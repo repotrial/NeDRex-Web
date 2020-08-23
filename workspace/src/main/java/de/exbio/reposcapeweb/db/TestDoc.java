@@ -9,27 +9,35 @@ import java.util.UUID;
 public class TestDoc {
 
     @Id
-    private String uid;
-    private String name;
+    private String id;
+    private String doc;
 
-    public TestDoc(String name){
-        this.uid = UUID.randomUUID().toString();
-        this.name=name;
+    public TestDoc(){
     }
 
-    public String getUid() {
-        return uid;
+    public TestDoc(String doc){
+        this.id = UUID.randomUUID().toString();
+        this.doc=doc;
     }
 
-    public void setUid(String uid) {
-        this.uid = uid;
+    public TestDoc(String id, String doc){
+        this.id = id;
+        this.doc = doc;
     }
 
-    public String getName() {
-        return name;
+    public String getId() {
+        return id;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setUid(String id) {
+        this.id = id;
+    }
+
+    public String getDoc() {
+        return doc;
+    }
+
+    public void setDoc(String name) {
+        this.doc = doc;
     }
 }

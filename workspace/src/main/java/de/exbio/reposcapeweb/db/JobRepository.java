@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface TestRepository extends MongoRepository<TestDoc,String> {
-    public Optional<TestDoc> findById(String id);
+public interface JobRepository extends MongoRepository<JobDoc, String> {
+    public Optional<JobDoc> findById(String id);
+
 }
