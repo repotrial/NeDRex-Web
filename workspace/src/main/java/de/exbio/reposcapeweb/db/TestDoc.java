@@ -1,11 +1,12 @@
 package de.exbio.reposcapeweb.db;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
-
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.util.UUID;
 
-@Document
+@Entity
+@Table(name="tests")
 public class TestDoc {
 
     @Id

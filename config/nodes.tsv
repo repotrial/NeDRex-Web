@@ -1,0 +1,6 @@
+#name
+disorder	primaryDomainId
+drug	primaryDomainId
+gene	primaryDomainId
+pathway	primaryDomainId
+protein	primaryDomainId

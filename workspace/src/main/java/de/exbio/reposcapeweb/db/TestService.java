@@ -40,7 +40,7 @@ public class TestService {
 
     public boolean testRead() {
         try {
-            if (testRepository.findAll().size() > 0)
+            if (testRepository.findAll().iterator().hasNext())
                 return true;
         } catch (Exception e) {
             return false;

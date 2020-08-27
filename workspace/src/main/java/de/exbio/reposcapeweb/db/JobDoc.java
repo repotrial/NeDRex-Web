@@ -2,9 +2,14 @@ package de.exbio.reposcapeweb.db;
 
 import org.springframework.data.annotation.Id;
 
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
+//@Entity
+//@Table(name="jobs")
 public class JobDoc {
 
-    @Id
+//    @Id
     private String id;
     private String doc;
 

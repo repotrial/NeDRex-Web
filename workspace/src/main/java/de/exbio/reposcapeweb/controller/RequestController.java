@@ -2,7 +2,6 @@ package de.exbio.reposcapeweb.controller;
 
 import de.exbio.reposcapeweb.db.JobDoc;
 import de.exbio.reposcapeweb.db.JobService;
-import de.exbio.reposcapeweb.db.TestRepository;
 import de.exbio.reposcapeweb.db.TestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,11 +18,11 @@ public class RequestController {
     private Logger log = LoggerFactory.getLogger(RequestController.class);
 
     private final TestService testService;
-    private final JobService jobService;
+//    private final JobService jobService;
 
-    public RequestController(@Autowired TestService testService, @Autowired JobService jobService){
+    public RequestController(@Autowired TestService testService/*, @Autowired JobService jobService*/){
         this.testService=testService;
-        this.jobService = jobService;
+//        this.jobService = jobService;
     }
 
     @RequestMapping(value = "/running", method = RequestMethod.GET)
@@ -54,20 +53,20 @@ public class RequestController {
         return testService.dump();
     }
 
-    @RequestMapping(value = "/submitJob", method = RequestMethod.GET)
-    @ResponseBody
-    public String submitJob(@RequestParam("id") String uid){
-        String jobId = jobService.submitJob(testService.getJob(uid));
-        log.info("Submitted "+uid+" as job "+jobId+"!");
-        return "Register for jobUpdate: "+jobId;
-    }
+//    @RequestMapping(value = "/submitJob", method = RequestMethod.GET)
+//    @ResponseBody
+//    public String submitJob(@RequestParam("id") String uid){
+//        String jobId = jobService.submitJob(testService.getJob(uid));
+//        log.info("Submitted "+uid+" as job "+jobId+"!");
+//        return "Register for jobUpdate: "+jobId;
+//    }
 
-    @RequestMapping(value = "/finishedJob", method = RequestMethod.GET)
-    @ResponseBody
-    public void registerFinishedJob(@RequestParam("j") String uid){
-        log.debug("j="+uid);
-        JobDoc doc= jobService.getJob(uid);
-        log.info("Got job "+uid+" with Document: "+doc.getDoc()+"!");
-    }
+//    @RequestMapping(value = "/finishedJob", method = RequestMethod.GET)
+//    @ResponseBody
+//    public void registerFinishedJob(@RequestParam("j") String uid){
+//        log.debug("j="+uid);
+//        JobDoc doc= jobService.getJob(uid);
+//        log.info("Got job "+uid+" with Document: "+doc.getDoc()+"!");
+//    }
 
 }

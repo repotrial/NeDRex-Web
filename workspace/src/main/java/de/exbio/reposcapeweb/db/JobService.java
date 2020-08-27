@@ -9,27 +9,27 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.util.UUID;
 
-@Service
+//@Service
 public class JobService {
 
     private Logger log = LoggerFactory.getLogger(JobService.class);
-    private final JobRepository jobRepository;
+//    private final JobRepository jobRepository;
 
-    @Autowired
-    public JobService(JobRepository jobRepository){
-        this.jobRepository = jobRepository;
-    }
+//    @Autowired
+//    public JobService(JobRepository jobRepository){
+//        this.jobRepository = jobRepository;
+//    }
 
 
-    public JobDoc getJob(String id){
-        JobDoc result = jobRepository.findById(id).orElse(null);
-        try{
-            result.getId();
-        } catch (NullPointerException e){
-            log.warn("Job not finished!");
-        }
-        return result;
-    }
+//    public JobDoc getJob(String id){
+//        JobDoc result = jobRepository.findById(id).orElse(null);
+//        try{
+//            result.getId();
+//        } catch (NullPointerException e){
+//            log.warn("Job not finished!");
+//        }
+//        return result;
+//    }
 
     public String submitJob(TestDoc input){
         String jobId = UUID.randomUUID().toString();
