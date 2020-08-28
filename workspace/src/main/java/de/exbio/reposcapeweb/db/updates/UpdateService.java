@@ -1,5 +1,7 @@
 package de.exbio.reposcapeweb.db.updates;
 
+import de.exbio.reposcapeweb.db.entities.nodes.Drug;
+import de.exbio.reposcapeweb.db.services.DrugService;
 import de.exbio.reposcapeweb.utils.FileUtils;
 import de.exbio.reposcapeweb.utils.ReaderUtils;
 import de.exbio.reposcapeweb.utils.StringUtils;
@@ -14,6 +16,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.util.HashMap;
+import java.util.HashSet;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
@@ -22,10 +25,12 @@ public class UpdateService {
     private final Logger log = LoggerFactory.getLogger(UpdateService.class);
 
     private final Environment env;
+    private final DrugService drugService;
 
     @Autowired
-    public UpdateService(Environment environment) {
+    public UpdateService(Environment environment, DrugService drugService) {
         this.env = environment;
+        this.drugService = drugService;
     }
 
 
@@ -66,10 +71,44 @@ public class UpdateService {
         //TODO just for dev
 //        reformatCollections(collections);
 
+        identifyUpdates(collections);
+    }
 
-        //TODO make diff > read inputstream -> updatedcells -> create batchfile -> input into db
+    private void identifyUpdates(HashMap<String, Collection> collections) {
+        collections.forEach((k, c) -> {
+            try {
+                String attributeDefinition = ReaderUtils.getUrlContent(new URL(env.getProperty("url.api.db") + k + "/attributes"));
+                boolean formatValidated = false;
+                switch (k) {
+                    case "drug": {
+                        //TODO check diff for update -> read inputstream -> update/remove/insert
+                        formatValidated = Drug.validateFormat(getAttributeNames(attributeDefinition));
+                        drugService.importUpdates(c.getFile());
+                    }
+                    //TODO add all other types
+                    //TODO create statistics for inserts/updates/removals
+                    //TODO validate edges and create statistics
+                }
+                if (!formatValidated)
+                    log.warn("Format validation for " + k + ": Error!");
+                else
+                    log.debug("Format validation for " + k + ": Success!");
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
+        });
 
+    }
 
+//    private HashMap<String,String> getAttributes(String values){
+//        HashMap<String,String> map = new HashMap<>();
+//        System.out.println(StringUtils.split(values, ",\""));
+//    }
+
+    private HashSet<String> getAttributeNames(String content) {
+        HashSet<String> attributes = new HashSet<>();
+        StringUtils.split(content.substring(1, content.length() - 2), ",").forEach(a -> attributes.add(a.substring(1, a.length() - 1)));
+        return attributes;
     }
 
     private void reformatCollections(HashMap<String, Collection> collections) {

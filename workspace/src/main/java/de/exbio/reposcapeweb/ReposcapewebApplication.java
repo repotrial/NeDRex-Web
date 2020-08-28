@@ -1,5 +1,6 @@
 package de.exbio.reposcapeweb;
 
+import de.exbio.reposcapeweb.db.services.DrugService;
 import de.exbio.reposcapeweb.db.updates.UpdateService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +17,7 @@ import org.springframework.jdbc.datasource.init.DataSourceInitializer;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 
 import javax.sql.DataSource;
+import java.io.File;
 
 @SpringBootApplication
 public class ReposcapewebApplication {
@@ -49,5 +51,6 @@ public class ReposcapewebApplication {
 
         else
             log.warn("Startup Database update is deactivated! Activate it by setting 'update.onstartup=true' in the application.properties.");
+
     }
 }

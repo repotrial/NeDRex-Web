@@ -45,6 +45,23 @@ public class StringUtils {
         return v;
     }
 
+    public static LinkedList<String> split(String line, char separator) {
+        LinkedList<String> v = new LinkedList<String>();
+        char tab = separator;
+
+        int lastTab = 0;
+        while (true) {
+            int nextTab = line.indexOf(tab, lastTab);
+            if (nextTab == -1) {
+                v.add(line.substring(lastTab));
+                break;
+            }
+            v.add(line.substring(lastTab, nextTab));
+            lastTab = nextTab + 1;
+        }
+        return v;
+    }
+
 
     public static LinkedList<String> split(Collection<String> lines, String sep) {
         LinkedList<String> v = new LinkedList<>();
@@ -78,8 +95,11 @@ public class StringUtils {
         return sb.toString();
     }
 
-
     public static String replaceAll(String line, String replace, String replaceWith) {
+        return concatAll(split(line, replace), replaceWith);
+    }
+
+    public static String replaceAll(String line, char replace, String replaceWith) {
         return concatAll(split(line, replace), replaceWith);
     }
 
@@ -95,6 +115,14 @@ public class StringUtils {
             replaceAll(result, Arrays.asList(p.first), p.second);
         }
         return result;
+    }
+
+    public static String listToString(List<String> list) {
+        return replaceAll(list.toString(), ' ', "");
+    }
+
+    public static LinkedList<String> stringToList(String s) {
+        return split(s.substring(s.charAt(0) == '[' ? 1 : 0, s.charAt(s.length() - 1) == ']' ? s.length() - 1 : s.length()), ',');
     }
 
 }

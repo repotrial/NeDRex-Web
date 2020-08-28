@@ -39,4 +39,18 @@ public class ReaderUtils {
         }
         return null;
     }
+
+    public static String getUrlContent(URL url) {
+        StringBuffer content = new StringBuffer();
+        BufferedReader br = getBufferedReader(url);
+        String line = "";
+        try {
+            while ((line = br.readLine()) != null) {
+                content.append(line).append("\n");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return content.toString();
+    }
 }
