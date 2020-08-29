@@ -1,6 +1,5 @@
 package de.exbio.reposcapeweb.db.entities.nodes;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import de.exbio.reposcapeweb.db.entities.RepoTrialEntity;
@@ -10,7 +9,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.persistence.*;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
@@ -20,17 +18,15 @@ public class Drug implements RepoTrialEntity {
     @Transient
     @JsonIgnore
     private Logger log = LoggerFactory.getLogger(Drug.class);
-    @Transient
-    @JsonIgnore
-    public static HashMap<String, Drug> entries = new HashMap<>();
-    @Transient
-    @JsonIgnore
-    private static HashSet<String> attributes = new HashSet<>(Arrays.asList("molecularFormula", "displayName", "inchi", "type", "domainIds", "primaryDomainId", "smiles", "casNumber", "drugCategories", "drugGroups", "_cls", "sequences", "iupacName", "synonyms", "primaryDataset", "indication", "allDatasets", "description"));
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @JsonIgnore
     private long id;
+    @Transient
+    @JsonIgnore
+    private static HashSet<String> attributes = new HashSet<>(Arrays.asList("molecularFormula", "displayName", "inchi", "type", "domainIds", "primaryDomainId", "smiles", "casNumber", "drugCategories", "drugGroups", "_cls", "sequences", "iupacName", "synonyms", "primaryDataset", "indication", "allDatasets", "description"));
+
 
 
     private String _cls;
@@ -74,16 +70,21 @@ public class Drug implements RepoTrialEntity {
     }
 
     @Override
-    public String toTsv() {
-        StringBuilder sb = new StringBuilder();
-//        sb.
-        return null;
+    public String getPrimaryId() {
+        return primaryDomainId;
     }
 
-    @Override
-    public String getHeader() {
-        return "#casNumber\tdescription\tdisplayName\tdomainIds\t";
-    }
+//    @Override
+//    public String toTsv() {
+//        StringBuilder sb = new StringBuilder();
+////        sb.
+//        return null;
+//    }
+//
+//    @Override
+//    public String getHeader() {
+//        return "#casNumber\tdescription\tdisplayName\tdomainIds\t";
+//    }
 
     public long getId() {
         return id;
@@ -205,6 +206,24 @@ public class Drug implements RepoTrialEntity {
         this.allDatasets = StringUtils.listToString(allDatasets);
     }
 
-
+    public void setValues(Drug other) {
+        this._cls=other._cls;
+        this.domainIds=other.domainIds;
+        this.displayName=other.displayName;
+        this.synonyms=other.synonyms;
+        this.type=other.type;
+        this.drugCategories=other.drugCategories;
+        this.drugGroups=other.drugGroups;
+        this.description=other.description;
+        this.casNumber=other.casNumber;
+        this.indication=other.indication;
+        this.sequences=other.sequences;
+        this.iupacName=other.iupacName;
+        this.smiles=other.smiles;
+        this.inchi=other.inchi;
+        this.primaryDataset=other.primaryDataset;
+        this.allDatasets=other.allDatasets;
+        this.molecularFormula=other.molecularFormula;
+    }
 }
 

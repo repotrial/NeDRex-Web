@@ -1,13 +1,10 @@
 package de.exbio.reposcapeweb.utils;
 
-import de.exbio.reposcapeweb.db.updates.UpdateService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 
 public class FileUtils {
     private final static Logger log = LoggerFactory.getLogger(FileUtils.class);
@@ -25,7 +22,7 @@ public class FileUtils {
         log.debug("Downloading " + url + " to " + fileName);
         ProcessBuilder pb = new ProcessBuilder("wget", "-O", fileName, url);
         try {
-            ProcessUtils.executeProcess(pb);
+            ProcessUtils.executeProcessWait(pb);
         } catch (IOException | InterruptedException e) {
             log.error("Error executing download!");
             e.printStackTrace();
@@ -46,7 +43,7 @@ public class FileUtils {
     public static void formatJson(File file) {
         ProcessBuilder pb = new ProcessBuilder("sed","-i","s/},{\"/},\\n{\"/g", file.getAbsolutePath());
         try {
-            ProcessUtils.executeProcess(pb);
+            ProcessUtils.executeProcessWait(pb);
         } catch (IOException | InterruptedException e) {
             log.error("Error converting json file!");
             e.printStackTrace();

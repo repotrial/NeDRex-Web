@@ -1,22 +1,27 @@
 package de.exbio.reposcapeweb.db.updates;
 
-import de.exbio.reposcapeweb.db.entities.nodes.Drug;
-import de.exbio.reposcapeweb.db.services.DrugService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
+import de.exbio.reposcapeweb.db.entities.RepoTrialEntity;
+import de.exbio.reposcapeweb.db.entities.nodes.*;
+import de.exbio.reposcapeweb.db.services.*;
 import de.exbio.reposcapeweb.utils.FileUtils;
 import de.exbio.reposcapeweb.utils.ReaderUtils;
+import de.exbio.reposcapeweb.utils.RepoTrialUtils;
 import de.exbio.reposcapeweb.utils.StringUtils;
+import org.apache.tomcat.jni.Proc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
+import org.springframework.expression.Operation;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
@@ -25,12 +30,23 @@ public class UpdateService {
     private final Logger log = LoggerFactory.getLogger(UpdateService.class);
 
     private final Environment env;
+    private final ObjectMapper objectMapper;
+
+    private final DisorderService disorderService;
     private final DrugService drugService;
+    private final GeneService geneService;
+    private final PathwayService pathwayService;
+    private final ProteinService proteinService;
 
     @Autowired
-    public UpdateService(Environment environment, DrugService drugService) {
+    public UpdateService(Environment environment, DrugService drugService, ObjectMapper objectMapper, PathwayService pathwayService, DisorderService disorderService, GeneService geneService, ProteinService proteinService) {
         this.env = environment;
         this.drugService = drugService;
+        this.objectMapper = objectMapper;
+        this.pathwayService = pathwayService;
+        this.disorderService=disorderService;
+        this.geneService=geneService;
+        this.proteinService=proteinService;
     }
 
 
@@ -69,35 +85,142 @@ public class UpdateService {
     private void updateDB(HashMap<String, Collection> collections) {
         //TODO implement
         //TODO just for dev
-//        reformatCollections(collections);
+        reformatCollections(collections);
 
         identifyUpdates(collections);
+    }
+
+    private <T extends RepoTrialEntity> EnumMap<UpdateOperation, HashMap<String, T>> runUpdates(Class<T> valueType, String attributeDefinition, Collection c) {
+        EnumMap<UpdateOperation, HashMap<String, T>> updates = new EnumMap<>(UpdateOperation.class);
+        if (!readUpdates(c, updates, valueType))
+            importInsertions(c.getFile(), updates, valueType);
+        return updates;
     }
 
     private void identifyUpdates(HashMap<String, Collection> collections) {
         collections.forEach((k, c) -> {
             try {
                 String attributeDefinition = ReaderUtils.getUrlContent(new URL(env.getProperty("url.api.db") + k + "/attributes"));
-                boolean formatValidated = false;
+                boolean updateSuccessful = true;
+
                 switch (k) {
                     case "drug": {
-                        //TODO check diff for update -> read inputstream -> update/remove/insert
-                        formatValidated = Drug.validateFormat(getAttributeNames(attributeDefinition));
-                        drugService.importUpdates(c.getFile());
+                        if (updateSuccessful = Drug.validateFormat(getAttributeNames(attributeDefinition)))
+                            updateSuccessful = drugService.submitUpdates(runUpdates(Drug.class, attributeDefinition, c));
+                        break;
                     }
-                    //TODO add all other types
-                    //TODO create statistics for inserts/updates/removals
+                    case "pathway": {
+                        if (updateSuccessful = Pathway.validateFormat(getAttributeNames(attributeDefinition)))
+                            updateSuccessful = pathwayService.submitUpdates(runUpdates(Pathway.class, attributeDefinition, c));
+                        break;
+                    }
+                    case "disorder": {
+                        if (updateSuccessful = Disorder.validateFormat(getAttributeNames(attributeDefinition)))
+                            updateSuccessful = disorderService.submitUpdates(runUpdates(Disorder.class, attributeDefinition, c));
+                        break;
+                    }
+                    case "gene": {
+                        if (updateSuccessful = Gene.validateFormat(getAttributeNames(attributeDefinition)))
+                            updateSuccessful = geneService.submitUpdates(runUpdates(Gene.class, attributeDefinition, c));
+                        break;
+                    }
+                    case "protein": {
+                        if (updateSuccessful = Protein.validateFormat(getAttributeNames(attributeDefinition)))
+                            updateSuccessful = proteinService.submitUpdates(runUpdates(Protein.class, attributeDefinition, c));
+                        break;
+                    }
                     //TODO validate edges and create statistics
                 }
-                if (!formatValidated)
-                    log.warn("Format validation for " + k + ": Error!");
+                if (updateSuccessful)
+                    log.warn("Update execution for " + k + ": Success!");
                 else
-                    log.debug("Format validation for " + k + ": Success!");
+                    log.debug("Update execution for " + k + ": Error!");
             } catch (MalformedURLException e) {
                 e.printStackTrace();
             }
         });
 
+    }
+
+    private <T extends RepoTrialEntity> boolean readUpdates(Collection c, EnumMap<UpdateOperation, HashMap<String, T>> updates, Class<T> valueType) {
+        File cached = RepoTrialUtils.getCachedFile(c, env.getProperty("path.db.cache"));
+        if (!cached.exists())
+            return false;
+        ProcessBuilder pb = new ProcessBuilder("diff", cached.getAbsolutePath(), c.getFile().getAbsolutePath());
+
+        pb.redirectErrorStream(true);
+        Process p = null;
+        HashMap<String, T> ins = new HashMap<>();
+        HashMap<String, T> upd = new HashMap<>();
+        HashMap<String, T> dels = new HashMap<>();
+        updates.put(UpdateOperation.Alteration, upd);
+        updates.put(UpdateOperation.Deletion, dels);
+        updates.put(UpdateOperation.Insertion, ins);
+
+        try {
+            p = pb.start();
+            BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            String line = "";
+            while ((line = br.readLine()) != null) {
+                char startC = line.charAt(0);
+                if (startC == '>' | startC == '<') {
+                    int start = line.charAt(2) == '[' ? 3 : 2;
+                    T d = objectMapper.readValue(line.substring(start), valueType);
+                    if (startC == '<') {
+                        dels.put(d.getPrimaryId(), d);
+                    } else {
+                        ins.put(d.getPrimaryId(), d);
+                    }
+                }
+
+            }
+
+            HashSet<String> overlap = new HashSet<>();
+            dels.keySet().forEach(id -> {
+                if (ins.containsKey(id))
+                    overlap.add(id);
+            });
+
+            overlap.forEach(id -> {
+                upd.put(id, ins.get(id));
+                dels.remove(id);
+                ins.remove(id);
+            });
+
+            p.waitFor();
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+        return true;
+    }
+
+    public <T extends RepoTrialEntity> void importInsertions(File updateFile, EnumMap<UpdateOperation, HashMap<String, T>> updates, Class<T> valueType) {
+        log.debug("Importing insertions only from " + updateFile);
+        HashMap<String, T> inserts = new HashMap<>();
+        updates.put(UpdateOperation.Insertion, inserts);
+        BufferedReader br = ReaderUtils.getBasicReader(updateFile);
+        String line = "";
+        boolean first = true;
+        try {
+            while ((line = br.readLine()) != null) {
+                if (first) {
+                    first = false;
+                    if (line.charAt(0) == '[')
+                        line = line.substring(1);
+                }
+                try {
+                    T d = objectMapper.readValue(line, valueType);
+                    inserts.put(d.getPrimaryId(), d);
+                } catch (MismatchedInputException e) {
+                    e.printStackTrace();
+                    log.error("Malformed input line in " + updateFile.getName() + ": " + line);
+                }
+                if (line.charAt(line.length() - 1) == ']')
+                    break;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 //    private HashMap<String,String> getAttributes(String values){
@@ -168,10 +291,10 @@ public class UpdateService {
         prepareCollections(env.getProperty("file.collections.nodes"), collections, true);
         prepareCollections(env.getProperty("file.collections.edges"), collections, false);
 
-//        collections.forEach((k, v) -> v.setFile(FileUtils.download(createUrl(api, k), createFile(destDir, k, fileType))));
+        collections.forEach((k, v) -> v.setFile(FileUtils.download(createUrl(api, k), createFile(destDir, k, fileType))));
 
         //TODO just for dev
-        collections.forEach((k, v) -> v.setFile(createFile(new File(env.getProperty("path.db.cache")), k, fileType)));
+//        collections.forEach((k, v) -> v.setFile(RepoTrialUtils.getCachedFile(v, fileType, env.getProperty("path.db.cache"))));
 
     }
 
