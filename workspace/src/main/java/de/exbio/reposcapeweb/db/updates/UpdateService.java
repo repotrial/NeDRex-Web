@@ -85,12 +85,12 @@ public class UpdateService {
     private void updateDB(HashMap<String, Collection> collections) {
         //TODO implement
         //TODO just for dev
-        reformatCollections(collections);
+//        reformatCollections(collections);
 
         identifyUpdates(collections);
     }
 
-    private <T extends RepoTrialEntity> EnumMap<UpdateOperation, HashMap<String, T>> runUpdates(Class<T> valueType, String attributeDefinition, Collection c) {
+    private <T extends RepoTrialEntity> EnumMap<UpdateOperation, HashMap<String, T>> runUpdates(Class<T> valueType, Collection c) {
         EnumMap<UpdateOperation, HashMap<String, T>> updates = new EnumMap<>(UpdateOperation.class);
         if (!readUpdates(c, updates, valueType))
             importInsertions(c.getFile(), updates, valueType);
@@ -106,35 +106,35 @@ public class UpdateService {
                 switch (k) {
                     case "drug": {
                         if (updateSuccessful = Drug.validateFormat(getAttributeNames(attributeDefinition)))
-                            updateSuccessful = drugService.submitUpdates(runUpdates(Drug.class, attributeDefinition, c));
+                            updateSuccessful = drugService.submitUpdates(runUpdates(Drug.class, c));
                         break;
                     }
                     case "pathway": {
                         if (updateSuccessful = Pathway.validateFormat(getAttributeNames(attributeDefinition)))
-                            updateSuccessful = pathwayService.submitUpdates(runUpdates(Pathway.class, attributeDefinition, c));
+                            updateSuccessful = pathwayService.submitUpdates(runUpdates(Pathway.class, c));
                         break;
                     }
                     case "disorder": {
                         if (updateSuccessful = Disorder.validateFormat(getAttributeNames(attributeDefinition)))
-                            updateSuccessful = disorderService.submitUpdates(runUpdates(Disorder.class, attributeDefinition, c));
+                            updateSuccessful = disorderService.submitUpdates(runUpdates(Disorder.class, c));
                         break;
                     }
                     case "gene": {
                         if (updateSuccessful = Gene.validateFormat(getAttributeNames(attributeDefinition)))
-                            updateSuccessful = geneService.submitUpdates(runUpdates(Gene.class, attributeDefinition, c));
+                            updateSuccessful = geneService.submitUpdates(runUpdates(Gene.class, c));
                         break;
                     }
                     case "protein": {
                         if (updateSuccessful = Protein.validateFormat(getAttributeNames(attributeDefinition)))
-                            updateSuccessful = proteinService.submitUpdates(runUpdates(Protein.class, attributeDefinition, c));
+                            updateSuccessful = proteinService.submitUpdates(runUpdates(Protein.class, c));
                         break;
                     }
-                    //TODO validate edges and create statistics
+                    //TODO validate edges and create statistics in background after update
                 }
                 if (updateSuccessful)
-                    log.warn("Update execution for " + k + ": Success!");
+                    log.debug("Update execution for " + k + ": Success!");
                 else
-                    log.debug("Update execution for " + k + ": Error!");
+                    log.warn("Update execution for " + k + ": Error!");
             } catch (MalformedURLException e) {
                 e.printStackTrace();
             }
@@ -291,10 +291,10 @@ public class UpdateService {
         prepareCollections(env.getProperty("file.collections.nodes"), collections, true);
         prepareCollections(env.getProperty("file.collections.edges"), collections, false);
 
-        collections.forEach((k, v) -> v.setFile(FileUtils.download(createUrl(api, k), createFile(destDir, k, fileType))));
+//        collections.forEach((k, v) -> v.setFile(FileUtils.download(createUrl(api, k), createFile(destDir, k, fileType))));
 
         //TODO just for dev
-//        collections.forEach((k, v) -> v.setFile(RepoTrialUtils.getCachedFile(v, fileType, env.getProperty("path.db.cache"))));
+        collections.forEach((k, v) -> v.setFile(RepoTrialUtils.getCachedFile(v, fileType, env.getProperty("path.db.cache"))));
 
     }
 
