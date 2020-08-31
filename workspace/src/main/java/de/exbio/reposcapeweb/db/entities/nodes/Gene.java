@@ -20,7 +20,7 @@ public class Gene implements RepoTrialEntity {
 
     @Transient
     @JsonIgnore
-    private Logger log = LoggerFactory.getLogger(Disorder.class);
+    private final Logger log = LoggerFactory.getLogger(Disorder.class);
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,7 +28,7 @@ public class Gene implements RepoTrialEntity {
     private long id;
     @Transient
     @JsonIgnore
-    private static HashSet<String> attributes = new HashSet<>(Arrays.asList("displayName", "type", "domainIds", "primaryDomainId", "geneType", "symbols", "approvedSymbol", "synonyms", "description", "chromosome", "mapLocation"));
+    private static final HashSet<String> attributes = new HashSet<>(Arrays.asList("displayName", "type", "domainIds", "primaryDomainId", "geneType", "symbols", "approvedSymbol", "synonyms", "description", "chromosome", "mapLocation"));
 
 
     private String primaryDomainId;
@@ -41,12 +41,7 @@ public class Gene implements RepoTrialEntity {
     private String chromosome;
     private String mapLocation;
     private String geneType;
-    private String type;
 
-
-    public static HashSet<String> getAttributes() {
-        return attributes;
-    }
 
     public String getPrimaryDomainId() {
         return primaryDomainId;
@@ -106,22 +101,26 @@ public class Gene implements RepoTrialEntity {
         return geneType;
     }
 
+    @JsonGetter
     public String getType() {
-        return type;
+        return "Gene";
+    }
+
+    @JsonSetter
+    public void setType(String type) {
     }
 
     public void setValues(Gene other) {
-        this.symbols=other.symbols;
-        this.domainIds=other.domainIds;
-        this.approvedSymbol=other.approvedSymbol;
-        this.chromosome=other.chromosome;
-        this.description=other.description;
-        this.displayName=other.displayName;
-        this.geneType=other.geneType;
-        this.mapLocation=other.mapLocation;
-        this.primaryDomainId=other.primaryDomainId;
-        this.synonyms=other.synonyms;
-        this.type=other.type;
+        this.symbols = other.symbols;
+        this.domainIds = other.domainIds;
+        this.approvedSymbol = other.approvedSymbol;
+        this.chromosome = other.chromosome;
+        this.description = other.description;
+        this.displayName = other.displayName;
+        this.geneType = other.geneType;
+        this.mapLocation = other.mapLocation;
+        this.primaryDomainId = other.primaryDomainId;
+        this.synonyms = other.synonyms;
 
     }
 

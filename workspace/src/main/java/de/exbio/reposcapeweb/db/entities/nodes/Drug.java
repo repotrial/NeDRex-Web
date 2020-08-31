@@ -17,7 +17,7 @@ import java.util.List;
 public class Drug implements RepoTrialEntity {
     @Transient
     @JsonIgnore
-    private Logger log = LoggerFactory.getLogger(Drug.class);
+    private final Logger log = LoggerFactory.getLogger(Drug.class);
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,8 +25,7 @@ public class Drug implements RepoTrialEntity {
     private long id;
     @Transient
     @JsonIgnore
-    private static HashSet<String> attributes = new HashSet<>(Arrays.asList("molecularFormula", "displayName", "inchi", "type", "domainIds", "primaryDomainId", "smiles", "casNumber", "drugCategories", "drugGroups", "_cls", "sequences", "iupacName", "synonyms", "primaryDataset", "indication", "allDatasets", "description"));
-
+    private final static HashSet<String> attributes = new HashSet<>(Arrays.asList("molecularFormula", "displayName", "inchi", "type", "domainIds", "primaryDomainId", "smiles", "casNumber", "drugCategories", "drugGroups", "_cls", "sequences", "iupacName", "synonyms", "primaryDataset", "indication", "allDatasets", "description"));
 
 
     private String _cls;

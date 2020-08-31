@@ -19,7 +19,7 @@ public class Protein implements RepoTrialEntity {
 
     @Transient
     @JsonIgnore
-    private Logger log = LoggerFactory.getLogger(Disorder.class);
+    private final Logger log = LoggerFactory.getLogger(Disorder.class);
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,7 +27,7 @@ public class Protein implements RepoTrialEntity {
     private long id;
     @Transient
     @JsonIgnore
-    private static HashSet<String> attributes = new HashSet<>(Arrays.asList("displayName", "type", "domainIds", "taxid", "primaryDomainId", "sequence", "synonyms", "geneName", "comments"));
+    private static final HashSet<String> attributes = new HashSet<>(Arrays.asList("displayName", "type", "domainIds", "taxid", "primaryDomainId", "sequence", "synonyms", "geneName", "comments"));
 
 
     public Protein() {
@@ -44,7 +44,6 @@ public class Protein implements RepoTrialEntity {
     public String comments;
     public String geneName;
     public String taxid;
-    public String type;
 
     public String getPrimaryDomainId() {
         return primaryDomainId;
@@ -90,9 +89,13 @@ public class Protein implements RepoTrialEntity {
         return taxid;
     }
 
+    @JsonGetter
     public String getType() {
-        return type;
+        return "Protein";
     }
+
+    @JsonSetter
+    public void setType(String type){}
 
     public void setValues(Protein other) {
         this.sequence = other.sequence;
@@ -103,7 +106,6 @@ public class Protein implements RepoTrialEntity {
         this.displayName = other.displayName;
         this.primaryDomainId = other.primaryDomainId;
         this.synonyms = other.synonyms;
-        this.type = other.type;
 
     }
 

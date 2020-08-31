@@ -7,7 +7,6 @@ import de.exbio.reposcapeweb.db.entities.RepoTrialEntity;
 import de.exbio.reposcapeweb.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.annotation.TypeAlias;
 
 import javax.persistence.*;
 import java.util.Arrays;
@@ -21,7 +20,7 @@ public class Disorder implements RepoTrialEntity {
 
     @Transient
     @JsonIgnore
-    private Logger log = LoggerFactory.getLogger(Disorder.class);
+    private final Logger log = LoggerFactory.getLogger(Disorder.class);
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,7 +28,7 @@ public class Disorder implements RepoTrialEntity {
     private long id;
     @Transient
     @JsonIgnore
-    private static HashSet<String> attributes = new HashSet<>(Arrays.asList("displayName", "synonyms", "type", "domainIds", "primaryDomainId", "description", "icd10"));
+    private static final HashSet<String> attributes = new HashSet<>(Arrays.asList("displayName", "synonyms", "type", "domainIds", "primaryDomainId", "description", "icd10"));
 
     private String primaryDomainId;
     @Column(columnDefinition = "TEXT")
@@ -40,8 +39,6 @@ public class Disorder implements RepoTrialEntity {
     private String icd10;
     @Column(columnDefinition = "TEXT")
     private String description;
-    private String type;
-
 
     public Disorder() {
     }
@@ -89,8 +86,13 @@ public class Disorder implements RepoTrialEntity {
         return description;
     }
 
+    @JsonGetter
     public String getType() {
-        return type;
+        return "Disorder";
+    }
+
+    @JsonSetter
+    public void setType(String type) {
     }
 
     public void setValues(Disorder other) {
@@ -100,8 +102,6 @@ public class Disorder implements RepoTrialEntity {
         this.description = other.description;
         this.displayName = other.displayName;
         this.primaryDomainId = other.primaryDomainId;
-        this.type = other.type;
-
     }
 
     public static boolean validateFormat(HashSet<String> attributes) {

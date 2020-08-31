@@ -1,5 +1,6 @@
 package de.exbio.reposcapeweb.db.entities.nodes;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import de.exbio.reposcapeweb.db.entities.RepoTrialEntity;
@@ -17,7 +18,7 @@ import java.util.LinkedList;
 public class Pathway implements RepoTrialEntity {
     @Transient
     @JsonIgnore
-    private Logger log = LoggerFactory.getLogger(Pathway.class);
+    private final Logger log = LoggerFactory.getLogger(Pathway.class);
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,7 +26,7 @@ public class Pathway implements RepoTrialEntity {
     private long id;
     @Transient
     @JsonIgnore
-    private static HashSet<String> attributes = new HashSet<>(Arrays.asList("displayName", "type", "domainIds", "primaryDomainId", "species"));
+    private static final HashSet<String> attributes = new HashSet<>(Arrays.asList("displayName", "type", "domainIds", "primaryDomainId", "species"));
 
     private String primaryDomainId;
 
@@ -35,17 +36,11 @@ public class Pathway implements RepoTrialEntity {
 
     private String species;
 
-    private String type;
-
     public Pathway() {
 
     }
 
 
-
-    public long getId() {
-        return id;
-    }
 
     public String getPrimaryDomainId() {
         return primaryDomainId;
@@ -68,15 +63,18 @@ public class Pathway implements RepoTrialEntity {
         return StringUtils.stringToList(species);
     }
 
+    @JsonGetter
     public String getType() {
-        return type;
+        return "Pathway";
     }
+
+    @JsonSetter
+    public void setType(String type){}
 
     public void setValues(Pathway other) {
         this.species = other.species;
         this.domainIds = other.domainIds;
         this.primaryDomainId = other.primaryDomainId;
-        this.type = other.type;
         this.displayName=other.displayName;
 
     }
