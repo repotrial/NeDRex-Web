@@ -32,26 +32,26 @@ public class DisorderComorbidWithDisorderService{
     }
 
 
-    public boolean submitUpdates(EnumMap<UpdateOperation, HashMap<Object, DisorderComorbidWithDisorder>> updates) {
+    public boolean submitUpdates(EnumMap<UpdateOperation, HashMap<PairId, DisorderComorbidWithDisorder>> updates) {
 
         if (updates == null)
             return false;
 
         if (updates.containsKey(UpdateOperation.Deletion))
-            disorderComorbidWithDisorderRepository.deleteAll(disorderComorbidWithDisorderRepository.findDisorderComorbidWithDisorderByIdIn(updates.get(UpdateOperation.Deletion).keySet().stream().map(o->(PairId)o).collect(Collectors.toSet())));
+            disorderComorbidWithDisorderRepository.deleteAll(disorderComorbidWithDisorderRepository.findDisorderComorbidWithDisordersByIdIn(updates.get(UpdateOperation.Deletion).keySet().stream().map(o->(PairId)o).collect(Collectors.toSet())));
 
         LinkedList<DisorderComorbidWithDisorder> toSave = new LinkedList(updates.get(UpdateOperation.Insertion).values());
         int insertCount = toSave.size();
         if (updates.containsKey(UpdateOperation.Alteration)) {
-            HashMap<Object, DisorderComorbidWithDisorder> toUpdate = updates.get(UpdateOperation.Alteration);
+            HashMap<PairId, DisorderComorbidWithDisorder> toUpdate = updates.get(UpdateOperation.Alteration);
 
-            disorderComorbidWithDisorderRepository.findDisorderComorbidWithDisorderByIdIn(new HashSet<>(toUpdate.keySet().stream().map(o->(PairId)o).collect(Collectors.toSet()))).forEach(d -> {
+            disorderComorbidWithDisorderRepository.findDisorderComorbidWithDisordersByIdIn(new HashSet<>(toUpdate.keySet().stream().map(o->(PairId)o).collect(Collectors.toSet()))).forEach(d -> {
                 d.setValues(toUpdate.get(d.getPrimaryIds()));
                 toSave.add(d);
             });
         }
         disorderComorbidWithDisorderRepository.saveAll(toSave);
-        log.debug("Updated disorder table: " + insertCount + " Inserts, " + (updates.containsKey(UpdateOperation.Alteration) ? updates.get(UpdateOperation.Alteration).size() : 0) + " Changes, " + (updates.containsKey(UpdateOperation.Deletion) ? updates.get(UpdateOperation.Deletion).size() : 0) + " Deletions identified!");
+        log.debug("Updated comorbid_with_disorder table: " + insertCount + " Inserts, " + (updates.containsKey(UpdateOperation.Alteration) ? updates.get(UpdateOperation.Alteration).size() : 0) + " Changes, " + (updates.containsKey(UpdateOperation.Deletion) ? updates.get(UpdateOperation.Deletion).size() : 0) + " Deletions identified!");
         return true;
     }
 

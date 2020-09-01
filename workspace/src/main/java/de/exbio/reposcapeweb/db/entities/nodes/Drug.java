@@ -28,14 +28,6 @@ public class Drug extends RepoTrialNode {
     @JsonIgnore
     public final static HashSet<String> attributes = new HashSet<>(Arrays.asList("molecularFormula", "displayName", "inchi", "type", "domainIds", "primaryDomainId", "smiles", "casNumber", "drugCategories", "drugGroups", "_cls", "sequences", "iupacName", "synonyms", "primaryDataset", "indication", "allDatasets", "description"));
 
-
-    @JsonIgnore
-    @Transient
-    public static HashMap<Integer,String> idToDomainMap = new HashMap<>();
-    @JsonIgnore
-    @Transient
-    public static HashMap<String,Integer> domainToIdMap = new HashMap<>();
-
     private String _cls;
     private String primaryDomainId;
     private String domainIds;

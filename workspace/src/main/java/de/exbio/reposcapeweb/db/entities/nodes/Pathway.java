@@ -29,13 +29,6 @@ public class Pathway extends RepoTrialNode {
     @JsonIgnore
     public static final HashSet<String> attributes = new HashSet<>(Arrays.asList("displayName", "type", "domainIds", "primaryDomainId", "species"));
 
-    @JsonIgnore
-    @Transient
-    public static HashMap<Integer,String> idToDomainMap = new HashMap<>();
-    @JsonIgnore
-    @Transient
-    public static HashMap<String,Integer> domainToIdMap = new HashMap<>();
-
     private String primaryDomainId;
 
     private String displayName;

@@ -30,13 +30,6 @@ public class Protein extends RepoTrialNode {
     @JsonIgnore
     public static final HashSet<String> attributes = new HashSet<>(Arrays.asList("displayName", "type", "domainIds", "taxid", "primaryDomainId", "sequence", "synonyms", "geneName", "comments"));
 
-    @JsonIgnore
-    @Transient
-    public static HashMap<Integer,String> idToDomainMap = new HashMap<>();
-    @JsonIgnore
-    @Transient
-    public static HashMap<String,Integer> domainToIdMap = new HashMap<>();
-
     public Protein() {
     }
 

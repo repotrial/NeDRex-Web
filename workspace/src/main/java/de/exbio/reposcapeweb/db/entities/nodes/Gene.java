@@ -31,13 +31,6 @@ public class Gene extends RepoTrialNode {
     @JsonIgnore
     public static final HashSet<String> attributes = new HashSet<>(Arrays.asList("displayName", "type", "domainIds", "primaryDomainId", "geneType", "symbols", "approvedSymbol", "synonyms", "description", "chromosome", "mapLocation"));
 
-    @JsonIgnore
-    @Transient
-    public static HashMap<Integer,String> idToDomainMap = new HashMap<>();
-    @JsonIgnore
-    @Transient
-    public static HashMap<String,Integer> domainToIdMap = new HashMap<>();
-
     private String primaryDomainId;
     private String domainIds;
     private String displayName;

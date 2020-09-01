@@ -19,6 +19,9 @@ public class PathwayService {
     private final Logger log = LoggerFactory.getLogger(DrugService.class);
     private final PathwayRepository pathwayRepository;
 
+    private HashMap<Integer,String> idToDomainMap = new HashMap<>();
+    private HashMap<String,Integer> domainToIdMap = new HashMap<>();
+
     @Autowired
     public PathwayService(PathwayRepository pathwayRepository) {
         this.pathwayRepository = pathwayRepository;
@@ -43,5 +46,18 @@ public class PathwayService {
         pathwayRepository.saveAll(toSave);
         log.debug("Updated pathway table: " + insertCount + " Inserts, " + (updates.containsKey(UpdateOperation.Alteration) ? updates.get(UpdateOperation.Alteration).size() : 0) + " Changes, " + (updates.containsKey(UpdateOperation.Deletion) ? updates.get(UpdateOperation.Deletion).size() : 0) + " Deletions identified!");
         return true;
+    }
+
+
+    public int map(String primaryDomainId) {
+        return getDomainToIdMap().get(primaryDomainId);
+    }
+
+    public HashMap<Integer, String> getIdToDomainMap() {
+        return idToDomainMap;
+    }
+
+    public HashMap<String, Integer> getDomainToIdMap() {
+        return domainToIdMap;
     }
 }

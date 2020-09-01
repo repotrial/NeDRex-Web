@@ -2,11 +2,10 @@ package de.exbio.reposcapeweb.db.updates;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
-import de.exbio.reposcapeweb.db.entities.edges.DisorderComorbidWithDisorder;
-import de.exbio.reposcapeweb.db.entities.edges.DisorderIsADisorder;
+import de.exbio.reposcapeweb.db.entities.edges.*;
+import de.exbio.reposcapeweb.db.entities.ids.PairId;
 import de.exbio.reposcapeweb.db.entities.nodes.*;
-import de.exbio.reposcapeweb.db.services.edges.DisorderComorbidWithDisorderService;
-import de.exbio.reposcapeweb.db.services.edges.DisorderIsADisorderService;
+import de.exbio.reposcapeweb.db.services.edges.*;
 import de.exbio.reposcapeweb.db.services.nodes.*;
 import de.exbio.reposcapeweb.utils.*;
 import org.slf4j.Logger;
@@ -38,6 +37,12 @@ public class UpdateService {
 
     private final DisorderComorbidWithDisorderService disorderComorbidWithDisorderService;
     private final DisorderIsADisorderService disorderIsADisorderService;
+    private final DrugHasIndicationService drugHasIndicationService;
+    private final DrugHasTargetService drugHasTargetService;
+    private final GeneAssociatedWithDisorderService geneAssociatedWithDisorderService;
+    private final ProteinEncodedByService proteinEncodedByService;
+    private final ProteinInPathwayService proteinInPathwayService;
+    private final ProteinInteractsWithProteinService proteinInteractsWithProteinServic;
 
     @Autowired
     public UpdateService(Environment environment,
@@ -48,7 +53,14 @@ public class UpdateService {
                          GeneService geneService,
                          ProteinService proteinService,
                          DisorderComorbidWithDisorderService disorderComorbidWithDisorderService,
-                         DisorderIsADisorderService disorderIsADisorderService) {
+                         DisorderIsADisorderService disorderIsADisorderService,
+                         DrugHasIndicationService drugHasIndicationService,
+                         DrugHasTargetService drugHasTargetService,
+                         GeneAssociatedWithDisorderService geneAssociatedWithDisorderService,
+                         ProteinEncodedByService proteinEncodedByService,
+                         ProteinInPathwayService proteinInPathwayService,
+                         ProteinInteractsWithProteinService proteinInteractsWithProteinService
+    ) {
         this.env = environment;
         this.drugService = drugService;
         this.objectMapper = objectMapper;
@@ -57,7 +69,14 @@ public class UpdateService {
         this.geneService = geneService;
         this.proteinService = proteinService;
         this.disorderComorbidWithDisorderService = disorderComorbidWithDisorderService;
-        this.disorderIsADisorderService=disorderIsADisorderService;
+        this.disorderIsADisorderService = disorderIsADisorderService;
+        this.drugHasIndicationService = drugHasIndicationService;
+        this.drugHasTargetService = drugHasTargetService;
+        this.geneAssociatedWithDisorderService = geneAssociatedWithDisorderService;
+        this.proteinEncodedByService = proteinEncodedByService;
+        this.proteinInPathwayService = proteinInPathwayService;
+        this.proteinInteractsWithProteinServic = proteinInteractsWithProteinService;
+
     }
 
 
@@ -135,8 +154,8 @@ public class UpdateService {
         return updates;
     }
 
-    private <T extends RepoTrialEdge> EnumMap<UpdateOperation, HashMap<Object, T>> runEdgeUpdates(Class<T> valueType, Collection c, IdMapper mapper) {
-        EnumMap<UpdateOperation, HashMap<Object, T>> updates = new EnumMap<>(UpdateOperation.class);
+    private <T extends RepoTrialEdge> EnumMap<UpdateOperation, HashMap<PairId, T>> runEdgeUpdates(Class<T> valueType, Collection c, IdMapper mapper) {
+        EnumMap<UpdateOperation, HashMap<PairId, T>> updates = new EnumMap<>(UpdateOperation.class);
         if (!readEdgeUpdates(c, updates, valueType, mapper))
             importEdgeInsertions(c.getFile(), updates, valueType, mapper);
         return updates;
@@ -164,11 +183,35 @@ public class UpdateService {
                 switch (k) {
                     case "disorder_comorbid_with_disorder":
                         if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, DisorderComorbidWithDisorder.attributes))
-                            updateSuccessful = disorderComorbidWithDisorderService.submitUpdates(runEdgeUpdates(DisorderComorbidWithDisorder.class, c,disorderComorbidWithDisorderService::mapIds));
+                            updateSuccessful = disorderComorbidWithDisorderService.submitUpdates(runEdgeUpdates(DisorderComorbidWithDisorder.class, c, disorderComorbidWithDisorderService::mapIds));
                         break;
                     case "disorder_is_a_disorder":
                         if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, DisorderIsADisorder.attributes))
-                            updateSuccessful = disorderIsADisorderService.submitUpdates(runEdgeUpdates(DisorderIsADisorder.class, c,disorderIsADisorderService::mapIds));
+                            updateSuccessful = disorderIsADisorderService.submitUpdates(runEdgeUpdates(DisorderIsADisorder.class, c, disorderIsADisorderService::mapIds));
+                        break;
+                    case "drug_has_indication":
+                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, DrugHasIndication.attributes))
+                            updateSuccessful = drugHasIndicationService.submitUpdates(runEdgeUpdates(DrugHasIndication.class, c, drugHasIndicationService::mapIds));
+                        break;
+                    case "drug_has_target":
+                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, DrugHasTarget.attributes))
+                            updateSuccessful = drugHasTargetService.submitUpdates(runEdgeUpdates(DrugHasTarget.class, c, drugHasTargetService::mapIds));
+                        break;
+                    case "gene_associated_with_service":
+                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, GeneAssociatedWithDisorder.attributes))
+                            updateSuccessful = geneAssociatedWithDisorderService.submitUpdates(runEdgeUpdates(GeneAssociatedWithDisorder.class, c, geneAssociatedWithDisorderService::mapIds));
+                        break;
+                    case "protein_encoded_by":
+                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, ProteinEncodedBy.attributes))
+                            updateSuccessful = proteinEncodedByService.submitUpdates(runEdgeUpdates(ProteinEncodedBy.class, c, proteinEncodedByService::mapIds));
+                        break;
+                    case "protein_in_pathway":
+                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, ProteinInPathway.attributes))
+                            updateSuccessful = proteinInPathwayService.submitUpdates(runEdgeUpdates(ProteinInPathway.class, c, proteinInPathwayService::mapIds));
+                        break;
+                    case "protein_interacts_with_protein":
+                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, ProteinInteractsWithProtein.attributes))
+                            updateSuccessful = proteinInteractsWithProteinServic.submitUpdates(runEdgeUpdates(ProteinInteractsWithProtein.class, c, proteinInteractsWithProteinServic::mapIds));
                         break;
 
                 }
@@ -236,11 +279,11 @@ public class UpdateService {
 
             switch (k) {
                 case "drug": {
-                    updateNodeIdMaps(cacheDir, k + "s", Drug.idToDomainMap, Drug.domainToIdMap);
+                    updateNodeIdMaps(cacheDir, k + "s", drugService.getIdToDomainMap(), drugService.getDomainToIdMap());
                     break;
                 }
                 case "pathway": {
-                    updateNodeIdMaps(cacheDir, k + "s", Pathway.idToDomainMap, Pathway.domainToIdMap);
+                    updateNodeIdMaps(cacheDir, k + "s", pathwayService.getIdToDomainMap(), pathwayService.getDomainToIdMap());
                     break;
                 }
                 case "disorder": {
@@ -248,11 +291,11 @@ public class UpdateService {
                     break;
                 }
                 case "gene": {
-                    updateNodeIdMaps(cacheDir, k + "s", Gene.idToDomainMap, Gene.domainToIdMap);
+                    updateNodeIdMaps(cacheDir, k + "s", geneService.getIdToDomainMap(), geneService.getDomainToIdMap());
                     break;
                 }
                 case "protein": {
-                    updateNodeIdMaps(cacheDir, k + "s", Protein.idToDomainMap, Protein.domainToIdMap);
+                    updateNodeIdMaps(cacheDir, k + "s", proteinService.getIdToDomainMap(), proteinService.getDomainToIdMap());
                     break;
                 }
             }
@@ -312,7 +355,7 @@ public class UpdateService {
         return true;
     }
 
-    private <T extends RepoTrialEdge> boolean readEdgeUpdates(Collection c, EnumMap<UpdateOperation, HashMap<Object, T>> updates, Class<T> valueType, IdMapper mapper) {
+    private <T extends RepoTrialEdge> boolean readEdgeUpdates(Collection c, EnumMap<UpdateOperation, HashMap<PairId, T>> updates, Class<T> valueType, IdMapper mapper) {
         File cached = RepoTrialUtils.getCachedFile(c, env.getProperty("path.db.cache"));
         if (!cached.exists())
             return false;
@@ -320,9 +363,9 @@ public class UpdateService {
 
         pb.redirectErrorStream(true);
         Process p = null;
-        HashMap<Object, T> ins = new HashMap<>();
-        HashMap<Object, T> upd = new HashMap<>();
-        HashMap<Object, T> dels = new HashMap<>();
+        HashMap<PairId, T> ins = new HashMap<>();
+        HashMap<PairId, T> upd = new HashMap<>();
+        HashMap<PairId, T> dels = new HashMap<>();
         updates.put(UpdateOperation.Alteration, upd);
         updates.put(UpdateOperation.Deletion, dels);
         updates.put(UpdateOperation.Insertion, ins);
@@ -347,7 +390,7 @@ public class UpdateService {
 
             }
 
-            HashSet<Object> overlap = new HashSet<>();
+            HashSet<PairId> overlap = new HashSet<>();
             dels.keySet().forEach(id -> {
                 if (ins.containsKey(id))
                     overlap.add(id);
@@ -395,9 +438,9 @@ public class UpdateService {
         }
     }
 
-    public <T extends RepoTrialEdge> void importEdgeInsertions(File updateFile, EnumMap<UpdateOperation, HashMap<Object, T>> updates, Class<T> valueType, IdMapper mapper) {
+    public <T extends RepoTrialEdge> void importEdgeInsertions(File updateFile, EnumMap<UpdateOperation, HashMap<PairId, T>> updates, Class<T> valueType, IdMapper mapper) {
         log.debug("Importing insertions only from " + updateFile);
-        HashMap<Object, T> inserts = new HashMap<>();
+        HashMap<PairId, T> inserts = new HashMap<>();
         updates.put(UpdateOperation.Insertion, inserts);
         BufferedReader br = ReaderUtils.getBasicReader(updateFile);
         String line = "";
