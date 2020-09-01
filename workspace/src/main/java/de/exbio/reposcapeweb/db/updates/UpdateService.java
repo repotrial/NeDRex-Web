@@ -3,9 +3,11 @@ package de.exbio.reposcapeweb.db.updates;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import de.exbio.reposcapeweb.db.entities.edges.DisorderComorbidWithDisorder;
-import de.exbio.reposcapeweb.db.entities.edges.ids.PairId;
+import de.exbio.reposcapeweb.db.entities.edges.DisorderIsADisorder;
 import de.exbio.reposcapeweb.db.entities.nodes.*;
-import de.exbio.reposcapeweb.db.services.*;
+import de.exbio.reposcapeweb.db.services.edges.DisorderComorbidWithDisorderService;
+import de.exbio.reposcapeweb.db.services.edges.DisorderIsADisorderService;
+import de.exbio.reposcapeweb.db.services.nodes.*;
 import de.exbio.reposcapeweb.utils.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,9 +37,18 @@ public class UpdateService {
     private final ProteinService proteinService;
 
     private final DisorderComorbidWithDisorderService disorderComorbidWithDisorderService;
+    private final DisorderIsADisorderService disorderIsADisorderService;
 
     @Autowired
-    public UpdateService(Environment environment, DrugService drugService, ObjectMapper objectMapper, PathwayService pathwayService, DisorderService disorderService, GeneService geneService, ProteinService proteinService, DisorderComorbidWithDisorderService disorderComorbidWithDisorderService) {
+    public UpdateService(Environment environment,
+                         DrugService drugService,
+                         ObjectMapper objectMapper,
+                         PathwayService pathwayService,
+                         DisorderService disorderService,
+                         GeneService geneService,
+                         ProteinService proteinService,
+                         DisorderComorbidWithDisorderService disorderComorbidWithDisorderService,
+                         DisorderIsADisorderService disorderIsADisorderService) {
         this.env = environment;
         this.drugService = drugService;
         this.objectMapper = objectMapper;
@@ -46,6 +57,7 @@ public class UpdateService {
         this.geneService = geneService;
         this.proteinService = proteinService;
         this.disorderComorbidWithDisorderService = disorderComorbidWithDisorderService;
+        this.disorderIsADisorderService=disorderIsADisorderService;
     }
 
 
@@ -123,10 +135,10 @@ public class UpdateService {
         return updates;
     }
 
-    private <T extends RepoTrialEdge> EnumMap<UpdateOperation, HashMap<Object, T>> runEdgeUpdates(Class<T> valueType, Collection c) {
+    private <T extends RepoTrialEdge> EnumMap<UpdateOperation, HashMap<Object, T>> runEdgeUpdates(Class<T> valueType, Collection c, IdMapper mapper) {
         EnumMap<UpdateOperation, HashMap<Object, T>> updates = new EnumMap<>(UpdateOperation.class);
-        if (!readEdgeUpdates(c, updates, valueType, ids -> new PairId(disorderService.map(ids.getFirst()), disorderService.map(ids.getSecond()))))
-            importEdgeInsertions(c.getFile(), updates, valueType, disorderComorbidWithDisorderService::mapIds);
+        if (!readEdgeUpdates(c, updates, valueType, mapper))
+            importEdgeInsertions(c.getFile(), updates, valueType, mapper);
         return updates;
     }
 
@@ -152,7 +164,11 @@ public class UpdateService {
                 switch (k) {
                     case "disorder_comorbid_with_disorder":
                         if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, DisorderComorbidWithDisorder.attributes))
-                            updateSuccessful = disorderComorbidWithDisorderService.submitUpdates(runEdgeUpdates(DisorderComorbidWithDisorder.class, c));
+                            updateSuccessful = disorderComorbidWithDisorderService.submitUpdates(runEdgeUpdates(DisorderComorbidWithDisorder.class, c,disorderComorbidWithDisorderService::mapIds));
+                        break;
+                    case "disorder_is_a_disorder":
+                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, DisorderIsADisorder.attributes))
+                            updateSuccessful = disorderIsADisorderService.submitUpdates(runEdgeUpdates(DisorderIsADisorder.class, c,disorderIsADisorderService::mapIds));
                         break;
 
                 }

@@ -1,8 +1,9 @@
-package de.exbio.reposcapeweb.db.services;
+package de.exbio.reposcapeweb.db.services.edges;
 
 import de.exbio.reposcapeweb.db.entities.edges.DisorderComorbidWithDisorder;
-import de.exbio.reposcapeweb.db.entities.edges.ids.PairId;
-import de.exbio.reposcapeweb.db.repositories.DisorderComorbidWithDisorderRepository;
+import de.exbio.reposcapeweb.db.entities.ids.PairId;
+import de.exbio.reposcapeweb.db.repositories.edges.DisorderComorbidWithDisorderRepository;
+import de.exbio.reposcapeweb.db.services.nodes.DisorderService;
 import de.exbio.reposcapeweb.db.updates.UpdateOperation;
 import de.exbio.reposcapeweb.utils.Pair;
 import org.slf4j.Logger;

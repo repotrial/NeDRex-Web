@@ -1,6 +1,6 @@
 package de.exbio.reposcapeweb.controller;
 
-import de.exbio.reposcapeweb.db.services.DrugService;
+import de.exbio.reposcapeweb.db.services.nodes.DrugService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,7 +1,7 @@
-package de.exbio.reposcapeweb.db.services;
+package de.exbio.reposcapeweb.db.services.nodes;
 
 import de.exbio.reposcapeweb.db.entities.nodes.Gene;
-import de.exbio.reposcapeweb.db.repositories.GeneRepository;
+import de.exbio.reposcapeweb.db.repositories.nodes.GeneRepository;
 import de.exbio.reposcapeweb.db.updates.UpdateOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,7 +12,6 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.stream.Collectors;
 
 @Service
 public class GeneService {

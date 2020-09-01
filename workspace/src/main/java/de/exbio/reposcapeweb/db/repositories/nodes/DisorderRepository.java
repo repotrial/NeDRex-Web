@@ -1,4 +1,4 @@
-package de.exbio.reposcapeweb.db.repositories;
+package de.exbio.reposcapeweb.db.repositories.nodes;
 
 import de.exbio.reposcapeweb.db.entities.nodes.Disorder;
 import org.springframework.data.repository.CrudRepository;

@@ -1,21 +1,17 @@
-package de.exbio.reposcapeweb.db.services;
+package de.exbio.reposcapeweb.db.services.nodes;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.exbio.reposcapeweb.db.entities.nodes.Disorder;
-import de.exbio.reposcapeweb.db.repositories.DisorderRepository;
-import de.exbio.reposcapeweb.db.repositories.PathwayRepository;
+import de.exbio.reposcapeweb.db.repositories.nodes.DisorderRepository;
 import de.exbio.reposcapeweb.db.updates.UpdateOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.Transient;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.stream.Collectors;
 
 @Service
 public class DisorderService {

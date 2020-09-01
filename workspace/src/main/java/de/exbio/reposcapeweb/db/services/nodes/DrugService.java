@@ -1,8 +1,7 @@
-package de.exbio.reposcapeweb.db.services;
+package de.exbio.reposcapeweb.db.services.nodes;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import de.exbio.reposcapeweb.db.entities.nodes.Drug;
-import de.exbio.reposcapeweb.db.repositories.DrugRepository;
+import de.exbio.reposcapeweb.db.repositories.nodes.DrugRepository;
 import de.exbio.reposcapeweb.db.updates.UpdateOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class DrugService {

@@ -1,4 +1,4 @@
-package de.exbio.reposcapeweb.db.entities.edges.ids;
+package de.exbio.reposcapeweb.db.entities.ids;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
