@@ -197,7 +197,7 @@ public class UpdateService {
                         if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, DrugHasTarget.attributes))
                             updateSuccessful = drugHasTargetService.submitUpdates(runEdgeUpdates(DrugHasTarget.class, c, drugHasTargetService::mapIds));
                         break;
-                    case "gene_associated_with_service":
+                    case "gene_associated_with_disorder":
                         if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, GeneAssociatedWithDisorder.attributes))
                             updateSuccessful = geneAssociatedWithDisorderService.submitUpdates(runEdgeUpdates(GeneAssociatedWithDisorder.class, c, geneAssociatedWithDisorderService::mapIds));
                         break;
