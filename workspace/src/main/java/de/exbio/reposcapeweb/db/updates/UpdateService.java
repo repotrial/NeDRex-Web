@@ -110,9 +110,8 @@ public class UpdateService {
     }
 
     private void updateDB(HashMap<String, Collection> collections, File cacheDir) {
-        //TODO implement
         //TODO just for dev
-//        reformatCollections(collections);
+        reformatCollections(collections);
 
         identifyUpdates(collections, cacheDir);
     }
@@ -478,10 +477,10 @@ public class UpdateService {
         prepareCollections(env.getProperty("file.collections.nodes"), collections, true);
         prepareCollections(env.getProperty("file.collections.edges"), collections, false);
 
-//        collections.forEach((k, v) -> v.setFile(FileUtils.download(createUrl(api, k), createFile(destDir, k, fileType))));
+        collections.forEach((k, v) -> v.setFile(FileUtils.download(createUrl(api, k), createFile(destDir, k, fileType))));
 
         //TODO just for dev
-        collections.forEach((k, v) -> v.setFile(RepoTrialUtils.getCachedFile(v, fileType, env.getProperty("path.db.cache"))));
+//        collections.forEach((k, v) -> v.setFile(RepoTrialUtils.getCachedFile(v, fileType, env.getProperty("path.db.cache"))));
 
     }
 
