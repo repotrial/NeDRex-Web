@@ -9,10 +9,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class DrugService {
@@ -31,7 +29,7 @@ public class DrugService {
         if (updates == null)
             return false;
         if (updates.containsKey(UpdateOperation.Deletion))
-            drugRepository.deleteAll(drugRepository.findAllByPrimaryDomainIdIn(updates.get(UpdateOperation.Deletion).keySet()));
+            drugRepository.deleteAll(drugRepository.findAllByPrimaryDomainIdIn((updates.get(UpdateOperation.Deletion).keySet())));
 
         LinkedList<Drug> toSave = new LinkedList(updates.get(UpdateOperation.Insertion).values());
         int insertCount = toSave.size();

@@ -2,19 +2,15 @@ package de.exbio.reposcapeweb.db.updates;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
-import de.exbio.reposcapeweb.db.entities.RepoTrialEntity;
+import de.exbio.reposcapeweb.db.entities.edges.DisorderComorbidWithDisorder;
+import de.exbio.reposcapeweb.db.entities.edges.ids.PairId;
 import de.exbio.reposcapeweb.db.entities.nodes.*;
 import de.exbio.reposcapeweb.db.services.*;
-import de.exbio.reposcapeweb.utils.FileUtils;
-import de.exbio.reposcapeweb.utils.ReaderUtils;
-import de.exbio.reposcapeweb.utils.RepoTrialUtils;
-import de.exbio.reposcapeweb.utils.StringUtils;
-import org.apache.tomcat.jni.Proc;
+import de.exbio.reposcapeweb.utils.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
-import org.springframework.expression.Operation;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
@@ -38,15 +34,18 @@ public class UpdateService {
     private final PathwayService pathwayService;
     private final ProteinService proteinService;
 
+    private final DisorderComorbidWithDisorderService disorderComorbidWithDisorderService;
+
     @Autowired
-    public UpdateService(Environment environment, DrugService drugService, ObjectMapper objectMapper, PathwayService pathwayService, DisorderService disorderService, GeneService geneService, ProteinService proteinService) {
+    public UpdateService(Environment environment, DrugService drugService, ObjectMapper objectMapper, PathwayService pathwayService, DisorderService disorderService, GeneService geneService, ProteinService proteinService, DisorderComorbidWithDisorderService disorderComorbidWithDisorderService) {
         this.env = environment;
         this.drugService = drugService;
         this.objectMapper = objectMapper;
         this.pathwayService = pathwayService;
-        this.disorderService=disorderService;
-        this.geneService=geneService;
-        this.proteinService=proteinService;
+        this.disorderService = disorderService;
+        this.geneService = geneService;
+        this.proteinService = proteinService;
+        this.disorderComorbidWithDisorderService = disorderComorbidWithDisorderService;
     }
 
 
@@ -64,6 +63,34 @@ public class UpdateService {
         return true;
     }
 
+    private void updateNodeIdMaps(File cacheDir, String table, HashMap<Integer, String> idToDomain, HashMap<String, Integer> domainToString) {
+        File nodeDir = new File(cacheDir, "nodes");
+        DBUtils.executeNodeDump(nodeDir, table);
+        log.info("Node id tables updated!");
+
+        File f = new File(nodeDir, table + ".list");
+        BufferedReader br = ReaderUtils.getBasicReader(f);
+        String line = "";
+
+        idToDomain.clear();
+        domainToString.clear();
+
+        try {
+            while ((line = br.readLine()) != null) {
+                if (line.charAt(0) == '#')
+                    continue;
+                ;
+                ArrayList<String> entry = StringUtils.split(line, '\t', 2);
+                int id = Integer.parseInt(entry.get(0));
+                idToDomain.put(id, entry.get(1));
+                domainToString.put(entry.get(1), id);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
     private void update(String url, File cacheDir) {
         log.debug("Executing Database update from " + url + " to cache-directory " + cacheDir.getAbsolutePath());
 
@@ -76,60 +103,59 @@ public class UpdateService {
 
         log.info("Downloading database files!");
         downloadUpdates(url, updateDir, fileType, collections);
-        updateDB(collections);
+        updateDB(collections, cacheDir);
         overrideOldData(cacheDir, collections);
 
         updateDir.delete();
     }
 
-    private void updateDB(HashMap<String, Collection> collections) {
+    private void updateDB(HashMap<String, Collection> collections, File cacheDir) {
         //TODO implement
         //TODO just for dev
 //        reformatCollections(collections);
 
-        identifyUpdates(collections);
+        identifyUpdates(collections, cacheDir);
     }
 
-    private <T extends RepoTrialEntity> EnumMap<UpdateOperation, HashMap<String, T>> runUpdates(Class<T> valueType, Collection c) {
+    private <T extends RepoTrialNode> EnumMap<UpdateOperation, HashMap<String, T>> runNodeUpdates(Class<T> valueType, Collection c) {
         EnumMap<UpdateOperation, HashMap<String, T>> updates = new EnumMap<>(UpdateOperation.class);
-        if (!readUpdates(c, updates, valueType))
-            importInsertions(c.getFile(), updates, valueType);
+        if (!readNodeUpdates(c, updates, valueType))
+            importNodeInsertions(c.getFile(), updates, valueType);
         return updates;
     }
 
-    private void identifyUpdates(HashMap<String, Collection> collections) {
+    private <T extends RepoTrialEdge> EnumMap<UpdateOperation, HashMap<Object, T>> runEdgeUpdates(Class<T> valueType, Collection c) {
+        EnumMap<UpdateOperation, HashMap<Object, T>> updates = new EnumMap<>(UpdateOperation.class);
+        if (!readEdgeUpdates(c, updates, valueType, ids -> new PairId(disorderService.map(ids.getFirst()), disorderService.map(ids.getSecond()))))
+            importEdgeInsertions(c.getFile(), updates, valueType, disorderComorbidWithDisorderService::mapIds);
+        return updates;
+    }
+
+    private void identifyUpdates(HashMap<String, Collection> collections, File cacheDir) {
+
+        importRepoTrialNodes(collections);
+
+        importIdMaps(collections, cacheDir);
+
+        importRepoTrialEdges(collections);
+
+    }
+
+    private void importRepoTrialEdges(HashMap<String, Collection> collections) {
+        //TODO validate edges and create statistics in background after update
         collections.forEach((k, c) -> {
+            if (c instanceof Node)
+                return;
             try {
-                String attributeDefinition = ReaderUtils.getUrlContent(new URL(env.getProperty("url.api.db") + k + "/attributes"));
+                HashSet<String> attributeDefinition = getAttributeNames(ReaderUtils.getUrlContent(new URL(env.getProperty("url.api.db") + k + "/attributes")));
                 boolean updateSuccessful = true;
 
                 switch (k) {
-                    case "drug": {
-                        if (updateSuccessful = Drug.validateFormat(getAttributeNames(attributeDefinition)))
-                            updateSuccessful = drugService.submitUpdates(runUpdates(Drug.class, c));
+                    case "disorder_comorbid_with_disorder":
+                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, DisorderComorbidWithDisorder.attributes))
+                            updateSuccessful = disorderComorbidWithDisorderService.submitUpdates(runEdgeUpdates(DisorderComorbidWithDisorder.class, c));
                         break;
-                    }
-                    case "pathway": {
-                        if (updateSuccessful = Pathway.validateFormat(getAttributeNames(attributeDefinition)))
-                            updateSuccessful = pathwayService.submitUpdates(runUpdates(Pathway.class, c));
-                        break;
-                    }
-                    case "disorder": {
-                        if (updateSuccessful = Disorder.validateFormat(getAttributeNames(attributeDefinition)))
-                            updateSuccessful = disorderService.submitUpdates(runUpdates(Disorder.class, c));
-                        break;
-                    }
-                    case "gene": {
-                        if (updateSuccessful = Gene.validateFormat(getAttributeNames(attributeDefinition)))
-                            updateSuccessful = geneService.submitUpdates(runUpdates(Gene.class, c));
-                        break;
-                    }
-                    case "protein": {
-                        if (updateSuccessful = Protein.validateFormat(getAttributeNames(attributeDefinition)))
-                            updateSuccessful = proteinService.submitUpdates(runUpdates(Protein.class, c));
-                        break;
-                    }
-                    //TODO validate edges and create statistics in background after update
+
                 }
                 if (updateSuccessful)
                     log.debug("Update execution for " + k + ": Success!");
@@ -139,10 +165,87 @@ public class UpdateService {
                 e.printStackTrace();
             }
         });
+    }
+
+
+    private void importRepoTrialNodes(HashMap<String, Collection> collections) {
+        collections.forEach((k, c) -> {
+            if (!(c instanceof Node))
+                return;
+            try {
+                HashSet<String> attributeDefinition = getAttributeNames(ReaderUtils.getUrlContent(new URL(env.getProperty("url.api.db") + k + "/attributes")));
+                boolean updateSuccessful = true;
+
+                switch (k) {
+                    case "drug": {
+                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, Drug.attributes))
+                            updateSuccessful = drugService.submitUpdates(runNodeUpdates(Drug.class, c));
+                        break;
+                    }
+                    case "pathway": {
+                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, Pathway.attributes))
+                            updateSuccessful = pathwayService.submitUpdates(runNodeUpdates(Pathway.class, c));
+                        break;
+                    }
+                    case "disorder": {
+                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, Disorder.attributes))
+                            updateSuccessful = disorderService.submitUpdates(runNodeUpdates(Disorder.class, c));
+                        break;
+                    }
+                    case "gene": {
+                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, Gene.attributes))
+                            updateSuccessful = geneService.submitUpdates(runNodeUpdates(Gene.class, c));
+                        break;
+                    }
+                    case "protein": {
+                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, Protein.attributes))
+                            updateSuccessful = proteinService.submitUpdates(runNodeUpdates(Protein.class, c));
+                        break;
+                    }
+                }
+                if (updateSuccessful)
+                    log.debug("Update execution for " + k + ": Success!");
+                else
+                    log.warn("Update execution for " + k + ": Error!");
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    private void importIdMaps(HashMap<String, Collection> collections, File cacheDir) {
+
+        collections.forEach((k, c) -> {
+            if (!(c instanceof Node))
+                return;
+
+            switch (k) {
+                case "drug": {
+                    updateNodeIdMaps(cacheDir, k + "s", Drug.idToDomainMap, Drug.domainToIdMap);
+                    break;
+                }
+                case "pathway": {
+                    updateNodeIdMaps(cacheDir, k + "s", Pathway.idToDomainMap, Pathway.domainToIdMap);
+                    break;
+                }
+                case "disorder": {
+                    updateNodeIdMaps(cacheDir, k + "s", disorderService.getIdToDomainMap(), disorderService.getDomainToIdMap());
+                    break;
+                }
+                case "gene": {
+                    updateNodeIdMaps(cacheDir, k + "s", Gene.idToDomainMap, Gene.domainToIdMap);
+                    break;
+                }
+                case "protein": {
+                    updateNodeIdMaps(cacheDir, k + "s", Protein.idToDomainMap, Protein.domainToIdMap);
+                    break;
+                }
+            }
+        });
 
     }
 
-    private <T extends RepoTrialEntity> boolean readUpdates(Collection c, EnumMap<UpdateOperation, HashMap<String, T>> updates, Class<T> valueType) {
+    private <T extends RepoTrialNode> boolean readNodeUpdates(Collection c, EnumMap<UpdateOperation, HashMap<String, T>> updates, Class<T> valueType) {
         File cached = RepoTrialUtils.getCachedFile(c, env.getProperty("path.db.cache"));
         if (!cached.exists())
             return false;
@@ -167,9 +270,9 @@ public class UpdateService {
                     int start = line.charAt(2) == '[' ? 3 : 2;
                     T d = objectMapper.readValue(line.substring(start), valueType);
                     if (startC == '<') {
-                        dels.put(d.getPrimaryId(), d);
+                        dels.put(d.getUniqueId(), d);
                     } else {
-                        ins.put(d.getPrimaryId(), d);
+                        ins.put(d.getUniqueId(), d);
                     }
                 }
 
@@ -194,7 +297,61 @@ public class UpdateService {
         return true;
     }
 
-    public <T extends RepoTrialEntity> void importInsertions(File updateFile, EnumMap<UpdateOperation, HashMap<String, T>> updates, Class<T> valueType) {
+    private <T extends RepoTrialEdge> boolean readEdgeUpdates(Collection c, EnumMap<UpdateOperation, HashMap<Object, T>> updates, Class<T> valueType, IdMapper mapper) {
+        File cached = RepoTrialUtils.getCachedFile(c, env.getProperty("path.db.cache"));
+        if (!cached.exists())
+            return false;
+        ProcessBuilder pb = new ProcessBuilder("diff", cached.getAbsolutePath(), c.getFile().getAbsolutePath());
+
+        pb.redirectErrorStream(true);
+        Process p = null;
+        HashMap<Object, T> ins = new HashMap<>();
+        HashMap<Object, T> upd = new HashMap<>();
+        HashMap<Object, T> dels = new HashMap<>();
+        updates.put(UpdateOperation.Alteration, upd);
+        updates.put(UpdateOperation.Deletion, dels);
+        updates.put(UpdateOperation.Insertion, ins);
+
+        try {
+            p = pb.start();
+            BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            String line = "";
+            while ((line = br.readLine()) != null) {
+                char startC = line.charAt(0);
+                if (startC == '>' | startC == '<') {
+                    int start = line.charAt(2) == '[' ? 3 : 2;
+                    T d = objectMapper.readValue(line.substring(start), valueType);
+                    //TODO map ids, give mapper via lamda ore some shit?
+                    d.setId(mapper.mapIds(d.getIdsToMap()));
+                    if (startC == '<') {
+                        dels.put(d.getPrimaryIds(), d);
+                    } else {
+                        ins.put(d.getPrimaryIds(), d);
+                    }
+                }
+
+            }
+
+            HashSet<Object> overlap = new HashSet<>();
+            dels.keySet().forEach(id -> {
+                if (ins.containsKey(id))
+                    overlap.add(id);
+            });
+
+            overlap.forEach(id -> {
+                upd.put(id, ins.get(id));
+                dels.remove(id);
+                ins.remove(id);
+            });
+
+            p.waitFor();
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+        return true;
+    }
+
+    public <T extends RepoTrialNode> void importNodeInsertions(File updateFile, EnumMap<UpdateOperation, HashMap<String, T>> updates, Class<T> valueType) {
         log.debug("Importing insertions only from " + updateFile);
         HashMap<String, T> inserts = new HashMap<>();
         updates.put(UpdateOperation.Insertion, inserts);
@@ -210,7 +367,37 @@ public class UpdateService {
                 }
                 try {
                     T d = objectMapper.readValue(line, valueType);
-                    inserts.put(d.getPrimaryId(), d);
+                    inserts.put(d.getUniqueId(), d);
+                } catch (MismatchedInputException e) {
+                    e.printStackTrace();
+                    log.error("Malformed input line in " + updateFile.getName() + ": " + line);
+                }
+                if (line.charAt(line.length() - 1) == ']')
+                    break;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public <T extends RepoTrialEdge> void importEdgeInsertions(File updateFile, EnumMap<UpdateOperation, HashMap<Object, T>> updates, Class<T> valueType, IdMapper mapper) {
+        log.debug("Importing insertions only from " + updateFile);
+        HashMap<Object, T> inserts = new HashMap<>();
+        updates.put(UpdateOperation.Insertion, inserts);
+        BufferedReader br = ReaderUtils.getBasicReader(updateFile);
+        String line = "";
+        boolean first = true;
+        try {
+            while ((line = br.readLine()) != null) {
+                if (first) {
+                    first = false;
+                    if (line.charAt(0) == '[')
+                        line = line.substring(1);
+                }
+                try {
+                    T d = objectMapper.readValue(line, valueType);
+                    d.setId(mapper.mapIds(d.getIdsToMap()));
+                    inserts.put(d.getPrimaryIds(), d);
                 } catch (MismatchedInputException e) {
                     e.printStackTrace();
                     log.error("Malformed input line in " + updateFile.getName() + ": " + line);

@@ -1,9 +1,11 @@
 package de.exbio.reposcapeweb.utils;
 
+import de.exbio.reposcapeweb.db.entities.nodes.Drug;
 import de.exbio.reposcapeweb.db.updates.Collection;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -21,12 +23,19 @@ public class RepoTrialUtils {
         return map;
     }
 
-    public static File getCachedFile(Collection c,String ending, String cacheDir){
-        return new File(cacheDir,c.getName()+ending);
+    public static File getCachedFile(Collection c, String ending, String cacheDir) {
+        return new File(cacheDir, c.getName() + ending);
     }
 
-    public static File getCachedFile(Collection c,String cacheDir){
-        return new File(cacheDir,c.getFile().getName());
+    public static File getCachedFile(Collection c, String cacheDir) {
+        return new File(cacheDir, c.getFile().getName());
+    }
+
+    public static boolean validateFormat(HashSet<String> urlAttributes, HashSet<String> classAttributes) {
+        for (String a : classAttributes)
+            if (!urlAttributes.remove(a))
+                return false;
+        return urlAttributes.isEmpty();
     }
 
 }

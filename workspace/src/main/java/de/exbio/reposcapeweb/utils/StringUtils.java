@@ -45,6 +45,40 @@ public class StringUtils {
         return v;
     }
 
+    public static ArrayList<String> split(String line, String separator, int lineSize) {
+        ArrayList<String> v = new ArrayList<String>(lineSize);
+        String tab = separator;
+
+        int lastTab = 0;
+        while (true) {
+            int nextTab = line.indexOf(tab, lastTab);
+            if (nextTab == -1) {
+                v.add(line.substring(lastTab));
+                break;
+            }
+            v.add(line.substring(lastTab, nextTab));
+            lastTab = nextTab + 1;
+        }
+        return v;
+    }
+
+    public static ArrayList<String> split(String line, char separator, int lineSize) {
+        ArrayList<String> v = new ArrayList<String>(lineSize);
+        char tab = separator;
+
+        int lastTab = 0;
+        while (true) {
+            int nextTab = line.indexOf(tab, lastTab);
+            if (nextTab == -1) {
+                v.add(line.substring(lastTab));
+                break;
+            }
+            v.add(line.substring(lastTab, nextTab));
+            lastTab = nextTab + 1;
+        }
+        return v;
+    }
+
     public static LinkedList<String> split(String line, char separator) {
         LinkedList<String> v = new LinkedList<String>();
         char tab = separator;

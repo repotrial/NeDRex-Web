@@ -9,12 +9,13 @@ import org.slf4j.LoggerFactory;
 
 import javax.persistence.*;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
 @Entity
 @Table(name = "drugs", indexes = @Index(name = "domainId", columnList = "primaryDomainId", unique = true))
-public class Drug implements RepoTrialEntity {
+public class Drug extends RepoTrialNode {
     @Transient
     @JsonIgnore
     private final Logger log = LoggerFactory.getLogger(Drug.class);
@@ -22,11 +23,18 @@ public class Drug implements RepoTrialEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @JsonIgnore
-    private long id;
+    private int id;
     @Transient
     @JsonIgnore
-    private final static HashSet<String> attributes = new HashSet<>(Arrays.asList("molecularFormula", "displayName", "inchi", "type", "domainIds", "primaryDomainId", "smiles", "casNumber", "drugCategories", "drugGroups", "_cls", "sequences", "iupacName", "synonyms", "primaryDataset", "indication", "allDatasets", "description"));
+    public final static HashSet<String> attributes = new HashSet<>(Arrays.asList("molecularFormula", "displayName", "inchi", "type", "domainIds", "primaryDomainId", "smiles", "casNumber", "drugCategories", "drugGroups", "_cls", "sequences", "iupacName", "synonyms", "primaryDataset", "indication", "allDatasets", "description"));
 
+
+    @JsonIgnore
+    @Transient
+    public static HashMap<Integer,String> idToDomainMap = new HashMap<>();
+    @JsonIgnore
+    @Transient
+    public static HashMap<String,Integer> domainToIdMap = new HashMap<>();
 
     private String _cls;
     private String primaryDomainId;
@@ -58,7 +66,7 @@ public class Drug implements RepoTrialEntity {
 
 
     public Drug() {
-        super();
+
     }
 
     public static boolean validateFormat(HashSet<String> attributes) {
@@ -87,10 +95,6 @@ public class Drug implements RepoTrialEntity {
 
     public long getId() {
         return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
     }
 
     public String getPrimaryDomainId() {
@@ -223,6 +227,12 @@ public class Drug implements RepoTrialEntity {
         this.primaryDataset=other.primaryDataset;
         this.allDatasets=other.allDatasets;
         this.molecularFormula=other.molecularFormula;
+    }
+
+
+    @Override
+    public String getUniqueId() {
+        return getPrimaryId();
     }
 }
 

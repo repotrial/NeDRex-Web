@@ -9,14 +9,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.persistence.*;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 @Entity
 @Table(name = "disorders")
-public class Disorder implements RepoTrialEntity {
+public class Disorder extends RepoTrialNode {
 
     @Transient
     @JsonIgnore
@@ -25,10 +22,11 @@ public class Disorder implements RepoTrialEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @JsonIgnore
-    private long id;
+    private int id;
     @Transient
     @JsonIgnore
-    private static final HashSet<String> attributes = new HashSet<>(Arrays.asList("displayName", "synonyms", "type", "domainIds", "primaryDomainId", "description", "icd10"));
+    public static final HashSet<String> attributes = new HashSet<>(Arrays.asList("displayName", "synonyms", "type", "domainIds", "primaryDomainId", "description", "icd10"));
+
 
     private String primaryDomainId;
     @Column(columnDefinition = "TEXT")
@@ -104,15 +102,28 @@ public class Disorder implements RepoTrialEntity {
         this.primaryDomainId = other.primaryDomainId;
     }
 
-    public static boolean validateFormat(HashSet<String> attributes) {
-        for (String a : Disorder.attributes)
-            if (!attributes.remove(a))
-                return false;
-        return attributes.isEmpty();
-    }
+//    public static boolean validateFormat(HashSet<String> attributes) {
+//        for (String a : Disorder.attributes)
+//            if (!attributes.remove(a))
+//                return false;
+//        return attributes.isEmpty();
+//    }
+
+//    public HashMap<Long, String> getIdToDomainMap() {
+//        return Disorder.idToDomainMap;
+//    }
+//
+//    public HashMap<String, Long> getDomainToIdMap() {
+//        return Disorder.domainToIdMap;
+//    }
 
     @Override
     public String getPrimaryId() {
         return getPrimaryDomainId();
+    }
+
+    @Override
+    public String getUniqueId() {
+        return getPrimaryId();
     }
 }

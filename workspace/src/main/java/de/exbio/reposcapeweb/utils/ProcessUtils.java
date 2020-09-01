@@ -1,9 +1,6 @@
 package de.exbio.reposcapeweb.utils;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.StringReader;
+import java.io.*;
 
 public class ProcessUtils {
 
@@ -13,6 +10,17 @@ public class ProcessUtils {
         BufferedReader bw = new BufferedReader(new InputStreamReader(p.getInputStream()));
         while(bw.readLine()!=null){}
         p.waitFor();
+    }
+
+    public static StringBuffer executeProcessWait(ProcessBuilder pb, StringBuffer sb) throws IOException, InterruptedException {
+        pb.redirectErrorStream(true);
+        Process p = pb.start();
+        BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
+        String line = "";
+        while((line =br.readLine())!=null)
+            sb.append(line).append('\n');
+        p.waitFor();
+        return sb;
     }
 
 

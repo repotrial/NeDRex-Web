@@ -10,12 +10,13 @@ import org.slf4j.LoggerFactory;
 
 import javax.persistence.*;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 
 @Entity
 @Table(name = "pathways", indexes = @Index(name = "domainId", columnList = "primaryDomainId", unique = true))
-public class Pathway implements RepoTrialEntity {
+public class Pathway extends RepoTrialNode {
     @Transient
     @JsonIgnore
     private final Logger log = LoggerFactory.getLogger(Pathway.class);
@@ -23,10 +24,17 @@ public class Pathway implements RepoTrialEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @JsonIgnore
-    private long id;
+    private int id;
     @Transient
     @JsonIgnore
-    private static final HashSet<String> attributes = new HashSet<>(Arrays.asList("displayName", "type", "domainIds", "primaryDomainId", "species"));
+    public static final HashSet<String> attributes = new HashSet<>(Arrays.asList("displayName", "type", "domainIds", "primaryDomainId", "species"));
+
+    @JsonIgnore
+    @Transient
+    public static HashMap<Integer,String> idToDomainMap = new HashMap<>();
+    @JsonIgnore
+    @Transient
+    public static HashMap<String,Integer> domainToIdMap = new HashMap<>();
 
     private String primaryDomainId;
 
@@ -79,15 +87,35 @@ public class Pathway implements RepoTrialEntity {
 
     }
 
-    public static boolean validateFormat(HashSet<String> attributes) {
-        for (String a : Pathway.attributes)
-            if (!attributes.remove(a))
-                return false;
-        return attributes.isEmpty();
-    }
+//    public static boolean validateFormat(HashSet<String> attributes) {
+//        for (String a : Pathway.attributes)
+//            if (!attributes.remove(a))
+//                return false;
+//        return attributes.isEmpty();
+//    }
 
     @Override
     public String getPrimaryId() {
         return getPrimaryDomainId();
     }
+
+//    @Override
+//    public HashMap<Integer, String> getIdToDomainMap() {
+//        if(Drug.idToDomainMap==null)
+//            Drug.idToDomainMap=new HashMap<>();
+//        return Drug.idToDomainMap;
+//    }
+//
+//    @Override
+//    public HashMap<String, Integer> getDomainToIdMap() {
+//        if(Drug.domainToIdMap==null)
+//            Drug.domainToIdMap=new HashMap<>();
+//        return Drug.domainToIdMap;
+//    }
+
+    @Override
+    public String getUniqueId() {
+        return getPrimaryId();
+    }
+
 }
