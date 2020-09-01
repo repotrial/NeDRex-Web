@@ -1,12 +1,11 @@
-package de.exbio.reposcapeweb.db.updates;
+package de.exbio.reposcapeweb.db.io;
 
-import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import de.exbio.reposcapeweb.db.io.Collection;
 import de.exbio.reposcapeweb.utils.StringUtils;
 
 import java.io.File;
 import java.util.InputMismatchException;
 import java.util.Iterator;
-import java.util.LinkedList;
 
 public class Node implements Collection {
 

@@ -1,13 +1,11 @@
 package de.exbio.reposcapeweb.utils;
 
-import de.exbio.reposcapeweb.db.entities.nodes.Drug;
-import de.exbio.reposcapeweb.db.updates.Collection;
+import de.exbio.reposcapeweb.db.io.Collection;
 
 import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.List;
 
 public class RepoTrialUtils {
 

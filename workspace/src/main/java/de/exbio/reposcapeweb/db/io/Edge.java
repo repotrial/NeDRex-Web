@@ -1,5 +1,6 @@
-package de.exbio.reposcapeweb.db.updates;
+package de.exbio.reposcapeweb.db.io;
 
+import de.exbio.reposcapeweb.db.io.Collection;
 import de.exbio.reposcapeweb.utils.StringUtils;
 
 import java.io.File;

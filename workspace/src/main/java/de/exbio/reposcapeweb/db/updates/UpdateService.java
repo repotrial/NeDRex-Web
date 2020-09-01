@@ -2,23 +2,37 @@ package de.exbio.reposcapeweb.db.updates;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
+import de.exbio.reposcapeweb.db.DbCommunicationService;
 import de.exbio.reposcapeweb.db.entities.edges.*;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
 import de.exbio.reposcapeweb.db.entities.nodes.*;
+import de.exbio.reposcapeweb.db.io.ImportService;
+import de.exbio.reposcapeweb.db.io.Node;
 import de.exbio.reposcapeweb.db.services.edges.*;
 import de.exbio.reposcapeweb.db.services.nodes.*;
-import de.exbio.reposcapeweb.utils.*;
+import de.exbio.reposcapeweb.utils.FileUtils;
+import de.exbio.reposcapeweb.utils.ReaderUtils;
+import de.exbio.reposcapeweb.utils.RepoTrialUtils;
+import de.exbio.reposcapeweb.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
-import java.util.*;
+import java.util.Arrays;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.HashSet;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
@@ -28,6 +42,8 @@ public class UpdateService {
 
     private final Environment env;
     private final ObjectMapper objectMapper;
+    private final ImportService importService;
+    private final DbCommunicationService dbCommunication;
 
     private final DisorderService disorderService;
     private final DrugService drugService;
@@ -44,10 +60,13 @@ public class UpdateService {
     private final ProteinInPathwayService proteinInPathwayService;
     private final ProteinInteractsWithProteinService proteinInteractsWithProteinServic;
 
+
     @Autowired
     public UpdateService(Environment environment,
-                         DrugService drugService,
                          ObjectMapper objectMapper,
+                         ImportService importService,
+                         DbCommunicationService dbCommunicationService,
+                         DrugService drugService,
                          PathwayService pathwayService,
                          DisorderService disorderService,
                          GeneService geneService,
@@ -62,8 +81,10 @@ public class UpdateService {
                          ProteinInteractsWithProteinService proteinInteractsWithProteinService
     ) {
         this.env = environment;
-        this.drugService = drugService;
         this.objectMapper = objectMapper;
+        this.importService = importService;
+        this.dbCommunication = dbCommunicationService;
+        this.drugService = drugService;
         this.pathwayService = pathwayService;
         this.disorderService = disorderService;
         this.geneService = geneService;
@@ -79,99 +100,92 @@ public class UpdateService {
 
     }
 
-
-    public boolean executeDataUpdate() {
+    @Async
+    @Scheduled(cron = "${update.interval}", zone = "Europe/Berlin")
+    public void executeDataUpdate() {
+        if (dbCommunication.isUpdateInProgress()) {
+            log.warn("Update already in progress!");
+            return;
+        }
+        dbCommunication.scheduleUpdate();
         String url = env.getProperty("url.api.db");
         File cacheDir = new File(env.getProperty("path.db.cache"));
+        cleanUpdateDirectories(cacheDir);
         try {
-            log.info("Executing DB update.");
+            log.info("DB update: Started!");
             update(url, cacheDir);
+            log.info("DB udpate: Success!");
         } catch (Exception e) {
+            dbCommunication.setUpdateInProgress(false);
+            e.printStackTrace();
             log.error("Update could not be executed correctly: " + e.getMessage());
-            e.printStackTrace();
-            throw new RuntimeException("Terminated because of update failure caused by" + e.getClass().toString().substring(5));
         }
-        return true;
+        dbCommunication.setUpdateInProgress(false);
     }
 
-    private void updateNodeIdMaps(File cacheDir, String table, HashMap<Integer, String> idToDomain, HashMap<String, Integer> domainToString) {
-        File nodeDir = new File(cacheDir, "nodes");
-        DBUtils.executeNodeDump(nodeDir, table);
-        log.info("Node id tables updated!");
-
-        File f = new File(nodeDir, table + ".list");
-        BufferedReader br = ReaderUtils.getBasicReader(f);
-        String line = "";
-
-        idToDomain.clear();
-        domainToString.clear();
-
-        try {
-            while ((line = br.readLine()) != null) {
-                if (line.charAt(0) == '#')
-                    continue;
-                ;
-                ArrayList<String> entry = StringUtils.split(line, '\t', 2);
-                int id = Integer.parseInt(entry.get(0));
-                idToDomain.put(id, entry.get(1));
-                domainToString.put(entry.get(1), id);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+    private void cleanUpdateDirectories(File cacheDir) {
+        if (Boolean.parseBoolean(env.getProperty("update.dir.remove"))) {
+            String prefix = env.getProperty("update.dir.prefix");
+            Arrays.stream(cacheDir.listFiles()).forEach(file -> {
+                if (file.getName().startsWith(prefix))
+                    file.delete();
+            });
         }
-
     }
+
 
     private void update(String url, File cacheDir) {
-        log.debug("Executing Database update from " + url + " to cache-directory " + cacheDir.getAbsolutePath());
+        log.debug("Loading Database update from " + url + " to cache-directory " + cacheDir.getAbsolutePath());
 
-        HashMap<String, Collection> collections = new HashMap<>();
+        HashMap<String, de.exbio.reposcapeweb.db.io.Collection> collections = new HashMap<>();
 
-        File updateDir = new File(cacheDir, "update_" + System.currentTimeMillis());
+        File updateDir = new File(cacheDir, env.getProperty("update.dir.prefix") + System.currentTimeMillis());
         updateDir.deleteOnExit();
         String fileType = env.getProperty("file.collections.filetype");
         fileType = fileType.charAt(0) == '.' ? fileType : '.' + fileType;
 
         log.info("Downloading database files!");
         downloadUpdates(url, updateDir, fileType, collections);
-        updateDB(collections, cacheDir);
+        restructureUpdates(collections);
+
+
+        executingUpdates(collections, cacheDir);
+
+
         overrideOldData(cacheDir, collections);
+
 
         updateDir.delete();
     }
 
-    private void updateDB(HashMap<String, Collection> collections, File cacheDir) {
-        //TODO just for dev
-        reformatCollections(collections);
-
-        identifyUpdates(collections, cacheDir);
-    }
-
-    private <T extends RepoTrialNode> EnumMap<UpdateOperation, HashMap<String, T>> runNodeUpdates(Class<T> valueType, Collection c) {
+    private <T extends RepoTrialNode> EnumMap<UpdateOperation, HashMap<String, T>> runNodeUpdates(Class<T> valueType, de.exbio.reposcapeweb.db.io.Collection c) {
         EnumMap<UpdateOperation, HashMap<String, T>> updates = new EnumMap<>(UpdateOperation.class);
         if (!readNodeUpdates(c, updates, valueType))
             importNodeInsertions(c.getFile(), updates, valueType);
         return updates;
     }
 
-    private <T extends RepoTrialEdge> EnumMap<UpdateOperation, HashMap<PairId, T>> runEdgeUpdates(Class<T> valueType, Collection c, IdMapper mapper) {
+    private <T extends RepoTrialEdge> EnumMap<UpdateOperation, HashMap<PairId, T>> runEdgeUpdates(Class<T> valueType, de.exbio.reposcapeweb.db.io.Collection c, IdMapper mapper) {
         EnumMap<UpdateOperation, HashMap<PairId, T>> updates = new EnumMap<>(UpdateOperation.class);
         if (!readEdgeUpdates(c, updates, valueType, mapper))
             importEdgeInsertions(c.getFile(), updates, valueType, mapper);
         return updates;
     }
 
-    private void identifyUpdates(HashMap<String, Collection> collections, File cacheDir) {
+    private void executingUpdates(HashMap<String, de.exbio.reposcapeweb.db.io.Collection> collections, File cacheDir) {
+        dbCommunication.scheduleLock();
 
         importRepoTrialNodes(collections);
 
-        importIdMaps(collections, cacheDir);
+        importService.importIdMaps(collections, cacheDir, true);
 
         importRepoTrialEdges(collections);
 
+        dbCommunication.setDbLocked(false);
+
     }
 
-    private void importRepoTrialEdges(HashMap<String, Collection> collections) {
+    private void importRepoTrialEdges(HashMap<String, de.exbio.reposcapeweb.db.io.Collection> collections) {
         //TODO validate edges and create statistics in background after update
         collections.forEach((k, c) -> {
             if (c instanceof Node)
@@ -226,7 +240,7 @@ public class UpdateService {
     }
 
 
-    private void importRepoTrialNodes(HashMap<String, Collection> collections) {
+    private void importRepoTrialNodes(HashMap<String, de.exbio.reposcapeweb.db.io.Collection> collections) {
         collections.forEach((k, c) -> {
             if (!(c instanceof Node))
                 return;
@@ -271,39 +285,8 @@ public class UpdateService {
         });
     }
 
-    private void importIdMaps(HashMap<String, Collection> collections, File cacheDir) {
 
-        collections.forEach((k, c) -> {
-            if (!(c instanceof Node))
-                return;
-
-            switch (k) {
-                case "drug": {
-                    updateNodeIdMaps(cacheDir, k + "s", drugService.getIdToDomainMap(), drugService.getDomainToIdMap());
-                    break;
-                }
-                case "pathway": {
-                    updateNodeIdMaps(cacheDir, k + "s", pathwayService.getIdToDomainMap(), pathwayService.getDomainToIdMap());
-                    break;
-                }
-                case "disorder": {
-                    updateNodeIdMaps(cacheDir, k + "s", disorderService.getIdToDomainMap(), disorderService.getDomainToIdMap());
-                    break;
-                }
-                case "gene": {
-                    updateNodeIdMaps(cacheDir, k + "s", geneService.getIdToDomainMap(), geneService.getDomainToIdMap());
-                    break;
-                }
-                case "protein": {
-                    updateNodeIdMaps(cacheDir, k + "s", proteinService.getIdToDomainMap(), proteinService.getDomainToIdMap());
-                    break;
-                }
-            }
-        });
-
-    }
-
-    private <T extends RepoTrialNode> boolean readNodeUpdates(Collection c, EnumMap<UpdateOperation, HashMap<String, T>> updates, Class<T> valueType) {
+    private <T extends RepoTrialNode> boolean readNodeUpdates(de.exbio.reposcapeweb.db.io.Collection c, EnumMap<UpdateOperation, HashMap<String, T>> updates, Class<T> valueType) {
         File cached = RepoTrialUtils.getCachedFile(c, env.getProperty("path.db.cache"));
         if (!cached.exists())
             return false;
@@ -333,7 +316,6 @@ public class UpdateService {
                         ins.put(d.getUniqueId(), d);
                     }
                 }
-
             }
 
             HashSet<String> overlap = new HashSet<>();
@@ -355,7 +337,7 @@ public class UpdateService {
         return true;
     }
 
-    private <T extends RepoTrialEdge> boolean readEdgeUpdates(Collection c, EnumMap<UpdateOperation, HashMap<PairId, T>> updates, Class<T> valueType, IdMapper mapper) {
+    private <T extends RepoTrialEdge> boolean readEdgeUpdates(de.exbio.reposcapeweb.db.io.Collection c, EnumMap<UpdateOperation, HashMap<PairId, T>> updates, Class<T> valueType, IdMapper mapper) {
         File cached = RepoTrialUtils.getCachedFile(c, env.getProperty("path.db.cache"));
         if (!cached.exists())
             return false;
@@ -379,7 +361,6 @@ public class UpdateService {
                 if (startC == '>' | startC == '<') {
                     int start = line.charAt(2) == '[' ? 3 : 2;
                     T d = objectMapper.readValue(line.substring(start), valueType);
-                    //TODO map ids, give mapper via lamda ore some shit?
                     d.setId(mapper.mapIds(d.getIdsToMap()));
                     if (startC == '<') {
                         dels.put(d.getPrimaryIds(), d);
@@ -387,7 +368,6 @@ public class UpdateService {
                         ins.put(d.getPrimaryIds(), d);
                     }
                 }
-
             }
 
             HashSet<PairId> overlap = new HashSet<>();
@@ -468,18 +448,13 @@ public class UpdateService {
         }
     }
 
-//    private HashMap<String,String> getAttributes(String values){
-//        HashMap<String,String> map = new HashMap<>();
-//        System.out.println(StringUtils.split(values, ",\""));
-//    }
-
     private HashSet<String> getAttributeNames(String content) {
         HashSet<String> attributes = new HashSet<>();
         StringUtils.split(content.substring(1, content.length() - 2), ",").forEach(a -> attributes.add(a.substring(1, a.length() - 1)));
         return attributes;
     }
 
-    private void reformatCollections(HashMap<String, Collection> collections) {
+    private void restructureUpdates(HashMap<String, de.exbio.reposcapeweb.db.io.Collection> collections) {
         collections.values().forEach(col -> {
             FileUtils.formatJson(col.getFile());
             BufferedReader br = ReaderUtils.getBasicReader(col.getFile());
@@ -518,7 +493,7 @@ public class UpdateService {
         return -1;
     }
 
-    private void overrideOldData(File cacheDir, HashMap<String, Collection> collections) {
+    private void overrideOldData(File cacheDir, HashMap<String, de.exbio.reposcapeweb.db.io.Collection> collections) {
         collections.forEach((k, v) -> {
             try {
                 log.debug("Moving " + v.getFile().toPath() + " to " + new File(cacheDir, v.getFile().getName()).toPath());
@@ -529,19 +504,15 @@ public class UpdateService {
         });
     }
 
-    private void downloadUpdates(String api, File destDir, String fileType, HashMap<String, Collection> collections) {
-        //TODO let downloads happen in background
+    private void downloadUpdates(String api, File destDir, String fileType, HashMap<String, de.exbio.reposcapeweb.db.io.Collection> collections) {
         destDir.mkdirs();
 
-        prepareCollections(env.getProperty("file.collections.nodes"), collections, true);
-        prepareCollections(env.getProperty("file.collections.edges"), collections, false);
+        importService.getCollections(collections);
 
         collections.forEach((k, v) -> v.setFile(FileUtils.download(createUrl(api, k), createFile(destDir, k, fileType))));
 
-        //TODO just for dev
-//        collections.forEach((k, v) -> v.setFile(RepoTrialUtils.getCachedFile(v, fileType, env.getProperty("path.db.cache"))));
-
     }
+
 
     private String createUrl(String api, String k) {
         return api + k + "/all";
@@ -550,21 +521,5 @@ public class UpdateService {
     private File createFile(File destDir, String k, String fileType) {
         return new File(destDir, k + fileType);
     }
-
-    private void prepareCollections(String file, HashMap<String, Collection> collections, boolean typeNode) {
-        BufferedReader br = ReaderUtils.getBasicReader(file);
-        String line = "";
-        try {
-            while ((line = br.readLine()) != null) {
-                if (line.charAt(0) == '#')
-                    continue;
-                Collection c = typeNode ? new Node(line) : new Edge(line);
-                collections.put(c.getName(), c);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
 
 }

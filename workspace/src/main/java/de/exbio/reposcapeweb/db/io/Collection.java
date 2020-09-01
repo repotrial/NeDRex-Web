@@ -1,4 +1,4 @@
-package de.exbio.reposcapeweb.db.updates;
+package de.exbio.reposcapeweb.db.io;
 
 import java.io.File;
 

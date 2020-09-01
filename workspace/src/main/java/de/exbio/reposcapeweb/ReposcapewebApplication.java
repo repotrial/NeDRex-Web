@@ -1,5 +1,6 @@
 package de.exbio.reposcapeweb;
 
+import de.exbio.reposcapeweb.db.io.ImportService;
 import de.exbio.reposcapeweb.db.updates.UpdateService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,31 +23,27 @@ public class ReposcapewebApplication {
 
     private final UpdateService updateService;
     private final Environment env;
+    private final ImportService importService;
 
     @Autowired
-    public ReposcapewebApplication(UpdateService updateService, Environment environment) {
+    public ReposcapewebApplication(UpdateService updateService, Environment environment, ImportService importService) {
         this.updateService = updateService;
+        this.importService = importService;
         this.env = environment;
     }
 
 
-
-
     @EventListener(ApplicationReadyEvent.class)
     public void postConstruct() {
+        importService.importNodeMaps();
 
-//        if(!DBUtils.setTempDir(env.getProperty("secure_file_priv")))
-//            throw new RuntimeException("DB does not work correctly. Please set secure_file_priv in db config.");
-//        System.out.println(DBUtils.getTempDir());
 
         if (Boolean.parseBoolean(env.getProperty("update.onstartup")))
-            if(updateService.executeDataUpdate())
-                log.info("Database successfully updated!");
-            else
-                log.info("Database could not be updated!");
-
+            updateService.executeDataUpdate();
         else
             log.warn("Startup Database update is deactivated! Activate it by setting 'update.onstartup=true' in the application.properties.");
 
+
+        log.info("Service can be used!");
     }
 }
