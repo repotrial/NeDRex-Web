@@ -41,7 +41,7 @@ public class ReposcapewebApplication {
     public void postConstruct() {
 
         importService.importNodeMaps();
-        log.debug("Current RAM usage: " + (int) ((Runtime.getRuntime().maxMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024)
+        log.debug("Current RAM usage: " + (int) ((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024)
                 + "MB");
 
         if (Boolean.parseBoolean(env.getProperty("update.onstartup")))

@@ -118,10 +118,10 @@ public class UpdateService {
             log.error("Update could not be executed correctly: " + e.getMessage());
         }
         dbCommunication.setUpdateInProgress(false);
-        log.debug("Current RAM usage: " + (int) ((Runtime.getRuntime().maxMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024)
+        log.debug("Current RAM usage: " + (int) ((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024)
                 + "MB");
         Runtime.getRuntime().gc();
-        log.debug("Current RAM usage: " + (int) ((Runtime.getRuntime().maxMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024)
+        log.debug("Current RAM usage: " + (int) ((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024)
                 + "MB");
     }
 
