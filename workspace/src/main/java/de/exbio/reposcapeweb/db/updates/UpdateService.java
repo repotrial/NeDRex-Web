@@ -29,10 +29,7 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
-import java.util.Arrays;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
@@ -101,7 +98,7 @@ public class UpdateService {
     }
 
     @Async
-    @Scheduled(cron = "${update.interval}", zone = "Europe/Berlin")
+    @Scheduled(cron = "${update.interval}", zone = "${update.interval.zone}")
     public void executeDataUpdate() {
         if (dbCommunication.isUpdateInProgress()) {
             log.warn("Update already in progress!");
@@ -121,14 +118,28 @@ public class UpdateService {
             log.error("Update could not be executed correctly: " + e.getMessage());
         }
         dbCommunication.setUpdateInProgress(false);
+        log.debug("Current RAM usage: " + (int) ((Runtime.getRuntime().maxMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024)
+                + "MB");
+        Runtime.getRuntime().gc();
+        log.debug("Current RAM usage: " + (int) ((Runtime.getRuntime().maxMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024)
+                + "MB");
     }
 
     private void cleanUpdateDirectories(File cacheDir) {
         if (Boolean.parseBoolean(env.getProperty("update.dir.remove"))) {
             String prefix = env.getProperty("update.dir.prefix");
+            LinkedList<File> delete = new LinkedList<>();
             Arrays.stream(cacheDir.listFiles()).forEach(file -> {
-                if (file.getName().startsWith(prefix))
-                    file.delete();
+                if (file.isDirectory() & file.getName().startsWith(prefix)) {
+                    delete.add(file);
+                }
+            });
+            delete.forEach(file -> {
+                try {
+                    org.apache.commons.io.FileUtils.deleteDirectory(file);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             });
         }
     }
@@ -186,7 +197,6 @@ public class UpdateService {
     }
 
     private void importRepoTrialEdges(HashMap<String, de.exbio.reposcapeweb.db.io.Collection> collections) {
-        //TODO validate edges and create statistics in background after update
         collections.forEach((k, c) -> {
             if (c instanceof Node)
                 return;

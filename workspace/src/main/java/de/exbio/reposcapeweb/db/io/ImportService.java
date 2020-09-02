@@ -2,8 +2,6 @@ package de.exbio.reposcapeweb.db.io;
 
 import de.exbio.reposcapeweb.db.DbCommunicationService;
 import de.exbio.reposcapeweb.db.services.nodes.*;
-import de.exbio.reposcapeweb.db.updates.UpdateService;
-import de.exbio.reposcapeweb.utils.DBUtils;
 import de.exbio.reposcapeweb.utils.ReaderUtils;
 import de.exbio.reposcapeweb.utils.StringUtils;
 import org.slf4j.Logger;
@@ -104,7 +102,7 @@ public class ImportService {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        log.debug("NodeIdMap import: Updated "+table);
+        log.debug("NodeIdMap import: Updated " + table);
     }
 
 
