@@ -159,7 +159,9 @@ public class UpdateService {
 
         log.info("Downloading database files!");
         downloadUpdates(url, updateDir, fileType, collections);
-//        restructureUpdates(collections);
+
+        if (!Boolean.parseBoolean(env.getProperty("dev.skip.dl")))
+            restructureUpdates(collections);
 
 
         executingUpdates(collections, cacheDir);
@@ -253,10 +255,6 @@ public class UpdateService {
                         if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, GeneAssociatedWithDisorder.attributes))
                             updateSuccessful = geneAssociatedWithDisorderService.submitUpdates(runEdgeUpdates(GeneAssociatedWithDisorder.class, c, geneAssociatedWithDisorderService::mapIds));
                         break;
-//                    case "protein_encoded_by":
-//                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, ProteinEncodedBy.attributes))
-//                            updateSuccessful = proteinEncodedByService.submitUpdates(runEdgeUpdates(ProteinEncodedBy.class, c, proteinEncodedByService::mapIds));
-//                        break;
                     case "protein_in_pathway":
                         if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, ProteinInPathway.attributes))
                             updateSuccessful = proteinInPathwayService.submitUpdates(runEdgeUpdates(ProteinInPathway.class, c, proteinInPathwayService::mapIds));
@@ -497,15 +495,13 @@ public class UpdateService {
             FileUtils.formatJson(col.getFile());
             BufferedReader br = ReaderUtils.getBasicReader(col.getFile());
             int count = 0;
-            String line = "";
             try {
-                while ((line = br.readLine()) != null) {
+                while (br.readLine() != null) {
                     count++;
                 }
             } catch (IOException e) {
                 e.printStackTrace();
             }
-//            }
             int officialCount = getCountFromDetails(col.getName());
             log.debug(col.getName() + " contains " + count + " entries!");
             if (count != officialCount) {
@@ -547,9 +543,10 @@ public class UpdateService {
 
         importService.getCollections(collections);
 
-//        collections.forEach((k, v) -> v.setFile(FileUtils.download(createUrl(api, k), createFile(destDir, k, fileType))));
-
-        collections.forEach((k,v)->v.setFile(createFile(destDir.getParentFile(),k,fileType)));
+        if (Boolean.parseBoolean(env.getProperty("dev.skip.dl")))
+            collections.forEach((k, v) -> v.setFile(createFile(destDir.getParentFile(), k, fileType)));
+        else
+            collections.forEach((k, v) -> v.setFile(FileUtils.download(createUrl(api, k), createFile(destDir, k, fileType))));
 
     }
 
