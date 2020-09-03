@@ -547,7 +547,6 @@ public class UpdateService {
             collections.forEach((k, v) -> v.setFile(createFile(destDir.getParentFile(), k, fileType)));
         else
             collections.forEach((k, v) -> v.setFile(FileUtils.download(createUrl(api, k), createFile(destDir, k, fileType))));
-
     }
 
 

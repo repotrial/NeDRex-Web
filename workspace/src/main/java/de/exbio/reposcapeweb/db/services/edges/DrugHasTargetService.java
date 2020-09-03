@@ -80,10 +80,8 @@ public class DrugHasTargetService {
     public boolean generateGeneEntries() {
         log.debug("Generating entries for drug_has_target_gene from drug_has_target(_protein).");
         try (Connection con = dataSource.getConnection()) {
-            if (generationPs == null) {
-                clearPs = con.prepareCall(clearQuery);
-                generationPs = con.prepareStatement(generationQuery);
-            }
+            clearPs = con.prepareCall(clearQuery);
+            generationPs = con.prepareStatement(generationQuery);
             clearPs.executeUpdate();
             generationPs.executeUpdate();
         } catch (SQLException throwables) {
