@@ -20,12 +20,12 @@ import java.util.HashSet;
 import java.util.List;
 
 @Entity
-@Table(name="gene_associated_with_disorder")
-public class GeneAssociatedWithDisorder extends RepoTrialEdge implements Serializable {
+@Table(name = "drug_has_target_gene")
+public class DrugHasTargetGene extends RepoTrialEdge implements Serializable {
 
     @Transient
     @JsonIgnore
-    private final Logger log = LoggerFactory.getLogger(GeneAssociatedWithDisorder.class);
+    private final Logger log = LoggerFactory.getLogger(DrugHasTargetGene.class);
 
     @JsonIgnore
     @EmbeddedId
@@ -33,20 +33,15 @@ public class GeneAssociatedWithDisorder extends RepoTrialEdge implements Seriali
 
     @Transient
     @JsonIgnore
-    public final static HashSet<String> attributes = new HashSet<>(Arrays.asList("targetDomainId", "type", "sourceDomainId", "score", "assertedBy"));
-
+    public final static HashSet<String> attributes = new HashSet<>(Arrays.asList("targetDomainId", "type", "sourceDomainId"));
 
     @Transient
     private String targetDomainId;
     @Transient
     private String sourceDomainId;
 
-    private String score;
-
-    private String assertedBy;
-
-
-    public GeneAssociatedWithDisorder(){}
+    public DrugHasTargetGene() {
+    }
 
     public String getTargetDomainId() {
         return targetDomainId;
@@ -58,30 +53,17 @@ public class GeneAssociatedWithDisorder extends RepoTrialEdge implements Seriali
 
     @JsonGetter
     public String getType() {
-        return "GeneAssociatedWithDisorder";
-    }
-
-    public String getScore() {
-        return score;
+        return "DrugHasTargetGene";
     }
 
     @JsonSetter
     public void setType(String type) {
     }
 
-    public List<String> getAssertedBy() {
-        return StringUtils.stringToList(assertedBy);
-    }
 
-    public void setAssertedBy(List<String> assertedBy) {
-        this.assertedBy = StringUtils.listToString(assertedBy);
-    }
-
-    public void setValues(GeneAssociatedWithDisorder other) {
+    public void setValues(DrugHasTargetGene other) {
         this.sourceDomainId = other.sourceDomainId;
         this.targetDomainId = other.targetDomainId;
-        this.assertedBy=other.assertedBy;
-        this.score=other.score;
     }
 
     @Override

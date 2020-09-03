@@ -1,12 +1,8 @@
 package de.exbio.reposcapeweb.db.services.edges;
 
-import de.exbio.reposcapeweb.db.entities.edges.DrugHasIndication;
-import de.exbio.reposcapeweb.db.entities.edges.DrugHasTarget;
 import de.exbio.reposcapeweb.db.entities.edges.ProteinEncodedBy;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
-import de.exbio.reposcapeweb.db.repositories.edges.DrugHasTargetRepository;
 import de.exbio.reposcapeweb.db.repositories.edges.ProteinEncodedByRepository;
-import de.exbio.reposcapeweb.db.services.nodes.DrugService;
 import de.exbio.reposcapeweb.db.services.nodes.GeneService;
 import de.exbio.reposcapeweb.db.services.nodes.ProteinService;
 import de.exbio.reposcapeweb.db.updates.UpdateOperation;

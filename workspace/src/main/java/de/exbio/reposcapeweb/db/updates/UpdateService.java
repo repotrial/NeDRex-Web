@@ -2,10 +2,12 @@ package de.exbio.reposcapeweb.db.updates;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
+import com.sun.xml.bind.v2.runtime.output.SAXOutput;
 import de.exbio.reposcapeweb.db.DbCommunicationService;
 import de.exbio.reposcapeweb.db.entities.edges.*;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
 import de.exbio.reposcapeweb.db.entities.nodes.*;
+import de.exbio.reposcapeweb.db.io.Collection;
 import de.exbio.reposcapeweb.db.io.ImportService;
 import de.exbio.reposcapeweb.db.io.Node;
 import de.exbio.reposcapeweb.db.services.edges.*;
@@ -22,6 +24,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import javax.sql.DataSource;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -41,6 +44,7 @@ public class UpdateService {
     private final ObjectMapper objectMapper;
     private final ImportService importService;
     private final DbCommunicationService dbCommunication;
+    private final DataSource dataSource;
 
     private final DisorderService disorderService;
     private final DrugService drugService;
@@ -55,7 +59,7 @@ public class UpdateService {
     private final GeneAssociatedWithDisorderService geneAssociatedWithDisorderService;
     private final ProteinEncodedByService proteinEncodedByService;
     private final ProteinInPathwayService proteinInPathwayService;
-    private final ProteinInteractsWithProteinService proteinInteractsWithProteinServic;
+    private final ProteinInteractsWithProteinService proteinInteractsWithProteinService;
 
 
     @Autowired
@@ -63,6 +67,7 @@ public class UpdateService {
                          ObjectMapper objectMapper,
                          ImportService importService,
                          DbCommunicationService dbCommunicationService,
+                         DataSource dataSource,
                          DrugService drugService,
                          PathwayService pathwayService,
                          DisorderService disorderService,
@@ -81,6 +86,7 @@ public class UpdateService {
         this.objectMapper = objectMapper;
         this.importService = importService;
         this.dbCommunication = dbCommunicationService;
+        this.dataSource = dataSource;
         this.drugService = drugService;
         this.pathwayService = pathwayService;
         this.disorderService = disorderService;
@@ -93,7 +99,7 @@ public class UpdateService {
         this.geneAssociatedWithDisorderService = geneAssociatedWithDisorderService;
         this.proteinEncodedByService = proteinEncodedByService;
         this.proteinInPathwayService = proteinInPathwayService;
-        this.proteinInteractsWithProteinServic = proteinInteractsWithProteinService;
+        this.proteinInteractsWithProteinService = proteinInteractsWithProteinService;
 
     }
 
@@ -118,11 +124,7 @@ public class UpdateService {
             log.error("Update could not be executed correctly: " + e.getMessage());
         }
         dbCommunication.setUpdateInProgress(false);
-        log.debug("Current RAM usage: " + (int) ((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024)
-                + "MB");
         Runtime.getRuntime().gc();
-        log.debug("Current RAM usage: " + (int) ((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024)
-                + "MB");
     }
 
     private void cleanUpdateDirectories(File cacheDir) {
@@ -157,7 +159,7 @@ public class UpdateService {
 
         log.info("Downloading database files!");
         downloadUpdates(url, updateDir, fileType, collections);
-        restructureUpdates(collections);
+//        restructureUpdates(collections);
 
 
         executingUpdates(collections, cacheDir);
@@ -192,17 +194,43 @@ public class UpdateService {
 
         importRepoTrialEdges(collections);
 
+        regenerateTransitiveEdges(collections);
+
         dbCommunication.setDbLocked(false);
 
     }
 
+    private void regenerateTransitiveEdges(HashMap<String, Collection> collections) {
+
+
+    }
+
     private void importRepoTrialEdges(HashMap<String, de.exbio.reposcapeweb.db.io.Collection> collections) {
-        collections.forEach((k, c) -> {
+
+        boolean updateSuccessful = true;
+
+        String first = "protein_encoded_by";
+        HashSet<String> attributeDefinition = null;
+        try {
+            attributeDefinition = getAttributeNames(ReaderUtils.getUrlContent(new URL(env.getProperty("url.api.db") + first + "/attributes")));
+            if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, ProteinEncodedBy.attributes))
+                updateSuccessful = proteinEncodedByService.submitUpdates(runEdgeUpdates(ProteinEncodedBy.class, collections.get(first), proteinEncodedByService::mapIds));
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+
+        if (updateSuccessful)
+            log.debug("Update execution for " + first + ": Success!");
+        else
+            log.warn("Update execution for " + first + ": Error!");
+
+        for (String k : collections.keySet()) {
+            Collection c = collections.get(k);
             if (c instanceof Node)
-                return;
+                continue;
             try {
-                HashSet<String> attributeDefinition = getAttributeNames(ReaderUtils.getUrlContent(new URL(env.getProperty("url.api.db") + k + "/attributes")));
-                boolean updateSuccessful = true;
+                attributeDefinition = getAttributeNames(ReaderUtils.getUrlContent(new URL(env.getProperty("url.api.db") + k + "/attributes")));
+                updateSuccessful = true;
 
                 switch (k) {
                     case "disorder_comorbid_with_disorder":
@@ -218,24 +246,24 @@ public class UpdateService {
                             updateSuccessful = drugHasIndicationService.submitUpdates(runEdgeUpdates(DrugHasIndication.class, c, drugHasIndicationService::mapIds));
                         break;
                     case "drug_has_target":
-                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, DrugHasTarget.attributes))
-                            updateSuccessful = drugHasTargetService.submitUpdates(runEdgeUpdates(DrugHasTarget.class, c, drugHasTargetService::mapIds));
+                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, DrugHasTargetProtein.attributes))
+                            updateSuccessful = drugHasTargetService.submitUpdates(runEdgeUpdates(DrugHasTargetProtein.class, c, drugHasTargetService::mapIds));
                         break;
                     case "gene_associated_with_disorder":
                         if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, GeneAssociatedWithDisorder.attributes))
                             updateSuccessful = geneAssociatedWithDisorderService.submitUpdates(runEdgeUpdates(GeneAssociatedWithDisorder.class, c, geneAssociatedWithDisorderService::mapIds));
                         break;
-                    case "protein_encoded_by":
-                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, ProteinEncodedBy.attributes))
-                            updateSuccessful = proteinEncodedByService.submitUpdates(runEdgeUpdates(ProteinEncodedBy.class, c, proteinEncodedByService::mapIds));
-                        break;
+//                    case "protein_encoded_by":
+//                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, ProteinEncodedBy.attributes))
+//                            updateSuccessful = proteinEncodedByService.submitUpdates(runEdgeUpdates(ProteinEncodedBy.class, c, proteinEncodedByService::mapIds));
+//                        break;
                     case "protein_in_pathway":
                         if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, ProteinInPathway.attributes))
                             updateSuccessful = proteinInPathwayService.submitUpdates(runEdgeUpdates(ProteinInPathway.class, c, proteinInPathwayService::mapIds));
                         break;
                     case "protein_interacts_with_protein":
                         if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, ProteinInteractsWithProtein.attributes))
-                            updateSuccessful = proteinInteractsWithProteinServic.submitUpdates(runEdgeUpdates(ProteinInteractsWithProtein.class, c, proteinInteractsWithProteinServic::mapIds));
+                            updateSuccessful = proteinInteractsWithProteinService.submitUpdates(runEdgeUpdates(ProteinInteractsWithProtein.class, c, proteinInteractsWithProteinService::mapIds));
                         break;
 
                 }
@@ -246,7 +274,7 @@ public class UpdateService {
             } catch (MalformedURLException e) {
                 e.printStackTrace();
             }
-        });
+        }
     }
 
 
@@ -519,7 +547,9 @@ public class UpdateService {
 
         importService.getCollections(collections);
 
-        collections.forEach((k, v) -> v.setFile(FileUtils.download(createUrl(api, k), createFile(destDir, k, fileType))));
+//        collections.forEach((k, v) -> v.setFile(FileUtils.download(createUrl(api, k), createFile(destDir, k, fileType))));
+
+        collections.forEach((k,v)->v.setFile(createFile(destDir.getParentFile(),k,fileType)));
 
     }
 

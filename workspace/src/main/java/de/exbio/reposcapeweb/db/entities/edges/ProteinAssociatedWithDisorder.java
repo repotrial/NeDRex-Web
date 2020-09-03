@@ -20,12 +20,12 @@ import java.util.HashSet;
 import java.util.List;
 
 @Entity
-@Table(name = "drug_has_target")
-public class DrugHasTarget extends RepoTrialEdge implements Serializable {
+@Table(name = "protein_associated_with_disorder")
+public class ProteinAssociatedWithDisorder extends RepoTrialEdge implements Serializable {
 
     @Transient
     @JsonIgnore
-    private final Logger log = LoggerFactory.getLogger(DrugHasTarget.class);
+    private final Logger log = LoggerFactory.getLogger(ProteinAssociatedWithDisorder.class);
 
     @JsonIgnore
     @EmbeddedId
@@ -33,18 +33,20 @@ public class DrugHasTarget extends RepoTrialEdge implements Serializable {
 
     @Transient
     @JsonIgnore
-    public final static HashSet<String> attributes = new HashSet<>(Arrays.asList("targetDomainId", "type", "sourceDomainId", "actions", "databases"));
+    public final static HashSet<String> attributes = new HashSet<>(Arrays.asList("targetDomainId", "type", "sourceDomainId", "score", "assertedBy"));
+
 
     @Transient
     private String targetDomainId;
     @Transient
     private String sourceDomainId;
 
-    private String actions;
+    private String score;
 
-    private String sourceDatabases;
+    private String assertedBy;
 
-    public DrugHasTarget() {
+
+    public ProteinAssociatedWithDisorder() {
     }
 
     public String getTargetDomainId() {
@@ -57,34 +59,30 @@ public class DrugHasTarget extends RepoTrialEdge implements Serializable {
 
     @JsonGetter
     public String getType() {
-        return "DrugHasTarget";
+        return "GeneAssociatedWithDisorder";
+    }
+
+    public String getScore() {
+        return score;
     }
 
     @JsonSetter
     public void setType(String type) {
     }
 
-    public List<String> getActions() {
-        return StringUtils.stringToList(actions);
+    public List<String> getAssertedBy() {
+        return StringUtils.stringToList(assertedBy);
     }
 
-    public void setActions(List<String> actions) {
-        this.actions = StringUtils.listToString(actions);
+    public void setAssertedBy(List<String> assertedBy) {
+        this.assertedBy = StringUtils.listToString(assertedBy);
     }
 
-    public List<String> getDatabases() {
-        return StringUtils.stringToList(sourceDatabases);
-    }
-
-    public void setDatabases(List<String> databases) {
-        this.sourceDatabases = StringUtils.listToString(databases);
-    }
-
-    public void setValues(DrugHasTarget other) {
+    public void setValues(ProteinAssociatedWithDisorder other) {
         this.sourceDomainId = other.sourceDomainId;
         this.targetDomainId = other.targetDomainId;
-        this.actions = other.actions;
-        this.sourceDatabases = other.sourceDatabases;
+        this.assertedBy = other.assertedBy;
+        this.score = other.score;
     }
 
     @Override
