@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface StatisticsRepository extends CrudRepository<Disorder,Integer> {
+public interface StatisticsRepository extends CrudRepository<Disorder, Integer> {
 
     @Query(nativeQuery = true, value = "SELECT * FROM disorder_comorbid_with_disorder_out")
     List<Degrees> get_disorder_comorbid_with_disorder_out();
@@ -31,11 +31,18 @@ public interface StatisticsRepository extends CrudRepository<Disorder,Integer> {
     List<Degrees> get_drug_has_indication_in();
 
 
-    @Query(nativeQuery = true, value = "SELECT * FROM drug_has_target_out")
-    List<Degrees> get_drug_has_target_out();
+    @Query(nativeQuery = true, value = "SELECT * FROM drug_has_target_protein_out")
+    List<Degrees> get_drug_has_target_protein_out();
 
-    @Query(nativeQuery = true, value = "SELECT * FROM drug_has_target_in")
-    List<Degrees> get_drug_has_target_in();
+    @Query(nativeQuery = true, value = "SELECT * FROM drug_has_target_protein_in")
+    List<Degrees> get_drug_has_target_protein_in();
+
+
+    @Query(nativeQuery = true, value = "SELECT * FROM drug_has_target_gene_out")
+    List<Degrees> get_drug_has_target_gene_out();
+
+    @Query(nativeQuery = true, value = "SELECT * FROM drug_has_target_gene_in")
+    List<Degrees> get_drug_has_target_gene_in();
 
 
     @Query(nativeQuery = true, value = "SELECT * FROM gene_associated_with_disorder_out")
@@ -43,6 +50,13 @@ public interface StatisticsRepository extends CrudRepository<Disorder,Integer> {
 
     @Query(nativeQuery = true, value = "SELECT * FROM gene_associated_with_disorder_in")
     List<Degrees> get_gene_associated_with_disorder_in();
+
+
+    @Query(nativeQuery = true, value = "SELECT * FROM protein_associated_with_disorder_out")
+    List<Degrees> get_protein_associated_with_disorder_out();
+
+    @Query(nativeQuery = true, value = "SELECT * FROM protein_associated_with_disorder_in")
+    List<Degrees> get_protein_associated_with_disorder_in();
 
 
     @Query(nativeQuery = true, value = "SELECT * FROM protein_encoded_by_out")
