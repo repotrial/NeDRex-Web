@@ -2,16 +2,17 @@ package de.exbio.reposcapeweb.db.entities.nodes;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
-import de.exbio.reposcapeweb.db.entities.RepoTrialEntity;
+import de.exbio.reposcapeweb.db.entities.RepoTrialNode;
+import de.exbio.reposcapeweb.filter.FilterContainer;
+import de.exbio.reposcapeweb.filter.FilterEntry;
+import de.exbio.reposcapeweb.filter.FilterKey;
 import de.exbio.reposcapeweb.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.persistence.*;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "drugs", indexes = @Index(name = "domainId", columnList = "primaryDomainId", unique = true))
@@ -72,18 +73,6 @@ public class Drug extends RepoTrialNode {
     public String getPrimaryId() {
         return primaryDomainId;
     }
-
-//    @Override
-//    public String toTsv() {
-//        StringBuilder sb = new StringBuilder();
-////        sb.
-//        return null;
-//    }
-//
-//    @Override
-//    public String getHeader() {
-//        return "#casNumber\tdescription\tdisplayName\tdomainIds\t";
-//    }
 
     public long getId() {
         return id;
@@ -225,6 +214,20 @@ public class Drug extends RepoTrialNode {
     @Override
     public String getUniqueId() {
         return getPrimaryId();
+    }
+
+
+    @Override
+    public Map<FilterKey, FilterEntry> toFilter() {
+        //TODO finish
+        HashMap<FilterKey, FilterEntry> map = new HashMap<>();
+
+        map.put(new FilterKey(displayName), new FilterEntry(displayName, FilterEntry.FilterTypes.NAME, id));
+
+        FilterContainer.builder(getDomainIds(), new FilterEntry(displayName, FilterEntry.FilterTypes.ALTERNATIVE, id), map);
+        FilterContainer.builder(getSynonyms().stream().filter(f -> !f.equals(primaryDomainId)).collect(Collectors.toSet()), new FilterEntry(displayName, FilterEntry.FilterTypes.ALIAS, id), map);
+
+        return map;
     }
 }
 

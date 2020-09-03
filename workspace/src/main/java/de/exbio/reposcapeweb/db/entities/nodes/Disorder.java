@@ -3,13 +3,17 @@ package de.exbio.reposcapeweb.db.entities.nodes;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
-import de.exbio.reposcapeweb.db.entities.RepoTrialEntity;
+import de.exbio.reposcapeweb.db.entities.RepoTrialNode;
+import de.exbio.reposcapeweb.filter.FilterContainer;
+import de.exbio.reposcapeweb.filter.FilterEntry;
+import de.exbio.reposcapeweb.filter.FilterKey;
 import de.exbio.reposcapeweb.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.persistence.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "disorders")
@@ -102,21 +106,6 @@ public class Disorder extends RepoTrialNode {
         this.primaryDomainId = other.primaryDomainId;
     }
 
-//    public static boolean validateFormat(HashSet<String> attributes) {
-//        for (String a : Disorder.attributes)
-//            if (!attributes.remove(a))
-//                return false;
-//        return attributes.isEmpty();
-//    }
-
-//    public HashMap<Long, String> getIdToDomainMap() {
-//        return Disorder.idToDomainMap;
-//    }
-//
-//    public HashMap<String, Long> getDomainToIdMap() {
-//        return Disorder.domainToIdMap;
-//    }
-
     @Override
     public String getPrimaryId() {
         return getPrimaryDomainId();
@@ -125,5 +114,17 @@ public class Disorder extends RepoTrialNode {
     @Override
     public String getUniqueId() {
         return getPrimaryId();
+    }
+
+    @Override
+    public Map<FilterKey, FilterEntry> toFilter() {
+        HashMap<FilterKey, FilterEntry> map = new HashMap<>();
+
+        map.put(new FilterKey(displayName), new FilterEntry(displayName, FilterEntry.FilterTypes.NAME, id));
+
+        FilterContainer.builder(getDomainIds(), new FilterEntry(displayName, FilterEntry.FilterTypes.ALTERNATIVE, id), map);
+        FilterContainer.builder(getSynonyms().stream().filter(f -> !f.equals(primaryDomainId)).collect(Collectors.toSet()), new FilterEntry(displayName, FilterEntry.FilterTypes.ALIAS, id), map);
+
+        return map;
     }
 }

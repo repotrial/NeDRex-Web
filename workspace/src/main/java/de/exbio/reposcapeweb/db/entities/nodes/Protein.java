@@ -3,16 +3,18 @@ package de.exbio.reposcapeweb.db.entities.nodes;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
-import de.exbio.reposcapeweb.db.entities.RepoTrialEntity;
+import de.exbio.reposcapeweb.db.entities.RepoTrialNode;
+import de.exbio.reposcapeweb.filter.FilterEntry;
+import de.exbio.reposcapeweb.filter.FilterKey;
 import de.exbio.reposcapeweb.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.persistence.*;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 @Entity
 @Table(name = "proteins")
@@ -109,35 +111,22 @@ public class Protein extends RepoTrialNode {
 
     }
 
-//    public static boolean validateFormat(HashSet<String> attributes) {
-//        for (String a : Protein.attributes)
-//            if (!attributes.remove(a))
-//                return false;
-//        return attributes.isEmpty();
-//    }
 
     @Override
     public String getPrimaryId() {
         return getPrimaryDomainId();
     }
 
-//    @Override
-//    public HashMap<Integer, String> getIdToDomainMap() {
-//        if(Drug.idToDomainMap==null)
-//            Drug.idToDomainMap=new HashMap<>();
-//        return Drug.idToDomainMap;
-//    }
-//
-//    @Override
-//    public HashMap<String, Integer> getDomainToIdMap() {
-//        if(Drug.domainToIdMap==null)
-//            Drug.domainToIdMap=new HashMap<>();
-//        return Drug.domainToIdMap;
-//    }
 
     @Override
     public String getUniqueId() {
         return getPrimaryId();
+    }
+
+    @Override
+    public Map<FilterKey, FilterEntry> toFilter() {
+        //TODO implement
+        return null;
     }
 
 }

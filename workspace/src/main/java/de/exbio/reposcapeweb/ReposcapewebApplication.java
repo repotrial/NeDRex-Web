@@ -4,6 +4,7 @@ import de.exbio.reposcapeweb.db.io.ImportService;
 import de.exbio.reposcapeweb.db.statistics.StatisticsRepository;
 import de.exbio.reposcapeweb.db.statistics.StatisticsService;
 import de.exbio.reposcapeweb.db.updates.UpdateService;
+import de.exbio.reposcapeweb.filter.FilterService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,19 +27,20 @@ public class ReposcapewebApplication {
     private final UpdateService updateService;
     private final Environment env;
     private final ImportService importService;
-    private final StatisticsRepository statisticsRepository;
+    private final FilterService filterService;
 
     @Autowired
-    public ReposcapewebApplication(UpdateService updateService, Environment environment, ImportService importService, StatisticsRepository statisticsRepository) {
+    public ReposcapewebApplication(UpdateService updateService, Environment environment, ImportService importService, FilterService filterService) {
         this.updateService = updateService;
         this.importService = importService;
         this.env = environment;
-        this.statisticsRepository = statisticsRepository;
+        this.filterService = filterService;
     }
 
 
     @EventListener(ApplicationReadyEvent.class)
     public void postConstruct() {
+
 
         importService.importNodeMaps();
         log.debug("Current RAM usage: " + (int) ((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024)
