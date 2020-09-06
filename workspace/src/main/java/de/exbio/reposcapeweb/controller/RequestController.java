@@ -5,63 +5,30 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
 
+/**
+ * Controller for the incoming requests on the RepoScape-WEB application.
+ *
+ * @author Andreas Maier
+ */
 @Controller
 public class RequestController {
 
-    private Logger log = LoggerFactory.getLogger(RequestController.class);
+    private final Logger log = LoggerFactory.getLogger(RequestController.class);
 
     private final DrugService drugService;
 
-    public RequestController(@Autowired DrugService drugService){
-        this.drugService=drugService;
+    @Autowired
+    public RequestController(DrugService drugService) {
+        this.drugService = drugService;
     }
 
-    @RequestMapping(value = "/running", method = RequestMethod.GET)
-    @ResponseBody
-    public String checkRunning(){
-        log.info("Requested Springboot running check!");
-        return "Router is Running!";
-    }
 
-//    @RequestMapping(value = "/dbread", method = RequestMethod.GET)
+//    @RequestMapping(value = "/running", method = RequestMethod.GET)
 //    @ResponseBody
-//    public String checkDBRead(){
-//        log.info("Requested DB reading check!");
-//        return "Read access from DB:"+testService.testRead();
-//    }
-//
-//    @RequestMapping(value = "/dbwrite", method = RequestMethod.GET)
-//    @ResponseBody
-//    public String checkDBWrite(){
-//        log.info("Requested DB writing check!");
-//        return "Write access to DB:"+testService.testWrite();
-//    }
-//
-//    @RequestMapping(value = "/dbdump", method = RequestMethod.GET)
-//    @ResponseBody
-//    public String checkDBDump(){
-//        log.info("Requested DB dumping check!");
-//        return testService.dump();
-//    }
-
-//    @RequestMapping(value = "/submitJob", method = RequestMethod.GET)
-//    @ResponseBody
-//    public String submitJob(@RequestParam("id") String uid){
-//        String jobId = jobService.submitJob(testService.getJob(uid));
-//        log.info("Submitted "+uid+" as job "+jobId+"!");
-//        return "Register for jobUpdate: "+jobId;
-//    }
-
-//    @RequestMapping(value = "/finishedJob", method = RequestMethod.GET)
-//    @ResponseBody
-//    public void registerFinishedJob(@RequestParam("j") String uid){
-//        log.debug("j="+uid);
-//        JobDoc doc= jobService.getJob(uid);
-//        log.info("Got job "+uid+" with Document: "+doc.getDoc()+"!");
+//    public String checkRunning(){
+//        log.info("Requested Springboot running check!");
+//        return "Router is Running!";
 //    }
 
 }
