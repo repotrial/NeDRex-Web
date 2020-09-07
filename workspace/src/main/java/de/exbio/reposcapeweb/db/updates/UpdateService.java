@@ -104,14 +104,19 @@ public class UpdateService {
 
     }
 
-    @Async
+
     @Scheduled(cron = "${update.interval}", zone = "${update.interval.zone}")
-    public void executeDataUpdate() {
+    public void scheduleDataUpdate() {
         if (dbCommunication.isUpdateInProgress()) {
             log.warn("Update already in progress!");
             return;
         }
         dbCommunication.scheduleUpdate();
+        executeDataUpdate();
+    }
+
+    @Async
+    public void executeDataUpdate() {
         String url = env.getProperty("url.api.db");
         File cacheDir = new File(env.getProperty("path.db.cache"));
         cleanUpdateDirectories(cacheDir);
@@ -193,7 +198,7 @@ public class UpdateService {
 
         importRepoTrialNodes(collections);
 
-        importService.importIdMaps(collections, cacheDir, true);
+//        updateIdMaps(collections, cacheDir, true);
 
         importRepoTrialEdges(collections);
 
@@ -278,6 +283,7 @@ public class UpdateService {
 
 
     private void importRepoTrialNodes(HashMap<String, de.exbio.reposcapeweb.db.io.Collection> collections) {
+        File nodeCacheDir = new File(env.getProperty("path.db.cache") + "nodes");
         collections.forEach((k, c) -> {
             if (!(c instanceof Node))
                 return;
@@ -289,26 +295,31 @@ public class UpdateService {
                     case "drug": {
                         if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, Drug.attributes))
                             updateSuccessful = drugService.submitUpdates(runNodeUpdates(Drug.class, c));
+                        RepoTrialUtils.writeNodeMap(new File(nodeCacheDir, k+".map"), drugService.getIdToDomainMap());
                         break;
                     }
                     case "pathway": {
                         if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, Pathway.attributes))
                             updateSuccessful = pathwayService.submitUpdates(runNodeUpdates(Pathway.class, c));
+                        RepoTrialUtils.writeNodeMap(new File(nodeCacheDir, k+".map"), pathwayService.getIdToDomainMap());
                         break;
                     }
                     case "disorder": {
                         if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, Disorder.attributes))
                             updateSuccessful = disorderService.submitUpdates(runNodeUpdates(Disorder.class, c));
+                        RepoTrialUtils.writeNodeMap(new File(nodeCacheDir, k+".map"), disorderService.getIdToDomainMap());
                         break;
                     }
                     case "gene": {
                         if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, Gene.attributes))
                             updateSuccessful = geneService.submitUpdates(runNodeUpdates(Gene.class, c));
+                        RepoTrialUtils.writeNodeMap(new File(nodeCacheDir, k+".map"), geneService.getIdToDomainMap());
                         break;
                     }
                     case "protein": {
                         if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, Protein.attributes))
                             updateSuccessful = proteinService.submitUpdates(runNodeUpdates(Protein.class, c));
+                        RepoTrialUtils.writeNodeMap(new File(nodeCacheDir, k+".map"), proteinService.getIdToDomainMap());
                         break;
                     }
                 }
@@ -319,6 +330,7 @@ public class UpdateService {
             } catch (MalformedURLException e) {
                 e.printStackTrace();
             }
+
         });
     }
 
@@ -430,10 +442,10 @@ public class UpdateService {
         log.debug("Importing insertions only from " + updateFile);
         HashMap<String, T> inserts = new HashMap<>();
         updates.put(UpdateOperation.Insertion, inserts);
-        BufferedReader br = ReaderUtils.getBasicReader(updateFile);
-        String line = "";
-        boolean first = true;
         try {
+            BufferedReader br = ReaderUtils.getBasicReader(updateFile);
+            String line = "";
+            boolean first = true;
             while ((line = br.readLine()) != null) {
                 if (first) {
                     first = false;
@@ -459,10 +471,11 @@ public class UpdateService {
         log.debug("Importing insertions only from " + updateFile);
         HashMap<PairId, T> inserts = new HashMap<>();
         updates.put(UpdateOperation.Insertion, inserts);
-        BufferedReader br = ReaderUtils.getBasicReader(updateFile);
-        String line = "";
-        boolean first = true;
         try {
+            BufferedReader br = ReaderUtils.getBasicReader(updateFile);
+            String line = "";
+            boolean first = true;
+
             while ((line = br.readLine()) != null) {
                 if (first) {
                     first = false;
@@ -494,9 +507,10 @@ public class UpdateService {
     private void restructureUpdates(HashMap<String, de.exbio.reposcapeweb.db.io.Collection> collections) {
         collections.values().forEach(col -> {
             FileUtils.formatJson(col.getFile());
-            BufferedReader br = ReaderUtils.getBasicReader(col.getFile());
             int count = 0;
             try {
+                BufferedReader br = ReaderUtils.getBasicReader(col.getFile());
+
                 while (br.readLine() != null) {
                     count++;
                 }

@@ -2,6 +2,7 @@ package de.exbio.reposcapeweb.db.services.nodes;
 
 import de.exbio.reposcapeweb.db.entities.nodes.Gene;
 import de.exbio.reposcapeweb.db.repositories.nodes.GeneRepository;
+import de.exbio.reposcapeweb.db.services.NodeService;
 import de.exbio.reposcapeweb.db.updates.UpdateOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,12 +15,12 @@ import java.util.HashSet;
 import java.util.LinkedList;
 
 @Service
-public class GeneService {
+public class GeneService extends NodeService {
     private final Logger log = LoggerFactory.getLogger(DrugService.class);
     private final GeneRepository geneRepository;
 
-    private HashMap<Integer,String> idToDomainMap = new HashMap<>();
-    private HashMap<String,Integer> domainToIdMap = new HashMap<>();
+    private HashMap<Integer, String> idToDomainMap = new HashMap<>();
+    private HashMap<String, Integer> domainToIdMap = new HashMap<>();
 
     @Autowired
     public GeneService(GeneRepository geneRepository) {
@@ -29,8 +30,14 @@ public class GeneService {
     public boolean submitUpdates(EnumMap<UpdateOperation, HashMap<String, Gene>> updates) {
         if (updates == null)
             return false;
-        if (updates.containsKey(UpdateOperation.Deletion))
+        if (updates.containsKey(UpdateOperation.Deletion)) {
             geneRepository.deleteAll(geneRepository.findAllByPrimaryDomainIdIn(updates.get(UpdateOperation.Deletion).keySet()));
+            updates.get(UpdateOperation.Deletion).values().forEach(d -> {
+                idToDomainMap.remove(d.getId());
+                domainToIdMap.remove(d.getPrimaryDomainId());
+            });
+
+        }
 
         LinkedList<Gene> toSave = new LinkedList(updates.get(UpdateOperation.Insertion).values());
         int insertCount = toSave.size();
@@ -42,7 +49,10 @@ public class GeneService {
                 toSave.add(d);
             });
         }
-        geneRepository.saveAll(toSave);
+        geneRepository.saveAll(toSave).forEach(d -> {
+            idToDomainMap.put(d.getId(), d.getPrimaryDomainId());
+            domainToIdMap.put(d.getPrimaryDomainId(), d.getId());
+        });
         log.debug("Updated gene table: " + insertCount + " Inserts, " + (updates.containsKey(UpdateOperation.Alteration) ? updates.get(UpdateOperation.Alteration).size() : 0) + " Changes, " + (updates.containsKey(UpdateOperation.Deletion) ? updates.get(UpdateOperation.Deletion).size() : 0) + " Deletions identified!");
         return true;
     }

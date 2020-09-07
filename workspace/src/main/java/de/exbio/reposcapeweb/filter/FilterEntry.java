@@ -1,6 +1,8 @@
 package de.exbio.reposcapeweb.filter;
 
-public class FilterEntry {
+import java.util.Objects;
+
+public class FilterEntry implements Comparable<FilterEntry> {
 
     private String name;
     private FilterTypes type;
@@ -38,8 +40,34 @@ public class FilterEntry {
         this.nodeId = nodeId;
     }
 
+    @Override
+    public int compareTo(FilterEntry other) {
+        int name = this.name.compareTo(other.name);
+        if (name != 0)
+            return name;
+        int type = this.type.compareTo(other.type);
+        if (type != 0)
+            return type;
+        return this.getNodeId() - other.getNodeId();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        FilterEntry that = (FilterEntry) o;
+        return nodeId == that.nodeId &&
+                name.equals(that.name) &&
+                type == that.type;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, type, nodeId);
+    }
+
     public enum FilterTypes {
-        NAME, ALIAS, ALTERNATIVE,SYNONYM;
+        NAME, ALIAS, ALTERNATIVE, SYNONYM;
     }
 
     @Override

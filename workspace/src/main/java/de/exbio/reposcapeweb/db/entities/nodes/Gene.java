@@ -36,6 +36,7 @@ public class Gene extends RepoTrialNode {
     private String primaryDomainId;
     private String domainIds;
     private String displayName;
+    @Column(columnDefinition = "TEXT")
     private String synonyms;
     private String approvedSymbol;
     private String symbols;
@@ -70,7 +71,7 @@ public class Gene extends RepoTrialNode {
 
     @JsonSetter
     public void setSynonyms(List<String> synonyms) {
-        this.symbols = StringUtils.listToString(synonyms);
+        this.synonyms = StringUtils.listToString(synonyms);
     }
 
     public String getApprovedSymbol() {
@@ -126,6 +127,11 @@ public class Gene extends RepoTrialNode {
 
     }
 
+
+    @Override
+    public int getId() {
+        return id;
+    }
 
     @Override
     public String getPrimaryId() {

@@ -97,7 +97,8 @@ public class Protein extends RepoTrialNode {
     }
 
     @JsonSetter
-    public void setType(String type){}
+    public void setType(String type) {
+    }
 
     public void setValues(Protein other) {
         this.sequence = other.sequence;
@@ -111,6 +112,11 @@ public class Protein extends RepoTrialNode {
 
     }
 
+
+    @Override
+    public int getId() {
+        return id;
+    }
 
     @Override
     public String getPrimaryId() {

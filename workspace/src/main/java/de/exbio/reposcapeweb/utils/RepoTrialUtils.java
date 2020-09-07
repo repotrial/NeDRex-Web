@@ -2,7 +2,10 @@ package de.exbio.reposcapeweb.utils;
 
 import de.exbio.reposcapeweb.db.io.Collection;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -34,6 +37,23 @@ public class RepoTrialUtils {
             if (!urlAttributes.remove(a))
                 return false;
         return urlAttributes.isEmpty();
+    }
+
+    public static void writeNodeMap(File f, HashMap<Integer, String> idToDomainMap) {
+        try {
+            BufferedWriter bw = new BufferedWriter(new FileWriter(f));
+            bw.write("#id\tprimaryDomainId");
+            idToDomainMap.forEach((k, v) -> {
+                try {
+                    bw.write(k + "\t" + v + "\n");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 }

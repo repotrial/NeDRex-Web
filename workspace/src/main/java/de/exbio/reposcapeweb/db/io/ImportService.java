@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -58,16 +59,20 @@ public class ImportService {
     }
 
     private void prepareCollections(String file, HashMap<String, de.exbio.reposcapeweb.db.io.Collection> collections, boolean typeNode) {
-        BufferedReader br = ReaderUtils.getBasicReader(file);
-        String line = "";
         try {
-            while ((line = br.readLine()) != null) {
-                if (line.charAt(0) == '#')
-                    continue;
-                Collection c = typeNode ? new Node(line) : new Edge(line);
-                collections.put(c.getName(), c);
+            BufferedReader br = ReaderUtils.getBasicReader(file);
+            String line = "";
+            try {
+                while ((line = br.readLine()) != null) {
+                    if (line.charAt(0) == '#')
+                        continue;
+                    Collection c = typeNode ? new Node(line) : new Edge(line);
+                    collections.put(c.getName(), c);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        } catch (IOException e) {
+        } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
     }
@@ -79,17 +84,17 @@ public class ImportService {
     }
 
 
-    private void updateNodeIdMaps(File cacheDir, String table, HashMap<Integer, String> idToDomain, HashMap<String, Integer> domainToString) {
+    private void importNodeIdMaps(File cacheDir, String table, HashMap<Integer, String> idToDomain, HashMap<String, Integer> domainToString) {
         File nodeDir = new File(cacheDir, "nodes");
 
-        File f = new File(nodeDir, table + ".list");
-        BufferedReader br = ReaderUtils.getBasicReader(f);
+        File f = new File(nodeDir, table + ".map");
         String line = "";
 
         idToDomain.clear();
         domainToString.clear();
 
         try {
+            BufferedReader br = ReaderUtils.getBasicReader(f);
             while ((line = br.readLine()) != null) {
                 if (line.charAt(0) == '#')
                     continue;
@@ -99,10 +104,10 @@ public class ImportService {
                 idToDomain.put(id, entry.get(1));
                 domainToString.put(entry.get(1), id);
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+            log.debug("NodeIdMap import: Updated " + table);
+        } catch (IOException | NullPointerException e) {
+            log.warn("Error on importing nodeidmaps for " + table);
         }
-        log.debug("NodeIdMap import: Updated " + table);
     }
 
 
@@ -114,23 +119,23 @@ public class ImportService {
 
             switch (k) {
                 case "drug": {
-                    updateNodeIdMaps(cacheDir, k + "s", drugService.getIdToDomainMap(), drugService.getDomainToIdMap());
+                    importNodeIdMaps(cacheDir, k, drugService.getIdToDomainMap(), drugService.getDomainToIdMap());
                     break;
                 }
                 case "pathway": {
-                    updateNodeIdMaps(cacheDir, k + "s", pathwayService.getIdToDomainMap(), pathwayService.getDomainToIdMap());
+                    importNodeIdMaps(cacheDir, k, pathwayService.getIdToDomainMap(), pathwayService.getDomainToIdMap());
                     break;
                 }
                 case "disorder": {
-                    updateNodeIdMaps(cacheDir, k + "s", disorderService.getIdToDomainMap(), disorderService.getDomainToIdMap());
+                    importNodeIdMaps(cacheDir, k, disorderService.getIdToDomainMap(), disorderService.getDomainToIdMap());
                     break;
                 }
                 case "gene": {
-                    updateNodeIdMaps(cacheDir, k + "s", geneService.getIdToDomainMap(), geneService.getDomainToIdMap());
+                    importNodeIdMaps(cacheDir, k, geneService.getIdToDomainMap(), geneService.getDomainToIdMap());
                     break;
                 }
                 case "protein": {
-                    updateNodeIdMaps(cacheDir, k + "s", proteinService.getIdToDomainMap(), proteinService.getDomainToIdMap());
+                    importNodeIdMaps(cacheDir, k, proteinService.getIdToDomainMap(), proteinService.getDomainToIdMap());
                     break;
                 }
             }

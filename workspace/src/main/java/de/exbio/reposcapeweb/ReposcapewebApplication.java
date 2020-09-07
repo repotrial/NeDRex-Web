@@ -41,15 +41,19 @@ public class ReposcapewebApplication {
     @EventListener(ApplicationReadyEvent.class)
     public void postConstruct() {
 
-
         importService.importNodeMaps();
         log.debug("Current RAM usage: " + (int) ((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024)
                 + "MB");
 
-        if (Boolean.parseBoolean(env.getProperty("update.onstartup")))
-            updateService.executeDataUpdate();
-        else
+
+        if (Boolean.parseBoolean(env.getProperty("update.onstartup"))) {
+            updateService.scheduleDataUpdate();
+        }
+        else {
             log.warn("Startup Database update is deactivated! Activate it by setting 'update.onstartup=true' in the application.properties.");
+        }
+
+
 
 
         log.info("Service can be used!");

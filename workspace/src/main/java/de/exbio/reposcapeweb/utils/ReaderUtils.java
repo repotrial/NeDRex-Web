@@ -5,16 +5,11 @@ import java.net.URL;
 
 public class ReaderUtils {
 
-    public static BufferedReader getBasicReader(File file) {
-        try {
-            return new BufferedReader(new FileReader(file));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        return null;
+    public static BufferedReader getBasicReader(File file) throws FileNotFoundException {
+        return new BufferedReader(new FileReader(file));
     }
 
-    public static BufferedReader getBasicReader(String url) {
+    public static BufferedReader getBasicReader(String url) throws FileNotFoundException {
         return getBasicReader(new File(url));
     }
 

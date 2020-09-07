@@ -1,9 +1,9 @@
 package de.exbio.reposcapeweb.db.entities.nodes;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import de.exbio.reposcapeweb.db.entities.RepoTrialNode;
-import de.exbio.reposcapeweb.filter.FilterContainer;
 import de.exbio.reposcapeweb.filter.FilterEntry;
 import de.exbio.reposcapeweb.filter.FilterKey;
 import de.exbio.reposcapeweb.utils.StringUtils;
@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.persistence.*;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "drugs", indexes = @Index(name = "domainId", columnList = "primaryDomainId", unique = true))
@@ -29,7 +28,6 @@ public class Drug extends RepoTrialNode {
     @JsonIgnore
     public final static HashSet<String> attributes = new HashSet<>(Arrays.asList("molecularFormula", "displayName", "inchi", "type", "domainIds", "primaryDomainId", "smiles", "casNumber", "drugCategories", "drugGroups", "_cls", "sequences", "iupacName", "synonyms", "primaryDataset", "indication", "allDatasets", "description"));
 
-    private String _cls;
     private String primaryDomainId;
     private String domainIds;
     private String displayName;
@@ -53,8 +51,6 @@ public class Drug extends RepoTrialNode {
     //    @Lob
     @Column(columnDefinition = "TEXT")
     private String inchi;
-    private String primaryDataset;
-    private String allDatasets;
     private String molecularFormula;
 
 
@@ -74,7 +70,7 @@ public class Drug extends RepoTrialNode {
         return primaryDomainId;
     }
 
-    public long getId() {
+    public int getId() {
         return id;
     }
 
@@ -86,20 +82,30 @@ public class Drug extends RepoTrialNode {
         return StringUtils.stringToList(domainIds);
     }
 
+    @JsonGetter
     public String get_cls() {
-        return _cls;
+        return "Drug."+type.name();
     }
+
+    @JsonSetter
+    public void set_cls(String _cls){}
 
     public List<String> getSynonyms() {
         return StringUtils.stringToList(synonyms);
     }
 
+    @JsonGetter
     public String getPrimaryDataset() {
-        return primaryDataset;
+        return "DrugBank";
     }
 
+    @JsonSetter
+    public void setPrimaryDataset(String dataset) {
+    }
+
+    @JsonGetter
     public List<String> getAllDatasets() {
-        return StringUtils.stringToList(allDatasets);
+        return new ArrayList<>(Collections.singletonList("DrugBank"));
     }
 
     public String getDisplayName() {
@@ -187,27 +193,23 @@ public class Drug extends RepoTrialNode {
 
     @JsonSetter
     public void setAllDatasets(List<String> allDatasets) {
-        this.allDatasets = StringUtils.listToString(allDatasets);
     }
 
     public void setValues(Drug other) {
-        this._cls=other._cls;
-        this.domainIds=other.domainIds;
-        this.displayName=other.displayName;
-        this.synonyms=other.synonyms;
-        this.type=other.type;
-        this.drugCategories=other.drugCategories;
-        this.drugGroups=other.drugGroups;
-        this.description=other.description;
-        this.casNumber=other.casNumber;
-        this.indication=other.indication;
-        this.sequences=other.sequences;
-        this.iupacName=other.iupacName;
-        this.smiles=other.smiles;
-        this.inchi=other.inchi;
-        this.primaryDataset=other.primaryDataset;
-        this.allDatasets=other.allDatasets;
-        this.molecularFormula=other.molecularFormula;
+        this.domainIds = other.domainIds;
+        this.displayName = other.displayName;
+        this.synonyms = other.synonyms;
+        this.type = other.type;
+        this.drugCategories = other.drugCategories;
+        this.drugGroups = other.drugGroups;
+        this.description = other.description;
+        this.casNumber = other.casNumber;
+        this.indication = other.indication;
+        this.sequences = other.sequences;
+        this.iupacName = other.iupacName;
+        this.smiles = other.smiles;
+        this.inchi = other.inchi;
+        this.molecularFormula = other.molecularFormula;
     }
 
 
@@ -222,10 +224,10 @@ public class Drug extends RepoTrialNode {
         //TODO finish
         HashMap<FilterKey, FilterEntry> map = new HashMap<>();
 
-        map.put(new FilterKey(displayName), new FilterEntry(displayName, FilterEntry.FilterTypes.NAME, id));
-
-        FilterContainer.builder(getDomainIds(), new FilterEntry(displayName, FilterEntry.FilterTypes.ALTERNATIVE, id), map);
-        FilterContainer.builder(getSynonyms().stream().filter(f -> !f.equals(primaryDomainId)).collect(Collectors.toSet()), new FilterEntry(displayName, FilterEntry.FilterTypes.ALIAS, id), map);
+//        map.put(new FilterKey(displayName), new FilterEntry(displayName, FilterEntry.FilterTypes.NAME, id));
+//
+//        FilterContainer.builder(getDomainIds(), new FilterEntry(displayName, FilterEntry.FilterTypes.ALTERNATIVE, id), map);
+//        FilterContainer.builder(getSynonyms().stream().filter(f -> !f.equals(primaryDomainId)).collect(Collectors.toSet()), new FilterEntry(displayName, FilterEntry.FilterTypes.ALIAS, id), map);
 
         return map;
     }

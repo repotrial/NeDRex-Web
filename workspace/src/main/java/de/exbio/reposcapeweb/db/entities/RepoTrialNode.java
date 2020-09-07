@@ -9,6 +9,8 @@ import java.util.Map;
 
 public abstract class RepoTrialNode extends RepoTrialEntity {
 
+    public abstract int getId();
+
     public abstract String getPrimaryId();
 
 //    public abstract HashMap<Integer,String> getIdToDomainMap();

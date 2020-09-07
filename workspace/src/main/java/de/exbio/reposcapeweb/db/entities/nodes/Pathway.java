@@ -37,12 +37,9 @@ public class Pathway extends RepoTrialNode {
 
     private String domainIds;
 
-    private String species;
-
     public Pathway() {
 
     }
-
 
 
     public String getPrimaryDomainId() {
@@ -62,8 +59,13 @@ public class Pathway extends RepoTrialNode {
         this.domainIds = StringUtils.listToString(domainIds);
     }
 
-    public LinkedList<String> getSpecies() {
-        return StringUtils.stringToList(species);
+    @JsonGetter
+    public String getSpecies() {
+        return "Homo sapiens";
+    }
+
+    @JsonSetter
+    public void setSpecies(String species) {
     }
 
     @JsonGetter
@@ -72,14 +74,19 @@ public class Pathway extends RepoTrialNode {
     }
 
     @JsonSetter
-    public void setType(String type){}
+    public void setType(String type) {
+    }
 
     public void setValues(Pathway other) {
-        this.species = other.species;
         this.domainIds = other.domainIds;
         this.primaryDomainId = other.primaryDomainId;
-        this.displayName=other.displayName;
+        this.displayName = other.displayName;
 
+    }
+
+    @Override
+    public int getId() {
+        return id;
     }
 
     @Override
@@ -98,7 +105,6 @@ public class Pathway extends RepoTrialNode {
         //TODO implement
         return null;
     }
-
 
 
 }

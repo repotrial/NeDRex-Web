@@ -50,6 +50,7 @@ public class DBUtils {
     public static void executeNodeDump(File dest, String table) {
         if (!dest.exists())
             dest.mkdirs();
+        log.debug("Executing dump for " + table + " to " + dest.getAbsolutePath());
         ProcessBuilder pb = new ProcessBuilder(tableToFile.getAbsolutePath(), queryExecuter.getParent(), dest.getAbsolutePath(), table, "SELECT id, primary_domain_id FROM " + table + ";");
         try {
             ProcessUtils.executeProcessWait(pb);

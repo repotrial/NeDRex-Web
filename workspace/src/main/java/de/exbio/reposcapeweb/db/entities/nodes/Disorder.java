@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import de.exbio.reposcapeweb.db.entities.RepoTrialNode;
-import de.exbio.reposcapeweb.filter.FilterContainer;
 import de.exbio.reposcapeweb.filter.FilterEntry;
 import de.exbio.reposcapeweb.filter.FilterKey;
 import de.exbio.reposcapeweb.utils.StringUtils;
@@ -107,6 +106,11 @@ public class Disorder extends RepoTrialNode {
     }
 
     @Override
+    public int getId() {
+        return id;
+    }
+
+    @Override
     public String getPrimaryId() {
         return getPrimaryDomainId();
     }
@@ -120,10 +124,10 @@ public class Disorder extends RepoTrialNode {
     public Map<FilterKey, FilterEntry> toFilter() {
         HashMap<FilterKey, FilterEntry> map = new HashMap<>();
 
-        map.put(new FilterKey(displayName), new FilterEntry(displayName, FilterEntry.FilterTypes.NAME, id));
-
-        FilterContainer.builder(getDomainIds(), new FilterEntry(displayName, FilterEntry.FilterTypes.ALTERNATIVE, id), map);
-        FilterContainer.builder(getSynonyms().stream().filter(f -> !f.equals(primaryDomainId)).collect(Collectors.toSet()), new FilterEntry(displayName, FilterEntry.FilterTypes.ALIAS, id), map);
+//        map.put(new FilterKey(displayName), new FilterEntry(displayName, FilterEntry.FilterTypes.NAME, id));
+//
+//        FilterContainer.builder(getDomainIds(), new FilterEntry(displayName, FilterEntry.FilterTypes.ALTERNATIVE, id), map);
+//        FilterContainer.builder(getSynonyms().stream().filter(f -> !f.equals(primaryDomainId)).collect(Collectors.toSet()), new FilterEntry(displayName, FilterEntry.FilterTypes.ALIAS, id), map);
 
         return map;
     }
