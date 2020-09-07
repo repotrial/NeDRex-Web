@@ -191,4 +191,59 @@ public class NodeFilter {
         //TODO clone entries
         this.uniqueMap = uniqueMap;
     }
+
+
+    public void removeByNodeIds(Collection<Integer> ids) {
+        removeByNodeIdsDistinct(ids);
+        removeByNodeIdsUnique(ids);
+    }
+
+    private void removeByNodeIdsUnique(Collection<Integer> ids) {
+        EnumMap<FilterType, Set<FilterKey>> del = new EnumMap<>(FilterType.class);
+        uniqueMap.forEach((type, keys) -> {
+            Set<FilterKey> left = keys.entrySet().stream().filter(e -> ids.contains(e.getValue().getNodeId())).map(Map.Entry::getKey).collect(Collectors.toSet());
+            del.put(type, left);
+        });
+
+        del.forEach((type, keys) -> keys.forEach(uniqueMap.get(type)::remove));
+    }
+
+    private void removeByNodeIdsDistinct(Collection<Integer> ids) {
+        EnumMap<FilterType, TreeMap<FilterKey, List<FilterEntry>>> del = new EnumMap<>(FilterType.class);
+        distinctMap.forEach((type, keys) -> keys.forEach((k, v) -> {
+            List<FilterEntry> left = v.stream().filter(e -> ids.contains(e.getNodeId())).collect(Collectors.toList());
+            if (left.size() > 0)
+                try {
+                    del.get(type).put(k, left);
+                } catch (NullPointerException e) {
+                    del.put(type, new TreeMap<>());
+                    del.get(type).put(k, left);
+                }
+        }));
+        del.forEach((type, keys) -> keys.forEach((k, v) -> {
+            distinctMap.get(type).get(k).removeAll(v);
+            if (distinctMap.get(type).get(k).size() == 0)
+                distinctMap.get(type).remove(k);
+        }));
+    }
+
+    public void addUnique(FilterType type, Map<FilterKey, FilterEntry> entries) {
+        if (!uniqueMap.containsKey(type))
+            uniqueMap.put(type, new TreeMap<>());
+        uniqueMap.get(type).putAll(entries);
+    }
+
+    public void addDistinct(FilterType type, Map<FilterKey, List<FilterEntry>> entries) {
+        if (!distinctMap.containsKey(type))
+            distinctMap.put(type, new TreeMap<>());
+        entries.forEach((key, values) -> addDistinct(type, key, values));
+    }
+
+    public void addDistinct(FilterType type, FilterKey key, List<FilterEntry> entries) {
+        if (!distinctMap.containsKey(type))
+            distinctMap.put(type, new TreeMap<>());
+        if (!distinctMap.get(type).containsKey(key))
+            distinctMap.get(type).put(key, new LinkedList<>());
+        distinctMap.get(type).get(key).addAll(entries);
+    }
 }
