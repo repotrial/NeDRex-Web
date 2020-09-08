@@ -1,0 +1,3 @@
+- Disease.json: displaynames missing
+- Protein.json: taxid sometimes '-1'
+- Format: 

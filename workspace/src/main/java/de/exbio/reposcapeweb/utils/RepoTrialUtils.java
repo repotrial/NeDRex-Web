@@ -14,11 +14,8 @@ public class RepoTrialUtils {
 
     public static HashMap<String, String> getAttributes(String content) {
         HashMap<String, String> map = new HashMap<>();
-        System.out.println(content);
         StringUtils.split(content, ",\"").forEach(vals -> {
-            System.out.println(vals);
             LinkedList<String> kv = StringUtils.split(vals, ":");
-            System.out.println(kv);
             map.put(StringUtils.split(kv.get(0), "\"").get(1), kv.get(1).charAt(0) == '"' ? StringUtils.split(kv.get(1), "\"").get(1) : kv.get(1));
         });
         return map;
@@ -42,7 +39,7 @@ public class RepoTrialUtils {
     public static void writeNodeMap(File f, HashMap<Integer, String> idToDomainMap) {
         try {
             BufferedWriter bw = new BufferedWriter(new FileWriter(f));
-            bw.write("#id\tprimaryDomainId");
+            bw.write("#id\tprimaryDomainId\n");
             idToDomainMap.forEach((k, v) -> {
                 try {
                     bw.write(k + "\t" + v + "\n");
@@ -50,7 +47,7 @@ public class RepoTrialUtils {
                     e.printStackTrace();
                 }
             });
-
+            bw.close();
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -26,7 +26,7 @@ public class FilterKey implements Comparable<FilterKey> {
     @Override
     public int compareTo(FilterKey other) {
         if (this.equals(other))
-            return 1;
+            return 0;
         return this.key.compareTo(other.key);
     }
 

@@ -13,6 +13,7 @@ import de.exbio.reposcapeweb.db.io.ImportService;
 import de.exbio.reposcapeweb.db.io.Node;
 import de.exbio.reposcapeweb.db.services.edges.*;
 import de.exbio.reposcapeweb.db.services.nodes.*;
+import de.exbio.reposcapeweb.filter.FilterService;
 import de.exbio.reposcapeweb.utils.FileUtils;
 import de.exbio.reposcapeweb.utils.ReaderUtils;
 import de.exbio.reposcapeweb.utils.RepoTrialUtils;
@@ -46,6 +47,7 @@ public class UpdateService {
     private final ImportService importService;
     private final DbCommunicationService dbCommunication;
     private final DataSource dataSource;
+    private final FilterService filterService;
 
     private final DisorderService disorderService;
     private final DrugService drugService;
@@ -69,6 +71,7 @@ public class UpdateService {
                          ImportService importService,
                          DbCommunicationService dbCommunicationService,
                          DataSource dataSource,
+                         FilterService filterServic,
                          DrugService drugService,
                          PathwayService pathwayService,
                          DisorderService disorderService,
@@ -88,6 +91,7 @@ public class UpdateService {
         this.importService = importService;
         this.dbCommunication = dbCommunicationService;
         this.dataSource = dataSource;
+        this.filterService = filterServic;
         this.drugService = drugService;
         this.pathwayService = pathwayService;
         this.disorderService = disorderService;
@@ -284,6 +288,9 @@ public class UpdateService {
 
     private void importRepoTrialNodes(HashMap<String, de.exbio.reposcapeweb.db.io.Collection> collections) {
         File nodeCacheDir = new File(env.getProperty("path.db.cache") + "nodes");
+        nodeCacheDir.mkdirs();
+        File filterCacheDir = new File(env.getProperty("path.db.cache") + "filters");
+        filterCacheDir.mkdirs();
         collections.forEach((k, c) -> {
             if (!(c instanceof Node))
                 return;
@@ -295,31 +302,36 @@ public class UpdateService {
                     case "drug": {
                         if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, Drug.attributes))
                             updateSuccessful = drugService.submitUpdates(runNodeUpdates(Drug.class, c));
-                        RepoTrialUtils.writeNodeMap(new File(nodeCacheDir, k+".map"), drugService.getIdToDomainMap());
+                        RepoTrialUtils.writeNodeMap(new File(nodeCacheDir, k + ".map"), drugService.getIdToDomainMap());
+                        filterService.writeToFile(drugService.getFilter(), new File(filterCacheDir, k));
                         break;
                     }
                     case "pathway": {
                         if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, Pathway.attributes))
                             updateSuccessful = pathwayService.submitUpdates(runNodeUpdates(Pathway.class, c));
-                        RepoTrialUtils.writeNodeMap(new File(nodeCacheDir, k+".map"), pathwayService.getIdToDomainMap());
+                        RepoTrialUtils.writeNodeMap(new File(nodeCacheDir, k + ".map"), pathwayService.getIdToDomainMap());
+                        filterService.writeToFile(pathwayService.getFilter(), new File(filterCacheDir, k));
                         break;
                     }
                     case "disorder": {
                         if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, Disorder.attributes))
                             updateSuccessful = disorderService.submitUpdates(runNodeUpdates(Disorder.class, c));
-                        RepoTrialUtils.writeNodeMap(new File(nodeCacheDir, k+".map"), disorderService.getIdToDomainMap());
+                        RepoTrialUtils.writeNodeMap(new File(nodeCacheDir, k + ".map"), disorderService.getIdToDomainMap());
+                        filterService.writeToFile(disorderService.getFilter(), new File(filterCacheDir, k));
                         break;
                     }
                     case "gene": {
                         if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, Gene.attributes))
                             updateSuccessful = geneService.submitUpdates(runNodeUpdates(Gene.class, c));
-                        RepoTrialUtils.writeNodeMap(new File(nodeCacheDir, k+".map"), geneService.getIdToDomainMap());
+                        RepoTrialUtils.writeNodeMap(new File(nodeCacheDir, k + ".map"), geneService.getIdToDomainMap());
+                        filterService.writeToFile(geneService.getFilter(), new File(filterCacheDir, k));
                         break;
                     }
                     case "protein": {
                         if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, Protein.attributes))
                             updateSuccessful = proteinService.submitUpdates(runNodeUpdates(Protein.class, c));
-                        RepoTrialUtils.writeNodeMap(new File(nodeCacheDir, k+".map"), proteinService.getIdToDomainMap());
+                        RepoTrialUtils.writeNodeMap(new File(nodeCacheDir, k + ".map"), proteinService.getIdToDomainMap());
+                        filterService.writeToFile(proteinService.getFilter(), new File(filterCacheDir, k));
                         break;
                     }
                 }

@@ -4,6 +4,7 @@ import de.exbio.reposcapeweb.db.entities.nodes.Protein;
 import de.exbio.reposcapeweb.db.repositories.nodes.ProteinRepository;
 import de.exbio.reposcapeweb.db.services.NodeService;
 import de.exbio.reposcapeweb.db.updates.UpdateOperation;
+import de.exbio.reposcapeweb.filter.NodeFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,7 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.stream.Collectors;
 
 @Service
 public class ProteinService extends NodeService {
@@ -22,9 +24,12 @@ public class ProteinService extends NodeService {
     private HashMap<Integer, String> idToDomainMap = new HashMap<>();
     private HashMap<String, Integer> domainToIdMap = new HashMap<>();
 
+    private NodeFilter allFilter;
+
     @Autowired
     public ProteinService(ProteinRepository proteinRepository) {
         this.proteinRepository = proteinRepository;
+        allFilter = new NodeFilter();
     }
 
     public boolean submitUpdates(EnumMap<UpdateOperation, HashMap<String, Protein>> updates) {
@@ -36,6 +41,7 @@ public class ProteinService extends NodeService {
                 idToDomainMap.remove(d.getId());
                 domainToIdMap.remove(d.getPrimaryDomainId());
             });
+            allFilter.removeByNodeIds(updates.get(UpdateOperation.Deletion).values().stream().map(Protein::getId).collect(Collectors.toSet()));
         }
 
         LinkedList<Protein> toSave = new LinkedList(updates.get(UpdateOperation.Insertion).values());
@@ -51,6 +57,7 @@ public class ProteinService extends NodeService {
         proteinRepository.saveAll(toSave).forEach(d -> {
             idToDomainMap.put(d.getId(), d.getPrimaryDomainId());
             domainToIdMap.put(d.getPrimaryDomainId(), d.getId());
+            allFilter.add(d.toDistinctFilter(),d.toUniqueFilter());
         });
         log.debug("Updated protein table: " + insertCount + " Inserts, " + (updates.containsKey(UpdateOperation.Alteration) ? updates.get(UpdateOperation.Alteration).size() : 0) + " Changes, " + (updates.containsKey(UpdateOperation.Deletion) ? updates.get(UpdateOperation.Deletion).size() : 0) + " Deletions identified!");
         return true;
@@ -67,5 +74,13 @@ public class ProteinService extends NodeService {
 
     public HashMap<String, Integer> getDomainToIdMap() {
         return domainToIdMap;
+    }
+
+    public NodeFilter getFilter(){
+        return allFilter;
+    }
+
+    public void setFilter(NodeFilter nf){
+        this.allFilter = nf;
     }
 }

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import de.exbio.reposcapeweb.db.entities.RepoTrialNode;
 import de.exbio.reposcapeweb.filter.FilterEntry;
 import de.exbio.reposcapeweb.filter.FilterKey;
+import de.exbio.reposcapeweb.filter.FilterType;
 import de.exbio.reposcapeweb.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,11 +29,14 @@ public class Drug extends RepoTrialNode {
     @JsonIgnore
     public final static HashSet<String> attributes = new HashSet<>(Arrays.asList("molecularFormula", "displayName", "inchi", "type", "domainIds", "primaryDomainId", "smiles", "casNumber", "drugCategories", "drugGroups", "_cls", "sequences", "iupacName", "synonyms", "primaryDataset", "indication", "allDatasets", "description"));
 
+    @Column(nullable = false)
     private String primaryDomainId;
     private String domainIds;
+    @Column(nullable = false)
     private String displayName;
     @Column(columnDefinition = "TEXT")
     private String synonyms;
+    @Column(nullable = false)
     private DrugType type;
     @Column(columnDefinition = "TEXT")
     private String drugCategories;
@@ -84,11 +88,12 @@ public class Drug extends RepoTrialNode {
 
     @JsonGetter
     public String get_cls() {
-        return "Drug."+type.name();
+        return "Drug." + type.name();
     }
 
     @JsonSetter
-    public void set_cls(String _cls){}
+    public void set_cls(String _cls) {
+    }
 
     public List<String> getSynonyms() {
         return StringUtils.stringToList(synonyms);
@@ -218,18 +223,68 @@ public class Drug extends RepoTrialNode {
         return getPrimaryId();
     }
 
-
     @Override
-    public Map<FilterKey, FilterEntry> toFilter() {
-        //TODO finish
-        HashMap<FilterKey, FilterEntry> map = new HashMap<>();
+    public EnumMap<FilterType, Map<FilterKey, FilterEntry>> toUniqueFilter() {
+        EnumMap<FilterType, Map<FilterKey, FilterEntry>> map = new EnumMap<>(FilterType.class);
 
-//        map.put(new FilterKey(displayName), new FilterEntry(displayName, FilterEntry.FilterTypes.NAME, id));
-//
-//        FilterContainer.builder(getDomainIds(), new FilterEntry(displayName, FilterEntry.FilterTypes.ALTERNATIVE, id), map);
-//        FilterContainer.builder(getSynonyms().stream().filter(f -> !f.equals(primaryDomainId)).collect(Collectors.toSet()), new FilterEntry(displayName, FilterEntry.FilterTypes.ALIAS, id), map);
+        FilterEntry ids = new FilterEntry(displayName, FilterType.DOMAIN_ID, id);
+
+        map.put(FilterType.DOMAIN_ID, new HashMap<>());
+
+        if (!getDomainIds().contains(primaryDomainId))
+            try {
+                primaryDomainId.charAt(0);
+                map.get(FilterType.DOMAIN_ID).put(new FilterKey(primaryDomainId), ids);
+            } catch (NullPointerException | IndexOutOfBoundsException ignore) {
+            }
+
+        getDomainIds().forEach(id -> map.get(FilterType.DOMAIN_ID).put(new FilterKey(id), ids));
+
+        map.put(FilterType.DISPLAY_NAME, new HashMap<>());
+        map.get(FilterType.DISPLAY_NAME).put(new FilterKey(displayName), new FilterEntry(displayName, FilterType.DISPLAY_NAME, id));
+
+
+        FilterEntry syns = new FilterEntry(displayName, FilterType.SYNONYM, id);
+        map.put(FilterType.SYNONYM, new HashMap<>());
+        getSynonyms().forEach(syn -> {
+            if ( !displayName.equals(syn))
+                map.get(FilterType.SYNONYM).put(new FilterKey(syn), syns);
+        });
+
+        try {
+            iupacName.charAt(0);
+            map.put(FilterType.IUPAC, new HashMap<>());
+            map.get(FilterType.IUPAC).put(new FilterKey(iupacName), new FilterEntry(displayName, FilterType.IUPAC, id));
+        } catch (NullPointerException | IndexOutOfBoundsException ignore) {
+        }
 
         return map;
     }
+
+    @Override
+    public EnumMap<FilterType, Map<FilterKey, FilterEntry>> toDistinctFilter() {
+        EnumMap<FilterType, Map<FilterKey, FilterEntry>> map = new EnumMap<>(FilterType.class);
+
+        if (getDrugCategories().size() > 0) {
+            map.put(FilterType.CATEGORY, new TreeMap<>());
+            FilterEntry catEntry = new FilterEntry(displayName, FilterType.CATEGORY, id);
+            getDrugCategories().forEach(cat -> {
+                map.get(FilterType.CATEGORY).put(new FilterKey(cat), catEntry);
+            });
+        }
+
+        if (getDrugGroups().size() > 0) {
+            map.put(FilterType.GROUP, new TreeMap<>());
+            FilterEntry catEntry = new FilterEntry(displayName, FilterType.GROUP, id);
+            getDrugGroups().forEach(g -> {
+                map.get(FilterType.GROUP).put(new FilterKey(g), catEntry);
+            });
+        }
+
+        map.put(FilterType.TYPE, new TreeMap<>());
+        map.get(FilterType.TYPE).put(new FilterKey(type.name()), new FilterEntry(displayName, FilterType.TYPE, id));
+        return map;
+    }
+
 }
 

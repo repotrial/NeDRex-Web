@@ -1,9 +1,11 @@
 package de.exbio.reposcapeweb.db.services.nodes;
 
+import de.exbio.reposcapeweb.db.entities.nodes.Disorder;
 import de.exbio.reposcapeweb.db.entities.nodes.Drug;
 import de.exbio.reposcapeweb.db.repositories.nodes.DrugRepository;
 import de.exbio.reposcapeweb.db.services.NodeService;
 import de.exbio.reposcapeweb.db.updates.UpdateOperation;
+import de.exbio.reposcapeweb.filter.NodeFilter;
 import de.exbio.reposcapeweb.utils.ReaderUtils;
 import de.exbio.reposcapeweb.utils.RepoTrialUtils;
 import org.slf4j.Logger;
@@ -13,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class DrugService extends NodeService {
@@ -24,9 +27,12 @@ public class DrugService extends NodeService {
     private HashMap<Integer, String> idToDomainMap = new HashMap<>();
     private HashMap<String, Integer> domainToIdMap = new HashMap<>();
 
+    private NodeFilter allFilter;
+
     @Autowired
     public DrugService(DrugRepository drugRepository) {
         this.drugRepository = drugRepository;
+        allFilter = new NodeFilter();
     }
 
     public boolean submitUpdates(EnumMap<UpdateOperation, HashMap<String, Drug>> updates) {
@@ -39,6 +45,7 @@ public class DrugService extends NodeService {
                 idToDomainMap.remove(d.getId());
                 domainToIdMap.remove(d.getPrimaryDomainId());
             });
+            allFilter.removeByNodeIds(updates.get(UpdateOperation.Deletion).values().stream().map(Drug::getId).collect(Collectors.toSet()));
 
         }
 
@@ -55,6 +62,7 @@ public class DrugService extends NodeService {
         drugRepository.saveAll(toSave).forEach(d -> {
             idToDomainMap.put(d.getId(), d.getPrimaryDomainId());
             domainToIdMap.put(d.getPrimaryDomainId(), d.getId());
+            allFilter.add(d.toDistinctFilter(),d.toUniqueFilter());
         });
         log.debug("Updated drug table: " + insertCount + " Inserts, " + (updates.containsKey(UpdateOperation.Alteration) ? updates.get(UpdateOperation.Alteration).size() : 0) + " Changes, " + (updates.containsKey(UpdateOperation.Deletion) ? updates.get(UpdateOperation.Deletion).size() : 0) + " Deletions identified!");
         return true;
@@ -72,4 +80,11 @@ public class DrugService extends NodeService {
         return domainToIdMap;
     }
 
+    public NodeFilter getFilter(){
+        return allFilter;
+    }
+
+    public void setFilter(NodeFilter nf){
+        this.allFilter = nf;
+    }
 }

@@ -2,6 +2,7 @@ package de.exbio.reposcapeweb.db.io;
 
 import de.exbio.reposcapeweb.db.DbCommunicationService;
 import de.exbio.reposcapeweb.db.services.nodes.*;
+import de.exbio.reposcapeweb.filter.FilterService;
 import de.exbio.reposcapeweb.utils.ReaderUtils;
 import de.exbio.reposcapeweb.utils.StringUtils;
 import org.slf4j.Logger;
@@ -30,6 +31,7 @@ public class ImportService {
     private final GeneService geneService;
     private final PathwayService pathwayService;
     private final ProteinService proteinService;
+    private final FilterService filterService;
 
     @Autowired
     public ImportService(Environment env,
@@ -38,24 +40,27 @@ public class ImportService {
                          PathwayService pathwayService,
                          DisorderService disorderService,
                          GeneService geneService,
+                         FilterService filterService,
                          ProteinService proteinService) {
         this.env = env;
         this.dbCommunication = dbCommunication;
         this.drugService = drugService;
+        this.filterService=filterService;
         this.pathwayService = pathwayService;
         this.disorderService = disorderService;
         this.geneService = geneService;
         this.proteinService = proteinService;
     }
 
-    public void importNodeMaps() {
-        log.info("NodeIdMap import: Start!");
+    public void importNodeData() {
+        log.info("NodeDataMap import: Start!");
         HashMap<String, Collection> collections = new HashMap<>();
         getCollections(collections);
-
+        log.info("Importing nodeIDs");
         File cacheDir = new File(env.getProperty("path.db.cache"));
         importIdMaps(collections, cacheDir, false);
         log.info("NodeIdMap import: Done!");
+        importNodeFilters(collections, new File(cacheDir,"filters"));
     }
 
     private void prepareCollections(String file, HashMap<String, de.exbio.reposcapeweb.db.io.Collection> collections, boolean typeNode) {
@@ -98,7 +103,6 @@ public class ImportService {
             while ((line = br.readLine()) != null) {
                 if (line.charAt(0) == '#')
                     continue;
-                ;
                 ArrayList<String> entry = StringUtils.split(line, '\t', 2);
                 int id = Integer.parseInt(entry.get(0));
                 idToDomain.put(id, entry.get(1));
@@ -144,4 +148,34 @@ public class ImportService {
 
     }
 
+    public void importNodeFilters(HashMap<String, Collection> collections, File cacheDir) {
+        collections.forEach((k, c) -> {
+            if (!(c instanceof Node))
+                return;
+
+            switch (k) {
+                case "drug": {
+                    drugService.setFilter(filterService.readFromFiles(new File(cacheDir,k)));
+                    break;
+                }
+                case "pathway": {
+                    pathwayService.setFilter(filterService.readFromFiles(new File(cacheDir,k)));
+                    break;
+                }
+                case "disorder": {
+                    disorderService.setFilter(filterService.readFromFiles(new File(cacheDir,k)));
+                    break;
+                }
+                case "gene": {
+                    geneService.setFilter(filterService.readFromFiles(new File(cacheDir,k)));
+                    break;
+                }
+                case "protein": {
+                    proteinService.setFilter(filterService.readFromFiles(new File(cacheDir,k)));
+                    break;
+                }
+            }
+        });
+
+    }
 }

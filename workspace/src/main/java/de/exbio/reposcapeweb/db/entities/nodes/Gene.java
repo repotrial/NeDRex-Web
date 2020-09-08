@@ -6,15 +6,13 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import de.exbio.reposcapeweb.db.entities.RepoTrialNode;
 import de.exbio.reposcapeweb.filter.FilterEntry;
 import de.exbio.reposcapeweb.filter.FilterKey;
+import de.exbio.reposcapeweb.filter.FilterType;
 import de.exbio.reposcapeweb.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.persistence.*;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Entity
 @Table(name = "genes")
@@ -33,8 +31,10 @@ public class Gene extends RepoTrialNode {
     @JsonIgnore
     public static final HashSet<String> attributes = new HashSet<>(Arrays.asList("displayName", "type", "domainIds", "primaryDomainId", "geneType", "symbols", "approvedSymbol", "synonyms", "description", "chromosome", "mapLocation"));
 
+    @Column(nullable = false)
     private String primaryDomainId;
     private String domainIds;
+    @Column(nullable = false)
     private String displayName;
     @Column(columnDefinition = "TEXT")
     private String synonyms;
@@ -145,8 +145,47 @@ public class Gene extends RepoTrialNode {
     }
 
     @Override
-    public Map<FilterKey, FilterEntry> toFilter() {
-        //TODO write
-        return null;
+    public EnumMap<FilterType, Map<FilterKey, FilterEntry>> toUniqueFilter() {
+        EnumMap<FilterType, Map<FilterKey, FilterEntry>> map = new EnumMap<>(FilterType.class);
+
+        FilterEntry ids = new FilterEntry(displayName, FilterType.DOMAIN_ID, id);
+
+
+        map.put(FilterType.DOMAIN_ID, new HashMap<>());
+
+        if (!getDomainIds().contains(primaryDomainId))
+            try {
+                primaryDomainId.charAt(0);
+                map.get(FilterType.DOMAIN_ID).put(new FilterKey(primaryDomainId), ids);
+            } catch (NullPointerException | IndexOutOfBoundsException ignore) {
+            }
+
+        getDomainIds().forEach(id -> map.get(FilterType.DOMAIN_ID).put(new FilterKey(id), ids));
+
+        map.put(FilterType.DISPLAY_NAME, new HashMap<>());
+        map.get(FilterType.DISPLAY_NAME).put(new FilterKey(displayName), new FilterEntry(displayName, FilterType.DISPLAY_NAME, id));
+
+        if(!displayName.equals(approvedSymbol) & !getSymbols().contains(approvedSymbol)){
+            map.put(FilterType.SYMBOLS, new HashMap<>());
+            FilterEntry symbolEntry = new FilterEntry(displayName,FilterType.SYMBOLS,id);
+            getSymbols().stream().filter(s->!s.equals(displayName) | !s.equals(approvedSymbol)).forEach(s->map.get(FilterType.SYMBOLS).put(new FilterKey(s),symbolEntry));
+        }
+
+
+        FilterEntry syns = new FilterEntry(displayName, FilterType.SYNONYM, id);
+        map.put(FilterType.SYNONYM, new HashMap<>());
+        getSynonyms().forEach(syn -> {
+            if ( !displayName.equals(syn))
+                map.get(FilterType.SYNONYM).put(new FilterKey(syn), syns);
+        });
+
+
+        return map;
     }
+
+    @Override
+    public EnumMap<FilterType, Map<FilterKey, FilterEntry>> toDistinctFilter() {
+        return new EnumMap<>(FilterType.class);
+    }
+
 }

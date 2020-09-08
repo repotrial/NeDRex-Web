@@ -6,15 +6,13 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import de.exbio.reposcapeweb.db.entities.RepoTrialNode;
 import de.exbio.reposcapeweb.filter.FilterEntry;
 import de.exbio.reposcapeweb.filter.FilterKey;
+import de.exbio.reposcapeweb.filter.FilterType;
 import de.exbio.reposcapeweb.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.persistence.*;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Map;
+import java.util.*;
 
 @Entity
 @Table(name = "pathways", indexes = @Index(name = "domainId", columnList = "primaryDomainId", unique = true))
@@ -31,10 +29,10 @@ public class Pathway extends RepoTrialNode {
     @JsonIgnore
     public static final HashSet<String> attributes = new HashSet<>(Arrays.asList("displayName", "type", "domainIds", "primaryDomainId", "species"));
 
+    @Column(nullable = false)
     private String primaryDomainId;
-
+    @Column(nullable = false)
     private String displayName;
-
     private String domainIds;
 
     public Pathway() {
@@ -101,10 +99,33 @@ public class Pathway extends RepoTrialNode {
     }
 
     @Override
-    public Map<FilterKey, FilterEntry> toFilter() {
-        //TODO implement
-        return null;
+    public EnumMap<FilterType, Map<FilterKey, FilterEntry>> toUniqueFilter() {
+        EnumMap<FilterType, Map<FilterKey, FilterEntry>> map = new EnumMap<>(FilterType.class);
+
+        FilterEntry ids = new FilterEntry(displayName, FilterType.DOMAIN_ID, id);
+
+
+        map.put(FilterType.DOMAIN_ID, new HashMap<>());
+
+        if (!getDomainIds().contains(primaryDomainId))
+            try {
+                primaryDomainId.charAt(0);
+                map.get(FilterType.DOMAIN_ID).put(new FilterKey(primaryDomainId), ids);
+            } catch (NullPointerException | IndexOutOfBoundsException ignore) {
+            }
+
+        getDomainIds().forEach(id -> map.get(FilterType.DOMAIN_ID).put(new FilterKey(id), ids));
+
+        map.put(FilterType.DISPLAY_NAME, new HashMap<>());
+        map.get(FilterType.DISPLAY_NAME).put(new FilterKey(displayName), new FilterEntry(displayName, FilterType.DISPLAY_NAME, id));
+
+
+        return map;
     }
 
+    @Override
+    public EnumMap<FilterType, Map<FilterKey, FilterEntry>> toDistinctFilter() {
+        return new EnumMap<>(FilterType.class);
+    }
 
 }

@@ -5,11 +5,11 @@ import java.util.Objects;
 public class FilterEntry implements Comparable<FilterEntry> {
 
     private String name;
-    private FilterTypes type;
+    private FilterType type;
     private int nodeId;
 
 
-    public FilterEntry(String name, FilterTypes type, int node) {
+    public FilterEntry(String name, FilterType type, int node) {
         this.name = name;
         this.type = type;
         this.nodeId = node;
@@ -24,11 +24,11 @@ public class FilterEntry implements Comparable<FilterEntry> {
         this.name = name;
     }
 
-    public FilterTypes getType() {
+    public FilterType getType() {
         return type;
     }
 
-    public void setType(FilterTypes type) {
+    public void setType(FilterType type) {
         this.type = type;
     }
 

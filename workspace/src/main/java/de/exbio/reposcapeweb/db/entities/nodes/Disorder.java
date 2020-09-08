@@ -6,13 +6,14 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import de.exbio.reposcapeweb.db.entities.RepoTrialNode;
 import de.exbio.reposcapeweb.filter.FilterEntry;
 import de.exbio.reposcapeweb.filter.FilterKey;
+import de.exbio.reposcapeweb.filter.FilterType;
 import de.exbio.reposcapeweb.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.lang.NonNull;
 
 import javax.persistence.*;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "disorders")
@@ -31,9 +32,11 @@ public class Disorder extends RepoTrialNode {
     public static final HashSet<String> attributes = new HashSet<>(Arrays.asList("displayName", "synonyms", "type", "domainIds", "primaryDomainId", "description", "icd10"));
 
 
+    @Column(nullable = false)
     private String primaryDomainId;
     @Column(columnDefinition = "TEXT")
     private String domainIds;
+    @Column(nullable = false)
     private String displayName;
     @Column(columnDefinition = "TEXT")
     private String synonyms;
@@ -56,6 +59,8 @@ public class Disorder extends RepoTrialNode {
 
     @JsonSetter
     public void setDomainIds(List<String> domainIds) {
+        //TODO cache lists
+
         this.domainIds = StringUtils.listToString(domainIds);
     }
 
@@ -96,6 +101,13 @@ public class Disorder extends RepoTrialNode {
     public void setType(String type) {
     }
 
+    @JsonSetter
+    public void setPrimaryDomainId(String domainId) {
+        this.primaryDomainId = domainId;
+        if (this.displayName == null)
+            this.displayName = domainId;
+    }
+
     public void setValues(Disorder other) {
         this.icd10 = other.icd10;
         this.synonyms = other.synonyms;
@@ -121,14 +133,46 @@ public class Disorder extends RepoTrialNode {
     }
 
     @Override
-    public Map<FilterKey, FilterEntry> toFilter() {
-        HashMap<FilterKey, FilterEntry> map = new HashMap<>();
+    public EnumMap<FilterType, Map<FilterKey, FilterEntry>> toDistinctFilter() {
+        EnumMap<FilterType, Map<FilterKey, FilterEntry>> map = new EnumMap<>(FilterType.class);
 
-//        map.put(new FilterKey(displayName), new FilterEntry(displayName, FilterEntry.FilterTypes.NAME, id));
-//
-//        FilterContainer.builder(getDomainIds(), new FilterEntry(displayName, FilterEntry.FilterTypes.ALTERNATIVE, id), map);
-//        FilterContainer.builder(getSynonyms().stream().filter(f -> !f.equals(primaryDomainId)).collect(Collectors.toSet()), new FilterEntry(displayName, FilterEntry.FilterTypes.ALIAS, id), map);
+        //TODO add disorder groups/parents
 
+        return map;
+    }
+
+    @Override
+    public EnumMap<FilterType, Map<FilterKey, FilterEntry>> toUniqueFilter() {
+        EnumMap<FilterType, Map<FilterKey, FilterEntry>> map = new EnumMap<>(FilterType.class);
+
+        FilterEntry ids = new FilterEntry(displayName, FilterType.DOMAIN_ID, id);
+
+        map.put(FilterType.DOMAIN_ID, new HashMap<>());
+
+        if (!getDomainIds().contains(primaryDomainId))
+            try {
+                primaryDomainId.charAt(0);
+                map.get(FilterType.DOMAIN_ID).put(new FilterKey(primaryDomainId), ids);
+            } catch (NullPointerException | IndexOutOfBoundsException ignore) {
+            }
+        getDomainIds().forEach(id -> map.get(FilterType.DOMAIN_ID).put(new FilterKey(id), ids));
+
+        map.put(FilterType.ICD10, new HashMap<>());
+        map.get(FilterType.ICD10).put(new FilterKey(icd10), new FilterEntry(displayName, FilterType.ICD10, id));
+
+        boolean notNull = false;
+        map.put(FilterType.DISPLAY_NAME, new HashMap<>());
+        map.get(FilterType.DISPLAY_NAME).put(new FilterKey(displayName), new FilterEntry(displayName, FilterType.DISPLAY_NAME, id));
+
+
+        if (getSynonyms().size() > 0) {
+            FilterEntry syns = new FilterEntry(displayName, FilterType.SYNONYM, id);
+            map.put(FilterType.SYNONYM, new HashMap<>());
+            getSynonyms().forEach(syn -> {
+                if (!displayName.equals(syn))
+                    map.get(FilterType.SYNONYM).put(new FilterKey(syn), syns);
+            });
+        }
         return map;
     }
 }

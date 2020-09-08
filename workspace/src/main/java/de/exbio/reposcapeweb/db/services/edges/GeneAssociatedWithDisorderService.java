@@ -85,10 +85,8 @@ public class GeneAssociatedWithDisorderService {
     public boolean generateGeneEntries() {
         log.debug("Generating entries for protein_associated_with_disorder from gene_associated_with_disorder(_protein).");
         try (Connection con = dataSource.getConnection()) {
-            if (generationPs == null) {
-                clearPs = con.prepareCall(clearQuery);
-                generationPs = con.prepareStatement(generationQuery);
-            }
+            clearPs = con.prepareStatement(clearQuery);
+            generationPs = con.prepareStatement(generationQuery);
             clearPs.executeUpdate();
             generationPs.executeUpdate();
         } catch (SQLException throwables) {

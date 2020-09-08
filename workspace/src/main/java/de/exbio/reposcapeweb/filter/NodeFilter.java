@@ -1,5 +1,7 @@
 package de.exbio.reposcapeweb.filter;
 
+import de.exbio.reposcapeweb.db.entities.RepoTrialNode;
+
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
@@ -30,16 +32,12 @@ public class NodeFilter {
     private NodeFilter filteredByIds(Collection<Integer> ids) {
         NodeFilter filtered = new NodeFilter();
 
-        distinctMap.forEach((type, keys) -> {
-            keys.forEach((key, entries) -> {
-                List<FilterEntry> es = entries.stream().filter(e -> ids.contains(e.getNodeId())).collect(Collectors.toList());
-                if (es.size() > 0)
-                    filtered.addDistinctMap(type, key, es);
-            });
-        });
-        uniqueMap.forEach((type, keys) -> {
-            keys.entrySet().stream().filter(e -> ids.contains(e.getValue().getNodeId())).forEach(e -> filtered.addUniqueMap(type, e.getKey(), e.getValue()));
-        });
+        distinctMap.forEach((type, keys) -> keys.forEach((key, entries) -> {
+            List<FilterEntry> es = entries.stream().filter(e -> ids.contains(e.getNodeId())).collect(Collectors.toList());
+            if (es.size() > 0)
+                filtered.addDistinctMap(type, key, es);
+        }));
+        uniqueMap.forEach((type, keys) -> keys.entrySet().stream().filter(e -> ids.contains(e.getValue().getNodeId())).forEach(e -> filtered.addUniqueMap(type, e.getKey(), e.getValue())));
         return filtered;
     }
 
@@ -233,17 +231,45 @@ public class NodeFilter {
         uniqueMap.get(type).putAll(entries);
     }
 
-    public void addDistinct(FilterType type, Map<FilterKey, List<FilterEntry>> entries) {
+    public void addUnique(FilterType type, String key, String name, int nodeId) {
+        if (!uniqueMap.containsKey(type))
+            uniqueMap.put(type, new TreeMap<>());
+        uniqueMap.get(type).put(new FilterKey(key), new FilterEntry(name, type, nodeId));
+    }
+
+    public void addDistinct(FilterType type, Map<FilterKey, FilterEntry> entries) {
         if (!distinctMap.containsKey(type))
             distinctMap.put(type, new TreeMap<>());
         entries.forEach((key, values) -> addDistinct(type, key, values));
     }
 
-    public void addDistinct(FilterType type, FilterKey key, List<FilterEntry> entries) {
+    public void addDistinct(FilterType type, FilterKey key, FilterEntry entry) {
         if (!distinctMap.containsKey(type))
             distinctMap.put(type, new TreeMap<>());
         if (!distinctMap.get(type).containsKey(key))
-            distinctMap.get(type).put(key, new LinkedList<>());
-        distinctMap.get(type).get(key).addAll(entries);
+            distinctMap.get(type).put(key, new LinkedList<>(Collections.singletonList(entry)));
+        else
+            distinctMap.get(type).get(key).add(entry);
+    }
+
+    public void addDistinct(FilterType type, String key, String name, int nodeId) {
+        if (!distinctMap.containsKey(type))
+            distinctMap.put(type, new TreeMap<>());
+        FilterKey fk = new FilterKey(key);
+        if (!distinctMap.get(type).containsKey(fk))
+            distinctMap.get(type).put(fk, new LinkedList<>());
+        distinctMap.get(type).get(fk).add(new FilterEntry(name, type, nodeId));
+    }
+
+//    public <T extends RepoTrialNode> void add(LinkedList<T> toAdd) {
+//        toAdd.forEach(n -> add(n.toDistinctFilter(), n.toUniqueFilter()));
+//    }
+
+
+    public void add(EnumMap<FilterType, Map<FilterKey, FilterEntry>> toDistinctFilter, EnumMap<FilterType, Map<FilterKey, FilterEntry>> toUniqueFilter) {
+        toUniqueFilter.forEach(this::addUnique);
+        toDistinctFilter.forEach(this::addDistinct);
+
+
     }
 }

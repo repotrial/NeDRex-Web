@@ -4,6 +4,8 @@ import de.exbio.reposcapeweb.db.entities.nodes.Disorder;
 import de.exbio.reposcapeweb.db.repositories.nodes.DisorderRepository;
 import de.exbio.reposcapeweb.db.services.NodeService;
 import de.exbio.reposcapeweb.db.updates.UpdateOperation;
+import de.exbio.reposcapeweb.filter.FilterService;
+import de.exbio.reposcapeweb.filter.NodeFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,18 +15,24 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.stream.Collectors;
 
 @Service
 public class DisorderService extends NodeService {
     private final Logger log = LoggerFactory.getLogger(DrugService.class);
     private final DisorderRepository disorderRepository;
+    private final FilterService filterService;
 
     private HashMap<Integer, String> idToDomainMap = new HashMap<>();
     private HashMap<String, Integer> domainToIdMap = new HashMap<>();
 
+    private NodeFilter allFilter;
+
     @Autowired
-    public DisorderService(DisorderRepository disorderRepository) {
+    public DisorderService(DisorderRepository disorderRepository, FilterService filterService) {
         this.disorderRepository = disorderRepository;
+        this.filterService = filterService;
+        allFilter = new NodeFilter();
     }
 
     public boolean submitUpdates(EnumMap<UpdateOperation, HashMap<String, Disorder>> updates) {
@@ -36,6 +44,7 @@ public class DisorderService extends NodeService {
                 idToDomainMap.remove(d.getId());
                 domainToIdMap.remove(d.getPrimaryDomainId());
             });
+            allFilter.removeByNodeIds(updates.get(UpdateOperation.Deletion).values().stream().map(Disorder::getId).collect(Collectors.toSet()));
         }
         LinkedList<Disorder> toSave = new LinkedList(updates.get(UpdateOperation.Insertion).values());
         int insertCount = toSave.size();
@@ -50,6 +59,7 @@ public class DisorderService extends NodeService {
         disorderRepository.saveAll(toSave).forEach(d -> {
             idToDomainMap.put(d.getId(), d.getPrimaryDomainId());
             domainToIdMap.put(d.getPrimaryDomainId(), d.getId());
+            allFilter.add(d.toDistinctFilter(),d.toUniqueFilter());
         });
         log.debug("Updated disorder table: " + insertCount + " Inserts, " + (updates.containsKey(UpdateOperation.Alteration) ? updates.get(UpdateOperation.Alteration).size() : 0) + " Changes, " + (updates.containsKey(UpdateOperation.Deletion) ? updates.get(UpdateOperation.Deletion).size() : 0) + " Deletions identified!");
         return true;
@@ -65,5 +75,13 @@ public class DisorderService extends NodeService {
 
     public HashMap<String, Integer> getDomainToIdMap() {
         return domainToIdMap;
+    }
+
+    public NodeFilter getFilter() {
+        return allFilter;
+    }
+
+    public void setFilter(NodeFilter nf){
+        this.allFilter = nf;
     }
 }
