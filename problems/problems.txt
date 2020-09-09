@@ -1,3 +1,2 @@
-- Disease.json: displaynames missing
+- Disease.json: bacteria/viruses only primarydomainid
 - Protein.json: taxid sometimes '-1'
-- Format: 
