@@ -10,7 +10,6 @@ import de.exbio.reposcapeweb.filter.FilterType;
 import de.exbio.reposcapeweb.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.lang.NonNull;
 
 import javax.persistence.*;
 import java.util.*;
