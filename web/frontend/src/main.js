@@ -1,15 +1,19 @@
-// The Vue build version to load with the `import` command
-// (runtime-only or standalone) has been set in webpack.base.conf with an alias.
 import Vue from 'vue'
-import App from './App'
-import router from './router'
+import App from './App.vue'
 
-Vue.config.productionTip = false
+import router from  './router'
+import vuetify from './plugins/vuetify'
 
-/* eslint-disable no-new */
+import 'babel-polyfill'
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+import { library } from '@fortawesome/fontawesome-svg-core'
+import { faUserSecret } from '@fortawesome/free-solid-svg-icons'
+library.add(faUserSecret)
+
+Vue.component('font-awesome-icon', FontAwesomeIcon)
+
 new Vue({
-  el: '#app',
   router,
-  components: { App },
-  template: '<App/>'
-})
+  vuetify,
+  render: h => h(App)
+}).$mount("#app")
