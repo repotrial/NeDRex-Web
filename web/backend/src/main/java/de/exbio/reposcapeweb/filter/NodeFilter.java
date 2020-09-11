@@ -269,7 +269,9 @@ public class NodeFilter {
     public void add(EnumMap<FilterType, Map<FilterKey, FilterEntry>> toDistinctFilter, EnumMap<FilterType, Map<FilterKey, FilterEntry>> toUniqueFilter) {
         toUniqueFilter.forEach(this::addUnique);
         toDistinctFilter.forEach(this::addDistinct);
+    }
 
-
+    public int size(){
+        return distinctMap.size()+uniqueMap.size();
     }
 }
