@@ -1,5 +1,6 @@
 package de.exbio.reposcapeweb.db.services.edges;
 
+import de.exbio.reposcapeweb.db.entities.edges.DisorderComorbidWithDisorder;
 import de.exbio.reposcapeweb.db.entities.edges.DisorderIsADisorder;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
 import de.exbio.reposcapeweb.db.repositories.edges.DisorderIsADisorderRepository;
@@ -11,10 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -23,6 +21,8 @@ public class DisorderIsADisorderService {
     private final Logger log = LoggerFactory.getLogger(DisorderIsADisorderService.class);
 
     private final DisorderIsADisorderRepository disorderIsADisorderRepository;
+    private final boolean directed = false;
+    private final HashMap<Integer, HashMap<Integer, Boolean>> edges = new HashMap<>();
 
     private final DisorderService disorderService;
 
@@ -41,6 +41,7 @@ public class DisorderIsADisorderService {
         if (updates.containsKey(UpdateOperation.Deletion))
             disorderIsADisorderRepository.deleteAll(disorderIsADisorderRepository.findDisorderIsADisordersByIdIn(updates.get(UpdateOperation.Deletion).keySet().stream().map(o->(PairId)o).collect(Collectors.toSet())));
 
+
         LinkedList<DisorderIsADisorder> toSave = new LinkedList(updates.get(UpdateOperation.Insertion).values());
         int insertCount = toSave.size();
         if (updates.containsKey(UpdateOperation.Alteration)) {
@@ -54,6 +55,38 @@ public class DisorderIsADisorderService {
         disorderIsADisorderRepository.saveAll(toSave);
         log.debug("Updated disorder_is_a_disorder table: " + insertCount + " Inserts, " + (updates.containsKey(UpdateOperation.Alteration) ? updates.get(UpdateOperation.Alteration).size() : 0) + " Changes, " + (updates.containsKey(UpdateOperation.Deletion) ? updates.get(UpdateOperation.Deletion).size() : 0) + " Deletions identified!");
         return true;
+    }
+
+    public Iterable<DisorderIsADisorder> findAll() {
+        return disorderIsADisorderRepository.findAll();
+    }
+
+    public void importEdges() {
+        findAll().forEach(edge -> {
+            importEdge(edge.getPrimaryIds());
+        });
+    }
+
+    private void importEdge(PairId edge) {
+        if (!edges.containsKey(edge.getId1()))
+            edges.put(edge.getId1(), new HashMap<>());
+        edges.get(edge.getId1()).put(edge.getId2(), true);
+
+        if (!edges.containsKey(edge.getId2()))
+            edges.put(edge.getId2(), new HashMap<>());
+        edges.get(edge.getId2()).put(edge.getId1(), !directed);
+    }
+
+    public boolean isEdge(PairId edge) {
+        return isEdge(edge.getId1(), edge.getId2());
+    }
+
+    public boolean isEdge(int id1, int id2) {
+        try {
+            return edges.get(id1).get(id2);
+        } catch (NullPointerException e) {
+            return false;
+        }
     }
 
 

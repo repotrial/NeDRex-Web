@@ -11,4 +11,5 @@ import java.util.List;
 @Repository
 public interface DisorderComorbidWithDisorderRepository extends CrudRepository<DisorderComorbidWithDisorder, PairId> {
     List<DisorderComorbidWithDisorder> findDisorderComorbidWithDisordersByIdIn(Collection<PairId> list);
+    List<DisorderComorbidWithDisorder> findAll();
 }

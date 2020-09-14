@@ -11,24 +11,23 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-public class DisorderComorbidWithDisorderService{
+public class DisorderComorbidWithDisorderService {
     private final Logger log = LoggerFactory.getLogger(DisorderComorbidWithDisorderService.class);
 
     private final DisorderComorbidWithDisorderRepository disorderComorbidWithDisorderRepository;
 
     private final DisorderService disorderService;
+    private final boolean directed = false;
+    private final HashMap<Integer, HashMap<Integer, Boolean>> edges = new HashMap<>();
 
     @Autowired
-    public DisorderComorbidWithDisorderService(DisorderService disorderService, DisorderComorbidWithDisorderRepository disorderComorbidWithDisorderRepository){
-        this.disorderService=disorderService;
-        this.disorderComorbidWithDisorderRepository=disorderComorbidWithDisorderRepository;
+    public DisorderComorbidWithDisorderService(DisorderService disorderService, DisorderComorbidWithDisorderRepository disorderComorbidWithDisorderRepository) {
+        this.disorderService = disorderService;
+        this.disorderComorbidWithDisorderRepository = disorderComorbidWithDisorderRepository;
     }
 
 
@@ -38,14 +37,14 @@ public class DisorderComorbidWithDisorderService{
             return false;
 
         if (updates.containsKey(UpdateOperation.Deletion))
-            disorderComorbidWithDisorderRepository.deleteAll(disorderComorbidWithDisorderRepository.findDisorderComorbidWithDisordersByIdIn(updates.get(UpdateOperation.Deletion).keySet().stream().map(o->(PairId)o).collect(Collectors.toSet())));
+            disorderComorbidWithDisorderRepository.deleteAll(disorderComorbidWithDisorderRepository.findDisorderComorbidWithDisordersByIdIn(updates.get(UpdateOperation.Deletion).keySet().stream().map(o -> (PairId) o).collect(Collectors.toSet())));
 
         LinkedList<DisorderComorbidWithDisorder> toSave = new LinkedList(updates.get(UpdateOperation.Insertion).values());
         int insertCount = toSave.size();
         if (updates.containsKey(UpdateOperation.Alteration)) {
             HashMap<PairId, DisorderComorbidWithDisorder> toUpdate = updates.get(UpdateOperation.Alteration);
 
-            disorderComorbidWithDisorderRepository.findDisorderComorbidWithDisordersByIdIn(new HashSet<>(toUpdate.keySet().stream().map(o->(PairId)o).collect(Collectors.toSet()))).forEach(d -> {
+            disorderComorbidWithDisorderRepository.findDisorderComorbidWithDisordersByIdIn(new HashSet<>(toUpdate.keySet().stream().map(o -> (PairId) o).collect(Collectors.toSet()))).forEach(d -> {
                 d.setValues(toUpdate.get(d.getPrimaryIds()));
                 toSave.add(d);
             });
@@ -55,8 +54,44 @@ public class DisorderComorbidWithDisorderService{
         return true;
     }
 
+    public List<DisorderComorbidWithDisorder> getEntries(Collection<PairId> toFind) {
+        return disorderComorbidWithDisorderRepository.findDisorderComorbidWithDisordersByIdIn(toFind);
+    }
 
-    public PairId mapIds(Pair<String,String> ids) {
-        return new PairId(disorderService.map(ids.getFirst()),disorderService.map(ids.getSecond()));
+    public List<DisorderComorbidWithDisorder> findAll() {
+        return disorderComorbidWithDisorderRepository.findAll();
+    }
+
+    public void importEdges() {
+        findAll().forEach(edge -> {
+            importEdge(edge.getPrimaryIds());
+        });
+    }
+
+    private void importEdge(PairId edge) {
+        if (!edges.containsKey(edge.getId1()))
+            edges.put(edge.getId1(), new HashMap<>());
+        edges.get(edge.getId1()).put(edge.getId2(), true);
+
+        if (!edges.containsKey(edge.getId2()))
+            edges.put(edge.getId2(), new HashMap<>());
+        edges.get(edge.getId2()).put(edge.getId1(), !directed);
+    }
+
+    public boolean isEdge(PairId edge) {
+        return isEdge(edge.getId1(), edge.getId2());
+    }
+
+    public boolean isEdge(int id1, int id2) {
+        try {
+            return edges.get(id1).get(id2);
+        } catch (NullPointerException e) {
+            return false;
+        }
+    }
+
+
+    public PairId mapIds(Pair<String, String> ids) {
+        return new PairId(disorderService.map(ids.getFirst()), disorderService.map(ids.getSecond()));
     }
 }

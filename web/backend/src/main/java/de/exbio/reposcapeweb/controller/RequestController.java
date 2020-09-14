@@ -50,7 +50,7 @@ public class RequestController {
         log.info("got request on exampleGraph");
         try {
             String out = objectMapper.writeValueAsString(webGraphService.getCancerComorbidity());
-            System.out.println(out);
+            log.info("Answered request!");
             return out;
         } catch (JsonProcessingException e) {
             e.printStackTrace();

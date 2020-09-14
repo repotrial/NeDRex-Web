@@ -14,10 +14,16 @@
     "@fortawesome/fontawesome-svg-core": "^1.2.30",
     "@fortawesome/free-solid-svg-icons": "^5.14.0",
     "@fortawesome/vue-fontawesome": "^2.0.0",
+    "axios": "^0.20.0",
     "babel-polyfill": "^6.26.0",
+    "vis-data": "^7.0.0",
+    "vis-network": "^8.3.2",
+    "vis-util": "^4.3.4",
     "vue": "^2.5.11",
     "vue-router": "^3.4.3",
-    "vuetify": "^2.3.10"
+    "vue-vis-network": "^1.0.2",
+    "vuetify": "^2.3.10",
+    "vuex": "^3.5.1"
   },
   "browserslist": [
     "> 1%",

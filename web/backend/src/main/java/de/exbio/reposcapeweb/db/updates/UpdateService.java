@@ -248,30 +248,37 @@ public class UpdateService {
                     case "disorder_comorbid_with_disorder":
                         if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, DisorderComorbidWithDisorder.attributes))
                             updateSuccessful = disorderComorbidWithDisorderService.submitUpdates(runEdgeUpdates(DisorderComorbidWithDisorder.class, c, disorderComorbidWithDisorderService::mapIds));
+                        disorderComorbidWithDisorderService.importEdges();
                         break;
                     case "disorder_is_a_disorder":
                         if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, DisorderIsADisorder.attributes))
                             updateSuccessful = disorderIsADisorderService.submitUpdates(runEdgeUpdates(DisorderIsADisorder.class, c, disorderIsADisorderService::mapIds));
+                        disorderIsADisorderService.importEdges();
                         break;
                     case "drug_has_indication":
                         if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, DrugHasIndication.attributes))
                             updateSuccessful = drugHasIndicationService.submitUpdates(runEdgeUpdates(DrugHasIndication.class, c, drugHasIndicationService::mapIds));
+                        drugHasIndicationService.importEdges();
                         break;
                     case "drug_has_target":
                         if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, DrugHasTargetProtein.attributes))
                             updateSuccessful = drugHasTargetService.submitUpdates(runEdgeUpdates(DrugHasTargetProtein.class, c, drugHasTargetService::mapIds));
+                        drugHasTargetService.importEdges();
                         break;
                     case "gene_associated_with_disorder":
                         if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, GeneAssociatedWithDisorder.attributes))
                             updateSuccessful = geneAssociatedWithDisorderService.submitUpdates(runEdgeUpdates(GeneAssociatedWithDisorder.class, c, geneAssociatedWithDisorderService::mapIds));
+                        geneAssociatedWithDisorderService.importEdges();
                         break;
                     case "protein_in_pathway":
                         if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, ProteinInPathway.attributes))
                             updateSuccessful = proteinInPathwayService.submitUpdates(runEdgeUpdates(ProteinInPathway.class, c, proteinInPathwayService::mapIds));
+                        proteinInPathwayService.importEdges();
                         break;
                     case "protein_interacts_with_protein":
                         if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, ProteinInteractsWithProtein.attributes))
                             updateSuccessful = proteinInteractsWithProteinService.submitUpdates(runEdgeUpdates(ProteinInteractsWithProtein.class, c, proteinInteractsWithProteinService::mapIds));
+                        proteinInteractsWithProteinService.importEdges();
                         break;
 
                 }

@@ -14,7 +14,7 @@
                 Selection
               </v-list-item-title>
               <v-list-item-subtitle>
-                dicover the graph
+                discover the graph
               </v-list-item-subtitle>
             </v-list-item-content>
           </v-list-item>
@@ -52,12 +52,11 @@
 
     <!-- Sizes your content based upon application components -->
     <v-main>
-
-      <!-- Provides the application the proper gutter -->
+      <button v-on:click="updateGraph()">update Graph</button>
       <v-container fluid>
-<!--        <div id="particles-js"></div>-->
-        <!-- If using vue-router -->
+        <!--        <router-link :to="{name:'Graph'}">Load a Graph</router-link>-->
         <!--        <router-view></router-view>-->
+        <Graph :payload="graphLoad" :key="graphKey"></Graph>
       </v-container>
     </v-main>
 
@@ -68,8 +67,11 @@
 </template>
 
 <script>
+import {mapGetters} from "vuex";
+
 import {library} from '@fortawesome/fontawesome-svg-core'
 import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome'
+import Graph from './views/Graph.vue';
 import {
   faFilter, faSearch
 } from '@fortawesome/free-solid-svg-icons'
@@ -79,25 +81,53 @@ library.add(faFilter, faSearch)
 
 export default {
   name: 'app',
+  graphLoad: {},
+  graphKey: 0,
+  exampleGraph: undefined,
   data() {
     return {
-      msg: 'Reposcape-Web Application'
+      graphLoad: this.graphLoad,
+      graphKey: 0
     }
   },
   methods: {
-    initParticles() {
-      window.particlesJS('particles-js', {})
+    setGraph: function (graph) {
+      this.graphLoad = graph;
+    },
+    updateGraph: function () {
+      if (!this.exampleGraph)
+        this.getExampleGraph()
+      else
+        this.graphKey += 1
+    },
+    getExampleGraph: function () {
+      this.$http.get("/getExampleGraph").then(response => {
+        if (response.data) {
+          console.log(response.data)
+          this.exampleGraph = response.data
+          this.setGraph(this.exampleGraph)
+          this.graphKey += 1
+        }
+      }).catch(err => {
+        console.log(err)
+      })
     }
+    // getGraph: function (){
+    //   return {payload:this.graphLoad};
+    // },
+    // reloadGraph: function (){
+    //
+    // }
   },
   components: {
     "font-awesome-icon": FontAwesomeIcon,
-    headerBar
+    headerBar,
+    Graph
   },
-  mounted() {
-    // let particles = document.createElement('script')
-    // particles.setAttribute('src','./dist/js/particles.js')
-    // document.head.appendChild(particles)
-  }
+  created() {
+    this.setGraph({message: "Default graph"})
+  },
+
 }
 
 </script>

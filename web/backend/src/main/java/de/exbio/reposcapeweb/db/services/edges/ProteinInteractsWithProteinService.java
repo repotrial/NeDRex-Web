@@ -1,5 +1,6 @@
 package de.exbio.reposcapeweb.db.services.edges;
 
+import de.exbio.reposcapeweb.db.entities.edges.DrugHasIndication;
 import de.exbio.reposcapeweb.db.entities.edges.ProteinInPathway;
 import de.exbio.reposcapeweb.db.entities.edges.ProteinInteractsWithProtein;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
@@ -32,6 +33,8 @@ public class ProteinInteractsWithProteinService {
 
     private final ProteinService proteinService;
 
+    private final boolean directed = true;
+    private final HashMap<Integer, HashMap<Integer, Boolean>> edges = new HashMap<>();
 
     @Autowired
     public ProteinInteractsWithProteinService(PathwayService pathwayService, ProteinService proteinService, ProteinInteractsWithProteinRepository proteinInteractsWithProteinRepository) {
@@ -61,6 +64,38 @@ public class ProteinInteractsWithProteinService {
         proteinInteractsWithProteinRepository.saveAll(toSave);
         log.debug("Updated protein_interacts_with_protein table: " + insertCount + " Inserts, " + (updates.containsKey(UpdateOperation.Alteration) ? updates.get(UpdateOperation.Alteration).size() : 0) + " Changes, " + (updates.containsKey(UpdateOperation.Deletion) ? updates.get(UpdateOperation.Deletion).size() : 0) + " Deletions identified!");
         return true;
+    }
+
+    public Iterable<ProteinInteractsWithProtein> findAll() {
+        return proteinInteractsWithProteinRepository.findAll();
+    }
+
+    public void importEdges() {
+        findAll().forEach(edge -> {
+            importEdge(edge.getPrimaryIds());
+        });
+    }
+
+    private void importEdge(PairId edge) {
+        if (!edges.containsKey(edge.getId1()))
+            edges.put(edge.getId1(), new HashMap<>());
+        edges.get(edge.getId1()).put(edge.getId2(), true);
+
+        if (!edges.containsKey(edge.getId2()))
+            edges.put(edge.getId2(), new HashMap<>());
+        edges.get(edge.getId2()).put(edge.getId1(), !directed);
+    }
+
+    public boolean isEdge(PairId edge) {
+        return isEdge(edge.getId1(), edge.getId2());
+    }
+
+    public boolean isEdge(int id1, int id2) {
+        try {
+            return edges.get(id1).get(id2);
+        } catch (NullPointerException e) {
+            return false;
+        }
     }
 
 

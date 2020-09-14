@@ -1,6 +1,5 @@
 package de.exbio.reposcapeweb.filter;
 
-import de.exbio.reposcapeweb.db.io.ImportService;
 import de.exbio.reposcapeweb.utils.ReaderUtils;
 import de.exbio.reposcapeweb.utils.StringUtils;
 import org.slf4j.Logger;
@@ -29,7 +28,7 @@ public class FilterService {
 
             nf.getDistinctMap().forEach((type, keys) -> keys.forEach((key, entries) -> entries.forEach(e -> {
                 try {
-                    bw.write(type.ordinal() + "\t" + key + "\t" + e.getNodeId() + "\t" + e.getName());
+                    bw.write(type.ordinal() + "\t" + key + "\t" + e.getNodeId() + "\t" + e.getName() + "\n");
                 } catch (IOException ioException) {
                     ioException.printStackTrace();
                 }
@@ -44,7 +43,7 @@ public class FilterService {
 
             nf.getUniqueMap().forEach((type, keys) -> keys.forEach((key, e) -> {
                 try {
-                    bw.write(type.ordinal() + "\t" + key + "\t" + e.getNodeId() + "\t" + e.getName()+"\n");
+                    bw.write(type.ordinal() + "\t" + key + "\t" + e.getNodeId() + "\t" + e.getName() + "\n");
                 } catch (IOException ioException) {
                     ioException.printStackTrace();
                 }
@@ -67,7 +66,7 @@ public class FilterService {
             }
             br.close();
         } catch (IOException e) {
-            log.debug("Read error on filter import for "+ f.getName());
+            log.debug("Read error on filter import for " + f.getName());
         }
 
         try {
@@ -78,7 +77,7 @@ public class FilterService {
             }
             br.close();
         } catch (IOException e) {
-            log.debug("Read error on filter import for "+ f.getName());
+            log.debug("Read error on filter import for " + f.getName());
         }
 
         return nf;

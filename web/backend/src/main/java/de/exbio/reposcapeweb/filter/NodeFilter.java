@@ -66,6 +66,7 @@ public class NodeFilter {
 
 
         TreeSet<FilterEntry> entries = new TreeSet<>();
+        HashSet<Integer> ids = new HashSet<>();
 
         uniqueMap.keySet().forEach(type -> entries.addAll(filterUniqueContains(type, key)));
         distinctMap.keySet().forEach(type -> entries.addAll(filterDistinctContains(type, key)));
@@ -74,7 +75,8 @@ public class NodeFilter {
         entries.forEach(e -> {
                     if (done.get())
                         return;
-                    filtered.add(e);
+                    if (ids.add(e.getNodeId()))
+                        filtered.add(e);
                     if (filtered.size() == size)
                         done.set(true);
                 }
@@ -86,6 +88,7 @@ public class NodeFilter {
         LinkedList<FilterEntry> filtered = new LinkedList<>();
 
         TreeSet<FilterEntry> entries = new TreeSet<>();
+        HashSet<Integer> ids = new HashSet<>();
 
         uniqueMap.keySet().forEach(type -> entries.addAll(filterUniqueStartsWith(type, key)));
         distinctMap.keySet().forEach(type -> entries.addAll(filterDistinctStartsWith(type, key)));
@@ -94,7 +97,8 @@ public class NodeFilter {
         entries.forEach(e -> {
                     if (done.get())
                         return;
-                    filtered.add(e);
+                    if (ids.add(e.getNodeId()))
+                        filtered.add(e);
                     if (filtered.size() == size)
                         done.set(true);
                 }
@@ -107,6 +111,7 @@ public class NodeFilter {
 
 
         TreeSet<FilterEntry> entries = new TreeSet<>();
+        HashSet<Integer> ids = new HashSet<>();
 
         uniqueMap.keySet().forEach(type -> entries.addAll(filterUniqueMatches(type, key)));
         distinctMap.keySet().forEach(type -> entries.addAll(filterDistinctMatches(type, key)));
@@ -115,7 +120,8 @@ public class NodeFilter {
         entries.forEach(e -> {
                     if (done.get())
                         return;
-                    filtered.add(e);
+                    if (ids.add(e.getNodeId()))
+                        filtered.add(e);
                     if (filtered.size() == size)
                         done.set(true);
                 }
@@ -271,7 +277,7 @@ public class NodeFilter {
         toDistinctFilter.forEach(this::addDistinct);
     }
 
-    public int size(){
-        return distinctMap.size()+uniqueMap.size();
+    public int size() {
+        return distinctMap.size() + uniqueMap.size();
     }
 }

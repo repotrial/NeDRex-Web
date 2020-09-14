@@ -2,6 +2,13 @@ var path = require('path')
 var webpack = require('webpack')
 
 module.exports = {
+
+  // outputDir: "target/dist",
+  // assetsDir: "static",
+  // publicPath: "/backend",
+
+
+
   entry: './src/main.js',
   output: {
     path: path.resolve(__dirname, './dist'),
@@ -83,10 +90,18 @@ module.exports = {
     },
     extensions: ['*', '.js', '.vue', '.json']
   },
+
   devServer: {
     historyApiFallback: true,
     noInfo: true,
-    overlay: true
+    overlay: true,
+    proxy: {
+          "/backend/api": {
+            target: "http://localhost:8090",
+            ws: true,
+            changeOrigin: true
+          }
+        }
   },
   performance: {
     hints: false
