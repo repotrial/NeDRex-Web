@@ -8,7 +8,7 @@ import java.util.Collection;
 import java.util.List;
 
 @Repository
-public interface DrugRepository extends CrudRepository<Drug,Long> {
+public interface DrugRepository extends CrudRepository<Drug,Integer> {
     List<Drug> findAllByPrimaryDomainIdIn(Collection<String> ids);
 
 }

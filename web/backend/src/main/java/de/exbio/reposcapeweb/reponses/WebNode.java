@@ -1,22 +1,31 @@
 package de.exbio.reposcapeweb.reponses;
 
 public class WebNode {
-    int id;
+    String id;
     String label;
+    String title;
     double x;
     double y;
+    String group;
     boolean hasEdge = false;
 
-    public WebNode(int id, String label){
-        this.id = id;
+    public WebNode(int id, String label,String group){
+        this.id = id+"";
         this.label = label;
+        this.group=group;
     }
 
-    public int getId() {
-        return id;
+    public WebNode(String prefix,int id, String label,String group){
+        this.id = prefix+id;
+        this.label = label;
+        this.group=group;
     }
 
-    public void setId(int id) {
+    public String getId() {
+        return id+"";
+    }
+
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -42,5 +51,21 @@ public class WebNode {
 
     public void setY(double y) {
         this.y = y;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getGroup() {
+        return group;
+    }
+
+    public void setGroup(String group) {
+        this.group = group;
     }
 }

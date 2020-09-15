@@ -3,7 +3,7 @@
     <headerBar/>
     <v-navigation-drawer app>
       <v-card
-        height="400"
+        height="250"
         width="256"
         class="mx-auto"
       >
@@ -11,7 +11,7 @@
           <v-list-item>
             <v-list-item-content>
               <v-list-item-title class="title">
-                Selection
+                Selection Tools
               </v-list-item-title>
               <v-list-item-subtitle>
                 discover the graph
@@ -46,17 +46,59 @@
           </v-list>
         </v-navigation-drawer>
       </v-card>
+      <v-card
+        height="670"
+        width="256"
+        class="mx-auto"
+      >
+        <v-navigation-drawer>
+
+          <v-list-item>
+            <v-list-item-content>
+              <v-list-item-title class="title">
+                Current Selection
+              </v-list-item-title>
+              <v-list-item-subtitle>
+                Including neighbors of first degree
+              </v-list-item-subtitle>
+            </v-list-item-content>
+          </v-list-item>
+
+          <v-simple-table v-if="selectedNode !== undefined">
+            <template v-slot:default>
+              <thead>
+              <tr>
+                <th class="text-left">ID</th>
+                <th class="text-left">Label</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr :key="selectedNode.id">
+                <td><b>{{ selectedNode.id }}</b></td>
+                <td><b>{{ selectedNode.title }}</b></td>
+              </tr>
+              <tr v-for="item in neighborNodes" :key="item.id">
+                <td>{{ item.id }}</td>
+                <td>{{ item.title }}</td>
+              </tr>
+              </tbody>
+            </template>
+          </v-simple-table>
+        </v-navigation-drawer>
+      </v-card>
 
     </v-navigation-drawer>
 
 
     <!-- Sizes your content based upon application components -->
     <v-main>
-      <button v-on:click="updateGraph()">update Graph</button>
+      <template v-for="item in graphButtons">
+          <v-btn :name=item.id :outlined="item.active" :dark="!item.active" v-on:click="loadGraph(item.id)" :color=item.color style="margin:5px">{{ item.label }}</v-btn>
+      </template>
+
       <v-container fluid>
-        <!--        <router-link :to="{name:'Graph'}">Load a Graph</router-link>-->
-        <!--        <router-view></router-view>-->
-        <Graph :payload="graphLoad" :key="graphKey"></Graph>
+        <Graph ref="graph" v-on:selectionEvent="loadSelection"
+        ></Graph>
       </v-container>
     </v-main>
 
@@ -67,14 +109,10 @@
 </template>
 
 <script>
-import {mapGetters} from "vuex";
-
 import {library} from '@fortawesome/fontawesome-svg-core'
 import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome'
 import Graph from './views/Graph.vue';
-import {
-  faFilter, faSearch
-} from '@fortawesome/free-solid-svg-icons'
+import {faFilter, faSearch} from '@fortawesome/free-solid-svg-icons'
 import headerBar from './components/header.vue'
 
 library.add(faFilter, faSearch)
@@ -84,49 +122,64 @@ export default {
   graphLoad: {},
   graphKey: 0,
   exampleGraph: undefined,
+  selectedNode: undefined,
+  neighborNodes: [],
+  graphButtons: [],
+  colors: {},
   data() {
     return {
       graphLoad: this.graphLoad,
-      graphKey: 0
+      graphKey: 0,
+      neighborNodes: this.neighborNodes,
+      selectedNode: this.selectedNode,
+      graphButtons: this.graphButtons
     }
   },
+  created() {
+    this.colors = {buttons: {graphs: {active: "deep-purple accent-2", inactive: undefined}}}
+    this.graphButtons = [
+      {id: 0, label: "Default Graph", color: this.colors.buttons.graphs.inactive, active:true},
+      {id: 1, label: "Cancer-Comorbidity Graph", color: this.colors.buttons.graphs.inactive, active:false},
+      {id: 2, label: "Neuro-Drug Graph", color: this.colors.buttons.graphs.inactive, active:false}
+    ]
+    // this.setGraph({message: "Default graph"})
+  },
   methods: {
-    setGraph: function (graph) {
-      this.graphLoad = graph;
+    loadGraph: function (id) {
+      console.log(id)
+      for (let index in this.graphButtons) {
+        if (this.graphButtons[index].id === id) {
+          if (this.graphButtons[index].active)
+            return;
+          this.graphButtons[index].active = true
+          // this.graphButtons[index].color = this.colors.buttons.graphs.active;
+        }else
+          this.graphButtons[index].active = false
+          // this.graphButtons[index].color = this.colors.buttons.graphs.inactive;
+      }
+      if(id===0){
+        this.graphLoad={name: "default"}
+      }
+      else if (id === 1){
+        this.graphLoad={url: "/getExampleGraph1"}
+      } else if (id ===2){
+        this.graphLoad={url: "/getExampleGraph2"}
+      }
+      this.$refs.graph.loadData(this.graphLoad)
     },
-    updateGraph: function () {
-      if (!this.exampleGraph)
-        this.getExampleGraph()
-      else
-        this.graphKey += 1
-    },
-    getExampleGraph: function () {
-      this.$http.get("/getExampleGraph").then(response => {
-        if (response.data) {
-          console.log(response.data)
-          this.exampleGraph = response.data
-          this.setGraph(this.exampleGraph)
-          this.graphKey += 1
-        }
-      }).catch(err => {
-        console.log(err)
-      })
+    loadSelection: function (params) {
+      console.log("selection")
+      console.log(params)
+      this.selectedNode = params.primary;
+      this.neighborNodes = params.neighbors;
     }
-    // getGraph: function (){
-    //   return {payload:this.graphLoad};
-    // },
-    // reloadGraph: function (){
-    //
-    // }
   },
   components: {
     "font-awesome-icon": FontAwesomeIcon,
     headerBar,
     Graph
   },
-  created() {
-    this.setGraph({message: "Default graph"})
-  },
+
 
 }
 

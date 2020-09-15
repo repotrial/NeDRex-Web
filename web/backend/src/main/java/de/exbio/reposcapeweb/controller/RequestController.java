@@ -44,12 +44,26 @@ public class RequestController {
 //        return "Router is Running!";
 //    }
 
-    @RequestMapping(value = "/getExampleGraph", method = RequestMethod.GET)
+    @RequestMapping(value = "/getExampleGraph1", method = RequestMethod.GET)
     @ResponseBody
-    public String getExampleGraph(){
-        log.info("got request on exampleGraph");
+    public String getExampleGraph1(){
+        log.info("got request on comorbidity graph");
         try {
             String out = objectMapper.writeValueAsString(webGraphService.getCancerComorbidity());
+            log.info("Answered request!");
+            return out;
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @RequestMapping(value = "/getExampleGraph2", method = RequestMethod.GET)
+    @ResponseBody
+    public String getExampleGraph2(){
+        log.info("got request on neuro-drug-graph");
+        try {
+            String out = objectMapper.writeValueAsString(webGraphService.getNeuroDrugs());
             log.info("Answered request!");
             return out;
         } catch (JsonProcessingException e) {

@@ -3,13 +3,13 @@ package de.exbio.reposcapeweb.reponses;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 
 public class WebGraph {
-    String message;
+    boolean directed =false;
+    String title;
     LinkedList<WebNode> nodes = new LinkedList<>();
     LinkedList<WebEdge> edges = new LinkedList<>();
-    int radiusFactor = 20;
+    int radiusFactor = 10;
 //    int y = 1;
 //    int x = 0;
     int f = 10;
@@ -17,17 +17,11 @@ public class WebGraph {
     public WebGraph(){
     }
 
-    public WebGraph(String message){
-        setMessage(message);
+    public WebGraph(String title, boolean directed){
+        this.title = title;
+        this.directed=directed;
     }
 
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
 
     public void addNode(WebNode node){
         nodes.add(node);
@@ -83,5 +77,13 @@ public class WebGraph {
         });
         drawCircular(connectedNodes,radiusFactor);
         drawCircular(isolatedNodes,radiusFactor*0.4);
+    }
+
+    public boolean isDirected() {
+        return directed;
+    }
+
+    public void setDirected(boolean directed) {
+        this.directed = directed;
     }
 }
