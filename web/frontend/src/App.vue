@@ -1,9 +1,28 @@
 <template>
   <v-app>
     <headerBar/>
+    <v-card>
+      <v-toolbar flat>
+        <template v-slot:extension>
+          <v-tabs
+            fixed-tabs
+          >
+            <v-tabs-slider></v-tabs-slider>
+            <v-tab v-for="tab in tabslist" class="primary--text" v-on:click="selectTab(tab.id)" :key=tab.id>
+              <i :style="{color:tab.color}">
+                <font-awesome-icon :icon=tab.icon></font-awesome-icon>
+                {{ tab.label }}
+              </i>
+
+            </v-tab>
+
+          </v-tabs>
+        </template>
+      </v-toolbar>
+    </v-card>
     <v-navigation-drawer app>
       <v-card
-        height="250"
+        height="200"
         width="256"
         class="mx-auto"
       >
@@ -91,12 +110,14 @@
 
 
     <!-- Sizes your content based upon application components -->
-    <v-main>
-      <template v-for="item in graphButtons">
-          <v-btn :name=item.id :outlined="item.active" :dark="!item.active" v-on:click="loadGraph(item.id)" :color=item.color style="margin:5px">{{ item.label }}</v-btn>
-      </template>
+    <v-main style="padding-top: 0; height: 60%; max-height: 60%">
+<!--      <template v-for="item in graphButtons">-->
+<!--        <v-btn :name=item.id :outlined="item.active" :dark="!item.active" v-on:click="loadGraph(item.id)"-->
+<!--               :color=item.color style="margin:5px">{{ item.label }}-->
+<!--        </v-btn>-->
+<!--      </template>-->
 
-      <v-container fluid>
+      <v-container v-show="selectedTabId===2" fluid>
         <Graph ref="graph" v-on:selectionEvent="loadSelection"
         ></Graph>
       </v-container>
@@ -111,11 +132,6 @@
 <script>
 import {library} from '@fortawesome/fontawesome-svg-core'
 import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome'
-import Graph from './views/Graph.vue';
-import {faFilter, faSearch} from '@fortawesome/free-solid-svg-icons'
-import headerBar from './components/header.vue'
-
-library.add(faFilter, faSearch)
 
 export default {
   name: 'app',
@@ -125,25 +141,38 @@ export default {
   selectedNode: undefined,
   neighborNodes: [],
   graphButtons: [],
+  selectedTabId: 0,
   colors: {},
+  tabslist: {},
   data() {
     return {
       graphLoad: this.graphLoad,
       graphKey: 0,
       neighborNodes: this.neighborNodes,
       selectedNode: this.selectedNode,
-      graphButtons: this.graphButtons
+      graphButtons: this.graphButtons,
+      tabslist: this.tabslist,
+      selectedTabId: this.selectedTabId,
     }
   },
   created() {
-    this.colors = {buttons: {graphs: {active: "deep-purple accent-2", inactive: undefined}}}
+    this.colors = {
+      buttons: {graphs: {active: "deep-purple accent-2", inactive: undefined}},
+      tabs: {active: "rgba(25 118 210)", inactive: "rgba(0,0,0,.54)"}
+    }
     this.graphButtons = [
-      {id: 0, label: "Default Graph", color: this.colors.buttons.graphs.inactive, active:true},
-      {id: 1, label: "Cancer-Comorbidity Graph", color: this.colors.buttons.graphs.inactive, active:false},
-      {id: 2, label: "Neuro-Drug Graph", color: this.colors.buttons.graphs.inactive, active:false}
+      {id: 0, label: "Default Graph", color: this.colors.buttons.graphs.inactive, active: true},
+      {id: 1, label: "Cancer-Comorbidity Graph", color: this.colors.buttons.graphs.inactive, active: false},
+      {id: 2, label: "Neuro-Drug Graph", color: this.colors.buttons.graphs.inactive, active: false}
     ]
-    // this.setGraph({message: "Default graph"})
+    this.tabslist = [
+      {id: 1, label: "Start", icon: "filter", color: this.colors.tabs.active},
+      {id: 2, label: "Graph", icon: "project-diagram", color: this.colors.tabs.inactive},
+      {id: 3, label: "List", icon: "list-ul", color: this.colors.tabs.inactive},
+      {id: 4, label: "Statistics", icon: "chart-pie", color: this.colors.tabs.inactive},
+    ]
   },
+  // this.setGraph({message: "Default graph"})
   methods: {
     loadGraph: function (id) {
       console.log(id)
@@ -153,17 +182,16 @@ export default {
             return;
           this.graphButtons[index].active = true
           // this.graphButtons[index].color = this.colors.buttons.graphs.active;
-        }else
+        } else
           this.graphButtons[index].active = false
-          // this.graphButtons[index].color = this.colors.buttons.graphs.inactive;
+        // this.graphButtons[index].color = this.colors.buttons.graphs.inactive;
       }
-      if(id===0){
-        this.graphLoad={name: "default"}
-      }
-      else if (id === 1){
-        this.graphLoad={url: "/getExampleGraph1"}
-      } else if (id ===2){
-        this.graphLoad={url: "/getExampleGraph2"}
+      if (id === 0) {
+        this.graphLoad = {name: "default"}
+      } else if (id === 1) {
+        this.graphLoad = {url: "/getExampleGraph1"}
+      } else if (id === 2) {
+        this.graphLoad = {url: "/getExampleGraph2"}
       }
       this.$refs.graph.loadData(this.graphLoad)
     },
@@ -172,6 +200,21 @@ export default {
       console.log(params)
       this.selectedNode = params.primary;
       this.neighborNodes = params.neighbors;
+    },
+    selectTab: function (tabid) {
+      console.log(tabid)
+      let colInactive = this.colors.tabs.inactive;
+      let colActive = this.colors.tabs.active;
+      for (let idx in this.tabslist) {
+        if (this.tabslist[idx].id === tabid) {
+          if (this.tabslist[idx].color === colActive)
+            return
+          else
+            this.tabslist[idx].color = colActive
+        } else
+          this.tabslist[idx].color = colInactive
+      }
+      this.selectedTabId = tabid;
     }
   },
   components: {
@@ -182,7 +225,13 @@ export default {
 
 
 }
+import Graph from './views/Graph.vue';
+import {faFilter, faSearch, faProjectDiagram, faChartPie, faListUl} from '@fortawesome/free-solid-svg-icons'
 
+import headerBar from './components/header.vue'
+
+
+library.add(faFilter, faSearch, faProjectDiagram, faChartPie, faListUl)
 </script>
 
 <style lang="sass">

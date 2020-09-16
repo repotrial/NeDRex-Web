@@ -126,7 +126,7 @@ export default {
           this.requestData(payload.url)
         else
           this.drawGraph()
-      } else
+      }else
         this.drawGraph()
 
 

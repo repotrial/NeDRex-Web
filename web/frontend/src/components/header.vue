@@ -1,10 +1,11 @@
 <template>
-  <v-app-bar app prominent color="white">
+  <v-app-bar app prominent elevation="0" color="white">
     <div id="particles-js"></div>
     <div id="title-div" style="position:fixed">
       <h1 id="title" >RepoScape-Browser</h1>
     </div>
   </v-app-bar>
+
 </template>
 
 <script>
