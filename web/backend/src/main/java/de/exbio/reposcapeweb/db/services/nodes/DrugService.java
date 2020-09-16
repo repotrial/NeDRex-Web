@@ -64,6 +64,7 @@ public class DrugService extends NodeService {
         return true;
     }
 
+
     public int map(String primaryDomainId) {
         return getDomainToIdMap().get(primaryDomainId);
     }

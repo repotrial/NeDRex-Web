@@ -8,6 +8,6 @@ import java.util.Collection;
 import java.util.List;
 
 @Repository
-public interface ProteinRepository extends CrudRepository<Protein,Long> {
+public interface ProteinRepository extends CrudRepository<Protein,Integer> {
     List<Protein> findAllByPrimaryDomainIdIn(Collection<String> ids);
 }

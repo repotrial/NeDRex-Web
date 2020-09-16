@@ -1,6 +1,5 @@
 package de.exbio.reposcapeweb.db.services.nodes;
 
-import de.exbio.reposcapeweb.db.entities.nodes.Drug;
 import de.exbio.reposcapeweb.db.entities.nodes.Pathway;
 import de.exbio.reposcapeweb.db.repositories.nodes.PathwayRepository;
 import de.exbio.reposcapeweb.db.services.NodeService;
@@ -11,10 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -86,4 +82,8 @@ public class PathwayService extends NodeService {
     public void setFilter(NodeFilter nf){
         this.allFilter = nf;
     }
+
+    public Iterable<Pathway> findAllByIds(Collection<Integer> ids) {
+            return pathwayRepository.findAllById(ids);
+        }
 }

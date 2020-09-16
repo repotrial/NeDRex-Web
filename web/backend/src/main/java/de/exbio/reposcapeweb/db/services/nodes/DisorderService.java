@@ -1,6 +1,7 @@
 package de.exbio.reposcapeweb.db.services.nodes;
 
 import de.exbio.reposcapeweb.db.entities.nodes.Disorder;
+import de.exbio.reposcapeweb.db.entities.nodes.Drug;
 import de.exbio.reposcapeweb.db.repositories.nodes.DisorderRepository;
 import de.exbio.reposcapeweb.db.services.NodeService;
 import de.exbio.reposcapeweb.db.updates.UpdateOperation;
@@ -11,10 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -83,5 +81,9 @@ public class DisorderService extends NodeService {
 
     public void setFilter(NodeFilter nf){
         this.allFilter = nf;
+    }
+
+    public Iterable<Disorder> findAllByIds(Collection<Integer> ids){
+        return disorderRepository.findAllById(ids);
     }
 }

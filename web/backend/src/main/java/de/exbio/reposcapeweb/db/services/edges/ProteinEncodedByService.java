@@ -1,6 +1,5 @@
 package de.exbio.reposcapeweb.db.services.edges;
 
-import de.exbio.reposcapeweb.db.entities.edges.DrugHasIndication;
 import de.exbio.reposcapeweb.db.entities.edges.ProteinEncodedBy;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
 import de.exbio.reposcapeweb.db.repositories.edges.ProteinEncodedByRepository;
@@ -13,10 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -30,7 +26,8 @@ public class ProteinEncodedByService {
     private final GeneService geneService;
 
     private final boolean directed = true;
-    private final HashMap<Integer, HashMap<Integer, Boolean>> edges = new HashMap<>();
+    private final HashMap<Integer, HashSet<Integer>> edgesTo = new HashMap<>();
+    private final HashMap<Integer, HashSet<Integer>> edgesFrom = new HashMap<>();
 
     @Autowired
     public ProteinEncodedByService(GeneService geneService, ProteinService proteinService, ProteinEncodedByRepository proteinEncodedByRepository) {
@@ -74,25 +71,46 @@ public class ProteinEncodedByService {
     }
 
     private void importEdge(PairId edge) {
-        if (!edges.containsKey(edge.getId1()))
-            edges.put(edge.getId1(), new HashMap<>());
-        edges.get(edge.getId1()).put(edge.getId2(), true);
+        if (!edgesFrom.containsKey(edge.getId1()))
+            edgesFrom.put(edge.getId1(), new HashSet<>());
+        edgesFrom.get(edge.getId1()).add(edge.getId2());
 
-        if (!edges.containsKey(edge.getId2()))
-            edges.put(edge.getId2(), new HashMap<>());
-        edges.get(edge.getId2()).put(edge.getId1(), !directed);
+        if (!edgesTo.containsKey(edge.getId2()))
+            edgesTo.put(edge.getId2(), new HashSet<>());
+        edgesTo.get(edge.getId2()).add(edge.getId1());
     }
 
-    public boolean isEdge(PairId edge) {
-        return isEdge(edge.getId1(), edge.getId2());
+    public boolean isEdgeTo(PairId edge) {
+        return isEdgeTo(edge.getId1(), edge.getId2());
     }
 
-    public boolean isEdge(int id1, int id2) {
+    public boolean isEdgeTo(int id1, int id2) {
         try {
-            return edges.get(id1).get(id2);
+            return edgesTo.get(id1).contains(id2);
         } catch (NullPointerException e) {
             return false;
         }
+    }
+
+
+    public boolean isEdgeFrom(PairId edge) {
+        return isEdgeFrom(edge.getId1(), edge.getId2());
+    }
+
+    public boolean isEdgeFrom(int id1, int id2) {
+        try {
+            return edgesFrom.get(id1).contains(id2);
+        } catch (NullPointerException e) {
+            return false;
+        }
+    }
+
+    public HashSet<Integer> getEdgesTo(Integer id){
+        return edgesTo.get(id);
+    }
+
+    public HashSet<Integer> getEdgesFrom(Integer id){
+        return edgesFrom.get(id);
     }
 
 

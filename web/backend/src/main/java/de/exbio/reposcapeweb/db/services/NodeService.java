@@ -5,4 +5,5 @@ import java.util.HashMap;
 public abstract class NodeService {
 
     public abstract HashMap<Integer,String> getIdToDomainMap();
+
 }

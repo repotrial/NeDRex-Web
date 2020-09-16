@@ -8,6 +8,6 @@ import java.util.Collection;
 import java.util.List;
 
 @Repository
-public interface GeneRepository extends CrudRepository<Gene,Long> {
+public interface GeneRepository extends CrudRepository<Gene,Integer> {
     List<Gene> findAllByPrimaryDomainIdIn(Collection<String> ids);
 }

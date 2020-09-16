@@ -27,7 +27,7 @@ import java.util.LinkedList;
 import java.util.stream.Collectors;
 
 @Service
-public class GeneAssociatedWithDisorderService {
+public class AssociatedWithDisorderService {
 
     private final Logger log = LoggerFactory.getLogger(GeneAssociatedWithDisorder.class);
 
@@ -39,8 +39,10 @@ public class GeneAssociatedWithDisorderService {
     private final DisorderService disorderService;
 
     private final boolean directed = true;
-    private final HashMap<Integer, HashMap<Integer, Boolean>> proteinEdges = new HashMap<>();
-    private final HashMap<Integer, HashMap<Integer, Boolean>> geneEdges = new HashMap<>();
+    private final HashMap<Integer, HashSet<Integer>> proteinEdgesTo = new HashMap<>();
+    private final HashMap<Integer, HashSet<Integer>> proteinEdgesFrom = new HashMap<>();
+    private final HashMap<Integer, HashSet<Integer>> geneEdgesTo = new HashMap<>();
+    private final HashMap<Integer, HashSet<Integer>> geneEdgesFrom = new HashMap<>();
 
     private final DataSource dataSource;
     private final String clearQuery = "DELETE FROM protein_associated_with_disorder";
@@ -51,7 +53,7 @@ public class GeneAssociatedWithDisorderService {
     private PreparedStatement generationPs = null;
 
     @Autowired
-    public GeneAssociatedWithDisorderService(DataSource dataSource, GeneService geneService, DisorderService disorderService, GeneAssociatedWithDisorderRepository geneAssociatedWithDisorderRepository, ProteinAssociatedWithDisorderRepository proteinAssociatedWithDisorderRepository) {
+    public AssociatedWithDisorderService(DataSource dataSource, GeneService geneService, DisorderService disorderService, GeneAssociatedWithDisorderRepository geneAssociatedWithDisorderRepository, ProteinAssociatedWithDisorderRepository proteinAssociatedWithDisorderRepository) {
         this.geneAssociatedWithDisorderRepository = geneAssociatedWithDisorderRepository;
         this.proteinAssociatedWithDisorderRepository = proteinAssociatedWithDisorderRepository;
         this.disorderService = disorderService;
@@ -123,52 +125,82 @@ public class GeneAssociatedWithDisorderService {
     }
 
     private void importGeneEdge(PairId edge) {
-        if (!geneEdges.containsKey(edge.getId1()))
-            geneEdges.put(edge.getId1(), new HashMap<>());
-        geneEdges.get(edge.getId1()).put(edge.getId2(), true);
+        if (!geneEdgesFrom.containsKey(edge.getId1()))
+            geneEdgesFrom.put(edge.getId1(), new HashSet<>());
+        geneEdgesFrom.get(edge.getId1()).add(edge.getId2());
 
-        if (!geneEdges.containsKey(edge.getId2()))
-            geneEdges.put(edge.getId2(), new HashMap<>());
-        geneEdges.get(edge.getId2()).put(edge.getId1(), !directed);
+        if (!geneEdgesTo.containsKey(edge.getId2()))
+            geneEdgesTo.put(edge.getId2(), new HashSet<>());
+        geneEdgesTo.get(edge.getId2()).add(edge.getId1());
     }
 
-    public boolean isGeneEdge(PairId edge) {
-        return isGeneEdge(edge.getId1(), edge.getId2());
+    public boolean isGeneEdgeFrom(PairId edge) {
+        return isGeneEdgeFrom(edge.getId1(), edge.getId2());
     }
 
-    public boolean isGeneEdge(int id1, int id2) {
+    public boolean isGeneEdgeFrom(int id1, int id2) {
         try {
-            return geneEdges.get(id1).get(id2);
+            return geneEdgesFrom.get(id1).contains(id2);
         } catch (NullPointerException e) {
             return false;
         }
     }
 
+    public HashSet<Integer> getGeneEdgesTo(int id) {
+        return geneEdgesTo.get(id);
+    }
 
-    public Iterable<ProteinAssociatedWithDisorder> findAllProteins() {
-        return proteinAssociatedWithDisorderRepository.findAll();
+    public boolean isGeneEdgeTo(int id1, int id2){
+        return geneEdgesTo.get(id1).contains(id2);
+    }
+
+    public HashSet<Integer> getGeneEdgesFrom(int id) {
+        return geneEdgesTo.get(id);
+    }
+
+
+    public Iterable<GeneAssociatedWithDisorder> findAllProteins() {
+        return geneAssociatedWithDisorderRepository.findAll();
     }
 
     private void importProteinEdge(PairId edge) {
-        if (!proteinEdges.containsKey(edge.getId1()))
-            proteinEdges.put(edge.getId1(), new HashMap<>());
-        proteinEdges.get(edge.getId1()).put(edge.getId2(), true);
+        if (!proteinEdgesFrom.containsKey(edge.getId1()))
+            proteinEdgesFrom.put(edge.getId1(), new HashSet<>());
+        proteinEdgesFrom.get(edge.getId1()).add(edge.getId2());
 
-        if (!proteinEdges.containsKey(edge.getId2()))
-            proteinEdges.put(edge.getId2(), new HashMap<>());
-        proteinEdges.get(edge.getId2()).put(edge.getId1(), !directed);
+        if (!proteinEdgesTo.containsKey(edge.getId2()))
+            proteinEdgesTo.put(edge.getId2(), new HashSet<>());
+        proteinEdgesTo.get(edge.getId2()).add(edge.getId1());
     }
 
-    public boolean isProteinEdge(PairId edge) {
-        return isProteinEdge(edge.getId1(), edge.getId2());
+
+    public boolean isProteinEdgeFrom(PairId edge) {
+        return isProteinEdgeFrom(edge.getId1(), edge.getId2());
     }
 
-    public boolean isProteinEdge(int id1, int id2) {
+    public boolean isProteinEdgeFrom(int id1, int id2) {
         try {
-            return proteinEdges.get(id1).get(id2);
+            return proteinEdgesFrom.get(id1).contains(id2);
         } catch (NullPointerException e) {
             return false;
         }
+    }
+
+    public HashSet<Integer> getProteinEdgesTo(int id) {
+        return proteinEdgesTo.get(id);
+    }
+
+    public boolean isProteinEdgeTo(int id1, int id2) {
+        try {
+            return proteinEdgesTo.get(id1).contains(id2);
+        }catch (NullPointerException e){
+            return false;
+        }
+    }
+
+
+    public HashSet<Integer> getProteinEdgesFrom(int id) {
+        return proteinEdgesTo.get(id);
     }
 
 

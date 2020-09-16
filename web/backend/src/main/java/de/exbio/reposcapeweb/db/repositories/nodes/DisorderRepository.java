@@ -8,6 +8,6 @@ import java.util.Collection;
 import java.util.List;
 
 @Repository
-public interface DisorderRepository extends CrudRepository<Disorder,Long> {
+public interface DisorderRepository extends CrudRepository<Disorder,Integer> {
     List<Disorder> findAllByPrimaryDomainIdIn(Collection<String> ids);
 }

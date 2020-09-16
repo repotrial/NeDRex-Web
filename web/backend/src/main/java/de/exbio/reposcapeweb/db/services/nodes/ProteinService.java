@@ -10,10 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -57,7 +54,7 @@ public class ProteinService extends NodeService {
         proteinRepository.saveAll(toSave).forEach(d -> {
             idToDomainMap.put(d.getId(), d.getPrimaryDomainId());
             domainToIdMap.put(d.getPrimaryDomainId(), d.getId());
-            allFilter.add(d.toDistinctFilter(),d.toUniqueFilter());
+            allFilter.add(d.toDistinctFilter(), d.toUniqueFilter());
         });
         log.debug("Updated protein table: " + insertCount + " Inserts, " + (updates.containsKey(UpdateOperation.Alteration) ? updates.get(UpdateOperation.Alteration).size() : 0) + " Changes, " + (updates.containsKey(UpdateOperation.Deletion) ? updates.get(UpdateOperation.Deletion).size() : 0) + " Deletions identified!");
         return true;
@@ -76,11 +73,15 @@ public class ProteinService extends NodeService {
         return domainToIdMap;
     }
 
-    public NodeFilter getFilter(){
+    public NodeFilter getFilter() {
         return allFilter;
     }
 
-    public void setFilter(NodeFilter nf){
+    public void setFilter(NodeFilter nf) {
         this.allFilter = nf;
+    }
+
+    public Iterable<Protein> findAllByIds(Collection<Integer> ids) {
+        return proteinRepository.findAllById(ids);
     }
 }

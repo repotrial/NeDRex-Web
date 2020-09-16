@@ -59,7 +59,7 @@ public class UpdateService {
     private final DisorderIsADisorderService disorderIsADisorderService;
     private final DrugHasIndicationService drugHasIndicationService;
     private final DrugHasTargetService drugHasTargetService;
-    private final GeneAssociatedWithDisorderService geneAssociatedWithDisorderService;
+    private final AssociatedWithDisorderService associatedWithDisorderService;
     private final ProteinEncodedByService proteinEncodedByService;
     private final ProteinInPathwayService proteinInPathwayService;
     private final ProteinInteractsWithProteinService proteinInteractsWithProteinService;
@@ -81,7 +81,7 @@ public class UpdateService {
                          DisorderIsADisorderService disorderIsADisorderService,
                          DrugHasIndicationService drugHasIndicationService,
                          DrugHasTargetService drugHasTargetService,
-                         GeneAssociatedWithDisorderService geneAssociatedWithDisorderService,
+                         AssociatedWithDisorderService associatedWithDisorderService,
                          ProteinEncodedByService proteinEncodedByService,
                          ProteinInPathwayService proteinInPathwayService,
                          ProteinInteractsWithProteinService proteinInteractsWithProteinService
@@ -101,7 +101,7 @@ public class UpdateService {
         this.disorderIsADisorderService = disorderIsADisorderService;
         this.drugHasIndicationService = drugHasIndicationService;
         this.drugHasTargetService = drugHasTargetService;
-        this.geneAssociatedWithDisorderService = geneAssociatedWithDisorderService;
+        this.associatedWithDisorderService = associatedWithDisorderService;
         this.proteinEncodedByService = proteinEncodedByService;
         this.proteinInPathwayService = proteinInPathwayService;
         this.proteinInteractsWithProteinService = proteinInteractsWithProteinService;
@@ -267,8 +267,8 @@ public class UpdateService {
                         break;
                     case "gene_associated_with_disorder":
                         if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, GeneAssociatedWithDisorder.attributes))
-                            updateSuccessful = geneAssociatedWithDisorderService.submitUpdates(runEdgeUpdates(GeneAssociatedWithDisorder.class, c, geneAssociatedWithDisorderService::mapIds));
-                        geneAssociatedWithDisorderService.importEdges();
+                            updateSuccessful = associatedWithDisorderService.submitUpdates(runEdgeUpdates(GeneAssociatedWithDisorder.class, c, associatedWithDisorderService::mapIds));
+                        associatedWithDisorderService.importEdges();
                         break;
                     case "protein_in_pathway":
                         if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, ProteinInPathway.attributes))
@@ -280,7 +280,11 @@ public class UpdateService {
                             updateSuccessful = proteinInteractsWithProteinService.submitUpdates(runEdgeUpdates(ProteinInteractsWithProtein.class, c, proteinInteractsWithProteinService::mapIds));
                         proteinInteractsWithProteinService.importEdges();
                         break;
-
+                    case "protein_encoded_by":
+                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, ProteinEncodedBy.attributes))
+                            updateSuccessful = proteinEncodedByService.submitUpdates(runEdgeUpdates(ProteinEncodedBy.class, c, proteinEncodedByService::mapIds));
+                        proteinEncodedByService.importEdges();
+                        break;
                 }
                 if (updateSuccessful)
                     log.debug("Update execution for " + k + ": Success!");

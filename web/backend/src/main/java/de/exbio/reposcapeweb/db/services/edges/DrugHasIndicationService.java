@@ -1,6 +1,5 @@
 package de.exbio.reposcapeweb.db.services.edges;
 
-import de.exbio.reposcapeweb.db.entities.edges.DisorderIsADisorder;
 import de.exbio.reposcapeweb.db.entities.edges.DrugHasIndication;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
 import de.exbio.reposcapeweb.db.repositories.edges.DrugHasIndicationRepository;
@@ -111,7 +110,7 @@ public class DrugHasIndicationService {
         return edgesTo.get(id);
     }
 
-    public Set<Integer> getEdgesFrom(Integer id){
+    public HashSet<Integer> getEdgesFrom(Integer id){
         return edgesFrom.get(id);
     }
 

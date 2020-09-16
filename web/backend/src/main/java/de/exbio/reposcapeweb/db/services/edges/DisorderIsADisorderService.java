@@ -1,6 +1,5 @@
 package de.exbio.reposcapeweb.db.services.edges;
 
-import de.exbio.reposcapeweb.db.entities.edges.DisorderComorbidWithDisorder;
 import de.exbio.reposcapeweb.db.entities.edges.DisorderIsADisorder;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
 import de.exbio.reposcapeweb.db.repositories.edges.DisorderIsADisorderRepository;
@@ -87,6 +86,10 @@ public class DisorderIsADisorderService {
         } catch (NullPointerException e) {
             return false;
         }
+    }
+
+    public HashSet<Integer> getEdges(int id){
+        return edges.get(id).entrySet().stream().filter(Map.Entry::getValue).map(Map.Entry::getKey).collect(Collectors.toCollection(HashSet::new));
     }
 
 

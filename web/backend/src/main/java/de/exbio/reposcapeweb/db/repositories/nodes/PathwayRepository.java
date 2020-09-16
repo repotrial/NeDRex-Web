@@ -9,6 +9,6 @@ import java.util.Collection;
 import java.util.List;
 
 @Repository
-public interface PathwayRepository extends CrudRepository<Pathway,Long> {
+public interface PathwayRepository extends CrudRepository<Pathway,Integer> {
     List<Pathway> findAllByPrimaryDomainIdIn(Collection<String> ids);
 }

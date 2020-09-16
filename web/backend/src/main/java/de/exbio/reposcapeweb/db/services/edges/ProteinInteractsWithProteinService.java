@@ -1,10 +1,7 @@
 package de.exbio.reposcapeweb.db.services.edges;
 
-import de.exbio.reposcapeweb.db.entities.edges.DrugHasIndication;
-import de.exbio.reposcapeweb.db.entities.edges.ProteinInPathway;
 import de.exbio.reposcapeweb.db.entities.edges.ProteinInteractsWithProtein;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
-import de.exbio.reposcapeweb.db.repositories.edges.ProteinInPathwayRepository;
 import de.exbio.reposcapeweb.db.repositories.edges.ProteinInteractsWithProteinRepository;
 import de.exbio.reposcapeweb.db.services.nodes.PathwayService;
 import de.exbio.reposcapeweb.db.services.nodes.ProteinService;
@@ -15,12 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -96,6 +88,10 @@ public class ProteinInteractsWithProteinService {
         } catch (NullPointerException e) {
             return false;
         }
+    }
+
+    public HashSet<Integer> getEdges(int id){
+        return edges.get(id).entrySet().stream().filter(Map.Entry::getValue).map(Map.Entry::getKey).collect(Collectors.toCollection(HashSet::new));
     }
 
 

@@ -90,6 +90,10 @@ public class DisorderComorbidWithDisorderService {
         }
     }
 
+    public HashSet<Integer> getEdges(int id){
+        return edges.get(id).entrySet().stream().filter(Map.Entry::getValue).map(Map.Entry::getKey).collect(Collectors.toCollection(HashSet::new));
+    }
+
 
     public PairId mapIds(Pair<String, String> ids) {
         return new PairId(disorderService.map(ids.getFirst()), disorderService.map(ids.getSecond()));

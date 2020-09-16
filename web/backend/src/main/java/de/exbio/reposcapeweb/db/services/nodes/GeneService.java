@@ -11,10 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -85,5 +82,9 @@ public class GeneService extends NodeService {
 
     public void setFilter(NodeFilter nf){
         this.allFilter = nf;
+    }
+
+    public Iterable<Gene> findAllByIds(Collection<Integer> ids){
+        return geneRepository.findAllById(ids);
     }
 }
