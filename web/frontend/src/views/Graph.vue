@@ -69,7 +69,6 @@ export default {
       this.directed = false;
       this.loadingColor = this.colors.bar.backend;
       this.$http.get(url).then(response => {
-        console.log(response.data)
         return response.data
       }).then(graph => {
         this.setGraph(graph)
@@ -81,7 +80,6 @@ export default {
 
     setGraph: function (graph) {
       this.loadingColor = this.colors.bar.vis
-      console.log(graph)
       if (graph) {
         if (graph.directed !== undefined)
           this.directed = graph.directed
@@ -109,6 +107,7 @@ export default {
       this.nodes = this.nodeSet.get({returnType: "Object"})
       // this.setNodeColors()
       this.loading = false;
+      this.$emit('finishedEvent')
     },
     loadData: function (payload) {
       this.loading = true
@@ -268,7 +267,7 @@ export default {
             this.nodes[nodeId].label = this.nodes[nodeId].hiddenLabel;
             this.nodes[nodeId].hiddenLabel = undefined;
           }
-          this.$emit('unselectionEvent')
+          this.$emit('selectionEvent')
         }
         this.highlight = false;
       }
@@ -325,8 +324,8 @@ export default {
 <style scoped lang="sass">
 .graph-window
   border: 1px solid gray
-  min-height: 100vh
-  height: 100vh
+  min-height: 75vh
+  height: 75vh
 
 .wrapper
   min-height: 100%

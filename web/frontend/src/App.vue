@@ -9,11 +9,16 @@
           >
             <v-tabs-slider></v-tabs-slider>
             <v-tab v-for="tab in tabslist" class="primary--text" v-on:click="selectTab(tab.id)" :key=tab.id>
-              <i :style="{color:tab.color}">
-                <font-awesome-icon :icon=tab.icon></font-awesome-icon>
-                {{ tab.label }}
-              </i>
-
+              <v-badge
+                dot
+                color="blue"
+                :value="tab.note"
+              >
+                <i :style="{color:tab.color}">
+                  <v-icon dense>{{tab.icon}}</v-icon>
+                  {{ tab.label }}
+                </i>
+              </v-badge>
             </v-tab>
 
           </v-tabs>
@@ -46,7 +51,7 @@
           >
             <v-list-item>
               <v-list-item-icon>
-                <font-awesome-icon icon="filter"/>
+                <v-icon>fas fa-filter</v-icon>
               </v-list-item-icon>
 
               <v-list-item-content>
@@ -55,7 +60,7 @@
             </v-list-item>
             <v-list-item>
               <v-list-item-icon>
-                <font-awesome-icon icon="search"/>
+                <v-icon>fas fa-search</v-icon>
               </v-list-item-icon>
 
               <v-list-item-content>
@@ -83,12 +88,12 @@
             </v-list-item-content>
           </v-list-item>
 
-          <v-simple-table v-if="selectedNode !== undefined">
+          <v-simple-table fixed-header v-if="selectedNode !== undefined">
             <template v-slot:default>
               <thead>
               <tr>
-                <th class="text-left">ID</th>
-                <th class="text-left">Label</th>
+                <th class="text-center">ID</th>
+                <th class="text-center">Label</th>
               </tr>
               </thead>
               <tbody>
@@ -109,17 +114,19 @@
     </v-navigation-drawer>
 
 
-    <!-- Sizes your content based upon application components -->
-    <v-main style="padding-top: 0; height: 60%; max-height: 60%">
-<!--      <template v-for="item in graphButtons">-->
-<!--        <v-btn :name=item.id :outlined="item.active" :dark="!item.active" v-on:click="loadGraph(item.id)"-->
-<!--               :color=item.color style="margin:5px">{{ item.label }}-->
-<!--        </v-btn>-->
-<!--      </template>-->
-
-      <v-container v-show="selectedTabId===2" fluid>
-        <Graph ref="graph" v-on:selectionEvent="loadSelection"
-        ></Graph>
+    <v-main style="padding-top: 0">
+      <v-container v-show="selectedTabId===0" fluid>
+        <div style="margin-top:20px">
+          <template v-for="item in graphButtons">
+            <v-btn :name=item.id :outlined="item.active" :dark="!item.active" v-on:click="loadGraph(item.id)"
+                   :color=item.color style="margin:5px">
+              {{ item.label }}
+            </v-btn>
+          </template>
+        </div>
+      </v-container>
+      <v-container v-show="selectedTabId===1" fluid>
+        <Graph ref="graph" v-on:selectionEvent="loadSelection" v-on:finishedEvent="setTabNotification(1)"></Graph>
       </v-container>
     </v-main>
 
@@ -130,8 +137,9 @@
 </template>
 
 <script>
-import {library} from '@fortawesome/fontawesome-svg-core'
-import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome'
+import Graph from './views/Graph.vue';
+import headerBar from './components/header.vue'
+
 
 export default {
   name: 'app',
@@ -156,6 +164,7 @@ export default {
     }
   },
   created() {
+    this.selectedTabId=0;
     this.colors = {
       buttons: {graphs: {active: "deep-purple accent-2", inactive: undefined}},
       tabs: {active: "rgba(25 118 210)", inactive: "rgba(0,0,0,.54)"}
@@ -166,16 +175,16 @@ export default {
       {id: 2, label: "Neuro-Drug Graph", color: this.colors.buttons.graphs.inactive, active: false}
     ]
     this.tabslist = [
-      {id: 1, label: "Start", icon: "filter", color: this.colors.tabs.active},
-      {id: 2, label: "Graph", icon: "project-diagram", color: this.colors.tabs.inactive},
-      {id: 3, label: "List", icon: "list-ul", color: this.colors.tabs.inactive},
-      {id: 4, label: "Statistics", icon: "chart-pie", color: this.colors.tabs.inactive},
+      {id: 0, label: "Start", icon: "fas fa-filter", color: this.colors.tabs.active, note: false},
+      {id: 1, label: "Graph", icon: "fas fa-project-diagram", color: this.colors.tabs.inactive, note: false},
+      {id: 2, label: "List", icon: "fas fa-list-ul", color: this.colors.tabs.inactive, note: false},
+      {id: 3, label: "Statistics", icon: "fas fa-chart-pie", color: this.colors.tabs.inactive, note: false},
     ]
   },
   // this.setGraph({message: "Default graph"})
   methods: {
     loadGraph: function (id) {
-      console.log(id)
+      this.tabslist[1].icon = "fas fa-circle-notch fa-spin"
       for (let index in this.graphButtons) {
         if (this.graphButtons[index].id === id) {
           if (this.graphButtons[index].active)
@@ -195,22 +204,32 @@ export default {
       }
       this.$refs.graph.loadData(this.graphLoad)
     },
+    setTabNotification: function (tabId) {
+      if (this.selectedTabId !== tabId)
+        this.tabslist[tabId].note = true
+      if(tabId===1){
+        this.tabslist[tabId].icon = "fas fa-project-diagram"
+      }
+    }
+    ,
     loadSelection: function (params) {
-      console.log("selection")
-      console.log(params)
-      this.selectedNode = params.primary;
-      this.neighborNodes = params.neighbors;
+      if(params) {
+        this.selectedNode = params.primary;
+        this.neighborNodes = params.neighbors;
+      }else{
+        this.selectedNode=undefined;
+        this.neighborNodes = [];
+      }
     },
     selectTab: function (tabid) {
-      console.log(tabid)
+      if (this.selectedTabId===tabid)
+        return
       let colInactive = this.colors.tabs.inactive;
       let colActive = this.colors.tabs.active;
       for (let idx in this.tabslist) {
-        if (this.tabslist[idx].id === tabid) {
-          if (this.tabslist[idx].color === colActive)
-            return
-          else
+        if (idx == tabid) {
             this.tabslist[idx].color = colActive
+            this.tabslist[idx].note = false
         } else
           this.tabslist[idx].color = colInactive
       }
@@ -218,20 +237,13 @@ export default {
     }
   },
   components: {
-    "font-awesome-icon": FontAwesomeIcon,
     headerBar,
     Graph
   },
 
 
 }
-import Graph from './views/Graph.vue';
-import {faFilter, faSearch, faProjectDiagram, faChartPie, faListUl} from '@fortawesome/free-solid-svg-icons'
 
-import headerBar from './components/header.vue'
-
-
-library.add(faFilter, faSearch, faProjectDiagram, faChartPie, faListUl)
 </script>
 
 <style lang="sass">
