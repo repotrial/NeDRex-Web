@@ -64,7 +64,7 @@ export default {
   }
   ,
   methods: {
-    requestData: function (url) {
+    getData: function (url) {
       this.loading = true;
       this.directed = false;
       this.loadingColor = this.colors.bar.backend;
@@ -121,14 +121,30 @@ export default {
       this.directed = defaults.directed;
 
       if (payload) {
-        if (payload.url !== undefined)
-          this.requestData(payload.url)
+        if (payload.get !== undefined)
+          this.getData(payload.get)
+        else if (payload.post !== undefined)
+          this.postData(payload.post)
         else
           this.drawGraph()
-      }else
+      } else
         this.drawGraph()
 
 
+    },
+    postData: function (post) {
+      this.loading = true;
+      this.directed = false;
+      this.loadingColor = this.colors.bar.backend;
+      this.$http.post("/getGraph",post).then(response => {
+        return response.data
+      }).then(graph => {
+        console.log(graph)
+        this.setGraph(graph)
+      }).catch(err => {
+        this.loadingColor = this.colors.bar.error;
+        console.log(err)
+      })
     }
     ,
     // setNodeColors: function () {

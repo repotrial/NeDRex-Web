@@ -15,7 +15,7 @@
                 :value="tab.note"
               >
                 <i :style="{color:tab.color}">
-                  <v-icon dense>{{tab.icon}}</v-icon>
+                  <v-icon dense>{{ tab.icon }}</v-icon>
                   {{ tab.label }}
                 </i>
               </v-badge>
@@ -164,7 +164,7 @@ export default {
     }
   },
   created() {
-    this.selectedTabId=0;
+    this.selectedTabId = 0;
     this.colors = {
       buttons: {graphs: {active: "deep-purple accent-2", inactive: undefined}},
       tabs: {active: "rgba(25 118 210)", inactive: "rgba(0,0,0,.54)"}
@@ -198,38 +198,53 @@ export default {
       if (id === 0) {
         this.graphLoad = {name: "default"}
       } else if (id === 1) {
-        this.graphLoad = {url: "/getExampleGraph1"}
+        this.graphLoad = {get: "/getExampleGraph1"}
       } else if (id === 2) {
-        this.graphLoad = {url: "/getExampleGraph2"}
+        this.graphLoad = {
+          post: {
+            nodes: {
+              disorder: {
+                filters: [
+                  {
+                    type: "match",
+                    expression: ".*((neur)|(prion)|(brain)|(enceph)|(cogni)).*"
+                  }
+                ]
+              }, drug: {}
+            },
+            edges: {DrugHasIndications: {}},
+            connectedOnly: true
+          }
+        }
       }
       this.$refs.graph.loadData(this.graphLoad)
     },
     setTabNotification: function (tabId) {
       if (this.selectedTabId !== tabId)
         this.tabslist[tabId].note = true
-      if(tabId===1){
+      if (tabId === 1) {
         this.tabslist[tabId].icon = "fas fa-project-diagram"
       }
     }
     ,
     loadSelection: function (params) {
-      if(params) {
+      if (params) {
         this.selectedNode = params.primary;
         this.neighborNodes = params.neighbors;
-      }else{
-        this.selectedNode=undefined;
+      } else {
+        this.selectedNode = undefined;
         this.neighborNodes = [];
       }
     },
     selectTab: function (tabid) {
-      if (this.selectedTabId===tabid)
+      if (this.selectedTabId === tabid)
         return
       let colInactive = this.colors.tabs.inactive;
       let colActive = this.colors.tabs.active;
       for (let idx in this.tabslist) {
         if (idx == tabid) {
-            this.tabslist[idx].color = colActive
-            this.tabslist[idx].note = false
+          this.tabslist[idx].color = colActive
+          this.tabslist[idx].note = false
         } else
           this.tabslist[idx].color = colInactive
       }

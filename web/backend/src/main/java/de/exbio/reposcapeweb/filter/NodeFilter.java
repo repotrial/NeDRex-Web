@@ -1,5 +1,6 @@
 package de.exbio.reposcapeweb.filter;
 
+import de.exbio.reposcapeweb.communication.requests.Filter;
 import de.exbio.reposcapeweb.db.entities.RepoTrialNode;
 
 import java.util.*;
@@ -106,6 +107,35 @@ public class NodeFilter {
         return filtered;
     }
 
+    public NodeFilter startsWith(String key) {
+        NodeFilter filtered = new NodeFilter();
+        uniqueMap.keySet().forEach(type -> filtered.setUniqueEntry(type, uniqueStartsWith(type, key)));
+        distinctMap.keySet().forEach(type -> filtered.setDistinctEntry(type, distinctStartsWith(type, key)));
+        return filtered;
+    }
+
+    public NodeFilter matches(String key) {
+        NodeFilter filtered = new NodeFilter();
+        uniqueMap.keySet().forEach(type -> filtered.setUniqueEntry(type, uniqueMatches(type, key)));
+        distinctMap.keySet().forEach(type -> filtered.setDistinctEntry(type, distinctMatches(type, key)));
+        return filtered;
+    }
+
+    public NodeFilter contains(String key) {
+        NodeFilter filtered = new NodeFilter();
+        uniqueMap.keySet().forEach(type -> filtered.setUniqueEntry(type, uniqueContains(type, key)));
+        distinctMap.keySet().forEach(type -> filtered.setDistinctEntry(type, distinctContains(type, key)));
+        return filtered;
+    }
+
+    public void setUniqueEntry(FilterType type, TreeMap<FilterKey, FilterEntry> entries) {
+        this.uniqueMap.put(type, entries);
+    }
+
+    public void setDistinctEntry(FilterType type, TreeMap<FilterKey, List<FilterEntry>> entries) {
+        this.distinctMap.put(type, entries);
+    }
+
     public LinkedList<FilterEntry> filterMatches(String key, int size) {
         LinkedList<FilterEntry> filtered = new LinkedList<>();
 
@@ -115,6 +145,28 @@ public class NodeFilter {
 
         uniqueMap.keySet().forEach(type -> entries.addAll(filterUniqueMatches(type, key)));
         distinctMap.keySet().forEach(type -> entries.addAll(filterDistinctMatches(type, key)));
+
+        AtomicBoolean done = new AtomicBoolean(false);
+        entries.forEach(e -> {
+                    if (done.get())
+                        return;
+                    if (ids.add(e.getNodeId()))
+                        filtered.add(e);
+                    if (filtered.size() == size)
+                        done.set(true);
+                }
+        );
+        return filtered;
+    }
+
+    public LinkedList<FilterEntry> toList(int size) {
+        LinkedList<FilterEntry> filtered = new LinkedList<>();
+
+
+        HashSet<Integer> ids = new HashSet<>();
+
+        TreeSet<FilterEntry> entries = uniqueMap.values().stream().map(TreeMap::values).flatMap(Collection::stream).collect(Collectors.toCollection(TreeSet::new));
+        entries.addAll(distinctMap.values().stream().map(TreeMap::values).flatMap(Collection::stream).flatMap(Collection::stream).collect(Collectors.toSet()));
 
         AtomicBoolean done = new AtomicBoolean(false);
         entries.forEach(e -> {
@@ -153,6 +205,34 @@ public class NodeFilter {
         }
     }
 
+    private TreeMap<FilterKey, FilterEntry> uniqueStartsWith(FilterType type, String key) {
+        TreeMap<FilterKey, FilterEntry> filtered = new TreeMap<>();
+        try {
+            uniqueMap.get(type).entrySet().stream().filter(k -> k.getKey().startsWith(key)).forEach(e -> filtered.put(e.getKey(), e.getValue()));
+        } catch (NullPointerException ignore) {
+        }
+        return filtered;
+    }
+
+    private TreeMap<FilterKey, FilterEntry> uniqueContains(FilterType type, String key) {
+        TreeMap<FilterKey, FilterEntry> filtered = new TreeMap<>();
+        try {
+            uniqueMap.get(type).entrySet().stream().filter(k -> k.getKey().contains(key)).forEach(e -> filtered.put(e.getKey(), e.getValue()));
+        } catch (NullPointerException ignore) {
+        }
+        return filtered;
+    }
+
+    private TreeMap<FilterKey, FilterEntry> uniqueMatches(FilterType type, String key) {
+        TreeMap<FilterKey, FilterEntry> filtered = new TreeMap<>();
+        try {
+            uniqueMap.get(type).entrySet().stream().filter(k -> k.getKey().matches(key)).forEach(e -> filtered.put(e.getKey(), e.getValue()));
+        } catch (NullPointerException ignore) {
+        }
+        return filtered;
+    }
+
+
     private HashSet<FilterEntry> filterDistinctContains(FilterType type, String key) {
         try {
             return distinctMap.get(type).entrySet().stream().filter(k -> k.getKey().contains(key)).map(Map.Entry::getValue).flatMap(Collection::stream).collect(Collectors.toCollection(HashSet::new));
@@ -175,6 +255,35 @@ public class NodeFilter {
         } catch (NullPointerException e) {
             return new HashSet<>();
         }
+    }
+
+    private TreeMap<FilterKey, List<FilterEntry>> distinctContains(FilterType type, String key) {
+        TreeMap<FilterKey, List<FilterEntry>> out = new TreeMap<>();
+        try {
+            distinctMap.get(type).entrySet().stream().filter(k -> k.getKey().contains(key)).forEach((e -> out.put(e.getKey(), e.getValue())));
+        } catch (NullPointerException ignore) {
+        }
+        return out;
+    }
+
+
+    private TreeMap<FilterKey, List<FilterEntry>> distinctStartsWith(FilterType type, String key) {
+        TreeMap<FilterKey, List<FilterEntry>> out = new TreeMap<>();
+        try {
+            distinctMap.get(type).entrySet().stream().filter(k -> k.getKey().startsWith(key)).forEach((e -> out.put(e.getKey(), e.getValue())));
+        } catch (NullPointerException ignore) {
+        }
+        return out;
+    }
+
+
+    private TreeMap<FilterKey, List<FilterEntry>> distinctMatches(FilterType type, String key) {
+        TreeMap<FilterKey, List<FilterEntry>> out = new TreeMap<>();
+        try {
+            distinctMap.get(type).entrySet().stream().filter(k -> k.getKey().matches(key)).forEach((e -> out.put(e.getKey(), e.getValue())));
+        } catch (NullPointerException ignore) {
+        }
+        return out;
     }
 
 
@@ -279,5 +388,23 @@ public class NodeFilter {
 
     public int size() {
         return distinctMap.size() + uniqueMap.size();
+    }
+
+
+    public NodeFilter apply(String type, String value) {
+        switch (type) {
+            case "start":
+                return startsWith(value);
+            case "contain":
+                return contains(value);
+            case "match":
+                return matches(value);
+        }
+        return null;
+    }
+
+
+    public NodeFilter apply(Filter f) {
+        return apply(f.type, f.expression);
     }
 }

@@ -1,10 +1,11 @@
-package de.exbio.reposcapeweb.controller;
+package de.exbio.reposcapeweb.communication.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.exbio.reposcapeweb.communication.requests.FilterGroup;
+import de.exbio.reposcapeweb.communication.requests.GraphRequest;
 import de.exbio.reposcapeweb.db.services.nodes.DrugService;
-import de.exbio.reposcapeweb.reponses.WebGraph;
-import de.exbio.reposcapeweb.reponses.WebGraphService;
+import de.exbio.reposcapeweb.communication.reponses.WebGraphService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +21,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * @author Andreas Maier
  */
 @Controller
-@RequestMapping(value="/api")
+@RequestMapping(value = "/api")
 public class RequestController {
 
     private final Logger log = LoggerFactory.getLogger(RequestController.class);
@@ -30,9 +31,9 @@ public class RequestController {
     private final WebGraphService webGraphService;
 
     @Autowired
-    public RequestController(DrugService drugService,ObjectMapper objectMapper, WebGraphService webGraphService) {
+    public RequestController(DrugService drugService, ObjectMapper objectMapper, WebGraphService webGraphService) {
         this.drugService = drugService;
-        this.objectMapper= objectMapper;
+        this.objectMapper = objectMapper;
         this.webGraphService = webGraphService;
     }
 
@@ -46,7 +47,7 @@ public class RequestController {
 
     @RequestMapping(value = "/getExampleGraph1", method = RequestMethod.GET)
     @ResponseBody
-    public String getExampleGraph1(){
+    public String getExampleGraph1() {
         log.info("got request on comorbidity graph");
         try {
             String out = objectMapper.writeValueAsString(webGraphService.getCancerComorbidity());
@@ -60,11 +61,31 @@ public class RequestController {
 
     @RequestMapping(value = "/getExampleGraph2", method = RequestMethod.GET)
     @ResponseBody
-    public String getExampleGraph2(){
+    public String getExampleGraph2() {
         log.info("got request on neuro-drug-graph");
         try {
             String out = objectMapper.writeValueAsString(webGraphService.getNeuroDrugs());
             log.info("Answered request!");
+            return out;
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @RequestMapping(value = "/getFiltered", method = RequestMethod.POST)
+    @ResponseBody
+    public String getFiltered(@RequestBody FilterGroup filters) {
+        return "";
+    }
+
+    @RequestMapping(value = "/getGraph", method = RequestMethod.POST)
+    @ResponseBody
+    public String getGraph(@RequestBody GraphRequest request) {
+        log.info("Requested a graph");
+        try {
+            String out = objectMapper.writeValueAsString(webGraphService.getGraph(request));
+            log.info("Graph sent");
             return out;
         } catch (JsonProcessingException e) {
             e.printStackTrace();

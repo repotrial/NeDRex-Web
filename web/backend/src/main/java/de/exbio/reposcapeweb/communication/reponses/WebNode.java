@@ -1,4 +1,4 @@
-package de.exbio.reposcapeweb.reponses;
+package de.exbio.reposcapeweb.communication.reponses;
 
 public class WebNode {
     String id;
@@ -67,5 +67,9 @@ public class WebNode {
 
     public void setGroup(String group) {
         this.group = group;
+    }
+
+    public boolean hasEdge() {
+        return hasEdge;
     }
 }

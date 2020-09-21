@@ -1,18 +1,25 @@
-package de.exbio.reposcapeweb.reponses;
+package de.exbio.reposcapeweb.communication.reponses;
 
+import de.exbio.reposcapeweb.communication.controller.RequestController;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class WebGraph {
+    private final Logger log = LoggerFactory.getLogger(WebGraph.class);
+    //TODO map with edge directions?
     boolean directed =false;
     String title;
     LinkedList<WebNode> nodes = new LinkedList<>();
     LinkedList<WebEdge> edges = new LinkedList<>();
-    int radiusFactor = 10;
+    private int radiusFactor = 10;
 //    int y = 1;
 //    int x = 0;
-    int f = 10;
+    private int f = 10;
 
     public WebGraph(){
     }
@@ -66,6 +73,7 @@ public class WebGraph {
     }
 
     public void drawDoubleCircular(){
+        log.debug("Layouting: start");
         LinkedList<WebNode> connectedNodes = new LinkedList<>();
         LinkedList<WebNode> isolatedNodes = new LinkedList<>();
         nodes.forEach(n -> {
@@ -77,6 +85,7 @@ public class WebGraph {
         });
         drawCircular(connectedNodes,radiusFactor);
         drawCircular(isolatedNodes,radiusFactor*0.4);
+        log.debug("Layouting: finished!");
     }
 
     public boolean isDirected() {
@@ -85,5 +94,9 @@ public class WebGraph {
 
     public void setDirected(boolean directed) {
         this.directed = directed;
+    }
+
+    public void addNodes(Collection<WebNode> nodes) {
+        this.nodes.addAll(nodes);
     }
 }
