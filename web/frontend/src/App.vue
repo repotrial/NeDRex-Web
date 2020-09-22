@@ -26,52 +26,52 @@
       </v-toolbar>
     </v-card>
     <v-navigation-drawer app>
+<!--      <v-card-->
+<!--        height="200"-->
+<!--        width="256"-->
+<!--        class="mx-auto"-->
+<!--      >-->
+<!--        <v-navigation-drawer permanent>-->
+<!--          <v-list-item>-->
+<!--            <v-list-item-content>-->
+<!--              <v-list-item-title class="title">-->
+<!--                Selection Tools-->
+<!--              </v-list-item-title>-->
+<!--              <v-list-item-subtitle>-->
+<!--                discover the graph-->
+<!--              </v-list-item-subtitle>-->
+<!--            </v-list-item-content>-->
+<!--          </v-list-item>-->
+
+<!--          <v-divider></v-divider>-->
+
+<!--          <v-list-->
+<!--            dense-->
+<!--            nav-->
+<!--          >-->
+<!--            <v-list-item>-->
+<!--              <v-list-item-icon>-->
+<!--                <v-icon>fas fa-filter</v-icon>-->
+<!--              </v-list-item-icon>-->
+
+<!--              <v-list-item-content>-->
+<!--                <v-list-item-title>Apply Filter</v-list-item-title>-->
+<!--              </v-list-item-content>-->
+<!--            </v-list-item>-->
+<!--            <v-list-item>-->
+<!--              <v-list-item-icon>-->
+<!--                <v-icon>fas fa-search</v-icon>-->
+<!--              </v-list-item-icon>-->
+
+<!--              <v-list-item-content>-->
+<!--                <v-list-item-title>Search</v-list-item-title>-->
+<!--              </v-list-item-content>-->
+<!--            </v-list-item>-->
+<!--          </v-list>-->
+<!--        </v-navigation-drawer>-->
+<!--      </v-card>-->
       <v-card
-        height="200"
-        width="256"
-        class="mx-auto"
-      >
-        <v-navigation-drawer permanent>
-          <v-list-item>
-            <v-list-item-content>
-              <v-list-item-title class="title">
-                Selection Tools
-              </v-list-item-title>
-              <v-list-item-subtitle>
-                discover the graph
-              </v-list-item-subtitle>
-            </v-list-item-content>
-          </v-list-item>
-
-          <v-divider></v-divider>
-
-          <v-list
-            dense
-            nav
-          >
-            <v-list-item>
-              <v-list-item-icon>
-                <v-icon>fas fa-filter</v-icon>
-              </v-list-item-icon>
-
-              <v-list-item-content>
-                <v-list-item-title>Apply Filter</v-list-item-title>
-              </v-list-item-content>
-            </v-list-item>
-            <v-list-item>
-              <v-list-item-icon>
-                <v-icon>fas fa-search</v-icon>
-              </v-list-item-icon>
-
-              <v-list-item-content>
-                <v-list-item-title>Search</v-list-item-title>
-              </v-list-item-content>
-            </v-list-item>
-          </v-list>
-        </v-navigation-drawer>
-      </v-card>
-      <v-card
-        height="670"
+        height="100%"
         width="256"
         class="mx-auto"
       >
@@ -117,14 +117,6 @@
     <v-main style="padding-top: 0">
       <v-container v-show="selectedTabId===0" fluid>
         <Start ref="start" v-on:graphLoadEvent="loadGraph" :colors="colors" ></Start>
-<!--        <div style="margin-top:20px">-->
-<!--          <template v-for="item in graphButtons">-->
-<!--            <v-btn :name=item.id :outlined="item.active" :dark="!item.active" v-on:click="loadGraph(item.id)"-->
-<!--                   :color=item.color style="margin:5px">-->
-<!--              {{ item.label }}-->
-<!--            </v-btn>-->
-<!--          </template>-->
-<!--        </div>-->
       </v-container>
       <v-container v-show="selectedTabId===1" fluid>
         <Graph ref="graph" v-on:selectionEvent="loadSelection" v-on:finishedEvent="setTabNotification(1)"></Graph>

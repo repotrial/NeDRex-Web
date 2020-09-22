@@ -1,11 +1,28 @@
 <template>
   <div style="margin-top:20px">
-    <template v-for="item in graphButtons">
-      <v-btn :name=item.id :outlined="item.active" :dark="!item.active" v-on:click="loadGraph(item.id)"
-             :color=item.color style="margin:5px">
-        {{ item.label }}
-      </v-btn>
-    </template>
+    <v-container id="dropdown-example">
+      <v-card class="mx-auto">
+        <v-list-item>
+          <v-list-item-content>
+            <v-list-item-title class="title">
+              Predefined Graphs
+            </v-list-item-title>
+            <v-list-item-subtitle>
+              Start exploring by choosing a start example
+            </v-list-item-subtitle>
+          </v-list-item-content>
+        </v-list-item>
+        <v-divider></v-divider>
+        <v-btn-toggle v-model="text" tile group>
+          <template v-for="item in graphButtons">
+            <v-btn :name=item.id :outlined="item.active" v-on:click="loadGraph(item.id)"
+                   :color=item.color style="margin:5px">
+              {{ item.label }}
+            </v-btn>
+          </template>
+        </v-btn-toggle>
+      </v-card>
+    </v-container>
   </div>
 </template>
 
@@ -17,7 +34,6 @@ export default {
     colors: {
       type: Object
     },
-    test:"unset"
   },
   data() {
     return {
@@ -34,15 +50,14 @@ export default {
   methods: {
 
     loadGraph: function (id) {
+      console.log(id)
       for (let index in this.graphButtons) {
         if (this.graphButtons[index].id === id) {
           if (this.graphButtons[index].active)
             return;
           this.graphButtons[index].active = true
-          // this.graphButtons[index].color = this.colors.buttons.graphs.active;
         } else
           this.graphButtons[index].active = false
-        // this.graphButtons[index].color = this.colors.buttons.graphs.inactive;
       }
       if (id === 0) {
         this.graphLoad = {name: "default"}
