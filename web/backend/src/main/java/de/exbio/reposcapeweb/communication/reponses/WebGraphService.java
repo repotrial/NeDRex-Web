@@ -33,12 +33,13 @@ public class WebGraphService {
             NodeFilter nf = nodeController.getFilter(k);
             if (v.filters != null)
                 for (Filter filter : v.filters) {
+                    System.out.println(filter.type +" -> "+ filter.expression);
                     nf.apply(filter);
                 }
             HashMap<Integer, WebNode> ids = new HashMap<>();
             nodeIds.put(k, ids);
             nf.toList(-1).forEach(entry -> {
-                ids.put(entry.getNodeId(), new WebNode(prefix, entry.getNodeId(), entry.getNodeId() + "", k));
+                ids.put(entry.getNodeId(), new WebNode(prefix, entry.getNodeId(), entry.getNodeId() + "", entry.getName(), k));
             });
         });
         String[] nodes = nodeIds.keySet().toArray(new String[nodeIds.size()]);
@@ -58,23 +59,27 @@ public class WebGraphService {
                     if (request.edges.containsKey(edgeName)) {
                         //TODO add edgeFilters
                         nodeIds.get(nodeI).forEach((k1, v1) -> {
-                            nodeIds.get(nodeJ).forEach((k2, v2) -> {
-                                //TODO chanche toGetEdges() for each direction -> iterate through results, set hasEdge true for the matching
-                                if (edgeController.isEdge(edgeName, nodeI, nodeJ, k1, k2)) {
-                                    v1.hasEdge = true;
-                                    v2.hasEdge = true;
-                                    graph.addEdge(new WebEdge(prefixI, k1, prefixJ, k2));
-                                }
-                            });
+                            try {
+                                edgeController.getEdges(edgeName, nodeI, k1).forEach(t -> {
+                                    try {
+                                        nodeIds.get(nodeJ).get(t).hasEdge = true;
+                                        v1.hasEdge = true;
+                                        graph.addEdge(new WebEdge(prefixI, k1, prefixJ, t));
+                                    } catch (NullPointerException ignore) {
+
+                                    }
+                                });
+                            }catch (NullPointerException ignore){
+                            }
                         });
                     }
                 });
             }
         }
         graph.addNodes(request.connectedOnly ?
-                nodeIds.values().stream().map(HashMap::values).flatMap(Collection::stream).collect(Collectors.toSet())
-                :
                 nodeIds.values().stream().map(HashMap::values).flatMap(Collection::stream).filter(WebNode::hasEdge).collect(Collectors.toSet())
+                :
+                nodeIds.values().stream().map(HashMap::values).flatMap(Collection::stream).collect(Collectors.toSet())
         );
         graph.drawDoubleCircular();
         return graph;

@@ -136,7 +136,7 @@ export default {
       this.loading = true;
       this.directed = false;
       this.loadingColor = this.colors.bar.backend;
-      this.$http.post("/getGraph",post).then(response => {
+      this.$http.post("/getGraph", post).then(response => {
         return response.data
       }).then(graph => {
         console.log(graph)
@@ -147,6 +147,10 @@ export default {
       })
     }
     ,
+    setSelection: function (nodes) {
+      this.$refs.network.selectNodes(nodes)
+      this.identifyNeighbors(nodes[0])
+    },
     // setNodeColors: function () {
     //   let nodesContainColor = false
     //   if (this.options.nodes.color !== undefined) {
@@ -166,23 +170,23 @@ export default {
       return {
         directed: true,
         nodes: new DataSet([
-          {id: 1, group: 'drugs', label: 'Drug', title: 'Drug', shape: 'circle'},
-          {id: 2, group: 'drugs', label: 'Protein', title: 'Protein', shape: 'circle'},
-          {id: 3, group: 'drugs', label: 'Pathway', title: 'Pathway', shape: 'circle'},
-          {id: 4, group: 'drugs', label: 'Gene', title: 'Gene', shape: 'circle'},
-          {id: 5, group: 'drugs', label: 'Disorder', title: 'Disorder', shape: 'circle'},
+          {id: 1, group: 'drug', label: 'Drug', title: 'Drug', shape: 'circle'},
+          {id: 2, group: 'protein', label: 'Protein', title: 'Protein', shape: 'circle'},
+          {id: 3, group: 'pathway', label: 'Pathway', title: 'Pathway', shape: 'circle'},
+          {id: 4, group: 'gene', label: 'Gene', title: 'Gene', shape: 'circle'},
+          {id: 5, group: 'disorder', label: 'Disorder', title: 'Disorder', shape: 'circle'},
         ]),
         edges: new DataSet([
           {from: 1, to: 2, label: 'DrugHasTarget'},
-          {from: 1, to: 4, label: 'DrugHasTarget'},
-          {from: 2, to: 2, label: 'ProteinInteractsWithProtein'},
+          {from: 1, to: 4, label: 'DrugHasTarget', dashes: true},
+          {from: 2, to: 2, label: 'ProteinInteractsWithProtein',},
           {from: 2, to: 3, label: 'ProteinInPathway'},
           {from: 2, to: 4, label: 'ProteinEncodedBy'},
-          {from: 2, to: 5, label: 'ProteinAssociatedWithDisorder'},
+          {from: 2, to: 5, label: 'ProteinAssociatedWithDisorder', dashes: true},
           {from: 4, to: 5, label: 'GeneAssociatedWithDisorder'},
           {from: 5, to: 5, label: 'DisorderComorbidWithDisorder'},
           {from: 5, to: 5, label: 'DisorderIsADisorder'},
-          {from: 5, to: 1, label: 'DrugHasIndication'},
+          {from: 1, to: 5, label: 'DrugHasIndication'},
         ]),
         layout: {
           improvedLayout: true,
@@ -192,19 +196,43 @@ export default {
         },
         options: {
           groups: {
-            drugs: {
+            drug: {
               color: {
-                border: '#2B7CE9',
-                background: '#D2E5FF',
-                highlight: {border: '#2B7CE9', background: '#D2E5FF'}
+                border: '#00CC96',
+                background: '#b4cdcc',
+                highlight: {border: '#00CC96', background: '#b4cdcc'}
               }
             },
             disorder: {
               color: {
-                border: '#e92b2b',
+                border: '#EF553B',
 
-                background: '#ffd2d2',
-                highlight: {border: '#e92b2b', background: '#ffd2d2'}
+                background: '#ecd0cb',
+                highlight: {border: '#EF553B', background: '#ecd0cb'}
+              }
+            },
+            gene: {
+              color: {
+                border: '#636EFA',
+
+                background: '#d6d9f8',
+                highlight: {border: '#636EFA', background: '#d6d9f8'}
+              }
+            },
+            protein: {
+              color: {
+                border: '#19d3f3',
+
+                background: '#bcdfe5',
+                highlight: {border: '#19d3f3', background: '#bcdfe5'}
+              }
+            },
+            pathway: {
+              color: {
+                border: '#fecb52',
+
+                background: '#fae6c1',
+                highlight: {border: '#fecb52', background: '#fae6c1'}
               }
             },
             other: {
@@ -221,7 +249,7 @@ export default {
             // arrows:{to:{enabled:true}},
             // scaling:{label:{enabled: true}},
             smooth: {enabled: true},
-            color: 'gray',
+            color: '#454545',
             // hidden: true,
             width: 0.3,
             physics: false,
@@ -262,29 +290,16 @@ export default {
     onClick: function (params) {
       if (params.nodes.length > 0) {
         let selected = params.nodes[0];
-        this.highlight = true;
-        this.uncolorNodes()
-
-        let toColor = []
-        toColor.push(selected)
-        let neighbors = []
-        this.getConnectedNodes(selected).forEach(n => {
-          toColor.push(n)
-          if (n !== selected)
-            neighbors.push(this.nodeSet.get(n))
-        })
-        this.recolorPrimary(toColor)
-        this.$emit('selectionEvent', {primary: this.nodeSet.get(selected), neighbors: neighbors})
+        this.identifyNeighbors(selected)
       } else if (this.highlight === true) {
-        // reset all nodes
-        for (let nodeId in this.nodes) {
-          this.nodes[nodeId].color = undefined
-          if (this.nodes[nodeId].hiddenLabel !== undefined) {
-            this.nodes[nodeId].label = this.nodes[nodeId].hiddenLabel;
-            this.nodes[nodeId].hiddenLabel = undefined;
-          }
-          this.$emit('selectionEvent')
-        }
+        // for (let nodeId in this.nodes) {
+        //   this.nodes[nodeId].color = undefined
+        //   if (this.nodes[nodeId].hiddenLabel !== undefined) {
+        //     this.nodes[nodeId].label = this.nodes[nodeId].hiddenLabel;
+        //     this.nodes[nodeId].hiddenLabel = undefined;
+        //   }
+        this.$emit('selectionEvent')
+        // }
         this.highlight = false;
       }
 
@@ -293,6 +308,21 @@ export default {
 
     }
     ,
+    identifyNeighbors: function (selected) {
+      //   this.highlight = true;
+      //   this.uncolorNodes()
+      //
+      //   let toColor = []
+      //   toColor.push(selected)
+      let neighbors = []
+      this.getConnectedNodes(selected).forEach(n => {
+        // toColor.push(n)
+        if (n !== selected)
+          neighbors.push(this.nodeSet.get(n))
+      })
+      //   this.recolorPrimary(toColor)
+      this.$emit('selectionEvent', {primary: this.nodeSet.get(selected), neighbors: neighbors})
+    },
     uncolorNodes: function () {
       for (let nodeId in this.nodes) {
         this.nodes[nodeId].color = "rgba(200,200,200,0.5)";

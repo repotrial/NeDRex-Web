@@ -21,6 +21,13 @@ public class WebNode {
         this.group=group;
     }
 
+    public WebNode(String prefix,int id, String label,String title, String group){
+        this.title=title;
+        this.id = prefix+id;
+        this.label = label;
+        this.group=group;
+    }
+
     public String getId() {
         return id+"";
     }

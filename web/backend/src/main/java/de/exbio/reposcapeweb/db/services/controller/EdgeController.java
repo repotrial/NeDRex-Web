@@ -74,14 +74,14 @@ public class EdgeController {
                 nodes2edge.put(v.first, new HashMap<>());
             if (!nodes2edge.get(v.first).containsKey(v.second))
                 nodes2edge.get(v.first).put(v.second, new LinkedList<>(Collections.singletonList(k)));
-            else
+            else if (!v.first.equals(v.second))
                 nodes2edge.get(v.first).get(v.second).add(k);
 
             if (!nodes2edge.containsKey(v.second))
                 nodes2edge.put(v.second, new HashMap<>());
             if (!nodes2edge.get(v.second).containsKey(v.first))
                 nodes2edge.get(v.second).put(v.first, new LinkedList<>(Collections.singletonList(k)));
-            else
+            else if (!v.first.equals(v.second))
                 nodes2edge.get(v.second).get(v.first).add(k);
 
         });
@@ -276,4 +276,64 @@ public class EdgeController {
         }
         return false;
     }
+
+    public HashSet<Integer> getEdges(String edgeName, String firstType, Integer node) {
+        if (edge2node.get(edgeName).first.equals(firstType))
+            return getEdgesFrom(edgeName, node);
+        return getEdgesTo(edgeName, node);
+    }
+
+    private HashSet<Integer> getEdgesFrom(String edgeName, Integer node) {
+        switch (edgeName) {
+            case "GeneAssociatedWithDisorder":
+                return getGenesAssociatedWithDisorderFrom(node);
+            case "DrugHasTargetGene":
+                return getDrugHasTargetGeneFrom(node);
+            case "ProteinEncodedBy":
+                return getProteinEncodedByFrom(node);
+            case "DrugHasIndication":
+                return getDrugHasIndicationFrom(node);
+            case "DrugHasTargetProtein":
+                return getDrugHasTargetProteinFrom(node);
+            case "ProteinInteractsWithProtein":
+                return getProteinInteractsWithProtein(node);
+            case "ProteinInPathway":
+                return getProteinInPathwayFrom(node);
+            case "ProteinAssociatedWithDisorder":
+                return getProteinAssociatedWithDisorderFrom(node);
+            case "DisorderIsADisorder":
+                return getDisorderIsADisorder(node);
+            case "DisorderComorbidWithDisorder":
+                return getDisorderComorbidWithDisorder(node);
+        }
+        return null;
+    }
+
+    private HashSet<Integer> getEdgesTo(String edgeName, Integer node) {
+        switch (edgeName) {
+            case "GeneAssociatedWithDisorder":
+                return getGenesAssociatedWithDisorderTo(node);
+            case "DrugHasTargetGene":
+                return getDrugHasTargetGeneTo(node);
+            case "ProteinEncodedBy":
+                return getProteinEncodedByTo(node);
+            case "DrugHasIndication":
+                return getDrugHasIndicationTo(node);
+            case "DrugHasTargetProtein":
+                return getDrugHasTargetProteinTo(node);
+            case "ProteinInteractsWithProtein":
+                return getProteinInteractsWithProtein(node);
+            case "ProteinInPathway":
+                return getProteinInPathwayTo(node);
+            case "ProteinAssociatedWithDisorder":
+                return getProteinAssociatedWithDisorderTo(node);
+            case "DisorderIsADisorder":
+                return getDisorderIsADisorder(node);
+            case "DisorderComorbidWithDisorder":
+                return getDisorderComorbidWithDisorder(node);
+        }
+        return null;
+    }
+
+
 }

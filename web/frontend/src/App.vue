@@ -101,7 +101,7 @@
                 <td><b>{{ selectedNode.id }}</b></td>
                 <td><b>{{ selectedNode.title }}</b></td>
               </tr>
-              <tr v-for="item in neighborNodes" :key="item.id">
+              <tr v-for="item in neighborNodes" :key="item.id" v-on:click="setSelectedNode(item.id)">
                 <td>{{ item.id }}</td>
                 <td>{{ item.title }}</td>
               </tr>
@@ -201,19 +201,15 @@ export default {
         this.graphLoad = {get: "/getExampleGraph1"}
       } else if (id === 2) {
         this.graphLoad = {
-          post: {
-            nodes: {
-              disorder: {
-                filters: [
-                  {
-                    type: "match",
+          post: {nodes: {disorder: {filters: [
+                  {type: "match",
                     expression: ".*((neur)|(prion)|(brain)|(enceph)|(cogni)).*"
                   }
                 ]
-              }, drug: {}
+              },drug: {}
             },
-            edges: {DrugHasIndications: {}},
-            connectedOnly: true
+            edges: { "DrugHasIndication":{}},
+            connectedOnly:true
           }
         }
       }
@@ -235,6 +231,9 @@ export default {
         this.selectedNode = undefined;
         this.neighborNodes = [];
       }
+    },
+    setSelectedNode: function (nodeId){
+      this.$refs.graph.setSelection([nodeId]);
     },
     selectTab: function (tabid) {
       if (this.selectedTabId === tabid)
