@@ -116,14 +116,15 @@
 
     <v-main style="padding-top: 0">
       <v-container v-show="selectedTabId===0" fluid>
-        <div style="margin-top:20px">
-          <template v-for="item in graphButtons">
-            <v-btn :name=item.id :outlined="item.active" :dark="!item.active" v-on:click="loadGraph(item.id)"
-                   :color=item.color style="margin:5px">
-              {{ item.label }}
-            </v-btn>
-          </template>
-        </div>
+        <Start ref="start" v-on:graphLoadEvent="loadGraph" :colors="colors" ></Start>
+<!--        <div style="margin-top:20px">-->
+<!--          <template v-for="item in graphButtons">-->
+<!--            <v-btn :name=item.id :outlined="item.active" :dark="!item.active" v-on:click="loadGraph(item.id)"-->
+<!--                   :color=item.color style="margin:5px">-->
+<!--              {{ item.label }}-->
+<!--            </v-btn>-->
+<!--          </template>-->
+<!--        </div>-->
       </v-container>
       <v-container v-show="selectedTabId===1" fluid>
         <Graph ref="graph" v-on:selectionEvent="loadSelection" v-on:finishedEvent="setTabNotification(1)"></Graph>
@@ -138,6 +139,7 @@
 
 <script>
 import Graph from './views/Graph.vue';
+import Start from './views/Start.vue';
 import headerBar from './components/header.vue'
 
 
@@ -148,7 +150,6 @@ export default {
   exampleGraph: undefined,
   selectedNode: undefined,
   neighborNodes: [],
-  graphButtons: [],
   selectedTabId: 0,
   colors: {},
   tabslist: {},
@@ -158,22 +159,17 @@ export default {
       graphKey: 0,
       neighborNodes: this.neighborNodes,
       selectedNode: this.selectedNode,
-      graphButtons: this.graphButtons,
       tabslist: this.tabslist,
       selectedTabId: this.selectedTabId,
+      colors: this.colors,
     }
   },
   created() {
-    this.selectedTabId = 0;
     this.colors = {
       buttons: {graphs: {active: "deep-purple accent-2", inactive: undefined}},
       tabs: {active: "rgba(25 118 210)", inactive: "rgba(0,0,0,.54)"}
     }
-    this.graphButtons = [
-      {id: 0, label: "Default Graph", color: this.colors.buttons.graphs.inactive, active: true},
-      {id: 1, label: "Cancer-Comorbidity Graph", color: this.colors.buttons.graphs.inactive, active: false},
-      {id: 2, label: "Neuro-Drug Graph", color: this.colors.buttons.graphs.inactive, active: false}
-    ]
+    this.selectedTabId = 0;
     this.tabslist = [
       {id: 0, label: "Start", icon: "fas fa-filter", color: this.colors.tabs.active, note: false},
       {id: 1, label: "Graph", icon: "fas fa-project-diagram", color: this.colors.tabs.inactive, note: false},
@@ -183,37 +179,9 @@ export default {
   },
   // this.setGraph({message: "Default graph"})
   methods: {
-    loadGraph: function (id) {
+    loadGraph: function (graph){
       this.tabslist[1].icon = "fas fa-circle-notch fa-spin"
-      for (let index in this.graphButtons) {
-        if (this.graphButtons[index].id === id) {
-          if (this.graphButtons[index].active)
-            return;
-          this.graphButtons[index].active = true
-          // this.graphButtons[index].color = this.colors.buttons.graphs.active;
-        } else
-          this.graphButtons[index].active = false
-        // this.graphButtons[index].color = this.colors.buttons.graphs.inactive;
-      }
-      if (id === 0) {
-        this.graphLoad = {name: "default"}
-      } else if (id === 1) {
-        this.graphLoad = {get: "/getExampleGraph1"}
-      } else if (id === 2) {
-        this.graphLoad = {
-          post: {nodes: {disorder: {filters: [
-                  {type: "match",
-                    expression: ".*((neur)|(prion)|(brain)|(enceph)|(cogni)).*"
-                  }
-                ]
-              },drug: {}
-            },
-            edges: { "DrugHasIndication":{}},
-            connectedOnly:true
-          }
-        }
-      }
-      this.$refs.graph.loadData(this.graphLoad)
+      this.$refs.graph.loadData(graph)
     },
     setTabNotification: function (tabId) {
       if (this.selectedTabId !== tabId)
@@ -252,7 +220,8 @@ export default {
   },
   components: {
     headerBar,
-    Graph
+    Graph,
+    Start
   },
 
 
