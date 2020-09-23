@@ -51,7 +51,7 @@
                 </v-list-item-group>
               </v-col>
               <v-col>
-                <v-list-item-group  multiple color="indigo" v-model="edgeModel">
+                <v-list-item-group multiple color="indigo" v-model="edgeModel">
                   <v-list-item v-for="item in edges" :name=item.id v-on:click="toggleEdge(item.id)" :key="item.id"
                                :selectable="edgeModel.indexOf(item.id)===-1">
                     <v-list-item-content>
@@ -67,17 +67,27 @@
           <template v-slot:default>
             <thead>
             <tr>
+              <th class="text-center"></th>
               <th class="text-center">Type</th>
               <th class="text-center">Name</th>
               <th class="text-center">Filter</th>
             </tr>
             </thead>
             <tbody>
-            <tr v-for="item in selectedElements" :key="item.name">
-              <td>{{ item.type }}</td>
-              <td>{{ item.name }}</td>
-              <td>{{ item.filter }}</td>
-            </tr>
+            <template v-for="item in selectedElements">
+              <tr :key="item.name" v-on:click="filterEdit(item.id)">
+                <v-icon v-if="filterId===item.id">fas fa-angle-double-left</v-icon>
+                <v-icon v-else>fas fa-angle-right</v-icon>
+
+                <td>
+                  {{ item.type }}
+                </td>
+                <td>{{ item.name }}</td>
+                <td>
+                  {{ item.filter.length }}
+                </td>
+              </tr>
+            </template>
             </tbody>
           </template>
 
@@ -96,6 +106,7 @@ export default {
   edges: [],
   nodeModel: [],
   edgeModel: [],
+  filterId: -1,
   props: {
     colors: {
       type: Object
@@ -109,6 +120,7 @@ export default {
       edges: this.edges,
       nodeModel: this.nodeModel,
       edgeModel: this.edgeModel,
+      filterId: this.filterId,
     }
   },
   created() {
@@ -188,8 +200,14 @@ export default {
         //TODO check dependence on edge on removal
         this.selectedElements.splice(remove, 1)
       } else {
-        this.selectedElements.push({id: nodeId, type: "node", name: this.nodes[nodeId].label, filter: "todo"})
+        this.selectedElements.push({id: nodeId, type: "node", name: this.nodes[nodeId].label, filter: []})
       }
+    },
+    filterEdit: function (filterId) {
+      if (this.filterId === filterId)
+        this.filterId = -1
+      else
+        this.filterId = filterId
     },
     toggleEdge: function (edgeId) {
       console.log(edgeId)
@@ -207,7 +225,7 @@ export default {
 
         let depending = []
         for (let idx in this.edges[edgeId].depends) {
-          if (this.nodeModel.indexOf(this.nodes[this.edges[edgeId].depends[idx]]) === -1) {
+          if (this.nodeModel.indexOf(this.edges[edgeId].depends[idx]) === -1) {
             depending.push(this.edges[edgeId].depends[idx])
           }
         }
@@ -216,7 +234,7 @@ export default {
           this.toggleNode(depending[idx])
           this.nodeModel.push(depending[idx])
         }
-        this.selectedElements.push({id: edgeId, type: "edge", name: this.edges[edgeId].label, filter: "todo"})
+        this.selectedElements.push({id: edgeId, type: "edge", name: this.edges[edgeId].label, filter: []})
       }
     }
   },

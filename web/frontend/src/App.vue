@@ -25,93 +25,7 @@
         </template>
       </v-toolbar>
     </v-card>
-    <v-navigation-drawer app>
-      <!--      <v-card-->
-      <!--        height="200"-->
-      <!--        width="256"-->
-      <!--        class="mx-auto"-->
-      <!--      >-->
-      <!--        <v-navigation-drawer permanent>-->
-      <!--          <v-list-item>-->
-      <!--            <v-list-item-content>-->
-      <!--              <v-list-item-title class="title">-->
-      <!--                Selection Tools-->
-      <!--              </v-list-item-title>-->
-      <!--              <v-list-item-subtitle>-->
-      <!--                discover the graph-->
-      <!--              </v-list-item-subtitle>-->
-      <!--            </v-list-item-content>-->
-      <!--          </v-list-item>-->
-
-      <!--          <v-divider></v-divider>-->
-
-      <!--          <v-list-->
-      <!--            dense-->
-      <!--            nav-->
-      <!--          >-->
-      <!--            <v-list-item>-->
-      <!--              <v-list-item-icon>-->
-      <!--                <v-icon>fas fa-filter</v-icon>-->
-      <!--              </v-list-item-icon>-->
-
-      <!--              <v-list-item-content>-->
-      <!--                <v-list-item-title>Apply Filter</v-list-item-title>-->
-      <!--              </v-list-item-content>-->
-      <!--            </v-list-item>-->
-      <!--            <v-list-item>-->
-      <!--              <v-list-item-icon>-->
-      <!--                <v-icon>fas fa-search</v-icon>-->
-      <!--              </v-list-item-icon>-->
-
-      <!--              <v-list-item-content>-->
-      <!--                <v-list-item-title>Search</v-list-item-title>-->
-      <!--              </v-list-item-content>-->
-      <!--            </v-list-item>-->
-      <!--          </v-list>-->
-      <!--        </v-navigation-drawer>-->
-      <!--      </v-card>-->
-      <v-card
-        height="100%"
-        width="256"
-        class="mx-auto"
-      >
-        <v-navigation-drawer>
-
-          <v-list-item>
-            <v-list-item-content>
-              <v-list-item-title class="title">
-                Current Selection
-              </v-list-item-title>
-              <v-list-item-subtitle>
-                Including neighbors of first degree
-              </v-list-item-subtitle>
-            </v-list-item-content>
-          </v-list-item>
-
-          <v-simple-table fixed-header v-if="selectedNode !== undefined">
-            <template v-slot:default>
-              <thead>
-              <tr>
-                <th class="text-center">ID</th>
-                <th class="text-center">Label</th>
-              </tr>
-              </thead>
-              <tbody>
-              <tr :key="selectedNode.id">
-                <td><b>{{ selectedNode.id }}</b></td>
-                <td><b>{{ selectedNode.title }}</b></td>
-              </tr>
-              <tr v-for="item in neighborNodes" :key="item.id" v-on:click="setSelectedNode(item.id)">
-                <td>{{ item.id }}</td>
-                <td>{{ item.title }}</td>
-              </tr>
-              </tbody>
-            </template>
-          </v-simple-table>
-        </v-navigation-drawer>
-      </v-card>
-
-    </v-navigation-drawer>
+    <SideCard v-show="showSidecard" ref="side" v-on:nodeSelectionEvent="setSelectedNode"></SideCard>
 
 
     <v-main style="padding-top: 0">
@@ -131,6 +45,7 @@
 <script>
 import Graph from './views/Graph.vue';
 import Start from './views/Start.vue';
+import SideCard from './views/SideCard.vue'
 import headerBar from './components/header.vue'
 
 
@@ -144,6 +59,7 @@ export default {
   selectedTabId: 0,
   colors: {},
   tabslist: {},
+  showSidecard:false,
   data() {
     return {
       graphLoad: this.graphLoad,
@@ -153,6 +69,7 @@ export default {
       tabslist: this.tabslist,
       selectedTabId: this.selectedTabId,
       colors: this.colors,
+      showSidecard: this.showSidecard,
     }
   },
   created() {
@@ -183,13 +100,15 @@ export default {
     }
     ,
     loadSelection: function (params) {
-      if (params) {
-        this.selectedNode = params.primary;
-        this.neighborNodes = params.neighbors;
-      } else {
-        this.selectedNode = undefined;
-        this.neighborNodes = [];
-      }
+      // if (params) {
+      //   this.selectedNode = params.primary;
+      //   this.neighborNodes = params.neighbors;
+      // } else {
+      //   this.selectedNode = undefined;
+      //   this.neighborNodes = [];
+      // }
+
+      this.$refs.side.loadSelection(params)
     },
     setSelectedNode: function (nodeId) {
       this.$refs.graph.setSelection([nodeId]);
@@ -207,11 +126,21 @@ export default {
           this.tabslist[idx].color = colInactive
       }
       this.selectedTabId = tabid;
+      this.adaptSidecard()
+    },
+    adaptSidecard: function (){
+      if(this.selectedTabId === 1){
+        this.showSidecard=true
+        this.$refs.side.setTitle({title:"Current Selection",description:" Including neighbors of first degree"})
+      }else if(this.selectedTabId === 0){
+        this.showSidecard=false
+      }
     }
   },
   components: {
     headerBar,
     Graph,
+    SideCard,
     Start
   },
 
