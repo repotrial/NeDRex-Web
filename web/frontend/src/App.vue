@@ -25,12 +25,12 @@
         </template>
       </v-toolbar>
     </v-card>
-    <SideCard v-show="showSidecard" ref="side" v-on:nodeSelectionEvent="setSelectedNode"></SideCard>
+    <SideCard v-show="showSidecard" ref="side" v-on:nodeSelectionEvent="setSelectedNode" v-on:addFilterEvent="addFilter"></SideCard>
 
 
-    <v-main style="padding-top: 0">
+    <v-main app style="padding-top: 0">
       <v-container v-show="selectedTabId===0" fluid>
-        <Start ref="start" v-on:graphLoadEvent="loadGraph" :colors="colors"></Start>
+        <Start ref="start" v-on:graphLoadEvent="loadGraph" v-on:filterEvent="filter" :colors="colors"></Start>
       </v-container>
       <v-container v-show="selectedTabId===1" fluid>
         <Graph ref="graph" v-on:selectionEvent="loadSelection" v-on:finishedEvent="setTabNotification(1)"></Graph>
@@ -111,7 +111,10 @@ export default {
     },
     setSelectedNode: function (nodeId) {
       this.$refs.graph.setSelection([nodeId]);
-      this.loadSelection({nodes:[nodeId]})
+      this.loadSelection({nodes: [nodeId]})
+    },
+    filter: function (filterData) {
+      this.adaptSidecard(filterData)
     },
     selectTab: function (tabid) {
       if (this.selectedTabId === tabid)
@@ -128,12 +131,26 @@ export default {
       this.selectedTabId = tabid;
       this.adaptSidecard()
     },
-    adaptSidecard: function () {
+    addFilter: function (param){
+      this.$refs.start.addFilter(param)
+    },
+    adaptSidecard: function (param) {
       if (this.selectedTabId === 1) {
         this.showSidecard = true
-        this.$refs.side.setTitle({title: "Current Selection", description: " Including neighbors of first degree"})
+        this.$refs.side.setTitle({title: "Current Selection", description: "Including neighbors of first degree"})
       } else if (this.selectedTabId === 0) {
-        this.showSidecard = false
+        console.log(param)
+        if (param !== undefined) {
+          this.showSidecard = true
+          this.$refs.side.setTitle({
+            title: "Filter " + param.name,
+            description: "Apply a filter for better exploration"
+          })
+          this.$refs.side.loadFilter(param)
+        } else {
+          this.$refs.side.loadFilter(undefined)
+          this.showSidecard = false
+        }
       }
     }
   },

@@ -55,6 +55,9 @@
             </v-row>
           </v-container>
         </v-list-item>
+        <v-btn v-on:click="loadGraph(-1)" style="margin:5px">
+          Apply Selection
+        </v-btn>
         <v-simple-table>
           <template v-slot:default>
             <thead>
@@ -67,8 +70,8 @@
             </thead>
             <tbody>
             <template v-for="item in selectedElements">
-              <tr :key="item.name" v-on:click="filterEdit(item.id)">
-                <v-icon v-if="filterId===item.id">fas fa-angle-double-left</v-icon>
+              <tr :key="item.name" v-on:click="filterEdit(item.name)">
+                <v-icon v-if="filterId===item.name">fas fa-angle-double-left</v-icon>
                 <v-icon v-else>fas fa-angle-right</v-icon>
 
                 <td>
@@ -101,6 +104,8 @@ export default {
   nodeModel: [],
   edgeModel: [],
   filterId: -1,
+  filters: {},
+  onlyConnected: true,
   props: {
     colors: {
       type: Object
@@ -115,12 +120,14 @@ export default {
       nodeModel: this.nodeModel,
       edgeModel: this.edgeModel,
       filterId: this.filterId,
+      onlyConnected: true
     }
   },
   created() {
     this.selectedElements = []
     this.nodeModel = []
     this.edgeModel = []
+    this.filters = {}
     this.graphButtons = [
       {id: 0, label: "Default Graph", color: this.colors.buttons.graphs.inactive, active: true},
       {id: 1, label: "Cancer-Comorbidity Graph", color: this.colors.buttons.graphs.inactive, active: false},
@@ -144,36 +151,53 @@ export default {
   },
   methods: {
     loadGraph: function (id) {
-      for (let index in this.graphButtons) {
-        if (this.graphButtons[index].id === id) {
-          if (this.graphButtons[index].active)
-            return;
-          this.graphButtons[index].active = true
-        } else
-          this.graphButtons[index].active = false
-      }
-      if (id === 0) {
-        this.graphLoad = {name: "default"}
-      } else if (id === 1) {
-        this.graphLoad = {get: "/getExampleGraph1"}
-      } else if (id === 2) {
-        this.graphLoad = {
-          post: {
-            nodes: {
-              disorder: {
-                filters: [
-                  {
-                    type: "match",
-                    expression: ".*((neur)|(prion)|(brain)|(enceph)|(cogni)).*"
-                  }
-                ]
-              }, drug: {}
-            },
-            edges: {"DrugHasIndication": {}},
-            connectedOnly: true
+      console.log("load graph")
+      if (id === -1) {
+        this.graphLoad = {post: {nodes: {}, edges: {}}}
+        this.selectedElements.forEach(element => {
+          let filter = this.filters[element.label]
+          if (filter === undefined)
+            filter = []
+          if (element.type === "node") {
+            this.graphLoad.post.nodes[element.name.toLowerCase()] = {filters: filter}
+          } else {
+            this.graphLoad.post.edges[element.name] = {filters: filter}
+          }
+        })
+        this.graphLoad.post.connectedOnly = this.onlyConnected
+      } else {
+        for (let index in this.graphButtons) {
+          if (this.graphButtons[index].id === id) {
+            if (this.graphButtons[index].active)
+              return;
+            this.graphButtons[index].active = true
+          } else
+            this.graphButtons[index].active = false
+        }
+        if (id === 0) {
+          this.graphLoad = {name: "default"}
+        } else if (id === 1) {
+          this.graphLoad = {get: "/getExampleGraph1"}
+        } else if (id === 2) {
+          this.graphLoad = {
+            post: {
+              nodes: {
+                disorder: {
+                  filters: [
+                    {
+                      type: "match",
+                      expression: ".*((neur)|(prion)|(brain)|(enceph)|(cogni)).*"
+                    }
+                  ]
+                }, drug: {}
+              },
+              edges: {"DrugHasIndication": {}},
+              connectedOnly: true
+            }
           }
         }
       }
+      console.log(this.graphLoad)
       this.$emit("graphLoadEvent", this.graphLoad)
     },
     toggleNode: function (nodeIndex, graphSelect) {
@@ -195,11 +219,21 @@ export default {
         this.selectedElements.push({index: nodeIndex, type: "node", name: this.nodes[nodeIndex].label, filter: []})
       }
     },
-    filterEdit: function (filterId) {
-      if (this.filterId === filterId)
+    filterEdit: function (filterName) {
+      if (this.filterId === filterName) {
         this.filterId = -1
-      else
-        this.filterId = filterId
+        this.$emit("filterEvent")
+      }
+      else {
+        this.filterId = filterName
+        let filters = this.filters[filterName]
+        this.$emit("filterEvent", {name:filterName, filters: filters})
+      }
+    },
+    addFilter: function (data) {
+      if (this.filters[data.filterName] === undefined)
+        this.filters[data.filterName] = []
+      this.filters[data.filterName].push(data.filter)
     },
     setSelection: function (params) {
       if (params !== undefined) {
