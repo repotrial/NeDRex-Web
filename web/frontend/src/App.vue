@@ -59,7 +59,7 @@ export default {
   selectedTabId: 0,
   colors: {},
   tabslist: {},
-  showSidecard:false,
+  showSidecard: false,
   data() {
     return {
       graphLoad: this.graphLoad,
@@ -107,11 +107,11 @@ export default {
       //   this.selectedNode = undefined;
       //   this.neighborNodes = [];
       // }
-
-      this.$refs.side.loadSelection(params)
+      this.$refs.side.loadSelection(this.$refs.graph.identifyNeighbors(params.nodes[0]))
     },
     setSelectedNode: function (nodeId) {
       this.$refs.graph.setSelection([nodeId]);
+      this.loadSelection({nodes:[nodeId]})
     },
     selectTab: function (tabid) {
       if (this.selectedTabId === tabid)
@@ -128,12 +128,12 @@ export default {
       this.selectedTabId = tabid;
       this.adaptSidecard()
     },
-    adaptSidecard: function (){
-      if(this.selectedTabId === 1){
-        this.showSidecard=true
-        this.$refs.side.setTitle({title:"Current Selection",description:" Including neighbors of first degree"})
-      }else if(this.selectedTabId === 0){
-        this.showSidecard=false
+    adaptSidecard: function () {
+      if (this.selectedTabId === 1) {
+        this.showSidecard = true
+        this.$refs.side.setTitle({title: "Current Selection", description: " Including neighbors of first degree"})
+      } else if (this.selectedTabId === 0) {
+        this.showSidecard = false
       }
     }
   },

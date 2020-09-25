@@ -41,19 +41,11 @@
           <v-container>
             <v-row>
               <v-col>
-                <v-list-item-group multiple color="indigo" v-model="nodeModel">
-                  <v-list-item v-for="item in nodes" :name=item.id v-on:click="toggleNode(item.id)" :key="item.id"
-                               :selectable="nodeModel.indexOf(item.id)===-1">
-                    <v-list-item-content>
-                      <v-list-item-title v-text="item.label"></v-list-item-title>
-                    </v-list-item-content>
-                  </v-list-item>
-                </v-list-item-group>
+                <Graph ref="graph" v-on:selectionEvent="setSelection" v-on:releaseEvent="resetSelection"></Graph>
               </v-col>
               <v-col>
                 <v-list-item-group multiple color="indigo" v-model="edgeModel">
-                  <v-list-item v-for="item in edges" :name=item.id v-on:click="toggleEdge(item.id)" :key="item.id"
-                               :selectable="edgeModel.indexOf(item.id)===-1">
+                  <v-list-item v-for="item in edges" v-on:click="toggleEdge(item.index,false)" :key="item.index">
                     <v-list-item-content>
                       <v-list-item-title v-text="item.label"></v-list-item-title>
                     </v-list-item-content>
@@ -98,6 +90,8 @@
 </template>
 
 <script>
+import Graph from "./Graph.vue"
+
 export default {
   name: "Start",
   graphButtons: [],
@@ -132,28 +126,23 @@ export default {
       {id: 1, label: "Cancer-Comorbidity Graph", color: this.colors.buttons.graphs.inactive, active: false},
       {id: 2, label: "Neuro-Drug Graph", color: this.colors.buttons.graphs.inactive, active: false}
     ]
-    this.nodes = [
-      {id: 0, label: "Drug"},
-      {id: 1, label: "Gene"},
-      {id: 2, label: "Protein"},
-      {id: 3, label: "Disorder"},
-      {id: 4, label: "Pathway"}
-    ]
-    this.edges = [
-      {id: 0, label: "DrugHasTargetGene", selected: false, depends: [0, 1]},
-      {id: 1, label: "DrugHasTargetProtein", selected: false, depends: [0, 2]},
-      {id: 2, label: "DrugHasIndication", selected: false, depends: [0, 3]},
-      {id: 3, label: "GeneAssociatedWithDisorder", selected: false, depends: [1, 3]},
-      {id: 4, label: "ProteinEncodedBy", selected: false, depends: [1, 2]},
-      {id: 5, label: "ProteinInteractsWithProtein", selected: false, depends: [2]},
-      {id: 6, label: "ProteinInPathway", selected: false, depends: [2, 4]},
-      {id: 7, label: "ProteinAssociatedWithDisorder", selected: false, depends: [2, 3]},
-      {id: 8, label: "DisorderIsADisorder", selected: false, depends: [3]},
-      {id: 9, label: "DisorderComorbidWithDisorder", selected: false, depends: [3]}
-    ]
+
+    this.nodes = []
+    this.edges = []
+  },
+  mounted() {
+    let selectionGraph = this.$refs.graph.getCurrentGraph()
+    selectionGraph.nodes.forEach(n => {
+      this.nodes.push({index: this.nodes.length, id: n.id, label: n.label})
+    })
+    selectionGraph.edges.forEach(e => {
+      let depends = [e.from]
+      if (e.from !== e.to)
+        depends.push(e.to)
+      this.edges.push({index: this.edges.length, id: e.id, label: e.label, depends: depends})
+    })
   },
   methods: {
-
     loadGraph: function (id) {
       for (let index in this.graphButtons) {
         if (this.graphButtons[index].id === id) {
@@ -187,20 +176,23 @@ export default {
       }
       this.$emit("graphLoadEvent", this.graphLoad)
     },
-    toggleNode: function (nodeId) {
-      let index = this.nodeModel.indexOf(nodeId)
+    toggleNode: function (nodeIndex, graphSelect) {
+      let index = this.nodeModel.indexOf(nodeIndex)
       if (index >= 0) {
         let remove = -1;
         for (let idx in this.selectedElements) {
-          if (this.selectedElements[idx].type === "node" && this.selectedElements[idx].id === nodeId) {
+          if (this.selectedElements[idx].type === "node" && this.selectedElements[idx].index === nodeIndex) {
             remove = idx;
             break;
           }
         }
-        //TODO check dependence on edge on removal
         this.selectedElements.splice(remove, 1)
+        if (graphSelect)
+          this.nodeModel.splice(index, 1)
       } else {
-        this.selectedElements.push({id: nodeId, type: "node", name: this.nodes[nodeId].label, filter: []})
+        if (graphSelect)
+          this.nodeModel.push(nodeIndex)
+        this.selectedElements.push({index: nodeIndex, type: "node", name: this.nodes[nodeIndex].label, filter: []})
       }
     },
     filterEdit: function (filterId) {
@@ -209,34 +201,75 @@ export default {
       else
         this.filterId = filterId
     },
-    toggleEdge: function (edgeId) {
-      console.log(edgeId)
-      let index = this.edgeModel.indexOf(edgeId)
+    setSelection: function (params) {
+      if (params !== undefined) {
+        if (params.nodes.length > 0) {
+        } else if (params.edges.length > 0) {
+          for (let idx in this.edges) {
+            if (this.edges[idx].id === params.edges[0]) {
+              this.toggleEdge(this.edges[idx].index, true)
+            }
+          }
+        }
+      }
+      this.resetSelection()
+    },
+
+    resetSelection: function () {
+      let edgeIds = []
+      this.edgeModel.forEach(e => {
+        edgeIds.push(this.edges[e].id)
+      })
+      let nodeIds = []
+      this.nodeModel.forEach(n => {
+        nodeIds.push(this.nodes[n].id)
+      })
+      let data = {nodes: nodeIds, edges: edgeIds}
+      this.$refs.graph.setSelectionMultiple(data)
+    },
+    toggleEdge: function (edgeIndex, graphSelect) {
+      let index = this.edgeModel.indexOf(edgeIndex)
       if (index >= 0) {
         let remove = -1;
+        let restDepending = []
         for (let idx in this.selectedElements) {
-          if (this.selectedElements[idx].type === "edge" && this.selectedElements[idx].id === edgeId) {
-            remove = idx;
-            break;
+          if (this.selectedElements[idx].type === "edge") {
+            if (this.selectedElements[idx].index === edgeIndex)
+              remove = idx;
+            else
+              this.edges[this.selectedElements[idx].index].depends.forEach(d => restDepending.push(d))
           }
         }
         this.selectedElements.splice(remove, 1)
+        this.edges[edgeIndex].depends.forEach(d => {
+          if (restDepending.indexOf(d) === -1)
+            for (let nodeIndex in this.nodes)
+              if (this.nodes[nodeIndex].id === d && this.nodeModel.indexOf(nodeIndex) > -1) {
+                this.toggleNode(nodeIndex, true)
+              }
+        })
+        if (graphSelect)
+          this.edgeModel.splice(index, 1)
       } else {
-
+        if (graphSelect)
+          this.edgeModel.push(edgeIndex)
         let depending = []
-        for (let idx in this.edges[edgeId].depends) {
-          if (this.nodeModel.indexOf(this.edges[edgeId].depends[idx]) === -1) {
-            depending.push(this.edges[edgeId].depends[idx])
-          }
+        for (let idx in this.edges[edgeIndex].depends) {
+          depending.push(this.edges[edgeIndex].depends[idx])
         }
-        //TODO add popup (alert) question for adding
         for (let idx in depending) {
-          this.toggleNode(depending[idx])
-          this.nodeModel.push(depending[idx])
+          for (let nodeIndex in this.nodes)
+            if (this.nodes[nodeIndex].id === depending[idx] && this.nodeModel.indexOf(nodeIndex) === -1) {
+              this.toggleNode(nodeIndex, true)
+            }
         }
-        this.selectedElements.push({id: edgeId, type: "edge", name: this.edges[edgeId].label, filter: []})
+        this.selectedElements.push({index: edgeIndex, type: "edge", name: this.edges[edgeIndex].label, filter: []})
       }
+      this.resetSelection()
     }
+  },
+  components: {
+    Graph,
   },
 
 }

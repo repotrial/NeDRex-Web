@@ -9,10 +9,12 @@
              :options="options"
              :layout="layout"
              :physics="physics"
-             :events="['stabilizationProgress','stabilizationIterationsDone','click']"
+             :events="['stabilizationProgress','stabilizationIterationsDone','click','release']"
              @click="onClick"
              @stabilizationProgress="onStabilizationProgress"
              @stabilizationIterationsDone="onStabilizationDone"
+             @release="onRelease"
+
     >
     </network>
   </div>
@@ -39,6 +41,7 @@ export default {
   colors: {},
   directed: false,
   loadingColor: 'primary',
+  lastClick: 0,
 
   created() {
     this.progress = 0
@@ -47,6 +50,7 @@ export default {
     this.colors = {bar: {backend: "#6db33f", vis: 'primary', error: 'red darken-2'}}
     this.highlight = false
     this.loadData(this.payload)
+    this.lastClick = 0
   },
 
   data() {
@@ -125,12 +129,12 @@ export default {
           this.getData(payload.get)
         else if (payload.post !== undefined)
           this.postData(payload.post)
+        else if (payload.data !== undefined)
+          this.setGraph(payload.data)
         else
           this.drawGraph()
       } else
         this.drawGraph()
-
-
     },
     postData: function (post) {
       this.loading = true;
@@ -147,6 +151,9 @@ export default {
       })
     }
     ,
+    getCurrentGraph: function (){
+      return {nodes: this.nodeSet, edges:this.edges, options : this.options}
+    },
     setSelection: function (nodes) {
       this.$refs.network.selectNodes(nodes)
       this.identifyNeighbors(nodes[0])
@@ -177,8 +184,8 @@ export default {
           {id: 5, group: 'disorder', label: 'Disorder', title: 'Disorder', shape: 'circle'},
         ]),
         edges: new DataSet([
-          {from: 1, to: 2, label: 'DrugHasTarget'},
-          {from: 1, to: 4, label: 'DrugHasTarget', dashes: true},
+          {from: 1, to: 2, label: 'DrugHasTargetProtein'},
+          {from: 1, to: 4, label: 'DrugHasTargetGene', dashes: true},
           {from: 2, to: 2, label: 'ProteinInteractsWithProtein',},
           {from: 2, to: 3, label: 'ProteinInPathway'},
           {from: 2, to: 4, label: 'ProteinEncodedBy'},
@@ -288,10 +295,11 @@ export default {
     }
     ,
     onClick: function (params) {
-      if (params.nodes.length > 0) {
-        let selected = params.nodes[0];
-        this.identifyNeighbors(selected)
-      } else if (this.highlight === true) {
+      if (params.nodes.length > 0 || params.edges.length > 0) {
+        // let selected = params.nodes[0];
+        // this.identifyNeighbors(selected)
+        this.$emit('selectionEvent', params)
+      } else {
         // for (let nodeId in this.nodes) {
         //   this.nodes[nodeId].color = undefined
         //   if (this.nodes[nodeId].hiddenLabel !== undefined) {
@@ -306,6 +314,31 @@ export default {
 
       this.updateNodes()
 
+    },
+    onRelease: function (params) {
+      if (new Date().getTime() - this.lastClick < 500)
+        return;
+      this.$emit('releaseEvent', params)
+    },
+    mapEdgeObject: function (edgeId) {
+      return this.edges._data[edgeId]
+    }
+    // deselectNode: function(nodeId){
+    //   this.$refs.network.
+    // }
+    ,
+    setSelectionMultiple: function (items) {
+      // for(let idx in selection) {
+      this.$refs.network.selectNodes(items.nodes)
+      this.$refs.network.selectEdges(items.edges)
+      // }
+    },
+    mapEdgeObjects: function (edgeIds) {
+      let edges = []
+      for (let idx in edgeIds)
+        edges.push(this.mapEdgeObject(edgeIds[idx]))
+
+      return edges;
     }
     ,
     identifyNeighbors: function (selected) {
@@ -321,7 +354,8 @@ export default {
           neighbors.push(this.nodeSet.get(n))
       })
       //   this.recolorPrimary(toColor)
-      this.$emit('selectionEvent', {primary: this.nodeSet.get(selected), neighbors: neighbors})
+      return {primary: this.nodeSet.get(selected), neighbors: neighbors}
+      // this.$emit('selectionEvent', {primary: this.nodeSet.get(selected), neighbors: neighbors})
     },
     uncolorNodes: function () {
       for (let nodeId in this.nodes) {
