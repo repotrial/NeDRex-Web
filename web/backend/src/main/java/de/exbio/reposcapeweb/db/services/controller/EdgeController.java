@@ -74,7 +74,7 @@ public class EdgeController {
                 nodes2edge.put(v.first, new HashMap<>());
             if (!nodes2edge.get(v.first).containsKey(v.second))
                 nodes2edge.get(v.first).put(v.second, new LinkedList<>(Collections.singletonList(k)));
-            else if (!v.first.equals(v.second))
+            else if (!v.first.equals(v.second) | !nodes2edge.get(v.first).get(v.second).contains(k))
                 nodes2edge.get(v.first).get(v.second).add(k);
 
             if (!nodes2edge.containsKey(v.second))

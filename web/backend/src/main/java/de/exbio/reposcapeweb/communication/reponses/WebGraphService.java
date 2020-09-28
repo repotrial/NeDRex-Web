@@ -1,10 +1,13 @@
 package de.exbio.reposcapeweb.communication.reponses;
 
+import de.exbio.reposcapeweb.ReposcapewebApplication;
 import de.exbio.reposcapeweb.communication.requests.Filter;
 import de.exbio.reposcapeweb.communication.requests.GraphRequest;
 import de.exbio.reposcapeweb.db.services.controller.EdgeController;
 import de.exbio.reposcapeweb.db.services.controller.NodeController;
 import de.exbio.reposcapeweb.filter.NodeFilter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +16,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class WebGraphService {
+    private Logger log = LoggerFactory.getLogger(WebGraphService.class);
 
     private final EdgeController edgeController;
     private final NodeController nodeController;
@@ -33,8 +37,7 @@ public class WebGraphService {
             NodeFilter nf = nodeController.getFilter(k);
             if (v.filters != null)
                 for (Filter filter : v.filters) {
-                    System.out.println(filter.type +" -> "+ filter.expression);
-                    nf.apply(filter);
+                    nf=nf.apply(filter);
                 }
             HashMap<Integer, WebNode> ids = new HashMap<>();
             nodeIds.put(k, ids);
@@ -53,6 +56,7 @@ public class WebGraphService {
                 String nodeJ = nodes[j];
                 LinkedList<String> edgeNames = edgeController.mapEdgeName(nodeI, nodeJ);
                 if(edgeNames==null) {
+                    log.debug("Edge for "+nodeI+" & "+nodeJ+" do not exist!");
                     continue;
                 }
                 edgeNames.forEach(edgeName -> {

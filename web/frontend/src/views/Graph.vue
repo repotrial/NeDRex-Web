@@ -137,6 +137,7 @@ export default {
         this.drawGraph()
     },
     postData: function (post) {
+      console.log(post)
       this.loading = true;
       this.directed = false;
       this.loadingColor = this.colors.bar.backend;
