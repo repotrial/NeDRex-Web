@@ -6,7 +6,7 @@
             <v-btn v-on:click="hide">
               <v-icon>fas fa-window-minimize</v-icon>
             </v-btn>
-            <v-btn v-if="!filterView" v-on:click="setAllSelected()">
+            <v-btn v-if="tabId === 1" v-on:click="setAllSelected()">
               <v-icon>fas fa-globe</v-icon>
             </v-btn>
           </v-navigation-drawer>
@@ -23,7 +23,7 @@
           </v-list-item-subtitle>
         </v-list-item-content>
       </v-list-item>
-      <v-simple-table fixed-header v-if="filterView" id="dropdown">
+      <v-simple-table fixed-header v-if="tabId === 0" id="dropdown">
         <template v-slot:default>
           <thead>
           <tr>
@@ -33,11 +33,11 @@
           </tr>
           </thead>
           <tbody>
-          <tr v-for="item in filters" :key="item.type+item.filter">
+          <tr v-for="(item,index) in filters" :key="item.type+item.filter">
             <td>{{ item.type }}</td>
             <td>{{ item.expression }}</td>
             <td>
-              <v-btn>
+              <v-btn v-on:click="removeFilter(index)">
                 <v-icon dense>fas fa-trash</v-icon>
               </v-btn>
             </td>
@@ -61,7 +61,7 @@
             </td>
             <td>
               <v-btn v-on:click="addFilter">
-                <v-icon>fas fa-plus-circle</v-icon>
+                <v-icon dense >fas fa-plus-circle</v-icon>
               </v-btn>
             </td>
           </tr>
@@ -70,7 +70,7 @@
 
 
       </v-simple-table>
-      <v-simple-table fixed-header v-if="selectedNode !== undefined || (neighborNodes !== undefined && neighborNodes.length>0)">
+      <v-simple-table fixed-header v-if="tabId === 1 && (selectedNode !== undefined || (neighborNodes !== undefined && neighborNodes.length>0))">
         <template v-slot:default>
           <thead>
           <tr>
@@ -109,6 +109,7 @@ export default {
   filterTypeModel: [],
   filterModel: "",
   filterName: "",
+  tabId:0,
 
   data() {
     return {
@@ -122,6 +123,7 @@ export default {
       filterTypes: this.filterTypes,
       filterTypeModel: this.filterTypeModel,
       filterModel: this.filterModel,
+      tabId:this.tabId,
     }
   },
   created() {
@@ -166,11 +168,24 @@ export default {
       this.filters.push(data)
       this.$emit("addFilterEvent", {name: this.filterName, filter: data})
     },
+    removeFilter: function (idx){
+      this.filters.splice(idx,1)
+      this.$emit("removeFilterEvent", {name:this.filterName,index:idx})
+    },
     setTitle: function (data) {
       this.title = data.title;
       this.description = data.description
       this.filterView = false
     },
+    setTabId: function (tabId){
+      this.tabId = tabId;
+      if(tabId === 0){
+        this.filterView=true
+      }
+      else if (tabId===1){
+
+      }
+    }
   },
 
 }

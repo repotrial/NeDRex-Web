@@ -9,10 +9,8 @@
              :options="options"
              :layout="layout"
              :physics="physics"
-             :events="['stabilizationProgress','stabilizationIterationsDone','click','release']"
+             :events="['click','release']"
              @click="onClick"
-             @stabilizationProgress="onStabilizationProgress"
-             @stabilizationIterationsDone="onStabilizationDone"
              @release="onRelease"
 
     >

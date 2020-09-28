@@ -26,7 +26,7 @@
       </v-toolbar>
     </v-card>
     <SideCard v-show="showSidecard" ref="side" v-on:nodeSelectionEvent="setSelectedNode"
-              v-on:addFilterEvent="addFilter" v-on:hideEvent="hideSidecard"></SideCard>
+              v-on:addFilterEvent="addFilter" v-on:hideEvent="hideSidecard" v-on:removeFilterEvent="removeFilter"></SideCard>
     <v-navigation-drawer app right v-show="!showSidecard" style="width: 5%">
       <v-list-item>
         <v-list-item-content>
@@ -163,7 +163,11 @@ export default {
     addFilter: function (param) {
       this.$refs.start.addFilter(param)
     },
+    removeFilter: function (param){
+      this.$refs.start.removeFilter(param)
+    },
     adaptSidecard: function (param) {
+      this.$refs.side.setTabId(this.selectedTabId)
       if (this.selectedTabId === 1) {
         this.$refs.side.setTitle({title: "Current Selection", description: "Including neighbors of first degree"})
       } else if (this.selectedTabId === 0) {
