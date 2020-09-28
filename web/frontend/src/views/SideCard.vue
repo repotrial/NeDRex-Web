@@ -1,136 +1,96 @@
 <template>
-  <v-navigation-drawer app right style="width:30%">
-    <!--      <v-card-->
-    <!--        height="200"-->
-    <!--        width="256"-->
-    <!--        class="mx-auto"-->
-    <!--      >-->
-    <!--        <v-navigation-drawer permanent>-->
-    <!--          <v-list-item>-->
-    <!--            <v-list-item-content>-->
-    <!--              <v-list-item-title class="title">-->
-    <!--                Selection Tools-->
-    <!--              </v-list-item-title>-->
-    <!--              <v-list-item-subtitle>-->
-    <!--                discover the graph-->
-    <!--              </v-list-item-subtitle>-->
-    <!--            </v-list-item-content>-->
-    <!--          </v-list-item>-->
-
-    <!--          <v-divider></v-divider>-->
-
-    <!--          <v-list-->
-    <!--            dense-->
-    <!--            nav-->
-    <!--          >-->
-    <!--            <v-list-item>-->
-    <!--              <v-list-item-icon>-->
-    <!--                <v-icon>fas fa-filter</v-icon>-->
-    <!--              </v-list-item-icon>-->
-
-    <!--              <v-list-item-content>-->
-    <!--                <v-list-item-title>Apply Filter</v-list-item-title>-->
-    <!--              </v-list-item-content>-->
-    <!--            </v-list-item>-->
-    <!--            <v-list-item>-->
-    <!--              <v-list-item-icon>-->
-    <!--                <v-icon>fas fa-search</v-icon>-->
-    <!--              </v-list-item-icon>-->
-
-    <!--              <v-list-item-content>-->
-    <!--                <v-list-item-title>Search</v-list-item-title>-->
-    <!--              </v-list-item-content>-->
-    <!--            </v-list-item>-->
-    <!--          </v-list>-->
-    <!--        </v-navigation-drawer>-->
-    <!--      </v-card>-->
-    <!--    <v-card-->
-    <!--      height="100%"-->
-    <!--      width="100%"-->
-    <!--      class="mx-auto"-->
-    <!--    >-->
-    <!--      <v-navigation-drawer>-->
-
-    <v-list-item>
-      <v-list-item-content>
-        <v-list-item-title class="title">
-          {{ title }}
-        </v-list-item-title>
-        <v-list-item-subtitle>
-          {{ description }}
-        </v-list-item-subtitle>
-      </v-list-item-content>
-    </v-list-item>
-    <v-simple-table fixed-header v-if="filterView" id="dropdown">
-      <template v-slot:default>
-        <thead>
-        <tr>
-          <th class="text-center">Type</th>
-          <th class="text-center">Filter</th>
-          <th class="text-center">Operation</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr v-for="item in filters" :key="item.type+item.filter">
-          <td>{{ item.type }}</td>
-          <td>{{ item.expression }}</td>
-          <td>
-            <v-btn>
-              <v-icon dense>fas fa-trash</v-icon>
+  <v-navigation-drawer app right  style="width: 30%">
+      <v-list-item>
+        <v-list-item-content>
+          <v-navigation-drawer>
+            <v-btn v-on:click="hide">
+              <v-icon>fas fa-window-minimize</v-icon>
             </v-btn>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <v-select
-              ref="typeSelect"
-              v-model="filterTypeModel"
-              :items="filterTypes"
-              label="type"
-              solo
-            ></v-select>
-          </td>
-          <td>
-            <v-text-field
-              v-model="filterModel"
-              :label="filterLabel"
-              solo
-            ></v-text-field>
-          </td>
-          <td>
-            <v-btn v-on:click="addFilter">
-              <v-icon>fas fa-plus-circle</v-icon>
+            <v-btn v-if="!filterView" v-on:click="setAllSelected()">
+              <v-icon>fas fa-globe</v-icon>
             </v-btn>
-          </td>
-        </tr>
-        </tbody>
-      </template>
+          </v-navigation-drawer>
+        </v-list-item-content>
+      </v-list-item>
+
+      <v-list-item>
+        <v-list-item-content>
+          <v-list-item-title class="title">
+            {{ title }}
+          </v-list-item-title>
+          <v-list-item-subtitle>
+            {{ description }}
+          </v-list-item-subtitle>
+        </v-list-item-content>
+      </v-list-item>
+      <v-simple-table fixed-header v-if="filterView" id="dropdown">
+        <template v-slot:default>
+          <thead>
+          <tr>
+            <th class="text-center">Type</th>
+            <th class="text-center">Filter</th>
+            <th class="text-center">Operation</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr v-for="item in filters" :key="item.type+item.filter">
+            <td>{{ item.type }}</td>
+            <td>{{ item.expression }}</td>
+            <td>
+              <v-btn>
+                <v-icon dense>fas fa-trash</v-icon>
+              </v-btn>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <v-select
+                ref="typeSelect"
+                v-model="filterTypeModel"
+                :items="filterTypes"
+                label="type"
+                solo
+              ></v-select>
+            </td>
+            <td>
+              <v-text-field
+                v-model="filterModel"
+                :label="filterLabel"
+                solo
+              ></v-text-field>
+            </td>
+            <td>
+              <v-btn v-on:click="addFilter">
+                <v-icon>fas fa-plus-circle</v-icon>
+              </v-btn>
+            </td>
+          </tr>
+          </tbody>
+        </template>
 
 
-    </v-simple-table>
-    <v-simple-table fixed-header v-if="selectedNode !== undefined">
-      <template v-slot:default>
-        <thead>
-        <tr>
-          <th class="text-center">ID</th>
-          <th class="text-center">Label</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr :key="selectedNode.id">
-          <td><b>{{ selectedNode.id }}</b></td>
-          <td><b>{{ selectedNode.title }}</b></td>
-        </tr>
-        <tr v-for="item in neighborNodes" :key="item.id" v-on:click="setSelectedNode(item.id)">
-          <td>{{ item.id }}</td>
-          <td>{{ item.title }}</td>
-        </tr>
-        </tbody>
-      </template>
-    </v-simple-table>
-    <!--      </v-navigation-drawer>-->
-    <!--    </v-card>-->
-
+      </v-simple-table>
+      <v-simple-table fixed-header v-if="selectedNode !== undefined || (neighborNodes !== undefined && neighborNodes.length>0)">
+        <template v-slot:default>
+          <thead>
+          <tr>
+            <th class="text-center">ID</th>
+            <th class="text-center">Label</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr v-if="selectedNode !== undefined" :key="selectedNode.id">
+            <td><b>{{ selectedNode.id }}</b></td>
+            <td><b>{{ selectedNode.title }}</b></td>
+          </tr>
+          <tr v-for="item in neighborNodes" :key="item.id" v-on:click="setSelectedNode(item.id)">
+            <td>{{ item.id }}</td>
+            <td>{{ item.title }}</td>
+          </tr>
+          </tbody>
+        </template>
+      </v-simple-table>
+      <!--    </v-card>-->
   </v-navigation-drawer>
 </template>
 
@@ -147,8 +107,8 @@ export default {
   filterType: "",
   filterTypes: [],
   filterTypeModel: [],
-  filterModel:"",
-  filterName:"",
+  filterModel: "",
+  filterName: "",
 
   data() {
     return {
@@ -161,7 +121,7 @@ export default {
       filterLabel: this.filterLabel,
       filterTypes: this.filterTypes,
       filterTypeModel: this.filterTypeModel,
-      filterModel:this.filterModel
+      filterModel: this.filterModel,
     }
   },
   created() {
@@ -172,11 +132,14 @@ export default {
   },
 
   methods: {
+    setAllSelected: function (){
+      this.$emit("nodeSelectionEvent")
+    },
     setSelectedNode: function (nodeId) {
       this.$emit("nodeSelectionEvent", nodeId)
     },
     loadSelection: function (params) {
-      if (params) {
+      if (params !== undefined) {
         this.selectedNode = params.primary;
         this.neighborNodes = params.neighbors;
       } else {
@@ -185,26 +148,28 @@ export default {
       }
     },
     loadFilter: function (data) {
-      console.log(data)
       if (data !== undefined) {
         this.filterView = true;
         this.filters = data.filters
-        if(this.filters === undefined)
-          this.filters=[]
-        this.filterName=data.name
+        if (this.filters === undefined)
+          this.filters = []
+        this.filterName = data.name
       } else
         this.filterView = false;
 
     },
-    addFilter:function (){
-      let data = {type:this.filterTypeModel,expression:this.filterModel};
+    hide: function () {
+      this.$emit("hideEvent")
+    },
+    addFilter: function () {
+      let data = {type: this.filterTypeModel, expression: this.filterModel};
       this.filters.push(data)
-      this.$emit("addFilterEvent",{name:this.filterName,filter:data})
+      this.$emit("addFilterEvent", {name: this.filterName, filter: data})
     },
     setTitle: function (data) {
       this.title = data.title;
       this.description = data.description
-      this.filterView=false
+      this.filterView = false
     },
   },
 

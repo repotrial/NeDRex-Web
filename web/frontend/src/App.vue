@@ -25,10 +25,21 @@
         </template>
       </v-toolbar>
     </v-card>
-    <SideCard v-show="showSidecard" ref="side" v-on:nodeSelectionEvent="setSelectedNode" v-on:addFilterEvent="addFilter"></SideCard>
+    <SideCard v-show="showSidecard" ref="side" v-on:nodeSelectionEvent="setSelectedNode"
+              v-on:addFilterEvent="addFilter" v-on:hideEvent="hideSidecard"></SideCard>
+    <v-navigation-drawer app right v-show="!showSidecard" style="width: 5%">
+      <v-list-item>
+        <v-list-item-content>
+          <v-navigation-drawer>
+            <v-btn v-on:click="showSidecard=true">
+              <v-icon>fas fa-caret-left</v-icon>
+            </v-btn>
+          </v-navigation-drawer>
+        </v-list-item-content>
+      </v-list-item>
+    </v-navigation-drawer>
 
-
-    <v-main app style="padding-top: 0">
+    <v-main app style="padding-top: 0" @click.stop="hideSide">
       <v-container v-show="selectedTabId===0" fluid>
         <Start ref="start" v-on:graphLoadEvent="loadGraph" v-on:filterEvent="filter" :colors="colors"></Start>
       </v-container>
@@ -91,6 +102,9 @@ export default {
       this.tabslist[1].icon = "fas fa-circle-notch fa-spin"
       this.$refs.graph.loadData(graph)
     },
+    hideSide: function () {
+      this.$refs.side.hide()
+    },
     setTabNotification: function (tabId) {
       if (this.selectedTabId !== tabId)
         this.tabslist[tabId].note = true
@@ -99,7 +113,12 @@ export default {
       }
     }
     ,
+    hideSidecard: function () {
+      this.showSidecard = false
+      this.$refs.start.minimizeSide()
+    },
     loadSelection: function (params) {
+      this.showSidecard = true
       // if (params) {
       //   this.selectedNode = params.primary;
       //   this.neighborNodes = params.neighbors;
@@ -107,11 +126,20 @@ export default {
       //   this.selectedNode = undefined;
       //   this.neighborNodes = [];
       // }
-      this.$refs.side.loadSelection(this.$refs.graph.identifyNeighbors(params.nodes[0]))
+      if (params !== undefined)
+        this.$refs.side.loadSelection(this.$refs.graph.identifyNeighbors(params.nodes[0]))
+      else {
+        this.$refs.side.loadSelection(this.$refs.graph.getAllNodes())
+      }
     },
     setSelectedNode: function (nodeId) {
-      this.$refs.graph.setSelection([nodeId]);
-      this.loadSelection({nodes: [nodeId]})
+      if(nodeId !== undefined) {
+        this.$refs.graph.setSelection([nodeId]);
+        this.loadSelection({nodes: [nodeId]})
+      }else{
+        this.$refs.graph.setSelection()
+        this.loadSelection()
+      }
     },
     filter: function (filterData) {
       this.adaptSidecard(filterData)
@@ -129,17 +157,16 @@ export default {
           this.tabslist[idx].color = colInactive
       }
       this.selectedTabId = tabid;
+
       this.adaptSidecard()
     },
-    addFilter: function (param){
+    addFilter: function (param) {
       this.$refs.start.addFilter(param)
     },
     adaptSidecard: function (param) {
       if (this.selectedTabId === 1) {
-        this.showSidecard = true
         this.$refs.side.setTitle({title: "Current Selection", description: "Including neighbors of first degree"})
       } else if (this.selectedTabId === 0) {
-        console.log(param)
         if (param !== undefined) {
           this.showSidecard = true
           this.$refs.side.setTitle({

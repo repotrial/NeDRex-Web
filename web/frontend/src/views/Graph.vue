@@ -137,7 +137,6 @@ export default {
         this.drawGraph()
     },
     postData: function (post) {
-      console.log(post)
       this.loading = true;
       this.directed = false;
       this.loadingColor = this.colors.bar.backend;
@@ -152,12 +151,20 @@ export default {
       })
     }
     ,
-    getCurrentGraph: function (){
-      return {nodes: this.nodeSet, edges:this.edges, options : this.options}
+    getCurrentGraph: function () {
+      return {nodes: this.nodeSet, edges: this.edges, options: this.options}
     },
     setSelection: function (nodes) {
-      this.$refs.network.selectNodes(nodes)
-      this.identifyNeighbors(nodes[0])
+      if (nodes !== undefined && nodes[0] !== undefined) {
+        this.$refs.network.selectNodes(nodes)
+        this.identifyNeighbors(nodes[0])
+        this.focusNode(nodes[0])
+      }else{
+        this.$refs.network.unselectAll()
+        this.$emit("selectionEvent")
+        this.focusNode()
+      }
+
     },
     // setNodeColors: function () {
     //   let nodesContainColor = false
@@ -278,22 +285,21 @@ export default {
       //TODO merge
       this.options = options;
     }
-    ,
-    onStabilizationProgress: function (params) {
-      // this.loading = true;
-      this.progress = 100 * params.iterations / params.total;
-      console.log(this.progress)
-      // this.width = Math.max(this.minWidth, this.maxWidth * widthFactor);
-      this.text = "Graph generation " + Math.round(this.progress) + "%";
-      //
-      // console.log(Math.round(widthFactor * 100) + "%")
-    }
-    ,
-    onStabilizationDone: function () {
-      this.text = "100%";
-      this.width = this.maxWidth
-      // this.loading = false;
-    }
+    // onStabilizationProgress: function (params) {
+    //   // this.loading = true;
+    //   this.progress = 100 * params.iterations / params.total;
+    //   console.log(this.progress)
+    //   // this.width = Math.max(this.minWidth, this.maxWidth * widthFactor);
+    //   this.text = "Graph generation " + Math.round(this.progress) + "%";
+    //   //
+    //   // console.log(Math.round(widthFactor * 100) + "%")
+    // }
+    // ,
+    // onStabilizationDone: function () {
+    //   this.text = "100%";
+    //   this.width = this.maxWidth
+    //   // this.loading = false;
+    // }
     ,
     onClick: function (params) {
       if (params.nodes.length > 0 || params.edges.length > 0) {
@@ -328,6 +334,11 @@ export default {
     //   this.$refs.network.
     // }
     ,
+    focusNode: function (nodeId) {
+      this.$refs.network.focus(nodeId)
+      if (nodeId === undefined)
+        this.viewAll()
+    },
     setSelectionMultiple: function (items) {
       // for(let idx in selection) {
       this.$refs.network.selectNodes(items.nodes)
@@ -342,6 +353,14 @@ export default {
       return edges;
     }
     ,
+    viewAll: function () {
+      this.$refs.network.fit()
+    },
+    getAllNodes: function (){
+        let nodes = []
+      this.nodeSet.getDataSet().forEach(n=>nodes.push(n))
+        return {neighbors:nodes}
+    },
     identifyNeighbors: function (selected) {
       //   this.highlight = true;
       //   this.uncolorNodes()

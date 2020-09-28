@@ -78,9 +78,10 @@
                   {{ item.type }}
                 </td>
                 <td>{{ item.name }}</td>
-                <td>
-                  {{ item.filter.length }}
+                <td v-if="filters[item.name] !== undefined" :title="hoverFilters(item.name)">
+                  {{filters[item.name].length }}
                 </td>
+                <td v-else>0</td>
               </tr>
             </template>
             </tbody>
@@ -120,7 +121,8 @@ export default {
       nodeModel: this.nodeModel,
       edgeModel: this.edgeModel,
       filterId: this.filterId,
-      onlyConnected: true
+      onlyConnected: true,
+      filters: this.filters
     }
   },
   created() {
@@ -200,6 +202,13 @@ export default {
       console.log(this.graphLoad)
       this.$emit("graphLoadEvent", this.graphLoad)
     },
+    hoverFilters: function (name){
+      let out = ""
+      this.filters[name].forEach(f=>{
+        out+=f.type+" "+f.expression+"\n"
+      })
+      return out
+    },
     toggleNode: function (nodeIndex, graphSelect) {
       let index = this.nodeModel.indexOf(nodeIndex)
       if (index >= 0) {
@@ -230,10 +239,14 @@ export default {
         this.$emit("filterEvent", {name:filterName, filters: filters})
       }
     },
+    minimizeSide: function (){
+      this.filterId = -1
+      this.$emit("filterEvent")
+    },
     addFilter: function (data) {
-      if (this.filters[data.filterName] === undefined)
-        this.filters[data.filterName] = []
-      this.filters[data.filterName].push(data.filter)
+      if (this.filters[data.name] === undefined)
+        this.filters[data.name] = []
+      this.filters[data.name].push(data.filter)
     },
     setSelection: function (params) {
       if (params !== undefined) {
