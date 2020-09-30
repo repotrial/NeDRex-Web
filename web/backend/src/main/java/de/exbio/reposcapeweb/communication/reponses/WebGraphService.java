@@ -37,7 +37,7 @@ public class WebGraphService {
             NodeFilter nf = nodeController.getFilter(k);
             if (v.filters != null)
                 for (Filter filter : v.filters) {
-                    nf=nf.apply(filter);
+                    nf = nf.apply(filter);
                 }
             HashMap<Integer, WebNode> ids = new HashMap<>();
             nodeIds.put(k, ids);
@@ -46,6 +46,7 @@ public class WebGraphService {
             });
         });
         String[] nodes = nodeIds.keySet().toArray(new String[nodeIds.size()]);
+        HashSet<String> conenctedNodes = new HashSet<>();
         for (int i = 0; i < nodes.length; i++) {
             String prefixI = nodes[i].substring(0, 3) + "_";
             for (int j = 0; j < nodes.length; j++) {
@@ -55,8 +56,8 @@ public class WebGraphService {
                 String nodeI = nodes[i];
                 String nodeJ = nodes[j];
                 LinkedList<String> edgeNames = edgeController.mapEdgeName(nodeI, nodeJ);
-                if(edgeNames==null) {
-                    log.debug("Edge for "+nodeI+" & "+nodeJ+" do not exist!");
+                if (edgeNames == null) {
+                    log.debug("Edge for " + nodeI + " & " + nodeJ + " do not exist!");
                     continue;
                 }
                 edgeNames.forEach(edgeName -> {
@@ -64,8 +65,13 @@ public class WebGraphService {
                         //TODO add edgeFilters
                         nodeIds.get(nodeI).forEach((k1, v1) -> {
                             try {
+                                if (request.connectedOnly & conenctedNodes.contains(nodeI) & !v1.hasEdge)
+                                    return;
+
                                 edgeController.getEdges(edgeName, nodeI, k1).forEach(t -> {
                                     try {
+                                        if (request.connectedOnly & conenctedNodes.contains(nodeJ) & !nodeIds.get(nodeJ).get(t).hasEdge)
+                                            return;
                                         nodeIds.get(nodeJ).get(t).hasEdge = true;
                                         v1.hasEdge = true;
                                         graph.addEdge(new WebEdge(prefixI, k1, prefixJ, t));
@@ -73,9 +79,13 @@ public class WebGraphService {
 
                                     }
                                 });
-                            }catch (NullPointerException ignore){
+                            } catch (NullPointerException ignore) {
                             }
                         });
+                        if (request.nodes.get(nodeI).filters.length == 0)
+                            conenctedNodes.add(nodeI);
+                        if (request.nodes.get(nodeJ).filters.length == 0)
+                            conenctedNodes.add(nodeJ);
                     }
                 });
             }
@@ -85,7 +95,7 @@ public class WebGraphService {
                 :
                 nodeIds.values().stream().map(HashMap::values).flatMap(Collection::stream).collect(Collectors.toSet())
         );
-        graph.drawDoubleCircular();
+//        graph.drawDoubleCircular();
         return graph;
     }
 

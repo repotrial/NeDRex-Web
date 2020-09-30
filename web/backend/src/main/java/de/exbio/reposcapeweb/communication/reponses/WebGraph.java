@@ -66,8 +66,8 @@ public class WebGraph {
         AtomicReference<Double> next = new AtomicReference<>(0.0);
         double radius = radiusFactor*nodes.size();
         nodes.forEach(n->{
-            n.setX(radius*Math.cos(next.get()));
-            n.setY(radius*Math.sin(next.get()));
+//            n.setX(radius*Math.cos(next.get()));
+//            n.setY(radius*Math.sin(next.get()));
             next.updateAndGet(v -> (v + rad));
         });
     }

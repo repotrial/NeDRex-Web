@@ -41,7 +41,7 @@
           <v-container>
             <v-row>
               <v-col>
-                <Graph ref="graph" v-on:selectionEvent="setSelection" v-on:releaseEvent="resetSelection"></Graph>
+                <Graph ref="startgraph" v-on:selectionEvent="setSelection" v-on:releaseEvent="resetSelection"></Graph>
               </v-col>
               <v-col>
                 <v-list-item-group multiple color="indigo" v-model="edgeModel">
@@ -143,7 +143,7 @@ export default {
     this.edges = []
   },
   mounted() {
-    let selectionGraph = this.$refs.graph.getCurrentGraph()
+    let selectionGraph = this.$refs.startgraph.getCurrentGraph()
     selectionGraph.nodes.forEach(n => {
       this.nodes.push({index: this.nodes.length, id: n.id, label: n.label})
     })
@@ -276,7 +276,7 @@ export default {
         nodeIds.push(this.nodes[n].id)
       })
       let data = {nodes: nodeIds, edges: edgeIds}
-      this.$refs.graph.setSelectionMultiple(data)
+      this.$refs.startgraph.setSelectionMultiple(data)
     },
     removeFilter: function (data) {
       console.log(this.filters[data.name])

@@ -25,8 +25,13 @@
         </template>
       </v-toolbar>
     </v-card>
-    <SideCard v-show="showSidecard" ref="side" v-on:nodeSelectionEvent="setSelectedNode"
-              v-on:addFilterEvent="addFilter" v-on:hideEvent="hideSidecard" v-on:removeFilterEvent="removeFilter"></SideCard>
+    <SideCard v-show="showSidecard" ref="side"
+              v-on:nodeSelectionEvent="setSelectedNode"
+              v-on:addFilterEvent="addFilter"
+              v-on:hideEvent="hideSidecard"
+              v-on:removeFilterEvent="removeFilter"
+              v-on:togglePhysicsEvent="togglePhysics"
+    ></SideCard>
     <v-navigation-drawer app right v-show="!showSidecard" style="width: 5%">
       <v-list-item>
         <v-list-item-content>
@@ -45,6 +50,9 @@
       </v-container>
       <v-container v-show="selectedTabId===1" fluid>
         <Graph ref="graph" v-on:selectionEvent="loadSelection" v-on:finishedEvent="setTabNotification(1)"></Graph>
+        <v-card>
+          <v-checkbox v-model="physics" label="Enable physics" v-on:click="togglePhysics"></v-checkbox>
+        </v-card>
       </v-container>
     </v-main>
 
@@ -71,6 +79,7 @@ export default {
   colors: {},
   tabslist: {},
   showSidecard: false,
+  physics: false,
   data() {
     return {
       graphLoad: this.graphLoad,
@@ -81,6 +90,7 @@ export default {
       selectedTabId: this.selectedTabId,
       colors: this.colors,
       showSidecard: this.showSidecard,
+      physics: this.physics,
     }
   },
   created() {
@@ -89,6 +99,7 @@ export default {
       tabs: {active: "rgba(25 118 210)", inactive: "rgba(0,0,0,.54)"}
     }
     this.selectedTabId = 0;
+    this.physics = false
     this.tabslist = [
       {id: 0, label: "Start", icon: "fas fa-filter", color: this.colors.tabs.active, note: false},
       {id: 1, label: "Graph", icon: "fas fa-project-diagram", color: this.colors.tabs.inactive, note: false},
@@ -100,6 +111,10 @@ export default {
   methods: {
     loadGraph: function (graph) {
       this.tabslist[1].icon = "fas fa-circle-notch fa-spin"
+      if (this.physics) {
+        this.physics = false;
+        this.togglePhysics()
+      }
       this.$refs.graph.loadData(graph)
     },
     hideSide: function () {
@@ -113,6 +128,9 @@ export default {
       }
     }
     ,
+    togglePhysics: function () {
+      this.$refs.graph.togglePhysics()
+    },
     hideSidecard: function () {
       this.showSidecard = false
       this.$refs.start.minimizeSide()
@@ -133,10 +151,10 @@ export default {
       }
     },
     setSelectedNode: function (nodeId) {
-      if(nodeId !== undefined) {
+      if (nodeId !== undefined) {
         this.$refs.graph.setSelection([nodeId]);
         this.loadSelection({nodes: [nodeId]})
-      }else{
+      } else {
         this.$refs.graph.setSelection()
         this.loadSelection()
       }
@@ -163,7 +181,7 @@ export default {
     addFilter: function (param) {
       this.$refs.start.addFilter(param)
     },
-    removeFilter: function (param){
+    removeFilter: function (param) {
       this.$refs.start.removeFilter(param)
     },
     adaptSidecard: function (param) {

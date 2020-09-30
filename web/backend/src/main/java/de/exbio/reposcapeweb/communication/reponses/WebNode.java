@@ -4,8 +4,8 @@ public class WebNode {
     String id;
     String label;
     String title;
-    double x;
-    double y;
+//    double x;
+//    double y;
     String group;
     boolean hasEdge = false;
 
@@ -44,21 +44,21 @@ public class WebNode {
         this.label = label;
     }
 
-    public double getX() {
-        return x;
-    }
-
-    public void setX(double x) {
-        this.x = x;
-    }
-
-    public double getY() {
-        return y;
-    }
-
-    public void setY(double y) {
-        this.y = y;
-    }
+//    public double getX() {
+//        return x;
+//    }
+//
+//    public void setX(double x) {
+//        this.x = x;
+//    }
+//
+//    public double getY() {
+//        return y;
+//    }
+//
+//    public void setY(double y) {
+//        this.y = y;
+//    }
 
     public String getTitle() {
         return title;

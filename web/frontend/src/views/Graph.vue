@@ -9,8 +9,11 @@
              :options="options"
              :layout="layout"
              :physics="physics"
-             :events="['click','release']"
+             :events="['click','release','startStabilizing','stabilizationProgress','stabilizationIterationsDone']"
              @click="onClick"
+             @startStabilizing="onStabilizationStart"
+             @stabilizationProgress="onStabilizationProgress"
+             @stabilizationIterationsDone="onStabilizationDone"
              @release="onRelease"
 
     >
@@ -40,6 +43,8 @@ export default {
   directed: false,
   loadingColor: 'primary',
   lastClick: 0,
+  physicsOn: false,
+  hideEdges:false,
 
   created() {
     this.progress = 0
@@ -49,6 +54,8 @@ export default {
     this.highlight = false
     this.loadData(this.payload)
     this.lastClick = 0
+    this.physicsOn = false
+    this.hideEdges=false
   },
 
   data() {
@@ -157,7 +164,7 @@ export default {
         this.$refs.network.selectNodes(nodes)
         this.identifyNeighbors(nodes[0])
         this.focusNode(nodes[0])
-      }else{
+      } else {
         this.$refs.network.unselectAll()
         this.$emit("selectionEvent")
         this.focusNode()
@@ -202,7 +209,7 @@ export default {
           {from: 1, to: 5, label: 'DrugHasIndication'},
         ]),
         layout: {
-          improvedLayout: true,
+          improvedLayout: false,
           // clusterThreshold: 1000,
           // hierarchical: {enabled: true}
 
@@ -254,50 +261,71 @@ export default {
           },
           nodes: {
             fixed: false,
-            physics: false,
+            physics: true,
             borderWidth: 2
 
           },
           edges: {
+            hidden: false,
             // arrows:{to:{enabled:true}},
             // scaling:{label:{enabled: true}},
             smooth: {enabled: true},
             color: '#454545',
             // hidden: true,
             width: 0.3,
-            physics: false,
+            physics: true,
             // length:300
+          },
+          physics: {
+            // solver: 'repulsion',
+            enabled: false,
+            stabilization: {enabled: true, updateInterval: 10, iterations: 1000, fit: true},
+            timestep: 0.3,
+            // wind: {x: 20, y: 20}
           }
         },
-        physics: {
-          enabled: false,
-          // solver: 'repulsion',
-          stabilization: {enabled: true, updateInterval: 1},
-          timestep: 0.3,
-          // wind: {x: 20, y: 20}
-        }
+
       }
     }
     ,
+    togglePhysics: function () {
+      if (this.physicsOn) {
+        this.physicsOn = false;
+        this.hideEdges = false;
+      } else {
+        this.hideEdges=true;
+        this.physicsOn = true;
+      }
+      this.options.physics.enabled = this.physicsOn
+      this.options.edges.hidden=this.hideEdges
+      this.$refs.network.setOptions(this.options)
+    },
     mergeOptions: function (options) {
       //TODO merge
       this.options = options;
+    },
+    onStabilizationStart: function () {
+      this.loading = true;
+      this.loadingColor = this.colors.bar.primary
+      console.log("stabilization has started")
+    },
+    onStabilizationProgress: function (params) {
+
+
+      this.progress = 100 * params.iterations / params.total;
+      console.log(this.progress)
+      // this.width = Math.max(this.minWidth, this.maxWidth * widthFactor);
+      this.text = "Graph generation " + Math.round(this.progress) + "%";
+      console.log(this.text)
+      //
+      // console.log(Math.round(widthFactor * 100) + "%")
     }
-    // onStabilizationProgress: function (params) {
-    //   // this.loading = true;
-    //   this.progress = 100 * params.iterations / params.total;
-    //   console.log(this.progress)
-    //   // this.width = Math.max(this.minWidth, this.maxWidth * widthFactor);
-    //   this.text = "Graph generation " + Math.round(this.progress) + "%";
-    //   //
-    //   // console.log(Math.round(widthFactor * 100) + "%")
-    // }
-    // ,
-    // onStabilizationDone: function () {
-    //   this.text = "100%";
-    //   this.width = this.maxWidth
-    //   // this.loading = false;
-    // }
+    ,
+    onStabilizationDone: function () {
+      this.text = "100%";
+      this.width = this.maxWidth
+      this.loading = false;
+    }
     ,
     onClick: function (params) {
       if (params.nodes.length > 0 || params.edges.length > 0) {
@@ -354,10 +382,10 @@ export default {
     viewAll: function () {
       this.$refs.network.fit()
     },
-    getAllNodes: function (){
-        let nodes = []
-      this.nodeSet.getDataSet().forEach(n=>nodes.push(n))
-        return {neighbors:nodes}
+    getAllNodes: function () {
+      let nodes = []
+      this.nodeSet.getDataSet().forEach(n => nodes.push(n))
+      return {neighbors: nodes}
     },
     identifyNeighbors: function (selected) {
       //   this.highlight = true;
