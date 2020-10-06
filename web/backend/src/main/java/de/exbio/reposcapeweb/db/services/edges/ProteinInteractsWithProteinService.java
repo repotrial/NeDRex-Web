@@ -2,6 +2,7 @@ package de.exbio.reposcapeweb.db.services.edges;
 
 import de.exbio.reposcapeweb.db.entities.edges.ProteinInteractsWithProtein;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
+import de.exbio.reposcapeweb.db.repositories.edges.GeneInteractsWithGeneRepository;
 import de.exbio.reposcapeweb.db.repositories.edges.ProteinInteractsWithProteinRepository;
 import de.exbio.reposcapeweb.db.services.nodes.PathwayService;
 import de.exbio.reposcapeweb.db.services.nodes.ProteinService;
@@ -12,6 +13,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.sql.DataSource;
+import javax.xml.crypto.Data;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -22,16 +28,24 @@ public class ProteinInteractsWithProteinService {
     private final Logger log = LoggerFactory.getLogger(ProteinInteractsWithProteinService.class);
 
     private final ProteinInteractsWithProteinRepository proteinInteractsWithProteinRepository;
+    private final GeneInteractsWithGeneRepository geneInteractsWithGeneRepository;
 
     private final ProteinService proteinService;
 
     private final boolean directed = true;
     private final HashMap<Integer, HashMap<Integer, Boolean>> edges = new HashMap<>();
 
+    private final DataSource dataSource;
+    private final String clearQuery = "DELETE FROM gene_interacts_with_gene";
+    private final String generationQuery = "INSERT IGNORE INTO gene_interacts_with_gene SELECT enc1.id_2, enc2.id_2 FROM protein_interacts_with_protein ppi INNER JOIN protein_encoded_by enc1 ON ppi.id_1=enc1.id_1 INNER JOIN protein_encoded_by enc2 on ppi.id_2=enc2.id_1;";
+    private PreparedStatement clearPs = null;
+    private PreparedStatement generationPs = null;
     @Autowired
-    public ProteinInteractsWithProteinService(PathwayService pathwayService, ProteinService proteinService, ProteinInteractsWithProteinRepository proteinInteractsWithProteinRepository) {
+    public ProteinInteractsWithProteinService(ProteinService proteinService, ProteinInteractsWithProteinRepository proteinInteractsWithProteinRepository, GeneInteractsWithGeneRepository geneInteractsWithGeneRepository, DataSource dataSource) {
         this.proteinInteractsWithProteinRepository = proteinInteractsWithProteinRepository;
+        this.geneInteractsWithGeneRepository=geneInteractsWithGeneRepository;
         this.proteinService = proteinService;
+        this.dataSource = dataSource;
     }
 
 
@@ -55,6 +69,25 @@ public class ProteinInteractsWithProteinService {
         }
         proteinInteractsWithProteinRepository.saveAll(toSave);
         log.debug("Updated protein_interacts_with_protein table: " + insertCount + " Inserts, " + (updates.containsKey(UpdateOperation.Alteration) ? updates.get(UpdateOperation.Alteration).size() : 0) + " Changes, " + (updates.containsKey(UpdateOperation.Deletion) ? updates.get(UpdateOperation.Deletion).size() : 0) + " Deletions identified!");
+        log.debug("Deriving entries for gene_interacts_with_gene.");
+        if (!generateGeneEntries())
+            return false;
+        log.debug("Derived " + geneInteractsWithGeneRepository.count() + " gene -> gene relations.");
+
+        return true;
+    }
+
+    public boolean generateGeneEntries() {
+        log.debug("Generating entries for gene_interacts_with_gene from drug_has_target(_protein).");
+        try (Connection con = dataSource.getConnection()) {
+            clearPs = con.prepareCall(clearQuery);
+            generationPs = con.prepareStatement(generationQuery);
+            clearPs.executeUpdate();
+            generationPs.executeUpdate();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+            return false;
+        }
         return true;
     }
 

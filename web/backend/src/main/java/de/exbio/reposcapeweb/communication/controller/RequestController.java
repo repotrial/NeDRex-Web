@@ -59,6 +59,19 @@ public class RequestController {
         return null;
     }
 
+    @RequestMapping(value = "/getMetagraph", method = RequestMethod.GET)
+    @ResponseBody
+    public String getMetaGraph() {
+        log.info("got request on metagraph");
+        try {
+            String out = objectMapper.writeValueAsString(webGraphService.getMetaGraph());
+            return out;
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     @RequestMapping(value = "/getExampleGraph2", method = RequestMethod.GET)
     @ResponseBody
     public String getExampleGraph2() {

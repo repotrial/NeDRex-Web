@@ -66,6 +66,16 @@ public class DbCommunicationService {
         }
     }
 
+    public void scheduleRead() {
+        while (isDbLocked()) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     public void scheduleLock() {
         while (!setDbLocked(true)) {
             try {

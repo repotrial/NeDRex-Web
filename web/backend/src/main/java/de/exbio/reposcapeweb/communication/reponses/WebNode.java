@@ -15,6 +15,11 @@ public class WebNode {
         this.group=group;
     }
 
+    public WebNode(int id, String label, String group, String title){
+        this(id,label,group);
+        this.title=title;
+    }
+
     public WebNode(String prefix,int id, String label,String group){
         this.id = prefix+id;
         this.label = label;

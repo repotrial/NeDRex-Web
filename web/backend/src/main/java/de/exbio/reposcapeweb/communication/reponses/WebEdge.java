@@ -1,18 +1,22 @@
 package de.exbio.reposcapeweb.communication.reponses;
 
-import de.exbio.reposcapeweb.communication.controller.RequestController;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class WebEdge {
 
     String from;
     String to;
+    String label ="";
+    boolean dashes=false;
 
     public WebEdge(int from, int to) {
         this.from = ""+from;
         this.to = ""+to;
+    }
+
+    public WebEdge(int from, int to, String label){
+        this(from,to);
+        this.label=label;
     }
 
     public WebEdge(String prefix1, int from, String prefix2, int to){
@@ -44,5 +48,22 @@ public class WebEdge {
 
     public void setTo(String to) {
         this.to = to;
+    }
+
+    public WebEdge setDashes(boolean dashed){
+        this.dashes=dashed;
+        return this;
+    }
+
+    public String getLabel() {
+        return label;
+    }
+
+    public void setLabel(String label) {
+        this.label = label;
+    }
+
+    public boolean isDashes() {
+        return dashes;
     }
 }
