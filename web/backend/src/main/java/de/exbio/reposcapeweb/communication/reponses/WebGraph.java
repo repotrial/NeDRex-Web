@@ -7,12 +7,14 @@ import org.slf4j.LoggerFactory;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class WebGraph {
     private final Logger log = LoggerFactory.getLogger(WebGraph.class);
     //TODO map with edge directions?
     boolean directed =false;
+    String id;
     String title;
     LinkedList<WebNode> nodes = new LinkedList<>();
     LinkedList<WebEdge> edges = new LinkedList<>();
@@ -22,9 +24,11 @@ public class WebGraph {
     private int f = 10;
 
     public WebGraph(){
+        this.id= UUID.randomUUID().toString();
     }
 
     public WebGraph(String title, boolean directed){
+        this.id= UUID.randomUUID().toString();
         this.title = title;
         this.directed=directed;
     }
@@ -98,5 +102,13 @@ public class WebGraph {
 
     public void addNodes(Collection<WebNode> nodes) {
         this.nodes.addAll(nodes);
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 }

@@ -20,6 +20,7 @@
     "vis-network": "^8.3.2",
     "vis-util": "^4.3.4",
     "vue": "^2.5.11",
+    "vue-cookies": "^1.7.4",
     "vue-router": "^3.4.3",
     "vue-vis-network": "^1.0.2",
     "vuetify": "^2.3.10",

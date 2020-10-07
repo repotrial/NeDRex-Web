@@ -46,13 +46,16 @@
 
     <v-main app style="padding-top: 0" @click.stop="hideSide">
       <v-container v-show="selectedTabId===0" fluid>
-        <Start ref="start" v-on:graphLoadEvent="loadGraph" v-on:filterEvent="filter" :colors="colors"></Start>
+        <Start v-if="metagraph !== undefined" ref="start" v-on:graphLoadEvent="loadGraph" v-on:filterEvent="filter" :colors="colors" :metagraph="metagraph"></Start>
       </v-container>
       <v-container v-show="selectedTabId===1" fluid>
-        <Graph ref="graph" v-on:selectionEvent="loadSelection" v-on:finishedEvent="setTabNotification(1)"></Graph>
+        <Graph ref="graph" v-on:selectionEvent="loadSelection" v-on:finishedEvent="setTabNotification(1)" v-on:graphLoadedEvent="loadList"></Graph>
         <v-card>
           <v-checkbox v-model="physics" label="Enable physics" v-on:click="togglePhysics"></v-checkbox>
         </v-card>
+      </v-container>
+      <v-container v-show="selectedTabId===2" fluid>
+        <List ref="list"></List>
       </v-container>
     </v-main>
 
@@ -64,6 +67,7 @@
 <script>
 import Graph from './views/Graph.vue';
 import Start from './views/Start.vue';
+import List from './views/List.vue'
 import SideCard from './views/SideCard.vue'
 import headerBar from './components/header.vue'
 
@@ -80,6 +84,7 @@ export default {
   tabslist: {},
   showSidecard: false,
   physics: false,
+  metagraph: Object,
   data() {
     return {
       graphLoad: this.graphLoad,
@@ -91,6 +96,7 @@ export default {
       colors: this.colors,
       showSidecard: this.showSidecard,
       physics: this.physics,
+      metagraph: this.metagraph
     }
   },
   created() {
@@ -106,9 +112,18 @@ export default {
       {id: 2, label: "List", icon: "fas fa-list-ul", color: this.colors.tabs.inactive, note: false},
       {id: 3, label: "Statistics", icon: "fas fa-chart-pie", color: this.colors.tabs.inactive, note: false},
     ]
+    this.initGraphs()
+
   },
   // this.setGraph({message: "Default graph"})
   methods: {
+    initGraphs: function () {
+      this.$http.get("/getMetagraph").then(response => {
+        this.metagraph = response.data;
+      }).catch(err => {
+        console.log(err)
+      })
+    },
     loadGraph: function (graph) {
       this.tabslist[1].icon = "fas fa-circle-notch fa-spin"
       if (this.physics) {
@@ -116,6 +131,9 @@ export default {
         this.togglePhysics()
       }
       this.$refs.graph.loadData(graph)
+    },
+    loadList: function (graphId){
+      this.$refs.list.getList(graphId)
     },
     hideSide: function () {
       this.$refs.side.hide()
@@ -207,7 +225,8 @@ export default {
     headerBar,
     Graph,
     SideCard,
-    Start
+    Start,
+    List
   },
 
 

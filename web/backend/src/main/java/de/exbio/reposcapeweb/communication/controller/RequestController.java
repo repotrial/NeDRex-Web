@@ -10,10 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * Controller for the incoming requests on the RepoScape-WEB application.
@@ -79,6 +76,19 @@ public class RequestController {
         try {
             String out = objectMapper.writeValueAsString(webGraphService.getNeuroDrugs());
             log.info("Answered request!");
+            return out;
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @RequestMapping(value = "/getGraphList",method = RequestMethod.GET)
+    @ResponseBody
+    public String getGraphList(@RequestParam("id") String id, @RequestParam("cached") boolean cached){
+        System.out.println("got request for "+id+" from cache="+cached);
+        try{
+            String out = objectMapper.writeValueAsString(webGraphService.getListFromGraph(id));
             return out;
         } catch (JsonProcessingException e) {
             e.printStackTrace();

@@ -38,10 +38,11 @@
         <v-divider></v-divider>
 
         <v-list-item style="align-content: center">
-          <v-container>
+          <v-container v-if="metagraph !== undefined">
             <v-row>
               <v-col>
-                <Graph ref="startgraph" v-on:selectionEvent="setSelection" v-on:releaseEvent="resetSelection"></Graph>
+                <Graph ref="startgraph" v-on:selectionEvent="setSelection" v-on:releaseEvent="resetSelection"
+                       :initgraph="{graph:metagraph,name:'metagraph'}"></Graph>
               </v-col>
               <v-col>
                 <v-list-item-group multiple color="indigo" v-model="edgeModel">
@@ -111,6 +112,7 @@ export default {
   filters: {},
   onlyConnected: true,
   props: {
+    metagraph: Object,
     colors: {
       type: Object
     },
@@ -125,7 +127,7 @@ export default {
       edgeModel: this.edgeModel,
       filterId: this.filterId,
       onlyConnected: true,
-      filters: this.filters
+      filters: this.filters,
     }
   },
   created() {
@@ -143,18 +145,20 @@ export default {
     this.edges = []
   },
   mounted() {
-    let selectionGraph = this.$refs.startgraph.getCurrentGraph()
-    selectionGraph.nodes.forEach(n => {
-      this.nodes.push({index: this.nodes.length, id: n.id, label: n.label})
-    })
-    selectionGraph.edges.forEach(e => {
-      let depends = [e.from]
-      if (e.from !== e.to)
-        depends.push(e.to)
-      this.edges.push({index: this.edges.length, id: e.id, label: e.label, depends: depends})
-    })
+    this.initLists(this.metagraph)
   },
   methods: {
+    initLists: function (selectionGraph) {
+      selectionGraph.nodes.forEach(n => {
+        this.nodes.push({index: this.nodes.length, id: n.id, label: n.label})
+      })
+      selectionGraph.edges.forEach(e => {
+        let depends = [e.from]
+        if (e.from !== e.to)
+          depends.push(e.to)
+        this.edges.push({index: this.edges.length, id: e.id, label: e.label, depends: depends})
+      })
+    },
     loadGraph: function (id) {
       console.log("load graph")
       if (id === -1) {

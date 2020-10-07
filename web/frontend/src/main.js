@@ -3,6 +3,7 @@ import App from './App.vue'
 
 import router from  './router'
 import vuetify from './plugins/vuetify'
+import VueCookies from "vue-cookies";
 
 import 'babel-polyfill'
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
@@ -13,6 +14,9 @@ library.add(faUserSecret)
 
 Vue.component('font-awesome-icon', FontAwesomeIcon)
 Vue.component('network', Network);
+
+Vue.use(VueCookies);
+
 
 import ApiService from "./services/api.service";
 ApiService.init("/backend/api/");

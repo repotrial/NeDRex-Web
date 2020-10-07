@@ -22,6 +22,8 @@ public class WebGraphService {
     private final EdgeController edgeController;
     private final NodeController nodeController;
     private final DbCommunicationService dbCommunicationService;
+    private HashMap<String,WebGraph> cache = new HashMap<>();
+
 
     @Autowired
     public WebGraphService(
@@ -58,9 +60,26 @@ public class WebGraphService {
         return graph;
     }
 
+    public WebGraph getCachedGraph(String graphId){
+        return cache.get(graphId);
+    }
+
+    public WebGraphList getListFromGraph(String id){
+        return getListFromGraph(getCachedGraph(id));
+    }
+
+    public WebGraphList getListFromGraph(WebGraph graph){
+        dbCommunicationService.scheduleRead();
+
+
+        //TODO write conversion from graph to list -> maybe cache graph differently
+        return new WebGraphList(graph.id);
+    }
+
     public WebGraph getGraph(GraphRequest request) {
         dbCommunicationService.scheduleRead();
         WebGraph graph = new WebGraph("All requested", false);
+        cache.put(graph.id,graph);
         TreeMap<String, HashMap<Integer, WebNode>> nodeIds = new TreeMap<>();
         request.nodes.forEach((k, v) -> {
             String prefix = k.substring(0, 3) + "_";

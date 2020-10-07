@@ -2,7 +2,7 @@
   <div class="graph-window">
     <i>{{ text }}</i>
     <v-progress-linear v-show="loading" indeterminate :color=loadingColor></v-progress-linear>
-    <network v-show="!loading" class="wrapper" ref="network"
+    <network v-if="nodeSet !== undefined" v-show="!loading" class="wrapper" ref="network"
              :key="key"
              :nodes="nodeSet"
              :edges="edges"
@@ -11,12 +11,12 @@
              :physics="physics"
              :events="['click','release','startStabilizing','stabilizationProgress','stabilizationIterationsDone']"
              @click="onClick"
-             @startStabilizing="onStabilizationStart"
-             @stabilizationProgress="onStabilizationProgress"
-             @stabilizationIterationsDone="onStabilizationDone"
-             @release="onRelease"
+             @release="onRelease">
+    <!--             @startStabilizing="onStabilizationStart"-->
+    <!--             @stabilizationProgress="onStabilizationProgress"-->
+    <!--             @stabilizationIterationsDone="onStabilizationDone"-->
 
-    >
+<!--    >-->
     </network>
   </div>
 </template>
@@ -27,10 +27,11 @@ import {DataSet} from 'vue-vis-network'
 export default {
   name: "graph",
   props: {
+    initgraph: Object,
     payload: Object,
   },
   key: 0,
-  nodeSet: Object,
+  nodeSet: undefined,
   loading: true,
   text: "",
   nodes: Object,
@@ -44,7 +45,8 @@ export default {
   loadingColor: 'primary',
   lastClick: 0,
   physicsOn: false,
-  hideEdges:false,
+  hideEdges: false,
+  metagraph: undefined,
 
   created() {
     this.progress = 0
@@ -52,10 +54,10 @@ export default {
     this.loading = true;
     this.colors = {bar: {backend: "#6db33f", vis: 'primary', error: 'red darken-2'}}
     this.highlight = false
-    this.loadData(this.payload)
+    this.loadData(this.initgraph)
     this.lastClick = 0
     this.physicsOn = false
-    this.hideEdges=false
+    this.hideEdges = false
   },
 
   data() {
@@ -108,6 +110,8 @@ export default {
       return this.loading
     },
     drawGraph: function () {
+      if(this.nodeSet === undefined || this.edges ===undefined)
+        return
       if (this.directed) {
         this.options.edges["arrows"] = {to: {enabled: true}}
       } else
@@ -120,14 +124,21 @@ export default {
     },
     loadData: function (payload) {
       this.loading = true
-      let defaults = this.getDefaults()
 
+      if (payload !== undefined && payload.name !== undefined && payload.name === "metagraph" && this.metagraph === undefined) {
+        this.metagraph = payload.graph;
+      }
+      if(this.metagraph !== undefined){
+        this.edges = new DataSet(this.metagraph.edges);
+        this.nodeSet = new DataSet(this.metagraph.nodes);
+        this.directed = this.metagraph.directed;
+      }
+
+
+      let defaults = this.getDefaults(payload)
       this.options = defaults.options;
       this.layout = defaults.layout;
       this.physics = defaults.physics;
-      this.edges = defaults.edges;
-      this.nodeSet = defaults.nodes;
-      this.directed = defaults.directed;
 
       if (payload) {
         if (payload.get !== undefined)
@@ -140,6 +151,7 @@ export default {
           this.drawGraph()
       } else
         this.drawGraph()
+      console.log("done")
     },
     postData: function (post) {
       this.loading = true;
@@ -149,6 +161,8 @@ export default {
         return response.data
       }).then(graph => {
         console.log(graph)
+        this.$cookies.set("graphid",graph.id)
+        this.$emit("graphLoadedEvent",graph.id)
         this.setGraph(graph)
       }).catch(err => {
         this.loadingColor = this.colors.bar.error;
@@ -157,8 +171,16 @@ export default {
     }
     ,
     getCurrentGraph: function () {
-      return {nodes: this.nodeSet, edges: this.edges, options: this.options}
-    },
+      if (this.nodeSet === undefined) {
+        setTimeout(this.getCurrentGraph, 100)
+      } else {
+        console.log(this.nodeSet)
+        return {nodes: this.nodeSet, edges: this.edges, options: this.options}
+      }
+
+
+    }
+    ,
     setSelection: function (nodes) {
       if (nodes !== undefined && nodes[0] !== undefined) {
         this.$refs.network.selectNodes(nodes)
@@ -170,44 +192,46 @@ export default {
         this.focusNode()
       }
 
-    },
-    // setNodeColors: function () {
-    //   let nodesContainColor = false
-    //   if (this.options.nodes.color !== undefined) {
-    //     this.nodeSet.getIds().forEach(id => {
-    //       if (this.nodeSet.get(id).color !== undefined)
-    //         nodesContainColor = true;
-    //     })
-    //     if (!nodesContainColor) {
-    //       for (let id in this.nodes) {
-    //         this.nodes[id].color = this.options.nodes.color
-    //       }
-    //     }
-    //   }
-    //   this.updateNodes()
-    // },
+    }
+    ,
+// setNodeColors: function () {
+//   let nodesContainColor = false
+//   if (this.options.nodes.color !== undefined) {
+//     this.nodeSet.getIds().forEach(id => {
+//       if (this.nodeSet.get(id).color !== undefined)
+//         nodesContainColor = true;
+//     })
+//     if (!nodesContainColor) {
+//       for (let id in this.nodes) {
+//         this.nodes[id].color = this.options.nodes.color
+//       }
+//     }
+//   }
+//   this.updateNodes()
+// },
+//     loadMetagraph: function () {
+//       return new Promise(() => {
+//         if (this.metagraph === undefined) {
+//           this.$http.get("/getMetagraph").then(response => {
+//             console.log("set metagraph")
+//             this.metagraph = response.data
+//             return response.data
+//           }).catch(err => {
+//             this.loadingColor = this.colors.bar.error;
+//             console.log(err)
+//           })
+//         } else {
+//           return this.metagraph
+//         }
+//       })
+//     }
+//     ,
+
     getDefaults: function () {
       return {
-        directed: true,
-        nodes: new DataSet([
-          {id: 1, group: 'drug', label: 'Drug', title: 'Drug', shape: 'circle'},
-          {id: 2, group: 'protein', label: 'Protein', title: 'Protein', shape: 'circle'},
-          {id: 3, group: 'pathway', label: 'Pathway', title: 'Pathway', shape: 'circle'},
-          {id: 4, group: 'gene', label: 'Gene', title: 'Gene', shape: 'circle'},
-          {id: 5, group: 'disorder', label: 'Disorder', title: 'Disorder', shape: 'circle'},
-        ]),
-        edges: new DataSet([
-          {from: 1, to: 2, label: 'DrugHasTargetProtein'},
-          {from: 1, to: 4, label: 'DrugHasTargetGene', dashes: true},
-          {from: 2, to: 2, label: 'ProteinInteractsWithProtein',},
-          {from: 2, to: 3, label: 'ProteinInPathway'},
-          {from: 2, to: 4, label: 'ProteinEncodedBy'},
-          {from: 2, to: 5, label: 'ProteinAssociatedWithDisorder', dashes: true},
-          {from: 4, to: 5, label: 'GeneAssociatedWithDisorder'},
-          {from: 5, to: 5, label: 'DisorderComorbidWithDisorder'},
-          {from: 5, to: 5, label: 'DisorderIsADisorder'},
-          {from: 1, to: 5, label: 'DrugHasIndication'},
-        ]),
+        // nodes: new DataSet(this.metagraph.nodes),
+        // edges: new DataSet(this.metagraph.edges),
+        // directed: this.metagraph.directed,
         layout: {
           improvedLayout: false,
           // clusterThreshold: 1000,
@@ -286,6 +310,10 @@ export default {
         },
 
       }
+      // }).catch(err => {
+      //   this.loadingColor = this.colors.bar.error;
+      //   console.log(err)
+      // })
     }
     ,
     togglePhysics: function () {
@@ -293,22 +321,25 @@ export default {
         this.physicsOn = false;
         this.hideEdges = false;
       } else {
-        this.hideEdges=true;
+        this.hideEdges = true;
         this.physicsOn = true;
       }
       this.options.physics.enabled = this.physicsOn
-      this.options.edges.hidden=this.hideEdges
+      this.options.edges.hidden = this.hideEdges
       this.$refs.network.setOptions(this.options)
-    },
+    }
+    ,
     mergeOptions: function (options) {
       //TODO merge
       this.options = options;
-    },
+    }
+    ,
     onStabilizationStart: function () {
       this.loading = true;
       this.loadingColor = this.colors.bar.primary
       console.log("stabilization has started")
-    },
+    }
+    ,
     onStabilizationProgress: function (params) {
 
 
@@ -347,30 +378,34 @@ export default {
 
       this.updateNodes()
 
-    },
+    }
+    ,
     onRelease: function (params) {
       if (new Date().getTime() - this.lastClick < 500)
         return;
       this.$emit('releaseEvent', params)
-    },
+    }
+    ,
     mapEdgeObject: function (edgeId) {
       return this.edges._data[edgeId]
     }
-    // deselectNode: function(nodeId){
-    //   this.$refs.network.
-    // }
+// deselectNode: function(nodeId){
+//   this.$refs.network.
+// }
     ,
     focusNode: function (nodeId) {
       this.$refs.network.focus(nodeId)
       if (nodeId === undefined)
         this.viewAll()
-    },
+    }
+    ,
     setSelectionMultiple: function (items) {
       // for(let idx in selection) {
       this.$refs.network.selectNodes(items.nodes)
       this.$refs.network.selectEdges(items.edges)
       // }
-    },
+    }
+    ,
     mapEdgeObjects: function (edgeIds) {
       let edges = []
       for (let idx in edgeIds)
@@ -381,12 +416,14 @@ export default {
     ,
     viewAll: function () {
       this.$refs.network.fit()
-    },
+    }
+    ,
     getAllNodes: function () {
       let nodes = []
       this.nodeSet.getDataSet().forEach(n => nodes.push(n))
       return {neighbors: nodes}
-    },
+    }
+    ,
     identifyNeighbors: function (selected) {
       //   this.highlight = true;
       //   this.uncolorNodes()
@@ -402,7 +439,8 @@ export default {
       //   this.recolorPrimary(toColor)
       return {primary: this.nodeSet.get(selected), neighbors: neighbors}
       // this.$emit('selectionEvent', {primary: this.nodeSet.get(selected), neighbors: neighbors})
-    },
+    }
+    ,
     uncolorNodes: function () {
       for (let nodeId in this.nodes) {
         this.nodes[nodeId].color = "rgba(200,200,200,0.5)";
