@@ -45,6 +45,37 @@ public class Gene extends RepoTrialNode {
     private String mapLocation;
     private String geneType;
 
+    public static String[] getListAttributes() {
+        return new String[]{"displayName", "primaryDomainId", "geneType", "approvedSymbol", "synonyms", "chromosome", "mapLocation"};
+    }
+
+    @Override
+    public HashMap<String, String> getAsMap() {
+        HashMap<String,String> values = new HashMap<>();
+        values.put("displayName",getDisplayName());
+        values.put("type",getType());
+        values.put("domainIds",domainIds);
+        values.put("synonyms",synonyms);
+        values.put("geneType",geneType);
+        values.put("symbols",symbols);
+        values.put("approvedSymbol",approvedSymbol);
+        values.put("description",description);
+        values.put("chromosome",chromosome);
+        values.put("mapLocation",mapLocation);
+        values.put("primaryDomainId",primaryDomainId);
+        return values;
+    }
+
+    @Override
+    public HashMap<String, String> getAsMap(HashSet<String> attributes) {
+        HashMap<String,String> values = new HashMap<>();
+        getAsMap().forEach((k,v)->{
+            if(attributes.contains(k))
+                values.put(k,v);
+        });
+        return values;
+    }
+
 
     public String getPrimaryDomainId() {
         return primaryDomainId;

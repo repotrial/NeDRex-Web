@@ -1,19 +1,20 @@
 package de.exbio.reposcapeweb.communication.reponses;
 
 import java.util.HashMap;
+import java.util.LinkedList;
 
 public class WebGraphList {
     public String id;
-    public HashMap<String,HashMap<String,String[]>> attributes;
-    public HashMap<String,HashMap<String,String>> nodes;
-    public HashMap<String,HashMap<String,String>> edges;
+    public HashMap<String, HashMap<String, String[]>> attributes;
+    public HashMap<String, LinkedList<HashMap<String, String>>> nodes;
+    public HashMap<String, LinkedList<HashMap<String, String>>> edges;
 
 
-    public WebGraphList(String id){
+    public WebGraphList(String id) {
         this.id = id;
         attributes = new HashMap<>();
-        attributes.put("nodes",new HashMap<>());
-        attributes.put("edges",new HashMap<>());
+        attributes.put("nodes", new HashMap<>());
+        attributes.put("edges", new HashMap<>());
         nodes = new HashMap<>();
         edges = new HashMap<>();
     }
@@ -35,19 +36,51 @@ public class WebGraphList {
         this.attributes = attributes;
     }
 
-    public HashMap<String, HashMap<String, String>> getNodes() {
+    public HashMap<String, LinkedList<HashMap<String, String>>> getNodes() {
         return nodes;
     }
 
-    public void setNodes(HashMap<String, HashMap<String, String>> nodes) {
+    public void setNodes(HashMap<String, LinkedList<HashMap<String, String>>> nodes) {
         this.nodes = nodes;
     }
 
-    public HashMap<String, HashMap<String, String>> getEdges() {
+    public HashMap<String, LinkedList<HashMap<String, String>>> getEdges() {
         return edges;
     }
 
-    public void setEdges(HashMap<String, HashMap<String, String>> edges) {
+    public void setEdges(HashMap<String, LinkedList<HashMap<String, String>>> edges) {
         this.edges = edges;
     }
+
+    public void addNode(String type, HashMap<String, String> entry) {
+        if (!nodes.containsKey(type))
+            nodes.put(type, new LinkedList<>());
+        nodes.get(type).add(entry);
+    }
+
+    public void addEdge(String type, HashMap<String,String> entry){
+        if(!edges.containsKey(type))
+            edges.put(type,new LinkedList<>());
+        edges.get(type).add(entry);
+    }
+
+    public void addAttributes(String entity, String type, String[] attributes){
+        this.attributes.get(entity).put(type,attributes);
+    }
+
+    public void addEdges(String type, LinkedList<HashMap<String, String>> nodesToAttributeList) {
+        if(!edges.containsKey(type))
+            edges.put(type,nodesToAttributeList);
+        else
+            edges.get(type).addAll(nodesToAttributeList);
+    }
+
+    public void addNodes(String type, LinkedList<HashMap<String, String>> nodesToAttributeList) {
+        if(!nodes.containsKey(type))
+            nodes.put(type,nodesToAttributeList);
+        else
+            nodes.get(type).addAll(nodesToAttributeList);
+    }
+
+
 }

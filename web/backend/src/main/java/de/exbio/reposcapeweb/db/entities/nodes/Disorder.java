@@ -46,6 +46,10 @@ public class Disorder extends RepoTrialNode {
     public Disorder() {
     }
 
+    public static String[] getListAttributes() {
+        return new String[]{"displayName", "synonyms",  "domainIds"};
+    }
+
 
     public String getPrimaryDomainId() {
         return primaryDomainId;
@@ -138,6 +142,29 @@ public class Disorder extends RepoTrialNode {
         //TODO add disorder groups/parents
 
         return map;
+    }
+
+    @Override
+    public HashMap<String, String> getAsMap() {
+        HashMap<String,String> values = new HashMap<>();
+        values.put("displayName",getDisplayName());
+        values.put("synonyms",synonyms);
+        values.put("type",getType());
+        values.put("domainIds",domainIds);
+        values.put("primaryDomainId",primaryDomainId);
+        values.put("description",getDescription());
+        values.put("icd10",icd10);
+        return values;
+    }
+
+    @Override
+    public HashMap<String, String> getAsMap(HashSet<String> attributes) {
+        HashMap<String,String> values = new HashMap<>();
+        getAsMap().forEach((k,v)->{
+            if(attributes.contains(k))
+                values.put(k,v);
+        });
+        return values;
     }
 
     @Override

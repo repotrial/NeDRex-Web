@@ -71,6 +71,11 @@ public class PathwayService extends NodeService {
         return idToDomainMap;
     }
 
+    @Override
+    public String[] getListAttributes() {
+        return Pathway.getListAttributes();
+    }
+
     public HashMap<String, Integer> getDomainToIdMap() {
         return domainToIdMap;
     }

@@ -118,4 +118,7 @@ public class ProteinEncodedByService {
         return new PairId(proteinService.map(ids.getFirst()), geneService.map(ids.getSecond()));
     }
 
+    public Iterable<ProteinEncodedBy> getEntries(Collection<PairId> ids) {
+        return proteinEncodedByRepository.findProteinEncodedsByIdIn(ids);
+    }
 }

@@ -71,6 +71,11 @@ public class GeneService extends NodeService {
         return idToDomainMap;
     }
 
+    @Override
+    public String[] getListAttributes() {
+        return Gene.getListAttributes();
+    }
+
     public HashMap<String, Integer> getDomainToIdMap() {
         return domainToIdMap;
     }

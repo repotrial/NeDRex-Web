@@ -54,9 +54,6 @@ public class Graph {
 
 
     public WebGraphList toWebList() {
-        if (weblist == null) {
-            //TODO implement conversion
-        }
         return weblist;
     }
 
@@ -82,5 +79,17 @@ public class Graph {
         if (!this.nodes.containsKey(typeId))
             this.nodes.put(typeId, new HashMap<>());
         this.nodes.get(typeId).put(node.getId(), node);
+    }
+
+    public void setWebList(WebGraphList list) {
+        this.weblist=list;
+    }
+
+    public HashMap<Integer, HashMap<Integer, Node>> getNodes() {
+        return nodes;
+    }
+
+    public HashMap<Integer, LinkedList<Edge>> getEdges() {
+        return edges;
     }
 }

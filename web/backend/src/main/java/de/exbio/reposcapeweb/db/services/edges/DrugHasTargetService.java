@@ -18,10 +18,7 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -204,5 +201,13 @@ public class DrugHasTargetService {
 
     public PairId mapIds(Pair<String, String> ids) {
         return new PairId(drugService.map(ids.getFirst()), proteinService.map(ids.getSecond()));
+    }
+
+    public Iterable<DrugHasTargetGene> getGenes(Collection<PairId> ids) {
+        return drugHasTargetGeneRepository.findDrugHasTargetsByIdIn(ids);
+    }
+
+    public Iterable<DrugHasTargetProtein> getProteins(Collection<PairId> ids) {
+        return drugHasTargetProteinRepository.findDrugHasTargetsByIdIn(ids);
     }
 }

@@ -39,6 +39,31 @@ public class Pathway extends RepoTrialNode {
 
     }
 
+    public static String[] getListAttributes() {
+        return new String[]{"displayName",  "primaryDomainId"};
+    }
+
+    @Override
+    public HashMap<String, String> getAsMap() {
+        HashMap<String,String> values = new HashMap<>();
+        values.put("displayName",getDisplayName());
+        values.put("type",getType());
+        values.put("domainIds",domainIds);
+        values.put("primaryDomainId",primaryDomainId);
+        values.put("species",getSpecies());
+        return values;
+    }
+
+    @Override
+    public HashMap<String, String> getAsMap(HashSet<String> attributes) {
+        HashMap<String,String> values = new HashMap<>();
+        getAsMap().forEach((k,v)->{
+            if(attributes.contains(k))
+                values.put(k,v);
+        });
+        return values;
+    }
+
 
     public String getPrimaryDomainId() {
         return primaryDomainId;

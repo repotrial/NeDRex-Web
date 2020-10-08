@@ -1,11 +1,13 @@
 package de.exbio.reposcapeweb.db.services.controller;
 
 import de.exbio.reposcapeweb.communication.cache.Graphs;
+import de.exbio.reposcapeweb.db.entities.edges.*;
+import de.exbio.reposcapeweb.db.entities.ids.PairId;
 import de.exbio.reposcapeweb.db.services.edges.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
+import java.util.*;
 
 
 @Service
@@ -188,6 +190,42 @@ public class EdgeController {
         return proteinInteractsWithProteinService.isEdge(id1, id2);
     }
 
+    public Iterable<DisorderComorbidWithDisorder> findAllDisorderComorbidWithDisorder(Collection<PairId> ids){
+        return disorderComorbidWithDisorderService.getEntries(ids);
+    }
+
+    public Iterable<DisorderIsADisorder> findAllDisorderIsADisorder(Collection<PairId> ids){
+        return disorderIsADisorderService.getEntries(ids);
+    }
+
+    public Iterable<DrugHasIndication> findAllDrugHasIndication(Collection<PairId> ids){
+        return drugHasIndicationService.getEntries(ids);
+    }
+    public Iterable<DrugHasTargetGene> findAllDrugHasTargetGene(Collection<PairId> ids){
+        return drugHasTargetService.getGenes(ids);
+    }
+    public Iterable<DrugHasTargetProtein> findAllDrugHasTargetProtein(Collection<PairId> ids){
+        return drugHasTargetService.getProteins(ids);
+    }
+    public Iterable<GeneAssociatedWithDisorder> findAllGeneAssociatedWithDisorder(Collection<PairId> ids){
+        return associatedWithDisorderService.getGenes(ids);
+    }
+    public Iterable<GeneInteractsWithGene> findAllGeneInteractsWithGene(Collection<PairId> ids){
+        return proteinInteractsWithProteinService.getGenes(ids);
+    }
+    public Iterable<ProteinAssociatedWithDisorder> findAllProteinAssociatedWithDisorder(Collection<PairId> ids){
+        return associatedWithDisorderService.getProteins(ids);
+    }
+    public Iterable<ProteinEncodedBy> findAllProteinEncodedBy(Collection<PairId> ids){
+        return proteinEncodedByService.getEntries(ids);
+    }
+    public Iterable<ProteinInPathway> findAllProteinInPathway(Collection<PairId> ids){
+        return proteinInPathwayService.getEntries(ids);
+    }
+    public Iterable<ProteinInteractsWithProtein> findAllProteinInteractsWithProtein(Collection<PairId> ids){
+        return proteinInteractsWithProteinService.getProteins(ids);
+    }
+
 
 
     public boolean isEdge(int edgeId, int node1, int node2, Integer k1, Integer k2) {
@@ -281,4 +319,56 @@ public class EdgeController {
     }
 
 
+    public String[] getListAttributes(Integer type) {
+        switch (Graphs.getEdge(type)) {
+            case "GeneAssociatedWithDisorder":
+                return GeneAssociatedWithDisorder.getListAttributes();
+            case "DrugHasTargetGene":
+                return DrugHasTargetGene.getListAttributes();
+            case "ProteinEncodedBy":
+                return ProteinEncodedBy.getListAttributes();
+            case "DrugHasIndication":
+                return DrugHasIndication.getListAttributes();
+            case "DrugHasTargetProtein":
+                return DrugHasTargetProtein.getListAttributes();
+            case "ProteinInteractsWithProtein":
+                return ProteinInteractsWithProtein.getListAttributes();
+            case "ProteinInPathway":
+                return ProteinInPathway.getListAttributes();
+            case "ProteinAssociatedWithDisorder":
+                return ProteinAssociatedWithDisorder.getListAttributes();
+            case "DisorderIsADisorder":
+                return DisorderIsADisorder.getListAttributes();
+            case "DisorderComorbidWithDisorder":
+                return DisorderComorbidWithDisorder.getListAttributes();
+        }
+        return null;
+    }
+
+    public LinkedList<HashMap<String, String>> edgesToAttributeList(Integer type, List<PairId> ids, HashSet<String> attributes) {
+        LinkedList<HashMap<String,String>> values = new LinkedList<>();
+        switch (Graphs.getEdge(type)) {
+            case "GeneAssociatedWithDisorder":
+                findAllGeneAssociatedWithDisorder(ids).forEach(e->values.add(e.getAsMap(attributes)));
+            case "DrugHasTargetGene":
+                findAllDrugHasTargetGene(ids).forEach(e->values.add(e.getAsMap(attributes)));
+            case "ProteinEncodedBy":
+                findAllProteinEncodedBy(ids).forEach(e->values.add(e.getAsMap(attributes)));
+            case "DrugHasIndication":
+                findAllDrugHasIndication(ids).forEach(e->values.add(e.getAsMap(attributes)));
+            case "DrugHasTargetProtein":
+                findAllDrugHasTargetProtein(ids).forEach(e->values.add(e.getAsMap(attributes)));
+            case "ProteinInteractsWithProtein":
+                findAllProteinInteractsWithProtein(ids).forEach(e->values.add(e.getAsMap(attributes)));
+            case "ProteinInPathway":
+                findAllProteinInPathway(ids).forEach(e->values.add(e.getAsMap(attributes)));
+            case "ProteinAssociatedWithDisorder":
+                findAllProteinAssociatedWithDisorder(ids).forEach(e->values.add(e.getAsMap(attributes)));
+            case "DisorderIsADisorder":
+                findAllDisorderIsADisorder(ids).forEach(e->values.add(e.getAsMap(attributes)));
+            case "DisorderComorbidWithDisorder":
+                findAllDisorderComorbidWithDisorder(ids).forEach(e->values.add(e.getAsMap(attributes)));
+        }
+        return values;
+    }
 }

@@ -69,6 +69,11 @@ public class ProteinService extends NodeService {
         return idToDomainMap;
     }
 
+    @Override
+    public String[] getListAttributes() {
+        return Protein.getListAttributes();
+    }
+
     public HashMap<String, Integer> getDomainToIdMap() {
         return domainToIdMap;
     }

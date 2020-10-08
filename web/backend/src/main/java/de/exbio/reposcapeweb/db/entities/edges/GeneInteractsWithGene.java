@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
@@ -44,6 +45,28 @@ public class GeneInteractsWithGene extends RepoTrialEdge implements Serializable
 //    private String evidenceTypes;
 
     public GeneInteractsWithGene() {
+    }
+
+    public static String[] getListAttributes() {
+        return new String[]{"memberOne","memberTwo"};
+    }
+
+    @Override
+    public HashMap<String, String> getAsMap() {
+        HashMap<String,String> values = new HashMap<>();
+        values.put("memberOne",memberOne);
+        values.put("memberTwo",memberTwo);
+        return values;
+    }
+
+    @Override
+    public HashMap<String, String> getAsMap(HashSet<String> attributes) {
+        HashMap<String,String> values = new HashMap<>();
+        getAsMap().forEach((k,v)->{
+            if(attributes.contains(k))
+                values.put(k,v);
+        });
+        return values;
     }
 
 

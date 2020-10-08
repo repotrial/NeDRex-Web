@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 
 
@@ -45,6 +46,29 @@ public class ProteinInPathway extends RepoTrialEdge implements Serializable {
     private String sourceDomainId;
 
     public ProteinInPathway() {
+    }
+
+    public static String[] getListAttributes() {
+        return new String[]{"targetDomainId", "type", "sourceDomainId"};
+    }
+
+    @Override
+    public HashMap<String, String> getAsMap() {
+        HashMap<String,String> values = new HashMap<>();
+        values.put("targetDomainId",targetDomainId);
+        values.put("sourceDomainId",sourceDomainId);
+        values.put("type",getType());
+        return values;
+    }
+
+    @Override
+    public HashMap<String, String> getAsMap(HashSet<String> attributes) {
+        HashMap<String,String> values = new HashMap<>();
+        getAsMap().forEach((k,v)->{
+            if(attributes.contains(k))
+                values.put(k,v);
+        });
+        return values;
     }
 
     public String getTargetDomainId() {

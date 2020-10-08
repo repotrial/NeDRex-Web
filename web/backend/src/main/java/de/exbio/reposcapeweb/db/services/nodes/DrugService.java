@@ -73,6 +73,11 @@ public class DrugService extends NodeService {
         return idToDomainMap;
     }
 
+    @Override
+    public String[] getListAttributes() {
+        return Drug.getListAttributes();
+    }
+
     public HashMap<String, Integer> getDomainToIdMap() {
         return domainToIdMap;
     }

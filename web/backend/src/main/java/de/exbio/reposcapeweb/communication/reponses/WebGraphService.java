@@ -8,6 +8,7 @@ import de.exbio.reposcapeweb.communication.cache.Node;
 import de.exbio.reposcapeweb.communication.requests.Filter;
 import de.exbio.reposcapeweb.communication.requests.GraphRequest;
 import de.exbio.reposcapeweb.db.DbCommunicationService;
+import de.exbio.reposcapeweb.db.entities.ids.PairId;
 import de.exbio.reposcapeweb.db.services.controller.EdgeController;
 import de.exbio.reposcapeweb.db.services.controller.NodeController;
 import de.exbio.reposcapeweb.filter.NodeFilter;
@@ -69,7 +70,28 @@ public class WebGraphService {
     }
 
     public WebGraphList getList(String id) {
-        return cache.get(id).toWebList();
+        WebGraphList list = cache.get(id).toWebList();
+        if(list==null){
+            Graph g = cache.get(id);
+            list = new WebGraphList(id);
+            WebGraphList finalList = list;
+            g.getNodes().forEach((type, nodeMap)->{
+                String stringType = Graphs.getNode(type);
+                String[] attributes = nodeController.getListAttributes(type);
+                finalList.addAttributes("nodes",stringType,attributes);
+                finalList.addNodes(stringType,nodeController.nodesToAttributeList(type,nodeMap.keySet(),new HashSet<>(Arrays.asList(attributes))));
+            });
+
+            g.getEdges().forEach((type, edgeMap)-> {
+                String stringType = Graphs.getEdge(type);
+                String[] attributes = edgeController.getListAttributes(type);
+                finalList.addAttributes("edges",stringType,attributes);
+                finalList.addEdges(stringType,edgeController.edgesToAttributeList(type,edgeMap.stream().map(e->new PairId(e.getId1(),e.getId2())).collect(Collectors.toList()),new HashSet<>(Arrays.asList(attributes))));
+            });
+
+            cache.get(id).setWebList(list);
+        }
+        return list;
     }
 
 

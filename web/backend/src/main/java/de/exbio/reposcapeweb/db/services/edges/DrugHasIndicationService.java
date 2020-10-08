@@ -119,4 +119,7 @@ public class DrugHasIndicationService {
         return new PairId(drugService.map(ids.getFirst()),disorderService.map(ids.getSecond()));
     }
 
+    public Iterable<DrugHasIndication> getEntries(Collection<PairId> ids) {
+        return drugHasIndicationRepository.findDrugHasIndicationsByIdIn(ids);
+    }
 }

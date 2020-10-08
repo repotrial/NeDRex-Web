@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
@@ -54,6 +55,31 @@ public class ProteinInteractsWithProtein extends RepoTrialEdge implements Serial
     private String evidenceTypes;
 
     public ProteinInteractsWithProtein() {
+    }
+
+    public static String[] getListAttributes() {
+        return new String[]{"databases", "memberTwo", "evidenceTypes", "memberOne"};
+    }
+
+    @Override
+    public HashMap<String, String> getAsMap() {
+        HashMap<String,String> values = new HashMap<>();
+        values.put("databases",StringUtils.listToString(getDatabases()));
+        values.put("memberOne",memberOne);
+        values.put("memberTwo",memberTwo);
+        values.put("evidenceTypes",evidenceTypes);
+        values.put("type",getType());
+        return values;
+    }
+
+    @Override
+    public HashMap<String, String> getAsMap(HashSet<String> attributes) {
+        HashMap<String,String> values = new HashMap<>();
+        getAsMap().forEach((k,v)->{
+            if(attributes.contains(k))
+                values.put(k,v);
+        });
+        return values;
     }
 
 

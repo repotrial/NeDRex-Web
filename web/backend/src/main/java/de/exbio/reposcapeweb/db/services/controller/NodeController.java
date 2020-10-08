@@ -1,12 +1,13 @@
 package de.exbio.reposcapeweb.db.services.controller;
 
+import de.exbio.reposcapeweb.communication.cache.Graphs;
 import de.exbio.reposcapeweb.db.entities.nodes.*;
 import de.exbio.reposcapeweb.db.services.nodes.*;
 import de.exbio.reposcapeweb.filter.NodeFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
+import java.util.*;
 
 @Service
 public class NodeController {
@@ -90,5 +91,38 @@ public class NodeController {
                 return filterProteins();
         }
         return null;
+    }
+
+    public String[] getListAttributes(Integer typeId) {
+        switch (Graphs.getNode(typeId)) {
+            case "disorder":
+                return disorderService.getListAttributes();
+            case "drug":
+                return drugService.getListAttributes();
+            case "gene":
+                return geneService.getListAttributes();
+            case "pathway":
+                return pathwayService.getListAttributes();
+            case "protein":
+                return proteinService.getListAttributes();
+        }
+        return null;
+    }
+
+    public LinkedList<HashMap<String, String>> nodesToAttributeList(Integer typeId, Set<Integer> ids, HashSet<String> attributes) {
+        LinkedList<HashMap<String, String>> out = new LinkedList<>();
+        switch (Graphs.getNode(typeId)) {
+            case "disorder":
+                findDisorders(ids).forEach(d -> out.add(d.getAsMap(attributes)));
+            case "drug":
+                findDrugs(ids).forEach(d -> out.add(d.getAsMap(attributes)));
+            case "gene":
+                findGenes(ids).forEach(d -> out.add(d.getAsMap(attributes)));
+            case "pathway":
+                findPathways(ids).forEach(d -> out.add(d.getAsMap(attributes)));
+            case "protein":
+                findProteins(ids).forEach(d -> out.add(d.getAsMap(attributes)));
+        }
+        return out;
     }
 }

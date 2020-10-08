@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 
 
@@ -93,6 +94,33 @@ public class DisorderComorbidWithDisorder extends RepoTrialEdge implements Seria
         this.rr12 = other.rr12;
         this.rr21 = other.rr21;
         this.rrGeoMean = other.rrGeoMean;
+    }
+
+    public static String[] getListAttributes() {
+        return new String[]{"memberOne", "memberTwo",  "phiCor","rrGeoMean","type","rr12","rr21"};
+    }
+
+    @Override
+    public HashMap<String, String> getAsMap() {
+        HashMap<String,String> values = new HashMap<>();
+        values.put("rr21",rr21+"");
+        values.put("rr12",rr12+"");
+        values.put("type",getType());
+        values.put("memberOne",memberOne);
+        values.put("memberTwo",memberTwo);
+        values.put("rrGeoMean",rrGeoMean+"");
+        values.put("phiCor",phiCor+"");
+        return values;
+    }
+
+    @Override
+    public HashMap<String, String> getAsMap(HashSet<String> attributes) {
+        HashMap<String,String> values = new HashMap<>();
+        getAsMap().forEach((k,v)->{
+            if(attributes.contains(k))
+                values.put(k,v);
+        });
+        return values;
     }
 
     @Override

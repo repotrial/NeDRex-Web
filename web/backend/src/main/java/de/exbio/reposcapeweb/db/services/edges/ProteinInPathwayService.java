@@ -118,4 +118,7 @@ public class ProteinInPathwayService {
         return new PairId(proteinService.map(ids.getFirst()), pathwayService.map(ids.getSecond()));
     }
 
+    public Iterable<ProteinInPathway> getEntries(Collection<PairId> ids) {
+        return proteinInPathwayRepository.findProteinInPathwaysByIdIn(ids);
+    }
 }

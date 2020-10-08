@@ -14,6 +14,8 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.HashSet;
 
 
 /**
@@ -60,6 +62,29 @@ public class DrugHasTargetGene extends RepoTrialEdge implements Serializable {
 
     @JsonSetter
     public void setType(String type) {
+    }
+
+    public static String[] getListAttributes() {
+        return new String[]{"targetDomainId", "sourceDomainId"};
+    }
+
+    @Override
+    public HashMap<String, String> getAsMap() {
+        HashMap<String,String> values = new HashMap<>();
+        values.put("targetDomainId",targetDomainId);
+        values.put("sourceDomainId",sourceDomainId);
+        values.put("type",getType());
+        return values;
+    }
+
+    @Override
+    public HashMap<String, String> getAsMap(HashSet<String> attributes) {
+        HashMap<String,String> values = new HashMap<>();
+        getAsMap().forEach((k,v)->{
+            if(attributes.contains(k))
+                values.put(k,v);
+        });
+        return values;
     }
 
 

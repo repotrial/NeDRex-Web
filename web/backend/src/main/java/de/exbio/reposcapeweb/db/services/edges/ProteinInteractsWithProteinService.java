@@ -1,5 +1,6 @@
 package de.exbio.reposcapeweb.db.services.edges;
 
+import de.exbio.reposcapeweb.db.entities.edges.GeneInteractsWithGene;
 import de.exbio.reposcapeweb.db.entities.edges.ProteinInteractsWithProtein;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
 import de.exbio.reposcapeweb.db.repositories.edges.GeneInteractsWithGeneRepository;
@@ -40,10 +41,11 @@ public class ProteinInteractsWithProteinService {
     private final String generationQuery = "INSERT IGNORE INTO gene_interacts_with_gene SELECT enc1.id_2, enc2.id_2 FROM protein_interacts_with_protein ppi INNER JOIN protein_encoded_by enc1 ON ppi.id_1=enc1.id_1 INNER JOIN protein_encoded_by enc2 on ppi.id_2=enc2.id_1;";
     private PreparedStatement clearPs = null;
     private PreparedStatement generationPs = null;
+
     @Autowired
     public ProteinInteractsWithProteinService(ProteinService proteinService, ProteinInteractsWithProteinRepository proteinInteractsWithProteinRepository, GeneInteractsWithGeneRepository geneInteractsWithGeneRepository, DataSource dataSource) {
         this.proteinInteractsWithProteinRepository = proteinInteractsWithProteinRepository;
-        this.geneInteractsWithGeneRepository=geneInteractsWithGeneRepository;
+        this.geneInteractsWithGeneRepository = geneInteractsWithGeneRepository;
         this.proteinService = proteinService;
         this.dataSource = dataSource;
     }
@@ -123,13 +125,20 @@ public class ProteinInteractsWithProteinService {
         }
     }
 
-    public HashSet<Integer> getEdges(int id){
+    public HashSet<Integer> getEdges(int id) {
         return edges.get(id).entrySet().stream().filter(Map.Entry::getValue).map(Map.Entry::getKey).collect(Collectors.toCollection(HashSet::new));
     }
 
 
-
     public PairId mapIds(Pair<String, String> ids) {
         return new PairId(proteinService.map(ids.getFirst()), proteinService.map(ids.getSecond()));
+    }
+
+    public Iterable<ProteinInteractsWithProtein> getProteins(Collection<PairId> ids) {
+        return proteinInteractsWithProteinRepository.findProteinInteractsWithProteinsByIdIn(ids);
+    }
+
+    public Iterable<GeneInteractsWithGene> getGenes(Collection<PairId> ids) {
+        return geneInteractsWithGeneRepository.findGeneInteractsWithGeneByIdIn(ids);
     }
 }

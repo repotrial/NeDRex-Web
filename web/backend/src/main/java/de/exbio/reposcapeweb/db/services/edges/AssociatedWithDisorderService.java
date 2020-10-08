@@ -20,10 +20,7 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -206,5 +203,13 @@ public class AssociatedWithDisorderService {
 
     public PairId mapIds(Pair<String, String> ids) {
         return new PairId(geneService.map(ids.getFirst()), disorderService.map(ids.getSecond()));
+    }
+
+    public Iterable<GeneAssociatedWithDisorder> getGenes(Collection<PairId> ids) {
+        return geneAssociatedWithDisorderRepository.findGeneAssociatedWithDisorderByIdIn(ids);
+    }
+
+    public Iterable<ProteinAssociatedWithDisorder> getProteins(Collection<PairId> ids) {
+        return proteinAssociatedWithDisorderRepository.findProteinAssociatedWithDisorderByIdIn(ids);
     }
 }

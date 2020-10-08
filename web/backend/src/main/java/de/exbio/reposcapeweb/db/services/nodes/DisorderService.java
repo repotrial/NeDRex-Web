@@ -71,6 +71,11 @@ public class DisorderService extends NodeService {
         return idToDomainMap;
     }
 
+    @Override
+    public String[] getListAttributes() {
+        return Disorder.getListAttributes();
+    }
+
     public HashMap<String, Integer> getDomainToIdMap() {
         return domainToIdMap;
     }

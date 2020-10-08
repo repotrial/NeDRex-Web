@@ -69,6 +69,44 @@ public class Drug extends RepoTrialNode {
         return attributes.isEmpty();
     }
 
+    public static String[] getListAttributes() {
+        return new String[]{"molecularFormula", "displayName", "inchi", "type", "primaryDomainId", "casNumber", "drugCategories", "drugGroups",  "iupacName", "synonyms", "indication"};
+    }
+
+    @Override
+    public HashMap<String, String> getAsMap() {
+        HashMap<String,String> values = new HashMap<>();
+        values.put("molecularFormula",molecularFormula);
+        values.put("displayName",getDisplayName());
+        values.put("inchi",getInchi());
+        values.put("type", getType().name());
+        values.put("domainIds",domainIds);
+        values.put("smiles",smiles);
+        values.put("synonyms",synonyms);
+        values.put("primaryDomainId",primaryDomainId);
+        values.put("casNumber",casNumber);
+        values.put("drugCategories",drugCategories);
+        values.put("drugGroups",drugGroups);
+        values.put("_cls",get_cls());
+        values.put("sequences",sequences);
+        values.put("iupacName",iupacName);
+        values.put("primaryDataset",getPrimaryDataset());
+        values.put("indication",indication);
+        values.put("allDatasets",StringUtils.listToString(getAllDatasets()));
+        values.put("description",description);
+        return values;
+    }
+
+    @Override
+    public HashMap<String, String> getAsMap(HashSet<String> attributes) {
+        HashMap<String,String> values = new HashMap<>();
+        getAsMap().forEach((k,v)->{
+            if(attributes.contains(k))
+                values.put(k,v);
+        });
+        return values;
+    }
+
     @Override
     public String getPrimaryId() {
         return primaryDomainId;

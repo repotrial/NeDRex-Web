@@ -11,5 +11,5 @@ import java.util.List;
 
 @Repository
 public interface DrugHasTargetGeneRepository extends CrudRepository<DrugHasTargetGene, PairId> {
-    List<DrugHasTargetProtein> findDrugHasTargetsByIdIn(Collection<PairId> list);
+    List<DrugHasTargetGene> findDrugHasTargetsByIdIn(Collection<PairId> list);
 }
