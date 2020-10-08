@@ -66,4 +66,10 @@ public class WebEdge {
     public boolean isDashes() {
         return dashes;
     }
+
+    public WebEdge addPrefixes(String prefix1, String prefix2){
+        this.from=prefix1+this.from;
+        this.to = prefix2+this.to;
+        return this;
+    }
 }

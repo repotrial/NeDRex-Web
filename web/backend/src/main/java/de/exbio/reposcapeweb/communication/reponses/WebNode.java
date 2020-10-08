@@ -15,6 +15,12 @@ public class WebNode {
         this.group=group;
     }
 
+    public WebNode(int id, String label, boolean hasEdge){
+        this.id = id+"";
+        this.label=label;
+        this.hasEdge=hasEdge;
+    }
+
     public WebNode(int id, String label, String group, String title){
         this(id,label,group);
         this.title=title;
@@ -77,11 +83,18 @@ public class WebNode {
         return group;
     }
 
-    public void setGroup(String group) {
-        this.group = group;
-    }
-
     public boolean hasEdge() {
         return hasEdge;
     }
+
+    public WebNode setPrefix(String prefix){
+        this.id = prefix+this.id;
+        return this;
+    }
+
+    public WebNode setGroup(String group){
+        this.group = group;
+        return this;
+    }
+
 }

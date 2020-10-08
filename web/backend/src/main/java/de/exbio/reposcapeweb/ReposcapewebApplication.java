@@ -1,6 +1,7 @@
 package de.exbio.reposcapeweb;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.exbio.reposcapeweb.communication.cache.Graphs;
 import de.exbio.reposcapeweb.db.io.ImportService;
 import de.exbio.reposcapeweb.db.services.nodes.DisorderService;
 import de.exbio.reposcapeweb.db.updates.UpdateService;
@@ -44,7 +45,7 @@ public class ReposcapewebApplication {
 
     @EventListener(ApplicationReadyEvent.class)
     public void postConstruct() {
-
+        Graphs.setUp();
         importService.importNodeData();
         log.debug("Current RAM usage: " + (int) ((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024)
                 + "MB");

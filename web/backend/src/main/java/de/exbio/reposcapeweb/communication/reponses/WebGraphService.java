@@ -1,6 +1,10 @@
 package de.exbio.reposcapeweb.communication.reponses;
 
 import de.exbio.reposcapeweb.ReposcapewebApplication;
+import de.exbio.reposcapeweb.communication.cache.Edge;
+import de.exbio.reposcapeweb.communication.cache.Graph;
+import de.exbio.reposcapeweb.communication.cache.Graphs;
+import de.exbio.reposcapeweb.communication.cache.Node;
 import de.exbio.reposcapeweb.communication.requests.Filter;
 import de.exbio.reposcapeweb.communication.requests.GraphRequest;
 import de.exbio.reposcapeweb.db.DbCommunicationService;
@@ -22,7 +26,7 @@ public class WebGraphService {
     private final EdgeController edgeController;
     private final NodeController nodeController;
     private final DbCommunicationService dbCommunicationService;
-    private HashMap<String,WebGraph> cache = new HashMap<>();
+    private HashMap<String, Graph> cache = new HashMap<>();
 
 
     @Autowired
@@ -32,120 +36,130 @@ public class WebGraphService {
             DbCommunicationService dbCommunicationService) {
         this.edgeController = edgeController;
         this.nodeController = nodeController;
-        this.dbCommunicationService=dbCommunicationService;
+        this.dbCommunicationService = dbCommunicationService;
     }
 
-    public WebGraph getMetaGraph(){
-        WebGraph graph = new WebGraph("Metagraph",true);
+    public WebGraph getMetaGraph() {
+        WebGraph graph = new WebGraph("Metagraph", true);
 
-        graph.addNode(new WebNode(1,"Drug","drug","Drug"));
-        graph.addNode(new WebNode(2,"Protein","protein","Protein"));
-        graph.addNode(new WebNode(3,"Pathway","pathway","Pathway"));
-        graph.addNode(new WebNode(4,"Gene","gene","Gene"));
-        graph.addNode(new WebNode(5,"Disorder","disorder","Disorder"));
+        graph.addNode(new WebNode(1, "Drug", "drug", "Drug"));
+        graph.addNode(new WebNode(2, "Protein", "protein", "Protein"));
+        graph.addNode(new WebNode(3, "Pathway", "pathway", "Pathway"));
+        graph.addNode(new WebNode(4, "Gene", "gene", "Gene"));
+        graph.addNode(new WebNode(5, "Disorder", "disorder", "Disorder"));
 
 
-        graph.addEdge(new WebEdge(1,2,"DrugHasTargetProtein"));
-        graph.addEdge(new WebEdge(1,4,"DrugHasTargetGene").setDashes(true));
-        graph.addEdge(new WebEdge(2,2,"ProteinInteractsWithProtein"));
-        graph.addEdge(new WebEdge(2,3,"ProteinInPathway"));
-        graph.addEdge(new WebEdge(2,4,"ProteinEncodedBy"));
-        graph.addEdge(new WebEdge(2,5,"ProteinAssociatedWithDisorder").setDashes(true));
-        graph.addEdge(new WebEdge(4,4,"GeneInteractsWithGene").setDashes(true));
-        graph.addEdge(new WebEdge(4,5,"GeneAssociatedWithDisorder"));
-        graph.addEdge(new WebEdge(5,5,"DisorderComorbidWithDisorder"));
-        graph.addEdge(new WebEdge(5,5,"DisorderIsADisorder"));
-        graph.addEdge(new WebEdge(1,5,"DrugHasIndication"));
+        graph.addEdge(new WebEdge(1, 2, "DrugHasTargetProtein"));
+        graph.addEdge(new WebEdge(1, 4, "DrugHasTargetGene").setDashes(true));
+        graph.addEdge(new WebEdge(2, 2, "ProteinInteractsWithProtein"));
+        graph.addEdge(new WebEdge(2, 3, "ProteinInPathway"));
+        graph.addEdge(new WebEdge(2, 4, "ProteinEncodedBy"));
+        graph.addEdge(new WebEdge(2, 5, "ProteinAssociatedWithDisorder").setDashes(true));
+        graph.addEdge(new WebEdge(4, 4, "GeneInteractsWithGene").setDashes(true));
+        graph.addEdge(new WebEdge(4, 5, "GeneAssociatedWithDisorder"));
+        graph.addEdge(new WebEdge(5, 5, "DisorderComorbidWithDisorder"));
+        graph.addEdge(new WebEdge(5, 5, "DisorderIsADisorder"));
+        graph.addEdge(new WebEdge(1, 5, "DrugHasIndication"));
 
         return graph;
     }
 
-    public WebGraph getCachedGraph(String graphId){
-        return cache.get(graphId);
+    public WebGraph getCachedGraph(String graphId) {
+        return cache.get(graphId).toWebGraph();
     }
 
-    public WebGraphList getListFromGraph(String id){
-        return getListFromGraph(getCachedGraph(id));
+    public WebGraphList getList(String id) {
+        return cache.get(id).toWebList();
     }
 
-    public WebGraphList getListFromGraph(WebGraph graph){
-        dbCommunicationService.scheduleRead();
-
-
-        //TODO write conversion from graph to list -> maybe cache graph differently
-        return new WebGraphList(graph.id);
-    }
 
     public WebGraph getGraph(GraphRequest request) {
         dbCommunicationService.scheduleRead();
-        WebGraph graph = new WebGraph("All requested", false);
-        cache.put(graph.id,graph);
-        TreeMap<String, HashMap<Integer, WebNode>> nodeIds = new TreeMap<>();
+
+        Graph g = new Graph();
+        cache.put(g.getId(), g);
+
+
+//        WebGraph graph = new WebGraph("All requested", false);
+//        cache.put(graph.id,graph);
+        TreeMap<Integer, HashMap<Integer, Node>> nodeIds = new TreeMap<>();
         request.nodes.forEach((k, v) -> {
-            String prefix = k.substring(0, 3) + "_";
+//            String prefix = k.substring(0, 3) + "_";
             NodeFilter nf = nodeController.getFilter(k);
             if (v.filters != null)
                 for (Filter filter : v.filters) {
                     nf = nf.apply(filter);
                 }
-            HashMap<Integer, WebNode> ids = new HashMap<>();
-            nodeIds.put(k, ids);
+            HashMap<Integer, Node> ids = new HashMap<>();
+            nodeIds.put(Graphs.getNode(k), ids);
+
             nf.toList(-1).forEach(entry -> {
-                ids.put(entry.getNodeId(), new WebNode(prefix, entry.getNodeId(), entry.getNodeId() + "", entry.getName(), k));
+                ids.put(entry.getNodeId(), new Node(entry.getNodeId(), entry.getName()));
+//                ids.put(entry.getNodeId(), new Node(prefix, entry.getNodeId(), entry.getNodeId() + "", entry.getName(), k));
             });
         });
-        String[] nodes = nodeIds.keySet().toArray(new String[nodeIds.size()]);
-        HashSet<String> conenctedNodes = new HashSet<>();
+        Integer[] nodes = nodeIds.keySet().toArray(new Integer[nodeIds.size()]);
+        HashSet<Integer> connectedNodes = new HashSet<>();
         for (int i = 0; i < nodes.length; i++) {
-            String prefixI = nodes[i].substring(0, 3) + "_";
+//            String prefixI = nodes[i].substring(0, 3) + "_";
             for (int j = 0; j < nodes.length; j++) {
                 if (i > j)
                     continue;
-                String prefixJ = nodes[j].substring(0, 3) + "_";
-                String nodeI = nodes[i];
-                String nodeJ = nodes[j];
-                LinkedList<String> edgeNames = edgeController.mapEdgeName(nodeI, nodeJ);
-                if (edgeNames == null) {
+//                String prefixJ = nodes[j].substring(0, 3) + "_";
+                int nodeI = nodes[i];
+                int nodeJ = nodes[j];
+
+                LinkedList<Integer> edgeIds = Graphs.getEdgesfromNodes(nodeI, nodeJ);
+                if (edgeIds == null) {
                     log.debug("Edge for " + nodeI + " & " + nodeJ + " do not exist!");
                     continue;
                 }
-                edgeNames.forEach(edgeName -> {
-                    if (request.edges.containsKey(edgeName)) {
+                edgeIds.forEach(edgeId -> {
+                    System.out.println(edgeId+ " -> "+Graphs.getEdge(edgeId));
+                    //TODO edge id mapping in frontend
+                    if (request.edges.containsKey(Graphs.getEdge(edgeId))) {
+                        System.out.println("\tmatched");
                         //TODO add edgeFilters
+                        LinkedList<Edge> edges = new LinkedList<>();
                         nodeIds.get(nodeI).forEach((k1, v1) -> {
                             try {
-                                if (request.connectedOnly & conenctedNodes.contains(nodeI) & !v1.hasEdge)
+                                if (request.connectedOnly & connectedNodes.contains(nodeI) & !v1.hasEdge())
                                     return;
-
-                                edgeController.getEdges(edgeName, nodeI, k1).forEach(t -> {
+                                edgeController.getEdges(edgeId, nodeI, k1).forEach(t -> {
                                     try {
-                                        if (request.connectedOnly & conenctedNodes.contains(nodeJ) & !nodeIds.get(nodeJ).get(t).hasEdge)
+                                        if (request.connectedOnly & connectedNodes.contains(nodeJ) & !nodeIds.get(nodeJ).get(t).hasEdge())
                                             return;
-                                        nodeIds.get(nodeJ).get(t).hasEdge = true;
-                                        v1.hasEdge = true;
-                                        graph.addEdge(new WebEdge(prefixI, k1, prefixJ, t));
+                                        nodeIds.get(nodeJ).get(t).setHasEdge(true);
+                                        v1.setHasEdge(true);
+                                        edges.add(new Edge(k1, t));
+//                                        g.addEdge(new WebEdge(prefixI, k1, prefixJ, t));
                                     } catch (NullPointerException ignore) {
-
                                     }
                                 });
                             } catch (NullPointerException ignore) {
                             }
                         });
-                        if (request.nodes.get(nodeI).filters.length == 0)
-                            conenctedNodes.add(nodeI);
-                        if (request.nodes.get(nodeJ).filters.length == 0)
-                            conenctedNodes.add(nodeJ);
+                        g.addEdges(edgeId, edges);
+                        if (request.nodes.get(Graphs.getNode(nodeI)).filters.length == 0)
+                            connectedNodes.add(nodeI);
+                        if (request.nodes.get(Graphs.getNode(nodeJ)).filters.length == 0)
+                            connectedNodes.add(nodeJ);
                     }
                 });
             }
         }
-        graph.addNodes(request.connectedOnly ?
-                nodeIds.values().stream().map(HashMap::values).flatMap(Collection::stream).filter(WebNode::hasEdge).collect(Collectors.toSet())
-                :
-                nodeIds.values().stream().map(HashMap::values).flatMap(Collection::stream).collect(Collectors.toSet())
-        );
+        if (request.connectedOnly)
+            nodeIds.forEach((type, nodeMap) -> nodeMap.entrySet().stream().filter(e -> e.getValue().hasEdge()).forEach(e -> g.addNode(type, e.getValue())));
+        else
+            nodeIds.forEach((type,nodeMap)-> nodeMap.entrySet().forEach(e->g.addNode(type,e.getValue())));
+        //        nodeIds.forEach(g::addNodes);
+//        g.addNodes(request.connectedOnly ?
+//                nodeIds.values().stream().map(HashMap::values).flatMap(Collection::stream).filter(Node::hasEdge).collect(Collectors.toSet())
+//                :
+//                nodeIds.values().stream().map(HashMap::values).flatMap(Collection::stream).collect(Collectors.toSet())
+//        );
 //        graph.drawDoubleCircular();
-        return graph;
+        return g.toWebGraph();
     }
 
     public WebGraph getNeuroDrugs() {

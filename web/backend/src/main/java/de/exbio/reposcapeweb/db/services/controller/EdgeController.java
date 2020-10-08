@@ -1,21 +1,15 @@
 package de.exbio.reposcapeweb.db.services.controller;
 
+import de.exbio.reposcapeweb.communication.cache.Graphs;
 import de.exbio.reposcapeweb.db.services.edges.*;
-import de.exbio.reposcapeweb.utils.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 
 
 @Service
 public class EdgeController {
-
-    private HashMap<String, HashMap<String, LinkedList<String>>> nodes2edge;
-    private HashMap<String, Pair<String, String>> edge2node;
 
     private final DisorderComorbidWithDisorderService disorderComorbidWithDisorderService;
     private final DisorderIsADisorderService disorderIsADisorderService;
@@ -47,44 +41,6 @@ public class EdgeController {
         this.proteinEncodedByService = proteinEncodedByService;
         this.proteinInPathwayService = proteinInPathwayService;
         this.proteinInteractsWithProteinService = proteinInteractsWithProteinService;
-        initNameMap();
-    }
-
-    private void initNameMap() {
-
-        edge2node = new HashMap<>();
-
-        edge2node.put("GeneAssociatedWithDisorder", new Pair<>("gene", "disorder"));
-        edge2node.put("DrugHasTargetGene", new Pair<>("drug", "gene"));
-        edge2node.put("ProteinEncodedBy", new Pair<>("protein", "gene"));
-
-        edge2node.put("DrugHasIndication", new Pair<>("drug", "disorder"));
-        edge2node.put("DrugHasTargetProtein", new Pair<>("drug", "protein"));
-
-        edge2node.put("ProteinInteractsWithProtein", new Pair<>("protein", "protein"));
-        edge2node.put("ProteinInPathway", new Pair<>("protein", "pathway"));
-        edge2node.put("ProteinAssociatedWithDisorder", new Pair<>("protein", "disorder"));
-
-        edge2node.put("DisorderIsADisorder", new Pair<>("disorder", "disorder"));
-        edge2node.put("DisorderComorbidWithDisorder", new Pair<>("disorder", "disorder"));
-
-        nodes2edge = new HashMap<>();
-        edge2node.forEach((k, v) -> {
-            if (!nodes2edge.containsKey(v.first))
-                nodes2edge.put(v.first, new HashMap<>());
-            if (!nodes2edge.get(v.first).containsKey(v.second))
-                nodes2edge.get(v.first).put(v.second, new LinkedList<>(Collections.singletonList(k)));
-            else if (!v.first.equals(v.second) | !nodes2edge.get(v.first).get(v.second).contains(k))
-                nodes2edge.get(v.first).get(v.second).add(k);
-
-            if (!nodes2edge.containsKey(v.second))
-                nodes2edge.put(v.second, new HashMap<>());
-            if (!nodes2edge.get(v.second).containsKey(v.first))
-                nodes2edge.get(v.second).put(v.first, new LinkedList<>(Collections.singletonList(k)));
-            else if (!v.first.equals(v.second))
-                nodes2edge.get(v.second).get(v.first).add(k);
-
-        });
     }
 
 
@@ -233,26 +189,15 @@ public class EdgeController {
     }
 
 
-    public LinkedList<String> mapEdgeName(String node1, String node2) {
-        try {
-            return nodes2edge.get(node1).get(node2);
-        } catch (NullPointerException e) {
-            return null;
-        }
+
+    public boolean isEdge(int edgeId, int node1, int node2, Integer k1, Integer k2) {
+        if (Graphs.getNodesfromEdge(edgeId).first == node1)
+            return isEdgeFrom(edgeId, node1, node2, k1, k2);
+        return isEdgeFrom(edgeId, node2, node1, k2, k1);
     }
 
-    public Pair<String, String> getEdgeName(String edge) {
-        return edge2node.get(edge);
-    }
-
-    public boolean isEdge(String edgeName, String node1, String node2, Integer k1, Integer k2) {
-        if (edge2node.get(edgeName).first.equals(node1))
-            return isEdgeFrom(edgeName, node1, node2, k1, k2);
-        return isEdgeFrom(edgeName, node2, node1, k2, k1);
-    }
-
-    public boolean isEdgeFrom(String edgeName, String node1, String node2, Integer k1, Integer k2) {
-        switch (edgeName) {
+    public boolean isEdgeFrom(int edgeId, int node1, int node2, Integer k1, Integer k2) {
+        switch (Graphs.getEdge(edgeId)) {
             case "GeneAssociatedWithDisorder":
                 return isGenesAssociatedWithDisorderFrom(k1, k2);
             case "DrugHasTargetGene":
@@ -277,14 +222,14 @@ public class EdgeController {
         return false;
     }
 
-    public HashSet<Integer> getEdges(String edgeName, String firstType, Integer node) {
-        if (edge2node.get(edgeName).first.equals(firstType))
-            return getEdgesFrom(edgeName, node);
-        return getEdgesTo(edgeName, node);
+    public HashSet<Integer> getEdges(int edgeId, int firstType, Integer node) {
+        if (Graphs.getNodesfromEdge(edgeId).first == firstType)
+            return getEdgesFrom(edgeId, node);
+        return getEdgesTo(edgeId, node);
     }
 
-    private HashSet<Integer> getEdgesFrom(String edgeName, Integer node) {
-        switch (edgeName) {
+    private HashSet<Integer> getEdgesFrom(int edgeId, Integer node) {
+        switch (Graphs.getEdge(edgeId)) {
             case "GeneAssociatedWithDisorder":
                 return getGenesAssociatedWithDisorderFrom(node);
             case "DrugHasTargetGene":
@@ -309,8 +254,8 @@ public class EdgeController {
         return null;
     }
 
-    private HashSet<Integer> getEdgesTo(String edgeName, Integer node) {
-        switch (edgeName) {
+    private HashSet<Integer> getEdgesTo(int edgeId, Integer node) {
+        switch (Graphs.getEdge(edgeId)) {
             case "GeneAssociatedWithDisorder":
                 return getGenesAssociatedWithDisorderTo(node);
             case "DrugHasTargetGene":

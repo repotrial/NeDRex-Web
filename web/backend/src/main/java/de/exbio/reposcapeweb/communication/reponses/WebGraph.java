@@ -1,6 +1,5 @@
 package de.exbio.reposcapeweb.communication.reponses;
 
-import de.exbio.reposcapeweb.communication.controller.RequestController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,6 +21,10 @@ public class WebGraph {
 //    int y = 1;
 //    int x = 0;
     private int f = 10;
+
+    public WebGraph(String id){
+        this.id = id;
+    }
 
     public WebGraph(){
         this.id= UUID.randomUUID().toString();
@@ -48,7 +51,10 @@ public class WebGraph {
 
     public void addEdge(WebEdge e){
         edges.add(e);
+    }
 
+    public void addEdges(Collection<WebEdge> edges){
+        this.edges.addAll(edges);
     }
 
     public LinkedList<WebEdge> getEdges() {

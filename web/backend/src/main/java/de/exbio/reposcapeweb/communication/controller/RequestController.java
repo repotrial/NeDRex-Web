@@ -88,7 +88,7 @@ public class RequestController {
     public String getGraphList(@RequestParam("id") String id, @RequestParam("cached") boolean cached){
         System.out.println("got request for "+id+" from cache="+cached);
         try{
-            String out = objectMapper.writeValueAsString(webGraphService.getListFromGraph(id));
+            String out = objectMapper.writeValueAsString(webGraphService.getList(id));
             return out;
         } catch (JsonProcessingException e) {
             e.printStackTrace();
@@ -105,8 +105,8 @@ public class RequestController {
     @RequestMapping(value = "/getGraph", method = RequestMethod.POST)
     @ResponseBody
     public String getGraph(@RequestBody GraphRequest request) {
-        log.info("Requested a graph");
         try {
+            log.info("Requested a graph "+objectMapper.writeValueAsString(request));
             String out = objectMapper.writeValueAsString(webGraphService.getGraph(request));
             log.info("Graph sent");
             return out;
