@@ -1,8 +1,11 @@
 package de.exbio.reposcapeweb;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.exbio.reposcapeweb.communication.cache.Graphs;
+import de.exbio.reposcapeweb.db.entities.ids.PairId;
 import de.exbio.reposcapeweb.db.io.ImportService;
+import de.exbio.reposcapeweb.db.services.controller.EdgeController;
 import de.exbio.reposcapeweb.db.services.nodes.DisorderService;
 import de.exbio.reposcapeweb.db.updates.UpdateService;
 import de.exbio.reposcapeweb.filter.FilterService;
@@ -14,6 +17,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.env.Environment;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.LinkedList;
 
 @SpringBootApplication
 public class ReposcapewebApplication {
@@ -31,21 +38,24 @@ public class ReposcapewebApplication {
     private final FilterService filterService;
     private final DisorderService disorderService;
     private final ObjectMapper objectMapper;
+    private final EdgeController edgeController;
 
     @Autowired
-    public ReposcapewebApplication(ObjectMapper objectMapper, DisorderService disorderService, UpdateService updateService, Environment environment, ImportService importService, FilterService filterService) {
+    public ReposcapewebApplication(ObjectMapper objectMapper, EdgeController edgeController, DisorderService disorderService, UpdateService updateService, Environment environment, ImportService importService, FilterService filterService) {
         this.updateService = updateService;
         this.importService = importService;
         this.env = environment;
         this.filterService = filterService;
         this.disorderService = disorderService;
         this.objectMapper = objectMapper;
+        this.edgeController = edgeController;
     }
 
 
     @EventListener(ApplicationReadyEvent.class)
     public void postConstruct() {
         Graphs.setUp();
+
         importService.importNodeData();
         log.debug("Current RAM usage: " + (int) ((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024)
                 + "MB");
@@ -61,5 +71,6 @@ public class ReposcapewebApplication {
 
 
         log.info("Service can be used!");
+
     }
 }

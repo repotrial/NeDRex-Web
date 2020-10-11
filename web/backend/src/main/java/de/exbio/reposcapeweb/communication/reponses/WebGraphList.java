@@ -68,11 +68,11 @@ public class WebGraphList {
         this.attributes.get(entity).put(type,attributes);
     }
 
-    public void addEdges(String type, LinkedList<HashMap<String, String>> nodesToAttributeList) {
+    public void addEdges(String type, LinkedList<HashMap<String, String>> edgesToAttributeList) {
         if(!edges.containsKey(type))
-            edges.put(type,nodesToAttributeList);
+            edges.put(type,edgesToAttributeList);
         else
-            edges.get(type).addAll(nodesToAttributeList);
+            edges.get(type).addAll(edgesToAttributeList);
     }
 
     public void addNodes(String type, LinkedList<HashMap<String, String>> nodesToAttributeList) {

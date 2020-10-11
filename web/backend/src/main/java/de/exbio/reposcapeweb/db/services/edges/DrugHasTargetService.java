@@ -1,5 +1,7 @@
 package de.exbio.reposcapeweb.db.services.edges;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.exbio.reposcapeweb.db.entities.edges.DrugHasTargetGene;
 import de.exbio.reposcapeweb.db.entities.edges.DrugHasTargetProtein;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
@@ -206,6 +208,7 @@ public class DrugHasTargetService {
     public Iterable<DrugHasTargetGene> getGenes(Collection<PairId> ids) {
         return drugHasTargetGeneRepository.findDrugHasTargetsByIdIn(ids);
     }
+
 
     public Iterable<DrugHasTargetProtein> getProteins(Collection<PairId> ids) {
         return drugHasTargetProteinRepository.findDrugHasTargetsByIdIn(ids);

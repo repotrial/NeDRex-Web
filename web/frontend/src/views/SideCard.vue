@@ -60,7 +60,7 @@
             ></v-text-field>
           </td>
           <td>
-            <v-btn v-on:click="addFilter">
+            <v-btn v-on:click="saveFilter">
               <v-icon dense>fas fa-plus-circle</v-icon>
             </v-btn>
           </td>
@@ -165,7 +165,11 @@ export default {
     hide: function () {
       this.$emit("hideEvent")
     },
-    addFilter: function () {
+    clearModels: function(){
+      this.filterModel=""
+      this.filterTypeModel=""
+    },
+    saveFilter: function () {
       let data = {type: this.filterTypeModel, expression: this.filterModel};
       let add = true
       this.filters.forEach(f => {
@@ -174,12 +178,13 @@ export default {
       })
       if (add) {
         this.filters.push(data)
-        this.$emit("addFilterEvent", {name: this.filterName, filter: data})
       }
+      this.filterTypeModel=""
+      this.filterModel=""
     },
     removeFilter: function (idx) {
       this.filters.splice(idx, 1)
-      this.$emit("removeFilterEvent", {name: this.filterName, index: idx})
+      // this.$emit("removeFilterEvent", {name: this.filterName, index: idx})
     },
     setTitle: function (data) {
       this.title = data.title;

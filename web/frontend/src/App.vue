@@ -27,7 +27,6 @@
     </v-card>
     <SideCard v-show="showSidecard" ref="side"
               v-on:nodeSelectionEvent="setSelectedNode"
-              v-on:addFilterEvent="addFilter"
               v-on:hideEvent="hideSidecard"
               v-on:removeFilterEvent="removeFilter"
               v-on:togglePhysicsEvent="togglePhysics"
@@ -44,7 +43,7 @@
       </v-list-item>
     </v-navigation-drawer>
 
-    <v-main app style="padding-top: 0" @click.stop="hideSide">
+    <v-main app style="padding-top: 0" @click.stop="hideSidecard()">
       <v-container v-show="selectedTabId===0" fluid>
         <Start v-if="metagraph !== undefined" ref="start" v-on:graphLoadEvent="loadGraph" v-on:filterEvent="filter" :colors="colors" :metagraph="metagraph"></Start>
       </v-container>
@@ -125,6 +124,7 @@ export default {
       })
     },
     loadGraph: function (graph) {
+      this.$refs.side.hide()
       this.tabslist[1].icon = "fas fa-circle-notch fa-spin"
       if (this.physics) {
         this.physics = false;
@@ -135,8 +135,11 @@ export default {
     loadList: function (graphId){
       this.$refs.list.getList(graphId)
     },
-    hideSide: function () {
-      this.$refs.side.hide()
+    toggleSide : function (){
+      if(this.showSidecard){
+        this.hideSidecard();
+      }
+      this.showSidecard = ! this.showSidecard;
     },
     setTabNotification: function (tabId) {
       if (this.selectedTabId !== tabId)
@@ -152,6 +155,7 @@ export default {
     hideSidecard: function () {
       this.showSidecard = false
       this.$refs.start.minimizeSide()
+      this.$refs.side.clearModels()
     },
     loadSelection: function (params) {
       this.showSidecard = true
@@ -196,9 +200,9 @@ export default {
 
       this.adaptSidecard()
     },
-    addFilter: function (param) {
-      this.$refs.start.addFilter(param)
-    },
+    // addFilter: function (param) {
+    //   this.$refs.start.addFilter(param)
+    // },
     removeFilter: function (param) {
       this.$refs.start.removeFilter(param)
     },
@@ -216,7 +220,7 @@ export default {
           this.$refs.side.loadFilter(param)
         } else {
           this.$refs.side.loadFilter(undefined)
-          this.showSidecard = false
+          this.hideSidecard()
         }
       }
     }

@@ -53,7 +53,7 @@ public class ProteinAssociatedWithDisorder extends RepoTrialEdge implements Seri
     private String assertedBy;
 
     public static String[] getListAttributes() {
-        return new String[]{"targetDomainId", "type", "sourceDomainId", "score", "assertedBy"};
+        return new String[]{"sourceId","targetId", "type","score", "assertedBy"};
     }
 
     @Override
@@ -61,6 +61,8 @@ public class ProteinAssociatedWithDisorder extends RepoTrialEdge implements Seri
         HashMap<String,String> values = new HashMap<>();
         values.put("targetDomainId",targetDomainId);
         values.put("sourceDomainId",sourceDomainId);
+        values.put("targetId",id.getId1()+"");
+        values.put("sourceId",id.getId2()+"");
         values.put("score",score);
         values.put("assertedBy",assertedBy);
         return values;

@@ -40,12 +40,13 @@ public class Pathway extends RepoTrialNode {
     }
 
     public static String[] getListAttributes() {
-        return new String[]{"displayName",  "primaryDomainId"};
+        return new String[]{"id","displayName",  "primaryDomainId"};
     }
 
     @Override
     public HashMap<String, String> getAsMap() {
         HashMap<String,String> values = new HashMap<>();
+        values.put("id",id+"");
         values.put("displayName",getDisplayName());
         values.put("type",getType());
         values.put("domainIds",domainIds);

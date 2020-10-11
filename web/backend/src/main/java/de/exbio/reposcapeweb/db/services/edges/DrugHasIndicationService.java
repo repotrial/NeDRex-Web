@@ -1,5 +1,7 @@
 package de.exbio.reposcapeweb.db.services.edges;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.exbio.reposcapeweb.db.entities.edges.DrugHasIndication;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
 import de.exbio.reposcapeweb.db.repositories.edges.DrugHasIndicationRepository;

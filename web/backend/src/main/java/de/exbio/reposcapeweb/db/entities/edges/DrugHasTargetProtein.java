@@ -39,7 +39,7 @@ public class DrugHasTargetProtein extends RepoTrialEdge implements Serializable 
     @JsonIgnore
     private final Logger log = LoggerFactory.getLogger(DrugHasTargetProtein.class);
 
-    @JsonIgnore
+//    @JsonIgnore
     @EmbeddedId
     private PairId id;
 
@@ -62,7 +62,7 @@ public class DrugHasTargetProtein extends RepoTrialEdge implements Serializable 
 
 
     public static String[] getListAttributes() {
-        return new String[]{"targetDomainId", "sourceDomainId", "actions"};
+        return new String[]{"sourceId","targetId", "actions"};
     }
 
     @Override
@@ -70,6 +70,8 @@ public class DrugHasTargetProtein extends RepoTrialEdge implements Serializable 
         HashMap<String,String> values = new HashMap<>();
         values.put("targetDomainId",targetDomainId);
         values.put("sourceDomainId",sourceDomainId);
+        values.put("targetId",id.getId1()+"");
+        values.put("sourceId",id.getId2()+"");
         values.put("type",getType());
         values.put("actions",actions);
         values.put("databases",sourceDatabases);

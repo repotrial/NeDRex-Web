@@ -42,7 +42,7 @@ public class DisorderIsADisorder extends RepoTrialEdge implements Serializable {
 
     @Transient
     @JsonIgnore
-    public final static HashSet<String> attributes = new HashSet<>(Arrays.asList("targetDomainId", "type", "sourceDomainId"));
+    public final static HashSet<String> attributes = new HashSet<>(Arrays.asList("targetDomainId", "sourceDomainId", "type"));
 
     @Transient
     private String targetDomainId;
@@ -51,7 +51,7 @@ public class DisorderIsADisorder extends RepoTrialEdge implements Serializable {
 
 
     public static String[] getListAttributes() {
-        return new String[]{"targetDomainId", "sourceDomainId"};
+        return new String[]{"sourceId","targetId"};
     }
 
     @Override
@@ -59,6 +59,8 @@ public class DisorderIsADisorder extends RepoTrialEdge implements Serializable {
         HashMap<String,String> values = new HashMap<>();
         values.put("targetDomainId",targetDomainId);
         values.put("sourceDomainId",sourceDomainId);
+        values.put("targetId",id.getId1()+"");
+        values.put("sourceId",id.getId2()+"");
         values.put("type",getType());
         return values;
     }

@@ -47,7 +47,7 @@ public class Disorder extends RepoTrialNode {
     }
 
     public static String[] getListAttributes() {
-        return new String[]{"displayName", "synonyms",  "domainIds"};
+        return new String[]{"id","displayName","icd10"};
     }
 
 
@@ -147,6 +147,7 @@ public class Disorder extends RepoTrialNode {
     @Override
     public HashMap<String, String> getAsMap() {
         HashMap<String,String> values = new HashMap<>();
+        values.put("id",id+"");
         values.put("displayName",getDisplayName());
         values.put("synonyms",synonyms);
         values.put("type",getType());

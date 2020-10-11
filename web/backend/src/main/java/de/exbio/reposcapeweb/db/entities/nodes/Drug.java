@@ -70,12 +70,13 @@ public class Drug extends RepoTrialNode {
     }
 
     public static String[] getListAttributes() {
-        return new String[]{"molecularFormula", "displayName", "inchi", "type", "primaryDomainId", "casNumber", "drugCategories", "drugGroups",  "iupacName", "synonyms", "indication"};
+        return new String[]{"id", "primaryDomainId", "displayName", "type","drugGroups","iupacName", "molecularFormula",  "casNumber"};
     }
 
     @Override
     public HashMap<String, String> getAsMap() {
         HashMap<String,String> values = new HashMap<>();
+        values.put("id",id+"");
         values.put("molecularFormula",molecularFormula);
         values.put("displayName",getDisplayName());
         values.put("inchi",getInchi());

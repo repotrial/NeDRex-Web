@@ -58,7 +58,7 @@ public class ProteinInteractsWithProtein extends RepoTrialEdge implements Serial
     }
 
     public static String[] getListAttributes() {
-        return new String[]{"databases", "memberTwo", "evidenceTypes", "memberOne"};
+        return new String[]{ "idOne","idTwo", "evidenceTypes"};
     }
 
     @Override
@@ -67,6 +67,8 @@ public class ProteinInteractsWithProtein extends RepoTrialEdge implements Serial
         values.put("databases",StringUtils.listToString(getDatabases()));
         values.put("memberOne",memberOne);
         values.put("memberTwo",memberTwo);
+        values.put("idOne",id.getId1()+"");
+        values.put("idTwo",id.getId2()+"");
         values.put("evidenceTypes",evidenceTypes);
         values.put("type",getType());
         return values;

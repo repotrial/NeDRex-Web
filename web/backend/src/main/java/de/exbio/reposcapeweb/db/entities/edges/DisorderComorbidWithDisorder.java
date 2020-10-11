@@ -97,7 +97,7 @@ public class DisorderComorbidWithDisorder extends RepoTrialEdge implements Seria
     }
 
     public static String[] getListAttributes() {
-        return new String[]{"memberOne", "memberTwo",  "phiCor","rrGeoMean","type","rr12","rr21"};
+        return new String[]{"idOne", "idTwo", "type", "phiCor","rrGeoMean","rr12","rr21"};
     }
 
     @Override
@@ -108,6 +108,8 @@ public class DisorderComorbidWithDisorder extends RepoTrialEdge implements Seria
         values.put("type",getType());
         values.put("memberOne",memberOne);
         values.put("memberTwo",memberTwo);
+        values.put("idOne",id.getId1()+"");
+        values.put("idTwo",id.getId2()+"");
         values.put("rrGeoMean",rrGeoMean+"");
         values.put("phiCor",phiCor+"");
         return values;

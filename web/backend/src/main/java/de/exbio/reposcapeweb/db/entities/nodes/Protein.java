@@ -32,6 +32,7 @@ public class Protein extends RepoTrialNode {
 
     public Protein() {
     }
+
     @Column(nullable = false)
     public String primaryDomainId;
     public String domainIds;
@@ -47,30 +48,31 @@ public class Protein extends RepoTrialNode {
     public String taxid;
 
     public static String[] getListAttributes() {
-        return new String[]{"displayName",  "taxid", "primaryDomainId",  "synonyms", "geneName"};
+        return new String[]{"id", "displayName", "geneName", "taxid", "primaryDomainId"};
     }
 
     @Override
     public HashMap<String, String> getAsMap() {
-        HashMap<String,String> values = new HashMap<>();
-        values.put("displayName",getDisplayName());
-        values.put("type",getType());
-        values.put("domainIds",domainIds);
-        values.put("taxid",taxid);
-        values.put("sequence",sequence);
-        values.put("synonyms",synonyms);
-        values.put("geneName",geneName);
-        values.put("primaryDomainId",primaryDomainId);
-        values.put("comments",comments);
+        HashMap<String, String> values = new HashMap<>();
+        values.put("id", id + "");
+        values.put("displayName", getDisplayName());
+        values.put("type", getType());
+        values.put("domainIds", domainIds);
+        values.put("taxid", taxid);
+        values.put("sequence", sequence);
+        values.put("synonyms", synonyms);
+        values.put("geneName", geneName);
+        values.put("primaryDomainId", primaryDomainId);
+        values.put("comments", comments);
         return values;
     }
 
     @Override
     public HashMap<String, String> getAsMap(HashSet<String> attributes) {
-        HashMap<String,String> values = new HashMap<>();
-        getAsMap().forEach((k,v)->{
-            if(attributes.contains(k))
-                values.put(k,v);
+        HashMap<String, String> values = new HashMap<>();
+        getAsMap().forEach((k, v) -> {
+            if (attributes.contains(k))
+                values.put(k, v);
         });
         return values;
     }
