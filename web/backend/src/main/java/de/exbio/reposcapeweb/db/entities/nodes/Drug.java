@@ -70,40 +70,40 @@ public class Drug extends RepoTrialNode {
     }
 
     public static String[] getListAttributes() {
-        return new String[]{"id", "primaryDomainId", "displayName", "type","drugGroups","iupacName", "molecularFormula",  "casNumber"};
+        return new String[]{"id", "displayName", "type", "drugGroups", "iupacName", "molecularFormula", "casNumber"};
     }
 
     @Override
-    public HashMap<String, String> getAsMap() {
-        HashMap<String,String> values = new HashMap<>();
-        values.put("id",id+"");
-        values.put("molecularFormula",molecularFormula);
-        values.put("displayName",getDisplayName());
-        values.put("inchi",getInchi());
+    public HashMap<String, Object> getAsMap() {
+        HashMap<String, Object> values = new HashMap<>();
+        values.put("id", id);
+        values.put("molecularFormula", getMolecularFormula());
+        values.put("displayName", getDisplayName());
+        values.put("inchi", getInchi());
         values.put("type", getType().name());
-        values.put("domainIds",domainIds);
-        values.put("smiles",smiles);
-        values.put("synonyms",synonyms);
-        values.put("primaryDomainId",primaryDomainId);
-        values.put("casNumber",casNumber);
-        values.put("drugCategories",drugCategories);
-        values.put("drugGroups",drugGroups);
-        values.put("_cls",get_cls());
-        values.put("sequences",sequences);
-        values.put("iupacName",iupacName);
-        values.put("primaryDataset",getPrimaryDataset());
-        values.put("indication",indication);
-        values.put("allDatasets",StringUtils.listToString(getAllDatasets()));
-        values.put("description",description);
+        values.put("domainIds", getDomainIds());
+        values.put("smiles", getSmiles());
+        values.put("synonyms", getSynonyms());
+        values.put("primaryDomainId", getPrimaryDomainId());
+        values.put("casNumber", getCasNumber());
+        values.put("drugCategories", getDrugCategories());
+        values.put("drugGroups", getDrugGroups());
+        values.put("_cls", get_cls());
+        values.put("sequences", getSequences());
+        values.put("iupacName", getIupacName());
+        values.put("primaryDataset", getPrimaryDataset());
+        values.put("indication", getIndication());
+        values.put("allDatasets", getAllDatasets());
+        values.put("description", getDescription());
         return values;
     }
 
     @Override
-    public HashMap<String, String> getAsMap(HashSet<String> attributes) {
-        HashMap<String,String> values = new HashMap<>();
-        getAsMap().forEach((k,v)->{
-            if(attributes.contains(k))
-                values.put(k,v);
+    public HashMap<String, Object> getAsMap(HashSet<String> attributes) {
+        HashMap<String, Object> values = new HashMap<>();
+        getAsMap().forEach((k, v) -> {
+            if (attributes.contains(k))
+                values.put(k, v);
         });
         return values;
     }
@@ -191,7 +191,11 @@ public class Drug extends RepoTrialNode {
     }
 
     public List<String> getSequences() {
-        return StringUtils.stringToList(sequences);
+        try {
+            return StringUtils.stringToList(sequences);
+        } catch (NullPointerException e) {
+            return new LinkedList<>();
+        }
     }
 
     public String getIupacName() {
@@ -286,7 +290,7 @@ public class Drug extends RepoTrialNode {
         FilterEntry syns = new FilterEntry(displayName, FilterType.SYNONYM, id);
         map.put(FilterType.SYNONYM, new HashMap<>());
         getSynonyms().forEach(syn -> {
-            if ( !displayName.equals(syn))
+            if (!displayName.equals(syn))
                 map.get(FilterType.SYNONYM).put(new FilterKey(syn), syns);
         });
 

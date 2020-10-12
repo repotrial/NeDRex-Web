@@ -1,10 +1,13 @@
 package de.exbio.reposcapeweb.db.services.edges;
 
+import de.exbio.reposcapeweb.db.entities.edges.DrugHasTargetGene;
 import de.exbio.reposcapeweb.db.entities.edges.GeneInteractsWithGene;
+import de.exbio.reposcapeweb.db.entities.edges.ProteinInPathway;
 import de.exbio.reposcapeweb.db.entities.edges.ProteinInteractsWithProtein;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
 import de.exbio.reposcapeweb.db.repositories.edges.GeneInteractsWithGeneRepository;
 import de.exbio.reposcapeweb.db.repositories.edges.ProteinInteractsWithProteinRepository;
+import de.exbio.reposcapeweb.db.services.nodes.GeneService;
 import de.exbio.reposcapeweb.db.services.nodes.PathwayService;
 import de.exbio.reposcapeweb.db.services.nodes.ProteinService;
 import de.exbio.reposcapeweb.db.updates.UpdateOperation;
@@ -32,6 +35,7 @@ public class ProteinInteractsWithProteinService {
     private final GeneInteractsWithGeneRepository geneInteractsWithGeneRepository;
 
     private final ProteinService proteinService;
+    private final GeneService geneService;
 
     private final boolean directed = true;
     private final HashMap<Integer, HashMap<Integer, Boolean>> edges = new HashMap<>();
@@ -43,11 +47,12 @@ public class ProteinInteractsWithProteinService {
     private PreparedStatement generationPs = null;
 
     @Autowired
-    public ProteinInteractsWithProteinService(ProteinService proteinService, ProteinInteractsWithProteinRepository proteinInteractsWithProteinRepository, GeneInteractsWithGeneRepository geneInteractsWithGeneRepository, DataSource dataSource) {
+    public ProteinInteractsWithProteinService(ProteinService proteinService, ProteinInteractsWithProteinRepository proteinInteractsWithProteinRepository, GeneInteractsWithGeneRepository geneInteractsWithGeneRepository, DataSource dataSource, GeneService geneService) {
         this.proteinInteractsWithProteinRepository = proteinInteractsWithProteinRepository;
         this.geneInteractsWithGeneRepository = geneInteractsWithGeneRepository;
         this.proteinService = proteinService;
         this.dataSource = dataSource;
+        this.geneService = geneService;
     }
 
 
@@ -140,5 +145,29 @@ public class ProteinInteractsWithProteinService {
 
     public Iterable<GeneInteractsWithGene> getGenes(Collection<PairId> ids) {
         return geneInteractsWithGeneRepository.findGeneInteractsWithGeneByIdIn(ids);
+    }
+
+    public Optional<GeneInteractsWithGene> findGene(PairId id) {
+        return geneInteractsWithGeneRepository.findById(id);
+    }
+
+    public Optional<ProteinInteractsWithProtein> findProtein(PairId id) {
+        return proteinInteractsWithProteinRepository.findById(id);
+    }
+
+    public void setClearPs(PreparedStatement clearPs) {
+        this.clearPs = clearPs;
+    }
+
+    public ProteinInteractsWithProtein setDomainIds(ProteinInteractsWithProtein item) {
+        item.setMemberOne(proteinService.map(item.getPrimaryIds().getId1()));
+        item.setMemberTwo(proteinService.map(item.getPrimaryIds().getId2()));
+        return item;
+    }
+
+    public GeneInteractsWithGene setDomainIds(GeneInteractsWithGene item) {
+        item.setMemberOne(geneService.map(item.getPrimaryIds().getId1()));
+        item.setMemberTwo(geneService.map(item.getPrimaryIds().getId2()));
+        return item;
     }
 }

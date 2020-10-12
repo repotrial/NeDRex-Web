@@ -48,28 +48,28 @@ public class Protein extends RepoTrialNode {
     public String taxid;
 
     public static String[] getListAttributes() {
-        return new String[]{"id", "displayName", "geneName", "taxid", "primaryDomainId"};
+        return new String[]{"id", "displayName", "geneName", "taxid"};
     }
 
     @Override
-    public HashMap<String, String> getAsMap() {
-        HashMap<String, String> values = new HashMap<>();
-        values.put("id", id + "");
+    public HashMap<String, Object> getAsMap() {
+        HashMap<String, Object> values = new HashMap<>();
+        values.put("id", id);
         values.put("displayName", getDisplayName());
         values.put("type", getType());
-        values.put("domainIds", domainIds);
-        values.put("taxid", taxid);
-        values.put("sequence", sequence);
-        values.put("synonyms", synonyms);
-        values.put("geneName", geneName);
-        values.put("primaryDomainId", primaryDomainId);
-        values.put("comments", comments);
+        values.put("domainIds", getDomainIds());
+        values.put("taxid", getTaxid());
+        values.put("sequence", getSequence());
+        values.put("synonyms", getSynonyms());
+        values.put("geneName", getGeneName());
+        values.put("primaryDomainId", getPrimaryDomainId());
+        values.put("comments", getComments());
         return values;
     }
 
     @Override
-    public HashMap<String, String> getAsMap(HashSet<String> attributes) {
-        HashMap<String, String> values = new HashMap<>();
+    public HashMap<String, Object> getAsMap(HashSet<String> attributes) {
+        HashMap<String, Object> values = new HashMap<>();
         getAsMap().forEach((k, v) -> {
             if (attributes.contains(k))
                 values.put(k, v);

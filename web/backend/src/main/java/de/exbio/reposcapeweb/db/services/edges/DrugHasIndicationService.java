@@ -2,7 +2,9 @@ package de.exbio.reposcapeweb.db.services.edges;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.exbio.reposcapeweb.db.entities.edges.DisorderIsADisorder;
 import de.exbio.reposcapeweb.db.entities.edges.DrugHasIndication;
+import de.exbio.reposcapeweb.db.entities.edges.ProteinAssociatedWithDisorder;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
 import de.exbio.reposcapeweb.db.repositories.edges.DrugHasIndicationRepository;
 import de.exbio.reposcapeweb.db.services.nodes.DisorderService;
@@ -124,4 +126,15 @@ public class DrugHasIndicationService {
     public Iterable<DrugHasIndication> getEntries(Collection<PairId> ids) {
         return drugHasIndicationRepository.findDrugHasIndicationsByIdIn(ids);
     }
+
+    public Optional<DrugHasIndication> find(PairId id) {
+        return drugHasIndicationRepository.findById(id);
+    }
+
+    public DrugHasIndication setDomainIds(DrugHasIndication item) {
+        item.setSourceDomainId(drugService.map(item.getPrimaryIds().getId1()));
+        item.setTargetDomainId(disorderService.map(item.getPrimaryIds().getId2()));
+        return item;
+    }
+
 }

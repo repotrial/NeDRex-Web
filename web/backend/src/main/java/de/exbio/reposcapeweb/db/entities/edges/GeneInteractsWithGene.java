@@ -52,8 +52,8 @@ public class GeneInteractsWithGene extends RepoTrialEdge implements Serializable
     }
 
     @Override
-    public HashMap<String, String> getAsMap() {
-        HashMap<String,String> values = new HashMap<>();
+    public HashMap<String, Object> getAsMap() {
+        HashMap<String,Object> values = new HashMap<>();
         values.put("memberOne",memberOne);
         values.put("memberTwo",memberTwo);
         values.put("idOne",id.getId1()+"");
@@ -62,8 +62,8 @@ public class GeneInteractsWithGene extends RepoTrialEdge implements Serializable
     }
 
     @Override
-    public HashMap<String, String> getAsMap(HashSet<String> attributes) {
-        HashMap<String,String> values = new HashMap<>();
+    public HashMap<String, Object> getAsMap(HashSet<String> attributes) {
+        HashMap<String,Object> values = new HashMap<>();
         getAsMap().forEach((k,v)->{
             if(attributes.contains(k))
                 values.put(k,v);
@@ -133,5 +133,13 @@ public class GeneInteractsWithGene extends RepoTrialEdge implements Serializable
     @Override
     public Pair<String, String> getIdsToMap() {
         return new Pair<>(memberOne, memberTwo);
+    }
+
+    public void setMemberOne(String memberOne) {
+        this.memberOne = memberOne;
+    }
+
+    public void setMemberTwo(String memberTwo) {
+        this.memberTwo = memberTwo;
     }
 }

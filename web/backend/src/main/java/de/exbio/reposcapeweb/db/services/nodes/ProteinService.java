@@ -65,6 +65,10 @@ public class ProteinService extends NodeService {
         return getDomainToIdMap().get(primaryDomainId);
     }
 
+    public String map(Integer id){
+        return getIdToDomainMap().get(id);
+    }
+
     public HashMap<Integer, String> getIdToDomainMap() {
         return idToDomainMap;
     }
@@ -89,4 +93,7 @@ public class ProteinService extends NodeService {
     public Iterable<Protein> findAllByIds(Collection<Integer> ids) {
         return proteinRepository.findAllById(ids);
     }
+
+    public Optional<Protein> findById(Integer id){return proteinRepository.findById(id);}
+
 }

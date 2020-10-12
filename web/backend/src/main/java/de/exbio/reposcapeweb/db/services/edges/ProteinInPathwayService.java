@@ -1,5 +1,7 @@
 package de.exbio.reposcapeweb.db.services.edges;
 
+import de.exbio.reposcapeweb.db.entities.edges.DrugHasTargetGene;
+import de.exbio.reposcapeweb.db.entities.edges.ProteinEncodedBy;
 import de.exbio.reposcapeweb.db.entities.edges.ProteinInPathway;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
 import de.exbio.reposcapeweb.db.repositories.edges.ProteinInPathwayRepository;
@@ -121,4 +123,16 @@ public class ProteinInPathwayService {
     public Iterable<ProteinInPathway> getEntries(Collection<PairId> ids) {
         return proteinInPathwayRepository.findProteinInPathwaysByIdIn(ids);
     }
+
+
+    public Optional<ProteinInPathway> find(PairId id) {
+        return proteinInPathwayRepository.findById(id);
+    }
+
+    public ProteinInPathway setDomainIds(ProteinInPathway item) {
+        item.setSourceDomainId(proteinService.map(item.getPrimaryIds().getId1()));
+        item.setTargetDomainId(pathwayService.map(item.getPrimaryIds().getId2()));
+        return item;
+    }
+
 }

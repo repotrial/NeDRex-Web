@@ -90,12 +90,22 @@ public class DisorderComorbidWithDisorderService {
         }
     }
 
-    public HashSet<Integer> getEdges(int id){
+    public HashSet<Integer> getEdges(int id) {
         return edges.get(id).entrySet().stream().filter(Map.Entry::getValue).map(Map.Entry::getKey).collect(Collectors.toCollection(HashSet::new));
     }
 
 
     public PairId mapIds(Pair<String, String> ids) {
         return new PairId(disorderService.map(ids.getFirst()), disorderService.map(ids.getSecond()));
+    }
+
+    public Optional<DisorderComorbidWithDisorder> find(PairId id) {
+        return disorderComorbidWithDisorderRepository.findById(id);
+    }
+
+    public DisorderComorbidWithDisorder setDomainIds(DisorderComorbidWithDisorder item) {
+        item.setMemberOne(disorderService.map(item.getPrimaryIds().getId1()));
+        item.setMemberTwo(disorderService.map(item.getPrimaryIds().getId2()));
+        return item;
     }
 }

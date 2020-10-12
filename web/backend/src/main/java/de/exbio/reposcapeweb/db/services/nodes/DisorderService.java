@@ -67,6 +67,10 @@ public class DisorderService extends NodeService {
         return getDomainToIdMap().get(primaryDomainId);
     }
 
+    public String map(Integer id){
+        return getIdToDomainMap().get(id);
+    }
+
     public HashMap<Integer, String> getIdToDomainMap() {
         return idToDomainMap;
     }
@@ -91,4 +95,6 @@ public class DisorderService extends NodeService {
     public Iterable<Disorder> findAllByIds(Collection<Integer> ids){
         return disorderRepository.findAllById(ids);
     }
+
+    public Optional<Disorder> findById(Integer id){return disorderRepository.findById(id);}
 }

@@ -2,12 +2,15 @@ package de.exbio.reposcapeweb.db.services.edges;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.exbio.reposcapeweb.db.entities.edges.DisorderIsADisorder;
+import de.exbio.reposcapeweb.db.entities.edges.DrugHasIndication;
 import de.exbio.reposcapeweb.db.entities.edges.DrugHasTargetGene;
 import de.exbio.reposcapeweb.db.entities.edges.DrugHasTargetProtein;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
 import de.exbio.reposcapeweb.db.repositories.edges.DrugHasTargetGeneRepository;
 import de.exbio.reposcapeweb.db.repositories.edges.DrugHasTargetProteinRepository;
 import de.exbio.reposcapeweb.db.services.nodes.DrugService;
+import de.exbio.reposcapeweb.db.services.nodes.GeneService;
 import de.exbio.reposcapeweb.db.services.nodes.ProteinService;
 import de.exbio.reposcapeweb.db.updates.UpdateOperation;
 import de.exbio.reposcapeweb.utils.Pair;
@@ -31,7 +34,7 @@ public class DrugHasTargetService {
     private final DrugHasTargetGeneRepository drugHasTargetGeneRepository;
 
     private final DrugService drugService;
-
+    private final GeneService geneService;
     private final ProteinService proteinService;
 
     private final boolean directed = true;
@@ -47,12 +50,13 @@ public class DrugHasTargetService {
     private PreparedStatement generationPs = null;
 
     @Autowired
-    public DrugHasTargetService(DrugService drugService, ProteinService proteinService, DrugHasTargetProteinRepository drugHasTargetProteinRepository, DrugHasTargetGeneRepository drugHasTargetGeneRepository, DataSource dataSource) {
+    public DrugHasTargetService(DrugService drugService, ProteinService proteinService, DrugHasTargetProteinRepository drugHasTargetProteinRepository, DrugHasTargetGeneRepository drugHasTargetGeneRepository, DataSource dataSource, GeneService geneService) {
         this.drugService = drugService;
         this.drugHasTargetProteinRepository = drugHasTargetProteinRepository;
         this.drugHasTargetGeneRepository = drugHasTargetGeneRepository;
         this.proteinService = proteinService;
         this.dataSource = dataSource;
+        this.geneService = geneService;
     }
 
 
@@ -212,5 +216,27 @@ public class DrugHasTargetService {
 
     public Iterable<DrugHasTargetProtein> getProteins(Collection<PairId> ids) {
         return drugHasTargetProteinRepository.findDrugHasTargetsByIdIn(ids);
+    }
+
+    public Optional<DrugHasTargetGene> findGene(PairId id) {
+        return drugHasTargetGeneRepository.findById(id);
+    }
+
+    public Optional<DrugHasTargetProtein> findProtein(PairId id) {
+        return drugHasTargetProteinRepository.findById(id);
+    }
+
+
+    public DrugHasTargetProtein setDomainIds(DrugHasTargetProtein item) {
+        item.setSourceDomainId(drugService.map(item.getPrimaryIds().getId1()));
+        item.setTargetDomainId(proteinService.map(item.getPrimaryIds().getId2()));
+        return item;
+    }
+
+
+    public DrugHasTargetGene setDomainIds(DrugHasTargetGene item) {
+        item.setSourceDomainId(drugService.map(item.getPrimaryIds().getId1()));
+        item.setTargetDomainId(geneService.map(item.getPrimaryIds().getId2()));
+        return item;
     }
 }

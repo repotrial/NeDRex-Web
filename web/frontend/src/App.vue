@@ -45,16 +45,18 @@
 
     <v-main app style="padding-top: 0" @click.stop="hideSidecard()">
       <v-container v-show="selectedTabId===0" fluid>
-        <Start v-if="metagraph !== undefined" ref="start" v-on:graphLoadEvent="loadGraph" v-on:filterEvent="filter" :colors="colors" :metagraph="metagraph"></Start>
+        <Start v-if="metagraph !== undefined" ref="start" v-on:graphLoadEvent="loadGraph" v-on:filterEvent="filter"
+               :colors="colors" :metagraph="metagraph"></Start>
       </v-container>
       <v-container v-show="selectedTabId===1" fluid>
-        <Graph ref="graph" v-on:selectionEvent="loadSelection" v-on:finishedEvent="setTabNotification(1)" v-on:graphLoadedEvent="loadList"></Graph>
+        <Graph ref="graph" v-on:selectionEvent="loadSelection" v-on:finishedEvent="setTabNotification(1)"
+               v-on:graphLoadedEvent="loadList"></Graph>
         <v-card>
           <v-checkbox v-model="physics" label="Enable physics" v-on:click="togglePhysics"></v-checkbox>
         </v-card>
       </v-container>
       <v-container v-show="selectedTabId===2" fluid>
-        <List ref="list"></List>
+        <List ref="list" v-on:finishedEvent="setTabNotification(2)" v-on:selectionEvent="loadDetails"></List>
       </v-container>
     </v-main>
 
@@ -126,26 +128,30 @@ export default {
     loadGraph: function (graph) {
       this.$refs.side.hide()
       this.tabslist[1].icon = "fas fa-circle-notch fa-spin"
+      this.tabslist[2].icon = "fas fa-circle-notch fa-spin"
       if (this.physics) {
         this.physics = false;
         this.togglePhysics()
       }
       this.$refs.graph.loadData(graph)
     },
-    loadList: function (graphId){
+    loadList: function (graphId) {
       this.$refs.list.getList(graphId)
     },
-    toggleSide : function (){
-      if(this.showSidecard){
+    toggleSide: function () {
+      if (this.showSidecard) {
         this.hideSidecard();
       }
-      this.showSidecard = ! this.showSidecard;
+      this.showSidecard = !this.showSidecard;
     },
     setTabNotification: function (tabId) {
       if (this.selectedTabId !== tabId)
         this.tabslist[tabId].note = true
       if (tabId === 1) {
         this.tabslist[tabId].icon = "fas fa-project-diagram"
+      }
+      if (tabId === 2) {
+        this.tabslist[tabId].icon = "fas fa-list-ul"
       }
     }
     ,
@@ -159,13 +165,6 @@ export default {
     },
     loadSelection: function (params) {
       this.showSidecard = true
-      // if (params) {
-      //   this.selectedNode = params.primary;
-      //   this.neighborNodes = params.neighbors;
-      // } else {
-      //   this.selectedNode = undefined;
-      //   this.neighborNodes = [];
-      // }
       if (params !== undefined)
         this.$refs.side.loadSelection(this.$refs.graph.identifyNeighbors(params.nodes[0]))
       else {
@@ -222,7 +221,13 @@ export default {
           this.$refs.side.loadFilter(undefined)
           this.hideSidecard()
         }
+      } else if (this.selectedTabId === 2) {
+        this.$refs.side.setTitle({title: "Detailed Information", description: "No item selected!"})
       }
+    },
+    loadDetails: function(params){
+      this.$refs.side.loadDetails(params)
+      this.showSidecard=true;
     }
   },
   components: {

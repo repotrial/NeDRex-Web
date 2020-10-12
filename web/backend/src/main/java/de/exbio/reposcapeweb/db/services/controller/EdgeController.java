@@ -194,38 +194,76 @@ public class EdgeController {
         return disorderComorbidWithDisorderService.getEntries(ids);
     }
 
+    public DisorderComorbidWithDisorder findDisorderComorbidWithDisorder(PairId id){
+        return disorderComorbidWithDisorderService.setDomainIds(disorderComorbidWithDisorderService.find(id).orElseGet(null));
+    }
+
     public Iterable<DisorderIsADisorder> findAllDisorderIsADisorder(Collection<PairId> ids){
         return disorderIsADisorderService.getEntries(ids);
+    }
+
+    public DisorderIsADisorder findDisorderIsADisorder(PairId id){
+        return disorderIsADisorderService.setDomainIds(disorderIsADisorderService.find(id).orElseGet(null));
     }
 
     public Iterable<DrugHasIndication> findAllDrugHasIndication(Collection<PairId> ids){
         return drugHasIndicationService.getEntries(ids);
     }
+    public DrugHasIndication findDrugHasIndication(PairId id){
+        return drugHasIndicationService.setDomainIds(drugHasIndicationService.find(id).orElseGet(null));
+    }
+
     public Iterable<DrugHasTargetGene> findAllDrugHasTargetGene(Collection<PairId> ids){
         return drugHasTargetService.getGenes(ids);
+    }
+
+    public DrugHasTargetGene findDrugHasTargetGene(PairId id){
+        return drugHasTargetService.setDomainIds(drugHasTargetService.findGene(id).orElseGet(null));
     }
     public Iterable<DrugHasTargetProtein> findAllDrugHasTargetProtein(Collection<PairId> ids){
         return drugHasTargetService.getProteins(ids);
     }
+    public DrugHasTargetProtein findDrugHasTargetProtein(PairId id){
+        return drugHasTargetService.setDomainIds(drugHasTargetService.findProtein(id).orElseGet(null));
+    }
     public Iterable<GeneAssociatedWithDisorder> findAllGeneAssociatedWithDisorder(Collection<PairId> ids){
         return associatedWithDisorderService.getGenes(ids);
+    }
+    public GeneAssociatedWithDisorder findGeneAssociatedWithDisorder(PairId id){
+        return associatedWithDisorderService.setDomainIds(associatedWithDisorderService.findGene(id).orElseGet(null));
     }
     public Iterable<GeneInteractsWithGene> findAllGeneInteractsWithGene(Collection<PairId> ids){
         return proteinInteractsWithProteinService.getGenes(ids);
     }
+    public GeneInteractsWithGene findGeneInteractsWithGene(PairId id){
+        return proteinInteractsWithProteinService.setDomainIds(proteinInteractsWithProteinService.findGene(id).orElseGet(null));
+    }
+
     public Iterable<ProteinAssociatedWithDisorder> findAllProteinAssociatedWithDisorder(Collection<PairId> ids){
         return associatedWithDisorderService.getProteins(ids);
     }
+    public ProteinAssociatedWithDisorder findProteinAssociatedWithDisorder(PairId id){
+        return associatedWithDisorderService.setDomainIds(associatedWithDisorderService.findProtein(id).orElseGet(null));
+    }
+
     public Iterable<ProteinEncodedBy> findAllProteinEncodedBy(Collection<PairId> ids){
         return proteinEncodedByService.getEntries(ids);
+    }
+    public ProteinEncodedBy findProteinEncodedBy(PairId id){
+        return proteinEncodedByService.setDomainIds(proteinEncodedByService.find(id).orElseGet(null));
     }
     public Iterable<ProteinInPathway> findAllProteinInPathway(Collection<PairId> ids){
         return proteinInPathwayService.getEntries(ids);
     }
+    public ProteinInPathway findProteinInPathway(PairId id){
+        return proteinInPathwayService.setDomainIds(proteinInPathwayService.find(id).orElseGet(null));
+    }
     public Iterable<ProteinInteractsWithProtein> findAllProteinInteractsWithProtein(Collection<PairId> ids){
         return proteinInteractsWithProteinService.getProteins(ids);
     }
-
+    public ProteinInteractsWithProtein findProteinInteractsWithProtein(PairId id){
+        return proteinInteractsWithProteinService.setDomainIds(proteinInteractsWithProteinService.findProtein(id).orElseGet(null));
+    }
 
 
     public boolean isEdge(int edgeId, int node1, int node2, Integer k1, Integer k2) {
@@ -345,8 +383,8 @@ public class EdgeController {
         return null;
     }
 
-    public LinkedList<HashMap<String, String>> edgesToAttributeList(Integer type, List<PairId> ids, HashSet<String> attributes) {
-        LinkedList<HashMap<String,String>> values = new LinkedList<>();
+    public LinkedList<HashMap<String, Object>> edgesToAttributeList(Integer type, List<PairId> ids, HashSet<String> attributes) {
+        LinkedList<HashMap<String,Object>> values = new LinkedList<>();
         switch (Graphs.getEdge(type)) {
             case "GeneAssociatedWithDisorder":
                 findAllGeneAssociatedWithDisorder(ids).forEach(e->values.add(e.getAsMap(attributes)));
@@ -370,5 +408,31 @@ public class EdgeController {
                 findAllDisorderComorbidWithDisorder(ids).forEach(e->values.add(e.getAsMap(attributes)));
         }
         return values;
+    }
+
+    public HashMap<String, Object> edgeToAttributeList(Integer type, PairId id) {
+        switch (Graphs.getEdge(type)) {
+            case "GeneAssociatedWithDisorder":
+                return findGeneAssociatedWithDisorder(id).getAsMap();
+            case "DrugHasTargetGene":
+                return findDrugHasTargetGene(id).getAsMap();
+            case "ProteinEncodedBy":
+                return findProteinEncodedBy(id).getAsMap();
+            case "DrugHasIndication":
+                return findDrugHasIndication(id).getAsMap();
+            case "DrugHasTargetProtein":
+                return findDrugHasTargetProtein(id).getAsMap();
+            case "ProteinInteractsWithProtein":
+                return findProteinInteractsWithProtein(id).getAsMap();
+            case "ProteinInPathway":
+                return findProteinInPathway(id).getAsMap();
+            case "ProteinAssociatedWithDisorder":
+                return findProteinAssociatedWithDisorder(id).getAsMap();
+            case "DisorderIsADisorder":
+                return findDisorderIsADisorder(id).getAsMap();
+            case "DisorderComorbidWithDisorder":
+                return findDisorderComorbidWithDisorder(id).getAsMap();
+        }
+        return null;
     }
 }

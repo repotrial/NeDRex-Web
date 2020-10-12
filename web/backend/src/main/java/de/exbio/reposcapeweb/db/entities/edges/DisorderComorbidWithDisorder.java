@@ -101,23 +101,23 @@ public class DisorderComorbidWithDisorder extends RepoTrialEdge implements Seria
     }
 
     @Override
-    public HashMap<String, String> getAsMap() {
-        HashMap<String,String> values = new HashMap<>();
-        values.put("rr21",rr21+"");
-        values.put("rr12",rr12+"");
+    public HashMap<String, Object> getAsMap() {
+        HashMap<String,Object> values = new HashMap<>();
+        values.put("rr21",getRr21());
+        values.put("rr12",getRr12());
         values.put("type",getType());
-        values.put("memberOne",memberOne);
-        values.put("memberTwo",memberTwo);
-        values.put("idOne",id.getId1()+"");
-        values.put("idTwo",id.getId2()+"");
-        values.put("rrGeoMean",rrGeoMean+"");
-        values.put("phiCor",phiCor+"");
+        values.put("memberOne",getMemberOne());
+        values.put("memberTwo",getMemberTwo());
+        values.put("idOne",id.getId1());
+        values.put("idTwo",id.getId2());
+        values.put("rrGeoMean",getRrGeoMean());
+        values.put("phiCor",getPhiCor());
         return values;
     }
 
     @Override
-    public HashMap<String, String> getAsMap(HashSet<String> attributes) {
-        HashMap<String,String> values = new HashMap<>();
+    public HashMap<String, Object> getAsMap(HashSet<String> attributes) {
+        HashMap<String,Object> values = new HashMap<>();
         getAsMap().forEach((k,v)->{
             if(attributes.contains(k))
                 values.put(k,v);
@@ -138,5 +138,14 @@ public class DisorderComorbidWithDisorder extends RepoTrialEdge implements Seria
     public Pair<String, String> getIdsToMap() {
         return new Pair<>(memberOne, memberTwo);
     }
+
+    public void setMemberOne(String memberOne) {
+        this.memberOne = memberOne;
+    }
+
+    public void setMemberTwo(String memberTwo) {
+        this.memberTwo = memberTwo;
+    }
+
 
 }

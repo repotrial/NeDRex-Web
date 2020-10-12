@@ -1,5 +1,6 @@
 package de.exbio.reposcapeweb.db.services.edges;
 
+import de.exbio.reposcapeweb.db.entities.edges.DrugHasTargetGene;
 import de.exbio.reposcapeweb.db.entities.edges.ProteinEncodedBy;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
 import de.exbio.reposcapeweb.db.repositories.edges.ProteinEncodedByRepository;
@@ -120,5 +121,15 @@ public class ProteinEncodedByService {
 
     public Iterable<ProteinEncodedBy> getEntries(Collection<PairId> ids) {
         return proteinEncodedByRepository.findProteinEncodedsByIdIn(ids);
+    }
+
+    public Optional<ProteinEncodedBy> find(PairId id) {
+        return proteinEncodedByRepository.findById(id);
+    }
+
+    public ProteinEncodedBy setDomainIds(ProteinEncodedBy item) {
+        item.setSourceDomainId(proteinService.map(item.getPrimaryIds().getId1()));
+        item.setTargetDomainId(geneService.map(item.getPrimaryIds().getId2()));
+        return item;
     }
 }

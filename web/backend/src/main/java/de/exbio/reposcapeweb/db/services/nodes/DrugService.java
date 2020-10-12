@@ -69,6 +69,9 @@ public class DrugService extends NodeService {
         return getDomainToIdMap().get(primaryDomainId);
     }
 
+    public String map(Integer id){
+        return getIdToDomainMap().get(id);
+    }
     public HashMap<Integer, String> getIdToDomainMap() {
         return idToDomainMap;
     }
@@ -93,4 +96,6 @@ public class DrugService extends NodeService {
     public Iterable<Drug> findAllByIds(Collection<Integer> ids){
         return drugRepository.findAllById(ids);
     }
+    public Optional<Drug> findById(Integer id){return drugRepository.findById(id);}
+
 }

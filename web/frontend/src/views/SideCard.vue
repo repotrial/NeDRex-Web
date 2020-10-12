@@ -92,6 +92,28 @@
         </tbody>
       </template>
     </v-simple-table>
+
+
+    <v-card v-if="tabId===2 && detailedObject !== undefined">
+      <v-list class="transparent">
+        <v-list-item
+          v-for="item in Object.keys(detailedObject)"
+          :key="item"
+        >
+          <v-list-item-title>{{ item }}</v-list-item-title>
+
+
+          <v-list-item-subtitle class="text-right">
+            {{ detailedObject[item] }}
+          </v-list-item-subtitle>
+          <!--          <v-list-item-icon>-->
+          <!--            <v-icon>{{ item.icon }}</v-icon>-->
+          <!--          </v-list-item-icon>-->
+        </v-list-item>
+      </v-list>
+
+
+    </v-card>
     <!--    </v-card>-->
   </v-navigation-drawer>
 </template>
@@ -112,6 +134,7 @@ export default {
   filterModel: "",
   filterName: "",
   tabId: 0,
+  detailedObject: undefined,
 
   data() {
     return {
@@ -126,6 +149,7 @@ export default {
       filterTypeModel: this.filterTypeModel,
       filterModel: this.filterModel,
       tabId: this.tabId,
+      detailedObject: this.detailedObject
     }
   },
   created() {
@@ -162,12 +186,36 @@ export default {
         this.filterView = false;
 
     },
+    loadDetails: function (data) {
+      if (data.type === "node") {
+        this.$http.get("getNodeDetails?name=" + data.name + "&id=" + data.id).then(response => {
+          if (response.data !== undefined) {
+            this.detailedObject = response.data
+            this.description = "for " + data.name + " " + this.detailedObject.displayName + " (id:" + this.detailedObject.id + ")"
+          }
+        }).catch(err => {
+          console.log(err)
+        })
+      } else if (data.type === "edge") {
+        this.$http.get("getEdgeDetails?name=" + data.name + "&id1=" + data.id1 + "&id2=" + data.id2).then(response => {
+          if (response.data !== undefined) {
+            this.detailedObject = response.data
+            if (this.detailedObject.sourceId !== undefined)
+              this.description = "for " + data.name + " " + this.detailedObject.displayName + " (id:" + this.detailedObject.sourceId + "->" + this.detailedObject.targetId + ")"
+            if (this.detailedObject.idOne !== undefined)
+              this.description = "for " + data.name + " id:" + this.detailedObject.idOne + "<->" + this.detailedObject.idTwo
+          }
+        }).catch(err => {
+          console.log(err)
+        })
+      }
+    },
     hide: function () {
       this.$emit("hideEvent")
     },
-    clearModels: function(){
-      this.filterModel=""
-      this.filterTypeModel=""
+    clearModels: function () {
+      this.filterModel = ""
+      this.filterTypeModel = ""
     },
     saveFilter: function () {
       let data = {type: this.filterTypeModel, expression: this.filterModel};
@@ -179,8 +227,8 @@ export default {
       if (add) {
         this.filters.push(data)
       }
-      this.filterTypeModel=""
-      this.filterModel=""
+      this.filterTypeModel = ""
+      this.filterModel = ""
     },
     removeFilter: function (idx) {
       this.filters.splice(idx, 1)

@@ -7,9 +7,9 @@ public abstract class RepoTrialEntity{
 
     public HashSet<String> attributes = null;
 
-    public abstract HashMap<String,String> getAsMap();
+    public abstract HashMap<String,Object> getAsMap();
 
-    public abstract HashMap<String,String> getAsMap(HashSet<String> attributes);
+    public abstract HashMap<String,Object> getAsMap(HashSet<String> attributes);
 
 //    public static boolean validateFormat(HashSet<String> attributes) {
 //        return false;

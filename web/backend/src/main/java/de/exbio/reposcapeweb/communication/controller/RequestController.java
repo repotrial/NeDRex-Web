@@ -2,8 +2,12 @@ package de.exbio.reposcapeweb.communication.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.exbio.reposcapeweb.communication.cache.Graphs;
 import de.exbio.reposcapeweb.communication.requests.FilterGroup;
 import de.exbio.reposcapeweb.communication.requests.GraphRequest;
+import de.exbio.reposcapeweb.db.entities.ids.PairId;
+import de.exbio.reposcapeweb.db.services.controller.EdgeController;
+import de.exbio.reposcapeweb.db.services.controller.NodeController;
 import de.exbio.reposcapeweb.db.services.nodes.DrugService;
 import de.exbio.reposcapeweb.communication.reponses.WebGraphService;
 import org.slf4j.Logger;
@@ -26,12 +30,16 @@ public class RequestController {
     private final DrugService drugService;
     private final ObjectMapper objectMapper;
     private final WebGraphService webGraphService;
+    private final EdgeController edgeController;
+    private final NodeController nodeController;
 
     @Autowired
-    public RequestController(DrugService drugService, ObjectMapper objectMapper, WebGraphService webGraphService) {
+    public RequestController(DrugService drugService, ObjectMapper objectMapper, WebGraphService webGraphService, EdgeController edgeController, NodeController nodeController) {
         this.drugService = drugService;
         this.objectMapper = objectMapper;
         this.webGraphService = webGraphService;
+        this.edgeController = edgeController;
+        this.nodeController = nodeController;
     }
 
 
@@ -69,6 +77,32 @@ public class RequestController {
         return null;
     }
 
+    @RequestMapping(value = "/getNodeDetails", method = RequestMethod.GET)
+    @ResponseBody
+    public String getDetails(@RequestParam("name") String name, @RequestParam("id") int id) {
+        log.info("requested details for node " + name + " with id " + id);
+        String out = "";
+        try {
+            out = objectMapper.writeValueAsString(nodeController.nodeToAttributeList(Graphs.getNode(name), id));
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return out;
+    }
+
+    @RequestMapping(value = "/getEdgeDetails", method = RequestMethod.GET)
+    @ResponseBody
+    public String getDetails(@RequestParam("name") String name, @RequestParam("id1") int id1, @RequestParam("id2") int id2) {
+        log.info("requested details for edge " + name + " with id (" + id1 + " -> " + id2 + ")");
+        String out = "";
+        try {
+            out = objectMapper.writeValueAsString(edgeController.edgeToAttributeList(Graphs.getEdge(name), new PairId(id1, id2)));
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return out;
+    }
+
     @RequestMapping(value = "/getExampleGraph2", method = RequestMethod.GET)
     @ResponseBody
     public String getExampleGraph2() {
@@ -83,11 +117,11 @@ public class RequestController {
         return null;
     }
 
-    @RequestMapping(value = "/getGraphList",method = RequestMethod.GET)
+    @RequestMapping(value = "/getGraphList", method = RequestMethod.GET)
     @ResponseBody
-    public String getGraphList(@RequestParam("id") String id, @RequestParam("cached") boolean cached){
-        System.out.println("got request for "+id+" from cache="+cached);
-        try{
+    public String getGraphList(@RequestParam("id") String id, @RequestParam("cached") boolean cached) {
+        System.out.println("got request for " + id + " from cache=" + cached);
+        try {
             String out = objectMapper.writeValueAsString(webGraphService.getList(id));
             return out;
         } catch (JsonProcessingException e) {
@@ -106,7 +140,7 @@ public class RequestController {
     @ResponseBody
     public String getGraph(@RequestBody GraphRequest request) {
         try {
-            log.info("Requested a graph "+objectMapper.writeValueAsString(request));
+            log.info("Requested a graph " + objectMapper.writeValueAsString(request));
             String out = objectMapper.writeValueAsString(webGraphService.getGraph(request));
             log.info("Graph sent");
             return out;

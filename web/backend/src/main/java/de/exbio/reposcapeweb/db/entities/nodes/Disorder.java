@@ -145,22 +145,22 @@ public class Disorder extends RepoTrialNode {
     }
 
     @Override
-    public HashMap<String, String> getAsMap() {
-        HashMap<String,String> values = new HashMap<>();
-        values.put("id",id+"");
+    public HashMap<String, Object> getAsMap() {
+        HashMap<String,Object> values = new HashMap<>();
+        values.put("id",id);
         values.put("displayName",getDisplayName());
-        values.put("synonyms",synonyms);
+        values.put("synonyms",getSynonyms());
         values.put("type",getType());
-        values.put("domainIds",domainIds);
-        values.put("primaryDomainId",primaryDomainId);
+        values.put("domainIds",getDomainIds());
+        values.put("primaryDomainId",getPrimaryDomainId());
         values.put("description",getDescription());
-        values.put("icd10",icd10);
+        values.put("icd10",getIcd10());
         return values;
     }
 
     @Override
-    public HashMap<String, String> getAsMap(HashSet<String> attributes) {
-        HashMap<String,String> values = new HashMap<>();
+    public HashMap<String, Object> getAsMap(HashSet<String> attributes) {
+        HashMap<String,Object> values = new HashMap<>();
         getAsMap().forEach((k,v)->{
             if(attributes.contains(k))
                 values.put(k,v);

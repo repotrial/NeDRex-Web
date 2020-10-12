@@ -1,6 +1,5 @@
 package de.exbio.reposcapeweb.db.services.nodes;
 
-import de.exbio.reposcapeweb.db.entities.nodes.Drug;
 import de.exbio.reposcapeweb.db.entities.nodes.Gene;
 import de.exbio.reposcapeweb.db.repositories.nodes.GeneRepository;
 import de.exbio.reposcapeweb.db.services.NodeService;
@@ -67,6 +66,10 @@ public class GeneService extends NodeService {
         return getDomainToIdMap().get(primaryDomainId);
     }
 
+    public String map(Integer id){
+        return getIdToDomainMap().get(id);
+    }
+
     public HashMap<Integer, String> getIdToDomainMap() {
         return idToDomainMap;
     }
@@ -92,4 +95,6 @@ public class GeneService extends NodeService {
     public Iterable<Gene> findAllByIds(Collection<Integer> ids){
         return geneRepository.findAllById(ids);
     }
+
+    public Optional<Gene> findById(Integer id){return geneRepository.findById(id);}
 }

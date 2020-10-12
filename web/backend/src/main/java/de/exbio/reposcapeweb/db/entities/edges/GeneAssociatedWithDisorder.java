@@ -52,7 +52,7 @@ public class GeneAssociatedWithDisorder extends RepoTrialEdge implements Seriali
     @Transient
     private String sourceDomainId;
 
-    private String score;
+    private Float score;
 
     private String assertedBy;
 
@@ -62,21 +62,21 @@ public class GeneAssociatedWithDisorder extends RepoTrialEdge implements Seriali
     }
 
     @Override
-    public HashMap<String, String> getAsMap() {
-        HashMap<String,String> values = new HashMap<>();
-        values.put("targetDomainId",targetDomainId);
-        values.put("sourceDomainId",sourceDomainId);
-        values.put("targetId",id.getId1()+"");
-        values.put("sourceId",id.getId2()+"");
+    public HashMap<String, Object> getAsMap() {
+        HashMap<String,Object> values = new HashMap<>();
+        values.put("targetDomainId",getTargetDomainId());
+        values.put("sourceDomainId",getSourceDomainId());
+        values.put("sourceId",id.getId1());
+        values.put("targetId",id.getId2());
         values.put("type",getType());
-        values.put("score",score);
-        values.put("assertedBy",assertedBy);
+        values.put("score",getScore());
+        values.put("assertedBy",getAssertedBy());
         return values;
     }
 
     @Override
-    public HashMap<String, String> getAsMap(HashSet<String> attributes) {
-        HashMap<String,String> values = new HashMap<>();
+    public HashMap<String, Object> getAsMap(HashSet<String> attributes) {
+        HashMap<String,Object> values = new HashMap<>();
         getAsMap().forEach((k,v)->{
             if(attributes.contains(k))
                 values.put(k,v);
@@ -100,7 +100,7 @@ public class GeneAssociatedWithDisorder extends RepoTrialEdge implements Seriali
         return "GeneAssociatedWithDisorder";
     }
 
-    public String getScore() {
+    public Float getScore() {
         return score;
     }
 
@@ -135,5 +135,13 @@ public class GeneAssociatedWithDisorder extends RepoTrialEdge implements Seriali
     @Override
     public Pair<String, String> getIdsToMap() {
         return new Pair<>(sourceDomainId, targetDomainId);
+    }
+
+    public void setTargetDomainId(String targetDomainId) {
+        this.targetDomainId = targetDomainId;
+    }
+
+    public void setSourceDomainId(String sourceDomainId) {
+        this.sourceDomainId = sourceDomainId;
     }
 }

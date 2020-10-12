@@ -19,8 +19,8 @@ public class PathwayService extends NodeService {
     private final Logger log = LoggerFactory.getLogger(DrugService.class);
     private final PathwayRepository pathwayRepository;
 
-    private HashMap<Integer,String> idToDomainMap = new HashMap<>();
-    private HashMap<String,Integer> domainToIdMap = new HashMap<>();
+    private HashMap<Integer, String> idToDomainMap = new HashMap<>();
+    private HashMap<String, Integer> domainToIdMap = new HashMap<>();
 
     private NodeFilter allFilter;
 
@@ -56,7 +56,7 @@ public class PathwayService extends NodeService {
         pathwayRepository.saveAll(toSave).forEach(d -> {
             idToDomainMap.put(d.getId(), d.getPrimaryDomainId());
             domainToIdMap.put(d.getPrimaryDomainId(), d.getId());
-            allFilter.add(d.toDistinctFilter(),d.toUniqueFilter());
+            allFilter.add(d.toDistinctFilter(), d.toUniqueFilter());
         });
         log.debug("Updated pathway table: " + insertCount + " Inserts, " + (updates.containsKey(UpdateOperation.Alteration) ? updates.get(UpdateOperation.Alteration).size() : 0) + " Changes, " + (updates.containsKey(UpdateOperation.Deletion) ? updates.get(UpdateOperation.Deletion).size() : 0) + " Deletions identified!");
         return true;
@@ -67,6 +67,9 @@ public class PathwayService extends NodeService {
         return getDomainToIdMap().get(primaryDomainId);
     }
 
+    public String map(Integer id){
+        return getIdToDomainMap().get(id);
+    }
     public HashMap<Integer, String> getIdToDomainMap() {
         return idToDomainMap;
     }
@@ -80,15 +83,20 @@ public class PathwayService extends NodeService {
         return domainToIdMap;
     }
 
-    public NodeFilter getFilter(){
+    public NodeFilter getFilter() {
         return allFilter;
     }
 
-    public void setFilter(NodeFilter nf){
+    public void setFilter(NodeFilter nf) {
         this.allFilter = nf;
     }
 
     public Iterable<Pathway> findAllByIds(Collection<Integer> ids) {
-            return pathwayRepository.findAllById(ids);
-        }
+        return pathwayRepository.findAllById(ids);
+    }
+
+    public Optional<Pathway> findById(Integer id) {
+        return pathwayRepository.findById(id);
+    }
+
 }

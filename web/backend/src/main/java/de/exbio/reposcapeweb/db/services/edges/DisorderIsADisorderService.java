@@ -1,6 +1,8 @@
 package de.exbio.reposcapeweb.db.services.edges;
 
+import de.exbio.reposcapeweb.db.entities.edges.DisorderComorbidWithDisorder;
 import de.exbio.reposcapeweb.db.entities.edges.DisorderIsADisorder;
+import de.exbio.reposcapeweb.db.entities.edges.GeneAssociatedWithDisorder;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
 import de.exbio.reposcapeweb.db.repositories.edges.DisorderIsADisorderRepository;
 import de.exbio.reposcapeweb.db.services.nodes.DisorderService;
@@ -100,4 +102,14 @@ public class DisorderIsADisorderService {
     public Iterable<DisorderIsADisorder> getEntries(Collection<PairId> ids) {
         return disorderIsADisorderRepository.findDisorderIsADisordersByIdIn(ids);
     }
+    public Optional<DisorderIsADisorder> find(PairId id) {
+        return disorderIsADisorderRepository.findById(id);
+    }
+
+    public DisorderIsADisorder setDomainIds(DisorderIsADisorder item) {
+        item.setSourceDomainId(disorderService.map(item.getPrimaryIds().getId1()));
+        item.setTargetDomainId(disorderService.map(item.getPrimaryIds().getId2()));
+        return item;
+    }
+
 }

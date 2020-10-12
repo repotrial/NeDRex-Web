@@ -44,12 +44,20 @@ public class NodeController {
         return disorderService.findAllByIds(ids);
     }
 
+    public Disorder findDisorder(Integer id) {
+        return disorderService.findById(id).orElseGet(null);
+    }
+
     public NodeFilter filterDrugs() {
         return drugService.getFilter();
     }
 
     public Iterable<Drug> findDrugs(Collection<Integer> ids) {
         return drugService.findAllByIds(ids);
+    }
+
+    public Drug findDrug(Integer id) {
+        return drugService.findById(id).orElseGet(null);
     }
 
     public NodeFilter filterGenes() {
@@ -60,6 +68,10 @@ public class NodeController {
         return geneService.findAllByIds(ids);
     }
 
+    public Gene findGene(Integer id) {
+        return geneService.findById(id).orElseGet(null);
+    }
+
     public NodeFilter filterPathways() {
         return pathwayService.getFilter();
     }
@@ -68,12 +80,20 @@ public class NodeController {
         return pathwayService.findAllByIds(ids);
     }
 
+    public Pathway findPathway(Integer id) {
+        return pathwayService.findById(id).orElseGet(null);
+    }
+
     public NodeFilter filterProteins() {
         return proteinService.getFilter();
     }
 
     public Iterable<Protein> findProteins(Collection<Integer> ids) {
         return proteinService.findAllByIds(ids);
+    }
+
+    public Protein findProtein(Integer id) {
+        return proteinService.findById(id).orElseGet(null);
     }
 
 
@@ -109,8 +129,8 @@ public class NodeController {
         return null;
     }
 
-    public LinkedList<HashMap<String, String>> nodesToAttributeList(Integer typeId, Set<Integer> ids, HashSet<String> attributes) {
-        LinkedList<HashMap<String, String>> out = new LinkedList<>();
+    public LinkedList<HashMap<String, Object>> nodesToAttributeList(Integer typeId, Set<Integer> ids, HashSet<String> attributes) {
+        LinkedList<HashMap<String, Object>> out = new LinkedList<>();
         switch (Graphs.getNode(typeId)) {
             case "disorder":
                 findDisorders(ids).forEach(d -> out.add(d.getAsMap(attributes)));
@@ -125,4 +145,21 @@ public class NodeController {
         }
         return out;
     }
+
+    public HashMap<String, Object> nodeToAttributeList(Integer typeId, Integer id) {
+        switch (Graphs.getNode(typeId)) {
+            case "disorder":
+                return findDisorder(id).getAsMap();
+            case "drug":
+                return findDrug(id).getAsMap();
+            case "gene":
+                return findGene(id).getAsMap();
+            case "pathway":
+                return findPathway(id).getAsMap();
+            case "protein":
+                return findProtein(id).getAsMap();
+        }
+        return null;
+    }
+
 }

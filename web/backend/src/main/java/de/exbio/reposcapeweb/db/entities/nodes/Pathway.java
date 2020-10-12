@@ -44,20 +44,20 @@ public class Pathway extends RepoTrialNode {
     }
 
     @Override
-    public HashMap<String, String> getAsMap() {
-        HashMap<String,String> values = new HashMap<>();
-        values.put("id",id+"");
+    public HashMap<String, Object> getAsMap() {
+        HashMap<String,Object> values = new HashMap<>();
+        values.put("id",id);
         values.put("displayName",getDisplayName());
         values.put("type",getType());
-        values.put("domainIds",domainIds);
-        values.put("primaryDomainId",primaryDomainId);
+        values.put("domainIds",getDomainIds());
+        values.put("primaryDomainId",getPrimaryDomainId());
         values.put("species",getSpecies());
         return values;
     }
 
     @Override
-    public HashMap<String, String> getAsMap(HashSet<String> attributes) {
-        HashMap<String,String> values = new HashMap<>();
+    public HashMap<String, Object> getAsMap(HashSet<String> attributes) {
+        HashMap<String,Object> values = new HashMap<>();
         getAsMap().forEach((k,v)->{
             if(attributes.contains(k))
                 values.put(k,v);

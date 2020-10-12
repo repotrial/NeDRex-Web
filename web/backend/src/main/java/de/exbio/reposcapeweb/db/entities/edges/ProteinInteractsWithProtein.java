@@ -58,28 +58,28 @@ public class ProteinInteractsWithProtein extends RepoTrialEdge implements Serial
     }
 
     public static String[] getListAttributes() {
-        return new String[]{ "idOne","idTwo", "evidenceTypes"};
+        return new String[]{"idOne", "idTwo", "evidenceTypes"};
     }
 
     @Override
-    public HashMap<String, String> getAsMap() {
-        HashMap<String,String> values = new HashMap<>();
-        values.put("databases",StringUtils.listToString(getDatabases()));
-        values.put("memberOne",memberOne);
-        values.put("memberTwo",memberTwo);
-        values.put("idOne",id.getId1()+"");
-        values.put("idTwo",id.getId2()+"");
-        values.put("evidenceTypes",evidenceTypes);
-        values.put("type",getType());
+    public HashMap<String, Object> getAsMap() {
+        HashMap<String, Object> values = new HashMap<>();
+        values.put("databases", getDatabases());
+        values.put("memberOne", getMemberOne());
+        values.put("memberTwo", getMemberTwo());
+        values.put("idOne", id.getId1());
+        values.put("idTwo", id.getId2());
+        values.put("evidenceTypes", getEvidenceTypes());
+        values.put("type", getType());
         return values;
     }
 
     @Override
-    public HashMap<String, String> getAsMap(HashSet<String> attributes) {
-        HashMap<String,String> values = new HashMap<>();
-        getAsMap().forEach((k,v)->{
-            if(attributes.contains(k))
-                values.put(k,v);
+    public HashMap<String, Object> getAsMap(HashSet<String> attributes) {
+        HashMap<String, Object> values = new HashMap<>();
+        getAsMap().forEach((k, v) -> {
+            if (attributes.contains(k))
+                values.put(k, v);
         });
         return values;
     }
@@ -146,5 +146,13 @@ public class ProteinInteractsWithProtein extends RepoTrialEdge implements Serial
     @Override
     public Pair<String, String> getIdsToMap() {
         return new Pair<>(memberOne, memberTwo);
+    }
+
+    public void setMemberOne(String memberOne) {
+        this.memberOne = memberOne;
+    }
+
+    public void setMemberTwo(String memberTwo) {
+        this.memberTwo = memberTwo;
     }
 }

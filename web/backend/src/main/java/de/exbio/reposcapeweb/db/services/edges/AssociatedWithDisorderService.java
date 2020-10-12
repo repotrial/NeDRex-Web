@@ -1,14 +1,12 @@
 package de.exbio.reposcapeweb.db.services.edges;
 
-import de.exbio.reposcapeweb.db.entities.edges.DrugHasTargetGene;
-import de.exbio.reposcapeweb.db.entities.edges.DrugHasTargetProtein;
-import de.exbio.reposcapeweb.db.entities.edges.GeneAssociatedWithDisorder;
-import de.exbio.reposcapeweb.db.entities.edges.ProteinAssociatedWithDisorder;
+import de.exbio.reposcapeweb.db.entities.edges.*;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
 import de.exbio.reposcapeweb.db.repositories.edges.GeneAssociatedWithDisorderRepository;
 import de.exbio.reposcapeweb.db.repositories.edges.ProteinAssociatedWithDisorderRepository;
 import de.exbio.reposcapeweb.db.services.nodes.DisorderService;
 import de.exbio.reposcapeweb.db.services.nodes.GeneService;
+import de.exbio.reposcapeweb.db.services.nodes.ProteinService;
 import de.exbio.reposcapeweb.db.updates.UpdateOperation;
 import de.exbio.reposcapeweb.utils.Pair;
 import org.slf4j.Logger;
@@ -32,7 +30,7 @@ public class AssociatedWithDisorderService {
     private final ProteinAssociatedWithDisorderRepository proteinAssociatedWithDisorderRepository;
 
     private final GeneService geneService;
-
+    private final ProteinService proteinService;
     private final DisorderService disorderService;
 
     private final boolean directed = true;
@@ -50,12 +48,13 @@ public class AssociatedWithDisorderService {
     private PreparedStatement generationPs = null;
 
     @Autowired
-    public AssociatedWithDisorderService(DataSource dataSource, GeneService geneService, DisorderService disorderService, GeneAssociatedWithDisorderRepository geneAssociatedWithDisorderRepository, ProteinAssociatedWithDisorderRepository proteinAssociatedWithDisorderRepository) {
+    public AssociatedWithDisorderService(DataSource dataSource, GeneService geneService, DisorderService disorderService, GeneAssociatedWithDisorderRepository geneAssociatedWithDisorderRepository, ProteinAssociatedWithDisorderRepository proteinAssociatedWithDisorderRepository, ProteinService proteinService) {
         this.geneAssociatedWithDisorderRepository = geneAssociatedWithDisorderRepository;
         this.proteinAssociatedWithDisorderRepository = proteinAssociatedWithDisorderRepository;
         this.disorderService = disorderService;
         this.geneService = geneService;
         this.dataSource = dataSource;
+        this.proteinService = proteinService;
     }
 
 
@@ -212,4 +211,26 @@ public class AssociatedWithDisorderService {
     public Iterable<ProteinAssociatedWithDisorder> getProteins(Collection<PairId> ids) {
         return proteinAssociatedWithDisorderRepository.findProteinAssociatedWithDisorderByIdIn(ids);
     }
+
+    public Optional<GeneAssociatedWithDisorder> findGene(PairId id) {
+        return geneAssociatedWithDisorderRepository.findById(id);
+    }
+
+    public Optional<ProteinAssociatedWithDisorder> findProtein(PairId id) {
+        return proteinAssociatedWithDisorderRepository.findById(id);
+    }
+
+    public ProteinAssociatedWithDisorder setDomainIds(ProteinAssociatedWithDisorder item) {
+        item.setSourceDomainId(proteinService.map(item.getPrimaryIds().getId1()));
+        item.setTargetDomainId(disorderService.map(item.getPrimaryIds().getId2()));
+        return item;
+    }
+    public GeneAssociatedWithDisorder setDomainIds(GeneAssociatedWithDisorder item) {
+        item.setSourceDomainId(geneService.map(item.getPrimaryIds().getId1()));
+        item.setTargetDomainId(disorderService.map(item.getPrimaryIds().getId2()));
+        return item;
+    }
+
+
+
 }
