@@ -99,7 +99,7 @@ public class DisorderIsADisorderService {
         return new PairId(disorderService.map(ids.getFirst()),disorderService.map(ids.getSecond()));
     }
 
-    public Iterable<DisorderIsADisorder> getEntries(Collection<PairId> ids) {
+    public List<DisorderIsADisorder> getEntries(Collection<PairId> ids) {
         return disorderIsADisorderRepository.findDisorderIsADisordersByIdIn(ids);
     }
     public Optional<DisorderIsADisorder> find(PairId id) {

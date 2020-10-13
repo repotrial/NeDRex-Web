@@ -139,11 +139,11 @@ public class ProteinInteractsWithProteinService {
         return new PairId(proteinService.map(ids.getFirst()), proteinService.map(ids.getSecond()));
     }
 
-    public Iterable<ProteinInteractsWithProtein> getProteins(Collection<PairId> ids) {
+    public List<ProteinInteractsWithProtein> getProteins(Collection<PairId> ids) {
         return proteinInteractsWithProteinRepository.findProteinInteractsWithProteinsByIdIn(ids);
     }
 
-    public Iterable<GeneInteractsWithGene> getGenes(Collection<PairId> ids) {
+    public List<GeneInteractsWithGene> getGenes(Collection<PairId> ids) {
         return geneInteractsWithGeneRepository.findGeneInteractsWithGeneByIdIn(ids);
     }
 

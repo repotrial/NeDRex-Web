@@ -35,10 +35,10 @@ public class DrugHasIndicationService {
     private final HashMap<Integer, HashSet<Integer>> edgesFrom = new HashMap<>();
 
     @Autowired
-    public DrugHasIndicationService(DrugService drugService,  DisorderService disorderService, DrugHasIndicationRepository drugHasIndicationRepository){
-        this.drugService=drugService;
-        this.drugHasIndicationRepository=drugHasIndicationRepository;
-        this.disorderService=disorderService;
+    public DrugHasIndicationService(DrugService drugService, DisorderService disorderService, DrugHasIndicationRepository drugHasIndicationRepository) {
+        this.drugService = drugService;
+        this.drugHasIndicationRepository = drugHasIndicationRepository;
+        this.disorderService = disorderService;
     }
 
 
@@ -48,14 +48,14 @@ public class DrugHasIndicationService {
             return false;
 
         if (updates.containsKey(UpdateOperation.Deletion))
-            drugHasIndicationRepository.deleteAll(drugHasIndicationRepository.findDrugHasIndicationsByIdIn(updates.get(UpdateOperation.Deletion).keySet().stream().map(o->(PairId)o).collect(Collectors.toSet())));
+            drugHasIndicationRepository.deleteAll(drugHasIndicationRepository.findDrugHasIndicationsByIdIn(updates.get(UpdateOperation.Deletion).keySet().stream().map(o -> (PairId) o).collect(Collectors.toSet())));
 
         LinkedList<DrugHasIndication> toSave = new LinkedList(updates.get(UpdateOperation.Insertion).values());
         int insertCount = toSave.size();
         if (updates.containsKey(UpdateOperation.Alteration)) {
             HashMap<PairId, DrugHasIndication> toUpdate = updates.get(UpdateOperation.Alteration);
 
-            drugHasIndicationRepository.findDrugHasIndicationsByIdIn(new HashSet<>(toUpdate.keySet().stream().map(o->(PairId)o).collect(Collectors.toSet()))).forEach(d -> {
+            drugHasIndicationRepository.findDrugHasIndicationsByIdIn(new HashSet<>(toUpdate.keySet().stream().map(o -> (PairId) o).collect(Collectors.toSet()))).forEach(d -> {
                 d.setValues(toUpdate.get(d.getPrimaryIds()));
                 toSave.add(d);
             });
@@ -110,20 +110,20 @@ public class DrugHasIndicationService {
         }
     }
 
-    public HashSet<Integer> getEdgesTo(Integer id){
+    public HashSet<Integer> getEdgesTo(Integer id) {
         return edgesTo.get(id);
     }
 
-    public HashSet<Integer> getEdgesFrom(Integer id){
+    public HashSet<Integer> getEdgesFrom(Integer id) {
         return edgesFrom.get(id);
     }
 
 
-    public PairId mapIds(Pair<String,String> ids) {
-        return new PairId(drugService.map(ids.getFirst()),disorderService.map(ids.getSecond()));
+    public PairId mapIds(Pair<String, String> ids) {
+        return new PairId(drugService.map(ids.getFirst()), disorderService.map(ids.getSecond()));
     }
 
-    public Iterable<DrugHasIndication> getEntries(Collection<PairId> ids) {
+    public List<DrugHasIndication> getEntries(List<PairId> ids) {
         return drugHasIndicationRepository.findDrugHasIndicationsByIdIn(ids);
     }
 

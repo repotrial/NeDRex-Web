@@ -44,6 +44,67 @@
     </v-navigation-drawer>
 
     <v-main app style="padding-top: 0" @click.stop="hideSidecard()">
+      <v-dialog
+        v-model="listDialog"
+        v-if="listWarnObject !== undefined"
+        persistent
+        max-width="500"
+      >
+        <v-card>
+          <v-card-title class="headline">
+            List loading warning!
+          </v-card-title>
+          <v-card-text>The selected graph consists of the following number of elements:
+          </v-card-text>
+          <v-divider></v-divider>
+          <v-card-subtitle style="font-size: 15pt; margin-top: 10px;">Nodes:</v-card-subtitle>
+<!--          <v-divider></v-divider>-->
+          <v-list class="transparent">
+            <v-list-item
+              v-for="item in Object.keys(listWarnObject.nodes)"
+              :key="item"
+            >
+              <v-list-item-title>{{ item.toLocaleUpperCase() }}
+              </v-list-item-title>
+              <v-list-item-subtitle>
+                {{ listWarnObject.nodes[item] }}
+              </v-list-item-subtitle>
+
+            </v-list-item>
+          </v-list>
+          <v-divider></v-divider>
+          <v-card-subtitle style="font-size: 15pt; margin-top: 10px;">Edges:</v-card-subtitle>
+<!--          <v-divider></v-divider>-->
+          <v-list class="transparent">
+            <v-list-item
+              v-for="item in Object.keys(listWarnObject.edges)"
+              :key="item"
+            >
+              <v-list-item-title>{{ item}}
+              </v-list-item-title>
+              <v-list-item-subtitle>
+                {{ listWarnObject.edges[item] }}
+              </v-list-item-subtitle>
+
+            </v-list-item>
+          </v-list>
+          <v-divider></v-divider>
+          <v-card-text>
+            This exceeds the limit of elements that can handled by the browser, so please apply a more strict filter!
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn
+              color="green darken-1"
+              text
+              @click="listDialog=false"
+            >
+              Dismiss
+            </v-btn>
+
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
       <v-container v-show="selectedTabId===0" fluid>
         <Start v-if="metagraph !== undefined" ref="start" v-on:graphLoadEvent="loadGraph" v-on:filterEvent="filter"
                :colors="colors" :metagraph="metagraph"></Start>
@@ -53,6 +114,7 @@
                v-on:selectionEvent="loadSelection"
                v-on:finishedEvent="setTabNotification(1)"
                v-on:graphLoadedEvent="loadList"
+               v-on:sizeWarningEvent="sizeWarning"
         ></Graph>
         <v-card>
           <v-checkbox v-model="physics" label="Enable physics" v-on:click="togglePhysics"></v-checkbox>
@@ -89,6 +151,7 @@ export default {
   showSidecard: false,
   physics: false,
   metagraph: Object,
+
   data() {
     return {
       graphLoad: this.graphLoad,
@@ -100,7 +163,9 @@ export default {
       colors: this.colors,
       showSidecard: this.showSidecard,
       physics: this.physics,
-      metagraph: this.metagraph
+      metagraph: this.metagraph,
+      listWarnObject: undefined,
+      listDialog: false,
     }
   },
   created() {
@@ -127,6 +192,10 @@ export default {
       }).catch(err => {
         console.log(err)
       })
+    },
+    sizeWarning: function (info) {
+      this.listWarnObject = info;
+      this.listDialog = true;
     },
     loadGraph: function (graph) {
       this.$refs.side.hide()
@@ -228,9 +297,9 @@ export default {
         this.$refs.side.setTitle({title: "Detailed Information", description: "No item selected!"})
       }
     },
-    loadDetails: function(params){
+    loadDetails: function (params) {
       this.$refs.side.loadDetails(params)
-      this.showSidecard=true;
+      this.showSidecard = true;
     }
   },
   components: {

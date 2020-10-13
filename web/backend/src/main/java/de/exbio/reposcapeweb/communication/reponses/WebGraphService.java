@@ -1,6 +1,5 @@
 package de.exbio.reposcapeweb.communication.reponses;
 
-import de.exbio.reposcapeweb.ReposcapewebApplication;
 import de.exbio.reposcapeweb.communication.cache.Edge;
 import de.exbio.reposcapeweb.communication.cache.Graph;
 import de.exbio.reposcapeweb.communication.cache.Graphs;
@@ -18,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Service
@@ -71,34 +71,54 @@ public class WebGraphService {
 
     public WebGraphList getList(String id) {
         WebGraphList list = cache.get(id).toWebList();
-        if(list==null){
+        if (list == null) {
+            log.debug("Converting nodes from Graph to WebList for " + id);
             Graph g = cache.get(id);
             list = new WebGraphList(id);
             WebGraphList finalList = list;
-            g.getNodes().forEach((type, nodeMap)->{
+            g.getNodes().forEach((type, nodeMap) -> {
                 String stringType = Graphs.getNode(type);
                 String[] attributes = nodeController.getListAttributes(type);
-                finalList.addAttributes("nodes",stringType,attributes);
-                finalList.addNodes(stringType,nodeController.nodesToAttributeList(type,nodeMap.keySet(),new HashSet<>(Arrays.asList(attributes))));
+                finalList.addAttributes("nodes", stringType, attributes);
+                finalList.addNodes(stringType, nodeController.nodesToAttributeList(type, nodeMap.keySet(), new HashSet<>(Arrays.asList(attributes))));
             });
-
-            g.getEdges().forEach((type, edgeMap)-> {
+            log.debug("Converting edges from Graph to WebList for " + id);
+            g.getEdges().forEach((type, edgeList) -> {
                 String stringType = Graphs.getEdge(type);
+                System.out.println(stringType+" <-> "+type);
                 String[] attributes = edgeController.getListAttributes(type);
-                finalList.addAttributes("edges",stringType,attributes);
-                finalList.addEdges(stringType,edgeController.edgesToAttributeList(type,edgeMap.stream().map(e->new PairId(e.getId1(),e.getId2())).collect(Collectors.toList()),new HashSet<>(Arrays.asList(attributes))));
+                finalList.addAttributes("edges", stringType, attributes);
+                HashSet<String> attrs = new HashSet<>(Arrays.asList(attributes));
+                List<PairId> edges = edgeList.stream().map(e -> new PairId(e.getId1(), e.getId2())).collect(Collectors.toList());
+                LinkedList<String> attrMaps = edgeController.edgesToAttributeList(type, edges, attrs);
+                finalList.addEdges(stringType, attrMaps);
+                System.out.println(attrMaps.size());
             });
+            System.out.println(list.edges.size());
 
             cache.get(id).setWebList(list);
         }
         return list;
     }
 
+    public WebGraph getWebGraph(GraphRequest request) {
+        return getGraph(request).toWebGraph();
+    }
 
-    public WebGraph getGraph(GraphRequest request) {
+    public WebGraph getWebGraph(String id) {
+        return cache.get(id).toWebGraph();
+    }
+
+    public Graph getGraph(GraphRequest request) {
+        if (request.id != null && cache.containsKey(request.id))
+            return cache.get(request.id);
+
         dbCommunicationService.scheduleRead();
 
-        Graph g = new Graph();
+
+        Graph g = request.id != null ? new Graph(request.id) : new Graph();
+
+
         cache.put(g.getId(), g);
 
 
@@ -137,7 +157,7 @@ public class WebGraphService {
                     continue;
                 }
                 edgeIds.forEach(edgeId -> {
-                    System.out.println(edgeId+ " -> "+Graphs.getEdge(edgeId));
+                    System.out.println(edgeId + " -> " + Graphs.getEdge(edgeId));
                     //TODO edge id mapping in frontend
                     if (request.edges.containsKey(Graphs.getEdge(edgeId))) {
                         System.out.println("\tmatched");
@@ -173,7 +193,7 @@ public class WebGraphService {
         if (request.connectedOnly)
             nodeIds.forEach((type, nodeMap) -> nodeMap.entrySet().stream().filter(e -> e.getValue().hasEdge()).forEach(e -> g.addNode(type, e.getValue())));
         else
-            nodeIds.forEach((type,nodeMap)-> nodeMap.entrySet().forEach(e->g.addNode(type,e.getValue())));
+            nodeIds.forEach((type, nodeMap) -> nodeMap.entrySet().forEach(e -> g.addNode(type, e.getValue())));
         //        nodeIds.forEach(g::addNodes);
 //        g.addNodes(request.connectedOnly ?
 //                nodeIds.values().stream().map(HashMap::values).flatMap(Collection::stream).filter(Node::hasEdge).collect(Collectors.toSet())
@@ -181,7 +201,8 @@ public class WebGraphService {
 //                nodeIds.values().stream().map(HashMap::values).flatMap(Collection::stream).collect(Collectors.toSet())
 //        );
 //        graph.drawDoubleCircular();
-        return g.toWebGraph();
+
+        return g;
     }
 
     public WebGraph getNeuroDrugs() {
@@ -237,6 +258,5 @@ public class WebGraphService {
         graph.drawDoubleCircular();
         return graph;
     }
-
 
 }

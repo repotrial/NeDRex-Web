@@ -2,7 +2,10 @@ package de.exbio.reposcapeweb.communication.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.exbio.reposcapeweb.communication.cache.Graph;
 import de.exbio.reposcapeweb.communication.cache.Graphs;
+import de.exbio.reposcapeweb.communication.reponses.WebGraph;
+import de.exbio.reposcapeweb.communication.reponses.WebGraphList;
 import de.exbio.reposcapeweb.communication.requests.FilterGroup;
 import de.exbio.reposcapeweb.communication.requests.GraphRequest;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
@@ -69,8 +72,7 @@ public class RequestController {
     public String getMetaGraph() {
         log.info("got request on metagraph");
         try {
-            String out = objectMapper.writeValueAsString(webGraphService.getMetaGraph());
-            return out;
+            return objectMapper.writeValueAsString(webGraphService.getMetaGraph());
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
@@ -122,8 +124,19 @@ public class RequestController {
     public String getGraphList(@RequestParam("id") String id, @RequestParam("cached") boolean cached) {
         System.out.println("got request for " + id + " from cache=" + cached);
         try {
-            String out = objectMapper.writeValueAsString(webGraphService.getList(id));
-            return out;
+            StringBuilder out = new StringBuilder("{\"edges\":{");
+            WebGraphList list = webGraphService.getList(id);
+            StringBuilder edgeBuilder = new StringBuilder();
+            list.getEdges().forEach((type, edges) -> {
+                edgeBuilder.append("\"").append(type).append("\":[");
+                StringBuilder sb = new StringBuilder("");
+                edges.forEach(e -> sb.append(e).append(','));
+                edgeBuilder.append(sb.substring(0, edges.size() > 0 ? sb.length() - 1 : sb.length()));
+                edgeBuilder.append("],");
+            });
+            out.append(edgeBuilder.substring(0, list.getEdges().size() > 0 ? edgeBuilder.length() - 1 : edgeBuilder.length())).append("},");
+            out.append(objectMapper.writeValueAsString(list).substring(1));
+            return out.toString();
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
@@ -136,14 +149,41 @@ public class RequestController {
         return "";
     }
 
+    @RequestMapping(value = "/getGraph", method = RequestMethod.GET)
+    @ResponseBody
+    public String getGraph(@RequestParam("id") String id) {
+        try {
+            log.info("Requested a web-graph " + objectMapper.writeValueAsString(id));
+            String out = objectMapper.writeValueAsString(webGraphService.getWebGraph(id));
+            log.info("Graph sent");
+            return out;
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     @RequestMapping(value = "/getGraph", method = RequestMethod.POST)
     @ResponseBody
     public String getGraph(@RequestBody GraphRequest request) {
         try {
             log.info("Requested a graph " + objectMapper.writeValueAsString(request));
-            String out = objectMapper.writeValueAsString(webGraphService.getGraph(request));
+            String out = objectMapper.writeValueAsString(webGraphService.getWebGraph(request));
+            System.out.println(out);
             log.info("Graph sent");
             return out;
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @RequestMapping(value = "/getGraphInfo", method = RequestMethod.POST)
+    @ResponseBody
+    public String getGraphInfo(@RequestBody GraphRequest request) {
+        try {
+            log.info("Requested a graph " + objectMapper.writeValueAsString(request));
+            return objectMapper.writeValueAsString(webGraphService.getGraph(request).toInfo());
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }

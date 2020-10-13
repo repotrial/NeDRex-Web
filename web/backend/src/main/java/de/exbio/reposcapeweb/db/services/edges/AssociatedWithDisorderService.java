@@ -204,11 +204,11 @@ public class AssociatedWithDisorderService {
         return new PairId(geneService.map(ids.getFirst()), disorderService.map(ids.getSecond()));
     }
 
-    public Iterable<GeneAssociatedWithDisorder> getGenes(Collection<PairId> ids) {
+    public List<GeneAssociatedWithDisorder> getGenes(Collection<PairId> ids) {
         return geneAssociatedWithDisorderRepository.findGeneAssociatedWithDisorderByIdIn(ids);
     }
 
-    public Iterable<ProteinAssociatedWithDisorder> getProteins(Collection<PairId> ids) {
+    public List<ProteinAssociatedWithDisorder> getProteins(Collection<PairId> ids) {
         return proteinAssociatedWithDisorderRepository.findProteinAssociatedWithDisorderByIdIn(ids);
     }
 

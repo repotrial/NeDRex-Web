@@ -1,5 +1,7 @@
 package de.exbio.reposcapeweb.communication.reponses;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.util.HashMap;
 import java.util.LinkedList;
 
@@ -7,7 +9,8 @@ public class WebGraphList {
     public String id;
     public HashMap<String, HashMap<String, String[]>> attributes;
     public HashMap<String, LinkedList<HashMap<String, Object>>> nodes;
-    public HashMap<String, LinkedList<HashMap<String, Object>>> edges;
+    @JsonIgnore
+    public HashMap<String, LinkedList<String>> edges;
 
 
     public WebGraphList(String id) {
@@ -44,11 +47,11 @@ public class WebGraphList {
         this.nodes = nodes;
     }
 
-    public HashMap<String, LinkedList<HashMap<String, Object>>> getEdges() {
+    public HashMap<String, LinkedList<String>> getEdges() {
         return edges;
     }
 
-    public void setEdges(HashMap<String, LinkedList<HashMap<String, Object>>> edges) {
+    public void setEdges(HashMap<String, LinkedList<String>> edges) {
         this.edges = edges;
     }
 
@@ -58,7 +61,7 @@ public class WebGraphList {
         nodes.get(type).add(entry);
     }
 
-    public void addEdge(String type, HashMap<String,Object> entry){
+    public void addEdge(String type, String entry){
         if(!edges.containsKey(type))
             edges.put(type,new LinkedList<>());
         edges.get(type).add(entry);
@@ -68,7 +71,7 @@ public class WebGraphList {
         this.attributes.get(entity).put(type,attributes);
     }
 
-    public void addEdges(String type, LinkedList<HashMap<String, Object>> edgesToAttributeList) {
+    public void addEdges(String type, LinkedList<String> edgesToAttributeList) {
         if(!edges.containsKey(type))
             edges.put(type,edgesToAttributeList);
         else

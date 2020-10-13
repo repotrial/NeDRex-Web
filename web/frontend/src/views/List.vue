@@ -124,12 +124,16 @@ export default {
     }
   },
   methods: {
+    clearLists: function (){
+      this.loadList(undefined)
+    },
     loadList: function (data) {
       if (data === undefined) {
         this.attributes = {};
         this.edges = {};
         this.nodes = {};
-        this.headers = {};
+        this.nodeTab = 0
+        this.edgeTab = 0
       } else {
         console.log(data)
         this.attributes = data.attributes;
@@ -145,7 +149,7 @@ export default {
     edgeDetails: function (id1, id2) {
       this.$emit("selectionEvent", {type: "edge", name: Object.keys(this.edges)[this.edgeTab], id1: id1, id2: id2})
     },
-    headers(entity, node) {
+    headers: function(entity, node) {
       //TODO sortable for all floats
       console.log("entity:" + entity + ", attributes:" + node)
       let out = []
@@ -160,6 +164,7 @@ export default {
       return out
     },
     getList: function (graphId) {
+      this.clearLists()
       this.$http.get("/getGraphList?id=" + graphId + "&cached=true").then(response => {
         this.loadList(response.data)
       }).then(() => {

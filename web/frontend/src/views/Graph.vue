@@ -234,22 +234,43 @@ export default {
         this.drawGraph()
     },
     sizeWarning: function () {
-      let warn = (this.nodeSet !== undefined && this.nodeSet.getIds().length > 1000) || (this.edges !== undefined &&this.edges.getIds().length > 1000)
+      let warn = (this.nodeSet !== undefined && this.nodeSet.getIds().length > 1000) || (this.edges !== undefined && this.edges.getIds().length > 1000)
       return warn
     },
     postData: function (post) {
+      this.visualize = false
       this.loading = true;
       this.directed = false;
       this.loadingColor = this.colors.bar.backend;
-      this.$http.post("/getGraph", post).then(response => {
+      this.$http.post("/getGraphInfo", post).then(response => {
         return response.data
-      }).then(graph => {
-        console.log(graph)
-        this.$cookies.set("graphid", graph.id)
-        this.$emit("graphLoadedEvent", graph.id)
-        this.setGraph(graph)
+      }).then(info => {
+        console.log(info)
+        console.log(info.id)
+        let sum = 0
+        for (let n in info.nodes)
+          sum += info.nodes[n];
+        for (let e in info.edges)
+          sum += info.edges[e]
+        console.log(sum)
+        if (sum >= 100000)
+          this.$emit("sizeWarningEvent",info)
+        else {
+          this.$http.get("/getGraph?id=" + info.id).then(response => {
+            if (response !== undefined)
+              return response.data
+          })
+            .then(graph => {
+              console.log(graph)
+              this.$cookies.set("graphid", graph.id)
+              this.$emit("graphLoadedEvent", graph.id)
+              this.setGraph(graph)
+            }).catch(err => {
+            this.loadingColor = this.colors.bar.error;
+            console.log(err)
+          })
+        }
       }).catch(err => {
-        this.loadingColor = this.colors.bar.error;
         console.log(err)
       })
     }

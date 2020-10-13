@@ -66,14 +66,14 @@ public class DrugHasTargetService {
             return false;
 
         if (updates.containsKey(UpdateOperation.Deletion))
-            drugHasTargetProteinRepository.deleteAll(drugHasTargetProteinRepository.findDrugHasTargetsByIdIn(updates.get(UpdateOperation.Deletion).keySet().stream().map(o -> (PairId) o).collect(Collectors.toSet())));
+            drugHasTargetProteinRepository.deleteAll(drugHasTargetProteinRepository.findDrugHasTargetProteinsByIdIn(updates.get(UpdateOperation.Deletion).keySet().stream().map(o -> (PairId) o).collect(Collectors.toSet())));
 
         LinkedList<DrugHasTargetProtein> toSave = new LinkedList(updates.get(UpdateOperation.Insertion).values());
         int insertCount = toSave.size();
         if (updates.containsKey(UpdateOperation.Alteration)) {
             HashMap<PairId, DrugHasTargetProtein> toUpdate = updates.get(UpdateOperation.Alteration);
 
-            drugHasTargetProteinRepository.findDrugHasTargetsByIdIn(new HashSet<>(toUpdate.keySet().stream().map(o -> (PairId) o).collect(Collectors.toSet()))).forEach(d -> {
+            drugHasTargetProteinRepository.findDrugHasTargetProteinsByIdIn(new HashSet<>(toUpdate.keySet().stream().map(o -> (PairId) o).collect(Collectors.toSet()))).forEach(d -> {
                 d.setValues(toUpdate.get(d.getPrimaryIds()));
                 toSave.add(d);
             });
@@ -209,13 +209,13 @@ public class DrugHasTargetService {
         return new PairId(drugService.map(ids.getFirst()), proteinService.map(ids.getSecond()));
     }
 
-    public Iterable<DrugHasTargetGene> getGenes(Collection<PairId> ids) {
+    public List<DrugHasTargetGene> getGenes(Collection<PairId> ids) {
         return drugHasTargetGeneRepository.findDrugHasTargetsByIdIn(ids);
     }
 
 
-    public Iterable<DrugHasTargetProtein> getProteins(Collection<PairId> ids) {
-        return drugHasTargetProteinRepository.findDrugHasTargetsByIdIn(ids);
+    public List<DrugHasTargetProtein> getProteins(Collection<PairId> ids) {
+        return drugHasTargetProteinRepository.findDrugHasTargetProteinsByIdIn(ids);
     }
 
     public Optional<DrugHasTargetGene> findGene(PairId id) {

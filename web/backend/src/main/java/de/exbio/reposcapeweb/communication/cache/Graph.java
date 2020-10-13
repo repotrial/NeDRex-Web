@@ -2,6 +2,7 @@ package de.exbio.reposcapeweb.communication.cache;
 
 import de.exbio.reposcapeweb.communication.controller.RequestController;
 import de.exbio.reposcapeweb.communication.reponses.WebGraph;
+import de.exbio.reposcapeweb.communication.reponses.WebGraphInfo;
 import de.exbio.reposcapeweb.communication.reponses.WebGraphList;
 import de.exbio.reposcapeweb.utils.Pair;
 import org.slf4j.Logger;
@@ -24,7 +25,11 @@ public class Graph {
     private WebGraphList weblist;
 
     public Graph() {
-        this.id = UUID.randomUUID().toString();
+        this(UUID.randomUUID().toString());
+    }
+
+    public Graph(String id) {
+        this.id = id;
         nodes = new HashMap<>();
         edges = new HashMap<>();
     }
@@ -33,7 +38,7 @@ public class Graph {
         if (webgraph == null) {
             int nodeCount = nodes.values().stream().mapToInt(HashMap::size).sum();
             int edgeCount = edges.values().stream().mapToInt(LinkedList::size).sum();
-            log.info("Converting Graph "+id+ " (nodes:"+nodeCount+", edges:"+edgeCount+") to webgraph: ");
+            log.info("Converting Graph " + id + " (nodes:" + nodeCount + ", edges:" + edgeCount + ") to webgraph: ");
             webgraph = new WebGraph(id);
             nodes.forEach((typeId, nodeMap) -> {
                 String prefix = Graphs.getPrefix(typeId);
@@ -50,6 +55,13 @@ public class Graph {
 
         }
         return webgraph;
+    }
+
+    public WebGraphInfo toInfo(){
+        WebGraphInfo info = new WebGraphInfo(id);
+        this.edges.forEach((id,es)->info.edges.put(Graphs.getEdge(id),es.size()));
+        this.nodes.forEach((id,ns)->info.nodes.put(Graphs.getNode(id),ns.size()));
+        return info;
     }
 
 
@@ -82,7 +94,7 @@ public class Graph {
     }
 
     public void setWebList(WebGraphList list) {
-        this.weblist=list;
+        this.weblist = list;
     }
 
     public HashMap<Integer, HashMap<Integer, Node>> getNodes() {
