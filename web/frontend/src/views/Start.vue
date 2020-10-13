@@ -58,6 +58,7 @@
         </v-list-item>
         <v-card>
           <v-checkbox v-model="onlyConnected" label="Hide unconnected"></v-checkbox>
+          <v-checkbox v-model="skipVis" label="Skip visualization"></v-checkbox>
         </v-card>
         <v-btn v-on:click="loadGraph(-1)" style="margin:5px">
           Apply Selection
@@ -128,6 +129,7 @@ export default {
       filterId: this.filterId,
       onlyConnected: true,
       startFilters: this.startFilters,
+      skipVis:false,
     }
   },
   created() {
@@ -207,6 +209,7 @@ export default {
         }
       }
       console.log(this.graphLoad)
+      this.graphLoad["skipVis"]=this.skipVis;
       this.$emit("graphLoadEvent", this.graphLoad)
     },
     hoverFilters: function (name) {

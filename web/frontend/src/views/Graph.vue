@@ -2,7 +2,7 @@
   <div class="graph-window">
     <i>{{ text }}</i>
     <v-progress-linear v-show="loading" indeterminate :color=loadingColor></v-progress-linear>
-    <network v-if="nodeSet !== undefined" v-show="!loading" class="wrapper" ref="network"
+    <network v-if="nodeSet !== undefined && visualize" v-show="!loading" class="wrapper" ref="network"
              :key="key"
              :nodes="nodeSet"
              :edges="edges"
@@ -12,12 +12,67 @@
              :events="['click','release','startStabilizing','stabilizationProgress','stabilizationIterationsDone']"
              @click="onClick"
              @release="onRelease">
-    <!--             @startStabilizing="onStabilizationStart"-->
-    <!--             @stabilizationProgress="onStabilizationProgress"-->
-    <!--             @stabilizationIterationsDone="onStabilizationDone"-->
+      <!--             @startStabilizing="onStabilizationStart"-->
+      <!--             @stabilizationProgress="onStabilizationProgress"-->
+      <!--             @stabilizationIterationsDone="onStabilizationDone"-->
 
-<!--    >-->
+      <!--    >-->
     </network>
+    <template>
+      <v-btn v-if="!sizeWarning()"
+             v-show="!visualize"
+             color="primary"
+             dark
+             v-on:click="dialogResolve(true)"
+      >
+        Visualize Graph!
+      </v-btn>
+      <v-dialog
+        v-if="sizeWarning() && nodeSet !== undefined"
+        v-model="dialog"
+        persistent
+        max-width="290"
+      >
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn
+            v-show="!visualize"
+            color="primary"
+            dark
+            v-bind="attrs"
+            v-on="on"
+          >
+            Visualize Graph?
+          </v-btn>
+        </template>
+        <v-card>
+          <v-card-title class="headline">
+            Load Visualization?
+          </v-card-title>
+          <v-card-text>The selected graph consists of {{ this.nodeSet.getIds().length }} nodes and
+            {{ this.edges.getIds().length }} edges. Visualization and especially physics simulation could take a long
+            time
+            and cause freezes. Do you want to visualize the graph or skip it for now?
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn
+              color="green darken-1"
+              text
+              @click="dialogResolve(false)"
+            >
+              Skip
+            </v-btn>
+            <v-btn
+              color="green darken-1"
+              text
+              @click="dialogResolve(true)"
+            >
+              Visualize
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+    </template>
   </div>
 </template>
 
@@ -47,6 +102,8 @@ export default {
   physicsOn: false,
   hideEdges: false,
   metagraph: undefined,
+  dialog: false,
+  visualize: true,
 
   created() {
     this.progress = 0
@@ -58,6 +115,8 @@ export default {
     this.lastClick = 0
     this.physicsOn = false
     this.hideEdges = false
+    this.dialog = false
+    this.visualize = true
   },
 
   data() {
@@ -71,6 +130,9 @@ export default {
       text: this.text,
       loading: this.loading,
       loadingColor: this.loadingColor,
+      dialog: this.dialog,
+      visualize: this.visualize,
+      skipVis: false,
     }
   }
   ,
@@ -91,6 +153,7 @@ export default {
 
     setGraph: function (graph) {
       this.loadingColor = this.colors.bar.vis
+      this.dialog = true;
       if (graph) {
         if (graph.directed !== undefined)
           this.directed = graph.directed
@@ -103,14 +166,29 @@ export default {
         if (graph["options"] !== undefined)
           this.mergeOptions(graph.options)
       }
-
+      if (this.skipVis) {
+        this.dialog = false;
+        this.visualize = false;
+      } else if (!this.sizeWarning) {
+        this.dialog = false;
+        this.visualize = true
+      }
       this.drawGraph();
+    },
+    dialogResolve: function (vis) {
+      this.dialog = false;
+      this.visualize = vis;
+    },
+    showDialogCheck: function () {
+      if (!this.sizeWarning) {
+        this.dialogResolve(true)
+      }
     },
     isLoading: function () {
       return this.loading
     },
     drawGraph: function () {
-      if(this.nodeSet === undefined || this.edges ===undefined)
+      if (this.nodeSet === undefined || this.edges === undefined)
         return
       if (this.directed) {
         this.options.edges["arrows"] = {to: {enabled: true}}
@@ -123,12 +201,15 @@ export default {
       this.$emit('finishedEvent')
     },
     loadData: function (payload) {
+      this.visualize = true
       this.loading = true
+      if (payload !== undefined && payload.skipVis !== undefined)
+        this.skipVis = payload.skipVis
 
       if (payload !== undefined && payload.name !== undefined && payload.name === "metagraph" && this.metagraph === undefined) {
         this.metagraph = payload.graph;
       }
-      if(this.metagraph !== undefined){
+      if (this.metagraph !== undefined) {
         this.edges = new DataSet(this.metagraph.edges);
         this.nodeSet = new DataSet(this.metagraph.nodes);
         this.directed = this.metagraph.directed;
@@ -151,7 +232,10 @@ export default {
           this.drawGraph()
       } else
         this.drawGraph()
-      console.log("done")
+    },
+    sizeWarning: function () {
+      let warn = (this.nodeSet !== undefined && this.nodeSet.getIds().length > 1000) || (this.edges !== undefined &&this.edges.getIds().length > 1000)
+      return warn
     },
     postData: function (post) {
       this.loading = true;
@@ -161,8 +245,8 @@ export default {
         return response.data
       }).then(graph => {
         console.log(graph)
-        this.$cookies.set("graphid",graph.id)
-        this.$emit("graphLoadedEvent",graph.id)
+        this.$cookies.set("graphid", graph.id)
+        this.$emit("graphLoadedEvent", graph.id)
         this.setGraph(graph)
       }).catch(err => {
         this.loadingColor = this.colors.bar.error;
@@ -174,7 +258,6 @@ export default {
       if (this.nodeSet === undefined) {
         setTimeout(this.getCurrentGraph, 100)
       } else {
-        console.log(this.nodeSet)
         return {nodes: this.nodeSet, edges: this.edges, options: this.options}
       }
 

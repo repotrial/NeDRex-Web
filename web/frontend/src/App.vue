@@ -49,8 +49,11 @@
                :colors="colors" :metagraph="metagraph"></Start>
       </v-container>
       <v-container v-show="selectedTabId===1" fluid>
-        <Graph ref="graph" v-on:selectionEvent="loadSelection" v-on:finishedEvent="setTabNotification(1)"
-               v-on:graphLoadedEvent="loadList"></Graph>
+        <Graph ref="graph"
+               v-on:selectionEvent="loadSelection"
+               v-on:finishedEvent="setTabNotification(1)"
+               v-on:graphLoadedEvent="loadList"
+        ></Graph>
         <v-card>
           <v-checkbox v-model="physics" label="Enable physics" v-on:click="togglePhysics"></v-checkbox>
         </v-card>
