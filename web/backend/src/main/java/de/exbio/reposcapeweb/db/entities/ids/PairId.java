@@ -53,4 +53,9 @@ public class PairId implements Serializable {
     public int hashCode() {
         return Objects.hash(id1, id2);
     }
+
+    @Override
+    public String toString() {
+        return "("+id1+","+id2+")";
+    }
 }

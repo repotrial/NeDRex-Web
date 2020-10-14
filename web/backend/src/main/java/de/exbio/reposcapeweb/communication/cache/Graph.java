@@ -1,6 +1,5 @@
 package de.exbio.reposcapeweb.communication.cache;
 
-import de.exbio.reposcapeweb.communication.controller.RequestController;
 import de.exbio.reposcapeweb.communication.reponses.WebGraph;
 import de.exbio.reposcapeweb.communication.reponses.WebGraphInfo;
 import de.exbio.reposcapeweb.communication.reponses.WebGraphList;

@@ -111,7 +111,7 @@ public class ProteinInPathwayService {
         return edgesTo.get(id);
     }
 
-    public Set<Integer> getEdgesFrom(Integer id){
+    public HashSet<Integer> getEdgesFrom(Integer id){
         return edgesFrom.get(id);
     }
 

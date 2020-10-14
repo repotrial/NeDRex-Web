@@ -164,7 +164,7 @@ public class EdgeController {
     }
 
     public HashSet<Integer> getProteinEncodedByFrom(int id) {
-        return proteinEncodedByService.getEdgesTo(id);
+        return proteinEncodedByService.getEdgesFrom(id);
     }
 
     public boolean isProteinEncodedByFrom(int id1, int id2) {
@@ -181,19 +181,28 @@ public class EdgeController {
     }
 
     public HashSet<Integer> getProteinInPathwayFrom(int id) {
-        return proteinEncodedByService.getEdgesFrom(id);
+        return proteinInPathwayService.getEdgesFrom(id);
     }
 
     public boolean isProteinInPathwayFrom(int id1, int id2) {
-        return proteinEncodedByService.isEdgeFrom(id1, id2);
+        return proteinInPathwayService.isEdgeFrom(id1, id2);
     }
 
     public HashSet<Integer> getProteinInteractsWithProtein(int id) {
-        return proteinInteractsWithProteinService.getEdges(id);
+        return proteinInteractsWithProteinService.getProteins(id);
     }
 
+
     public boolean isProteinInteractsWithProtein(int id1, int id2) {
-        return proteinInteractsWithProteinService.isEdge(id1, id2);
+        return proteinInteractsWithProteinService.isProteinEdge(id1, id2);
+    }
+
+    public boolean isGeneInteractsWithGene(int id1, int id2) {
+        return proteinInteractsWithProteinService.isGeneEdge(id1, id2);
+    }
+
+    public HashSet<Integer> getGeneInteractsWithGene(int id) {
+        return proteinInteractsWithProteinService.getGenes(id);
     }
 
     public List<DisorderComorbidWithDisorder> findAllDisorderComorbidWithDisorder(Collection<PairId> ids) {
@@ -229,7 +238,6 @@ public class EdgeController {
     }
 
     public List<DrugHasTargetProtein> findAllDrugHasTargetProtein(Collection<PairId> ids) {
-        System.out.println("finding drughastargetprotein for "+ids.size()+" ids");
         return drugHasTargetService.getProteins(ids);
     }
 
@@ -314,6 +322,8 @@ public class EdgeController {
                 return isDisorderIsADisorder(k1, k2);
             case "DisorderComorbidWithDisorder":
                 return isDisorderComorbidWithDisorder(k1, k2);
+            case "GeneInteractsWithGene":
+                return isGeneInteractsWithGene(k1,k2);
         }
         return false;
     }
@@ -346,6 +356,8 @@ public class EdgeController {
                 return getDisorderIsADisorder(node);
             case "DisorderComorbidWithDisorder":
                 return getDisorderComorbidWithDisorder(node);
+            case "GeneInteractsWithGene":
+                return getGeneInteractsWithGene(node);
         }
         return null;
     }
@@ -372,6 +384,8 @@ public class EdgeController {
                 return getDisorderIsADisorder(node);
             case "DisorderComorbidWithDisorder":
                 return getDisorderComorbidWithDisorder(node);
+            case "GeneInteractsWithGene":
+                return getGeneInteractsWithGene(node);
         }
         return null;
     }
@@ -399,6 +413,8 @@ public class EdgeController {
                 return DisorderIsADisorder.getListAttributes();
             case "DisorderComorbidWithDisorder":
                 return DisorderComorbidWithDisorder.getListAttributes();
+            case "GeneInteractsWithGene":
+                return GeneInteractsWithGene.getListAttributes();
         }
         return null;
     }
@@ -472,6 +488,15 @@ public class EdgeController {
                     }
                 });
                 break;
+            case "GeneInteractsWithGene":
+                chunks.stream().map(this::findAllGeneInteractsWithGene).flatMap(Collection::stream).collect(Collectors.toList()).forEach(e -> {
+                    try {
+                        values.add(objectMapper.writeValueAsString(e.getAsMap(attributes)));
+                    } catch (JsonProcessingException jsonProcessingException) {
+                        jsonProcessingException.printStackTrace();
+                    }
+                });
+                break;
             case "ProteinInPathway":
                 chunks.stream().map(this::findAllProteinInPathway).flatMap(Collection::stream).collect(Collectors.toList()).forEach(e -> {
                     try {
@@ -525,6 +550,8 @@ public class EdgeController {
                 return findDrugHasTargetProtein(id).getAsMap();
             case "ProteinInteractsWithProtein":
                 return findProteinInteractsWithProtein(id).getAsMap();
+            case "GeneInteractsWithGene":
+                return findGeneInteractsWithGene(id).getAsMap();
             case "ProteinInPathway":
                 return findProteinInPathway(id).getAsMap();
             case "ProteinAssociatedWithDisorder":

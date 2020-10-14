@@ -1,6 +1,5 @@
 package de.exbio.reposcapeweb.communication.cache;
 
-import de.exbio.reposcapeweb.communication.reponses.WebEdge;
 import de.exbio.reposcapeweb.utils.Pair;
 
 import java.util.Collections;
@@ -58,6 +57,8 @@ public class Graphs {
         edge2node.put(Graphs.getEdge("DisorderIsADisorder"), new Pair<>(Graphs.getNode("disorder"), Graphs.getNode("disorder")));
         edge2node.put(Graphs.getEdge("DisorderComorbidWithDisorder"), new Pair<>(Graphs.getNode("disorder"), Graphs.getNode("disorder")));
 
+        edge2node.put(Graphs.getEdge("GeneInteractsWithGene"),new Pair<>(Graphs.getNode("gene"),Graphs.getNode("gene")));
+
         nodes2edge = new HashMap<>();
         edge2node.forEach((k, v) -> {
             if (!nodes2edge.containsKey(v.first))
@@ -105,6 +106,10 @@ public class Graphs {
         } catch (NullPointerException e) {
             return null;
         }
+    }
+
+    public static boolean checkEdgeDirection(int edgeId, int node1, int node2){
+        return edge2node.get(edgeId).getFirst().equals(node1) & edge2node.get(edgeId).getSecond().equals(node2);
     }
 
     public static Pair<Integer, Integer> getNodesfromEdge(int edge) {

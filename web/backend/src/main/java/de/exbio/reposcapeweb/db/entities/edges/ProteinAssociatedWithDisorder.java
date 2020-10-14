@@ -53,7 +53,7 @@ public class ProteinAssociatedWithDisorder extends RepoTrialEdge implements Seri
     private String assertedBy;
 
     public static String[] getListAttributes() {
-        return new String[]{"sourceId","targetId", "type","score", "assertedBy"};
+        return new String[]{"sourceId","targetId","score", "assertedBy"};
     }
 
     @Override

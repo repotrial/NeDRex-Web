@@ -393,7 +393,7 @@ public class NodeFilter {
 
     public NodeFilter apply(String type, String value) {
         switch (type) {
-            case "start":
+            case "startsWith":
                 return startsWith(value);
             case "contain":
                 return contains(value);

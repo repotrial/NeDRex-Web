@@ -277,7 +277,7 @@ public class UpdateService {
                         break;
                     case "protein_interacts_with_protein":
                         if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, ProteinInteractsWithProtein.attributes))
-                            updateSuccessful = proteinInteractsWithProteinService.submitUpdates(runEdgeUpdates(ProteinInteractsWithProtein.class, c, proteinInteractsWithProteinService::mapIds));
+                            updateSuccessful = proteinInteractsWithProteinService.submitUpdates(runEdgeUpdates(ProteinInteractsWithProtein.class, c, proteinInteractsWithProteinService::mapProteinIds));
                         proteinInteractsWithProteinService.importEdges();
                         break;
                     case "protein_encoded_by":

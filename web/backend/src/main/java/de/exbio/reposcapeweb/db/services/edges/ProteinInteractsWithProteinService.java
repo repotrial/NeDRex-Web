@@ -1,14 +1,11 @@
 package de.exbio.reposcapeweb.db.services.edges;
 
-import de.exbio.reposcapeweb.db.entities.edges.DrugHasTargetGene;
 import de.exbio.reposcapeweb.db.entities.edges.GeneInteractsWithGene;
-import de.exbio.reposcapeweb.db.entities.edges.ProteinInPathway;
 import de.exbio.reposcapeweb.db.entities.edges.ProteinInteractsWithProtein;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
 import de.exbio.reposcapeweb.db.repositories.edges.GeneInteractsWithGeneRepository;
 import de.exbio.reposcapeweb.db.repositories.edges.ProteinInteractsWithProteinRepository;
 import de.exbio.reposcapeweb.db.services.nodes.GeneService;
-import de.exbio.reposcapeweb.db.services.nodes.PathwayService;
 import de.exbio.reposcapeweb.db.services.nodes.ProteinService;
 import de.exbio.reposcapeweb.db.updates.UpdateOperation;
 import de.exbio.reposcapeweb.utils.Pair;
@@ -18,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.sql.DataSource;
-import javax.xml.crypto.Data;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -38,7 +34,8 @@ public class ProteinInteractsWithProteinService {
     private final GeneService geneService;
 
     private final boolean directed = true;
-    private final HashMap<Integer, HashMap<Integer, Boolean>> edges = new HashMap<>();
+    private final HashMap<Integer, HashMap<Integer, Boolean>> proteins = new HashMap<>();
+    private final HashMap<Integer, HashMap<Integer, Boolean>> genes = new HashMap<>();
 
     private final DataSource dataSource;
     private final String clearQuery = "DELETE FROM gene_interacts_with_gene";
@@ -98,45 +95,82 @@ public class ProteinInteractsWithProteinService {
         return true;
     }
 
-    public Iterable<ProteinInteractsWithProtein> findAll() {
+    public Iterable<ProteinInteractsWithProtein> findAllProteins() {
         return proteinInteractsWithProteinRepository.findAll();
     }
 
+    public Iterable<GeneInteractsWithGene> findAllGenes() {
+        return geneInteractsWithGeneRepository.findAll();
+    }
+
     public void importEdges() {
-        findAll().forEach(edge -> {
-            importEdge(edge.getPrimaryIds());
+        findAllProteins().forEach(edge -> {
+            importProteinEdge(edge.getPrimaryIds());
         });
+
+        findAllGenes().forEach(edge -> importGeneEdge(edge.getPrimaryIds()));
     }
 
-    private void importEdge(PairId edge) {
-        if (!edges.containsKey(edge.getId1()))
-            edges.put(edge.getId1(), new HashMap<>());
-        edges.get(edge.getId1()).put(edge.getId2(), true);
+    private void importProteinEdge(PairId edge) {
+        if (!proteins.containsKey(edge.getId1()))
+            proteins.put(edge.getId1(), new HashMap<>());
+        proteins.get(edge.getId1()).put(edge.getId2(), true);
 
-        if (!edges.containsKey(edge.getId2()))
-            edges.put(edge.getId2(), new HashMap<>());
-        edges.get(edge.getId2()).put(edge.getId1(), !directed);
+        if (!proteins.containsKey(edge.getId2()))
+            proteins.put(edge.getId2(), new HashMap<>());
+        proteins.get(edge.getId2()).put(edge.getId1(), !directed);
     }
 
-    public boolean isEdge(PairId edge) {
-        return isEdge(edge.getId1(), edge.getId2());
+
+    private void importGeneEdge(PairId edge) {
+        if (!genes.containsKey(edge.getId1()))
+            genes.put(edge.getId1(), new HashMap<>());
+        genes.get(edge.getId1()).put(edge.getId2(), true);
+
+        if (!genes.containsKey(edge.getId2()))
+            genes.put(edge.getId2(), new HashMap<>());
+        genes.get(edge.getId2()).put(edge.getId1(), !directed);
     }
 
-    public boolean isEdge(int id1, int id2) {
+    public boolean isProteinEdge(PairId edge) {
+        return isProteinEdge(edge.getId1(), edge.getId2());
+    }
+
+    public boolean isProteinEdge(int id1, int id2) {
         try {
-            return edges.get(id1).get(id2);
+            return proteins.get(id1).get(id2);
         } catch (NullPointerException e) {
             return false;
         }
     }
 
-    public HashSet<Integer> getEdges(int id) {
-        return edges.get(id).entrySet().stream().filter(Map.Entry::getValue).map(Map.Entry::getKey).collect(Collectors.toCollection(HashSet::new));
+    public boolean isGeneEdge(PairId edge) {
+        return isGeneEdge(edge.getId1(), edge.getId2());
+    }
+
+    public boolean isGeneEdge(int id1, int id2) {
+        try {
+            return genes.get(id1).get(id2);
+        } catch (NullPointerException e) {
+            return false;
+        }
+    }
+
+    public HashSet<Integer> getProteins(int id) {
+        return proteins.get(id).entrySet().stream().filter(Map.Entry::getValue).map(Map.Entry::getKey).collect(Collectors.toCollection(HashSet::new));
+    }
+
+    public HashSet<Integer> getGenes(int id) {
+        return proteins.get(id).entrySet().stream().filter(Map.Entry::getValue).map(Map.Entry::getKey).collect(Collectors.toCollection(HashSet::new));
     }
 
 
-    public PairId mapIds(Pair<String, String> ids) {
+    public PairId mapProteinIds(Pair<String, String> ids) {
         return new PairId(proteinService.map(ids.getFirst()), proteinService.map(ids.getSecond()));
+    }
+
+    public PairId mapGeneIds(Pair<String, String> ids) {
+        return new PairId(geneService.map(ids.getFirst()), geneService.map(ids.getSecond()));
     }
 
     public List<ProteinInteractsWithProtein> getProteins(Collection<PairId> ids) {

@@ -3,8 +3,10 @@ package de.exbio.reposcapeweb;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.exbio.reposcapeweb.communication.cache.Graphs;
+import de.exbio.reposcapeweb.db.entities.edges.DrugHasTargetProtein;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
 import de.exbio.reposcapeweb.db.io.ImportService;
+import de.exbio.reposcapeweb.db.repositories.edges.DrugHasTargetProteinRepository;
 import de.exbio.reposcapeweb.db.services.controller.EdgeController;
 import de.exbio.reposcapeweb.db.services.nodes.DisorderService;
 import de.exbio.reposcapeweb.db.updates.UpdateService;
@@ -19,6 +21,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.core.env.Environment;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 
@@ -51,6 +54,9 @@ public class ReposcapewebApplication {
         this.edgeController = edgeController;
     }
 
+
+    @Autowired
+    DrugHasTargetProteinRepository drugHasTargetProteinRepository;
 
     @EventListener(ApplicationReadyEvent.class)
     public void postConstruct() {

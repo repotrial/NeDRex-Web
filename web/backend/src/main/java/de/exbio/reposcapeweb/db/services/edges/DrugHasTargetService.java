@@ -157,7 +157,7 @@ public class DrugHasTargetService {
     }
 
     public HashSet<Integer> getGeneEdgesFrom(int id) {
-        return geneEdgesTo.get(id);
+        return geneEdgesFrom.get(id);
     }
 
 
@@ -201,7 +201,7 @@ public class DrugHasTargetService {
     }
 
     public HashSet<Integer> getProteinEdgesFrom(int id) {
-        return proteinEdgesTo.get(id);
+        return proteinEdgesFrom.get(id);
     }
 
 

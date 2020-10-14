@@ -151,13 +151,13 @@ public class AssociatedWithDisorderService {
     }
 
     public HashSet<Integer> getGeneEdgesFrom(int id) {
-        return geneEdgesTo.get(id);
+        return geneEdgesFrom.get(id);
     }
 
 
-    public Iterable<GeneAssociatedWithDisorder> findAllProteins() {
-        return geneAssociatedWithDisorderRepository.findAll();
-    }
+    public Iterable<ProteinAssociatedWithDisorder> findAllProteins() {
+        return proteinAssociatedWithDisorderRepository.findAll()
+;    }
 
     private void importProteinEdge(PairId edge) {
         if (!proteinEdgesFrom.containsKey(edge.getId1()))
@@ -196,7 +196,7 @@ public class AssociatedWithDisorderService {
 
 
     public HashSet<Integer> getProteinEdgesFrom(int id) {
-        return proteinEdgesTo.get(id);
+        return proteinEdgesFrom.get(id);
     }
 
 
