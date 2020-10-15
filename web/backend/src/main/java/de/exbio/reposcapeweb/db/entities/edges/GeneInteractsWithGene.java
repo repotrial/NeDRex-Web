@@ -48,7 +48,7 @@ public class GeneInteractsWithGene extends RepoTrialEdge implements Serializable
     }
 
     public static String[] getListAttributes() {
-        return new String[]{"idOne","idTwo"};
+        return new String[]{"id","idOne","idTwo"};
     }
 
     @Override
@@ -56,8 +56,9 @@ public class GeneInteractsWithGene extends RepoTrialEdge implements Serializable
         HashMap<String,Object> values = new HashMap<>();
         values.put("memberOne",memberOne);
         values.put("memberTwo",memberTwo);
-        values.put("idOne",id.getId1()+"");
-        values.put("idTwo",id.getId2()+"");
+        values.put("idOne",id.getId1());
+        values.put("idTwo",id.getId2());
+        values.put("id",id.getId1()+"-"+id.getId2());
         return values;
     }
 

@@ -58,7 +58,7 @@ public class GeneAssociatedWithDisorder extends RepoTrialEdge implements Seriali
 
 
     public static String[] getListAttributes() {
-        return new String[]{"sourceId","targetId", "type",  "score", "assertedBy"};
+        return new String[]{"id","sourceId","targetId", "type",  "score", "assertedBy"};
     }
 
     @Override
@@ -71,6 +71,7 @@ public class GeneAssociatedWithDisorder extends RepoTrialEdge implements Seriali
         values.put("type",getType());
         values.put("score",getScore());
         values.put("assertedBy",getAssertedBy());
+        values.put("id",id.getId1()+"-"+id.getId2());
         return values;
     }
 

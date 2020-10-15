@@ -134,14 +134,19 @@ public class NodeController {
         switch (Graphs.getNode(typeId)) {
             case "disorder":
                 findDisorders(ids).forEach(d -> out.add(d.getAsMap(attributes)));
+                break;
             case "drug":
                 findDrugs(ids).forEach(d -> out.add(d.getAsMap(attributes)));
+                break;
             case "gene":
                 findGenes(ids).forEach(d -> out.add(d.getAsMap(attributes)));
+                break;
             case "pathway":
                 findPathways(ids).forEach(d -> out.add(d.getAsMap(attributes)));
+                break;
             case "protein":
                 findProteins(ids).forEach(d -> out.add(d.getAsMap(attributes)));
+                break;
         }
         return out;
     }

@@ -62,7 +62,7 @@ public class DrugHasTargetProtein extends RepoTrialEdge implements Serializable 
 
 
     public static String[] getListAttributes() {
-        return new String[]{"sourceId","targetId", "actions"};
+        return new String[]{"id","sourceId","targetId", "actions"};
     }
 
     @Override
@@ -75,6 +75,7 @@ public class DrugHasTargetProtein extends RepoTrialEdge implements Serializable 
         values.put("type",getType());
         values.put("actions",getActions());
         values.put("databases",getDatabases());
+        values.put("id",id.getId1()+"-"+id.getId2());
         return values;
     }
 

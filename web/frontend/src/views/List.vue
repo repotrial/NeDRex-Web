@@ -1,6 +1,11 @@
 <template>
   <div>
     <v-container>
+      <v-switch
+        v-model="showAllLists"
+        label="Show all Items"
+        class="pa-3"
+      ></v-switch>
       <v-card style="margin:5px">
         <v-card-title>Nodes</v-card-title>
         <i v-show="Object.keys(nodes).length === 0">no node entries</i>
@@ -17,11 +22,24 @@
           </v-tabs>
           <v-tabs-items>
             <v-data-table
+              ref="nodeTab"
               dense
+              v-model="selected.nodes[nodeTab]"
               class="elevation-1"
               :headers="headers('nodes',Object.keys(nodes)[nodeTab])"
-              :items="nodes[Object.keys(nodes)[nodeTab]]"
+              :items="showAllLists ? nodes[Object.keys(nodes)[nodeTab]]: selected.nodes[nodeTab]"
+              item-key="id"
+              show-select
             >
+              <template v-slot:top>
+                <v-switch
+                  v-if="showAllLists"
+                  v-on:click="selectAll('nodes',nodeTab)"
+                  v-model="selectAllModel.nodes[nodeTab]"
+                  label="Select All"
+                  class="pa-3"
+                ></v-switch>
+              </template>
               <template v-slot:item.displayName="{item}">
                 <v-tooltip right>
                   <template v-slot:activator="{ on, attrs }">
@@ -48,10 +66,11 @@
         <v-card-title>Edges</v-card-title>
         <i v-show="Object.keys(edges).length === 0">no edge entries</i>
         <template v-if="Object.keys(edges).length>0">
-          <v-tabs next-icon="mdi-arrow-right-bold-box-outline"
-                  prev-icon="mdi-arrow-left-bold-box-outline"
-                  show-arrows
-                  v-model="edgeTab"
+          <v-tabs
+            next-icon="mdi-arrow-right-bold-box-outline"
+            prev-icon="mdi-arrow-left-bold-box-outline"
+            show-arrows
+            v-model="edgeTab"
           >
             <v-tabs-slider color="blue"></v-tabs-slider>
             <v-tab v-for="edge in Object.keys(edges)" :key="edge">
@@ -59,12 +78,26 @@
             </v-tab>
           </v-tabs>
           <v-tabs-items>
-            <v-data-table fixed-header
-                          dense
-                          class="elevation-1"
-                          :headers="headers('edges',Object.keys(edges)[edgeTab])"
-                          :items="edges[Object.keys(edges)[edgeTab]]"
+            <v-data-table
+              ref="edgeTab"
+              fixed-header
+              v-model="selected.edges[edgeTab]"
+              dense
+              class="elevation-1"
+              :headers="headers('edges',Object.keys(edges)[edgeTab])"
+              :items="showAllLists ? edges[Object.keys(edges)[edgeTab]] : selected.edges[edgeTab]"
+              item-key="id"
+              show-select
             >
+              <template v-slot:top>
+                <v-switch
+                  v-show="showAllLists"
+                  v-on:click="selectAll('edges',edgeTab)"
+                  v-model="selectAllModel.edges[edgeTab]"
+                  label="Select All"
+                  class="pa-3"
+                ></v-switch>
+              </template>
               <template v-slot:item.edgeid="{item}">
                 <template v-if="item.sourceId !== undefined">
                   <v-icon
@@ -121,11 +154,18 @@ export default {
       attributes: this.attributes,
       nodeTab: this.nodeTab,
       edgeTab: this.edgeTab,
+      selected: {nodes: {}, edges: {}},
+      selectAllModel: {nodes: {}, edges: {}},
+      nodepage: {},
+      showAllLists: true
     }
   },
   methods: {
-    clearLists: function (){
+    clearLists: function () {
       this.loadList(undefined)
+      this.selected = {nodes: {}, edges: {}}
+      this.selectAllModel = {nodes: {}, edges: {}}
+      this.nodepage = {}
     },
     loadList: function (data) {
       if (data === undefined) {
@@ -137,10 +177,51 @@ export default {
       } else {
         console.log(data)
         this.attributes = data.attributes;
+        this.selected["nodes"] = {}
+        this.selected["edges"] = {}
+        for (let ni = 0; ni < Object.keys(this.attributes.nodes).length; ni++) {
+          this.selected.nodes[ni] = []
+          this.selectAllModel.nodes[ni] = false
+          this.nodepage[ni] = 0
+        }
+        for (let ei = 0; ei < Object.keys(this.attributes.edges).length; ei++) {
+          this.selected.edges[ei] = []
+          this.selectAllModel.edges[ei] = false
+        }
         this.edges = data.edges;
         this.nodes = data.nodes;
         this.nodeTab = 0
         this.edgeTab = 0
+      }
+    },
+    changedPage: function (number) {
+      this.nodepage[this.nodeTab] = number;
+      console.log("changed to page " + number)
+    },
+    printSelection: function () {
+      console.log(this.selected)
+    },
+    selectAll: function (type, tab) {
+      let data = {nodes: this.nodes, edges: this.edges}
+      let model = this.selected[type][tab]
+      let items = data[type][Object.keys(data[type])[tab]]
+      model.length = 0
+      if (this.selectAllModel[type][tab]) {
+        items.forEach(item => {
+          if (type === "nodes")
+            this.$refs.nodeTab.select(item, true)
+          else
+            this.$refs.edgeTab.select(item, true)
+          model.push(item)
+        })
+      } else {
+        items.forEach(item => {
+          if (type === "nodes")
+            this.$refs.nodeTab.select(item, false)
+          else
+            this.$refs.edgeTab.select(item, false)
+        })
+
       }
     },
     // selectNodeTab: function (nodeName){
@@ -159,7 +240,7 @@ export default {
     edgeDetails: function (id1, id2) {
       this.$emit("selectionEvent", {type: "edge", name: Object.keys(this.edges)[this.edgeTab], id1: id1, id2: id2})
     },
-    headers: function(entity, node) {
+    headers: function (entity, node) {
       //TODO sortable for all floats
       console.log("entity:" + entity + ", attributes:" + node)
       let out = []
