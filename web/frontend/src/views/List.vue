@@ -143,6 +143,16 @@ export default {
         this.edgeTab = 0
       }
     },
+    // selectNodeTab: function (nodeName){
+    //   console.log("setting node tab= "+nodeName)
+    //   let nodeTypes = Object.keys(this.attributes.nodes);
+    //   for(let idx in nodeTypes){
+    //     console.log("is nodeTypes.idx === nodeName? "+ (nodeTypes[idx] === nodeName))
+    //     if(nodeTypes[idx] === nodeName)
+    //       this.nodeTab=idx;
+    //   }
+    //   console.log(this.nodeTab+" -> "+nodeTypes[this.nodeTab])
+    // },
     nodeDetails: function (nodeId) {
       this.$emit("selectionEvent", {type: "node", name: Object.keys(this.nodes)[this.nodeTab], id: nodeId})
     },

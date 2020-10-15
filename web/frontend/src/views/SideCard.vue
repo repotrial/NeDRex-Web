@@ -77,17 +77,26 @@
         <thead>
         <tr>
           <th class="text-center">ID</th>
-          <th class="text-center">Label</th>
+          <th class="text-center">Name</th>
         </tr>
         </thead>
         <tbody>
         <tr v-if="selectedNode !== undefined" :key="selectedNode.id">
           <td><b>{{ selectedNode.id }}</b></td>
-          <td><b>{{ selectedNode.title }}</b></td>
+          <td><b>{{ selectedNode.label }}
+            <v-icon
+              color="primary"
+              dark
+              v-on:click="nodeDetails(selectedNode.id)"
+            >
+              fas fa-info-circle
+            </v-icon>
+          </b></td>
         </tr>
         <tr v-for="item in neighborNodes" :key="item.id" v-on:click="setSelectedNode(item.id)">
           <td>{{ item.id }}</td>
-          <td>{{ item.title }}</td>
+          <td>{{ item.label }}
+          </td>
         </tr>
         </tbody>
       </template>
@@ -186,7 +195,13 @@ export default {
         this.filterView = false;
 
     },
+    nodeDetails: function (id) {
+      let str = id.split("_")
+      this.$emit("nodeDetailsEvent", {prefix: str[0], id: str[1]})
+    },
     loadDetails: function (data) {
+      console.log("loading details for")
+      console.log(data)
       if (data.type === "node") {
         this.$http.get("getNodeDetails?name=" + data.name + "&id=" + data.id).then(response => {
           if (response.data !== undefined) {

@@ -85,16 +85,13 @@ public class WebGraphService {
             log.debug("Converting edges from Graph to WebList for " + id);
             g.getEdges().forEach((type, edgeList) -> {
                 String stringType = Graphs.getEdge(type);
-                System.out.println(stringType + " <-> " + type);
                 String[] attributes = edgeController.getListAttributes(type);
                 finalList.addAttributes("edges", stringType, attributes);
                 HashSet<String> attrs = new HashSet<>(Arrays.asList(attributes));
                 List<PairId> edges = edgeList.stream().map(e -> new PairId(e.getId1(), e.getId2())).collect(Collectors.toList());
                 LinkedList<String> attrMaps = edgeController.edgesToAttributeList(type, edges, attrs);
                 finalList.addEdges(stringType, attrMaps);
-                System.out.println(attrMaps.size());
             });
-            System.out.println(list.edges.size());
 
             cache.get(id).setWebList(list);
         }
@@ -152,10 +149,8 @@ public class WebGraphService {
                 edgeIds.forEach(edgeId -> {
                     //TODO edge id mapping in frontend
                     if (request.edges.containsKey(Graphs.getEdge(edgeId))) {
-                        System.out.println(Graphs.getEdge(edgeId) +" direction of "+ Graphs.getNode(nodeI[0])+" -> "+Graphs.getNode(nodeJ[0]) +" correct? "+Graphs.checkEdgeDirection(edgeId, nodeI[0], nodeJ[0]));
                         //TODO add edgeFilters
                         LinkedList<Edge> edges = new LinkedList<>();
-                        System.out.println("Edges for "+Graphs.getEdge(edgeId)+"("+edgeId+") and node "+Graphs.getNode(nodeI[0])+" ("+nodeI[0]+")" );
                         nodeIds.get(nodeI[0]).forEach((k1, v1) -> {
                             try {
                                 if (request.connectedOnly & connectedNodes.contains(nodeI[0]) & !v1.hasEdge()) {

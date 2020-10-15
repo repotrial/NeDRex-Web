@@ -6,6 +6,7 @@
         <template v-slot:extension>
           <v-tabs
             fixed-tabs
+            v-model="selectedTabId"
           >
             <v-tabs-slider></v-tabs-slider>
             <v-tab v-for="tab in tabslist" class="primary--text" v-on:click="selectTab(tab.id)" :key=tab.id>
@@ -30,6 +31,7 @@
               v-on:hideEvent="hideSidecard"
               v-on:removeFilterEvent="removeFilter"
               v-on:togglePhysicsEvent="togglePhysics"
+              v-on:nodeDetailsEvent="nodeDetails"
     ></SideCard>
     <v-navigation-drawer app right v-show="!showSidecard" style="width: 5%">
       <v-list-item>
@@ -179,7 +181,7 @@ export default {
       {id: 0, label: "Start", icon: "fas fa-filter", color: this.colors.tabs.active, note: false},
       {id: 1, label: "Graph", icon: "fas fa-project-diagram", color: this.colors.tabs.inactive, note: false},
       {id: 2, label: "List", icon: "fas fa-list-ul", color: this.colors.tabs.inactive, note: false},
-      {id: 3, label: "Statistics", icon: "fas fa-chart-pie", color: this.colors.tabs.inactive, note: false},
+      {id: 3, label: "History", icon: "fas fa-history", color: this.colors.tabs.inactive, note: false},
     ]
     this.initGraphs()
 
@@ -215,6 +217,16 @@ export default {
         this.hideSidecard();
       }
       this.showSidecard = !this.showSidecard;
+    },
+    nodeDetails: function (data){
+      let type = ""
+      this.metagraph.nodes.forEach(n=>{
+        if(n.group.startsWith(data.prefix))
+          type = n.group;
+      })
+      this.selectTab(2)
+      // this.$refs.list.selectNodeTab(type)
+      this.loadDetails({type: "node", name: type, id: data.id})
     },
     setTabNotification: function (tabId) {
       if (this.selectedTabId !== tabId)

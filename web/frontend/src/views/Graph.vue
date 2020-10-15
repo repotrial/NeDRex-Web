@@ -254,8 +254,10 @@ export default {
           sum += info.edges[e]
         console.log(sum)
         if (sum >= 100000)
-          this.$emit("sizeWarningEvent",info)
+          this.$emit("sizeWarningEvent", info)
         else {
+          if (!this.skipVis)
+            this.visualize = true;
           this.$http.get("/getGraph?id=" + info.id).then(response => {
             if (response !== undefined)
               return response.data
