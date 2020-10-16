@@ -1,9 +1,12 @@
 package de.exbio.reposcapeweb.db.io;
 
 import de.exbio.reposcapeweb.db.DbCommunicationService;
+import de.exbio.reposcapeweb.db.entities.edges.*;
+import de.exbio.reposcapeweb.db.services.edges.*;
 import de.exbio.reposcapeweb.db.services.nodes.*;
 import de.exbio.reposcapeweb.filter.FilterService;
 import de.exbio.reposcapeweb.utils.ReaderUtils;
+import de.exbio.reposcapeweb.utils.RepoTrialUtils;
 import de.exbio.reposcapeweb.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +36,15 @@ public class ImportService {
     private final ProteinService proteinService;
     private final FilterService filterService;
 
+    private final DisorderComorbidWithDisorderService disorderComorbidWithDisorderService;
+    private final DisorderIsADisorderService disorderIsADisorderService;
+    private final DrugHasIndicationService drugHasIndicationService;
+    private final DrugHasTargetService drugHasTargetService;
+    private final AssociatedWithDisorderService associatedWithDisorderService;
+    private final ProteinEncodedByService proteinEncodedByService;
+    private final ProteinInPathwayService proteinInPathwayService;
+    private final ProteinInteractsWithProteinService proteinInteractsWithProteinService;
+
     @Autowired
     public ImportService(Environment env,
                          DbCommunicationService dbCommunication,
@@ -41,15 +53,32 @@ public class ImportService {
                          DisorderService disorderService,
                          GeneService geneService,
                          FilterService filterService,
-                         ProteinService proteinService) {
+                         ProteinService proteinService,
+     DisorderComorbidWithDisorderService disorderComorbidWithDisorderService,
+                         DisorderIsADisorderService disorderIsADisorderService,
+                         DrugHasIndicationService drugHasIndicationService,
+                         DrugHasTargetService drugHasTargetService,
+                         AssociatedWithDisorderService associatedWithDisorderService,
+                         ProteinEncodedByService proteinEncodedByService,
+                         ProteinInPathwayService proteinInPathwayService,
+                         ProteinInteractsWithProteinService proteinInteractsWithProteinService) {
         this.env = env;
         this.dbCommunication = dbCommunication;
         this.drugService = drugService;
-        this.filterService=filterService;
+        this.filterService = filterService;
         this.pathwayService = pathwayService;
         this.disorderService = disorderService;
         this.geneService = geneService;
         this.proteinService = proteinService;
+
+        this.disorderComorbidWithDisorderService = disorderComorbidWithDisorderService;
+        this.disorderIsADisorderService = disorderIsADisorderService;
+        this.drugHasIndicationService = drugHasIndicationService;
+        this.drugHasTargetService = drugHasTargetService;
+        this.associatedWithDisorderService = associatedWithDisorderService;
+        this.proteinEncodedByService = proteinEncodedByService;
+        this.proteinInPathwayService = proteinInPathwayService;
+        this.proteinInteractsWithProteinService = proteinInteractsWithProteinService;
     }
 
     public void importNodeData() {
@@ -60,7 +89,7 @@ public class ImportService {
         File cacheDir = new File(env.getProperty("path.db.cache"));
         importIdMaps(collections, cacheDir, false);
         log.info("NodeIdMap import: Done!");
-        importNodeFilters(collections, new File(cacheDir,"filters"));
+        importNodeFilters(collections, new File(cacheDir, "filters"));
     }
 
     private void prepareCollections(String file, HashMap<String, de.exbio.reposcapeweb.db.io.Collection> collections, boolean typeNode) {
@@ -115,6 +144,48 @@ public class ImportService {
     }
 
 
+    public void importEdges(boolean allowOnUpdate) {
+        log.info("Edge-Data import: Start!");
+        HashMap<String, Collection> collections = new HashMap<>();
+        getCollections(collections);
+        log.info("Importing edgeIds");
+        File cacheDir = new File(env.getProperty("path.db.cache"));
+        dbCommunication.scheduleImport(allowOnUpdate);
+        collections.forEach((k, c) -> {
+            if (!(c instanceof Edge))
+                return;
+            switch (k) {
+                case "disorder_comorbid_with_disorder":
+                    disorderComorbidWithDisorderService.importEdges();
+                    break;
+                case "disorder_is_a_disorder":
+                    disorderIsADisorderService.importEdges();
+                    break;
+                case "drug_has_indication":
+                    drugHasIndicationService.importEdges();
+                    break;
+                case "drug_has_target":
+                    drugHasTargetService.importEdges();
+                    break;
+                case "gene_associated_with_disorder":
+                    associatedWithDisorderService.importEdges();
+                    break;
+                case "protein_in_pathway":
+                    proteinInPathwayService.importEdges();
+                    break;
+                case "protein_interacts_with_protein":
+                    proteinInteractsWithProteinService.importEdges();
+                    break;
+                case "protein_encoded_by":
+                    proteinEncodedByService.importEdges();
+                    break;
+            }
+        });
+        dbCommunication.setImportInProgress(false);
+        log.info("Edge-Data import: Done!");
+    }
+
+
     public void importIdMaps(HashMap<String, de.exbio.reposcapeweb.db.io.Collection> collections, File cacheDir, boolean allowOnUpdate) {
         dbCommunication.scheduleImport(allowOnUpdate);
         collections.forEach((k, c) -> {
@@ -155,23 +226,23 @@ public class ImportService {
 
             switch (k) {
                 case "drug": {
-                    drugService.setFilter(filterService.readFromFiles(new File(cacheDir,k)));
+                    drugService.setFilter(filterService.readFromFiles(new File(cacheDir, k)));
                     break;
                 }
                 case "pathway": {
-                    pathwayService.setFilter(filterService.readFromFiles(new File(cacheDir,k)));
+                    pathwayService.setFilter(filterService.readFromFiles(new File(cacheDir, k)));
                     break;
                 }
                 case "disorder": {
-                    disorderService.setFilter(filterService.readFromFiles(new File(cacheDir,k)));
+                    disorderService.setFilter(filterService.readFromFiles(new File(cacheDir, k)));
                     break;
                 }
                 case "gene": {
-                    geneService.setFilter(filterService.readFromFiles(new File(cacheDir,k)));
+                    geneService.setFilter(filterService.readFromFiles(new File(cacheDir, k)));
                     break;
                 }
                 case "protein": {
-                    proteinService.setFilter(filterService.readFromFiles(new File(cacheDir,k)));
+                    proteinService.setFilter(filterService.readFromFiles(new File(cacheDir, k)));
                     break;
                 }
             }

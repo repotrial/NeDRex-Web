@@ -14,6 +14,7 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -54,6 +55,11 @@ public class DrugHasTargetGene extends RepoTrialEdge implements Serializable {
     public String getSourceDomainId() {
         return sourceDomainId;
     }
+
+    @Transient
+    @JsonIgnore
+    public final static String[] allAttributes = new String[]{"id","sourceId", "targetId","sourceDomainId","targetDomainId", "type"};
+
 
     @JsonGetter
     public String getType() {

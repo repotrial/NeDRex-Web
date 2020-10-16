@@ -563,4 +563,32 @@ public class EdgeController {
         }
         return null;
     }
+
+    public String[] getAttributes(Integer type) {
+        switch (Graphs.getEdge(type)) {
+            case "GeneAssociatedWithDisorder":
+                return GeneAssociatedWithDisorder.allAttributes;
+            case "DrugHasTargetGene":
+                return DrugHasTargetGene.allAttributes;
+            case "ProteinEncodedBy":
+                return ProteinEncodedBy.allAttributes;
+            case "DrugHasIndication":
+                return DrugHasIndication.allAttributes;
+            case "DrugHasTargetProtein":
+                return DrugHasTargetProtein.allAttributes;
+            case "ProteinInteractsWithProtein":
+                return ProteinInteractsWithProtein.allAttributes;
+            case "ProteinInPathway":
+                return ProteinInPathway.allAttributes;
+            case "ProteinAssociatedWithDisorder":
+                return ProteinAssociatedWithDisorder.allAttributes;
+            case "DisorderIsADisorder":
+                return DisorderIsADisorder.allAttributes;
+            case "DisorderComorbidWithDisorder":
+                return DisorderComorbidWithDisorder.allAttributes;
+            case "GeneInteractsWithGene":
+                return GeneInteractsWithGene.allAttributes;
+        }
+        return null;
+    }
 }

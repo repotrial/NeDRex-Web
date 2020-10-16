@@ -21,7 +21,25 @@
         </v-row>
       </v-card>
       <v-card style="margin:5px">
-        <v-card-title>Nodes</v-card-title>
+        <v-card-title v-on:mouseenter="nodeOptionHover=true" v-on:mouseleave="nodeOptionHover=false">Nodes
+          <v-tooltip
+            right>
+            <template v-slot:activator="{ on, attrs }">
+              <v-icon
+                v-show="nodeOptionHover"
+                size="17px"
+                color="primary"
+                dark
+                v-bind="attrs"
+                v-on="on"
+                v-on:click="nodeOptions"
+              >
+                fas fa-cog
+              </v-icon>
+            </template>
+            <span>options</span>
+          </v-tooltip>
+        </v-card-title>
         <i v-if="Object.keys(nodes).length === 0">no node entries</i>
         <template v-if="Object.keys(nodes).length>0">
           <v-tabs next-icon="mdi-arrow-right-bold-box-outline"
@@ -37,6 +55,7 @@
           <v-tabs-items>
             <v-data-table
               ref="nodeTab"
+              fixed-header
               dense
               v-model="selected.nodes[nodeTab]"
               class="elevation-1"
@@ -44,7 +63,6 @@
               :items="showAllLists ? nodes[Object.keys(nodes)[nodeTab]]: selected.nodes[nodeTab]"
               item-key="id"
               show-select
-              @click:row="toggleNodeSelect"
             >
               <template v-slot:top>
                 <v-switch
@@ -78,7 +96,25 @@
       </v-card>
 
       <v-card style="margin:5px">
-        <v-card-title>Edges</v-card-title>
+        <v-card-title v-on:mouseenter="edgeOptionHover=true" v-on:mouseleave="edgeOptionHover=false">Edges
+          <v-tooltip
+            right>
+            <template v-slot:activator="{ on, attrs }">
+              <v-icon
+                v-show="edgeOptionHover"
+                size="17px"
+                color="primary"
+                dark
+                v-bind="attrs"
+                v-on="on"
+                v-on:click="edgeOptions"
+              >
+                fas fa-cog
+              </v-icon>
+            </template>
+            <span>options</span>
+          </v-tooltip>
+        </v-card-title>
         <i v-if="Object.keys(edges).length === 0">no edge entries</i>
         <template v-if="Object.keys(edges).length>0">
           <v-tabs
@@ -144,6 +180,50 @@
         </template>
       </v-card>
     </v-container>
+    <v-dialog
+      v-model="optionDialog"
+      persistent
+      max-width="290"
+    >
+      <!--      <template v-slot:activator="{ on, attrs }">-->
+      <!--        <v-btn-->
+      <!--          v-show="!visualize"-->
+      <!--          color="primary"-->
+      <!--          dark-->
+      <!--          v-bind="attrs"-->
+      <!--          v-on="on"-->
+      <!--        >-->
+      <!--          Visualize Graph?-->
+      <!--        </v-btn>-->
+      <!--      </template>-->
+      <v-card>
+        <v-card-title class="headline">
+          Load Visualization?
+        </v-card-title>
+        <v-card-text>The selected graph consists of nodes and
+          edges. Visualization and especially physics simulation could take a long
+          time
+          and cause freezes. Do you want to visualize the graph or skip it for now?
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            color="green darken-1"
+            text
+            @click="dialogResolve(false)"
+          >
+            Cancel
+          </v-btn>
+          <v-btn
+            color="green darken-1"
+            text
+            @click="dialogResolve(true)"
+          >
+            Apply
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -167,13 +247,17 @@ export default {
     return {
       edges: this.edges,
       nodes: this.nodes,
-      attributes: this.attributes,
+      // listAttributes: {},
       nodeTab: this.nodeTab,
       edgeTab: this.edgeTab,
       selected: {nodes: {}, edges: {}},
       selectAllModel: {nodes: {}, edges: {}},
       nodepage: {},
-      showAllLists: true
+      showAllLists: true,
+      nodeOptionHover: false,
+      edgeOptionHover: false,
+      optionDialog: false,
+      options: {}
     }
   },
   methods: {
@@ -185,6 +269,7 @@ export default {
     },
     loadList: function (data) {
       this.attributes = {};
+      // this.listAttributes = {}
       this.edges = {};
       this.nodes = {};
       this.nodeTab = 0
@@ -194,6 +279,16 @@ export default {
         this.selected["nodes"] = {}
         this.selected["edges"] = {}
         this.attributes = data.attributes;
+        // for (let entity in Object.keys(this.attributes)) {
+        //   this.listAttributes[entity] = {}
+        //   for (let type in Object.keys(this.attributes[entity])) {
+        //     this.listAttributes[entity][type] = []
+        //     this.attributes[entity][type].forEach(attribute => {
+        //       if (attribute.list)
+        //         this.listAttributes[entity][type].push(attribute)
+        //     })
+        //   }
+        // }
         for (let ni = 0; ni < Object.keys(this.attributes.nodes).length; ni++) {
           this.selected.nodes[ni] = []
           this.selectAllModel.nodes[ni] = false
@@ -209,45 +304,44 @@ export default {
         this.edgeTab = 0
       }
     },
-    toggleNodeSelect: function (item, row) {
-      console.log(this.selected)
-      // if(row.isSelected()){
-      //   this.selected.nodes.splice(this.selected.nodes.indexOf(item),1)
-      // }else{
-      //   this.selected.nodes[this.nodeTab].push(item)
-      // }
+    nodeOptions: function () {
+      this.optionDialog = true;
+      options["title"] = (Object.keys(this.nodes).length > 1) ? "Nodes" : "Node"
+
+    },
+    edgeOptions: function () {
+      this.optionDialog = true;
+    },
+    dialogResolve(apply) {
+      this.optionDialog = false;
+      if (!apply) {
+        return;
+      }
+
+
     },
     changedPage: function (number) {
       this.nodepage[this.nodeTab] = number;
       console.log("changed to page " + number)
     },
     loadSelection: function () {
-      // this.$emit("loadSelectionEvent",this.selected)
-      let attributesRemaining = {nodes: {}, edges: {}}
-      let nodesRemaining = {}
-      let edgesRemaining = {}
-      let update = {id:this.gid,nodes:{},edges:{}}
+      let update = {id: this.gid, nodes: {}, edges: {}}
       Object.keys(this.selected.nodes).forEach(n => {
         let type = Object.keys(this.nodes)[n]
-        // attributesRemaining.nodes[type] = this.attributes.nodes[type]
-        // nodesRemaining[type] = this.selected.nodes[n]
-        update.nodes[type]=[]
-        this.selected.nodes[n].forEach(node=>update.nodes[type].push(node.id))
+        update.nodes[type] = []
+        this.selected.nodes[n].forEach(node => update.nodes[type].push(node.id))
       })
       Object.keys(this.selected.edges).forEach(e => {
         let type = Object.keys(this.edges)[e]
-        // attributesRemaining.edges[type] = this.attributes.edges[type]
-        // edgesRemaining[type] = this.selected.edges[e]
-        update.edges[type]=[]
-        this.selected.edges[e].forEach(edge=>update.edges[type].push(edge.id))
+        update.edges[type] = []
+        this.selected.edges[e].forEach(edge => update.edges[type].push(edge.id))
       })
-      console.log(update)
-      this.$http.post("/updateGraph",update).then(response=>{
-        if(response.data!==undefined)
+      this.$http.post("/updateGraph", update).then(response => {
+        if (response.data !== undefined)
           return response.data;
-      }).then(info=>{
-        this.$emit("updateInfo",info)
-      }).catch(err=>{
+      }).then(info => {
+        this.$emit("updateInfo", info)
+      }).catch(err => {
         console.log(err)
       })
       // this.loadList({nodes: nodesRemaining, edges: edgesRemaining, attributes: attributesRemaining})
@@ -296,12 +390,15 @@ export default {
       console.log("entity:" + entity + ", attributes:" + node)
       let out = []
       this.attributes[entity][node].forEach(attr => {
-        if (attr === "id")
+        if(!attr.list)
+          return
+        let name = attr.name
+        if (name === "id")
           return;
-        if (attr === "sourceId" || attr === "idOne") {
+        if (name === "sourceId" || name === "idOne") {
           out.push({text: "EdgeId", align: 'start', sortable: false, value: "edgeid"})
         }
-        out.push({text: attr, align: 'start', sortable: false, value: attr})
+        out.push({text: name, align: 'start', sortable: attr.numeric, value: name})
       })
       return out
     },

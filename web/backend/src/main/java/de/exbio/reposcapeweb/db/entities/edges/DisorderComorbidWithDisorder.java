@@ -42,6 +42,10 @@ public class DisorderComorbidWithDisorder extends RepoTrialEdge implements Seria
     public final static HashSet<String> attributes = new HashSet<>(Arrays.asList("rr21", "type", "rr12", "memberTwo", "rrGeoMean", "memberOne", "phiCor"));
 
     @Transient
+    @JsonIgnore
+    public final static String[] allAttributes = new String[]{"id","idOne", "idTwo", "memberOne","memberTwo", "phiCor","rrGeoMean","rr12","rr21","type"};
+
+    @Transient
     private String memberOne;
     @Transient
     private String memberTwo;

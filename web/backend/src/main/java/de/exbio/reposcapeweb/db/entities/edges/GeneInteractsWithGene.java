@@ -51,6 +51,12 @@ public class GeneInteractsWithGene extends RepoTrialEdge implements Serializable
         return new String[]{"id","idOne","idTwo"};
     }
 
+
+    @Transient
+    @JsonIgnore
+    public final static String[] allAttributes = new String[]{"id","idOne","idTwo","memberOne","memberTwo"};
+
+
     @Override
     public HashMap<String, Object> getAsMap() {
         HashMap<String,Object> values = new HashMap<>();

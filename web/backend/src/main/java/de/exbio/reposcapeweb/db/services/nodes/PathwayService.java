@@ -1,5 +1,6 @@
 package de.exbio.reposcapeweb.db.services.nodes;
 
+import de.exbio.reposcapeweb.db.entities.nodes.Disorder;
 import de.exbio.reposcapeweb.db.entities.nodes.Pathway;
 import de.exbio.reposcapeweb.db.repositories.nodes.PathwayRepository;
 import de.exbio.reposcapeweb.db.services.NodeService;
@@ -97,6 +98,10 @@ public class PathwayService extends NodeService {
 
     public Optional<Pathway> findById(Integer id) {
         return pathwayRepository.findById(id);
+    }
+
+    public String[] getAttributes() {
+        return Pathway.attributes.toArray(String[]::new);
     }
 
 }

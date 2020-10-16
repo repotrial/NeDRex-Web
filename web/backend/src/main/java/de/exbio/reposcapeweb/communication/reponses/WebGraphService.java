@@ -80,14 +80,17 @@ public class WebGraphService {
             g.getNodes().forEach((type, nodeMap) -> {
                 String stringType = Graphs.getNode(type);
                 String[] attributes = nodeController.getListAttributes(type);
-                finalList.addAttributes("nodes", stringType, attributes);
+                finalList.addListAttributes("nodes", stringType, attributes);
+                finalList.addAttributes("nodes",stringType,nodeController.getAttributes(type));
                 finalList.addNodes(stringType, nodeController.nodesToAttributeList(type, nodeMap.keySet(), new HashSet<>(Arrays.asList(attributes))));
+
             });
             log.debug("Converting edges from Graph to WebList for " + id);
             g.getEdges().forEach((type, edgeList) -> {
                 String stringType = Graphs.getEdge(type);
                 String[] attributes = edgeController.getListAttributes(type);
-                finalList.addAttributes("edges", stringType, attributes);
+                finalList.addListAttributes("edges", stringType, attributes);
+                finalList.addAttributes("edges",stringType,edgeController.getAttributes(type));
                 HashSet<String> attrs = new HashSet<>(Arrays.asList(attributes));
                 List<PairId> edges = edgeList.stream().map(e -> new PairId(e.getId1(), e.getId2())).collect(Collectors.toList());
                 LinkedList<String> attrMaps = edgeController.edgesToAttributeList(type, edges, attrs);

@@ -30,6 +30,10 @@ public class Disorder extends RepoTrialNode {
     @JsonIgnore
     public static final HashSet<String> attributes = new HashSet<>(Arrays.asList("displayName", "synonyms", "type", "domainIds", "primaryDomainId", "description", "icd10"));
 
+    @Transient
+    @JsonIgnore
+    public final static String[] allAttributes = new String[]{"id","primaryDomainId","displayName","domainIds","icd10", "synonyms",  "description","type"};
+
 
     @Column(nullable = false)
     private String primaryDomainId;

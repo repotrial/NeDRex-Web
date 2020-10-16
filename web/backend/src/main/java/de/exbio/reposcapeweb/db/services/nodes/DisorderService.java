@@ -97,4 +97,8 @@ public class DisorderService extends NodeService {
     }
 
     public Optional<Disorder> findById(Integer id){return disorderRepository.findById(id);}
+
+    public String[] getAttributes() {
+        return Disorder.attributes.toArray(String[]::new);
+    }
 }

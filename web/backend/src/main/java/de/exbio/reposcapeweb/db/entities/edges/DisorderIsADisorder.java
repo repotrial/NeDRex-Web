@@ -45,6 +45,10 @@ public class DisorderIsADisorder extends RepoTrialEdge implements Serializable {
     public final static HashSet<String> attributes = new HashSet<>(Arrays.asList("targetDomainId", "sourceDomainId", "type"));
 
     @Transient
+    @JsonIgnore
+    public final static String[] allAttributes = new String[]{"id","sourceId","targetId","targetDomainId", "sourceDomainId", "type"};
+
+    @Transient
     private String targetDomainId;
     @Transient
     private String sourceDomainId;

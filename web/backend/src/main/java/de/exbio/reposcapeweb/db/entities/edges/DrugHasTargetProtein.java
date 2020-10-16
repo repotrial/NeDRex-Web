@@ -48,6 +48,11 @@ public class DrugHasTargetProtein extends RepoTrialEdge implements Serializable 
     public final static HashSet<String> attributes = new HashSet<>(Arrays.asList("targetDomainId", "type", "sourceDomainId", "actions", "databases"));
 
     @Transient
+    @JsonIgnore
+    public final static String[] allAttributes = new String[]{"id","sourceId","targetId","sourceDomainId", "targetDomainId", "actions", "databases","type"};
+
+
+    @Transient
     private String targetDomainId;
     @Transient
     private String sourceDomainId;

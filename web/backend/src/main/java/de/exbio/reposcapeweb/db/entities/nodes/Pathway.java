@@ -29,6 +29,11 @@ public class Pathway extends RepoTrialNode {
     @JsonIgnore
     public static final HashSet<String> attributes = new HashSet<>(Arrays.asList("displayName", "type", "domainIds", "primaryDomainId", "species"));
 
+
+    @Transient
+    @JsonIgnore
+    public final static String[] allAttributes = new String[]{"id", "primaryDomainId","displayName","domainIds","species","domainIds","type"};
+
     @Column(nullable = false)
     private String primaryDomainId;
     @Column(nullable = false)

@@ -40,6 +40,12 @@ public class ProteinInPathway extends RepoTrialEdge implements Serializable {
     @JsonIgnore
     public final static HashSet<String> attributes = new HashSet<>(Arrays.asList("targetDomainId", "type", "sourceDomainId"));
 
+
+    @Transient
+    @JsonIgnore
+    public final static String[] allAttributes = new String[]{"id", "sourceId","targetId", "sourceDomainId","targetDomainId", "type"};
+
+
     @Transient
     private String targetDomainId;
     @Transient

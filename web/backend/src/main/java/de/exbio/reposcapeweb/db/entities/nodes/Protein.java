@@ -26,9 +26,14 @@ public class Protein extends RepoTrialNode {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @JsonIgnore
     private int id;
+
     @Transient
     @JsonIgnore
     public static final HashSet<String> attributes = new HashSet<>(Arrays.asList("displayName", "type", "domainIds", "taxid", "primaryDomainId", "sequence", "synonyms", "geneName", "comments"));
+
+    @Transient
+    @JsonIgnore
+    public final static String[] allAttributes = new String[]{"id","primaryDomainId","domainIds", "displayName", "geneName", "taxid","sequence", "synonyms","comments","type"};
 
     public Protein() {
     }

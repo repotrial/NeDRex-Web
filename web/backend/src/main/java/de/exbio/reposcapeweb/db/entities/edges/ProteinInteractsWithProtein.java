@@ -45,6 +45,10 @@ public class ProteinInteractsWithProtein extends RepoTrialEdge implements Serial
     public final static HashSet<String> attributes = new HashSet<>(Arrays.asList("type", "methods", "databases", "memberTwo", "evidenceTypes", "memberOne"));
 
     @Transient
+    @JsonIgnore
+    public final static String[] allAttributes = new String[]{"id","idOne", "idTwo", "memberOne", "memberTwo","evidenceTypes", "methods", "databases","type"};
+
+    @Transient
     private String memberOne;
     @Transient
     private String memberTwo;

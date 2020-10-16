@@ -1,5 +1,6 @@
 package de.exbio.reposcapeweb.db.services.nodes;
 
+import de.exbio.reposcapeweb.db.entities.nodes.Disorder;
 import de.exbio.reposcapeweb.db.entities.nodes.Protein;
 import de.exbio.reposcapeweb.db.repositories.nodes.ProteinRepository;
 import de.exbio.reposcapeweb.db.services.NodeService;
@@ -96,4 +97,7 @@ public class ProteinService extends NodeService {
 
     public Optional<Protein> findById(Integer id){return proteinRepository.findById(id);}
 
+    public String[] getAttributes() {
+        return Protein.attributes.toArray(String[]::new);
+    }
 }

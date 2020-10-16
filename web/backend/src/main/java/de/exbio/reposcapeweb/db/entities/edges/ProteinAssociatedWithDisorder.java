@@ -56,6 +56,11 @@ public class ProteinAssociatedWithDisorder extends RepoTrialEdge implements Seri
         return new String[]{"id","sourceId","targetId","score", "assertedBy"};
     }
 
+    @Transient
+    @JsonIgnore
+    public final static String[] allAttributes = new String[]{"id","sourceId","targetId", "sourceDomainId","targetDomainId", "score", "assertedBy","type"};
+
+
     @Override
     public HashMap<String, Object> getAsMap() {
         HashMap<String,Object> values = new HashMap<>();

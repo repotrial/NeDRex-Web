@@ -1,5 +1,6 @@
 package de.exbio.reposcapeweb.db.services.nodes;
 
+import de.exbio.reposcapeweb.db.entities.nodes.Disorder;
 import de.exbio.reposcapeweb.db.entities.nodes.Drug;
 import de.exbio.reposcapeweb.db.repositories.nodes.DrugRepository;
 import de.exbio.reposcapeweb.db.services.NodeService;
@@ -97,5 +98,9 @@ public class DrugService extends NodeService {
         return drugRepository.findAllById(ids);
     }
     public Optional<Drug> findById(Integer id){return drugRepository.findById(id);}
+
+    public String[] getAttributes() {
+        return Drug.attributes.toArray(String[]::new);
+    }
 
 }

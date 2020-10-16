@@ -46,6 +46,9 @@ public class GeneAssociatedWithDisorder extends RepoTrialEdge implements Seriali
     @JsonIgnore
     public final static HashSet<String> attributes = new HashSet<>(Arrays.asList("targetDomainId", "type", "sourceDomainId", "score", "assertedBy"));
 
+    @Transient
+    @JsonIgnore
+    public final static String[] allAttributes = new String[]{"id","sourceId","targetId","sourceDomainId","targetDomainId", "score", "assertedBy","type"};
 
     @Transient
     private String targetDomainId;

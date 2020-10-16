@@ -31,6 +31,11 @@ public class Gene extends RepoTrialNode {
     @JsonIgnore
     public static final HashSet<String> attributes = new HashSet<>(Arrays.asList("displayName", "type", "domainIds", "primaryDomainId", "geneType", "symbols", "approvedSymbol", "synonyms", "description", "chromosome", "mapLocation"));
 
+
+    @Transient
+    @JsonIgnore
+    public final static String[] allAttributes = new String[]{"id","primaryDomainId","domainIds","displayName", "approvedSymbol", "geneType","chromosome", "mapLocation","symbols","synonyms","description","type"};
+
     @Column(nullable = false)
     private String primaryDomainId;
     private String domainIds;
@@ -48,6 +53,8 @@ public class Gene extends RepoTrialNode {
     public static String[] getListAttributes() {
         return new String[]{"id","displayName", "approvedSymbol", "geneType","chromosome", "mapLocation"};
     }
+
+
 
     @Override
     public HashMap<String, Object> getAsMap() {
