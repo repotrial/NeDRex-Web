@@ -224,6 +224,8 @@ export default {
       if (payload) {
         if (payload.get !== undefined)
           this.getData(payload.get)
+        else if (payload.info !== undefined)
+          this.loadInfo(payload.info)
         else if (payload.post !== undefined)
           this.postData(payload.post)
         else if (payload.data !== undefined)
@@ -237,6 +239,44 @@ export default {
       let warn = (this.nodeSet !== undefined && this.nodeSet.getIds().length > 1000) || (this.edges !== undefined && this.edges.getIds().length > 1000)
       return warn
     },
+    loadInfo: function (info){
+      this.visualize = false
+      this.loading = true;
+      this.directed = false;
+      this.loadingColor = this.colors.bar.backend;
+      this.evalPostInfo(info)
+    },
+    evalPostInfo: function (info) {
+
+      console.log(info)
+      console.log(info.id)
+      let sum = 0
+      for (let n in info.nodes)
+        sum += info.nodes[n];
+      for (let e in info.edges)
+        sum += info.edges[e]
+      console.log(sum)
+      if (sum >= 100000)
+        this.$emit("sizeWarningEvent", info)
+      else {
+        if (!this.skipVis)
+          this.visualize = true;
+        this.$http.get("/getGraph?id=" + info.id).then(response => {
+          if (response !== undefined)
+            return response.data
+        })
+          .then(graph => {
+            console.log(graph)
+            this.$cookies.set("gid", graph.id)
+            this.$emit("graphLoadedEvent", graph.id)
+            this.setGraph(graph)
+          }).catch(err => {
+          this.loadingColor = this.colors.bar.error;
+          console.log(err)
+        })
+      }
+
+    },
     postData: function (post) {
       this.visualize = false
       this.loading = true;
@@ -245,33 +285,7 @@ export default {
       this.$http.post("/getGraphInfo", post).then(response => {
         return response.data
       }).then(info => {
-        console.log(info)
-        console.log(info.id)
-        let sum = 0
-        for (let n in info.nodes)
-          sum += info.nodes[n];
-        for (let e in info.edges)
-          sum += info.edges[e]
-        console.log(sum)
-        if (sum >= 100000)
-          this.$emit("sizeWarningEvent", info)
-        else {
-          if (!this.skipVis)
-            this.visualize = true;
-          this.$http.get("/getGraph?id=" + info.id).then(response => {
-            if (response !== undefined)
-              return response.data
-          })
-            .then(graph => {
-              console.log(graph)
-              this.$cookies.set("graphid", graph.id)
-              this.$emit("graphLoadedEvent", graph.id)
-              this.setGraph(graph)
-            }).catch(err => {
-            this.loadingColor = this.colors.bar.error;
-            console.log(err)
-          })
-        }
+        this.evalPostInfo(info)
       }).catch(err => {
         console.log(err)
       })

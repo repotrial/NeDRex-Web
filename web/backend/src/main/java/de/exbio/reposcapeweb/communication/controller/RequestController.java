@@ -8,6 +8,7 @@ import de.exbio.reposcapeweb.communication.reponses.WebGraph;
 import de.exbio.reposcapeweb.communication.reponses.WebGraphList;
 import de.exbio.reposcapeweb.communication.requests.FilterGroup;
 import de.exbio.reposcapeweb.communication.requests.GraphRequest;
+import de.exbio.reposcapeweb.communication.requests.UpdateRequest;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
 import de.exbio.reposcapeweb.db.services.controller.EdgeController;
 import de.exbio.reposcapeweb.db.services.controller.NodeController;
@@ -172,6 +173,18 @@ public class RequestController {
             System.out.println(out);
             log.info("Graph sent");
             return out;
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @RequestMapping(value="/updateGraph", method = RequestMethod.POST)
+    @ResponseBody
+    public String updateGraph(@RequestBody UpdateRequest request){
+        ;
+        try {
+            return objectMapper.writeValueAsString(webGraphService.updateGraph(request));
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }

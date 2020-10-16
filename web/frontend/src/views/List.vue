@@ -1,14 +1,28 @@
 <template>
   <div>
     <v-container>
-      <v-switch
-        v-model="showAllLists"
-        label="Show all Items"
-        class="pa-3"
-      ></v-switch>
+      <v-card>
+        <v-row>
+          <v-col>
+            <v-switch
+              v-model="showAllLists"
+              label="Show all Items"
+              class="pa-3"
+            ></v-switch>
+          </v-col>
+          <v-col>
+            <v-btn
+              v-on:click="loadSelection"
+            >
+              Load Selection
+              <v-icon>fas fa-project-diagram</v-icon>
+            </v-btn>
+          </v-col>
+        </v-row>
+      </v-card>
       <v-card style="margin:5px">
         <v-card-title>Nodes</v-card-title>
-        <i v-show="Object.keys(nodes).length === 0">no node entries</i>
+        <i v-if="Object.keys(nodes).length === 0">no node entries</i>
         <template v-if="Object.keys(nodes).length>0">
           <v-tabs next-icon="mdi-arrow-right-bold-box-outline"
                   prev-icon="mdi-arrow-left-bold-box-outline"
@@ -30,6 +44,7 @@
               :items="showAllLists ? nodes[Object.keys(nodes)[nodeTab]]: selected.nodes[nodeTab]"
               item-key="id"
               show-select
+              @click:row="toggleNodeSelect"
             >
               <template v-slot:top>
                 <v-switch
@@ -64,7 +79,7 @@
 
       <v-card style="margin:5px">
         <v-card-title>Edges</v-card-title>
-        <i v-show="Object.keys(edges).length === 0">no edge entries</i>
+        <i v-if="Object.keys(edges).length === 0">no edge entries</i>
         <template v-if="Object.keys(edges).length>0">
           <v-tabs
             next-icon="mdi-arrow-right-bold-box-outline"
@@ -140,6 +155,7 @@ export default {
   attributes: {},
   nodeTab: undefined,
   edgeTab: undefined,
+  gid: undefined,
 
   created() {
     this.nodes = {}
@@ -168,17 +184,16 @@ export default {
       this.nodepage = {}
     },
     loadList: function (data) {
-      if (data === undefined) {
-        this.attributes = {};
-        this.edges = {};
-        this.nodes = {};
-        this.nodeTab = 0
-        this.edgeTab = 0
-      } else {
+      this.attributes = {};
+      this.edges = {};
+      this.nodes = {};
+      this.nodeTab = 0
+      this.edgeTab = 0
+      if (data !== undefined) {
         console.log(data)
-        this.attributes = data.attributes;
         this.selected["nodes"] = {}
         this.selected["edges"] = {}
+        this.attributes = data.attributes;
         for (let ni = 0; ni < Object.keys(this.attributes.nodes).length; ni++) {
           this.selected.nodes[ni] = []
           this.selectAllModel.nodes[ni] = false
@@ -194,12 +209,48 @@ export default {
         this.edgeTab = 0
       }
     },
+    toggleNodeSelect: function (item, row) {
+      console.log(this.selected)
+      // if(row.isSelected()){
+      //   this.selected.nodes.splice(this.selected.nodes.indexOf(item),1)
+      // }else{
+      //   this.selected.nodes[this.nodeTab].push(item)
+      // }
+    },
     changedPage: function (number) {
       this.nodepage[this.nodeTab] = number;
       console.log("changed to page " + number)
     },
-    printSelection: function () {
-      console.log(this.selected)
+    loadSelection: function () {
+      // this.$emit("loadSelectionEvent",this.selected)
+      let attributesRemaining = {nodes: {}, edges: {}}
+      let nodesRemaining = {}
+      let edgesRemaining = {}
+      let update = {id:this.gid,nodes:{},edges:{}}
+      Object.keys(this.selected.nodes).forEach(n => {
+        let type = Object.keys(this.nodes)[n]
+        // attributesRemaining.nodes[type] = this.attributes.nodes[type]
+        // nodesRemaining[type] = this.selected.nodes[n]
+        update.nodes[type]=[]
+        this.selected.nodes[n].forEach(node=>update.nodes[type].push(node.id))
+      })
+      Object.keys(this.selected.edges).forEach(e => {
+        let type = Object.keys(this.edges)[e]
+        // attributesRemaining.edges[type] = this.attributes.edges[type]
+        // edgesRemaining[type] = this.selected.edges[e]
+        update.edges[type]=[]
+        this.selected.edges[e].forEach(edge=>update.edges[type].push(edge.id))
+      })
+      console.log(update)
+      this.$http.post("/updateGraph",update).then(response=>{
+        if(response.data!==undefined)
+          return response.data;
+      }).then(info=>{
+        this.$emit("updateInfo",info)
+      }).catch(err=>{
+        console.log(err)
+      })
+      // this.loadList({nodes: nodesRemaining, edges: edgesRemaining, attributes: attributesRemaining})
     },
     selectAll: function (type, tab) {
       let data = {nodes: this.nodes, edges: this.edges}
@@ -254,11 +305,12 @@ export default {
       })
       return out
     },
-    getList: function (graphId) {
+    getList: function (gid) {
       this.clearLists()
-      this.$http.get("/getGraphList?id=" + graphId + "&cached=true").then(response => {
+      this.$http.get("/getGraphList?id=" + gid + "&cached=true").then(response => {
         this.loadList(response.data)
       }).then(() => {
+        this.gid = gid;
         this.$emit("finishedEvent")
       }).catch(err => {
         console.log(err)

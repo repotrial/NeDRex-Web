@@ -123,7 +123,12 @@
         </v-card>
       </v-container>
       <v-container v-show="selectedTabId===2" fluid>
-        <List ref="list" v-on:finishedEvent="setTabNotification(2)" v-on:selectionEvent="loadDetails"></List>
+        <List ref="list"
+              v-on:finishedEvent="setTabNotification(2)"
+              v-on:selectionEvent="loadDetails"
+              v-on:loadSelectionEvent="loadSubSelection"
+              v-on:updateInfo="loadInfo"
+        ></List>
       </v-container>
     </v-main>
 
@@ -195,6 +200,9 @@ export default {
         console.log(err)
       })
     },
+    loadSubSelection: function (selection){
+      this.loadGraph({data:selection})
+    },
     sizeWarning: function (info) {
       this.listWarnObject = info;
       this.listDialog = true;
@@ -209,8 +217,11 @@ export default {
       }
       this.$refs.graph.loadData(graph)
     },
-    loadList: function (graphId) {
-      this.$refs.list.getList(graphId)
+    loadInfo: function (info){
+      this.$refs.graph.loadData({info:info})
+    },
+    loadList: function (gid) {
+      this.$refs.list.getList(gid)
     },
     toggleSide: function () {
       if (this.showSidecard) {

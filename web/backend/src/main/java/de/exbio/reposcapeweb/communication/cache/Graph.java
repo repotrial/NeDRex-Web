@@ -7,6 +7,7 @@ import de.exbio.reposcapeweb.utils.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.UUID;
@@ -77,6 +78,12 @@ public class Graph {
             this.edges.put(edgeId, edges);
         } else
             this.edges.get(edgeId).addAll(edges);
+    }
+
+    public void addNodes(Integer typeId, Collection<Node> nodes){
+        if(!this.nodes.containsKey(typeId))
+            this.nodes.put(typeId, new HashMap<>());
+        nodes.forEach(n->addNode(typeId,n));
     }
 
     public void addNodes(Integer typeId, HashMap<Integer, Node> nodeMap) {

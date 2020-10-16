@@ -6,6 +6,7 @@ import de.exbio.reposcapeweb.communication.cache.Graphs;
 import de.exbio.reposcapeweb.communication.cache.Node;
 import de.exbio.reposcapeweb.communication.requests.Filter;
 import de.exbio.reposcapeweb.communication.requests.GraphRequest;
+import de.exbio.reposcapeweb.communication.requests.UpdateRequest;
 import de.exbio.reposcapeweb.db.DbCommunicationService;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
 import de.exbio.reposcapeweb.db.services.controller.EdgeController;
@@ -100,6 +101,34 @@ public class WebGraphService {
 
     public WebGraph getWebGraph(GraphRequest request) {
         return getGraph(request).toWebGraph();
+    }
+
+    public WebGraphInfo updateGraph(UpdateRequest request){
+        Graph basis = cache.get(request.id);
+        System.out.println(request.id);
+        System.out.println(cache.keySet());
+        Graph g = new Graph();
+        request.nodes.forEach((type,ids)->{
+            int typeId = Graphs.getNode(type);
+            HashSet<Integer> nodeIds = new HashSet<>(Arrays.asList(ids));
+            g.addNodes(typeId,
+                    basis
+                            .getNodes()
+                            .get(typeId)
+                            .entrySet()
+                            .stream().filter(e->
+                            nodeIds.contains(e.getKey()))
+                            .map(Map.Entry::getValue)
+                            .collect(Collectors.toList()));
+        });
+        request.edges.forEach((type,ids)->{
+            int typeId = Graphs.getEdge(type);
+            HashSet<String> edgeIds = new HashSet<>(Arrays.asList(ids));
+            g.addEdges(typeId,basis.getEdges().get(typeId).stream().filter(e->edgeIds.contains(e.getId1()+"-"+e.getId2())).collect(Collectors.toCollection(LinkedList::new)));
+        });
+
+        cache.put(g.getId(),g);
+        return g.toInfo();
     }
 
     public WebGraph getWebGraph(String id) {
