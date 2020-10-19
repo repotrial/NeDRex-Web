@@ -40,7 +40,7 @@
             <span>options</span>
           </v-tooltip>
         </v-card-title>
-        <i v-if="Object.keys(nodes).length === 0">no node entries</i>
+        <i v-if="!update.nodes && Object.keys(nodes).length === 0">no node entries</i>
         <template v-if="Object.keys(nodes).length>0">
           <v-tabs next-icon="mdi-arrow-right-bold-box-outline"
                   prev-icon="mdi-arrow-left-bold-box-outline"
@@ -183,7 +183,7 @@
     <v-dialog
       v-model="optionDialog"
       persistent
-      max-width="290"
+      max-width="500"
     >
       <!--      <template v-slot:activator="{ on, attrs }">-->
       <!--        <v-btn-->
@@ -196,15 +196,32 @@
       <!--          Visualize Graph?-->
       <!--        </v-btn>-->
       <!--      </template>-->
-      <v-card>
+      <v-card v-if="options !== undefined && options.type !== undefined">
         <v-card-title class="headline">
-          Load Visualization?
+          Organize {{ options.title }} Attributes
         </v-card-title>
-        <v-card-text>The selected graph consists of nodes and
-          edges. Visualization and especially physics simulation could take a long
-          time
-          and cause freezes. Do you want to visualize the graph or skip it for now?
+        <v-card-text>Adjust the attributes of the general item tables.
         </v-card-text>
+        <v-divider></v-divider>
+        <template v-if="Object.keys(options.type).length>0">
+          <v-tabs v-model="optionTab">
+            <v-tabs-slider color="blue"></v-tabs-slider>
+            <v-tab v-for="name in Object.keys(options.attributes)" :key="name">
+              {{ Object.keys(nodes)[name] }}
+            </v-tab>
+          </v-tabs>
+          <v-tabs-items>
+            <v-list>
+              <v-list-item v-for="attr in options.attributes[optionTab]" :key="attr.name">
+                <v-switch v-model="attr.selected" :label="attr.name">
+                </v-switch>
+              </v-list-item>
+            </v-list>
+          </v-tabs-items>
+        </template>
+
+        <v-divider></v-divider>
+
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn
@@ -257,7 +274,9 @@ export default {
       nodeOptionHover: false,
       edgeOptionHover: false,
       optionDialog: false,
-      options: {}
+      options: {},
+      optionTab: undefined,
+      update: {nodes: false, edges: false}
     }
   },
   methods: {
@@ -269,7 +288,6 @@ export default {
     },
     loadList: function (data) {
       this.attributes = {};
-      // this.listAttributes = {}
       this.edges = {};
       this.nodes = {};
       this.nodeTab = 0
@@ -279,16 +297,6 @@ export default {
         this.selected["nodes"] = {}
         this.selected["edges"] = {}
         this.attributes = data.attributes;
-        // for (let entity in Object.keys(this.attributes)) {
-        //   this.listAttributes[entity] = {}
-        //   for (let type in Object.keys(this.attributes[entity])) {
-        //     this.listAttributes[entity][type] = []
-        //     this.attributes[entity][type].forEach(attribute => {
-        //       if (attribute.list)
-        //         this.listAttributes[entity][type].push(attribute)
-        //     })
-        //   }
-        // }
         for (let ni = 0; ni < Object.keys(this.attributes.nodes).length; ni++) {
           this.selected.nodes[ni] = []
           this.selectAllModel.nodes[ni] = false
@@ -306,8 +314,19 @@ export default {
     },
     nodeOptions: function () {
       this.optionDialog = true;
-      options["title"] = (Object.keys(this.nodes).length > 1) ? "Nodes" : "Node"
+      this.optionsTab = 0
+      this.options["title"] = (Object.keys(this.nodes).length > 1) ? "Nodes" : "Node"
 
+      this.options["attributes"] = {}
+      for (let node in Object.keys(this.attributes.nodes)) {
+        let models = []
+        this.attributes.nodes[Object.keys(this.attributes.nodes)[node]].forEach(attr => {
+          models.push({name: attr.name, selected: attr.list})
+        })
+        this.options.attributes[node] = models;
+      }
+      console.log(this.options)
+      this.options["type"] = "nodes";
     },
     edgeOptions: function () {
       this.optionDialog = true;
@@ -317,7 +336,56 @@ export default {
       if (!apply) {
         return;
       }
+      let comparison = this.attributes[this.options.type];
 
+      let reloadNeeded = [];
+      for (let index in this.options.attributes) {
+        let name = Object.keys(comparison)[index]
+        for (let attrIndex in this.options.attributes[index]) {
+          if (this.options.attributes[index][attrIndex].selected && !comparison[name][attrIndex].sent) {
+            reloadNeeded.push(name)
+            break;
+          }
+          comparison[name][attrIndex].list = this.options.attributes[index][attrIndex].selected;
+        }
+      }
+      if (reloadNeeded.length > 0) {
+        let payload = {id: this.gid, attributes: {nodes: {}, edges: {}}}
+        for (let index in this.options.attributes) {
+          let name = Object.keys(comparison)[index]
+          if (reloadNeeded.indexOf(name) === -1)
+            continue
+          let attrs = []
+          payload.attributes[this.options.type][name] = attrs
+          for (let attrIndex in this.options.attributes[index]) {
+            if (this.options.attributes[index][attrIndex].selected)
+              attrs.push(this.options.attributes[index][attrIndex].name)
+          }
+        }
+        this.$http.post("/getCustomGraphList", payload).then(response => {
+          if (response.data !== undefined)
+            return response.data
+        }).then(data => {
+            //TODO just add new data?
+          if (this.options.type === "nodes") {
+            for (let name in data.nodes) {
+              this.attributes.nodes[name] = data.attributes.nodes[name]
+              this.nodes[name] = data.nodes[name]
+            }
+            this.update.nodes = true;
+          } else {
+            for (let name in data.edges) {
+              this.attributes.edges[name] = data.attributes.edges[name]
+              this.edges[name] = data.edges[name]
+            }
+            this.update.edges = true
+          }
+        }).catch(err => {
+          console.log(err)
+        })
+      } else {
+        this.update.nodes = true;
+      }
 
     },
     changedPage: function (number) {
@@ -344,9 +412,9 @@ export default {
       }).catch(err => {
         console.log(err)
       })
-      // this.loadList({nodes: nodesRemaining, edges: edgesRemaining, attributes: attributesRemaining})
     },
     selectAll: function (type, tab) {
+      //TODO maybe find different way to store selection (lagging on >1000 objects already)
       let data = {nodes: this.nodes, edges: this.edges}
       let model = this.selected[type][tab]
       let items = data[type][Object.keys(data[type])[tab]]
@@ -390,7 +458,7 @@ export default {
       console.log("entity:" + entity + ", attributes:" + node)
       let out = []
       this.attributes[entity][node].forEach(attr => {
-        if(!attr.list)
+        if (!attr.list)
           return
         let name = attr.name
         if (name === "id")
@@ -400,6 +468,7 @@ export default {
         }
         out.push({text: name, align: 'start', sortable: attr.numeric, value: name})
       })
+      this.update[entity] = false;
       return out
     },
     getList: function (gid) {

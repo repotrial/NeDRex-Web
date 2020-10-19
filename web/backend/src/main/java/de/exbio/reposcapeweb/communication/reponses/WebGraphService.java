@@ -4,6 +4,7 @@ import de.exbio.reposcapeweb.communication.cache.Edge;
 import de.exbio.reposcapeweb.communication.cache.Graph;
 import de.exbio.reposcapeweb.communication.cache.Graphs;
 import de.exbio.reposcapeweb.communication.cache.Node;
+import de.exbio.reposcapeweb.communication.requests.CustomListRequest;
 import de.exbio.reposcapeweb.communication.requests.Filter;
 import de.exbio.reposcapeweb.communication.requests.GraphRequest;
 import de.exbio.reposcapeweb.communication.requests.UpdateRequest;
@@ -70,34 +71,58 @@ public class WebGraphService {
         return cache.get(graphId).toWebGraph();
     }
 
-    public WebGraphList getList(String id) {
-        WebGraphList list = cache.get(id).toWebList();
-        if (list == null) {
+    public WebGraphList getList(String id, CustomListRequest req) {
+        Graph g = cache.get(id);
+
+
+        WebGraphList list = g.toWebList();
+        boolean custom = req != null;
+        if (list == null || custom) {
+            if (req == null) {
+                req = new CustomListRequest();
+                req.attributes = new HashMap<>();
+                CustomListRequest finalReq = req;
+                g.getNodes().keySet().forEach(k -> {
+                    if (!finalReq.attributes.containsKey("nodes"))
+                        finalReq.attributes.put("nodes", new HashMap<>());
+                    finalReq.attributes.get("nodes").put(Graphs.getNode(k), nodeController.getListAttributes(k));
+                });
+                g.getEdges().keySet().forEach(k -> {
+                    if (!finalReq.attributes.containsKey("edges"))
+                        finalReq.attributes.put("edges", new HashMap<>());
+                    finalReq.attributes.get("edges").put(Graphs.getEdge(k), edgeController.getListAttributes(k));
+                });
+            }
             log.debug("Converting nodes from Graph to WebList for " + id);
-            Graph g = cache.get(id);
             list = new WebGraphList(id);
             WebGraphList finalList = list;
+            CustomListRequest finalReq1 = req;
             g.getNodes().forEach((type, nodeMap) -> {
                 String stringType = Graphs.getNode(type);
-                String[] attributes = nodeController.getListAttributes(type);
+                if (!finalReq1.attributes.get("nodes").containsKey(stringType))
+                    return;
+                String[] attributes = finalReq1.attributes.get("nodes").get(stringType);
                 finalList.addListAttributes("nodes", stringType, attributes);
-                finalList.addAttributes("nodes",stringType,nodeController.getAttributes(type));
+                finalList.addAttributes("nodes", stringType, nodeController.getAttributes(type));
                 finalList.addNodes(stringType, nodeController.nodesToAttributeList(type, nodeMap.keySet(), new HashSet<>(Arrays.asList(attributes))));
 
             });
             log.debug("Converting edges from Graph to WebList for " + id);
             g.getEdges().forEach((type, edgeList) -> {
                 String stringType = Graphs.getEdge(type);
-                String[] attributes = edgeController.getListAttributes(type);
+                if (!finalReq1.attributes.get("edges").containsKey(stringType))
+                    return;
+                String[] attributes = finalReq1.attributes.get("edges").get(stringType);
                 finalList.addListAttributes("edges", stringType, attributes);
-                finalList.addAttributes("edges",stringType,edgeController.getAttributes(type));
+                finalList.addAttributes("edges", stringType, edgeController.getAttributes(type));
                 HashSet<String> attrs = new HashSet<>(Arrays.asList(attributes));
                 List<PairId> edges = edgeList.stream().map(e -> new PairId(e.getId1(), e.getId2())).collect(Collectors.toList());
                 LinkedList<String> attrMaps = edgeController.edgesToAttributeList(type, edges, attrs);
                 finalList.addEdges(stringType, attrMaps);
             });
 
-            cache.get(id).setWebList(list);
+            if (!custom)
+                cache.get(id).setWebList(list);
         }
         return list;
     }
@@ -106,12 +131,12 @@ public class WebGraphService {
         return getGraph(request).toWebGraph();
     }
 
-    public WebGraphInfo updateGraph(UpdateRequest request){
+    public WebGraphInfo updateGraph(UpdateRequest request) {
         Graph basis = cache.get(request.id);
         System.out.println(request.id);
         System.out.println(cache.keySet());
         Graph g = new Graph();
-        request.nodes.forEach((type,ids)->{
+        request.nodes.forEach((type, ids) -> {
             int typeId = Graphs.getNode(type);
             HashSet<Integer> nodeIds = new HashSet<>(Arrays.asList(ids));
             g.addNodes(typeId,
@@ -119,18 +144,18 @@ public class WebGraphService {
                             .getNodes()
                             .get(typeId)
                             .entrySet()
-                            .stream().filter(e->
+                            .stream().filter(e ->
                             nodeIds.contains(e.getKey()))
                             .map(Map.Entry::getValue)
                             .collect(Collectors.toList()));
         });
-        request.edges.forEach((type,ids)->{
+        request.edges.forEach((type, ids) -> {
             int typeId = Graphs.getEdge(type);
             HashSet<String> edgeIds = new HashSet<>(Arrays.asList(ids));
-            g.addEdges(typeId,basis.getEdges().get(typeId).stream().filter(e->edgeIds.contains(e.getId1()+"-"+e.getId2())).collect(Collectors.toCollection(LinkedList::new)));
+            g.addEdges(typeId, basis.getEdges().get(typeId).stream().filter(e -> edgeIds.contains(e.getId1() + "-" + e.getId2())).collect(Collectors.toCollection(LinkedList::new)));
         });
 
-        cache.put(g.getId(),g);
+        cache.put(g.getId(), g);
         return g.toInfo();
     }
 

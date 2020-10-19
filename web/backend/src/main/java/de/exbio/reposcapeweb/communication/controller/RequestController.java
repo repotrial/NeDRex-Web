@@ -6,6 +6,7 @@ import de.exbio.reposcapeweb.communication.cache.Graph;
 import de.exbio.reposcapeweb.communication.cache.Graphs;
 import de.exbio.reposcapeweb.communication.reponses.WebGraph;
 import de.exbio.reposcapeweb.communication.reponses.WebGraphList;
+import de.exbio.reposcapeweb.communication.requests.CustomListRequest;
 import de.exbio.reposcapeweb.communication.requests.FilterGroup;
 import de.exbio.reposcapeweb.communication.requests.GraphRequest;
 import de.exbio.reposcapeweb.communication.requests.UpdateRequest;
@@ -126,7 +127,32 @@ public class RequestController {
         System.out.println("got request for " + id + " from cache=" + cached);
         try {
             StringBuilder out = new StringBuilder("{\"edges\":{");
-            WebGraphList list = webGraphService.getList(id);
+            WebGraphList list = webGraphService.getList(id, null);
+            StringBuilder edgeBuilder = new StringBuilder();
+            list.getEdges().forEach((type, edges) -> {
+                edgeBuilder.append("\"").append(type).append("\":[");
+                StringBuilder sb = new StringBuilder("");
+                edges.forEach(e -> sb.append(e).append(','));
+                edgeBuilder.append(sb.substring(0, edges.size() > 0 ? sb.length() - 1 : sb.length()));
+                edgeBuilder.append("],");
+            });
+            out.append(edgeBuilder.substring(0, list.getEdges().size() > 0 ? edgeBuilder.length() - 1 : edgeBuilder.length())).append("},");
+            out.append(objectMapper.writeValueAsString(list).substring(1));
+            return out.toString();
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @RequestMapping(value = "/getCustomGraphList", method = RequestMethod.POST)
+    @ResponseBody
+    public String getCustomGraphList(@RequestBody CustomListRequest req) {
+        System.out.println("got custom request for " + req.id );
+        try {
+            System.out.println(objectMapper.writeValueAsString(req));
+            StringBuilder out = new StringBuilder("{\"edges\":{");
+            WebGraphList list = webGraphService.getList(req.id, req);
             StringBuilder edgeBuilder = new StringBuilder();
             list.getEdges().forEach((type, edges) -> {
                 edgeBuilder.append("\"").append(type).append("\":[");
