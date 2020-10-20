@@ -124,7 +124,7 @@ public class RequestController {
     @RequestMapping(value = "/getGraphList", method = RequestMethod.GET)
     @ResponseBody
     public String getGraphList(@RequestParam("id") String id, @RequestParam("cached") boolean cached) {
-        System.out.println("got request for " + id + " from cache=" + cached);
+        log.info("got request for " + id + " from cache=" + cached);
         try {
             StringBuilder out = new StringBuilder("{\"edges\":{");
             WebGraphList list = webGraphService.getList(id, null);

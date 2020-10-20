@@ -420,7 +420,6 @@ public class EdgeController {
     }
 
     public LinkedList<String> edgesToAttributeList(Integer type, List<PairId> ids, HashSet<String> attributes) {
-        System.out.println("getting info for " + ids.size() + " " + type + "-Edges");
         int chunksize= 1000;
         LinkedList<LinkedList<PairId>> chunks = new LinkedList<>();
         for(int i = 0; i<ids.size()/chunksize+1; i++){
