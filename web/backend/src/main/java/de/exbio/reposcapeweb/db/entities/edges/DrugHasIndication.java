@@ -46,7 +46,12 @@ public class DrugHasIndication extends RepoTrialEdge implements Serializable {
 
     @Transient
     @JsonIgnore
-    public final static String[] allAttributes = new String[]{"id","sourceId","targetId","sourceDomainId","sourceDomainId","type"};
+    public final static String[] allAttributes = new String[]{"id","sourceId","targetId","sourceDomainId","targetDomainId","type"};
+
+    @Transient
+    @JsonIgnore
+    public final static String[] allAttributeTypes = new String[]{"numeric","numeric","numeric","","",""};
+
 
     @Transient
     private String targetDomainId;

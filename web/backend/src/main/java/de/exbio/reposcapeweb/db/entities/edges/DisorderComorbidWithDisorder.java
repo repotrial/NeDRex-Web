@@ -46,6 +46,11 @@ public class DisorderComorbidWithDisorder extends RepoTrialEdge implements Seria
     public final static String[] allAttributes = new String[]{"id","idOne", "idTwo", "memberOne","memberTwo", "phiCor","rrGeoMean","rr12","rr21","type"};
 
     @Transient
+    @JsonIgnore
+    public final static String[] allAttributeTypes = new String[]{"numeric","numeric", "numeric", "","", "numeric","numeric","numeric","numeric",""};
+
+
+    @Transient
     private String memberOne;
     @Transient
     private String memberTwo;

@@ -61,6 +61,11 @@ public class DrugHasTargetGene extends RepoTrialEdge implements Serializable {
     public final static String[] allAttributes = new String[]{"id","sourceId", "targetId","sourceDomainId","targetDomainId", "type"};
 
 
+    @Transient
+    @JsonIgnore
+    public final static String[] allAttributeTypes = new String[]{"numeric","numeric", "numeric","","", ""};
+
+
     @JsonGetter
     public String getType() {
         return "DrugHasTargetGene";
@@ -70,6 +75,7 @@ public class DrugHasTargetGene extends RepoTrialEdge implements Serializable {
     public void setType(String type) {
     }
 
+    @JsonIgnore
     public static String[] getListAttributes() {
         return new String[]{"id","sourceId","targetId"};
     }

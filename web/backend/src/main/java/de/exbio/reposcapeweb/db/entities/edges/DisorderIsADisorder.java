@@ -49,6 +49,11 @@ public class DisorderIsADisorder extends RepoTrialEdge implements Serializable {
     public final static String[] allAttributes = new String[]{"id","sourceId","targetId","targetDomainId", "sourceDomainId", "type"};
 
     @Transient
+    @JsonIgnore
+    public final static String[] allAttributeTypes = new String[]{"numeric","numeric","numeric","", "", ""};
+
+
+    @Transient
     private String targetDomainId;
     @Transient
     private String sourceDomainId;

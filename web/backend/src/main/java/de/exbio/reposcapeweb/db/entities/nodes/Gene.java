@@ -36,6 +36,12 @@ public class Gene extends RepoTrialNode {
     @JsonIgnore
     public final static String[] allAttributes = new String[]{"id","primaryDomainId","domainIds","displayName", "approvedSymbol", "geneType","chromosome", "mapLocation","symbols","synonyms","description","type"};
 
+
+    @Transient
+    @JsonIgnore
+    public final static String[] allAttributeTypes = new String[]{"numeric","","array","", "", "","", "","array","array","",""};
+
+
     @Column(nullable = false)
     private String primaryDomainId;
     private String domainIds;

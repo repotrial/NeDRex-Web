@@ -35,6 +35,11 @@ public class Protein extends RepoTrialNode {
     @JsonIgnore
     public final static String[] allAttributes = new String[]{"id","primaryDomainId","domainIds", "displayName", "geneName", "taxid","sequence", "synonyms","comments","type"};
 
+    @Transient
+    @JsonIgnore
+    public final static String[] allAttributeTypes = new String[]{"numeric","","array", "", "", "numeric","", "array","array",""};
+
+
     public Protein() {
     }
 

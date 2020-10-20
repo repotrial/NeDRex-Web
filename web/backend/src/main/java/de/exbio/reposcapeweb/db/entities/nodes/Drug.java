@@ -34,6 +34,10 @@ public class Drug extends RepoTrialNode {
     @JsonIgnore
     public final static String[] allAttributes = new String[]{"id", "primaryDomainId", "domainIds", "displayName", "indication", "drugGroups", "drugCategories", "iupacName", "molecularFormula", "casNumber", "primaryDataset", "allDatasets", "inchi", "smiles", "_cls", "sequences", "synonyms", "description", "type"};
 
+    @Transient
+    @JsonIgnore
+    public final static String[] allAttributeTypes = new String[]{"numeric", "", "array", "", "", "array", "array", "", "", "", "", "array", "", "", "", "array", "array", "", ""};
+
 
     @Column(nullable = false)
     private String primaryDomainId;

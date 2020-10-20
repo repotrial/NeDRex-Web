@@ -51,6 +51,10 @@ public class GeneAssociatedWithDisorder extends RepoTrialEdge implements Seriali
     public final static String[] allAttributes = new String[]{"id","sourceId","targetId","sourceDomainId","targetDomainId", "score", "assertedBy","type"};
 
     @Transient
+    @JsonIgnore
+    public final static String[] allAttributeTypes = new String[]{"numeric","numeric","numeric","","", "numeric", "array",""};
+
+    @Transient
     private String targetDomainId;
     @Transient
     private String sourceDomainId;

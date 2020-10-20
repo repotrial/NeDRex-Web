@@ -54,7 +54,11 @@ public class GeneInteractsWithGene extends RepoTrialEdge implements Serializable
 
     @Transient
     @JsonIgnore
-    public final static String[] allAttributes = new String[]{"id","idOne","idTwo","memberOne","memberTwo"};
+    public final static String[] allAttributes = new String[]{"id","idOne","idTwo","memberOne","memberTwo","type"};
+
+    @Transient
+    @JsonIgnore
+    public final static String[] allAttributeTypes = new String[]{"numeric","numeric","numeric","","", ""};
 
 
     @Override
@@ -64,6 +68,7 @@ public class GeneInteractsWithGene extends RepoTrialEdge implements Serializable
         values.put("memberTwo",memberTwo);
         values.put("idOne",id.getId1());
         values.put("idTwo",id.getId2());
+        values.put("type",getType());
         values.put("id",id.getId1()+"-"+id.getId2());
         return values;
     }

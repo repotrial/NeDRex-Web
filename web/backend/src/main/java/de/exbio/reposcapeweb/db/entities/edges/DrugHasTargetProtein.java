@@ -51,6 +51,10 @@ public class DrugHasTargetProtein extends RepoTrialEdge implements Serializable 
     @JsonIgnore
     public final static String[] allAttributes = new String[]{"id","sourceId","targetId","sourceDomainId", "targetDomainId", "actions", "databases","type"};
 
+    @Transient
+    @JsonIgnore
+    public final static String[] allAttributeTypes = new String[]{"numeric","numeric","numeric","", "", "array", "array",""};
+
 
     @Transient
     private String targetDomainId;

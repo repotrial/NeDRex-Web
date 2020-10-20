@@ -182,4 +182,20 @@ public class NodeController {
         }
         return null;
     }
+
+    public String[] getAttributeTypes(Integer typeId) {
+        switch (Graphs.getNode(typeId)) {
+            case "disorder":
+                return Disorder.allAttributeTypes;
+            case "drug":
+                return Drug.allAttributeTypes;
+            case "gene":
+                return Gene.allAttributeTypes;
+            case "pathway":
+                return Pathway.allAttributeTypes;
+            case "protein":
+                return Protein.allAttributeTypes;
+        }
+        return null;
+    }
 }

@@ -76,6 +76,7 @@ public class WebGraphService {
 
 
         WebGraphList list = g.toWebList();
+
         boolean custom = req != null;
         if (list == null || custom) {
             if (req == null) {
@@ -105,21 +106,29 @@ public class WebGraphService {
                 finalList.addListAttributes("nodes", stringType, attributes);
                 finalList.addAttributes("nodes", stringType, nodeController.getAttributes(type));
                 finalList.addNodes(stringType, nodeController.nodesToAttributeList(type, nodeMap.keySet(), new HashSet<>(Arrays.asList(attributes))));
+                finalList.setTypes("nodes",stringType,nodeController.getAttributes(type),nodeController.getAttributeTypes(type));
 
             });
             log.debug("Converting edges from Graph to WebList for " + id);
+
             g.getEdges().forEach((type, edgeList) -> {
                 String stringType = Graphs.getEdge(type);
                 if (!finalReq1.attributes.get("edges").containsKey(stringType))
                     return;
+
                 String[] attributes = finalReq1.attributes.get("edges").get(stringType);
                 finalList.addListAttributes("edges", stringType, attributes);
                 finalList.addAttributes("edges", stringType, edgeController.getAttributes(type));
                 HashSet<String> attrs = new HashSet<>(Arrays.asList(attributes));
+
                 List<PairId> edges = edgeList.stream().map(e -> new PairId(e.getId1(), e.getId2())).collect(Collectors.toList());
+
+
                 LinkedList<String> attrMaps = edgeController.edgesToAttributeList(type, edges, attrs);
                 finalList.addEdges(stringType, attrMaps);
+                finalList.setTypes("edges",stringType,edgeController.getAttributes(type),edgeController.getAttributeTypes(type));
             });
+
 
             if (!custom)
                 cache.get(id).setWebList(list);
@@ -133,8 +142,6 @@ public class WebGraphService {
 
     public WebGraphInfo updateGraph(UpdateRequest request) {
         Graph basis = cache.get(request.id);
-        System.out.println(request.id);
-        System.out.println(cache.keySet());
         Graph g = new Graph();
         request.nodes.forEach((type, ids) -> {
             int typeId = Graphs.getNode(type);
@@ -208,11 +215,13 @@ public class WebGraphService {
                     if (request.edges.containsKey(Graphs.getEdge(edgeId))) {
                         //TODO add edgeFilters
                         LinkedList<Edge> edges = new LinkedList<>();
+
                         nodeIds.get(nodeI[0]).forEach((k1, v1) -> {
                             try {
                                 if (request.connectedOnly & connectedNodes.contains(nodeI[0]) & !v1.hasEdge()) {
                                     return;
                                 }
+
                                 edgeController.getEdges(edgeId, nodeI[0], k1).forEach(t -> {
                                     try {
                                         if (request.connectedOnly & connectedNodes.contains(nodeJ[0]) & !nodeIds.get(nodeJ[0]).get(t).hasEdge())

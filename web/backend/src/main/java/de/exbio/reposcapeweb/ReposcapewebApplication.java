@@ -61,7 +61,6 @@ public class ReposcapewebApplication {
     @EventListener(ApplicationReadyEvent.class)
     public void postConstruct() {
         Graphs.setUp();
-
         importService.importNodeData();
         log.debug("Current RAM usage: " + (int) ((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024)
                 + "MB");
@@ -72,6 +71,7 @@ public class ReposcapewebApplication {
             importService.importEdges(false);
             log.warn("Startup Database update is deactivated! Activate it by setting 'update.onstartup=true' in the application.properties.");
         }
+
 
         log.debug("Current RAM usage: " + (int) ((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024)
                 + "MB");

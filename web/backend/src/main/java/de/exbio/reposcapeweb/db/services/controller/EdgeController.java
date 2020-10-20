@@ -428,7 +428,7 @@ public class EdgeController {
             for(int j = 0; j<chunksize;j++){
                 if(ids.size()<=i*chunksize+j)
                     break;
-                idChunk.add(ids.get(i*500+j));
+                idChunk.add(ids.get(i*chunksize+j));
             }
             chunks.add(idChunk);
         }
@@ -588,6 +588,34 @@ public class EdgeController {
                 return DisorderComorbidWithDisorder.allAttributes;
             case "GeneInteractsWithGene":
                 return GeneInteractsWithGene.allAttributes;
+        }
+        return null;
+    }
+
+    public String[] getAttributeTypes(Integer type) {
+        switch (Graphs.getEdge(type)) {
+            case "GeneAssociatedWithDisorder":
+                return GeneAssociatedWithDisorder.allAttributeTypes;
+            case "DrugHasTargetGene":
+                return DrugHasTargetGene.allAttributeTypes;
+            case "ProteinEncodedBy":
+                return ProteinEncodedBy.allAttributeTypes;
+            case "DrugHasIndication":
+                return DrugHasIndication.allAttributeTypes;
+            case "DrugHasTargetProtein":
+                return DrugHasTargetProtein.allAttributeTypes;
+            case "ProteinInteractsWithProtein":
+                return ProteinInteractsWithProtein.allAttributeTypes;
+            case "ProteinInPathway":
+                return ProteinInPathway.allAttributeTypes;
+            case "ProteinAssociatedWithDisorder":
+                return ProteinAssociatedWithDisorder.allAttributeTypes;
+            case "DisorderIsADisorder":
+                return DisorderIsADisorder.allAttributeTypes;
+            case "DisorderComorbidWithDisorder":
+                return DisorderComorbidWithDisorder.allAttributeTypes;
+            case "GeneInteractsWithGene":
+                return GeneInteractsWithGene.allAttributeTypes;
         }
         return null;
     }

@@ -34,6 +34,10 @@ public class Pathway extends RepoTrialNode {
     @JsonIgnore
     public final static String[] allAttributes = new String[]{"id", "primaryDomainId","displayName","domainIds","species","domainIds","type"};
 
+    @Transient
+    @JsonIgnore
+    public final static String[] allAttributeTypes = new String[]{"numeric", "","","array","array","array",""};
+
     @Column(nullable = false)
     private String primaryDomainId;
     @Column(nullable = false)

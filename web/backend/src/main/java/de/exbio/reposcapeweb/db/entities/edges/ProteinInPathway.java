@@ -45,6 +45,11 @@ public class ProteinInPathway extends RepoTrialEdge implements Serializable {
     @JsonIgnore
     public final static String[] allAttributes = new String[]{"id", "sourceId","targetId", "sourceDomainId","targetDomainId", "type"};
 
+    @Transient
+    @JsonIgnore
+    public final static String[] allAttributeTypes = new String[]{"numeric", "numeric","numeric", "","", ""};
+
+
 
     @Transient
     private String targetDomainId;

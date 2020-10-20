@@ -34,6 +34,10 @@ public class Disorder extends RepoTrialNode {
     @JsonIgnore
     public final static String[] allAttributes = new String[]{"id","primaryDomainId","displayName","domainIds","icd10", "synonyms",  "description","type"};
 
+    @Transient
+    @JsonIgnore
+    public final static String[] allAttributeTypes = new String[]{"numeric","","","array","", "array",  "",""};
+
 
     @Column(nullable = false)
     private String primaryDomainId;

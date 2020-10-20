@@ -49,6 +49,11 @@ public class ProteinInteractsWithProtein extends RepoTrialEdge implements Serial
     public final static String[] allAttributes = new String[]{"id","idOne", "idTwo", "memberOne", "memberTwo","evidenceTypes", "methods", "databases","type"};
 
     @Transient
+    @JsonIgnore
+    public final static String[] allAttributeTypes = new String[]{"numeric","numeric", "numeric", "", "","array", "array", "array",""};
+
+
+    @Transient
     private String memberOne;
     @Transient
     private String memberTwo;

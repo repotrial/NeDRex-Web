@@ -91,6 +91,7 @@ public class WebGraphList {
         HashSet<String> attrSet = new HashSet<>(Arrays.asList(attributes));
         this.attributes.get(entity).get(type).stream().filter(s -> attrSet.contains(s.name)).forEach(WebAttribute::isSent);
     }
+
     public void addEdges(String type, LinkedList<String> edgesToAttributeList) {
         if (!edges.containsKey(type))
             edges.put(type, edgesToAttributeList);
@@ -105,11 +106,23 @@ public class WebGraphList {
             nodes.get(type).addAll(nodesToAttributeList);
     }
 
+    public void setTypes(String type, String name, String[] attributes, String[] types) {
+        ArrayList<String> names = new ArrayList<>(Arrays.asList(attributes));
+        this.attributes.get(type).get(name).forEach(a -> {
+            String t = types[names.indexOf(a.name)];
+            if (t.equals("numeric"))
+                a.isNumeric();
+            if (t.equals("array"))
+                a.isArray();
+        });
+    }
+
     private class WebAttribute {
         public String name;
         public boolean list;
-        public boolean numeric;
         public boolean sent;
+        public boolean numeric;
+        public boolean array;
 
         public WebAttribute(String name) {
             this.name = name;
@@ -124,8 +137,12 @@ public class WebGraphList {
             this.numeric = true;
         }
 
-        public void isSent(){
+        public void isSent() {
             this.sent = true;
+        }
+
+        public void isArray() {
+            this.array = true;
         }
     }
 

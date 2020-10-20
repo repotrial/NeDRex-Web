@@ -330,6 +330,19 @@ export default {
     },
     edgeOptions: function () {
       this.optionDialog = true;
+      this.optionsTab = 0
+      this.options["title"] = (Object.keys(this.edges).length > 1) ? "Edges" : "Edge"
+
+      this.options["attributes"] = {}
+      for (let edge in Object.keys(this.attributes.edges)) {
+        let models = []
+        this.attributes.edges[Object.keys(this.attributes.edges)[edge]].forEach(attr => {
+          models.push({name: attr.name, selected: attr.list})
+        })
+        this.options.attributes[edge] = models;
+      }
+      console.log(this.options)
+      this.options["type"] = "edges";
     },
     dialogResolve(apply) {
       this.optionDialog = false;
