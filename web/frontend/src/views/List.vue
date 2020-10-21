@@ -63,15 +63,42 @@
               :items="showAllLists ? nodes[Object.keys(nodes)[nodeTab]]: selected.nodes[nodeTab]"
               item-key="id"
               show-select
+              :search="filters.nodes"
+              :custom-filter="filter"
             >
               <template v-slot:top>
-                <v-switch
-                  v-if="showAllLists"
-                  v-on:click="selectAll('nodes',nodeTab)"
-                  v-model="selectAllModel.nodes[nodeTab]"
-                  label="Select All"
-                  class="pa-3"
-                ></v-switch>
+                <v-container>
+                  <v-row>
+                    <v-col
+                      cols="3"
+                    >
+                      <v-select
+                        :items="headerNames('nodes',Object.keys(nodes)[nodeTab])"
+                        label="Attribute"
+                        v-model="filterAttribute.nodes"
+                        outlined
+                      ></v-select>
+                    </v-col>
+                    <v-col
+                      cols="8"
+                    >
+                      <v-text-field
+                        v-model="filters.nodes"
+                        label="Search (UPPER CASE ONLY)"
+                        class="mx-4"
+                      ></v-text-field>
+                    </v-col>
+                  </v-row>
+                  <v-row>
+                    <v-switch
+                      v-if="showAllLists"
+                      v-on:click="selectAll('nodes',nodeTab)"
+                      v-model="selectAllModel.nodes[nodeTab]"
+                      label="Select All"
+                      class="pa-3"
+                    ></v-switch>
+                  </v-row>
+                </v-container>
               </template>
               <template v-slot:item.displayName="{item}">
                 <v-tooltip right>
@@ -276,7 +303,9 @@ export default {
       optionDialog: false,
       options: {},
       optionTab: undefined,
-      update: {nodes: false, edges: false}
+      update: {nodes: false, edges: false},
+      filters: {nodes: '', edges: ''},
+      filterAttribute: {nodes: '', edges: ''}
     }
   },
   methods: {
@@ -311,6 +340,19 @@ export default {
         this.nodeTab = 0
         this.edgeTab = 0
       }
+    },
+    filter: function (value, search, item) {
+      //TODO add string/numeric
+      let attr = item[this.filterAttribute.nodes];
+      if (typeof attr === "object") {
+        let match = false;
+        attr.forEach(el => {
+          if (el.indexOf(search) !== -1)
+            match = true
+        })
+        return match;
+      } else
+        return attr.indexOf(search) !== -1
     },
     nodeOptions: function () {
       this.optionDialog = true;
@@ -379,7 +421,7 @@ export default {
           if (response.data !== undefined)
             return response.data
         }).then(data => {
-            //TODO just add new data?
+          //TODO just add new data?
           if (this.options.type === "nodes") {
             for (let name in data.nodes) {
               this.attributes.nodes[name] = data.attributes.nodes[name]
@@ -427,7 +469,8 @@ export default {
       })
     },
     selectAll: function (type, tab) {
-      //TODO maybe find different way to store selection (lagging on >1000 objects already)
+      //TODO apply select all to only filtered
+      //TODO maybe find different way to store selection (lagging on >1000 objects already) (maybe get bool array from ref?)
       let data = {nodes: this.nodes, edges: this.edges}
       let model = this.selected[type][tab]
       let items = data[type][Object.keys(data[type])[tab]]
@@ -438,8 +481,9 @@ export default {
             this.$refs.nodeTab.select(item, true)
           else
             this.$refs.edgeTab.select(item, true)
-          model.push(item)
+          // model.push(item)
         })
+        this.selected[type][tab] = {...items}
       } else {
         items.forEach(item => {
           if (type === "nodes")
@@ -483,6 +527,12 @@ export default {
       })
       this.update[entity] = false;
       return out
+    },
+    headerNames: function (entity, node) {
+      let headers = this.headers(entity, node);
+      let out = []
+      headers.forEach(header => out.push(header.text))
+      return out;
     },
     getList: function (gid) {
       this.clearLists()
