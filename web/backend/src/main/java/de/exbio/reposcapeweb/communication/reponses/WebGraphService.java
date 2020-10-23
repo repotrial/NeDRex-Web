@@ -4,10 +4,7 @@ import de.exbio.reposcapeweb.communication.cache.Edge;
 import de.exbio.reposcapeweb.communication.cache.Graph;
 import de.exbio.reposcapeweb.communication.cache.Graphs;
 import de.exbio.reposcapeweb.communication.cache.Node;
-import de.exbio.reposcapeweb.communication.requests.CustomListRequest;
-import de.exbio.reposcapeweb.communication.requests.Filter;
-import de.exbio.reposcapeweb.communication.requests.GraphRequest;
-import de.exbio.reposcapeweb.communication.requests.UpdateRequest;
+import de.exbio.reposcapeweb.communication.requests.*;
 import de.exbio.reposcapeweb.db.DbCommunicationService;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
 import de.exbio.reposcapeweb.db.services.controller.EdgeController;
@@ -106,7 +103,7 @@ public class WebGraphService {
                 finalList.addListAttributes("nodes", stringType, attributes);
                 finalList.addAttributes("nodes", stringType, nodeController.getAttributes(type));
                 finalList.addNodes(stringType, nodeController.nodesToAttributeList(type, nodeMap.keySet(), new HashSet<>(Arrays.asList(attributes))));
-                finalList.setTypes("nodes",stringType,nodeController.getAttributes(type),nodeController.getAttributeTypes(type));
+                finalList.setTypes("nodes", stringType, nodeController.getAttributes(type), nodeController.getAttributeTypes(type));
 
             });
             log.debug("Converting edges from Graph to WebList for " + id);
@@ -126,7 +123,7 @@ public class WebGraphService {
 
                 LinkedList<String> attrMaps = edgeController.edgesToAttributeList(type, edges, attrs);
                 finalList.addEdges(stringType, attrMaps);
-                finalList.setTypes("edges",stringType,edgeController.getAttributes(type),edgeController.getAttributeTypes(type));
+                finalList.setTypes("edges", stringType, edgeController.getAttributes(type), edgeController.getAttributeTypes(type));
             });
 
 
@@ -189,6 +186,7 @@ public class WebGraphService {
                 for (Filter filter : v.filters) {
                     nf = nf.apply(filter);
                 }
+            g.saveNodeFilter(k, nf);
             HashMap<Integer, Node> ids = new HashMap<>();
             nodeIds.put(Graphs.getNode(k), ids);
 
@@ -244,8 +242,9 @@ public class WebGraphService {
                 });
             }
         }
-        if (request.connectedOnly)
+        if (request.connectedOnly) {
             nodeIds.forEach((type, nodeMap) -> nodeMap.entrySet().stream().filter(e -> e.getValue().hasEdge()).forEach(e -> g.addNode(type, e.getValue())));
+        }
         else
             nodeIds.forEach((type, nodeMap) -> nodeMap.forEach((key, value) -> g.addNode(type, value)));
         return g;
@@ -305,4 +304,20 @@ public class WebGraphService {
         return graph;
     }
 
+    public Suggestions getSuggestions(SuggestionRequest request) {
+        Graph graph = cache.get(request.gid);
+        Suggestions suggestions = new Suggestions(request.gid, request.query);
+
+        if (request.type.equals("nodes")) {
+            NodeFilter nf = graph.getNodeFilter(request.name).contains(request.query);
+            HashSet<Integer> ids = new HashSet<>(graph.getNodes().get(Graphs.getNode(request.name)).keySet());
+            suggestions.setDistinct(nf.getDistinctMap(), ids);
+            suggestions.setUnique(nf.getUniqueMap(),ids);
+        } else {
+
+        }
+
+
+        return suggestions;
+    }
 }

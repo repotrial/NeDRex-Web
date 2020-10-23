@@ -6,10 +6,7 @@ import de.exbio.reposcapeweb.communication.cache.Graph;
 import de.exbio.reposcapeweb.communication.cache.Graphs;
 import de.exbio.reposcapeweb.communication.reponses.WebGraph;
 import de.exbio.reposcapeweb.communication.reponses.WebGraphList;
-import de.exbio.reposcapeweb.communication.requests.CustomListRequest;
-import de.exbio.reposcapeweb.communication.requests.FilterGroup;
-import de.exbio.reposcapeweb.communication.requests.GraphRequest;
-import de.exbio.reposcapeweb.communication.requests.UpdateRequest;
+import de.exbio.reposcapeweb.communication.requests.*;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
 import de.exbio.reposcapeweb.db.services.controller.EdgeController;
 import de.exbio.reposcapeweb.db.services.controller.NodeController;
@@ -121,6 +118,18 @@ public class RequestController {
         return null;
     }
 
+    @RequestMapping(value = "/getSuggestions", method = RequestMethod.POST)
+    @ResponseBody
+    public String getSuggestions(@RequestBody SuggestionRequest request) {
+        log.info("got request for " + request.gid + " getting suggestions for query '" + request.query + "' in " + request.name + " (" + request.type + ")");
+        try {
+            return objectMapper.writeValueAsString(webGraphService.getSuggestions(request));
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     @RequestMapping(value = "/getGraphList", method = RequestMethod.GET)
     @ResponseBody
     public String getGraphList(@RequestParam("id") String id, @RequestParam("cached") boolean cached) {
@@ -148,7 +157,7 @@ public class RequestController {
     @RequestMapping(value = "/getCustomGraphList", method = RequestMethod.POST)
     @ResponseBody
     public String getCustomGraphList(@RequestBody CustomListRequest req) {
-        System.out.println("got custom request for " + req.id );
+        System.out.println("got custom request for " + req.id);
         try {
             System.out.println(objectMapper.writeValueAsString(req));
             StringBuilder out = new StringBuilder("{\"edges\":{");
@@ -205,9 +214,9 @@ public class RequestController {
         return null;
     }
 
-    @RequestMapping(value="/updateGraph", method = RequestMethod.POST)
+    @RequestMapping(value = "/updateGraph", method = RequestMethod.POST)
     @ResponseBody
-    public String updateGraph(@RequestBody UpdateRequest request){
+    public String updateGraph(@RequestBody UpdateRequest request) {
         ;
         try {
             return objectMapper.writeValueAsString(webGraphService.updateGraph(request));

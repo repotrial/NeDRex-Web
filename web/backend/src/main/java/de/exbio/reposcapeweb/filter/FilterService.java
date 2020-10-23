@@ -59,7 +59,7 @@ public class FilterService {
         String line = "";
 
         try {
-            BufferedReader br = ReaderUtils.getBasicReader(new File(f.getAbsoluteFile() + ".distinct"));
+            BufferedReader br = ReaderUtils.getBasicReader(new File(f.getAbsoluteFile() + ".unique"));
             while ((line = br.readLine()) != null) {
                 LinkedList<String> values = StringUtils.split(line, '\t');
                 nf.addUnique(FilterType.values()[Integer.parseInt(values.get(0))], values.get(1), values.get(3), Integer.parseInt(values.get(2)));
@@ -70,7 +70,7 @@ public class FilterService {
         }
 
         try {
-            BufferedReader br = ReaderUtils.getBasicReader(new File(f.getAbsoluteFile() + ".unique"));
+            BufferedReader br = ReaderUtils.getBasicReader(new File(f.getAbsoluteFile() + ".distinct"));
             while ((line = br.readLine()) != null) {
                 LinkedList<String> values = StringUtils.split(line, '\t');
                 nf.addDistinct(FilterType.values()[Integer.parseInt(values.get(0))], values.get(1), values.get(3), Integer.parseInt(values.get(2)));

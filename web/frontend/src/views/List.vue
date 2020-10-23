@@ -63,40 +63,86 @@
               :items="showAllLists ? nodes[Object.keys(nodes)[nodeTab]]: selected.nodes[nodeTab]"
               item-key="id"
               show-select
-              :search="filters.nodes"
+              :search="filters.nodes.query"
               :custom-filter="filter"
             >
               <template v-slot:top>
                 <v-container>
                   <v-row>
                     <v-col
-                      cols="3"
+                      cols="2"
+                      v-show="!filters.nodes.suggestions"
                     >
                       <v-select
                         :items="headerNames('nodes',Object.keys(nodes)[nodeTab])"
                         label="Attribute"
-                        v-model="filterAttribute.nodes"
+                        v-model="filters.nodes.attribute"
                         outlined
                       ></v-select>
                     </v-col>
                     <v-col
-                      cols="8"
+                      :cols="(filters.nodes.suggestions)?10:8"
                     >
                       <v-text-field
-                        v-model="filters.nodes"
-                        label="Search (UPPER CASE ONLY)"
+                        clearable
+                        v-show="!filters.nodes.suggestions"
+                        v-model="filters.nodes.query"
+                        label="Query (case sensitive)"
                         class="mx-4"
                       ></v-text-field>
+                      <v-autocomplete
+                        clearable
+                        :search-input.sync="findNodeSuggestions"
+                        v-show="filters.nodes.suggestions"
+                        :loading="suggestions.nodes.loading"
+                        :items="suggestions.nodes.data"
+                        v-model="filterNodeModel"
+                        label="Query (case sensitive)"
+                        class="mx-4"
+                      >
+                        <template v-slot:item="{ item }" v-on:select="suggestions.nodes.chosen=item">
+                          <v-list-item-avatar
+                          >
+                            <v-icon>mdi-bitcoin</v-icon>
+                          </v-list-item-avatar>
+                          <v-list-item-content>
+                            <v-list-item-title v-text="item.text"></v-list-item-title>
+                            <v-list-item-subtitle
+                              v-text="item.type + (item.ids.length>1 ?'('+item.ids.length+')':'')"></v-list-item-subtitle>
+                          </v-list-item-content>
+                        </template>
+                      </v-autocomplete>
+                    </v-col>
+                    <v-col
+                      cols="2"
+                    >
+                      <v-switch
+                        label="Suggestions"
+                        v-model="filters.nodes.suggestions"
+                        v-on:click="toggleSuggestions('nodes')"
+                      >
+                      </v-switch>
                     </v-col>
                   </v-row>
                   <v-row>
-                    <v-switch
-                      v-if="showAllLists"
-                      v-on:click="selectAll('nodes',nodeTab)"
-                      v-model="selectAllModel.nodes[nodeTab]"
-                      label="Select All"
-                      class="pa-3"
-                    ></v-switch>
+                    <v-col>
+                      <v-btn
+                        v-if="showAllLists"
+                        v-on:click="selectAll('nodes',nodeTab)"
+                        v-model="selectAllModel.nodes[nodeTab]"
+                        class="pa-3"
+                      >Select All
+                      </v-btn>
+                    </v-col>
+                    <v-col>
+                      <v-btn
+                        v-if="showAllLists"
+                        v-on:click="deselectAll('nodes',nodeTab)"
+                        v-model="selectAllModel.nodes[nodeTab]"
+                        class="pa-3"
+                      >Deselect All
+                      </v-btn>
+                    </v-col>
                   </v-row>
                 </v-container>
               </template>
@@ -304,9 +350,69 @@ export default {
       options: {},
       optionTab: undefined,
       update: {nodes: false, edges: false},
-      filters: {nodes: '', edges: ''},
-      filterAttribute: {nodes: '', edges: ''}
+      findNodeSuggestions: null,
+      suggestions: {
+        nodes: {model: undefined, data: [], loading: false, chosen: undefined},
+        edges: {model: undefined, data: [], loading: false, chosen: undefined}
+      },
+      filters: {
+        nodes: {query: '', attribute: '', suggestions: false},
+        edges: {query: '', attribute: '', suggestions: false}
+      },
+      filterNodeModel: null,
     }
+  },
+  watch: {
+    filterNodeModel: function (val) {
+      if (val !== undefined) {
+        this.filters.nodes.query = val
+        this.suggestions.nodes.chosen = this.suggestions.nodes.data.filter(item => item.value === val).flatMap(item => item.ids);
+      } else {
+        this.suggestions.nodes.chosen = undefined
+      }
+    },
+    findNodeSuggestions: function (val) {
+      let type = "nodes";
+      let name = Object.keys(this.nodes)[this.nodeTab];
+      if (this.suggestions[type].chosen !== undefined)
+        return
+      // console.log(this.suggestions.nodes.query)
+      // if (this.filters.nodes.query=== val){
+      //   console.log("setting chosen ids")
+      //   this.suggestions[type].chosen = this.suggestions[type].data.filter(item=>item.value ===val).flatMap(item=>item.ids);
+      //   console.log(this.suggestions[type].chosen)
+      //   return
+      // }
+      this.suggestions[type].loading = true;
+
+      this.suggestions[type].data = []
+
+      console.log("getting suggestions for " + name + " (" + type + ")" + " query=" + val)
+
+      this.$http.post("getSuggestions", {
+        gid: this.gid,
+        type: type,
+        name: name,
+        query: val
+      }).then(response => {
+        if (response.data !== undefined) {
+          return response.data
+        }
+      }).then(data => {
+        this.suggestions[type].data = data.suggestions;
+      }).catch(err => {
+        console.log(err)
+      }).finally(
+        this.suggestions[type].loading = false
+      )
+      // let list = this[type][name];
+      // list.forEach(item => {
+      //   console.log(item.displayName)
+      //   if (item.displayName.indexOf(this.filters[type].query) !== -1)
+      //     this.suggestions[type].data.push({text: item.displayName, id: item.id, value: item.displayName})
+      // })
+      // this.suggestions[type].loading = false;
+    },
   },
   methods: {
     clearLists: function () {
@@ -322,7 +428,6 @@ export default {
       this.nodeTab = 0
       this.edgeTab = 0
       if (data !== undefined) {
-        console.log(data)
         this.selected["nodes"] = {}
         this.selected["edges"] = {}
         this.attributes = data.attributes;
@@ -341,18 +446,33 @@ export default {
         this.edgeTab = 0
       }
     },
+    toggleSuggestions: function (type) {
+      if (!this.filters[type].suggestions) {
+        this.filters[type].query = ""
+      }
+    },
     filter: function (value, search, item) {
       //TODO add string/numeric
-      let attr = item[this.filterAttribute.nodes];
-      if (typeof attr === "object") {
-        let match = false;
-        attr.forEach(el => {
-          if (el.indexOf(search) !== -1)
-            match = true
-        })
-        return match;
-      } else
-        return attr.indexOf(search) !== -1
+      if (!this.filters.nodes.suggestions) {
+        if (this.filters.nodes.attribute.length === 0)
+          return true;
+        let attr = item[this.filters.nodes.attribute];
+        if (typeof attr === "object") {
+          attr.forEach(el => {
+            if (el.indexOf(search) !== -1)
+              return true
+          })
+          return false;
+        } else {
+          return attr !== undefined && attr.indexOf(search) !== -1
+        }
+      } else {
+        if (this.suggestions.nodes.chosen !== undefined) {
+          //TODO map more efficient?
+          return this.suggestions.nodes.chosen.indexOf(item.id) !== -1
+        }
+        return true;
+      }
     },
     nodeOptions: function () {
       this.optionDialog = true;
@@ -469,30 +589,49 @@ export default {
       })
     },
     selectAll: function (type, tab) {
-      //TODO apply select all to only filtered
       //TODO maybe find different way to store selection (lagging on >1000 objects already) (maybe get bool array from ref?)
       let data = {nodes: this.nodes, edges: this.edges}
-      let model = this.selected[type][tab]
       let items = data[type][Object.keys(data[type])[tab]]
-      model.length = 0
-      if (this.selectAllModel[type][tab]) {
-        items.forEach(item => {
+
+      let filterActive = this.filters[type].attribute.length > 0 && this.filters[type].query.length > 0
+      items.forEach(item => {
+        if (!filterActive || (filterActive && this.filter(undefined, this.filters[type].query, item))) {
           if (type === "nodes")
             this.$refs.nodeTab.select(item, true)
           else
             this.$refs.edgeTab.select(item, true)
-          // model.push(item)
-        })
+          if (filterActive && this.selected[type][tab].indexOf(item) === -1)
+            this.selected[type][tab].push(item)
+        }
+      })
+      if (!filterActive) {
+        let model = this.selected[type][tab]
+        model.length = 0
         this.selected[type][tab] = {...items}
-      } else {
-        items.forEach(item => {
+      }
+    },
+    deselectAll: function (type, tab) {
+      let data = {nodes: this.nodes, edges: this.edges}
+      let items = data[type][Object.keys(data[type])[tab]]
+
+      let filterActive = this.filters[type].attribute.length > 0 && this.filters[type].query.length > 0
+
+
+      items.forEach(item => {
+        if (!filterActive || (filterActive && this.filter(undefined, this.filters[type].query, item))) {
           if (type === "nodes")
             this.$refs.nodeTab.select(item, false)
           else
             this.$refs.edgeTab.select(item, false)
-        })
-
-      }
+          if (filterActive) {
+            let index = this.selected[type][tab].indexOf(item);
+            if (index !== -1)
+              this.selected[type][tab].splice(index, 1)
+          }
+        }
+      })
+      if (!filterActive)
+        this.selected[type][tab].length = 0
     },
     // selectNodeTab: function (nodeName){
     //   console.log("setting node tab= "+nodeName)
@@ -511,8 +650,6 @@ export default {
       this.$emit("selectionEvent", {type: "edge", name: Object.keys(this.edges)[this.edgeTab], id1: id1, id2: id2})
     },
     headers: function (entity, node) {
-      //TODO sortable for all floats
-      console.log("entity:" + entity + ", attributes:" + node)
       let out = []
       this.attributes[entity][node].forEach(attr => {
         if (!attr.list)

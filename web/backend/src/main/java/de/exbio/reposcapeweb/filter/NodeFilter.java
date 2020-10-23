@@ -407,4 +407,5 @@ public class NodeFilter {
     public NodeFilter apply(Filter f) {
         return apply(f.type, f.expression);
     }
+
 }

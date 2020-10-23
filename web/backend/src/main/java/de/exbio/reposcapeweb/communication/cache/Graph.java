@@ -3,6 +3,7 @@ package de.exbio.reposcapeweb.communication.cache;
 import de.exbio.reposcapeweb.communication.reponses.WebGraph;
 import de.exbio.reposcapeweb.communication.reponses.WebGraphInfo;
 import de.exbio.reposcapeweb.communication.reponses.WebGraphList;
+import de.exbio.reposcapeweb.filter.NodeFilter;
 import de.exbio.reposcapeweb.utils.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +24,7 @@ public class Graph {
     private HashMap<Integer, LinkedList<Edge>> edges;
     private WebGraph webgraph;
     private WebGraphList weblist;
+    private HashMap<String, NodeFilter> nodeFilters;
 
     public Graph() {
         this(UUID.randomUUID().toString());
@@ -32,6 +34,7 @@ public class Graph {
         this.id = id;
         nodes = new HashMap<>();
         edges = new HashMap<>();
+        nodeFilters = new HashMap<>();
     }
 
     public WebGraph toWebGraph() {
@@ -57,10 +60,22 @@ public class Graph {
         return webgraph;
     }
 
-    public WebGraphInfo toInfo(){
+    public void saveNodeFilter(String nodeName, NodeFilter nf) {
+        this.nodeFilters.put(nodeName, nf);
+        nf.getDistinctMap().forEach((type, filters) -> {
+            filters.forEach((name, list) -> {
+            });
+        });
+    }
+
+    public NodeFilter getNodeFilter(String nodeName) {
+        return this.nodeFilters.get(nodeName);
+    }
+
+    public WebGraphInfo toInfo() {
         WebGraphInfo info = new WebGraphInfo(id);
-        this.edges.forEach((id,es)->info.edges.put(Graphs.getEdge(id),es.size()));
-        this.nodes.forEach((id,ns)->info.nodes.put(Graphs.getNode(id),ns.size()));
+        this.edges.forEach((id, es) -> info.edges.put(Graphs.getEdge(id), es.size()));
+        this.nodes.forEach((id, ns) -> info.nodes.put(Graphs.getNode(id), ns.size()));
         return info;
     }
 
@@ -80,10 +95,10 @@ public class Graph {
             this.edges.get(edgeId).addAll(edges);
     }
 
-    public void addNodes(Integer typeId, Collection<Node> nodes){
-        if(!this.nodes.containsKey(typeId))
+    public void addNodes(Integer typeId, Collection<Node> nodes) {
+        if (!this.nodes.containsKey(typeId))
             this.nodes.put(typeId, new HashMap<>());
-        nodes.forEach(n->addNode(typeId,n));
+        nodes.forEach(n -> addNode(typeId, n));
     }
 
     public void addNodes(Integer typeId, HashMap<Integer, Node> nodeMap) {
@@ -110,4 +125,5 @@ public class Graph {
     public HashMap<Integer, LinkedList<Edge>> getEdges() {
         return edges;
     }
+
 }
