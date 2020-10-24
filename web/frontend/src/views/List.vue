@@ -103,13 +103,26 @@
                         <template v-slot:item="{ item }" v-on:select="suggestions.nodes.chosen=item">
                           <v-list-item-avatar
                           >
-                            <v-icon>mdi-bitcoin</v-icon>
+                            <v-icon v-if="item.type==='DOMAIN_ID'">fas fa-fingerprint</v-icon>
+                            <v-icon v-if="item.type==='DISPLAY_NAME' || item.type==='SYMBOLS'" >fas fa-tv</v-icon>
+                            <v-icon v-if="item.type==='ICD10'">fas fa-disease</v-icon>
+                            <v-icon v-if="item.type==='SYNONYM'">fas fa-sync</v-icon>
+                            <v-icon v-if="item.type==='IUPAC'">mdi-molecule</v-icon>
+                            <v-icon v-if="item.type==='ORIGIN'">fas fa-dna</v-icon>
+                            <v-icon v-if="item.type==='DESCRIPTION' || item.type==='COMMENTS'">fas fa-info</v-icon>
+                            <v-icon v-if="item.type==='INDICATION'">fas fa-pills</v-icon>
+                            <v-icon v-if="item.type==='TYPE' || item.type==='GROUP' || item.type==='CATEGORY'" >fas fa-layer-group</v-icon>
                           </v-list-item-avatar>
                           <v-list-item-content>
                             <v-list-item-title v-text="item.text"></v-list-item-title>
                             <v-list-item-subtitle
-                              v-text="item.type + (item.ids.length>1 ?'('+item.ids.length+')':'')"></v-list-item-subtitle>
+                              v-text="item.type"></v-list-item-subtitle>
                           </v-list-item-content>
+                          <v-list-item-action>
+                            <v-chip>
+                              {{item.ids.length}}
+                            </v-chip>
+                          </v-list-item-action>
                         </template>
                       </v-autocomplete>
                     </v-col>
@@ -376,19 +389,8 @@ export default {
       let name = Object.keys(this.nodes)[this.nodeTab];
       if (this.suggestions[type].chosen !== undefined)
         return
-      // console.log(this.suggestions.nodes.query)
-      // if (this.filters.nodes.query=== val){
-      //   console.log("setting chosen ids")
-      //   this.suggestions[type].chosen = this.suggestions[type].data.filter(item=>item.value ===val).flatMap(item=>item.ids);
-      //   console.log(this.suggestions[type].chosen)
-      //   return
-      // }
       this.suggestions[type].loading = true;
-
       this.suggestions[type].data = []
-
-      console.log("getting suggestions for " + name + " (" + type + ")" + " query=" + val)
-
       this.$http.post("getSuggestions", {
         gid: this.gid,
         type: type,
@@ -405,13 +407,6 @@ export default {
       }).finally(
         this.suggestions[type].loading = false
       )
-      // let list = this[type][name];
-      // list.forEach(item => {
-      //   console.log(item.displayName)
-      //   if (item.displayName.indexOf(this.filters[type].query) !== -1)
-      //     this.suggestions[type].data.push({text: item.displayName, id: item.id, value: item.displayName})
-      // })
-      // this.suggestions[type].loading = false;
     },
   },
   methods: {
