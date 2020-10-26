@@ -34,13 +34,16 @@ public class Gene extends RepoTrialNode {
 
     @Transient
     @JsonIgnore
-    public final static String[] allAttributes = new String[]{"id","primaryDomainId","domainIds","displayName", "approvedSymbol", "geneType","chromosome", "mapLocation","symbols","synonyms","description","type"};
+    public final static String[] allAttributes = new String[]{"id", "primaryDomainId", "domainIds", "displayName", "approvedSymbol", "geneType", "chromosome", "mapLocation", "symbols", "synonyms", "description", "type"};
 
 
     @Transient
     @JsonIgnore
-    public final static String[] allAttributeTypes = new String[]{"numeric","","array","", "", "","", "","array","array","",""};
+    public final static String[] allAttributeTypes = new String[]{"numeric", "", "array", "", "", "", "", "", "array", "array", "", ""};
 
+    @Transient
+    @JsonIgnore
+    public final static boolean[] idAttributes = new boolean[]{true, true, true, false, false, false, false, false, false, false, false, false};
 
     @Column(nullable = false)
     private String primaryDomainId;
@@ -57,35 +60,34 @@ public class Gene extends RepoTrialNode {
     private String geneType;
 
     public static String[] getListAttributes() {
-        return new String[]{"id","displayName", "approvedSymbol", "geneType","chromosome", "mapLocation"};
+        return new String[]{"id", "displayName", "approvedSymbol", "geneType", "chromosome", "mapLocation"};
     }
-
 
 
     @Override
     public HashMap<String, Object> getAsMap() {
-        HashMap<String,Object> values = new HashMap<>();
-        values.put("id",id);
-        values.put("displayName",getDisplayName());
-        values.put("type",getType());
-        values.put("domainIds",getDomainIds());
-        values.put("synonyms",getSynonyms());
-        values.put("geneType",getGeneType());
-        values.put("symbols",getSymbols());
-        values.put("approvedSymbol",getApprovedSymbol());
-        values.put("description",getDescription());
-        values.put("chromosome",getChromosome());
-        values.put("mapLocation",getMapLocation());
-        values.put("primaryDomainId",getPrimaryDomainId());
+        HashMap<String, Object> values = new HashMap<>();
+        values.put("id", id);
+        values.put("displayName", getDisplayName());
+        values.put("type", getType());
+        values.put("domainIds", getDomainIds());
+        values.put("synonyms", getSynonyms());
+        values.put("geneType", getGeneType());
+        values.put("symbols", getSymbols());
+        values.put("approvedSymbol", getApprovedSymbol());
+        values.put("description", getDescription());
+        values.put("chromosome", getChromosome());
+        values.put("mapLocation", getMapLocation());
+        values.put("primaryDomainId", getPrimaryDomainId());
         return values;
     }
 
     @Override
     public HashMap<String, Object> getAsMap(HashSet<String> attributes) {
-        HashMap<String,Object> values = new HashMap<>();
-        getAsMap().forEach((k,v)->{
-            if(attributes.contains(k))
-                values.put(k,v);
+        HashMap<String, Object> values = new HashMap<>();
+        getAsMap().forEach((k, v) -> {
+            if (attributes.contains(k))
+                values.put(k, v);
         });
         return values;
     }
@@ -210,17 +212,17 @@ public class Gene extends RepoTrialNode {
         map.put(FilterType.DISPLAY_NAME, new HashMap<>());
         map.get(FilterType.DISPLAY_NAME).put(new FilterKey(displayName), new FilterEntry(displayName, FilterType.DISPLAY_NAME, id));
 
-        if(!displayName.equals(approvedSymbol) & !getSymbols().contains(approvedSymbol)){
+        if (!displayName.equals(approvedSymbol) & !getSymbols().contains(approvedSymbol)) {
             map.put(FilterType.SYMBOLS, new HashMap<>());
-            FilterEntry symbolEntry = new FilterEntry(displayName,FilterType.SYMBOLS,id);
-            getSymbols().stream().filter(s->!s.equals(displayName) | !s.equals(approvedSymbol)).forEach(s->map.get(FilterType.SYMBOLS).put(new FilterKey(s),symbolEntry));
+            FilterEntry symbolEntry = new FilterEntry(displayName, FilterType.SYMBOLS, id);
+            getSymbols().stream().filter(s -> !s.equals(displayName) | !s.equals(approvedSymbol)).forEach(s -> map.get(FilterType.SYMBOLS).put(new FilterKey(s), symbolEntry));
         }
 
 
         FilterEntry syns = new FilterEntry(displayName, FilterType.SYNONYM, id);
         map.put(FilterType.SYNONYM, new HashMap<>());
         getSynonyms().forEach(syn -> {
-            if ( !displayName.equals(syn))
+            if (!displayName.equals(syn))
                 map.get(FilterType.SYNONYM).put(new FilterKey(syn), syns);
         });
 

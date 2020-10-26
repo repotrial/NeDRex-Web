@@ -33,11 +33,15 @@ public class Protein extends RepoTrialNode {
 
     @Transient
     @JsonIgnore
-    public final static String[] allAttributes = new String[]{"id","primaryDomainId","domainIds", "displayName", "geneName", "taxid","sequence", "synonyms","comments","type"};
+    public final static String[] allAttributes = new String[]{"id", "primaryDomainId", "domainIds", "displayName", "geneName", "taxid", "sequence", "synonyms", "comments", "type"};
 
     @Transient
     @JsonIgnore
-    public final static String[] allAttributeTypes = new String[]{"numeric","","array", "", "", "numeric","", "array","array",""};
+    public final static String[] allAttributeTypes = new String[]{"numeric", "", "array", "", "", "numeric", "", "array", "array", ""};
+
+    @Transient
+    @JsonIgnore
+    public final static boolean[] idAttributes = new boolean[]{true, true, true, false, false, false, false, false, false, false};
 
 
     public Protein() {

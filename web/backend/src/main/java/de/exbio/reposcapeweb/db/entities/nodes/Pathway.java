@@ -32,11 +32,16 @@ public class Pathway extends RepoTrialNode {
 
     @Transient
     @JsonIgnore
-    public final static String[] allAttributes = new String[]{"id", "primaryDomainId","displayName","domainIds","species","domainIds","type"};
+    public final static String[] allAttributes = new String[]{"id", "primaryDomainId", "displayName", "domainIds", "species", "domainIds", "type"};
 
     @Transient
     @JsonIgnore
-    public final static String[] allAttributeTypes = new String[]{"numeric", "","","array","array","array",""};
+    public final static String[] allAttributeTypes = new String[]{"numeric", "", "", "array", "array", "array", ""};
+
+    @Transient
+    @JsonIgnore
+    public final static boolean[] idAttributes = new boolean[]{true, true, false, true, false, false, false};
+
 
     @Column(nullable = false)
     private String primaryDomainId;
@@ -49,27 +54,27 @@ public class Pathway extends RepoTrialNode {
     }
 
     public static String[] getListAttributes() {
-        return new String[]{"id","displayName",  "primaryDomainId"};
+        return new String[]{"id", "displayName", "primaryDomainId"};
     }
 
     @Override
     public HashMap<String, Object> getAsMap() {
-        HashMap<String,Object> values = new HashMap<>();
-        values.put("id",id);
-        values.put("displayName",getDisplayName());
-        values.put("type",getType());
-        values.put("domainIds",getDomainIds());
-        values.put("primaryDomainId",getPrimaryDomainId());
-        values.put("species",getSpecies());
+        HashMap<String, Object> values = new HashMap<>();
+        values.put("id", id);
+        values.put("displayName", getDisplayName());
+        values.put("type", getType());
+        values.put("domainIds", getDomainIds());
+        values.put("primaryDomainId", getPrimaryDomainId());
+        values.put("species", getSpecies());
         return values;
     }
 
     @Override
     public HashMap<String, Object> getAsMap(HashSet<String> attributes) {
-        HashMap<String,Object> values = new HashMap<>();
-        getAsMap().forEach((k,v)->{
-            if(attributes.contains(k))
-                values.put(k,v);
+        HashMap<String, Object> values = new HashMap<>();
+        getAsMap().forEach((k, v) -> {
+            if (attributes.contains(k))
+                values.put(k, v);
         });
         return values;
     }

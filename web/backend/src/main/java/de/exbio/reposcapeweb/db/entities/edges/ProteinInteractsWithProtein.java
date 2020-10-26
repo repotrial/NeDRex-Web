@@ -46,11 +46,15 @@ public class ProteinInteractsWithProtein extends RepoTrialEdge implements Serial
 
     @Transient
     @JsonIgnore
-    public final static String[] allAttributes = new String[]{"id","idOne", "idTwo", "memberOne", "memberTwo","evidenceTypes", "methods", "databases","type"};
+    public final static String[] allAttributes = new String[]{"id", "idOne", "idTwo", "memberOne", "memberTwo", "evidenceTypes", "methods", "databases", "type"};
 
     @Transient
     @JsonIgnore
-    public final static String[] allAttributeTypes = new String[]{"numeric","numeric", "numeric", "", "","array", "array", "array",""};
+    public final static String[] allAttributeTypes = new String[]{"numeric", "numeric", "numeric", "", "", "array", "array", "array", ""};
+
+    @Transient
+    @JsonIgnore
+    public final static boolean[] idAttributes = new boolean[]{true, true, true, true, true, false, false, false, false};
 
 
     @Transient
@@ -67,7 +71,7 @@ public class ProteinInteractsWithProtein extends RepoTrialEdge implements Serial
     }
 
     public static String[] getListAttributes() {
-        return new String[]{"id","idOne", "idTwo", "evidenceTypes"};
+        return new String[]{"id", "idOne", "idTwo", "evidenceTypes"};
     }
 
     @Override
@@ -80,7 +84,7 @@ public class ProteinInteractsWithProtein extends RepoTrialEdge implements Serial
         values.put("idTwo", id.getId2());
         values.put("evidenceTypes", getEvidenceTypes());
         values.put("type", getType());
-        values.put("id",id.getId1()+"-"+id.getId2());
+        values.put("id", id.getId1() + "-" + id.getId2());
         return values;
     }
 

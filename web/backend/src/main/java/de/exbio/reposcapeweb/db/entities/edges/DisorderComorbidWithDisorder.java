@@ -49,6 +49,11 @@ public class DisorderComorbidWithDisorder extends RepoTrialEdge implements Seria
     @JsonIgnore
     public final static String[] allAttributeTypes = new String[]{"numeric","numeric", "numeric", "","", "numeric","numeric","numeric","numeric",""};
 
+    @Transient
+    @JsonIgnore
+    public final static boolean[] idAttributes = new boolean[]{true, true, true, true, true, false, false, false, false, false};
+
+
 
     @Transient
     private String memberOne;

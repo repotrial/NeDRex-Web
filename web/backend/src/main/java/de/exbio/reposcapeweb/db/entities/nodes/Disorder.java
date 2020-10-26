@@ -36,7 +36,11 @@ public class Disorder extends RepoTrialNode {
 
     @Transient
     @JsonIgnore
-    public final static String[] allAttributeTypes = new String[]{"numeric","","","array","", "array",  "",""};
+    public final static String[] allAttributeTypes = new String[]{"numeric","id","","","array","", "array",  "",""};
+
+    @Transient
+    @JsonIgnore
+    public final static boolean[] idAttributes=new boolean[]{true,true,false,true,false,false,false,false};
 
 
     @Column(nullable = false)

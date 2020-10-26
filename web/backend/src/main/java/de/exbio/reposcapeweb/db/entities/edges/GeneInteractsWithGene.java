@@ -60,6 +60,9 @@ public class GeneInteractsWithGene extends RepoTrialEdge implements Serializable
     @JsonIgnore
     public final static String[] allAttributeTypes = new String[]{"numeric","numeric","numeric","","", ""};
 
+    @Transient
+    @JsonIgnore
+    public final static boolean[] idAttributes = new boolean[]{true, true, true, true, true, false};
 
     @Override
     public HashMap<String, Object> getAsMap() {

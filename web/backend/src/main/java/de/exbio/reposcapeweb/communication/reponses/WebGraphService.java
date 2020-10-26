@@ -103,7 +103,7 @@ public class WebGraphService {
                 finalList.addListAttributes("nodes", stringType, attributes);
                 finalList.addAttributes("nodes", stringType, nodeController.getAttributes(type));
                 finalList.addNodes(stringType, nodeController.nodesToAttributeList(type, nodeMap.keySet(), new HashSet<>(Arrays.asList(attributes))));
-                finalList.setTypes("nodes", stringType, nodeController.getAttributes(type), nodeController.getAttributeTypes(type));
+                finalList.setTypes("nodes", stringType, nodeController.getAttributes(type), nodeController.getAttributeTypes(type), nodeController.getIdAttributes(type));
 
             });
             log.debug("Converting edges from Graph to WebList for " + id);
@@ -123,7 +123,7 @@ public class WebGraphService {
 
                 LinkedList<String> attrMaps = edgeController.edgesToAttributeList(type, edges, attrs);
                 finalList.addEdges(stringType, attrMaps);
-                finalList.setTypes("edges", stringType, edgeController.getAttributes(type), edgeController.getAttributeTypes(type));
+                finalList.setTypes("edges", stringType, edgeController.getAttributes(type), edgeController.getAttributeTypes(type), edgeController.getIdAttributes(type));
             });
 
 
@@ -244,8 +244,7 @@ public class WebGraphService {
         }
         if (request.connectedOnly) {
             nodeIds.forEach((type, nodeMap) -> nodeMap.entrySet().stream().filter(e -> e.getValue().hasEdge()).forEach(e -> g.addNode(type, e.getValue())));
-        }
-        else
+        } else
             nodeIds.forEach((type, nodeMap) -> nodeMap.forEach((key, value) -> g.addNode(type, value)));
         return g;
     }
@@ -312,7 +311,7 @@ public class WebGraphService {
             NodeFilter nf = graph.getNodeFilter(request.name).contains(request.query);
             HashSet<Integer> ids = new HashSet<>(graph.getNodes().get(Graphs.getNode(request.name)).keySet());
             suggestions.setDistinct(nf.getDistinctMap(), ids);
-            suggestions.setUnique(nf.getUniqueMap(),ids);
+            suggestions.setUnique(nf.getUniqueMap(), ids);
         } else {
 
         }

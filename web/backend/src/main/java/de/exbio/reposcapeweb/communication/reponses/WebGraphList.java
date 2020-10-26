@@ -106,14 +106,17 @@ public class WebGraphList {
             nodes.get(type).addAll(nodesToAttributeList);
     }
 
-    public void setTypes(String type, String name, String[] attributes, String[] types) {
+    public void setTypes(String type, String name, String[] attributes, String[] types, boolean[] ids) {
         ArrayList<String> names = new ArrayList<>(Arrays.asList(attributes));
         this.attributes.get(type).get(name).forEach(a -> {
-            String t = types[names.indexOf(a.name)];
+            int idx = names.indexOf(a.name);
+            String t = types[idx];
             if (t.equals("numeric"))
                 a.isNumeric();
             if (t.equals("array"))
                 a.isArray();
+            if(ids[idx])
+                a.isId();
         });
     }
 
@@ -123,6 +126,7 @@ public class WebGraphList {
         public boolean sent;
         public boolean numeric;
         public boolean array;
+        public boolean id;
 
         public WebAttribute(String name) {
             this.name = name;
@@ -143,6 +147,10 @@ public class WebGraphList {
 
         public void isArray() {
             this.array = true;
+        }
+
+        public void isId() {
+            this.id = true;
         }
     }
 

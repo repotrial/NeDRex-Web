@@ -198,4 +198,20 @@ public class NodeController {
         }
         return null;
     }
+
+    public boolean[] getIdAttributes(Integer typeId) {
+        switch (Graphs.getNode(typeId)) {
+            case "disorder":
+                return Disorder.idAttributes;
+            case "drug":
+                return Drug.idAttributes;
+            case "gene":
+                return Gene.idAttributes;
+            case "pathway":
+                return Pathway.idAttributes;
+            case "protein":
+                return Protein.idAttributes;
+        }
+        return null;
+    }
 }
