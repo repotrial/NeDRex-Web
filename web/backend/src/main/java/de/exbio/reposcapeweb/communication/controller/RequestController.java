@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.exbio.reposcapeweb.communication.cache.Graph;
 import de.exbio.reposcapeweb.communication.cache.Graphs;
+import de.exbio.reposcapeweb.communication.reponses.SelectionResponse;
 import de.exbio.reposcapeweb.communication.reponses.WebGraph;
 import de.exbio.reposcapeweb.communication.reponses.WebGraphList;
 import de.exbio.reposcapeweb.communication.requests.*;
@@ -129,6 +130,18 @@ public class RequestController {
         }
         return null;
     }
+
+    @RequestMapping(value = "/getConnectedSelection", method = RequestMethod.POST)
+    @ResponseBody
+    public String getConnectedEdges(@RequestBody SelectionRequest request) {
+        try {
+            return objectMapper.writeValueAsString(webGraphService.getSelection(request));
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 
     @RequestMapping(value = "/getGraphList", method = RequestMethod.GET)
     @ResponseBody

@@ -2,9 +2,15 @@ package de.exbio.reposcapeweb.communication.cache;
 
 import de.exbio.reposcapeweb.communication.reponses.WebEdge;
 
+import java.util.Objects;
+
 public class Edge {
     private int id1;
     private int id2;
+
+    public Edge(){
+
+    }
 
     public Edge(int id1, int id2) {
         this.id1 = id1;
@@ -29,5 +35,19 @@ public class Edge {
 
     public void setId2(int id2) {
         this.id2 = id2;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Edge edge = (Edge) o;
+        return id1 == edge.id1 &&
+                id2 == edge.id2;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id1, id2);
     }
 }

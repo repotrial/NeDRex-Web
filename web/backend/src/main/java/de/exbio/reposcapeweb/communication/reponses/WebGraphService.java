@@ -10,13 +10,13 @@ import de.exbio.reposcapeweb.db.entities.ids.PairId;
 import de.exbio.reposcapeweb.db.services.controller.EdgeController;
 import de.exbio.reposcapeweb.db.services.controller.NodeController;
 import de.exbio.reposcapeweb.filter.NodeFilter;
+import de.exbio.reposcapeweb.utils.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Service
@@ -64,8 +64,12 @@ public class WebGraphService {
         return graph;
     }
 
-    public WebGraph getCachedGraph(String graphId) {
-        return cache.get(graphId).toWebGraph();
+    public WebGraph getCachedWebGraph(String graphId) {
+        return getCachedGraph(graphId).toWebGraph();
+    }
+
+    public Graph getCachedGraph(String graphId) {
+        return cache.get(graphId);
     }
 
     public WebGraphList getList(String id, CustomListRequest req) {
@@ -318,5 +322,100 @@ public class WebGraphService {
 
 
         return suggestions;
+    }
+
+    public SelectionResponse getSelection(SelectionRequest request) {
+        SelectionResponse selection = new SelectionResponse();
+        Graph graph = getCachedGraph(request.gid);
+
+        if (request.edge) {
+            getEdgeSelection(graph, selection, request);
+        }
+        if (request.node) {
+            getNodeSelection(graph, selection, request);
+        }
+        return selection;
+    }
+
+    private void getEdgeSelection(Graph graph, SelectionResponse selection, SelectionRequest request) {
+        HashMap<Integer, HashSet<Integer>> seed = new HashMap<>();
+        request.nodes.forEach((k, v) -> seed.put(Graphs.getNode(k), new HashSet<>(Arrays.asList(v))));
+        request.edges.keySet().forEach(k -> {
+            int eid = Graphs.getEdge(k);
+            HashSet<Edge> edges = new HashSet<>();
+            Pair<Integer, Integer> nodeIds = Graphs.getNodesfromEdge(eid);
+            HashSet<Integer> ids1 = seed.get(nodeIds.first);
+            HashSet<Integer> ids2 = seed.get(nodeIds.second);
+            HashSet<Integer> nodes1 = new HashSet<>();
+            HashSet<Integer> nodes2 = new HashSet<>();
+
+            graph.getEdges().get(eid).forEach(e -> {
+                boolean cont1 = ids1.contains(e.getId1());
+                boolean cont2 = ids2.contains(e.getId2());
+                if ((cont1 & cont2)) {
+                    edges.add(new Edge(e.getId1(), e.getId2()));
+                } else if (request.extend) {
+                    if (!cont1 & cont2) {
+                        nodes1.add(e.getId1());
+                        edges.add(new Edge(e.getId1(), e.getId2()));
+                    } else if (cont1) {
+                        nodes2.add(e.getId2());
+                        edges.add(new Edge(e.getId1(), e.getId2()));
+                    }
+                }
+
+            });
+            selection.addEdges(k, edges);
+            selection.addNodes(Graphs.getNode(nodeIds.first), nodes1);
+            selection.addNodes(Graphs.getNode(nodeIds.second), nodes2);
+        });
+    }
+
+    private void getNodeSelection(Graph graph, SelectionResponse selection, SelectionRequest request) {
+        HashMap<Integer, HashMap<Integer, HashSet<Integer>>> seed = new HashMap<>();
+        request.edges.forEach((k, v) -> {
+            HashMap<Integer, HashSet<Integer>> edges = new HashMap<>();
+            seed.put(Graphs.getEdge(k), edges);
+            Arrays.stream(v).forEach(e -> {
+                if (!edges.containsKey(e.getId1()))
+                    edges.put(e.getId1(), new HashSet<>());
+                edges.get(e.getId1()).add(e.getId2());
+            });
+
+        });
+        request.edges.keySet().forEach(k -> {
+            int eid = Graphs.getEdge(k);
+            HashSet<Edge> edges = new HashSet<>();
+            Pair<Integer, Integer> nodeIds = Graphs.getNodesfromEdge(eid);
+            HashMap<Integer, HashSet<Integer>> eids = seed.get(eid);
+            HashSet<Integer> nodes1 = new HashSet<>();
+            HashSet<Integer> nodes2 = new HashSet<>();
+
+            HashMap<Integer, Node> ids1 = graph.getNodes().get(nodeIds.first);
+            HashMap<Integer, Node> ids2 = graph.getNodes().get(nodeIds.second);
+
+            eids.forEach((n1, ns) -> {
+                boolean cont1 = ids1.containsKey(n1);
+                ns.forEach(n2 -> {
+                    boolean cont2 = ids2.containsKey(n2);
+
+                    if ((cont1 & cont2)) {
+                        nodes1.add(n1);
+                        nodes2.add(n2);
+                    } else if (request.extend) {
+                        if (!cont1 & cont2) {
+                            nodes1.add(n1);
+                            edges.add(new Edge(n1, n2));
+                        } else if (cont1) {
+                            nodes2.add(n2);
+                            edges.add(new Edge(n1, n2));
+                        }
+                    }
+                });
+            });
+            selection.addEdges(k, edges);
+            selection.addNodes(Graphs.getNode(nodeIds.first), nodes1);
+            selection.addNodes(Graphs.getNode(nodeIds.second), nodes2);
+        });
     }
 }
