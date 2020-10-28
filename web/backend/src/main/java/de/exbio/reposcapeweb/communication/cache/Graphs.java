@@ -116,5 +116,9 @@ public class Graphs {
         return edge2node.get(edge);
     }
 
+    public static Pair<Integer, Integer> getNodesfromEdge(String edge) {
+        return edge2node.get(Graphs.getEdge(edge));
+    }
+
 
 }

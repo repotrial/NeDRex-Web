@@ -142,6 +142,17 @@ public class RequestController {
         return null;
     }
 
+    @RequestMapping(value = "/extendGraph", method = RequestMethod.POST)
+    @ResponseBody
+    public String getGraphExtension(@RequestBody ExtensionRequest request){
+        try {
+            return objectMapper.writeValueAsString(webGraphService.getExtension(request));
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 
     @RequestMapping(value = "/getGraphList", method = RequestMethod.GET)
     @ResponseBody

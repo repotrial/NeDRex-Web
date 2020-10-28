@@ -404,6 +404,48 @@
       </v-card>
     </v-container>
     <v-dialog
+      v-model="extension.show"
+      persistent
+      max-width="500"
+    >
+      <v-card v-if="extension.show">
+        <v-card-title class="headline">
+          Add more edges to our current graph
+        </v-card-title>
+        <v-card-text>Adjust the attributes of the general item tables.
+        </v-card-text>
+        <v-divider></v-divider>
+        <v-tabs-items>
+          <v-list>
+            <v-list-item v-for="attr in extension.edges" :key="attr.name">
+              <v-switch v-model="attr.selected" :label="attr.name" :disabled="attr.disabled">
+              </v-switch>
+            </v-list-item>
+          </v-list>
+        </v-tabs-items>
+
+        <v-divider></v-divider>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            color="green darken-1"
+            text
+            @click="extensionDialogResolve(false)"
+          >
+            Cancel
+          </v-btn>
+          <v-btn
+            color="green darken-1"
+            text
+            @click="extensionDialogResolve(true)"
+          >
+            Apply
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    <v-dialog
       v-model="optionDialog"
       persistent
       max-width="500"
@@ -542,6 +584,7 @@ export default {
   name: "List",
   nodes: {},
   edges: {},
+  metagraph: {},
   attributes: {},
   nodeTab: undefined,
   edgeTab: undefined,
@@ -577,6 +620,7 @@ export default {
         extendScope: false
       },
       options: {},
+      extension: {show: false, nodes: [], edges: []},
       optionTab: undefined,
       update: {nodes: false, edges: false},
       findNodeSuggestions: null,
@@ -632,6 +676,9 @@ export default {
     },
   },
   methods: {
+    setMetagraph: function (metagraph) {
+      this.metagraph = metagraph;
+    },
     filterSelected(items) {
       return items.filter(item => item.selected)
     },
@@ -861,9 +908,28 @@ export default {
       }
 
     },
+    extensionDialogResolve: function (apply) {
+      let payload = {
+        gid: this.gid,
+        nodes: this.extension.nodes.filter(n => n.selected).map(n => n.name),
+        edges: this.extension.edges.filter(n => n.selected && !n.disabled).map(n => n.name)
+      }
+      this.extension = {nodes: [], edges: []}
+      this.extension.show = false;
+      if (!apply) {
+        return
+      }
+      console.log(payload)
+      this.$http.post("/extendGraph", payload).then(response => {
+        if (response.data !== undefined)
+          return response.data
+      }).then(info => {
+        this.$emit("updateInfo", info)
+      }).catch(err => console.log(err))
+    },
     selectionDialogResolve: function (apply) {
       this.selectionDialog.show = false
-      if (!apply || (this.selectionDialog.type === "nodes" &&this.selectionDialog.seeds.filter(k=>k.select).length < 2)) {
+      if (!apply || (this.selectionDialog.type === "nodes" && this.selectionDialog.seeds.filter(k => k.select).length < 2)) {
         this.selectionDialog.extendSelect = false;
         return;
       }
@@ -1105,7 +1171,12 @@ export default {
       //TODO implement popup menu
     },
     extendGraph: function () {
-
+      this.extension.edges = this.metagraph.edges.map(e => e.label).map(e => {
+        let there = Object.keys(this.attributes.edges).indexOf(e) !== -1
+        return {name: e, selected: there, disabled: there}
+      })
+      this.extension.show = true;
+      this.$nextTick()
 
 //TODO implement popup menu
     },

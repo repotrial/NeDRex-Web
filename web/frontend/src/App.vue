@@ -196,6 +196,7 @@ export default {
     initGraphs: function () {
       this.$http.get("/getMetagraph").then(response => {
         this.metagraph = response.data;
+        this.$refs.list.setMetagraph(this.metagraph)
       }).catch(err => {
         console.log(err)
       })

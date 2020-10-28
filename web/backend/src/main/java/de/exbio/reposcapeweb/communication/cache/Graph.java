@@ -89,10 +89,9 @@ public class Graph {
     }
 
     public void addEdges(int edgeId, LinkedList<Edge> edges) {
-        if (!this.edges.containsKey(edgeId)) {
-            this.edges.put(edgeId, edges);
-        } else
-            this.edges.get(edgeId).addAll(edges);
+        if (!this.edges.containsKey(edgeId))
+            this.edges.put(edgeId, new LinkedList<>());
+        this.edges.get(edgeId).addAll(edges);
     }
 
     public void addNodes(Integer typeId, Collection<Node> nodes) {
@@ -126,4 +125,17 @@ public class Graph {
         return edges;
     }
 
+
+    public HashMap<String, NodeFilter> getNodeFilters() {
+        return nodeFilters;
+    }
+
+
+    public Graph clone() {
+        Graph g = new Graph();
+        getNodeFilters().forEach(g::saveNodeFilter);
+        nodes.forEach((type, map) -> g.addNodes(type, map.values()));
+        edges.forEach(g::addEdges);
+        return g;
+    }
 }

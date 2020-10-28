@@ -421,4 +421,51 @@ public class WebGraphService {
             selection.addNodes(Graphs.getNode(nodeIds.second), nodes2);
         });
     }
+
+    public WebGraphInfo getExtension(ExtensionRequest request) {
+        //TODO clone weblist and graph?
+        Graph g = getCachedGraph(request.gid).clone();
+        cache.put(g.getId(), g);
+        Arrays.stream(request.edges).forEach(e -> {
+            int edgeId = Graphs.getEdge(e);
+            Pair<Integer, Integer> nodeIds = Graphs.getNodesfromEdge(edgeId);
+            LinkedList<Edge> edges = new LinkedList<>();
+            if (g.getNodes().containsKey(nodeIds.first) & g.getNodes().containsKey(nodeIds.second)) {
+                g.getNodes().get(nodeIds.first).keySet().forEach(nodeId1 -> {
+                    edgeController.getEdges(edgeId, nodeIds.first, nodeId1).forEach(nodeId2 -> {
+                        if (g.getNodes().get(nodeIds.second).containsKey(nodeId2))
+                            edges.add(new Edge(nodeId1, nodeId2));
+                    });
+                });
+
+            } else {
+                HashSet<Integer> nodes = new HashSet<>();
+                int existing = g.getNodes().containsKey(nodeIds.first) ? nodeIds.first : nodeIds.second;
+                int adding = existing == nodeIds.first ? nodeIds.second : nodeIds.first;
+
+                g.getNodes().get(existing).keySet().forEach(nodeId1 -> {
+                    try {
+                        HashSet<Integer> add = edgeController.getEdges(edgeId, existing, nodeId1);
+                        nodes.addAll(add);
+                        add.forEach(nodeId2 ->
+                                edges.add(new Edge(nodeId1, nodeId2))
+                        );
+                    }catch (NullPointerException ignore){
+                    }
+                });
+
+                NodeFilter nf =new NodeFilter(nodeController.getFilter(Graphs.getNode(adding)),nodes);
+                g.saveNodeFilter(Graphs.getNode(adding),nf);
+
+                HashMap<Integer,Node> nodeMap = new HashMap<>();
+                nf.toList(-1).forEach(entry->nodeMap.put(entry.getNodeId(),new Node(entry.getNodeId(),entry.getName())));
+
+                g.addNodes(adding,nodeMap);
+
+            }
+            g.addEdges(edgeId, edges);
+        });
+
+        return g.toInfo();
+    }
 }
