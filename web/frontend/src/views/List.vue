@@ -191,7 +191,7 @@
                       </v-col>
                       <v-col>
                         <v-chip
-                          v-on:click="selectEdges(nodeTab)"
+                          v-on:click="selectEdges()"
                           class="pa-3"
                         >Select Needed Edges
                         </v-chip>
@@ -340,18 +340,18 @@
                     </v-row>
                     <v-row>
                       <v-col>
-                        <v-btn
+                        <v-chip
                           v-on:click="selectAll('edges',edgeTab)"
                           class="pa-3"
                         >Select All Edges
-                        </v-btn>
+                        </v-chip>
                       </v-col>
                       <v-col>
-                        <v-btn
+                        <v-chip
                           v-on:click="deselectAll('edges',edgeTab)"
                           class="pa-3"
-                        >Deselect All Edges
-                        </v-btn>
+                        >Unselect All Edges
+                        </v-chip>
                       </v-col>
                       <v-col>
                         <v-chip
@@ -408,17 +408,6 @@
       persistent
       max-width="500"
     >
-      <!--      <template v-slot:activator="{ on, attrs }">-->
-      <!--        <v-btn-->
-      <!--          v-show="!visualize"-->
-      <!--          color="primary"-->
-      <!--          dark-->
-      <!--          v-bind="attrs"-->
-      <!--          v-on="on"-->
-      <!--        >-->
-      <!--          Visualize Graph?-->
-      <!--        </v-btn>-->
-      <!--      </template>-->
       <v-card v-if="options !== undefined && options.type !== undefined">
         <v-card-title class="headline">
           Organize {{ options.title }} Attributes
@@ -464,6 +453,87 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <v-dialog
+      v-model="selectionDialog.show"
+      persistent
+      max-width="500"
+    >
+      <v-card v-if="selectionDialog.show && selectionDialog.type !== undefined">
+        <v-card-title class="headline">
+          Advanced {{ selectionDialog.title }} Selection
+        </v-card-title>
+        <v-card-text>Adjust the attributes of the general item tables.
+        </v-card-text>
+        <v-card-subtitle>Seeds ({{ selectionDialog.type }})</v-card-subtitle>
+        <v-divider></v-divider>
+        <v-tabs-items>
+          <v-list>
+            <v-list-item v-for="attr in selectionDialog.seeds" :key="attr.name">
+              <v-switch v-model="attr.select"
+                        :label="attr.name+ ' ('+countSelected(selectionDialog.type ,attr.name)+')'">
+              </v-switch>
+            </v-list-item>
+          </v-list>
+        </v-tabs-items>
+
+        <v-card-subtitle>Targets ({{ selectionDialog.type === "nodes" ? "edges" : "nodes" }})</v-card-subtitle>
+        <v-divider></v-divider>
+        <v-tabs-items>
+          <v-list>
+            <v-list-item v-for="attr in selectionDialog.targets" :key="attr.name">
+              <v-switch v-model="attr.select"
+                        :label="attr.name + ' ('+countSelected(selectionDialog.type === 'nodes' ? 'edges' : 'nodes' ,attr.name)+')'">
+              </v-switch>
+            </v-list-item>
+          </v-list>
+        </v-tabs-items>
+
+        <v-card-subtitle>Options</v-card-subtitle>
+        <v-container>
+          <v-row>
+            <v-col v-show="selectionDialog.type === 'nodes'">
+              <v-switch v-model="selectionDialog.extendSelect" label=''>
+                <template v-slot:label>
+                  extend seed selection
+                  <v-tooltip
+                    right>
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-icon
+                        size="17px"
+                        color="primary"
+                        dark
+                        v-bind="attrs"
+                        v-on="on"
+                      >
+                        fas fa-question-circle
+                      </v-icon>
+                    </template>
+                    <span>{{ selectionDialog.extendDescription }}</span>
+                  </v-tooltip>
+                </template>
+              </v-switch>
+            </v-col>
+          </v-row>
+        </v-container>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            color="green darken-1"
+            text
+            @click="selectionDialogResolve(false)"
+          >
+            Cancel
+          </v-btn>
+          <v-btn
+            color="green darken-1"
+            text
+            @click="selectionDialogResolve(true)"
+          >
+            Apply
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -496,6 +566,16 @@ export default {
       nodeOptionHover: false,
       edgeOptionHover: false,
       optionDialog: false,
+      selectionDialog: {
+        show: false,
+        type: "",
+        title: "",
+        seeds: [],
+        targets: [],
+        extendDescription: "Adding all edges of the seed categories, which contain at least one node. The 'missing' nodes are also added to selection.",
+        extendSelect: false,
+        extendScope: false
+      },
       options: {},
       optionTab: undefined,
       update: {nodes: false, edges: false},
@@ -593,6 +673,9 @@ export default {
       }
     }
     ,
+    countSelected: function (type, name) {
+      return this[type][name].filter(item => item.selected).length
+    },
     applySuggestion: function (val) {
       if (val !== undefined) {
         let nodes = this.nodes[Object.keys(this.nodes)[this.nodeTab]]
@@ -777,6 +860,69 @@ export default {
         this.update.nodes = true;
       }
 
+    },
+    selectionDialogResolve: function (apply) {
+      this.selectionDialog.show = false
+      if (!apply || (this.selectionDialog.type === "nodes" &&this.selectionDialog.seeds.filter(k=>k.select).length < 2)) {
+        this.selectionDialog.extendSelect = false;
+        return;
+      }
+
+      let payload = {
+        gid: this.gid,
+        node: this.selectionDialog.type === "edges",
+        edge: this.selectionDialog.type === "nodes",
+        extend: this.selectionDialog.extendSelect,
+        nodes: {},
+        edges: {}
+      };
+
+      let edges = (this.selectionDialog.type === "edges" ? this.selectionDialog.seeds : this.selectionDialog.targets);
+      edges.forEach(k => {
+        if (k.select) {
+          if (this.selectionDialog.type === "edges") {
+            let v = this.edges[k.name]
+            let directed = this.attributes.edges[k.name].filter(attr => attr.name === "sourceId").length > 0;
+            let id1 = directed ? "sourceId" : "idOne"
+            let id2 = directed ? "targetId" : "idTwo"
+            payload.edges[k.name] = v.filter((v1, k1) => v1.selected).map((v1, k1) => {
+                return {id1: v1[id1], id2: v1[id2]}
+              }
+            )
+          } else
+            payload.edges[k.name] = []
+        }
+      })
+      let nodes = (this.selectionDialog.type === "nodes" ? this.selectionDialog.seeds : this.selectionDialog.targets);
+      nodes.forEach(k => {
+        if (k.select) {
+          if (this.selectionDialog.type === "nodes") {
+            let v = this.nodes[k.name]
+            payload.nodes[k.name] = v.filter((v1, k1) => v1.selected).map((v1, k1) => {
+                return v1.id
+              }
+            )
+          } else
+            payload.nodes[k.name] = []
+        }
+      })
+      console.log(payload)
+      this.selectionDialog.extendSelect = false;
+      this.$http.post("/getConnectedSelection", payload).then(response => {
+        if (response.data !== undefined)
+          return response.data
+      }).then(data => {
+        // if (this.selectionDialog.type === "edges")
+        for (let ntype in data.nodes) {
+          this.select("nodes", ntype, data.nodes[ntype])
+        }
+        // else
+        for (let etype in data.edges) {
+          this.select("edges", etype, data.edges[etype])
+        }
+      }).catch(err => {
+        console.log(err)
+      })
     }
     ,
     loadSelection: function () {
@@ -923,59 +1069,44 @@ export default {
       return out;
     }
     , selectEdges: function () {
-      let payload = {gid: this.gid, edge: true, nodes: {}, edges: {}}
-      for (let k in this.nodes) {
-        let v = this.nodes[k]
-        payload.nodes[k] = v.filter((v1, k1) => v1.selected).map((v1, k1) => v1.id)
-      }
-      for (let k in this.edges) {
-        payload.edges[k] = []
-      }
-      this.$http.post("/getConnectedSelection", payload).then(response => {
-        if (response.data !== undefined)
-          return response.data
-      }).then(data => {
-        for (let etype in data.edges) {
-          this.select("edges", etype, data.edges[etype])
-        }
-      }).catch(err => {
-        console.log(err)
-      })
+      this.selectionDialog.type = "nodes"
+      this.selectionDialog.title = "Edges"
 
-//TODO implement popup menu
+
+      if (this.attributes.nodes !== undefined)
+        this.selectionDialog.seeds = Object.keys(this.attributes.nodes).map(name => {
+          return {name: name, select: false}
+        })
+      if (this.attributes.edges !== undefined)
+        this.selectionDialog.targets = Object.keys(this.attributes.edges).map(name => {
+          return {name: name, select: false}
+        })
+      this.selectionDialog.show = true;
+
     }
     , selectNodes: function () {
-//TODO implement popup menu
+      this.selectionDialog.title = "Nodes"
+      this.selectionDialog.type = "edges"
 
-      let payload = {gid: this.gid, node: true, nodes: {}, edges: {}}
-      for (let k in this.edges) {
-        let v = this.edges[k]
-        let directed = this.attributes.edges[k].filter(attr => attr.name === "sourceId").length > 0;
-        let id1 = directed ? "sourceId" : "idOne"
-        let id2 = directed ? "targetId" : "idTwo"
-        payload.edges[k] = v.filter((v1, k1) => v1.selected).map((v1, k1) => {
-            return {id1: v1[id1], id2: v1[id2]}
-          }
-        )
-      }
-      for (let k in this.nodes) {
-        payload.nodes[k] = []
-      }
-      this.$http.post("/getConnectedSelection", payload).then(response => {
-        if (response.data !== undefined)
-          return response.data
-      }).then(data => {
-        for (let ntype in data.nodes) {
-          this.select("nodes", ntype, data.nodes[ntype])
-        }
-      }).catch(err => {
-        console.log(err)
-      })
+      if (this.attributes.edges !== undefined)
+        this.selectionDialog.seeds = Object.keys(this.attributes.edges).map(name => {
+          return {name: name, select: false}
+        })
+      if (this.attributes.nodes !== undefined)
+        this.selectionDialog.targets = Object.keys(this.attributes.nodes).map(name => {
+          return {name: name, select: false}
+        })
+
+
+      this.selectionDialog.show = true;
+
     },
     collapseGraph: function () {
       //TODO implement popup menu
     },
     extendGraph: function () {
+
+
 //TODO implement popup menu
     },
     getList: function (gid) {

@@ -356,10 +356,12 @@ public class WebGraphService {
                     edges.add(new Edge(e.getId1(), e.getId2()));
                 } else if (request.extend) {
                     if (!cont1 & cont2) {
-                        nodes1.add(e.getId1());
+                        if (seed.containsKey(nodeIds.first))
+                            nodes1.add(e.getId1());
                         edges.add(new Edge(e.getId1(), e.getId2()));
                     } else if (cont1) {
-                        nodes2.add(e.getId2());
+                        if (seed.containsKey(nodeIds.second))
+                            nodes2.add(e.getId2());
                         edges.add(new Edge(e.getId1(), e.getId2()));
                     }
                 }
@@ -400,17 +402,18 @@ public class WebGraphService {
                     boolean cont2 = ids2.containsKey(n2);
 
                     if ((cont1 & cont2)) {
-                        nodes1.add(n1);
-                        nodes2.add(n2);
-                    } else if (request.extend) {
-                        if (!cont1 & cont2) {
+                        if (request.nodes.containsKey(Graphs.getNode(nodeIds.first)))
                             nodes1.add(n1);
-                            edges.add(new Edge(n1, n2));
-                        } else if (cont1) {
+                        if (request.nodes.containsKey(Graphs.getNode(nodeIds.second)))
                             nodes2.add(n2);
-                            edges.add(new Edge(n1, n2));
-                        }
                     }
+//                    else if (request.extend) {
+//                        if ((!cont1 & cont2) & request.nodes.containsKey(Graphs.getNode(nodeIds.first))) {
+//                            nodes1.add(n1);
+//                        } else if (cont1 & request.nodes.containsKey(Graphs.getNode(nodeIds.second))) {
+//                            nodes2.add(n2);
+//                        }
+//                    }
                 });
             });
             selection.addEdges(k, edges);
