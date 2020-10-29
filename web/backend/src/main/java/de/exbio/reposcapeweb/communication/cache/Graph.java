@@ -8,10 +8,8 @@ import de.exbio.reposcapeweb.utils.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 public class Graph {
@@ -22,6 +20,8 @@ public class Graph {
     // edgetype -> node1 -> node2 -> edge
 //    private HashMap<Integer,HashMap<Integer,HashMap<Integer,Node>>> edges;
     private HashMap<Integer, LinkedList<Edge>> edges;
+    private HashMap<Integer,String> customEdges;
+    private HashMap<Integer,Pair<Integer,Integer>> customEdgeNodes;
     private WebGraph webgraph;
     private WebGraphList weblist;
     private HashMap<String, NodeFilter> nodeFilters;
@@ -35,6 +35,8 @@ public class Graph {
         nodes = new HashMap<>();
         edges = new HashMap<>();
         nodeFilters = new HashMap<>();
+        customEdges = new HashMap<>();
+        customEdgeNodes = new HashMap<>();
     }
 
     public WebGraph toWebGraph() {
@@ -49,7 +51,7 @@ public class Graph {
                 webgraph.addNodes(nodeMap.values().stream().map(node -> node.toWebNode().setPrefix(prefix).setGroup(group)).collect(Collectors.toSet()));
             });
             edges.forEach((typeId, edges) -> {
-                Pair<Integer, Integer> ns = Graphs.getNodesfromEdge(typeId);
+                Pair<Integer, Integer> ns = getNodesfromEdge(typeId);
                 String pref1 = Graphs.getPrefix(ns.first);
                 String pref2 = Graphs.getPrefix(ns.second);
                 //TODO add directional?
@@ -74,10 +76,32 @@ public class Graph {
 
     public WebGraphInfo toInfo() {
         WebGraphInfo info = new WebGraphInfo(id);
-        this.edges.forEach((id, es) -> info.edges.put(Graphs.getEdge(id), es.size()));
+        this.edges.forEach((id, es) -> info.edges.put(getEdge(id), es.size()));
         this.nodes.forEach((id, ns) -> info.nodes.put(Graphs.getNode(id), ns.size()));
         return info;
     }
+
+    public String getEdge(int id){
+        return id<0 ? customEdges.get(id) : Graphs.getEdge(id);
+    }
+
+    public Integer getEdge(String id){
+        try{
+            return Graphs.getEdge(id);
+        }catch (NullPointerException e) {
+            AtomicReference<Integer> out = new AtomicReference<>();
+            customEdges.forEach((k,v)->{
+                if(v.equals(id))
+                    out.set(k);
+            });
+            return out.get();
+        }
+    }
+
+    public Pair<Integer,Integer> getNodesfromEdge(int id){
+        return id<0 ? customEdgeNodes.get(id) : Graphs.getNodesfromEdge(id);
+    }
+
 
 
     public WebGraphList toWebList() {
@@ -132,10 +156,18 @@ public class Graph {
 
 
     public Graph clone() {
+        //TODO clone weblist and graph?
         Graph g = new Graph();
         getNodeFilters().forEach(g::saveNodeFilter);
         nodes.forEach((type, map) -> g.addNodes(type, map.values()));
         edges.forEach(g::addEdges);
         return g;
+    }
+
+    public void addCollapsedEdges(int node1, int node2, String edgeName, LinkedList<Edge> edges) {
+        int edgeId = (customEdges.size()+1)*-1;
+        customEdgeNodes.put(edgeId, new Pair<>(node1,node2));
+        customEdges.put(edgeId,edgeName);
+        addEdges(edgeId,edges);
     }
 }

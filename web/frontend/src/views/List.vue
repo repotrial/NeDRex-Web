@@ -19,6 +19,13 @@
             </v-col>
             <v-col>
               <v-chip
+                v-on:click="collapseGraph()"
+                class="pa-3"
+              >Collapse Graph
+              </v-chip>
+            </v-col>
+            <v-col>
+              <v-chip
                 icon
                 v-on:click="loadSelection"
               >
@@ -184,13 +191,6 @@
                       </v-col>
                       <v-col>
                         <v-chip
-                          v-on:click="deselectAll('nodes',nodeTab)"
-                          class="pa-3"
-                        >Unselect All Nodes
-                        </v-chip>
-                      </v-col>
-                      <v-col>
-                        <v-chip
                           v-on:click="selectEdges()"
                           class="pa-3"
                         >Select Needed Edges
@@ -198,9 +198,9 @@
                       </v-col>
                       <v-col>
                         <v-chip
-                          v-on:click="collapseGraph()"
+                          v-on:click="deselectAll('nodes',nodeTab)"
                           class="pa-3"
-                        >Collapse Graph
+                        >Unselect All Nodes
                         </v-chip>
                       </v-col>
                     </v-row>
@@ -446,6 +446,149 @@
       </v-card>
     </v-dialog>
     <v-dialog
+      v-model="collapse.show"
+      persistent
+      max-width="500"
+    >
+      <v-card v-if="collapse.show" ref="dialog">
+        <v-card-title class="headline">
+          Collapse Configuration
+        </v-card-title>
+        <v-card-text>Select a node and two edges which should be replaced by a new edge.
+        </v-card-text>
+        <v-divider></v-divider>
+        <v-container>
+          <v-row>
+            <v-col>
+              <v-switch
+                v-model="collapse.self.selected"
+                :disabled="collapse.self.disabled"
+                label="Allow Single Edge"
+              ></v-switch>
+            </v-col>
+          </v-row>
+          <v-divider></v-divider>
+          <v-row>
+            <v-col>
+              <v-list>
+                <v-list-item>
+                  <v-card-title>Nodes</v-card-title>
+                </v-list-item>
+                <v-list-item v-for="attr in collapse.nodes" :key="attr.name">
+                  <v-switch v-model="attr.selected" @click="isDisabled('nodes',attr.name)" :label="attr.name"
+                            :disabled="attr.disabled">
+                  </v-switch>
+                </v-list-item>
+              </v-list>
+            </v-col>
+            <v-col>
+              <v-list>
+                <v-list-item>
+                  <v-card-title>Edges</v-card-title>
+                </v-list-item>
+                <v-list-item v-for="attr in collapse.edges" :key="attr.name">
+                  <v-switch v-model="attr.selected" @click="isDisabled('edges',attr.name)" :label="attr.name"
+                            :disabled="attr.disabled">
+                  </v-switch>
+                </v-list-item>
+              </v-list>
+            </v-col>
+          </v-row>
+        </v-container>
+        <v-divider></v-divider>
+        <v-text-field
+          label="Edge Name"
+          outlined
+          v-model="collapse.edgeName">
+        </v-text-field>
+        <v-card-text v-if="collapse.accept">
+          <template v-if="!collapse.self.selected">
+            Generate edge by merging {{ collapse.edge1 }} and
+            {{ collapse.edge2 }} (via {{ collapse.nodes.filter(n => n.selected)[0].name }})?
+          </template>
+          <template v-if="collapse.self.selected"> Generate {{ collapse.edgeName }} edge by looping via
+            {{ collapse.edge1 }} and {{ collapse.nodes.filter(n => n.selected)[0].name }}?
+          </template>
+        </v-card-text>
+        <v-container v-if="collapse.accept">
+          <v-row>
+            <v-col v-if="!collapse.self.selected">
+              <v-chip @click="switchCollapseEdges">Switch edges</v-chip>
+            </v-col>
+          </v-row>
+        </v-container>
+        <v-divider></v-divider>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            color="green darken-1"
+            text
+            @click="collapseDialogResolve(false)"
+          >
+            Cancel
+          </v-btn>
+          <v-btn
+            color="green darken-1"
+            text
+            :disabled="!collapse.accept"
+            @click="collapseDialogResolve(true)"
+          >
+            Apply
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    <v-dialog
+      v-model="optionDialog"
+      persistent
+      max-width="500"
+    >
+      <v-card v-if="options !== undefined && options.type !== undefined">
+        <v-card-title class="headline">
+          Organize {{ options.title }} Attributes
+        </v-card-title>
+        <v-card-text>Adjust the attributes of the general item tables.
+        </v-card-text>
+        <v-divider></v-divider>
+        <template v-if="Object.keys(options.type).length>0">
+          <v-tabs v-model="optionTab">
+            <v-tabs-slider color="blue"></v-tabs-slider>
+            <v-tab v-for="name in Object.keys(options.attributes)" :key="name">
+              {{ Object.keys(nodes)[name] }}
+            </v-tab>
+          </v-tabs>
+          <v-tabs-items>
+            <v-list>
+              <v-list-item v-for="attr in options.attributes[optionTab]" :key="attr.name">
+                <v-switch v-model="attr.selected" :label="attr.name" :disabled="(attr.name === 'id')">
+                </v-switch>
+              </v-list-item>
+            </v-list>
+          </v-tabs-items>
+        </template>
+
+        <v-divider></v-divider>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            color="green darken-1"
+            text
+            @click="dialogResolve(false)"
+          >
+            Cancel
+          </v-btn>
+          <v-btn
+            color="green darken-1"
+            text
+            @click="dialogResolve(true)"
+          >
+            Apply
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    <v-dialog
       v-model="optionDialog"
       persistent
       max-width="500"
@@ -620,6 +763,16 @@ export default {
         extendScope: false
       },
       options: {},
+      collapse: {
+        show: false,
+        nodes: [],
+        self: {selected: false, disabled: false},
+        edges: [],
+        edgeName: "",
+        accept: false,
+        edge1: "",
+        edge2: ""
+      },
       extension: {show: false, nodes: [], edges: []},
       optionTab: undefined,
       update: {nodes: false, edges: false},
@@ -817,6 +970,13 @@ export default {
 
     },
 
+    switchCollapseEdges: function () {
+      let tmp = this.collapse.edge1
+      this.collapse.edge1 = this.collapse.edge2
+      this.collapse.edge2 = tmp
+      this.collapse.edgeName = this.collapse.edge1 + "_and_" + this.collapse.edge2
+    },
+
     nodeOptions: function () {
       this.optionDialog = true;
       this.optionsTab = 0
@@ -834,6 +994,57 @@ export default {
       this.options["type"] = "nodes";
     }
     ,
+    isDisabled: function (type, name) {
+      let clicked = this.collapse[type].filter(x => x.name === name)[0]
+      if (clicked.disabled)
+        return
+      let node = undefined;
+      this.collapse.nodes.forEach(n => {
+        if (n.selected)
+          node = n
+      })
+      let edges = this.collapse.edges.filter(e => e.selected)
+
+      if (type === "edges") {
+        if (this.collapse.edge1.length === 0)
+          this.collapse.edge1 = name
+        else
+          this.collapse.edge2 = name
+      }
+
+      this.collapse.edges.forEach(e => {
+
+        if (!e.selected && (((node !== undefined && (e.from !== node.id && e.to !== node.id))) || edges.length === 2 || (edges.length === 1 && this.collapse.self.selected)))
+          e.disabled = true
+        else
+          e.disabled = false
+      })
+      let middlenodeId = undefined
+      this.collapse.self.disabled = false
+      if (edges.length === 2) {
+        let nodeids = [edges[0].to, edges[0].from]
+        if (nodeids.indexOf(edges[1].to) !== -1)
+          middlenodeId = edges[1].to
+        else if (nodeids.indexOf(edges[1].from !== -1))
+          middlenodeId = edges[1].from
+        this.collapse.self.disabled = true
+
+        this.collapse.edgeName = this.collapse.edge1 + "_and_" + this.collapse.edge2
+      } else if (edges.length === 1) {
+        this.collapse.edgeName = this.collapse.edge1 + "_loop"
+      }
+      this.collapse.nodes.forEach(n => {
+        let disable = true;
+        this.collapse.edges.forEach(e => {
+          if (n.selected || (node === undefined && (edges.length === 0 || (e.selected && (e.to === n.id || e.from === n.id) && (edges.length < 2 || middlenodeId === n.id)))))
+            disable = false
+        })
+        n.disabled = disable
+      })
+
+      this.collapse.accept = this.isConnectedCollapse()
+      this.$refs.dialog.$forceUpdate()
+    },
     edgeOptions: function () {
       this.optionDialog = true;
       this.optionsTab = 0
@@ -854,6 +1065,7 @@ export default {
     dialogResolve(apply) {
       this.optionDialog = false;
       if (!apply) {
+        this.$nextTick()
         return;
       }
       let comparison = this.attributes[this.options.type];
@@ -917,6 +1129,7 @@ export default {
       this.extension = {nodes: [], edges: []}
       this.extension.show = false;
       if (!apply) {
+        this.$nextTick()
         return
       }
       console.log(payload)
@@ -927,10 +1140,42 @@ export default {
         this.$emit("updateInfo", info)
       }).catch(err => console.log(err))
     },
+    resetCollapseDialog:function (){
+      this.collapse.nodes = [];
+      this.collapse.edges = []
+      this.collapse.self.disabled = false;
+      this.collapse.edge1 = ""
+      this.collapse.edge2 = ""
+    },
+    collapseDialogResolve: function (apply) {
+      this.collapse.show = false;
+      if (!apply) {
+        this.resetCollapseDialog()
+        this.$nextTick()
+        return
+      }
+      let payload = {
+        gid: this.gid,
+        self: this.collapse.self.selected,
+        edgeName: this.collapse.edgeName,
+        edge1: this.collapse.edge1,
+        edge2: this.collapse.edge2,
+        node: this.collapse.nodes.filter(n=>n.selected)[0].name
+      }
+      this.resetCollapseDialog()
+      console.log(payload)
+      this.$http.post("/collapseGraph", payload).then(response => {
+        if (response.data !== undefined)
+          return response.data
+      }).then(info => {
+        this.$emit("updateInfo", info)
+      }).catch(err => console.log(err))
+    },
     selectionDialogResolve: function (apply) {
       this.selectionDialog.show = false
       if (!apply || (this.selectionDialog.type === "nodes" && this.selectionDialog.seeds.filter(k => k.select).length < 2)) {
         this.selectionDialog.extendSelect = false;
+        this.$nextTick()
         return;
       }
 
@@ -992,6 +1237,7 @@ export default {
     }
     ,
     loadSelection: function () {
+      //TODO check if correct (nodes connected by edge)
       let update = {id: this.gid, nodes: {}, edges: {}}
       for (let type in this.nodes) {
         update.nodes[type] = []
@@ -1148,7 +1394,7 @@ export default {
           return {name: name, select: false}
         })
       this.selectionDialog.show = true;
-
+      this.$nextTick()
     }
     , selectNodes: function () {
       this.selectionDialog.title = "Nodes"
@@ -1165,10 +1411,60 @@ export default {
 
 
       this.selectionDialog.show = true;
-
+      this.$nextTick()
     },
     collapseGraph: function () {
+      // show: false, nodes: [], self:false, edges:[]
       //TODO implement popup menu
+      console.log(this.metagraph)
+      this.collapse.nodes = this.metagraph.nodes.filter(n => Object.keys(this.attributes.nodes).indexOf(n.label.toLowerCase()) !== -1).map(n => {
+        return {name: n.label.toLowerCase(), selected: false, id: n.id, disabled: false}
+      })
+      this.collapse.edges = this.metagraph.edges.filter(e => Object.keys(this.attributes.edges).indexOf(e.label) !== -1).map(e => {
+        return {name: e.label, selected: false, from: e.from, to: e.to, disabled: false}
+      })
+      //TODO add already collapsed edges (need to get connecting nodes)
+      if (this.collapse.edges.length < 2) {
+        this.collapse.self.selected = true
+        this.collapse.self.disabled = true
+        this.collapse.edges.forEach(e => {
+          e.disabled = true
+          e.selected = true
+        })
+      } else if (this.collapse.edges.length === 2) {
+        this.collapse.edges.forEach(e => {
+          e.disabled = true
+          e.selected = true
+        })
+      }
+      if (this.collapse.nodes.length === 1) {
+        this.collapse.nodes.forEach(n => {
+          n.disabled = true
+          n.selected = true
+        })
+      }
+      this.collapse.accept = this.isConnectedCollapse()
+      this.collapse.show = true;
+      console.log(this.collapse)
+      this.$nextTick()
+
+    },
+    isConnectedCollapse: function () {
+      let node = undefined;
+      this.collapse.nodes.forEach(n => {
+        if (n.selected)
+          node = n.id
+      })
+      if (node === undefined)
+        return false;
+      let edges = this.collapse.edges.filter(e => e.selected)
+      if (edges.length === 0 || (!this.collapse.self.selected && edges.length < 2))
+        return false;
+      edges.forEach(e => {
+        if (e.from !== node && e.to !== node)
+          return false
+      })
+      return true
     },
     extendGraph: function () {
       this.extension.edges = this.metagraph.edges.map(e => e.label).map(e => {
@@ -1176,11 +1472,12 @@ export default {
         return {name: e, selected: there, disabled: there}
       })
       this.extension.show = true;
+
       this.$nextTick()
 
-//TODO implement popup menu
     },
-    getList: function (gid) {
+    getList: function (gid, metagraph) {
+      this.setMetagraph(metagraph)
       this.clearLists()
       this.$http.get("/getGraphList?id=" + gid + "&cached=true").then(response => {
         this.loadList(response.data)

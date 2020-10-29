@@ -94,15 +94,9 @@ public class RequestController {
 
     @RequestMapping(value = "/getEdgeDetails", method = RequestMethod.GET)
     @ResponseBody
-    public String getDetails(@RequestParam("name") String name, @RequestParam("id1") int id1, @RequestParam("id2") int id2) {
+    public String getDetails(@RequestParam("gid") String gid, @RequestParam("name") String name, @RequestParam("id1") int id1, @RequestParam("id2") int id2) {
         log.info("requested details for edge " + name + " with id (" + id1 + " -> " + id2 + ")");
-        String out = "";
-        try {
-            out = objectMapper.writeValueAsString(edgeController.edgeToAttributeList(Graphs.getEdge(name), new PairId(id1, id2)));
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-        return out;
+        return webGraphService.getEdgeDetails(gid, name, new PairId(id1, id2));
     }
 
     @RequestMapping(value = "/getExampleGraph2", method = RequestMethod.GET)
@@ -144,9 +138,20 @@ public class RequestController {
 
     @RequestMapping(value = "/extendGraph", method = RequestMethod.POST)
     @ResponseBody
-    public String getGraphExtension(@RequestBody ExtensionRequest request){
+    public String getGraphExtension(@RequestBody ExtensionRequest request) {
         try {
             return objectMapper.writeValueAsString(webGraphService.getExtension(request));
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @RequestMapping(value = "/collapseGraph", method = RequestMethod.POST)
+    @ResponseBody
+    public String getCollapsedGraph(@RequestBody CollapseRequest request) {
+        try {
+            return objectMapper.writeValueAsString(webGraphService.getCollapsedGraph(request));
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }

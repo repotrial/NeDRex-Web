@@ -212,7 +212,7 @@ export default {
           console.log(err)
         })
       } else if (data.type === "edge") {
-        this.$http.get("getEdgeDetails?name=" + data.name + "&id1=" + data.id1 + "&id2=" + data.id2).then(response => {
+        this.$http.get("getEdgeDetails?name=" + data.name + "&id1=" + data.id1 + "&id2=" + data.id2+"&gid="+this.$cookies.get("gid")).then(response => {
           if (response.data !== undefined) {
             this.detailedObject = response.data
             if (this.detailedObject.sourceId !== undefined)

@@ -222,7 +222,7 @@ export default {
       this.$refs.graph.loadData({info:info})
     },
     loadList: function (gid) {
-      this.$refs.list.getList(gid)
+      this.$refs.list.getList(gid, this.metagraph)
     },
     toggleSide: function () {
       if (this.showSidecard) {

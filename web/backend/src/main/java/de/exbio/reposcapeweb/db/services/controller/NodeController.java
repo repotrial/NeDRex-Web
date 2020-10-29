@@ -199,6 +199,22 @@ public class NodeController {
         return null;
     }
 
+    public String getDomainId(Integer typeId, Integer id) {
+        switch (Graphs.getNode(typeId)) {
+            case "disorder":
+                return disorderService.map(id);
+            case "drug":
+                return drugService.map(id);
+            case "gene":
+                return geneService.map(id);
+            case "pathway":
+                return pathwayService.map(id);
+            case "protein":
+                return proteinService.map(id);
+        }
+        return null;
+    }
+
     public boolean[] getIdAttributes(Integer typeId) {
         switch (Graphs.getNode(typeId)) {
             case "disorder":
