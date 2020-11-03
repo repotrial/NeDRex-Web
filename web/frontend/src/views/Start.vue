@@ -129,7 +129,7 @@ export default {
       filterId: this.filterId,
       onlyConnected: true,
       startFilters: this.startFilters,
-      skipVis:false,
+      skipVis:true,
     }
   },
   created() {

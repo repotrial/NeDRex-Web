@@ -1,5 +1,6 @@
 package de.exbio.reposcapeweb.communication.cache;
 
+import de.exbio.reposcapeweb.communication.reponses.ConnectionGraph;
 import de.exbio.reposcapeweb.communication.reponses.WebGraph;
 import de.exbio.reposcapeweb.communication.reponses.WebGraphInfo;
 import de.exbio.reposcapeweb.communication.reponses.WebGraphList;
@@ -8,6 +9,7 @@ import de.exbio.reposcapeweb.utils.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.sql.Connection;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -161,6 +163,7 @@ public class Graph {
         getNodeFilters().forEach(g::saveNodeFilter);
         nodes.forEach((type, map) -> g.addNodes(type, map.values()));
         edges.forEach(g::addEdges);
+        customEdgeNodes.forEach((k,v)->g.addCollapsedEdges(v.getFirst(),v.getSecond(),customEdges.get(k),new LinkedList<>()));
         return g;
     }
 
@@ -170,4 +173,5 @@ public class Graph {
         customEdges.put(edgeId,edgeName);
         addEdges(edgeId,edges);
     }
+
 }

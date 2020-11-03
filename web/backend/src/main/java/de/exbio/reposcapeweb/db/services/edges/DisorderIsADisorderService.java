@@ -91,7 +91,7 @@ public class DisorderIsADisorderService {
     }
 
     public HashSet<Integer> getEdges(int id){
-        return edges.get(id).entrySet().stream().filter(Map.Entry::getValue).map(Map.Entry::getKey).collect(Collectors.toCollection(HashSet::new));
+            return edges.get(id).entrySet().stream().filter(Map.Entry::getValue).map(Map.Entry::getKey).collect(Collectors.toCollection(HashSet::new));
     }
 
 

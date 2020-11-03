@@ -463,6 +463,7 @@
               <v-switch
                 v-model="collapse.self.selected"
                 :disabled="collapse.self.disabled"
+                @click="isDisabled()"
                 label="Allow Single Edge"
               ></v-switch>
             </v-col>
@@ -514,6 +515,30 @@
           <v-row>
             <v-col v-if="!collapse.self.selected">
               <v-chip @click="switchCollapseEdges">Switch edges</v-chip>
+            </v-col>
+            <v-col>
+              <v-switch
+                v-model="collapse.keep"
+              >
+                <template v-slot:label>
+                  Keep
+                  <v-tooltip
+                    right>
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-icon
+                        size="17px"
+                        color="primary"
+                        dark
+                        v-bind="attrs"
+                        v-on="on"
+                      >
+                        fas fa-question-circle
+                      </v-icon>
+                    </template>
+                    <span>Activate to keep collapsed entities even if there are no other entities connected.</span>
+                  </v-tooltip>
+                </template>
+              </v-switch>
             </v-col>
           </v-row>
         </v-container>
@@ -728,6 +753,7 @@ export default {
   nodes: {},
   edges: {},
   metagraph: {},
+  entityGraph: {},
   attributes: {},
   nodeTab: undefined,
   edgeTab: undefined,
@@ -738,6 +764,7 @@ export default {
     this.attributes = {}
     this.edges = {}
     this.backup = {nodes: {}, edges: {}}
+    this.init()
   },
 
   data() {
@@ -771,7 +798,8 @@ export default {
         edgeName: "",
         accept: false,
         edge1: "",
-        edge2: ""
+        edge2: "",
+        keep: false,
       },
       extension: {show: false, nodes: [], edges: []},
       optionTab: undefined,
@@ -829,6 +857,16 @@ export default {
     },
   },
   methods: {
+    init: function () {
+      if (this.gid === undefined)
+        return
+      this.$http.get("/getConnectionGraph?gid=" + this.gid).then(response => {
+        if (response.data !== undefined)
+          return response.data
+      }).then(data => {
+        this.entityGraph = data
+      }).catch(err => console.log(err))
+    },
     setMetagraph: function (metagraph) {
       this.metagraph = metagraph;
     },
@@ -847,6 +885,8 @@ export default {
       this.nodes = {};
       this.nodeTab = 0
       this.edgeTab = 0
+      this.filters.edges.query = ''
+      this.filters.nodes.query = ''
       if (data !== undefined) {
         this.attributes = data.attributes;
         for (let ni = 0; ni < Object.keys(this.attributes.nodes).length; ni++) {
@@ -995,22 +1035,26 @@ export default {
     }
     ,
     isDisabled: function (type, name) {
-      let clicked = this.collapse[type].filter(x => x.name === name)[0]
-      if (clicked.disabled)
-        return
+      if (type !== undefined && name !== undefined) {
+        let clicked = this.collapse[type].filter(x => x.name === name)[0]
+        if (clicked.disabled)
+          return
+
+        if (type === "edges") {
+          if (this.collapse.edge1.length === 0)
+            this.collapse.edge1 = name
+          else
+            this.collapse.edge2 = name
+        }
+
+      }
       let node = undefined;
       this.collapse.nodes.forEach(n => {
         if (n.selected)
           node = n
       })
-      let edges = this.collapse.edges.filter(e => e.selected)
 
-      if (type === "edges") {
-        if (this.collapse.edge1.length === 0)
-          this.collapse.edge1 = name
-        else
-          this.collapse.edge2 = name
-      }
+      let edges = this.collapse.edges.filter(e => e.selected)
 
       this.collapse.edges.forEach(e => {
 
@@ -1140,7 +1184,7 @@ export default {
         this.$emit("updateInfo", info)
       }).catch(err => console.log(err))
     },
-    resetCollapseDialog:function (){
+    resetCollapseDialog: function () {
       this.collapse.nodes = [];
       this.collapse.edges = []
       this.collapse.self.disabled = false;
@@ -1160,7 +1204,8 @@ export default {
         edgeName: this.collapse.edgeName,
         edge1: this.collapse.edge1,
         edge2: this.collapse.edge2,
-        node: this.collapse.nodes.filter(n=>n.selected)[0].name
+        node: this.collapse.nodes.filter(n => n.selected)[0].name,
+        keep: this.collapse.keep
       }
       this.resetCollapseDialog()
       console.log(payload)
@@ -1290,8 +1335,8 @@ export default {
       })
     },
     selectAll: function (type, tab) {
-      let data = {nodes: this.nodes, edges: this.edges}
-      let items = data[type][Object.keys(data[type])[tab]]
+      let name = Object.keys(this[type])[tab]
+      let items = this[type][name]
 
       let filterActive = this.filters[type].attribute.name !== undefined && this.filters[type].attribute.name.length > 0 && this.filters[type].query !== null && this.filters[type].query.length > 0 && this.filters[type].attribute.operator !== undefined && this.filters[type].attribute.operator.length > 0
       items.forEach(item => {
@@ -1302,12 +1347,28 @@ export default {
             item.selected = true
         }
       )
+
+      if (type === "edges") {
+        this.selectionDialog.seeds = [{select: true, name: name}]
+        let edge = Object.values(this.entityGraph.edges).filter(e => e.name === name)[0]
+        let nodes = Object.values(this.entityGraph.nodes).filter(n => n.id === edge.node1 || n.id === edge.node2)
+        this.selectionDialog.targets = nodes.map(n => {
+          return {name: n.name, select: true}
+        })
+        this.selectionDialog.type = type
+        this.selectionDialog.extendSelect = false
+        this.selectionDialog.extendScope = false
+        this.selectionDialogResolve(true)
+      }
+
       this.$nextTick().then(() => {
-        if ("nodes" === type)
-          this.$refs.nodeTab.$forceUpdate()
-        else
+        if ("edges" === type)
           this.$refs.edgeTab.$forceUpdate()
+        this.$refs.nodeTab.$forceUpdate()
+
       })
+
+
     }
     ,
     deselectAll: function (type, tab) {
@@ -1416,12 +1477,11 @@ export default {
     collapseGraph: function () {
       // show: false, nodes: [], self:false, edges:[]
       //TODO implement popup menu
-      console.log(this.metagraph)
-      this.collapse.nodes = this.metagraph.nodes.filter(n => Object.keys(this.attributes.nodes).indexOf(n.label.toLowerCase()) !== -1).map(n => {
-        return {name: n.label.toLowerCase(), selected: false, id: n.id, disabled: false}
+      this.collapse.nodes = Object.values(this.entityGraph.nodes).map(n => {
+        return {name: n.name, selected: false, id: n.id, disabled: false}
       })
-      this.collapse.edges = this.metagraph.edges.filter(e => Object.keys(this.attributes.edges).indexOf(e.label) !== -1).map(e => {
-        return {name: e.label, selected: false, from: e.from, to: e.to, disabled: false}
+      this.collapse.edges = Object.values(this.entityGraph.edges).map(e => {
+        return {name: e.name, selected: false, from: e.node1, to: e.node2, disabled: false}
       })
       //TODO add already collapsed edges (need to get connecting nodes)
       if (this.collapse.edges.length < 2) {
@@ -1430,11 +1490,16 @@ export default {
         this.collapse.edges.forEach(e => {
           e.disabled = true
           e.selected = true
+          this.collapse.edge1 = e.name
         })
-      } else if (this.collapse.edges.length === 2) {
+      } else if (this.collapse.edges.length === 2 && !this.collapse.self.selected) {
         this.collapse.edges.forEach(e => {
           e.disabled = true
           e.selected = true
+          if (this.collapse.edge1.length === 0)
+            this.collapse.edge1 = e.name
+          else
+            this.collapse.edge2 = e.name
         })
       }
       if (this.collapse.nodes.length === 1) {
@@ -1483,6 +1548,9 @@ export default {
         this.loadList(response.data)
       }).then(() => {
         this.gid = gid;
+      }).then(() => {
+        this.init()
+      }).then(() => {
         this.$emit("finishedEvent")
       }).catch(err => {
         console.log(err)

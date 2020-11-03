@@ -7,4 +7,5 @@ public class CollapseRequest {
     public String edge1;
     public String edge2;
     public String edgeName;
+    public boolean keep = false;
 }

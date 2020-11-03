@@ -19,6 +19,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
+
 /**
  * Controller for the incoming requests on the RepoScape-WEB application.
  *
@@ -158,6 +160,17 @@ public class RequestController {
         return null;
     }
 
+    @RequestMapping(value = "/getConnectionGraph", method = RequestMethod.GET)
+    @ResponseBody
+    public String getConnectionGraph(@RequestParam("gid") String gid){
+        try{
+            return objectMapper.writeValueAsString(webGraphService.getConnectionGraph(gid));
+        }catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 
     @RequestMapping(value = "/getGraphList", method = RequestMethod.GET)
     @ResponseBody
@@ -166,6 +179,7 @@ public class RequestController {
         try {
             StringBuilder out = new StringBuilder("{\"edges\":{");
             WebGraphList list = webGraphService.getList(id, null);
+            list.edges.forEach((k,v)-> System.out.println(k+": "+v.size()));
             StringBuilder edgeBuilder = new StringBuilder();
             list.getEdges().forEach((type, edges) -> {
                 edgeBuilder.append("\"").append(type).append("\":[");
