@@ -42,7 +42,7 @@
             <v-row>
               <v-col>
                 <Graph ref="startgraph" v-on:selectionEvent="setSelection" v-on:releaseEvent="resetSelection"
-                       :initgraph="{graph:metagraph,name:'metagraph'}"></Graph>
+                       :initgraph="{graph:metagraph,name:'metagraph'}" :startGraph="true"></Graph>
               </v-col>
               <v-col>
                 <v-list-item-group multiple color="indigo" v-model="edgeModel">
@@ -189,7 +189,6 @@ export default {
           this.graphLoad = {name: "default"}
         } else if (id === 1) {
           this.graphLoad = {get: "/getExampleGraph1"}
-        } else if (id === 2) {
           this.graphLoad = {
             post: {
               nodes: {

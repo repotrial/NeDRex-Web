@@ -3,16 +3,18 @@ import Router from "vue-router";
 import Graph from "./views/Graph.vue"
 import Start from "./views/Start.vue"
 import List from "./views/List.vue"
+import App from "./App.vue"
 
 Vue.use(Router);
 
 const router = new Router({
     mode: "history",
-    base: "/backend",
+    // base: "/backend",
     routes: [
       {path: "/", name: "Graph", component: Graph, props: true},
       {path: "/", name: "Start", component: Start, props: true},
-      {path: "/", name: "List", component: List, props: false}
+      {path: "/", name: "List", component: List, props: false},
+      {path:"/:gid", name:"App", component: App, props:false}
     ]
   },
   // { path:"/",

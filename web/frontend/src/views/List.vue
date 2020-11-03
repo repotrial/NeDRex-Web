@@ -353,13 +353,6 @@
                         >Unselect All Edges
                         </v-chip>
                       </v-col>
-                      <v-col>
-                        <v-chip
-                          v-on:click="selectNodes()"
-                          class="pa-3"
-                        >Add Needed Nodes
-                        </v-chip>
-                      </v-col>
                     </v-row>
                   </v-container>
                 </v-card>
@@ -759,14 +752,6 @@ export default {
   edgeTab: undefined,
   gid: undefined,
 
-  created() {
-    this.nodes = {}
-    this.attributes = {}
-    this.edges = {}
-    this.backup = {nodes: {}, edges: {}}
-    this.init()
-  },
-
   data() {
     return {
       edges: this.edges,
@@ -820,14 +805,21 @@ export default {
       filterNodeModel: null,
     }
   },
+
+  created() {
+    this.nodes = {}
+    this.attributes = {}
+    this.edges = {}
+    this.backup = {nodes: {}, edges: {}}
+    this.gid = this.$route.params["gid"]
+    if (this.gid !== undefined)
+      this.getList(this.gid, this.metagraph)
+  },
+
   watch: {
     filterNodeModel: function (val) {
       this.applySuggestion(val)
     },
-    // nodeTab: function (val) {
-    //   this.applySuggestion(undefined)
-    //   this.findNodeSuggestions = null;
-    // },
     findNodeSuggestions: function (val) {
       let type = "nodes";
       let name = Object.keys(this.nodes)[this.nodeTab];
@@ -857,6 +849,15 @@ export default {
     },
   },
   methods: {
+    reload: function(){
+      this.nodes = {}
+      this.attributes = {}
+      this.edges = {}
+      this.backup = {nodes: {}, edges: {}}
+      this.gid = this.$route.params["gid"]
+      if (this.gid !== undefined)
+        this.getList(this.gid, this.metagraph)
+    },
     init: function () {
       if (this.gid === undefined)
         return
@@ -865,7 +866,8 @@ export default {
           return response.data
       }).then(data => {
         this.entityGraph = data
-      }).catch(err => console.log(err))
+      })
+        .catch(err => console.log(err))
     },
     setMetagraph: function (metagraph) {
       this.metagraph = metagraph;
@@ -1456,34 +1458,14 @@ export default {
         })
       this.selectionDialog.show = true;
       this.$nextTick()
-    }
-    , selectNodes: function () {
-      this.selectionDialog.title = "Nodes"
-      this.selectionDialog.type = "edges"
-
-      if (this.attributes.edges !== undefined)
-        this.selectionDialog.seeds = Object.keys(this.attributes.edges).map(name => {
-          return {name: name, select: false}
-        })
-      if (this.attributes.nodes !== undefined)
-        this.selectionDialog.targets = Object.keys(this.attributes.nodes).map(name => {
-          return {name: name, select: false}
-        })
-
-
-      this.selectionDialog.show = true;
-      this.$nextTick()
     },
     collapseGraph: function () {
-      // show: false, nodes: [], self:false, edges:[]
-      //TODO implement popup menu
       this.collapse.nodes = Object.values(this.entityGraph.nodes).map(n => {
         return {name: n.name, selected: false, id: n.id, disabled: false}
       })
       this.collapse.edges = Object.values(this.entityGraph.edges).map(e => {
         return {name: e.name, selected: false, from: e.node1, to: e.node2, disabled: false}
       })
-      //TODO add already collapsed edges (need to get connecting nodes)
       if (this.collapse.edges.length < 2) {
         this.collapse.self.selected = true
         this.collapse.self.disabled = true

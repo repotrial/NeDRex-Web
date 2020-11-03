@@ -179,7 +179,6 @@ public class RequestController {
         try {
             StringBuilder out = new StringBuilder("{\"edges\":{");
             WebGraphList list = webGraphService.getList(id, null);
-            list.edges.forEach((k,v)-> System.out.println(k+": "+v.size()));
             StringBuilder edgeBuilder = new StringBuilder();
             list.getEdges().forEach((type, edges) -> {
                 edgeBuilder.append("\"").append(type).append("\":[");
@@ -200,9 +199,7 @@ public class RequestController {
     @RequestMapping(value = "/getCustomGraphList", method = RequestMethod.POST)
     @ResponseBody
     public String getCustomGraphList(@RequestBody CustomListRequest req) {
-        System.out.println("got custom request for " + req.id);
         try {
-            System.out.println(objectMapper.writeValueAsString(req));
             StringBuilder out = new StringBuilder("{\"edges\":{");
             WebGraphList list = webGraphService.getList(req.id, req);
             StringBuilder edgeBuilder = new StringBuilder();
@@ -248,7 +245,6 @@ public class RequestController {
         try {
             log.info("Requested a graph " + objectMapper.writeValueAsString(request));
             String out = objectMapper.writeValueAsString(webGraphService.getWebGraph(request));
-            System.out.println(out);
             log.info("Graph sent");
             return out;
         } catch (JsonProcessingException e) {

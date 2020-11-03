@@ -116,7 +116,6 @@
                v-on:selectionEvent="loadSelection"
                v-on:finishedEvent="setTabNotification(1)"
                v-on:graphLoadedEvent="loadList"
-               v-on:sizeWarningEvent="sizeWarning"
         ></Graph>
         <v-card>
           <v-checkbox v-model="physics" label="Enable physics" v-on:click="togglePhysics"></v-checkbox>
@@ -127,7 +126,7 @@
               v-on:finishedEvent="setTabNotification(2)"
               v-on:selectionEvent="loadDetails"
               v-on:loadSelectionEvent="loadSubSelection"
-              v-on:updateInfo="loadInfo"
+              v-on:updateInfo="evalPostInfo"
         ></List>
       </v-container>
     </v-main>
@@ -212,17 +211,42 @@ export default {
       this.$refs.side.hide()
       this.tabslist[1].icon = "fas fa-circle-notch fa-spin"
       this.tabslist[2].icon = "fas fa-circle-notch fa-spin"
+      this.$nextTick()
       if (this.physics) {
         this.physics = false;
         this.togglePhysics()
       }
-      this.$refs.graph.loadData(graph)
+      this.$http.post("/getGraphInfo", graph.post).then(response => {
+        return response.data
+      }).then(info => {
+        this.evalPostInfo(info)
+      }).catch(err => {
+        console.log(err)
+      })
+      // this.$refs.graph.loadData(graph)
     },
-    loadInfo: function (info){
-      this.$refs.graph.loadData({info:info})
-    },
+    // loadInfo: function (info){
+    //   this.$refs.graph.loadData({info:info})
+    // },
     loadList: function (gid) {
       this.$refs.list.getList(gid, this.metagraph)
+    },
+    evalPostInfo: function (info) {
+      let sum = 0
+      for (let n in info.nodes)
+        sum += info.nodes[n];
+      for (let e in info.edges)
+        sum += info.edges[e]
+      if (sum >= 100000) {
+        this.sizeWarning(info)
+        this.tabslist[1].icon = "fas fa-project-diagram"
+        this.tabslist[2].icon = "fas fa-list-ul"
+      }else {
+        this.$router.push({path:'/'+info.id})
+        this.$refs.graph.reload()
+        this.$refs.list.reload()
+      }
+
     },
     toggleSide: function () {
       if (this.showSidecard) {

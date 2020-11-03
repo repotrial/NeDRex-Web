@@ -101,7 +101,6 @@ public class WebGraphService {
                     finalReq.attributes.get("edges").put(g.getEdge(k), k < 0 ? new String[]{"id", "idOne", "idTwo"} : edgeController.getListAttributes(k));
                 });
             }
-            req.attributes.get("edges").forEach((k, v) -> System.out.println(k + ": " + Arrays.toString(v)));
             log.debug("Converting nodes from Graph to WebList for " + id);
             list = new WebGraphList(id);
             WebGraphList finalList = list;
@@ -121,7 +120,6 @@ public class WebGraphService {
 
             g.getEdges().forEach((type, edgeList) -> {
                 String stringType = g.getEdge(type);
-                System.out.println(stringType + " with " + edgeList.size());
                 if (!finalReq1.attributes.get("edges").containsKey(stringType))
                     return;
 
@@ -142,7 +140,6 @@ public class WebGraphService {
 
                     LinkedList<String> attrMaps = edgeController.edgesToAttributeList(type, edges, attrs);
                     finalList.addEdges(stringType, attrMaps);
-                    System.out.println("\tadded " + attrMaps.size() + " edges");
                     finalList.setTypes("edges", stringType, attributeArray, edgeController.getAttributeTypes(type), edgeController.getIdAttributes(type));
 
                 }
