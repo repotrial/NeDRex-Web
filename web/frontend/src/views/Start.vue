@@ -208,6 +208,7 @@ export default {
         }
       }
       console.log(this.graphLoad)
+      this.graphLoad.post["uid"]= this.$cookies.get("uid")
       this.graphLoad["skipVis"]=this.skipVis;
       this.$emit("graphLoadEvent", this.graphLoad)
     },

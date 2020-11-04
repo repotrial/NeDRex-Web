@@ -33,4 +33,12 @@ public class Node {
     public WebNode toWebNode(){
         return new WebNode(id,name,hasEdge);
     }
+
+    public String getName() {
+        return name;
+    }
+
+    public boolean isHasEdge() {
+        return hasEdge;
+    }
 }

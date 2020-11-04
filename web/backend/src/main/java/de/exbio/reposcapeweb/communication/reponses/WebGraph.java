@@ -26,12 +26,12 @@ public class WebGraph {
         this.id = id;
     }
 
-    public WebGraph(){
-        this.id= UUID.randomUUID().toString();
-    }
+//    public WebGraph(){
+//        this.id= UUID.randomUUID().toString();
+//    }
 
-    public WebGraph(String title, boolean directed){
-        this.id= UUID.randomUUID().toString();
+    public WebGraph(String title, boolean directed, String id){
+        this.id= id;
         this.title = title;
         this.directed=directed;
     }

@@ -60,7 +60,7 @@
           </v-card-text>
           <v-divider></v-divider>
           <v-card-subtitle style="font-size: 15pt; margin-top: 10px;">Nodes:</v-card-subtitle>
-<!--          <v-divider></v-divider>-->
+          <!--          <v-divider></v-divider>-->
           <v-list class="transparent">
             <v-list-item
               v-for="item in Object.keys(listWarnObject.nodes)"
@@ -76,13 +76,13 @@
           </v-list>
           <v-divider></v-divider>
           <v-card-subtitle style="font-size: 15pt; margin-top: 10px;">Edges:</v-card-subtitle>
-<!--          <v-divider></v-divider>-->
+          <!--          <v-divider></v-divider>-->
           <v-list class="transparent">
             <v-list-item
               v-for="item in Object.keys(listWarnObject.edges)"
               :key="item"
             >
-              <v-list-item-title>{{ item}}
+              <v-list-item-title>{{ item }}
               </v-list-item-title>
               <v-list-item-subtitle>
                 {{ listWarnObject.edges[item] }}
@@ -175,6 +175,7 @@ export default {
     }
   },
   created() {
+    this.loadUser()
     this.colors = {
       buttons: {graphs: {active: "deep-purple accent-2", inactive: undefined}},
       tabs: {active: "rgba(25 118 210)", inactive: "rgba(0,0,0,.54)"}
@@ -192,6 +193,16 @@ export default {
   },
   // this.setGraph({message: "Default graph"})
   methods: {
+    loadUser: function () {
+      console.log(this.$cookies.get("uid"))
+      this.$http.get("/getUser?user=" + this.$cookies.get("uid")).then(response => {
+        if (response.data !== undefined)
+          return response.data
+      }).then(data => {
+        this.$cookies.set("uid", data.uid);
+        console.log(data.history)
+      }).catch(err => console.log(err))
+    },
     initGraphs: function () {
       this.$http.get("/getMetagraph").then(response => {
         this.metagraph = response.data;
@@ -200,8 +211,8 @@ export default {
         console.log(err)
       })
     },
-    loadSubSelection: function (selection){
-      this.loadGraph({data:selection})
+    loadSubSelection: function (selection) {
+      this.loadGraph({data: selection})
     },
     sizeWarning: function (info) {
       this.listWarnObject = info;
@@ -241,10 +252,14 @@ export default {
         this.sizeWarning(info)
         this.tabslist[1].icon = "fas fa-project-diagram"
         this.tabslist[2].icon = "fas fa-list-ul"
-      }else {
-        this.$router.push({path:'/'+info.id})
-        this.$refs.graph.reload()
-        this.$refs.list.reload()
+      } else {
+        console.log(info)
+        this.$http.get("/archiveHistory?uid=" + this.$cookies.get("uid") + "&gid=" + info.id).then(() => {
+          this.$router.push({path: '/' + info.id})
+          this.$refs.graph.reload()
+          this.$refs.list.reload()
+        }).catch(err => console.log(err))
+
       }
 
     },
@@ -254,10 +269,10 @@ export default {
       }
       this.showSidecard = !this.showSidecard;
     },
-    nodeDetails: function (data){
+    nodeDetails: function (data) {
       let type = ""
-      this.metagraph.nodes.forEach(n=>{
-        if(n.group.startsWith(data.prefix))
+      this.metagraph.nodes.forEach(n => {
+        if (n.group.startsWith(data.prefix))
           type = n.group;
       })
       this.selectTab(2)

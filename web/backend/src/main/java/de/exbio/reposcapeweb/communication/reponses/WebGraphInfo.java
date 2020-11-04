@@ -12,4 +12,16 @@ public class WebGraphInfo {
         nodes = new HashMap<>();
         edges = new HashMap<>();
     }
+
+    public String getId() {
+        return id;
+    }
+
+    public HashMap<String, Integer> getNodes() {
+        return nodes;
+    }
+
+    public HashMap<String, Integer> getEdges() {
+        return edges;
+    }
 }

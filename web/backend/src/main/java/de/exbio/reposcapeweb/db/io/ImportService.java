@@ -2,6 +2,7 @@ package de.exbio.reposcapeweb.db.io;
 
 import de.exbio.reposcapeweb.db.DbCommunicationService;
 import de.exbio.reposcapeweb.db.entities.edges.*;
+import de.exbio.reposcapeweb.db.history.HistoryController;
 import de.exbio.reposcapeweb.db.services.edges.*;
 import de.exbio.reposcapeweb.db.services.nodes.*;
 import de.exbio.reposcapeweb.filter.FilterService;
@@ -45,6 +46,8 @@ public class ImportService {
     private final ProteinInPathwayService proteinInPathwayService;
     private final ProteinInteractsWithProteinService proteinInteractsWithProteinService;
 
+    private final HistoryController historyController;
+
     @Autowired
     public ImportService(Environment env,
                          DbCommunicationService dbCommunication,
@@ -61,7 +64,8 @@ public class ImportService {
                          AssociatedWithDisorderService associatedWithDisorderService,
                          ProteinEncodedByService proteinEncodedByService,
                          ProteinInPathwayService proteinInPathwayService,
-                         ProteinInteractsWithProteinService proteinInteractsWithProteinService) {
+                         ProteinInteractsWithProteinService proteinInteractsWithProteinService,
+                         HistoryController historyController) {
         this.env = env;
         this.dbCommunication = dbCommunication;
         this.drugService = drugService;
@@ -79,6 +83,8 @@ public class ImportService {
         this.proteinEncodedByService = proteinEncodedByService;
         this.proteinInPathwayService = proteinInPathwayService;
         this.proteinInteractsWithProteinService = proteinInteractsWithProteinService;
+
+        this.historyController = historyController;
     }
 
     public void importNodeData() {
@@ -90,6 +96,10 @@ public class ImportService {
         importIdMaps(collections, cacheDir, false);
         log.info("NodeIdMap import: Done!");
         importNodeFilters(collections, new File(cacheDir, "filters"));
+    }
+
+    public void importHistory(){
+        historyController.importHistory();
     }
 
     private void prepareCollections(String file, HashMap<String, de.exbio.reposcapeweb.db.io.Collection> collections, boolean typeNode) {

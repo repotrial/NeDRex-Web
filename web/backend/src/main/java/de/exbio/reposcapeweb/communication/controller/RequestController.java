@@ -9,6 +9,7 @@ import de.exbio.reposcapeweb.communication.reponses.WebGraph;
 import de.exbio.reposcapeweb.communication.reponses.WebGraphList;
 import de.exbio.reposcapeweb.communication.requests.*;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
+import de.exbio.reposcapeweb.db.history.HistoryController;
 import de.exbio.reposcapeweb.db.services.controller.EdgeController;
 import de.exbio.reposcapeweb.db.services.controller.NodeController;
 import de.exbio.reposcapeweb.db.services.nodes.DrugService;
@@ -37,14 +38,16 @@ public class RequestController {
     private final WebGraphService webGraphService;
     private final EdgeController edgeController;
     private final NodeController nodeController;
+    private final HistoryController historyController;
 
     @Autowired
-    public RequestController(DrugService drugService, ObjectMapper objectMapper, WebGraphService webGraphService, EdgeController edgeController, NodeController nodeController) {
+    public RequestController(DrugService drugService, ObjectMapper objectMapper, WebGraphService webGraphService, EdgeController edgeController, NodeController nodeController, HistoryController historyController) {
         this.drugService = drugService;
         this.objectMapper = objectMapper;
         this.webGraphService = webGraphService;
         this.edgeController = edgeController;
         this.nodeController = nodeController;
+        this.historyController = historyController;
     }
 
 
@@ -55,19 +58,19 @@ public class RequestController {
 //        return "Router is Running!";
 //    }
 
-    @RequestMapping(value = "/getExampleGraph1", method = RequestMethod.GET)
-    @ResponseBody
-    public String getExampleGraph1() {
-        log.info("got request on comorbidity graph");
-        try {
-            String out = objectMapper.writeValueAsString(webGraphService.getCancerComorbidity());
-            log.info("Answered request!");
-            return out;
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
+//    @RequestMapping(value = "/getExampleGraph1", method = RequestMethod.GET)
+//    @ResponseBody
+//    public String getExampleGraph1() {
+//        log.info("got request on comorbidity graph");
+//        try {
+//            String out = objectMapper.writeValueAsString(webGraphService.getCancerComorbidity());
+//            log.info("Answered request!");
+//            return out;
+//        } catch (JsonProcessingException e) {
+//            e.printStackTrace();
+//        }
+//        return null;
+//    }
 
     @RequestMapping(value = "/getMetagraph", method = RequestMethod.GET)
     @ResponseBody
@@ -101,19 +104,19 @@ public class RequestController {
         return webGraphService.getEdgeDetails(gid, name, new PairId(id1, id2));
     }
 
-    @RequestMapping(value = "/getExampleGraph2", method = RequestMethod.GET)
-    @ResponseBody
-    public String getExampleGraph2() {
-        log.info("got request on neuro-drug-graph");
-        try {
-            String out = objectMapper.writeValueAsString(webGraphService.getNeuroDrugs());
-            log.info("Answered request!");
-            return out;
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
+//    @RequestMapping(value = "/getExampleGraph2", method = RequestMethod.GET)
+//    @ResponseBody
+//    public String getExampleGraph2() {
+//        log.info("got request on neuro-drug-graph");
+//        try {
+//            String out = objectMapper.writeValueAsString(webGraphService.getNeuroDrugs());
+//            log.info("Answered request!");
+//            return out;
+//        } catch (JsonProcessingException e) {
+//            e.printStackTrace();
+//        }
+//        return null;
+//    }
 
     @RequestMapping(value = "/getSuggestions", method = RequestMethod.POST)
     @ResponseBody
@@ -239,11 +242,18 @@ public class RequestController {
         return null;
     }
 
+    @RequestMapping(value = "/archiveHistory", method = RequestMethod.GET)
+    @ResponseBody
+    public void archiveHistory(@RequestParam("uid") String uid, @RequestParam("gid") String gid){
+        log.info(uid+" is saving graph "+gid);
+        webGraphService.addGraphToHistory(uid,gid);
+    }
+
     @RequestMapping(value = "/getGraph", method = RequestMethod.POST)
     @ResponseBody
     public String getGraph(@RequestBody GraphRequest request) {
         try {
-            log.info("Requested a graph " + objectMapper.writeValueAsString(request));
+            log.info("Requested a graph " + objectMapper.writeValueAsString(request)+" uid="+request.uid);
             String out = objectMapper.writeValueAsString(webGraphService.getWebGraph(request));
             log.info("Graph sent");
             return out;
@@ -253,10 +263,20 @@ public class RequestController {
         return null;
     }
 
+    @RequestMapping(value = "/getUser", method = RequestMethod.GET)
+    @ResponseBody
+    public String getUser(@RequestParam("user") String userId){
+        try {
+            return objectMapper.writeValueAsString(historyController.getUserHistory(userId));
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     @RequestMapping(value = "/updateGraph", method = RequestMethod.POST)
     @ResponseBody
     public String updateGraph(@RequestBody UpdateRequest request) {
-        ;
         try {
             return objectMapper.writeValueAsString(webGraphService.updateGraph(request));
         } catch (JsonProcessingException e) {

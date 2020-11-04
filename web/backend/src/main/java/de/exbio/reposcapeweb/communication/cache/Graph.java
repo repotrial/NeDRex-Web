@@ -1,6 +1,6 @@
 package de.exbio.reposcapeweb.communication.cache;
 
-import de.exbio.reposcapeweb.communication.reponses.ConnectionGraph;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.exbio.reposcapeweb.communication.reponses.WebGraph;
 import de.exbio.reposcapeweb.communication.reponses.WebGraphInfo;
 import de.exbio.reposcapeweb.communication.reponses.WebGraphList;
@@ -9,36 +9,53 @@ import de.exbio.reposcapeweb.utils.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.Connection;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 public class Graph {
 
+    @JsonIgnore
     private final Logger log = LoggerFactory.getLogger(Graph.class);
     private String id;
+    @JsonIgnore
+    private String parent;
     private HashMap<Integer, HashMap<Integer, Node>> nodes;
     // edgetype -> node1 -> node2 -> edge
 //    private HashMap<Integer,HashMap<Integer,HashMap<Integer,Node>>> edges;
     private HashMap<Integer, LinkedList<Edge>> edges;
     private HashMap<Integer,String> customEdges;
     private HashMap<Integer,Pair<Integer,Integer>> customEdgeNodes;
+    @JsonIgnore
     private WebGraph webgraph;
+    @JsonIgnore
     private WebGraphList weblist;
+    @JsonIgnore
     private HashMap<String, NodeFilter> nodeFilters;
 
     public Graph() {
-        this(UUID.randomUUID().toString());
-    }
-
-    public Graph(String id) {
-        this.id = id;
         nodes = new HashMap<>();
         edges = new HashMap<>();
         nodeFilters = new HashMap<>();
         customEdges = new HashMap<>();
         customEdgeNodes = new HashMap<>();
+    }
+
+    public Graph(String id) {
+        this();
+        this.id = id;
+
+    }
+
+    public void setParent(String id){
+        this.parent = id;
+    }
+
+    public String getParent() {
+        return parent;
     }
 
     public WebGraph toWebGraph() {
@@ -157,13 +174,14 @@ public class Graph {
     }
 
 
-    public Graph clone() {
+    public Graph clone(String id) {
         //TODO clone weblist and graph?
-        Graph g = new Graph();
+        Graph g = new Graph(id);
         getNodeFilters().forEach(g::saveNodeFilter);
         nodes.forEach((type, map) -> g.addNodes(type, map.values()));
         edges.forEach(g::addEdges);
         customEdgeNodes.forEach((k,v)->g.addCollapsedEdges(v.getFirst(),v.getSecond(),customEdges.get(k),new LinkedList<>()));
+        g.setParent(this.id);
         return g;
     }
 
@@ -174,4 +192,11 @@ public class Graph {
         addEdges(edgeId,edges);
     }
 
+    public HashMap<Integer, String> getCustomEdges() {
+        return customEdges;
+    }
+
+    public HashMap<Integer, Pair<Integer, Integer>> getCustomEdgeNodes() {
+        return customEdgeNodes;
+    }
 }

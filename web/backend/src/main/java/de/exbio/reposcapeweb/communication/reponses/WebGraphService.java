@@ -9,17 +9,20 @@ import de.exbio.reposcapeweb.communication.cache.Node;
 import de.exbio.reposcapeweb.communication.requests.*;
 import de.exbio.reposcapeweb.db.DbCommunicationService;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
+import de.exbio.reposcapeweb.db.history.GraphHistory;
+import de.exbio.reposcapeweb.db.history.HistoryController;
 import de.exbio.reposcapeweb.db.services.controller.EdgeController;
 import de.exbio.reposcapeweb.db.services.controller.NodeController;
 import de.exbio.reposcapeweb.filter.NodeFilter;
 import de.exbio.reposcapeweb.utils.Pair;
+import de.exbio.reposcapeweb.utils.WriterUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.*;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,6 +31,7 @@ public class WebGraphService {
 
     private final EdgeController edgeController;
     private final NodeController nodeController;
+    private final HistoryController historyController;
     private final ObjectMapper objectMapper;
     private final DbCommunicationService dbCommunicationService;
     private HashMap<String, Graph> cache = new HashMap<>();
@@ -38,15 +42,17 @@ public class WebGraphService {
             NodeController nodeController,
             EdgeController edgeController,
             DbCommunicationService dbCommunicationService,
-            ObjectMapper objectMapper) {
+            ObjectMapper objectMapper,
+            HistoryController historyController) {
         this.edgeController = edgeController;
         this.nodeController = nodeController;
         this.dbCommunicationService = dbCommunicationService;
         this.objectMapper = objectMapper;
+        this.historyController = historyController;
     }
 
     public WebGraph getMetaGraph() {
-        WebGraph graph = new WebGraph("Metagraph", true);
+        WebGraph graph = new WebGraph("Metagraph", true, historyController.getGraphId());
 
         graph.addNode(new WebNode(1, "Drug", "drug", "Drug"));
         graph.addNode(new WebNode(2, "Protein", "protein", "Protein"));
@@ -75,13 +81,16 @@ public class WebGraphService {
     }
 
     public Graph getCachedGraph(String graphId) {
-        return cache.get(graphId);
+        if (graphId != null && !graphId.equals("null")) {
+            if (!cache.containsKey(graphId))
+                importGraph(graphId);
+            return cache.get(graphId);
+        }
+        return null;
     }
 
     public WebGraphList getList(String id, CustomListRequest req) {
-        Graph g = cache.get(id);
-
-
+        Graph g = getCachedGraph(id);
         WebGraphList list = g.toWebList();
 
         boolean custom = req != null;
@@ -147,7 +156,8 @@ public class WebGraphService {
 
 
             if (!custom)
-                cache.get(id).setWebList(list);
+                getCachedGraph(id).setWebList(list);
+
         }
         return list;
     }
@@ -157,8 +167,9 @@ public class WebGraphService {
     }
 
     public WebGraphInfo updateGraph(UpdateRequest request) {
-        Graph basis = cache.get(request.id);
-        Graph g = new Graph();
+        Graph basis = getCachedGraph(request.id);
+        Graph g = new Graph(historyController.getGraphId());
+        g.setParent(request.id);
         request.nodes.forEach((type, ids) -> {
             if (ids.length == 0)
                 return;
@@ -193,29 +204,30 @@ public class WebGraphService {
     }
 
     public WebGraph getWebGraph(String id) {
-        return cache.get(id).toWebGraph();
+        return getCachedGraph(id).toWebGraph();
     }
 
     public Graph getGraph(GraphRequest request) {
-        if (request.id != null && cache.containsKey(request.id))
-            return cache.get(request.id);
+        Graph g = getCachedGraph(request.id);
+        if (g != null)
+            return g;
+        else
+            g = new Graph(historyController.getGraphId());
 
         dbCommunicationService.scheduleRead();
-
-
-        Graph g = request.id != null ? new Graph(request.id) : new Graph();
 
 
         cache.put(g.getId(), g);
 
         TreeMap<Integer, HashMap<Integer, Node>> nodeIds = new TreeMap<>();
+        Graph finalG = g;
         request.nodes.forEach((k, v) -> {
             NodeFilter nf = nodeController.getFilter(k);
             if (v.filters != null)
                 for (Filter filter : v.filters) {
                     nf = nf.apply(filter);
                 }
-            g.saveNodeFilter(k, nf);
+            finalG.saveNodeFilter(k, nf);
             HashMap<Integer, Node> ids = new HashMap<>();
             nodeIds.put(Graphs.getNode(k), ids);
 
@@ -262,7 +274,7 @@ public class WebGraphService {
                             } catch (NullPointerException ignore) {
                             }
                         });
-                        g.addEdges(edgeId, edges);
+                        finalG.addEdges(edgeId, edges);
                         if (request.nodes.get(Graphs.getNode(nodeI[0])).filters.length == 0)
                             connectedNodes.add(nodeI[0]);
                         if (request.nodes.get(Graphs.getNode(nodeJ[0])).filters.length == 0)
@@ -272,68 +284,69 @@ public class WebGraphService {
             }
         }
         if (request.connectedOnly) {
-            nodeIds.forEach((type, nodeMap) -> nodeMap.entrySet().stream().filter(e -> e.getValue().hasEdge()).forEach(e -> g.addNode(type, e.getValue())));
+            nodeIds.forEach((type, nodeMap) -> nodeMap.entrySet().stream().filter(e -> e.getValue().hasEdge()).forEach(e -> finalG.addNode(type, e.getValue())));
         } else
-            nodeIds.forEach((type, nodeMap) -> nodeMap.forEach((key, value) -> g.addNode(type, value)));
+            nodeIds.forEach((type, nodeMap) -> nodeMap.forEach((key, value) -> finalG.addNode(type, value)));
+
         return g;
     }
 
-    public WebGraph getNeuroDrugs() {
-        dbCommunicationService.scheduleRead();
-        WebGraph graph = new WebGraph("Neuro Disorer Drugs", true);
-        HashMap<Integer, WebNode> ids = new HashMap<>();
-        HashSet<Integer> drugs = new HashSet<>();
-        nodeController.filterDisorder().filterMatches(".*((neur)|(prion)|(brain)|(enceph)|(cogni)).*", -1).forEach(entry -> {
-            WebNode n = new WebNode("dis_", entry.getNodeId(), entry.getName(), "disorder");
-            ids.put(entry.getNodeId(), n);
-            n.setTitle(entry.getName());
-            HashSet<Integer> indications = edgeController.getDrugHasIndicationTo(entry.getNodeId());
-            graph.addNode(n);
-            try {
-                drugs.addAll(indications);
-                indications.forEach(drug -> {
-                    graph.addEdge(new WebEdge("dr_" + drug, "dis_" + entry.getNodeId()));
-                    n.hasEdge = true;
-                });
-            } catch (NullPointerException e) {
-            }
-        });
-        nodeController.findDrugs(drugs).forEach(d -> {
-            WebNode n = new WebNode("dr_", d.getId(), d.getDisplayName(), "drugs");
-            n.hasEdge = true;
-            n.setTitle(d.getDisplayName());
-            graph.addNode(n);
-        });
-//        graph.drawDoubleCircular();
-        return graph;
-    }
+//    public WebGraph getNeuroDrugs() {
+//        dbCommunicationService.scheduleRead();
+//        WebGraph graph = new WebGraph("Neuro Disorer Drugs", true, historyController.getGraphId());
+//        HashMap<Integer, WebNode> ids = new HashMap<>();
+//        HashSet<Integer> drugs = new HashSet<>();
+//        nodeController.filterDisorder().filterMatches(".*((neur)|(prion)|(brain)|(enceph)|(cogni)).*", -1).forEach(entry -> {
+//            WebNode n = new WebNode("dis_", entry.getNodeId(), entry.getName(), "disorder");
+//            ids.put(entry.getNodeId(), n);
+//            n.setTitle(entry.getName());
+//            HashSet<Integer> indications = edgeController.getDrugHasIndicationTo(entry.getNodeId());
+//            graph.addNode(n);
+//            try {
+//                drugs.addAll(indications);
+//                indications.forEach(drug -> {
+//                    graph.addEdge(new WebEdge("dr_" + drug, "dis_" + entry.getNodeId()));
+//                    n.hasEdge = true;
+//                });
+//            } catch (NullPointerException e) {
+//            }
+//        });
+//        nodeController.findDrugs(drugs).forEach(d -> {
+//            WebNode n = new WebNode("dr_", d.getId(), d.getDisplayName(), "drugs");
+//            n.hasEdge = true;
+//            n.setTitle(d.getDisplayName());
+//            graph.addNode(n);
+//        });
+////        graph.drawDoubleCircular();
+//        return graph;
+//    }
 
 
-    public WebGraph getCancerComorbidity() {
-        dbCommunicationService.scheduleRead();
-        WebGraph graph = new WebGraph("Cancer comorbidity Network", false);
-        HashMap<Integer, WebNode> ids = new HashMap<>();
-        nodeController.filterDisorder().filterMatches(".*(cancer|tumor|tumour|carc).*", -1).forEach(entry -> {
-            WebNode n = new WebNode(entry.getNodeId(), entry.getNodeId() + "", "disorder");
-            ids.put(entry.getNodeId(), n);
-            n.setTitle(entry.getName());
-        });
-
-        ids.keySet().forEach(id1 -> ids.keySet().forEach(id2 -> {
-            if (edgeController.isDisorderComorbidWithDisorder(id1, id2)) {
-                graph.addEdge(new WebEdge(id1, id2));
-                ids.get(id1).hasEdge = true;
-                ids.get(id2).hasEdge = true;
-            }
-        }));
-
-        ids.values().forEach(graph::addNode);
-//        graph.drawDoubleCircular();
-        return graph;
-    }
+//    public WebGraph getCancerComorbidity() {
+//        dbCommunicationService.scheduleRead();
+//        WebGraph graph = new WebGraph("Cancer comorbidity Network", false, historyController.getGraphId());
+//        HashMap<Integer, WebNode> ids = new HashMap<>();
+//        nodeController.filterDisorder().filterMatches(".*(cancer|tumor|tumour|carc).*", -1).forEach(entry -> {
+//            WebNode n = new WebNode(entry.getNodeId(), entry.getNodeId() + "", "disorder");
+//            ids.put(entry.getNodeId(), n);
+//            n.setTitle(entry.getName());
+//        });
+//
+//        ids.keySet().forEach(id1 -> ids.keySet().forEach(id2 -> {
+//            if (edgeController.isDisorderComorbidWithDisorder(id1, id2)) {
+//                graph.addEdge(new WebEdge(id1, id2));
+//                ids.get(id1).hasEdge = true;
+//                ids.get(id2).hasEdge = true;
+//            }
+//        }));
+//
+//        ids.values().forEach(graph::addNode);
+////        graph.drawDoubleCircular();
+//        return graph;
+//    }
 
     public Suggestions getSuggestions(SuggestionRequest request) {
-        Graph graph = cache.get(request.gid);
+        Graph graph = getCachedGraph(request.gid);
         Suggestions suggestions = new Suggestions(request.gid, request.query);
 
         if (request.type.equals("nodes")) {
@@ -441,7 +454,7 @@ public class WebGraphService {
     }
 
     public WebGraphInfo getExtension(ExtensionRequest request) {
-        Graph g = getCachedGraph(request.gid).clone();
+        Graph g = getCachedGraph(request.gid).clone(historyController.getGraphId());
         cache.put(g.getId(), g);
         HashSet<String> requestedEdges = new HashSet<>(Arrays.asList(request.edges));
         while (!requestedEdges.isEmpty()) {
@@ -521,7 +534,7 @@ public class WebGraphService {
     }
 
     public WebGraphInfo getCollapsedGraph(CollapseRequest request) {
-        Graph g = getCachedGraph(request.gid).clone();
+        Graph g = getCachedGraph(request.gid).clone(historyController.getGraphId());
         cache.put(g.getId(), g);
         int collapseNode = Graphs.getNode(request.node);
         int edgeId1 = g.getEdge(request.edge1);
@@ -617,4 +630,46 @@ public class WebGraphService {
             }
         }
     }
+
+    public void addGraphToHistory(String uid, String gid) {
+        Graph g = cache.get(gid);
+        GraphHistory history;
+        if (g.getParent() == null) {
+            history = new GraphHistory(uid, g.getId(), g.toInfo());
+        } else {
+            history = new GraphHistory(uid, g.getId(), g.toInfo(), historyController.getHistory(g.getParent()));
+            cache.remove(gid);
+        }
+        historyController.save(history);
+        exportGraph(g);
+    }
+
+
+    public void exportGraph(Graph g) {
+        File out = historyController.getGraphPath(g.getId());
+        try {
+            WriterUtils.writeTo(out, objectMapper.writeValueAsString(g));
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void importGraph(String gid) {
+        try {
+            log.debug("Importing Graph with id=" + gid);
+            Graph g = objectMapper.readValue(historyController.getGraphPath(gid), Graph.class);
+            restoreNodeFilters(g);
+            this.cache.put(gid, g);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void restoreNodeFilters(Graph g) {
+        g.getNodes().forEach((k, v) -> {
+            String name = Graphs.getNode(k);
+            g.saveNodeFilter(name, new NodeFilter(nodeController.getFilter(name), v.keySet()));
+        });
+    }
+
 }
