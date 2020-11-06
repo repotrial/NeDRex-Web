@@ -35,6 +35,7 @@ public class WebGraphService {
     private final ObjectMapper objectMapper;
     private final DbCommunicationService dbCommunicationService;
     private HashMap<String, Graph> cache = new HashMap<>();
+    private HashMap<String, Object> colorMap;
 
 
     @Autowired
@@ -73,11 +74,33 @@ public class WebGraphService {
         graph.addEdge(new WebEdge(5, 5, "DisorderIsADisorder"));
         graph.addEdge(new WebEdge(1, 5, "DrugHasIndication"));
 
+        graph.setColorMap(this.colorMap);
+
         return graph;
     }
 
-    public WebGraph getCachedWebGraph(String graphId) {
-        return getCachedGraph(graphId).toWebGraph();
+    public HashMap<String, Object> getColorMap(Collection<String> nodetypes) {
+        if (colorMap == null) {
+            //TODO read from config json
+
+            colorMap = new HashMap<>();
+            ArrayList<String[]> colors = new ArrayList<>(Arrays.asList(
+                    new String[]{"drug", "#00CC96", "#b4cdcc"},
+                    new String[]{"disorder", "#EF553B", "#ecd0cb"},
+                    new String[]{"gene", "#636EFA", "#d6d9f8"},
+                    new String[]{"protein", "#19d3f3", "#bcdfe5"},
+                    new String[]{"pathway", "#fecb52", "#fae6c1"}));
+            colors.forEach(c -> {
+                HashMap<String, String> node = new HashMap<>();
+                colorMap.put(c[0], node);
+                node.put("main", c[1]);
+                node.put("light", c[2]);
+            });
+        }
+
+        HashMap<String, Object> out = new HashMap<>();
+        nodetypes.forEach(n -> out.put(n, colorMap.get(n)));
+        return out;
     }
 
     public Graph getCachedGraph(String graphId) {
@@ -163,7 +186,9 @@ public class WebGraphService {
     }
 
     public WebGraph getWebGraph(GraphRequest request) {
-        return getGraph(request).toWebGraph();
+        Graph g = getGraph(request);
+        return g.toWebGraph(getColorMap(g.getNodes().keySet().stream().map(Graphs::getNode).collect(Collectors.toSet())));
+
     }
 
     public WebGraphInfo updateGraph(UpdateRequest request) {
@@ -204,7 +229,8 @@ public class WebGraphService {
     }
 
     public WebGraph getWebGraph(String id) {
-        return getCachedGraph(id).toWebGraph();
+        Graph g= getCachedGraph(id);
+        return g.toWebGraph(getColorMap(g.getNodes().keySet().stream().map(Graphs::getNode).collect(Collectors.toSet())));
     }
 
     public Graph getGraph(GraphRequest request) {
@@ -608,7 +634,10 @@ public class WebGraphService {
         g.getEdges().keySet().forEach(eid -> {
             //TODO get real direction
             Pair<Integer, Integer> nodeIds = g.getNodesfromEdge(eid);
-            cg.addEdge(g.getEdge(eid), eid, true, nodeIds.getFirst(), nodeIds.getSecond());
+            boolean direction = false;
+            if(eid>-1)
+                direction = edgeController.getDirection(eid);
+            cg.addEdge(g.getEdge(eid), eid, direction, nodeIds.getFirst(), nodeIds.getSecond());
         });
         g.getNodes().keySet().forEach(nid -> {
             cg.addNode(Graphs.getNode(nid), nid);

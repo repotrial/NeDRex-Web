@@ -4,8 +4,6 @@ public class WebNode {
     String id;
     String label;
     String title;
-//    double x;
-//    double y;
     String group;
     boolean hasEdge = false;
 
@@ -25,6 +23,7 @@ public class WebNode {
         this(id,label,group);
         this.title=title;
     }
+
 
     public WebNode(String prefix,int id, String label,String group){
         this.id = prefix+id;

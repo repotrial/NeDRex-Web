@@ -25,7 +25,7 @@ public class GraphHistory {
     @JoinColumn(name="graph_id", insertable = false, updatable = false)
     @JsonIgnore
     private GraphHistory parent;
-    @OneToMany(mappedBy="parent",fetch = FetchType.LAZY)
+    @OneToMany(mappedBy="parent",fetch = FetchType.EAGER)
     @JsonIgnore
     private List<GraphHistory> derived;
     private String comment;

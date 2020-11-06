@@ -57,7 +57,7 @@ public class Graph {
         return parent;
     }
 
-    public WebGraph toWebGraph() {
+    public WebGraph toWebGraph(HashMap<String,Object> colors) {
         if (webgraph == null) {
             int nodeCount = nodes.values().stream().mapToInt(HashMap::size).sum();
             int edgeCount = edges.values().stream().mapToInt(LinkedList::size).sum();
@@ -75,10 +75,11 @@ public class Graph {
                 //TODO add directional?
                 webgraph.addEdges(edges.stream().map(edge -> edge.toWebEdge().addPrefixes(pref1, pref2)).collect(Collectors.toSet()));
             });
-
         }
+        webgraph.setColorMap(colors);
         return webgraph;
     }
+
 
     public void saveNodeFilter(String nodeName, NodeFilter nf) {
         this.nodeFilters.put(nodeName, nf);

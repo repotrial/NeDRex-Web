@@ -29,7 +29,7 @@
               >
                 <template v-slot:prepend="{item}">
 
-                  <span style="color: lightgray; font-size: 10pt">
+                  <span style="color: darkgray; font-size: 10pt">
                     <v-tooltip right>
                       <template v-slot:activator="{ on, attrs }">
                         <v-icon

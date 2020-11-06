@@ -204,4 +204,8 @@ public class ProteinInteractsWithProteinService {
         item.setMemberTwo(geneService.map(item.getPrimaryIds().getId2()));
         return item;
     }
+
+    public boolean isDirected() {
+        return directed;
+    }
 }

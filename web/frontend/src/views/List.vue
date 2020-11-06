@@ -1,7 +1,59 @@
 <template>
   <div>
     <v-container>
+      <v-card style="margin:5px" ref="info">
+        <v-card-title>General Information</v-card-title>
+        <v-container v-if="loading">Load a list first.</v-container>
+        <v-container v-else>
+          <v-row>
+            <v-col>
+              <v-list>
+                <v-list-item>
+                  <b>Nodes ({{ getCounts('nodes') }})</b>
+                </v-list-item>
+                <v-list-item v-for="node in Object.values(countMap.nodes)" :key="node.name">
+                  <v-chip outlined>
+                    <v-icon left :color="getColoring('nodes',node.name)">fas fa-genderless</v-icon>
+                    {{ node.name }} ({{node.selected}}/{{ node.total }})
+                  </v-chip>
+                </v-list-item>
+
+              </v-list>
+            </v-col>
+            <v-col>
+              <v-list>
+                <v-list-item>
+                  <b>Edges ({{ getCounts('edges') }})</b>
+                </v-list-item>
+                <v-list-item v-for="edge in Object.values(countMap.edges)" :key="edge.name">
+                  <v-chip outlined>
+                    <v-icon left :color="getColoring('edges',edge.name)[0]">fas fa-genderless</v-icon>
+                    <template v-if="direction(edge.name)===0">
+                      <v-icon left>fas fa-undo-alt</v-icon>
+                    </template>
+                    <template v-else>
+                      <v-icon v-if="direction(edge.name)===1" left>fas fa-long-arrow-alt-right</v-icon>
+                      <v-icon v-else left>fas fa-arrows-alt-h</v-icon>
+                      <v-icon left :color="getColoring('edges',edge.name)[1]">fas fa-genderless</v-icon>
+                    </template>
+                    {{ edge.name }} ({{edge.selected}}/{{ edge.total }})
+
+                  </v-chip>
+
+                </v-list-item>
+
+              </v-list>
+            </v-col>
+
+
+          </v-row>
+
+
+        </v-container>
+
+      </v-card>
       <v-card style="margin:5px">
+        <v-card-title>General Options</v-card-title>
         <v-container>
           <v-row>
             <v-col>
@@ -213,6 +265,7 @@
                   v-model="item.selected"
                   hide-details
                   primary
+                  @click="countClick('nodes',nodeTab,item.selected)"
                 ></v-checkbox>
               </template>
               <template v-slot:item.displayName="{item}">
@@ -803,6 +856,8 @@ export default {
         edges: {query: '', attribute: {}, suggestions: false}
       },
       filterNodeModel: null,
+      loading: true,
+      countMap:{nodes:{},edges:{}}
     }
   },
 
@@ -849,7 +904,7 @@ export default {
     },
   },
   methods: {
-    reload: function(){
+    reload: function () {
       this.nodes = {}
       this.attributes = {}
       this.edges = {}
@@ -866,6 +921,8 @@ export default {
           return response.data
       }).then(data => {
         this.entityGraph = data
+        this.reloadCountMap()
+        this.loading = false
       })
         .catch(err => console.log(err))
     },
@@ -1178,6 +1235,7 @@ export default {
         this.$nextTick()
         return
       }
+      this.loading = true
       console.log(payload)
       this.$http.post("/extendGraph", payload).then(response => {
         if (response.data !== undefined)
@@ -1200,6 +1258,7 @@ export default {
         this.$nextTick()
         return
       }
+      this.loading = true;
       let payload = {
         gid: this.gid,
         self: this.collapse.self.selected,
@@ -1217,6 +1276,9 @@ export default {
       }).then(info => {
         this.$emit("updateInfo", info)
       }).catch(err => console.log(err))
+    },
+    setLoading : function (boolean){
+      this.loading = boolean
     },
     selectionDialogResolve: function (apply) {
       this.selectionDialog.show = false
@@ -1278,6 +1340,7 @@ export default {
         for (let etype in data.edges) {
           this.select("edges", etype, data.edges[etype])
         }
+        this.reloadCountMap()
       }).catch(err => {
         console.log(err)
       })
@@ -1299,6 +1362,7 @@ export default {
       this.filters.nodes.suggestions = false;
       this.filterNodeModel = null
       this.$http.post("/updateGraph", update).then(response => {
+        this.loading = true;
         if (response.data !== undefined)
           return response.data;
       }).then(info => {
@@ -1362,15 +1426,12 @@ export default {
         this.selectionDialog.extendScope = false
         this.selectionDialogResolve(true)
       }
-
       this.$nextTick().then(() => {
+        this.reloadCountMap()
         if ("edges" === type)
           this.$refs.edgeTab.$forceUpdate()
         this.$refs.nodeTab.$forceUpdate()
-
       })
-
-
     }
     ,
     deselectAll: function (type, tab) {
@@ -1385,7 +1446,9 @@ export default {
           item.selected = false;
 
       })
+      this.reloadCountMap()
       this.$nextTick().then(() => {
+        this.$refs.info.$forceUpdate()
         if ("nodes" === type)
           this.$refs.nodeTab.$forceUpdate()
         else
@@ -1537,6 +1600,41 @@ export default {
       }).catch(err => {
         console.log(err)
       })
+    },
+    getCounts: function (entity) {
+      return Object.values(this[entity]).map(e => e.length).reduce((i, j) => i + j)
+    },
+    reloadCountMap: function (){
+      this.countMap.nodes = this.getCountMap("nodes");
+      this.countMap.edges = this.getCountMap("edges");
+      console.log(this.countMap)
+    },
+    getCountMap: function (entity) {
+      let out = {}
+      Object.keys(this[entity]).forEach(k =>
+        out[k]={name: k, total: this[entity][k].length, selected:this.filterSelected(this[entity][k]).length}
+    )
+      return out
+    },
+    getColoring: function (entity, name) {
+      if (entity === "nodes") {
+        return this.metagraph.colorMap[name].main;
+      } else {
+        let edge = Object.values(this.entityGraph.edges).filter(n => n.name === name)[0]
+        let n1 = this.entityGraph.nodes[edge.node1].name;
+        let n2 = this.entityGraph.nodes[edge.node2].name;
+        return [this.metagraph.colorMap[n1].main, this.metagraph.colorMap[n2].main]
+      }
+    },
+    direction: function (edge) {
+      let e = Object.values(this.entityGraph.edges).filter(e => e.name === edge)[0];
+      if (e.node1 === e.node2)
+        return 0
+      return e.directed ? 1 : 2
+    },
+    countClick : function (entity, tabId, boolean){
+      let name = Object.keys(this.attributes[entity])[tabId]
+      this.countMap[entity][name].selected += (boolean ? 1:-1)
     }
   }
 }

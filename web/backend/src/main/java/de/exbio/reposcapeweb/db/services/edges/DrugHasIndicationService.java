@@ -137,4 +137,8 @@ public class DrugHasIndicationService {
         return item;
     }
 
+    public boolean isDirected() {
+        return directed;
+    }
+
 }

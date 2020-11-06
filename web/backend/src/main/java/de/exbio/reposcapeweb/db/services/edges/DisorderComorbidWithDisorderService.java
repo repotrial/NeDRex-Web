@@ -108,4 +108,8 @@ public class DisorderComorbidWithDisorderService {
         item.setMemberTwo(disorderService.map(item.getPrimaryIds().getId2()));
         return item;
     }
+
+    public boolean isDirected() {
+        return directed;
+    }
 }

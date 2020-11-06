@@ -3,10 +3,7 @@ package de.exbio.reposcapeweb.communication.reponses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class WebGraph {
@@ -17,6 +14,7 @@ public class WebGraph {
     String title;
     LinkedList<WebNode> nodes = new LinkedList<>();
     LinkedList<WebEdge> edges = new LinkedList<>();
+    HashMap<String,Object> colorMap;
 //    private int radiusFactor = 10;
 //    int y = 1;
 //    int x = 0;
@@ -36,6 +34,9 @@ public class WebGraph {
         this.directed=directed;
     }
 
+    public void setColorMap(HashMap<String, Object> colorMap) {
+        this.colorMap = colorMap;
+    }
 
     public void addNode(WebNode node){
         nodes.add(node);
@@ -65,8 +66,12 @@ public class WebGraph {
         this.edges = edges;
     }
 
+    public HashMap<String, Object> getColorMap() {
+        return colorMap;
+    }
 
-//    public void drawCircular(){
+
+    //    public void drawCircular(){
 //
 //       drawCircular(nodes,radiusFactor);
 //    }

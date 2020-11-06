@@ -135,4 +135,8 @@ public class ProteinInPathwayService {
         return item;
     }
 
+    public boolean isDirected() {
+        return directed;
+    }
+
 }

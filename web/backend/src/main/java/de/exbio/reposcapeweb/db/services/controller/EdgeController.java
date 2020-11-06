@@ -646,4 +646,32 @@ public class EdgeController {
         }
         return null;
     }
+
+    public boolean getDirection(Integer type) {
+        switch (Graphs.getEdge(type)) {
+            case "GeneAssociatedWithDisorder":
+                return associatedWithDisorderService.isDirected();
+            case "DrugHasTargetGene":
+                return drugHasTargetService.isDirected();
+            case "ProteinEncodedBy":
+                return proteinEncodedByService.isDirected();
+            case "DrugHasIndication":
+                return drugHasIndicationService.isDirected();
+            case "DrugHasTargetProtein":
+                return drugHasTargetService.isDirected();
+            case "ProteinInteractsWithProtein":
+                return proteinInteractsWithProteinService.isDirected();
+            case "ProteinInPathway":
+                return proteinInPathwayService.isDirected();
+            case "ProteinAssociatedWithDisorder":
+                return associatedWithDisorderService.isDirected();
+            case "DisorderIsADisorder":
+                return disorderIsADisorderService.isDirected();
+            case "DisorderComorbidWithDisorder":
+                return disorderComorbidWithDisorderService.isDirected();
+            case "GeneInteractsWithGene":
+                return proteinInteractsWithProteinService.isDirected();
+        }
+        return false;
+    }
 }

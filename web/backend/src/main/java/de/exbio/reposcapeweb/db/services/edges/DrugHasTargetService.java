@@ -239,4 +239,8 @@ public class DrugHasTargetService {
         item.setTargetDomainId(geneService.map(item.getPrimaryIds().getId2()));
         return item;
     }
+
+    public boolean isDirected() {
+        return directed;
+    }
 }

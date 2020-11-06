@@ -231,6 +231,7 @@ public class AssociatedWithDisorderService {
         return item;
     }
 
-
-
+    public boolean isDirected() {
+        return directed;
+    }
 }
