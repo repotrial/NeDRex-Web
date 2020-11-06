@@ -7,10 +7,9 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.UUID;
+import java.time.ZoneOffset;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class HistoryController {
@@ -81,12 +80,42 @@ public class HistoryController {
             uid = getNewUser();
         }
         out.put("uid", uid);
-        if(!userMap.containsKey(uid))
-            userMap.put(uid,new HashSet<>());
-        ArrayList<GraphHistory> list = new ArrayList<>(userMap.get(uid).size());
-        userMap.get(uid).forEach(h -> list.add(getHistory(h)));
-        out.put("history", list);
+        if (!userMap.containsKey(uid))
+            userMap.put(uid, new HashSet<>());
+        HashMap<String, GraphHistory> map = new HashMap<>();
+        userMap.get(uid).forEach(h -> {
+            GraphHistory history = getHistory(h);
+            map.put(h, history);
+            GraphHistory parent = history.getParent();
+            while (parent != null && !map.containsKey(parent.getGraphId())) {
+                map.put(parent.getGraphId(), parent);
+                parent = parent.getParent();
+            }
+
+        });
+        out.put("history", getHistoryTree(map.values()));
+
+        LinkedList<HashMap<String, Object>> list = map.values().stream().map(h -> h.toMap(false)).sorted((history, t1) -> {
+            long h1 = (long) history.get("created");
+            long h2 = (long) t1.get("created");
+            if (h1 == h2)
+                return 0;
+            return h1 < h2 ? -1 : 1;
+        }).collect(Collectors.toCollection(LinkedList::new));
+
+
+        out.put("chronology", list);
         return out;
+    }
+
+    public ArrayList<Object> getHistoryTree(Collection<GraphHistory> historyList) {
+        ArrayList<Object> history = new ArrayList<>();
+
+        historyList.forEach(v -> {
+            if (v.getParent() == null)
+                history.add(v.toMap(true));
+        });
+        return history;
     }
 
     public String getGraphId() {
@@ -109,6 +138,6 @@ public class HistoryController {
     public File getGraphPath(String id) {
         String cachedir = env.getProperty("path.db.cache");
         GraphHistory history = getHistory(id);
-        return new File(cachedir, "graphs/"+history.getUserId() + "/" + id + ".json");
+        return new File(cachedir, "graphs/" + history.getUserId() + "/" + id + ".json");
     }
 }

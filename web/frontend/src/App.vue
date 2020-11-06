@@ -129,6 +129,11 @@
               v-on:updateInfo="evalPostInfo"
         ></List>
       </v-container>
+      <v-container v-show="selectedTabId===3" fluid>
+        <History ref="history"
+                 v-on:graphLoadEvent="loadGraph"
+        ></History>
+      </v-container>
     </v-main>
 
     <v-footer app>
@@ -139,6 +144,7 @@
 <script>
 import Graph from './views/Graph.vue';
 import Start from './views/Start.vue';
+import History from "./views/History";
 import List from './views/List.vue'
 import SideCard from './views/SideCard.vue'
 import headerBar from './components/header.vue'
@@ -191,7 +197,6 @@ export default {
     this.initGraphs()
 
   },
-  // this.setGraph({message: "Default graph"})
   methods: {
     loadUser: function () {
       console.log(this.$cookies.get("uid"))
@@ -258,6 +263,7 @@ export default {
           this.$router.push({path: '/' + info.id})
           this.$refs.graph.reload()
           this.$refs.list.reload()
+          this.$refs.history.reload()
         }).catch(err => console.log(err))
 
       }
@@ -370,7 +376,8 @@ export default {
     Graph,
     SideCard,
     Start,
-    List
+    List,
+    History
   },
 
 

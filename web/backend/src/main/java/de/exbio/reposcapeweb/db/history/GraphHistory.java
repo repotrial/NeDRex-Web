@@ -5,9 +5,12 @@ import de.exbio.reposcapeweb.communication.reponses.WebGraphInfo;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name="histories")
@@ -106,5 +109,20 @@ public class GraphHistory {
 
     public String getComment() {
         return comment;
+    }
+
+    public HashMap<String,Object> toMap(boolean cascade){
+        HashMap<String, Object> out = new HashMap<>();
+        out.put("id",getGraphId());
+        out.put("edges",edgeMap);
+        out.put("user",userId);
+        out.put("nodes",nodeMap);
+        out.put("created",created.toEpochSecond(ZoneOffset.ofTotalSeconds(0)));
+        out.put("comment",comment);
+        if(cascade) {
+            ArrayList<Object> children = derived.stream().map(g->g.toMap(true)).collect(Collectors.toCollection(ArrayList::new));
+            out.put("children", children);
+        }
+        return out;
     }
 }
