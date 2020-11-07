@@ -12,9 +12,9 @@
                   <b>Nodes ({{ getCounts('nodes') }})</b>
                 </v-list-item>
                 <v-list-item v-for="node in Object.values(countMap.nodes)" :key="node.name">
-                  <v-chip outlined>
+                  <v-chip outlined @click="focus('nodes',Object.keys(attributes.nodes).indexOf(node.name))">
                     <v-icon left :color="getColoring('nodes',node.name)">fas fa-genderless</v-icon>
-                    {{ node.name }} ({{node.selected}}/{{ node.total }})
+                    {{ node.name }} ({{ node.selected }}/{{ node.total }})
                   </v-chip>
                 </v-list-item>
 
@@ -26,7 +26,7 @@
                   <b>Edges ({{ getCounts('edges') }})</b>
                 </v-list-item>
                 <v-list-item v-for="edge in Object.values(countMap.edges)" :key="edge.name">
-                  <v-chip outlined>
+                  <v-chip outlined @click="focus('edges',Object.keys(attributes.edges).indexOf(edge.name))">
                     <v-icon left :color="getColoring('edges',edge.name)[0]">fas fa-genderless</v-icon>
                     <template v-if="direction(edge.name)===0">
                       <v-icon left>fas fa-undo-alt</v-icon>
@@ -36,7 +36,7 @@
                       <v-icon v-else left>fas fa-arrows-alt-h</v-icon>
                       <v-icon left :color="getColoring('edges',edge.name)[1]">fas fa-genderless</v-icon>
                     </template>
-                    {{ edge.name }} ({{edge.selected}}/{{ edge.total }})
+                    {{ edge.name }} ({{ edge.selected }}/{{ edge.total }})
 
                   </v-chip>
 
@@ -89,7 +89,9 @@
         </v-container>
       </v-card>
       <v-card style="margin:5px">
-        <v-card-title v-on:mouseenter="nodeOptionHover=true" v-on:mouseleave="nodeOptionHover=false">Nodes
+        <v-card-title id="nodes" ref="nodeTitle" v-on:mouseenter="nodeOptionHover=true"
+                      v-on:mouseleave="nodeOptionHover=false">
+          Nodes
           <v-tooltip
             right>
             <template v-slot:activator="{ on, attrs }">
@@ -291,7 +293,7 @@
       </v-card>
 
       <v-card style="margin:5px">
-        <v-card-title v-on:mouseenter="edgeOptionHover=true" v-on:mouseleave="edgeOptionHover=false">Edges
+        <v-card-title id="edges" ref="edgeTitle" v-on:mouseenter="edgeOptionHover=true" v-on:mouseleave="edgeOptionHover=false">Edges
           <v-tooltip
             right>
             <template v-slot:activator="{ on, attrs }">
@@ -857,7 +859,7 @@ export default {
       },
       filterNodeModel: null,
       loading: true,
-      countMap:{nodes:{},edges:{}}
+      countMap: {nodes: {}, edges: {}}
     }
   },
 
@@ -867,6 +869,7 @@ export default {
     this.edges = {}
     this.backup = {nodes: {}, edges: {}}
     this.gid = this.$route.params["gid"]
+    this.reloadMetagraph()
     if (this.gid !== undefined)
       this.getList(this.gid, this.metagraph)
   },
@@ -1277,7 +1280,7 @@ export default {
         this.$emit("updateInfo", info)
       }).catch(err => console.log(err))
     },
-    setLoading : function (boolean){
+    setLoading: function (boolean) {
       this.loading = boolean
     },
     selectionDialogResolve: function (apply) {
@@ -1586,6 +1589,12 @@ export default {
       this.$nextTick()
 
     },
+    reloadMetagraph: function () {
+      this.$http.get("/getMetagraph").then(response => {
+        if (response.data !== undefined)
+          return response.data
+      }).then(this.setMetagraph).catch(err => console.log(err))
+    },
     getList: function (gid, metagraph) {
       this.setMetagraph(metagraph)
       this.clearLists()
@@ -1604,7 +1613,7 @@ export default {
     getCounts: function (entity) {
       return Object.values(this[entity]).map(e => e.length).reduce((i, j) => i + j)
     },
-    reloadCountMap: function (){
+    reloadCountMap: function () {
       this.countMap.nodes = this.getCountMap("nodes");
       this.countMap.edges = this.getCountMap("edges");
       console.log(this.countMap)
@@ -1612,11 +1621,14 @@ export default {
     getCountMap: function (entity) {
       let out = {}
       Object.keys(this[entity]).forEach(k =>
-        out[k]={name: k, total: this[entity][k].length, selected:this.filterSelected(this[entity][k]).length}
-    )
+        out[k] = {name: k, total: this[entity][k].length, selected: this.filterSelected(this[entity][k]).length}
+      )
       return out
     },
     getColoring: function (entity, name) {
+      // if (this.metagraph === null) {
+      //   this.reloadMetagraph(this.getColoring(entity, name))
+      // } else {
       if (entity === "nodes") {
         return this.metagraph.colorMap[name].main;
       } else {
@@ -1625,6 +1637,7 @@ export default {
         let n2 = this.entityGraph.nodes[edge.node2].name;
         return [this.metagraph.colorMap[n1].main, this.metagraph.colorMap[n2].main]
       }
+      // }
     },
     direction: function (edge) {
       let e = Object.values(this.entityGraph.edges).filter(e => e.name === edge)[0];
@@ -1632,9 +1645,27 @@ export default {
         return 0
       return e.directed ? 1 : 2
     },
-    countClick : function (entity, tabId, boolean){
+    countClick: function (entity, tabId, boolean) {
       let name = Object.keys(this.attributes[entity])[tabId]
-      this.countMap[entity][name].selected += (boolean ? 1:-1)
+      this.countMap[entity][name].selected += (boolean ? 1 : -1)
+    },
+    focus: function (entity, tabId) {
+      if (entity === "nodes") {
+        this.nodeTab = tabId;
+        this.scrollFocus("nodeTitle")
+      } else {
+        this.edgeTab = tabId;
+        this.scrollFocus("edgeTitle")
+      }
+      // let path = this.$route.path.split('#')
+      // if (path[1] !== entity)
+      //   this.$router.push(this.$route.path.split('#')[0] + "#" + entity)
+    },
+    scrollFocus: function (refName) {
+      var element = this.$refs[refName];
+      element.scrollIntoView()
+
+
     }
   }
 }
