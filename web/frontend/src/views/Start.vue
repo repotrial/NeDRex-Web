@@ -48,7 +48,21 @@
                 <v-list-item-group multiple color="indigo" v-model="edgeModel">
                   <v-list-item v-for="item in edges" v-on:click="toggleEdge(item.index,false)" :key="item.index">
                     <v-list-item-content>
-                      <v-list-item-title v-text="item.label"></v-list-item-title>
+
+                      <v-chip outlined>
+                        <v-icon left :color="getColoring('edges',item.label)[0]">fas fa-genderless</v-icon>
+                        <template v-if="direction(item.label)===0">
+                          <v-icon left>fas fa-undo-alt</v-icon>
+                        </template>
+                        <template v-else>
+                          <v-icon v-if="direction(item.label)===1" left>fas fa-long-arrow-alt-right</v-icon>
+                          <v-icon v-else left>fas fa-arrows-alt-h</v-icon>
+                          <v-icon left :color="getColoring('edges',item.label)[1]">fas fa-genderless</v-icon>
+                        </template>
+                        {{ item.label }}
+
+                      </v-chip>
+
                     </v-list-item-content>
                   </v-list-item>
                 </v-list-item-group>
@@ -324,7 +338,24 @@ export default {
         this.selectedElements.push({index: edgeIndex, type: "edge", name: this.edges[edgeIndex].label, filter: []})
       }
       this.resetSelection()
-    }
+    },
+    direction: function (edge) {
+      let e = Object.values(this.metagraph.edges).filter(e => e.label === edge)[0];
+      if (e.from === e.to)
+        return 0
+      return 1
+    },
+    getColoring: function (entity, name) {
+      console.log(this.metagraph)
+      if (entity === "nodes") {
+        return this.metagraph.colorMap[name].main;
+      } else {
+        let edge = Object.values(this.metagraph.edges).filter(n => n.label === name)[0]
+        let n1 = Object.values(this.metagraph.nodes).filter(n=>n.id===edge.from)[0].group
+        let n2 = Object.values(this.metagraph.nodes).filter(n=>n.id===edge.to)[0].group
+        return [this.metagraph.colorMap[n1].main, this.metagraph.colorMap[n2].main]
+      }
+    },
   },
   components: {
     Graph,

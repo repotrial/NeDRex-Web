@@ -74,13 +74,13 @@ public class WebGraphService {
         graph.addEdge(new WebEdge(5, 5, "DisorderIsADisorder"));
         graph.addEdge(new WebEdge(1, 5, "DrugHasIndication"));
 
-        graph.setColorMap(this.colorMap);
+        graph.setColorMap(this.getColorMap(null));
 
         return graph;
     }
 
     public HashMap<String, Object> getColorMap(Collection<String> nodetypes) {
-        if (colorMap == null) {
+        if (nodetypes ==null || colorMap == null) {
             //TODO read from config json
 
             colorMap = new HashMap<>();
@@ -97,7 +97,8 @@ public class WebGraphService {
                 node.put("light", c[2]);
             });
         }
-
+        if(nodetypes ==null)
+            nodetypes = new HashSet<>(colorMap.keySet());
         HashMap<String, Object> out = new HashMap<>();
         nodetypes.forEach(n -> out.put(n, colorMap.get(n)));
         return out;

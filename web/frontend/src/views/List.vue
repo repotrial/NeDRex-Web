@@ -1626,9 +1626,6 @@ export default {
       return out
     },
     getColoring: function (entity, name) {
-      // if (this.metagraph === null) {
-      //   this.reloadMetagraph(this.getColoring(entity, name))
-      // } else {
       if (entity === "nodes") {
         return this.metagraph.colorMap[name].main;
       } else {
@@ -1637,7 +1634,6 @@ export default {
         let n2 = this.entityGraph.nodes[edge.node2].name;
         return [this.metagraph.colorMap[n1].main, this.metagraph.colorMap[n2].main]
       }
-      // }
     },
     direction: function (edge) {
       let e = Object.values(this.entityGraph.edges).filter(e => e.name === edge)[0];
@@ -1657,9 +1653,6 @@ export default {
         this.edgeTab = tabId;
         this.scrollFocus("edgeTitle")
       }
-      // let path = this.$route.path.split('#')
-      // if (path[1] !== entity)
-      //   this.$router.push(this.$route.path.split('#')[0] + "#" + entity)
     },
     scrollFocus: function (refName) {
       var element = this.$refs[refName];
