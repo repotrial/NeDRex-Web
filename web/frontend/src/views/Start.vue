@@ -60,9 +60,7 @@
                           <v-icon left :color="getColoring('edges',item.label)[1]">fas fa-genderless</v-icon>
                         </template>
                         {{ item.label }}
-
                       </v-chip>
-
                     </v-list-item-content>
                   </v-list-item>
                 </v-list-item-group>
@@ -346,7 +344,6 @@ export default {
       return 1
     },
     getColoring: function (entity, name) {
-      console.log(this.metagraph)
       if (entity === "nodes") {
         return this.metagraph.colorMap[name].main;
       } else {

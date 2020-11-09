@@ -15,18 +15,10 @@ public class WebGraph {
     LinkedList<WebNode> nodes = new LinkedList<>();
     LinkedList<WebEdge> edges = new LinkedList<>();
     HashMap<String,Object> colorMap;
-//    private int radiusFactor = 10;
-//    int y = 1;
-//    int x = 0;
-//    private int f = 10;
 
     public WebGraph(String id){
         this.id = id;
     }
-
-//    public WebGraph(){
-//        this.id= UUID.randomUUID().toString();
-//    }
 
     public WebGraph(String title, boolean directed, String id){
         this.id= id;
@@ -70,38 +62,6 @@ public class WebGraph {
         return colorMap;
     }
 
-
-    //    public void drawCircular(){
-//
-//       drawCircular(nodes,radiusFactor);
-//    }
-
-//    private void drawCircular(List<WebNode> nodes,double radiusFactor){
-//        double rad = (2*Math.PI)/nodes.size();
-//        AtomicReference<Double> next = new AtomicReference<>(0.0);
-//        double radius = radiusFactor*nodes.size();
-//        nodes.forEach(n->{
-////            n.setX(radius*Math.cos(next.get()));
-////            n.setY(radius*Math.sin(next.get()));
-//            next.updateAndGet(v -> (v + rad));
-//        });
-//    }
-
-//    public void drawDoubleCircular(){
-//        log.debug("Layouting: start");
-//        LinkedList<WebNode> connectedNodes = new LinkedList<>();
-//        LinkedList<WebNode> isolatedNodes = new LinkedList<>();
-//        nodes.forEach(n -> {
-//            if(n.hasEdge)
-//                connectedNodes.add(n);
-//            else
-//                isolatedNodes.add(n);
-//
-//        });
-//        drawCircular(connectedNodes,radiusFactor);
-//        drawCircular(isolatedNodes,radiusFactor*0.4);
-//        log.debug("Layouting: finished!");
-//    }
 
     public boolean isDirected() {
         return directed;

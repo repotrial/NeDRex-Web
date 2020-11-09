@@ -28,6 +28,7 @@ public class Graph {
     private HashMap<Integer, LinkedList<Edge>> edges;
     private HashMap<Integer,String> customEdges;
     private HashMap<Integer,Pair<Integer,Integer>> customEdgeNodes;
+    private HashMap<Integer,HashMap<Integer,HashMap<Integer,Integer>>> customEdgeWeights;
     @JsonIgnore
     private WebGraph webgraph;
     @JsonIgnore
@@ -41,6 +42,7 @@ public class Graph {
         nodeFilters = new HashMap<>();
         customEdges = new HashMap<>();
         customEdgeNodes = new HashMap<>();
+        customEdgeWeights= new HashMap<>();
     }
 
     public Graph(String id) {
@@ -182,6 +184,7 @@ public class Graph {
         edges.forEach(g::addEdges);
         customEdgeNodes.forEach((k,v)->g.addCollapsedEdges(v.getFirst(),v.getSecond(),customEdges.get(k),new LinkedList<>()));
         g.setParent(this.id);
+        customEdgeWeights.forEach((k,v)->g.addCollapsedWeights(getEdge(k),v));
         return g;
     }
 
@@ -199,4 +202,14 @@ public class Graph {
     public HashMap<Integer, Pair<Integer, Integer>> getCustomEdgeNodes() {
         return customEdgeNodes;
     }
+
+    public void addCollapsedWeights(String edgeName, HashMap<Integer, HashMap<Integer, Integer>> edgeWeights) {
+        customEdgeWeights.put(getEdge(edgeName),edgeWeights);
+    }
+
+    public HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>> getCustomEdgeWeights() {
+        return customEdgeWeights;
+    }
+
+
 }

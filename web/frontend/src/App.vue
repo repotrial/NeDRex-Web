@@ -258,7 +258,7 @@ export default {
         this.sizeWarning(info)
         this.tabslist[1].icon = "fas fa-project-diagram"
         this.tabslist[2].icon = "fas fa-list-ul"
-        this.list.setLoading(false)
+        this.$refs.list.setLoading(false)
       } else {
         console.log(info)
         this.$http.get("/archiveHistory?uid=" + this.$cookies.get("uid") + "&gid=" + info.id).then(() => {

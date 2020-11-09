@@ -80,7 +80,7 @@ public class WebGraphService {
     }
 
     public HashMap<String, Object> getColorMap(Collection<String> nodetypes) {
-        if (nodetypes ==null || colorMap == null) {
+        if (nodetypes == null || colorMap == null) {
             //TODO read from config json
 
             colorMap = new HashMap<>();
@@ -97,7 +97,7 @@ public class WebGraphService {
                 node.put("light", c[2]);
             });
         }
-        if(nodetypes ==null)
+        if (nodetypes == null)
             nodetypes = new HashSet<>(colorMap.keySet());
         HashMap<String, Object> out = new HashMap<>();
         nodetypes.forEach(n -> out.put(n, colorMap.get(n)));
@@ -162,11 +162,11 @@ public class WebGraphService {
                 List<PairId> edges = edgeList.stream().map(e -> new PairId(e.getId1(), e.getId2())).collect(Collectors.toList());
                 if (type < 0) {
                     Pair<Integer, Integer> nodeIds = g.getNodesfromEdge(type);
-                    String[] attributeArray = new String[]{"id", "idOne", "idTwo", "memberOne", "memberTwo"};
+                    String[] attributeArray = new String[]{"id", "idOne", "idTwo", "memberOne", "memberTwo", "weight"};
                     finalList.addAttributes("edges", stringType, attributeArray);
                     LinkedList<String> attrMaps = edges.stream().map(p -> getCustomEdgeAttributeList(g, type, p)).collect(Collectors.toCollection(LinkedList::new));
                     finalList.addEdges(stringType, attrMaps);
-                    finalList.setTypes("edges", stringType, attributeArray, new String[]{"", "numeric", "numeric", "", ""}, new boolean[]{true, true, true, true, true});
+                    finalList.setTypes("edges", stringType, attributeArray, new String[]{"", "numeric", "numeric", "", "", "numeric"}, new boolean[]{true, true, true, true, true, false});
                 } else {
                     String[] attributeArray = edgeController.getAttributes(type);
                     finalList.addAttributes("edges", stringType, attributeArray);
@@ -230,7 +230,7 @@ public class WebGraphService {
     }
 
     public WebGraph getWebGraph(String id) {
-        Graph g= getCachedGraph(id);
+        Graph g = getCachedGraph(id);
         return g.toWebGraph(getColorMap(g.getNodes().keySet().stream().map(Graphs::getNode).collect(Collectors.toSet())));
     }
 
@@ -570,17 +570,25 @@ public class WebGraphService {
         LinkedList<Edge> edges = new LinkedList<>();
         int startNodeId = nodes1.getFirst() == collapseNode ? nodes1.getSecond() : nodes1.getFirst();
         int targetNodeId;
+        HashMap<Integer, HashMap<Integer, Integer>> edgeWeights = new HashMap<>();
         if (request.self) {
             targetNodeId = startNodeId;
             edgeMap1.forEach((middle, startNodes) ->
                     startNodes.forEach(targetNode ->
                             startNodes.forEach(startNode -> {
-                                if (!startNode.equals(targetNode))
-                                    edges.add(new Edge(startNode, targetNode));
+                                int weight = 1;
+                                if (!startNode.equals(targetNode)) {
+                                    if (edgeWeights.containsKey(startNode) && edgeWeights.get(startNode).containsKey(targetNode))
+                                        weight += edgeWeights.get(startNode).get(targetNode);
+                                    if (!edgeWeights.containsKey(startNode))
+                                        edgeWeights.put(startNode, new HashMap<>());
+                                    if (!edgeWeights.containsKey(startNode) || !edgeWeights.get(startNode).containsKey(targetNode))
+                                        edges.add(new Edge(startNode, targetNode));
+                                    edgeWeights.get(startNode).put(targetNode, weight);
+                                }
                             })
                     )
             );
-
         } else {
             int edgeId2 = g.getEdge(request.edge2);
             Pair<Integer, Integer> nodes2 = g.getNodesfromEdge(g.getEdge(request.edge2));
@@ -590,7 +598,18 @@ public class WebGraphService {
             edgeMap1.forEach((middle, startNodes) -> {
                 try {
                     edgeMap2.get(middle).forEach(targetNode ->
-                            startNodes.forEach(startNode -> edges.add(new Edge(startNode, targetNode)))
+                            startNodes.forEach(startNode -> {
+                                int weight = 1;
+                                if (!startNode.equals(targetNode)) {
+                                    if (edgeWeights.containsKey(startNode) && edgeWeights.get(startNode).containsKey(targetNode))
+                                        weight += edgeWeights.get(startNode).get(targetNode);
+                                    if (!edgeWeights.containsKey(startNode))
+                                        edgeWeights.put(startNode, new HashMap<>());
+                                    if (!edgeWeights.containsKey(startNode) || !edgeWeights.get(startNode).containsKey(targetNode))
+                                        edges.add(new Edge(startNode, targetNode));
+                                    edgeWeights.get(startNode).put(targetNode, weight);
+                                }
+                            })
                     );
                 } catch (NullPointerException ignore) {
                 }
@@ -599,6 +618,7 @@ public class WebGraphService {
                 g.getEdges().remove(edgeId2);
         }
         g.addCollapsedEdges(startNodeId, targetNodeId, request.edgeName, edges);
+        g.addCollapsedWeights(request.edgeName, edgeWeights);
         if (!request.keep) {
             g.getEdges().remove(edgeId1);
             HashSet<Integer> otherConnectedEdges = new HashSet<>();
@@ -621,6 +641,7 @@ public class WebGraphService {
         as.put("idTwo", p.getId2());
         as.put("memberOne", nodeController.getDomainId(nodeIds.first, p.getId1()));
         as.put("memberTwo", nodeController.getDomainId(nodeIds.second, p.getId2()));
+        as.put("weight", graph.getCustomEdgeWeights().get(edgeId).get(p.getId1()).get(p.getId2()));
         try {
             return objectMapper.writeValueAsString(as);
         } catch (JsonProcessingException e) {
@@ -636,7 +657,7 @@ public class WebGraphService {
             //TODO get real direction
             Pair<Integer, Integer> nodeIds = g.getNodesfromEdge(eid);
             boolean direction = false;
-            if(eid>-1)
+            if (eid > -1)
                 direction = edgeController.getDirection(eid);
             cg.addEdge(g.getEdge(eid), eid, direction, nodeIds.getFirst(), nodeIds.getSecond());
         });

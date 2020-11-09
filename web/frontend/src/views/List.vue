@@ -293,7 +293,8 @@
       </v-card>
 
       <v-card style="margin:5px">
-        <v-card-title id="edges" ref="edgeTitle" v-on:mouseenter="edgeOptionHover=true" v-on:mouseleave="edgeOptionHover=false">Edges
+        <v-card-title id="edges" ref="edgeTitle" v-on:mouseenter="edgeOptionHover=true"
+                      v-on:mouseleave="edgeOptionHover=false">Edges
           <v-tooltip
             right>
             <template v-slot:activator="{ on, attrs }">
@@ -455,6 +456,7 @@
       v-model="extension.show"
       persistent
       max-width="500"
+      ref="extensionDialog"
     >
       <v-card v-if="extension.show">
         <v-card-title class="headline">
@@ -1232,10 +1234,10 @@ export default {
         nodes: this.extension.nodes.filter(n => n.selected).map(n => n.name),
         edges: this.extension.edges.filter(n => n.selected && !n.disabled).map(n => n.name)
       }
-      this.extension = {nodes: [], edges: []}
+      this.extension.nodes = []
+      this.extension.edges = []
       this.extension.show = false;
       if (!apply) {
-        this.$nextTick()
         return
       }
       this.loading = true
@@ -1558,7 +1560,6 @@ export default {
       }
       this.collapse.accept = this.isConnectedCollapse()
       this.collapse.show = true;
-      console.log(this.collapse)
       this.$nextTick()
 
     },
@@ -1585,12 +1586,12 @@ export default {
         return {name: e, selected: there, disabled: there}
       })
       this.extension.show = true;
-
-      this.$nextTick()
+      console.log(this.extension)
+      this.$refs.extensionDialog.$forceUpdate()
 
     },
     reloadMetagraph: function () {
-      this.$http.get("/getMetagraph").then(response => {
+      return this.$http.get("/getMetagraph").then(response => {
         if (response.data !== undefined)
           return response.data
       }).then(this.setMetagraph).catch(err => console.log(err))
@@ -1611,7 +1612,8 @@ export default {
       })
     },
     getCounts: function (entity) {
-      return Object.values(this[entity]).map(e => e.length).reduce((i, j) => i + j)
+      let objects = Object.values(this[entity]);
+      return objects === undefined || objects.length === 0 ? 0 : objects.map(e => e.length).reduce((i, j) => i + j)
     },
     reloadCountMap: function () {
       this.countMap.nodes = this.getCountMap("nodes");
@@ -1626,6 +1628,8 @@ export default {
       return out
     },
     getColoring: function (entity, name) {
+      if(this.metagraph === undefined || Object.keys(this.metagraph.colorMap).length ===0)
+        return this.reloadMetagraph().then(()=>this.getColoring(entity,name))
       if (entity === "nodes") {
         return this.metagraph.colorMap[name].main;
       } else {
