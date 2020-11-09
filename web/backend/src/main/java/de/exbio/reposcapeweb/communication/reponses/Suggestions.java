@@ -63,8 +63,6 @@ public class Suggestions {
 
         public Suggestion(String type, String name, Collection<Integer> ids) {
             this(type, name);
-            if (ids.size() > 1)
-                System.out.println(type + " - " + name + ": " + ids.size());
             this.ids = ids.toArray(Integer[]::new);
         }
 

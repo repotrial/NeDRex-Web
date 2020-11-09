@@ -15,6 +15,7 @@ import de.exbio.reposcapeweb.db.services.controller.EdgeController;
 import de.exbio.reposcapeweb.db.services.controller.NodeController;
 import de.exbio.reposcapeweb.filter.NodeFilter;
 import de.exbio.reposcapeweb.utils.Pair;
+import de.exbio.reposcapeweb.utils.StatUtils;
 import de.exbio.reposcapeweb.utils.WriterUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -162,11 +163,11 @@ public class WebGraphService {
                 List<PairId> edges = edgeList.stream().map(e -> new PairId(e.getId1(), e.getId2())).collect(Collectors.toList());
                 if (type < 0) {
                     Pair<Integer, Integer> nodeIds = g.getNodesfromEdge(type);
-                    String[] attributeArray = new String[]{"id", "idOne", "idTwo", "memberOne", "memberTwo", "weight"};
+                    String[] attributeArray = new String[]{"id", "idOne", "idTwo", "memberOne", "memberTwo", "weight", "jaccardIndex"};
                     finalList.addAttributes("edges", stringType, attributeArray);
                     LinkedList<String> attrMaps = edges.stream().map(p -> getCustomEdgeAttributeList(g, type, p)).collect(Collectors.toCollection(LinkedList::new));
                     finalList.addEdges(stringType, attrMaps);
-                    finalList.setTypes("edges", stringType, attributeArray, new String[]{"", "numeric", "numeric", "", "", "numeric"}, new boolean[]{true, true, true, true, true, false});
+                    finalList.setTypes("edges", stringType, attributeArray, new String[]{"", "numeric", "numeric", "", "", "numeric", "numeric"}, new boolean[]{true, true, true, true, true, false, false});
                 } else {
                     String[] attributeArray = edgeController.getAttributes(type);
                     finalList.addAttributes("edges", stringType, attributeArray);
@@ -220,6 +221,8 @@ public class WebGraphService {
             if (typeId < 0) {
                 Pair<Integer, Integer> nodeIds = basis.getNodesfromEdge(typeId);
                 g.addCollapsedEdges(nodeIds.getFirst(), nodeIds.getSecond(), type, basis.getEdges().get(typeId).stream().filter(e -> edgeIds.contains(e.getId1() + "-" + e.getId2())).collect(Collectors.toCollection(LinkedList::new)));
+                g.addCollapsedWeights(type, filterIdMaps(basis.getCustomEdgeWeights().get(typeId), g.getNodes().get(nodeIds.first).keySet(), g.getNodes().get(nodeIds.second).keySet()));
+                g.addCollapsedJaccardIndex(type, filterIdMaps(basis.getCustomJaccardIndex().get(typeId), g.getNodes().get(nodeIds.first).keySet(), g.getNodes().get(nodeIds.second).keySet()));
             } else {
                 g.addEdges(typeId, basis.getEdges().get(typeId).stream().filter(e -> edgeIds.contains(e.getId1() + "-" + e.getId2())).collect(Collectors.toCollection(LinkedList::new)));
             }
@@ -227,6 +230,21 @@ public class WebGraphService {
 
         cache.put(g.getId(), g);
         return g.toInfo();
+    }
+
+    private <T extends Number> HashMap<Integer, HashMap<Integer, T>> filterIdMaps(HashMap<Integer, HashMap<Integer, T>> filterMap, Set<Integer> idSet1, Set<Integer> idSet2) {
+        HashMap<Integer, HashMap<Integer, T>> out = new HashMap<>();
+        filterMap.forEach((k, v) -> {
+            if (idSet1.contains(k))
+                v.forEach((k2, value) -> {
+                    if (idSet2.contains(k2)) {
+                        if (!out.containsKey(k))
+                            out.put(k, new HashMap<>());
+                        out.get(k).put(k2, value);
+                    }
+                });
+        });
+        return out;
     }
 
     public WebGraph getWebGraph(String id) {
@@ -571,6 +589,7 @@ public class WebGraphService {
         int startNodeId = nodes1.getFirst() == collapseNode ? nodes1.getSecond() : nodes1.getFirst();
         int targetNodeId;
         HashMap<Integer, HashMap<Integer, Integer>> edgeWeights = new HashMap<>();
+        HashMap<Integer, HashMap<Integer, Double>> jaccardIndex = new HashMap<>();
         if (request.self) {
             targetNodeId = startNodeId;
             edgeMap1.forEach((middle, startNodes) ->
@@ -580,16 +599,22 @@ public class WebGraphService {
                                 if (!startNode.equals(targetNode)) {
                                     if (edgeWeights.containsKey(startNode) && edgeWeights.get(startNode).containsKey(targetNode))
                                         weight += edgeWeights.get(startNode).get(targetNode);
-                                    if (!edgeWeights.containsKey(startNode))
+                                    if (!edgeWeights.containsKey(startNode)) {
                                         edgeWeights.put(startNode, new HashMap<>());
+                                        jaccardIndex.put(startNode, new HashMap<>());
+                                    }
                                     if (!edgeWeights.containsKey(startNode) || !edgeWeights.get(startNode).containsKey(targetNode))
                                         edges.add(new Edge(startNode, targetNode));
                                     edgeWeights.get(startNode).put(targetNode, weight);
+                                    jaccardIndex.get(startNode).put(targetNode, StatUtils.calculateJaccardIndex(startNodes, startNodes));
                                 }
                             })
+
+
                     )
             );
         } else {
+
             int edgeId2 = g.getEdge(request.edge2);
             Pair<Integer, Integer> nodes2 = g.getNodesfromEdge(g.getEdge(request.edge2));
             targetNodeId = nodes2.getFirst() == collapseNode ? nodes2.getSecond() : nodes2.getFirst();
@@ -597,17 +622,21 @@ public class WebGraphService {
 
             edgeMap1.forEach((middle, startNodes) -> {
                 try {
-                    edgeMap2.get(middle).forEach(targetNode ->
+                    HashSet<Integer> targetNodes = edgeMap2.get(middle);
+                    targetNodes.forEach(targetNode ->
                             startNodes.forEach(startNode -> {
                                 int weight = 1;
                                 if (!startNode.equals(targetNode)) {
                                     if (edgeWeights.containsKey(startNode) && edgeWeights.get(startNode).containsKey(targetNode))
                                         weight += edgeWeights.get(startNode).get(targetNode);
-                                    if (!edgeWeights.containsKey(startNode))
+                                    if (!edgeWeights.containsKey(startNode)) {
                                         edgeWeights.put(startNode, new HashMap<>());
+                                        jaccardIndex.put(startNode, new HashMap<>());
+                                    }
                                     if (!edgeWeights.containsKey(startNode) || !edgeWeights.get(startNode).containsKey(targetNode))
                                         edges.add(new Edge(startNode, targetNode));
                                     edgeWeights.get(startNode).put(targetNode, weight);
+                                    jaccardIndex.get(startNode).put(targetNode, StatUtils.calculateJaccardIndex(startNodes, targetNodes));
                                 }
                             })
                     );
@@ -619,6 +648,7 @@ public class WebGraphService {
         }
         g.addCollapsedEdges(startNodeId, targetNodeId, request.edgeName, edges);
         g.addCollapsedWeights(request.edgeName, edgeWeights);
+        g.addCollapsedJaccardIndex(request.edgeName, jaccardIndex);
         if (!request.keep) {
             g.getEdges().remove(edgeId1);
             HashSet<Integer> otherConnectedEdges = new HashSet<>();
@@ -642,6 +672,7 @@ public class WebGraphService {
         as.put("memberOne", nodeController.getDomainId(nodeIds.first, p.getId1()));
         as.put("memberTwo", nodeController.getDomainId(nodeIds.second, p.getId2()));
         as.put("weight", graph.getCustomEdgeWeights().get(edgeId).get(p.getId1()).get(p.getId2()));
+        as.put("jaccardIndex", graph.getCustomJaccardIndex().get(edgeId).get(p.getId1()).get(p.getId2()));
         try {
             return objectMapper.writeValueAsString(as);
         } catch (JsonProcessingException e) {

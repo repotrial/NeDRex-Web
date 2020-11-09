@@ -29,6 +29,7 @@ public class Graph {
     private HashMap<Integer,String> customEdges;
     private HashMap<Integer,Pair<Integer,Integer>> customEdgeNodes;
     private HashMap<Integer,HashMap<Integer,HashMap<Integer,Integer>>> customEdgeWeights;
+    private HashMap<Integer, HashMap<Integer, HashMap<Integer, Double>>> customJaccardIndex;
     @JsonIgnore
     private WebGraph webgraph;
     @JsonIgnore
@@ -43,6 +44,7 @@ public class Graph {
         customEdges = new HashMap<>();
         customEdgeNodes = new HashMap<>();
         customEdgeWeights= new HashMap<>();
+        customJaccardIndex=new HashMap<>();
     }
 
     public Graph(String id) {
@@ -184,7 +186,8 @@ public class Graph {
         edges.forEach(g::addEdges);
         customEdgeNodes.forEach((k,v)->g.addCollapsedEdges(v.getFirst(),v.getSecond(),customEdges.get(k),new LinkedList<>()));
         g.setParent(this.id);
-        customEdgeWeights.forEach((k,v)->g.addCollapsedWeights(getEdge(k),v));
+        customEdgeWeights.forEach((k,v)->g.addCollapsedWeights(g.getEdge(k),v));
+        customJaccardIndex.forEach((k,v)->g.addCollapsedJaccardIndex(g.getEdge(k),v));
         return g;
     }
 
@@ -212,4 +215,11 @@ public class Graph {
     }
 
 
+    public void addCollapsedJaccardIndex(String edgeName, HashMap<Integer, HashMap<Integer, Double>> jaccardIndex) {
+        customJaccardIndex.put(getEdge(edgeName), jaccardIndex);
+    }
+
+    public HashMap<Integer, HashMap<Integer, HashMap<Integer, Double>>> getCustomJaccardIndex() {
+        return customJaccardIndex;
+    }
 }
