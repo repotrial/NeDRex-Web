@@ -85,11 +85,9 @@ public class HistoryController {
         HashMap<String, GraphHistory> map = new HashMap<>();
         userMap.get(uid).forEach(h -> {
             GraphHistory history = getHistory(h);
-            map.put(h, history);
-            GraphHistory parent = history.getParent();
-            while (parent != null && !map.containsKey(parent.getGraphId())) {
-                map.put(parent.getGraphId(), parent);
-                parent = parent.getParent();
+            while (history != null && !map.containsKey(history.getGraphId())) {
+                map.put(history.getGraphId(), history);
+                history = history.getParent();
             }
 
         });
@@ -100,7 +98,7 @@ public class HistoryController {
             long h2 = (long) t1.get("created");
             if (h1 == h2)
                 return 0;
-            return h1 < h2 ? -1 : 1;
+            return h1 < h2 ? 1 : -1;
         }).collect(Collectors.toCollection(LinkedList::new));
 
 

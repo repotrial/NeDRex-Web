@@ -148,7 +148,6 @@ public class WebGraphService {
                 finalList.addAttributes("nodes", stringType, nodeController.getAttributes(type));
                 finalList.addNodes(stringType, nodeController.nodesToAttributeList(type, nodeMap.keySet(), new HashSet<>(Arrays.asList(attributes))));
                 finalList.setTypes("nodes", stringType, nodeController.getAttributes(type), nodeController.getAttributeTypes(type), nodeController.getIdAttributes(type));
-
             });
             log.debug("Converting edges from Graph to WebList for " + id);
 
