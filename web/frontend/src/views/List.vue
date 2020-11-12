@@ -1,10 +1,25 @@
 <template>
   <div>
     <v-container>
-      <v-card style="margin:5px" ref="info">
-        <v-card-title>General Information</v-card-title>
-        <v-container v-if="loading">Load a list first.</v-container>
-        <v-container v-else>
+      <v-card style="margin:5px;padding-bottom:15px" ref="info" :loading="loading">
+
+        <template slot="progress">
+          <v-card-title>General Information</v-card-title>
+          <v-progress-circular
+            color="primary"
+            size="50"
+            width="5"
+            indeterminate
+          ></v-progress-circular>
+<!--          <v-progress-linear-->
+<!--            color="primary"-->
+<!--            height="5"-->
+<!--            indeterminate-->
+<!--          ></v-progress-linear>-->
+<!--          <v-card-title>General Information</v-card-title>-->
+        </template>
+        <v-container v-if="!loading">
+          <v-card-title>General Information</v-card-title>
           <v-row>
             <v-col>
               <v-list>
@@ -50,7 +65,6 @@
 
 
         </v-container>
-
       </v-card>
       <v-card style="margin:5px">
         <v-card-title>General Options</v-card-title>
@@ -58,6 +72,7 @@
           <v-row>
             <v-col>
               <v-switch
+                inset
                 v-model="showAllLists"
                 label="Show all Items"
               ></v-switch>
@@ -66,389 +81,455 @@
               <v-chip
                 v-on:click="extendGraph()"
                 class="pa-3"
-              >Extend Graph
+                outlined
+              >
+                <v-icon left>fas fa-plus-circle</v-icon>
+                Extend Graph
               </v-chip>
             </v-col>
             <v-col>
               <v-chip
                 v-on:click="collapseGraph()"
                 class="pa-3"
-              >Collapse Graph
+                outlined
+              >
+                <v-icon left>fas fa-compress-alt</v-icon>
+                Collapse Graph
+
               </v-chip>
             </v-col>
             <v-col>
               <v-chip
                 icon
+                outlined
                 v-on:click="loadSelection"
               >
+                <v-icon left>fas fa-project-diagram</v-icon>
                 Load Selection
-                <v-icon>fas fa-project-diagram</v-icon>
               </v-chip>
             </v-col>
           </v-row>
         </v-container>
       </v-card>
-      <v-card style="margin:5px">
-        <v-card-title id="nodes" ref="nodeTitle" v-on:mouseenter="nodeOptionHover=true"
-                      v-on:mouseleave="nodeOptionHover=false">
-          Nodes
-          <v-tooltip
-            right>
-            <template v-slot:activator="{ on, attrs }">
-              <v-icon
-                v-show="nodeOptionHover"
-                size="17px"
-                color="primary"
-                dark
-                v-bind="attrs"
-                v-on="on"
-                v-on:click="nodeOptions"
-              >
-                fas fa-cog
-              </v-icon>
-            </template>
-            <span>options</span>
-          </v-tooltip>
-        </v-card-title>
-        <i v-if="!update.nodes && Object.keys(nodes).length === 0">no node entries</i>
-        <template v-if="Object.keys(nodes).length>0">
-          <v-tabs next-icon="mdi-arrow-right-bold-box-outline"
-                  prev-icon="mdi-arrow-left-bold-box-outline"
-                  show-arrows
-                  v-model="nodeTab"
-          >
-            <v-tabs-slider color="blue"></v-tabs-slider>
-            <v-tab v-for="node in Object.keys(nodes)" :key="node">
-              {{ node }}
-            </v-tab>
-          </v-tabs>
-          <v-tabs-items>
-            <v-data-table
-              ref="nodeTab"
-              fixed-header
-              dense
-              class="elevation-1"
-              :headers="headers('nodes',Object.keys(nodes)[nodeTab])"
-              :items="showAllLists ? nodes[Object.keys(nodes)[nodeTab]]: filterSelected(nodes[Object.keys(nodes)[nodeTab]])"
-              item-key="id"
-              :search="filters.nodes.query"
-              :custom-filter="filterNode"
-            >
-              <template v-slot:top>
-                <v-card
-                  elevation="1"
-                  outlined
-                  style="margin:20px"
+      <v-card style="margin:5px;padding-bottom: 15px" :loading="loading">
+        <template slot="progress">
+          <v-card-title>Nodes</v-card-title>
+          <v-progress-circular
+            color="primary"
+            size="50"
+            width="5"
+            indeterminate
+          ></v-progress-circular>
+<!--          <v-progress-linear-->
+<!--            color="primary"-->
+<!--            height="5"-->
+<!--            indeterminate-->
+<!--          ></v-progress-linear>-->
+<!--          <v-card-title>Nodes</v-card-title>-->
+        </template>
+        <template v-if="!loading">
+          <v-card-title id="nodes" ref="nodeTitle" v-on:mouseenter="nodeOptionHover=true"
+                        v-on:mouseleave="nodeOptionHover=false">
+            Nodes
+            <v-tooltip
+              right>
+              <template v-slot:activator="{ on, attrs }">
+                <v-icon
+                  v-show="nodeOptionHover"
+                  size="17px"
+                  color="primary"
+                  dark
+                  v-bind="attrs"
+                  v-on="on"
+                  v-on:click="nodeOptions"
                 >
-                  <v-card-title style="font-size: large">
-                    <v-btn
-                      icon
-                      @click="selectionMenu.nodes=!selectionMenu.nodes"
-                    >
-                      <v-icon v-if="selectionMenu.nodes" style="font-size: inherit">fas fa-minus-square</v-icon>
-                      <v-icon v-else style="font-size: inherit">fas fa-plus-square</v-icon>
-                    </v-btn>
-                    Selection Toolbox
-                  </v-card-title>
-                  <v-divider></v-divider>
-                  <v-container v-show="selectionMenu.nodes">
-                    <v-row>
-                      <v-col
-                        cols="2"
-                        v-show="!filters.nodes.suggestions"
+                  fas fa-cog
+                </v-icon>
+              </template>
+              <span>options</span>
+            </v-tooltip>
+          </v-card-title>
+          <i v-if="!update.nodes && Object.keys(nodes).length === 0">no node entries</i>
+          <template v-if="Object.keys(nodes).length>0">
+            <v-tabs next-icon="mdi-arrow-right-bold-box-outline"
+                    prev-icon="mdi-arrow-left-bold-box-outline"
+                    show-arrows
+                    v-model="nodeTab"
+            >
+              <v-tabs-slider color="blue"></v-tabs-slider>
+              <v-tab v-for="node in Object.keys(nodes)" :key="node">
+                {{ node }}
+              </v-tab>
+            </v-tabs>
+            <v-tabs-items>
+              <v-data-table
+                ref="nodeTab"
+                fixed-header
+                dense
+                class="elevation-1"
+                :headers="headers('nodes',Object.keys(nodes)[nodeTab])"
+                :items="showAllLists ? nodes[Object.keys(nodes)[nodeTab]]: filterSelected(nodes[Object.keys(nodes)[nodeTab]])"
+                item-key="id"
+                :loading="nodeTabLoading"
+                loading-text="Loading... Please wait"
+                :search="filters.nodes.query"
+                :custom-filter="filterNode"
+              >
+                <template v-slot:top>
+                  <v-card
+                    elevation="1"
+                    outlined
+                    style="margin:20px"
+                  >
+                    <v-card-title style="font-size: large">
+                      <v-btn
+                        icon
+                        @click="selectionMenu.nodes=!selectionMenu.nodes"
                       >
-                        <v-select
-                          :items="headerNames('nodes',Object.keys(nodes)[nodeTab])"
-                          label="Attribute"
-                          v-model="filters.nodes.attribute.name"
-                          outlined
-                        ></v-select>
-                      </v-col>
-                      <v-col
-                        cols="1"
-                        v-if="!filters.nodes.suggestions"
-                      >
-                        <v-select
-                          v-model="filters.nodes.attribute.operator"
-                          :disabled="filters.nodes.attribute.name === undefined || filters.nodes.attribute.name == null || filters.nodes.attribute.name.length ===0"
-                          :items="operatorNames('nodes',Object.keys(nodes)[nodeTab],filters.nodes.attribute.name)"
-                          label="Operator"
-                          outlined
-                        ></v-select>
-                      </v-col>
-                      <v-col
-                        :cols="(filters.nodes.suggestions)?10:7"
-                      >
-                        <v-text-field
-                          clearable
+                        <v-icon v-if="selectionMenu.nodes" style="font-size: inherit">fas fa-minus-square</v-icon>
+                        <v-icon v-else style="font-size: inherit">fas fa-plus-square</v-icon>
+                      </v-btn>
+                      Selection Toolbox
+                    </v-card-title>
+                    <v-divider></v-divider>
+                    <v-container v-show="selectionMenu.nodes">
+                      <v-row>
+                        <v-col
+                          cols="2"
                           v-show="!filters.nodes.suggestions"
-                          v-model="filters.nodes.query"
-                          label="Query (case sensitive)"
-                          class="mx-4"
-                        ></v-text-field>
-                        <v-autocomplete
-                          clearable
-                          :search-input.sync="findNodeSuggestions"
-                          v-show="filters.nodes.suggestions"
-                          :loading="suggestions.nodes.loading"
-                          :items="suggestions.nodes.data"
-                          v-model="filterNodeModel"
-                          label="Query (case sensitive)"
-                          class="mx-4"
                         >
-                          <template v-slot:item="{ item }" v-on:select="suggestions.nodes.chosen=item">
-                            <v-list-item-avatar
-                            >
-                              <v-icon v-if="item.type==='DOMAIN_ID'">fas fa-fingerprint</v-icon>
-                              <v-icon v-if="item.type==='DISPLAY_NAME' || item.type==='SYMBOLS'">fas fa-tv</v-icon>
-                              <v-icon v-if="item.type==='ICD10'">fas fa-disease</v-icon>
-                              <v-icon v-if="item.type==='SYNONYM'">fas fa-sync</v-icon>
-                              <v-icon v-if="item.type==='IUPAC'">mdi-molecule</v-icon>
-                              <v-icon v-if="item.type==='ORIGIN'">fas fa-dna</v-icon>
-                              <v-icon v-if="item.type==='DESCRIPTION' || item.type==='COMMENTS'">fas fa-info</v-icon>
-                              <v-icon v-if="item.type==='INDICATION'">fas fa-pills</v-icon>
-                              <v-icon v-if="item.type==='TYPE' || item.type==='GROUP' || item.type==='CATEGORY'">fas
-                                fa-layer-group
-                              </v-icon>
-                            </v-list-item-avatar>
-                            <v-list-item-content>
-                              <v-list-item-title v-text="item.text"></v-list-item-title>
-                              <v-list-item-subtitle
-                                v-text="item.type"></v-list-item-subtitle>
-                            </v-list-item-content>
-                            <v-list-item-action>
-                              <v-chip>
-                                {{ item.ids.length }}
-                              </v-chip>
-                            </v-list-item-action>
-                          </template>
-                        </v-autocomplete>
-                      </v-col>
-                      <v-col
-                        cols="2"
+                          <v-select
+                            :items="headerNames('nodes',Object.keys(nodes)[nodeTab])"
+                            label="Attribute"
+                            v-model="filters.nodes.attribute.name"
+                            outlined
+                          ></v-select>
+                        </v-col>
+                        <v-col
+                          cols="1"
+                          v-if="!filters.nodes.suggestions"
+                        >
+                          <v-select
+                            v-model="filters.nodes.attribute.operator"
+                            :disabled="filters.nodes.attribute.name === undefined || filters.nodes.attribute.name == null || filters.nodes.attribute.name.length ===0"
+                            :items="operatorNames('nodes',Object.keys(nodes)[nodeTab],filters.nodes.attribute.name)"
+                            label="Operator"
+                            outlined
+                          ></v-select>
+                        </v-col>
+                        <v-col
+                          :cols="(filters.nodes.suggestions)?10:7"
+                        >
+                          <v-text-field
+                            clearable
+                            v-show="!filters.nodes.suggestions"
+                            v-model="filters.nodes.query"
+                            label="Query (case sensitive)"
+                            class="mx-4"
+                          ></v-text-field>
+                          <v-autocomplete
+                            clearable
+                            :search-input.sync="findNodeSuggestions"
+                            v-show="filters.nodes.suggestions"
+                            :loading="suggestions.nodes.loading"
+                            :items="suggestions.nodes.data"
+                            v-model="filterNodeModel"
+                            label="Query (case sensitive)"
+                            class="mx-4"
+                          >
+                            <template v-slot:item="{ item }" v-on:select="suggestions.nodes.chosen=item">
+                              <v-list-item-avatar
+                              >
+                                <v-icon v-if="item.type==='DOMAIN_ID'">fas fa-fingerprint</v-icon>
+                                <v-icon v-if="item.type==='DISPLAY_NAME' || item.type==='SYMBOLS'">fas fa-tv</v-icon>
+                                <v-icon v-if="item.type==='ICD10'">fas fa-disease</v-icon>
+                                <v-icon v-if="item.type==='SYNONYM'">fas fa-sync</v-icon>
+                                <v-icon v-if="item.type==='IUPAC'">mdi-molecule</v-icon>
+                                <v-icon v-if="item.type==='ORIGIN'">fas fa-dna</v-icon>
+                                <v-icon v-if="item.type==='DESCRIPTION' || item.type==='COMMENTS'">fas fa-info</v-icon>
+                                <v-icon v-if="item.type==='INDICATION'">fas fa-pills</v-icon>
+                                <v-icon v-if="item.type==='TYPE' || item.type==='GROUP' || item.type==='CATEGORY'">fas
+                                  fa-layer-group
+                                </v-icon>
+                              </v-list-item-avatar>
+                              <v-list-item-content>
+                                <v-list-item-title v-text="item.text"></v-list-item-title>
+                                <v-list-item-subtitle
+                                  v-text="item.type"></v-list-item-subtitle>
+                              </v-list-item-content>
+                              <v-list-item-action>
+                                <v-chip>
+                                  {{ item.ids.length }}
+                                </v-chip>
+                              </v-list-item-action>
+                            </template>
+                          </v-autocomplete>
+                        </v-col>
+                        <v-col
+                          cols="2"
+                        >
+                          <v-switch
+                            label="Suggestions"
+                            v-model="filters.nodes.suggestions"
+                            v-on:click="toggleSuggestions('nodes')"
+                          >
+                          </v-switch>
+                        </v-col>
+                      </v-row>
+                      <v-row>
+                        <v-col>
+                          <v-chip
+                            v-on:click="selectAll('nodes',nodeTab)"
+                            class="pa-3"
+                            outlined
+                          >
+                            <v-icon left>
+                              fas fa-check-double
+                            </v-icon>
+                            Select All Nodes
+
+                          </v-chip>
+                        </v-col>
+                        <v-col>
+                          <v-chip
+                            v-on:click="selectEdges()"
+                            class="pa-3"
+                            outlined
+                          >
+                            <v-icon left>
+                              fas fa-check
+                            </v-icon>
+                            Select Needed Edges
+                          </v-chip>
+                        </v-col>
+                        <v-col>
+                          <v-chip
+                            v-on:click="deselectAll('nodes',nodeTab)"
+                            class="pa-3"
+                            outlined
+                          >
+                            <v-icon
+                            left
+                            >fas fa-ban</v-icon>
+                            Unselect All Nodes
+                          </v-chip>
+                        </v-col>
+                      </v-row>
+                    </v-container>
+                  </v-card>
+                </template>
+                <template v-slot:item.selected="{item}">
+                  <v-checkbox
+                    :key="item.id"
+                    v-model="item.selected"
+                    hide-details
+                    primary
+                    @click="countClick('nodes',nodeTab,item.selected)"
+                  ></v-checkbox>
+                </template>
+                <template v-slot:item.displayName="{item}">
+                  <v-tooltip right>
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-icon
+                        color="primary"
+                        dark
+                        v-bind="attrs"
+                        v-on="on"
+                        v-on:click="nodeDetails(item.id)"
                       >
-                        <v-switch
-                          label="Suggestions"
-                          v-model="filters.nodes.suggestions"
-                          v-on:click="toggleSuggestions('nodes')"
+                        fas fa-info-circle
+                      </v-icon>
+                      {{ item.displayName }}
+                    </template>
+                    <span>id:{{ item.id }}</span>
+                  </v-tooltip>
+                </template>
+              </v-data-table>
+            </v-tabs-items>
+          </template>
+        </template>
+      </v-card>
+      <v-card style="margin:5px;padding-bottom: 15px" :loading="loading">
+        <template slot="progress">
+          <v-card-title>Edges</v-card-title>
+          <v-progress-circular
+            color="primary"
+            size="50"
+            width="5"
+            indeterminate
+          ></v-progress-circular>
+<!--          <v-progress-linear-->
+<!--            color="primary"-->
+<!--            height="5"-->
+<!--            indeterminate-->
+<!--          ></v-progress-linear>-->
+<!--          <v-card-title>Edges</v-card-title>-->
+        </template>
+        <template v-if="!loading">
+          <v-card-title id="edges" ref="edgeTitle" v-on:mouseenter="edgeOptionHover=true"
+                        v-on:mouseleave="edgeOptionHover=false">Edges
+            <v-tooltip
+              right>
+              <template v-slot:activator="{ on, attrs }">
+                <v-icon
+                  v-show="edgeOptionHover"
+                  size="17px"
+                  color="primary"
+                  dark
+                  v-bind="attrs"
+                  v-on="on"
+                  v-on:click="edgeOptions"
+                >
+                  fas fa-cog
+                </v-icon>
+              </template>
+              <span>options</span>
+            </v-tooltip>
+          </v-card-title>
+          <i v-if="Object.keys(edges).length === 0">no edge entries</i>
+          <template v-if="Object.keys(edges).length>0">
+            <v-tabs
+              next-icon="mdi-arrow-right-bold-box-outline"
+              prev-icon="mdi-arrow-left-bold-box-outline"
+              show-arrows
+              v-model="edgeTab"
+            >
+              <v-tabs-slider color="blue"></v-tabs-slider>
+              <v-tab v-for="edge in Object.keys(edges)" :key="edge">
+                {{ edge }}
+              </v-tab>
+            </v-tabs>
+            <v-tabs-items>
+              <v-data-table
+                ref="edgeTab"
+                fixed-header
+                dense
+                class="elevation-1"
+                :headers="headers('edges',Object.keys(edges)[edgeTab])"
+                :items="showAllLists ? edges[Object.keys(edges)[edgeTab]] : filterSelected(edges[Object.keys(edges)[edgeTab]])"
+                :search="filters.edges.query"
+                :custom-filter="filterEdge"
+                loading-text="Loading... Please wait"
+                item-key="id"
+              >
+                <template v-slot:top>
+                  <v-card
+                    elevation="1"
+                    outlined
+                    style="margin:20px"
+                  >
+                    <v-card-title style="font-size: large">
+                      <v-btn
+                        icon
+                        @click="selectionMenu.edges=!selectionMenu.edges"
+                      >
+                        <v-icon v-if="selectionMenu.edges" style="font-size: inherit">fas fa-minus-square</v-icon>
+                        <v-icon v-else style="font-size: inherit">fas fa-plus-square</v-icon>
+                      </v-btn>
+                      Selection Toolbox
+                    </v-card-title>
+                    <v-divider></v-divider>
+                    <v-container
+                      v-show="selectionMenu.edges">
+                      <v-row>
+                        <v-col
+                          cols="2"
                         >
-                        </v-switch>
-                      </v-col>
-                    </v-row>
-                    <v-row>
-                      <v-col>
-                        <v-chip
-                          v-on:click="selectAll('nodes',nodeTab)"
-                          class="pa-3"
-                        >Select All Nodes
-                        </v-chip>
-                      </v-col>
-                      <v-col>
-                        <v-chip
-                          v-on:click="selectEdges()"
-                          class="pa-3"
-                        >Select Needed Edges
-                        </v-chip>
-                      </v-col>
-                      <v-col>
-                        <v-chip
-                          v-on:click="deselectAll('nodes',nodeTab)"
-                          class="pa-3"
-                        >Unselect All Nodes
-                        </v-chip>
-                      </v-col>
-                    </v-row>
-                  </v-container>
-                </v-card>
-              </template>
-              <template v-slot:item.selected="{item}">
-                <v-checkbox
-                  :key="item.id"
-                  v-model="item.selected"
-                  hide-details
-                  primary
-                  @click="countClick('nodes',nodeTab,item.selected)"
-                ></v-checkbox>
-              </template>
-              <template v-slot:item.displayName="{item}">
-                <v-tooltip right>
-                  <template v-slot:activator="{ on, attrs }">
+                          <v-select
+                            :items="headerNames('edges',Object.keys(edges)[edgeTab])"
+                            label="Attribute"
+                            v-model="filters.edges.attribute.name"
+                            outlined
+                          ></v-select>
+                        </v-col>
+                        <v-col
+                          cols="1"
+                          v-if="!filters.edges.suggestions"
+                        >
+                          <v-select
+                            v-model="filters.edges.attribute.operator"
+                            :items="operatorNames('edges',Object.keys(edges)[edgeTab],filters.edges.attribute.name)"
+                            label="Operator"
+                            outlined
+                          ></v-select>
+                        </v-col>
+                        <v-col
+                          cols="7"
+                        >
+                          <v-text-field
+                            clearable
+                            v-model="filters.edges.query"
+                            label="Query (case sensitive)"
+                            class="mx-4"
+                          ></v-text-field>
+                        </v-col>
+                        <v-col
+                          cols="2"
+                        >
+                        </v-col>
+                      </v-row>
+                      <v-row>
+                        <v-col>
+                          <v-chip
+                            v-on:click="selectAll('edges',edgeTab)"
+                            class="pa-3"
+                            outlined
+                          >
+                            <v-icon left>fas fa-check-double</v-icon>
+                            Select All Edges
+                          </v-chip>
+                        </v-col>
+                        <v-col>
+                          <v-chip
+                            v-on:click="deselectAll('edges',edgeTab)"
+                            class="pa-3"
+                            outlined
+                          >
+                            <v-icon left>fas fa-ban</v-icon>
+                            Unselect All Edges
+                          </v-chip>
+                        </v-col>
+                      </v-row>
+                    </v-container>
+                  </v-card>
+                </template>
+                <template v-slot:item.selected="{item}">
+                  <v-checkbox
+                    :key="item.id"
+                    v-model="item.selected"
+                    hide-details
+                    primary
+                  ></v-checkbox>
+                </template>
+                <template v-slot:item.edgeid="{item}">
+                  <template v-if="item.sourceId !== undefined">
                     <v-icon
                       color="primary"
                       dark
-                      v-bind="attrs"
-                      v-on="on"
-                      v-on:click="nodeDetails(item.id)"
+                      v-on:click="edgeDetails(item.sourceId, item.targetId)"
                     >
                       fas fa-info-circle
                     </v-icon>
-                    {{ item.displayName }}
+                    {{ item.sourceId }}
+                    <v-icon>fas fa-long-arrow-alt-right</v-icon>
+                    {{ item.targetId }}
                   </template>
-                  <span>id:{{ item.id }}</span>
-                </v-tooltip>
-              </template>
-            </v-data-table>
-          </v-tabs-items>
-        </template>
-      </v-card>
-
-      <v-card style="margin:5px">
-        <v-card-title id="edges" ref="edgeTitle" v-on:mouseenter="edgeOptionHover=true"
-                      v-on:mouseleave="edgeOptionHover=false">Edges
-          <v-tooltip
-            right>
-            <template v-slot:activator="{ on, attrs }">
-              <v-icon
-                v-show="edgeOptionHover"
-                size="17px"
-                color="primary"
-                dark
-                v-bind="attrs"
-                v-on="on"
-                v-on:click="edgeOptions"
-              >
-                fas fa-cog
-              </v-icon>
-            </template>
-            <span>options</span>
-          </v-tooltip>
-        </v-card-title>
-        <i v-if="Object.keys(edges).length === 0">no edge entries</i>
-        <template v-if="Object.keys(edges).length>0">
-          <v-tabs
-            next-icon="mdi-arrow-right-bold-box-outline"
-            prev-icon="mdi-arrow-left-bold-box-outline"
-            show-arrows
-            v-model="edgeTab"
-          >
-            <v-tabs-slider color="blue"></v-tabs-slider>
-            <v-tab v-for="edge in Object.keys(edges)" :key="edge">
-              {{ edge }}
-            </v-tab>
-          </v-tabs>
-          <v-tabs-items>
-            <v-data-table
-              ref="edgeTab"
-              fixed-header
-              dense
-              class="elevation-1"
-              :headers="headers('edges',Object.keys(edges)[edgeTab])"
-              :items="showAllLists ? edges[Object.keys(edges)[edgeTab]] : filterSelected(edges[Object.keys(edges)[edgeTab]])"
-              :search="filters.edges.query"
-              :custom-filter="filterEdge"
-              item-key="id"
-            >
-              <template v-slot:top>
-                <v-card
-                  elevation="1"
-                  outlined
-                  style="margin:20px"
-                >
-                  <v-card-title style="font-size: large">
-                    <v-btn
-                      icon
-                      @click="selectionMenu.edges=!selectionMenu.edges"
+                  <template v-else>
+                    <v-icon
+                      color="primary"
+                      dark
+                      v-on:click="edgeDetails(item.idOne, item.idTwo)"
                     >
-                      <v-icon v-if="selectionMenu.edges" style="font-size: inherit">fas fa-minus-square</v-icon>
-                      <v-icon v-else style="font-size: inherit">fas fa-plus-square</v-icon>
-                    </v-btn>
-                    Selection Toolbox
-                  </v-card-title>
-                  <v-divider></v-divider>
-                  <v-container
-                    v-show="selectionMenu.edges">
-                    <v-row>
-                      <v-col
-                        cols="2"
-                      >
-                        <v-select
-                          :items="headerNames('edges',Object.keys(edges)[edgeTab])"
-                          label="Attribute"
-                          v-model="filters.edges.attribute.name"
-                          outlined
-                        ></v-select>
-                      </v-col>
-                      <v-col
-                        cols="1"
-                        v-if="!filters.edges.suggestions"
-                      >
-                        <v-select
-                          v-model="filters.edges.attribute.operator"
-                          :items="operatorNames('edges',Object.keys(edges)[edgeTab],filters.edges.attribute.name)"
-                          label="Operator"
-                          outlined
-                        ></v-select>
-                      </v-col>
-                      <v-col
-                        cols="7"
-                      >
-                        <v-text-field
-                          clearable
-                          v-model="filters.edges.query"
-                          label="Query (case sensitive)"
-                          class="mx-4"
-                        ></v-text-field>
-                      </v-col>
-                      <v-col
-                        cols="2"
-                      >
-                      </v-col>
-                    </v-row>
-                    <v-row>
-                      <v-col>
-                        <v-chip
-                          v-on:click="selectAll('edges',edgeTab)"
-                          class="pa-3"
-                        >Select All Edges
-                        </v-chip>
-                      </v-col>
-                      <v-col>
-                        <v-chip
-                          v-on:click="deselectAll('edges',edgeTab)"
-                          class="pa-3"
-                        >Unselect All Edges
-                        </v-chip>
-                      </v-col>
-                    </v-row>
-                  </v-container>
-                </v-card>
-              </template>
-              <template v-slot:item.selected="{item}">
-                <v-checkbox
-                  :key="item.id"
-                  v-model="item.selected"
-                  hide-details
-                  primary
-                ></v-checkbox>
-              </template>
-              <template v-slot:item.edgeid="{item}">
-                <template v-if="item.sourceId !== undefined">
-                  <v-icon
-                    color="primary"
-                    dark
-                    v-on:click="edgeDetails(item.sourceId, item.targetId)"
-                  >
-                    fas fa-info-circle
-                  </v-icon>
-                  {{ item.sourceId }}
-                  <v-icon>fas fa-long-arrow-alt-right</v-icon>
-                  {{ item.targetId }}
+                      fas fa-info-circle
+                    </v-icon>
+                    {{ item.idOne }}
+                    <v-icon>fas fa-arrows-alt-h</v-icon>
+                    {{ item.idTwo }}
+                  </template>
                 </template>
-                <template v-else>
-                  <v-icon
-                    color="primary"
-                    dark
-                    v-on:click="edgeDetails(item.idOne, item.idTwo)"
-                  >
-                    fas fa-info-circle
-                  </v-icon>
-                  {{ item.idOne }}
-                  <v-icon>fas fa-arrows-alt-h</v-icon>
-                  {{ item.idTwo }}
-                </template>
-              </template>
-            </v-data-table>
-          </v-tabs-items>
+              </v-data-table>
+            </v-tabs-items>
+          </template>
         </template>
       </v-card>
     </v-container>
@@ -861,6 +942,7 @@ export default {
       },
       filterNodeModel: null,
       loading: true,
+      nodeTabLoading:false,
       countMap: {nodes: {}, edges: {}}
     }
   },
@@ -981,6 +1063,7 @@ export default {
       return this[type][name].filter(item => item.selected).length
     },
     applySuggestion: function (val) {
+      this.nodeTabLoading =true
       if (val !== undefined) {
         let nodes = this.nodes[Object.keys(this.nodes)[this.nodeTab]]
         this.suggestions.nodes.chosen = this.suggestions.nodes.data.filter(item => item.value === val).flatMap(item => item.ids);
@@ -991,6 +1074,7 @@ export default {
         this.nodes[Object.keys(this.nodes)[this.nodeTab]] = this.backup.nodes[this.nodeTab]
         this.suggestions.nodes.chosen = undefined
       }
+      this.nodeTabLoading = false
     },
     toggleSuggestions: function (type) {
       if (!this.filters[type].suggestions) {
@@ -1352,8 +1436,13 @@ export default {
     }
     ,
     loadSelection: function () {
+
       //TODO check if correct (nodes connected by edge)
       let update = {id: this.gid, nodes: {}, edges: {}}
+      if (Object.values(this.countMap.nodes).map(n => n.selected).reduce((i, v) => i + v) === 0) {
+        this.$emit("printNotificationEvent", "Please select some nodes first!", 1)
+        return;
+      }
       for (let type in this.nodes) {
         update.nodes[type] = []
         this.nodes[type] = this.filterSelected(this.nodes[type])
@@ -1364,6 +1453,8 @@ export default {
         this.edges[type] = this.filterSelected(this.edges[type])
         this.edges[type].forEach(edge => update.edges[type].push(edge.id))
       }
+
+
       this.filters.nodes.suggestions = false;
       this.filterNodeModel = null
       this.$http.post("/updateGraph", update).then(response => {
@@ -1628,8 +1719,8 @@ export default {
       return out
     },
     getColoring: function (entity, name) {
-      if(this.metagraph === undefined || Object.keys(this.metagraph.colorMap).length ===0)
-        return this.reloadMetagraph().then(()=>this.getColoring(entity,name))
+      if (this.metagraph === undefined || Object.keys(this.metagraph.colorMap).length === 0)
+        return this.reloadMetagraph().then(() => this.getColoring(entity, name))
       if (entity === "nodes") {
         return this.metagraph.colorMap[name].main;
       } else {

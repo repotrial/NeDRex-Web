@@ -1,5 +1,5 @@
 <template>
-  <v-app-bar app prominent elevation="0" color="white">
+  <v-app-bar app prominent elevation="0" hide-on-scroll color="white">
     <div id="particles-js"></div>
     <div id="title-div" style="position:fixed">
       <h1 id="title" >RepoScape-Browser</h1>

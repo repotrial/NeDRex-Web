@@ -1,111 +1,122 @@
 <template>
   <div style="margin-top:20px">
-    <v-container>
-      <v-card class="mx-auto">
+    <v-card>
+      <v-list>
         <v-list-item>
-          <v-list-item-content>
-            <v-list-item-title class="title">
-              Predefined Graphs
-            </v-list-item-title>
-            <v-list-item-subtitle>
-              Start exploring by choosing a start example
-            </v-list-item-subtitle>
-          </v-list-item-content>
+          <v-list-item-title class="title">Select your exploration path</v-list-item-title>
+        </v-list-item>
+        <v-list-item>
+          <v-list-item-subtitle>For new users or basic tasks like drug-target identification, the guided path is recommended.
+          </v-list-item-subtitle>
         </v-list-item>
         <v-divider></v-divider>
-        <v-btn-toggle tile group>
-          <template v-for="item in graphButtons">
-            <v-btn :name=item.id :outlined="item.active" v-on:click="loadGraph(item.id)"
-                   :color=item.color style="margin:5px">
-              {{ item.label }}
-            </v-btn>
-          </template>
-        </v-btn-toggle>
-      </v-card>
-    </v-container>
-    <v-container>
-      <v-card class="mx-auto">
         <v-list-item>
-          <v-list-item-content>
-            <v-list-item-title class="title">
-              Customized Exploration
-            </v-list-item-title>
+          <v-tabs v-model="selectionTab" centered>
+            <v-tabs-slider color="blue"></v-tabs-slider>
+            <v-tab>Guided Exploration</v-tab>
+            <v-tab>Advanced Exploration</v-tab>
+          </v-tabs>
+        </v-list-item>
+      </v-list>
+    </v-card>
+
+    <v-container v-show="selectionTab===1">
+      <v-card class="mx-auto">
+        <v-list>
+          <v-list-item>
+              <v-list-item-title class="title">
+                Customized Exploration
+              </v-list-item-title>
+          </v-list-item>
+          <v-list-item>
             <v-list-item-subtitle>
               Query a specified starting graph.
             </v-list-item-subtitle>
-          </v-list-item-content>
-        </v-list-item>
-        <v-divider></v-divider>
+          </v-list-item>
+        </v-list>
+          <v-divider></v-divider>
 
-        <v-list-item style="align-content: center">
-          <v-container v-if="metagraph !== undefined">
-            <v-row>
-              <v-col>
-                <Graph ref="startgraph" v-on:selectionEvent="setSelection" v-on:releaseEvent="resetSelection"
-                       :initgraph="{graph:metagraph,name:'metagraph'}" :startGraph="true"></Graph>
-              </v-col>
-              <v-col>
-                <v-list-item-group multiple color="indigo" v-model="edgeModel">
-                  <v-list-item v-for="item in edges" v-on:click="toggleEdge(item.index,false)" :key="item.index">
-                    <v-list-item-content>
+        <v-container v-if="metagraph !== undefined">
+          <v-row>
+            <v-col>
+              <Graph ref="startgraph" :initgraph="{graph:metagraph,name:'metagraph'}" :startGraph="true"></Graph>
+            </v-col>
+            <v-col>
+              <v-list v-model="nodeModel" ref="nodeSelector">
+                <v-card-title>Nodes</v-card-title>
+                <v-list-item v-for="item in nodes" :key="item.index">
+                  <v-chip outlined v-on:click="toggleNode(item.index)"
+                          :color="nodeModel.indexOf(item.index)===-1?'gray':'primary'"
+                          :text-color="nodeModel.indexOf(item.index)===-1?'black':'gray'">
+                    <v-icon left :color="getColoring('nodes',item.label)">fas fa-genderless</v-icon>
+                    {{ item.label }}
+                  </v-chip>
+                </v-list-item>
+              </v-list>
 
-                      <v-chip outlined>
-                        <v-icon left :color="getColoring('edges',item.label)[0]">fas fa-genderless</v-icon>
-                        <template v-if="direction(item.label)===0">
-                          <v-icon left>fas fa-undo-alt</v-icon>
-                        </template>
-                        <template v-else>
-                          <v-icon v-if="direction(item.label)===1" left>fas fa-long-arrow-alt-right</v-icon>
-                          <v-icon v-else left>fas fa-arrows-alt-h</v-icon>
-                          <v-icon left :color="getColoring('edges',item.label)[1]">fas fa-genderless</v-icon>
-                        </template>
-                        {{ item.label }}
-                      </v-chip>
-                    </v-list-item-content>
-                  </v-list-item>
-                </v-list-item-group>
-              </v-col>
-            </v-row>
-          </v-container>
-        </v-list-item>
-        <v-card>
-          <v-checkbox v-model="onlyConnected" label="Hide unconnected"></v-checkbox>
-          <v-checkbox v-model="skipVis" label="Skip visualization"></v-checkbox>
-        </v-card>
-        <v-btn v-on:click="loadGraph(-1)" style="margin:5px">
-          Apply Selection
-        </v-btn>
-        <v-simple-table>
-          <template v-slot:default>
-            <thead>
-            <tr>
-              <th class="text-center"></th>
-              <th class="text-center">Type</th>
-              <th class="text-center">Name</th>
-              <th class="text-center">Filter</th>
-            </tr>
-            </thead>
-            <tbody>
-            <template v-for="item in selectedElements">
-              <tr :key="item.name" v-on:click="filterEdit(item.name)">
-                <v-icon v-if="filterId===item.name">fas fa-angle-double-left</v-icon>
-                <v-icon v-else>fas fa-angle-right</v-icon>
+            </v-col>
+            <v-col>
+              <v-list v-model="edgeModel">
+                <v-card-title>Edges</v-card-title>
+                <v-list-item v-for="item in edges" :key="item.index">
+                  <v-chip outlined v-on:click="toggleEdge(item.index)"
+                          :color="edgeModel.indexOf(item.index)===-1?'gray':'primary'"
+                          :text-color="edgeModel.indexOf(item.index)===-1?'black':'gray'">
 
-                <td>
-                  {{ item.type }}
-                </td>
-                <td>{{ item.name }}</td>
-                <td v-if="startFilters[item.name] !== undefined" :title="hoverFilters(item.name)">
-                  {{ startFilters[item.name].length }}
-                </td>
-                <td v-else>0</td>
-              </tr>
-            </template>
-            </tbody>
-          </template>
-
-        </v-simple-table>
+                    <v-icon left :color="getColoring('edges',item.label)[0]">fas fa-genderless</v-icon>
+                    <template v-if="direction(item.label)===0">
+                      <v-icon left>fas fa-undo-alt</v-icon>
+                    </template>
+                    <template v-else>
+                      <v-icon v-if="direction(item.label)===1" left>fas fa-long-arrow-alt-right</v-icon>
+                      <v-icon v-else left>fas fa-arrows-alt-h</v-icon>
+                      <v-icon left :color="getColoring('edges',item.label)[1]">fas fa-genderless</v-icon>
+                    </template>
+                    {{ item.label }}
+                  </v-chip>
+                </v-list-item>
+              </v-list>
+            </v-col>
+          </v-row>
+        </v-container>
       </v-card>
+      <v-card>
+        <v-checkbox v-model="onlyConnected" label="Hide unconnected"></v-checkbox>
+        <v-checkbox v-model="skipVis" label="Skip visualization"></v-checkbox>
+      </v-card>
+      <v-btn v-on:click="loadGraph(-1)" style="margin:5px">
+        Apply Selection
+      </v-btn>
+      <v-simple-table>
+        <template v-slot:default>
+          <thead>
+          <tr>
+            <th class="text-center"></th>
+            <th class="text-center">Type</th>
+            <th class="text-center">Name</th>
+            <th class="text-center">Filter</th>
+          </tr>
+          </thead>
+          <tbody>
+          <template v-for="item in selectedElements">
+            <tr :key="item.name" v-on:click="filterEdit(item.name)">
+              <v-icon v-if="filterId===item.name">fas fa-angle-double-left</v-icon>
+              <v-icon v-else>fas fa-angle-right</v-icon>
+
+              <td>
+                {{ item.type }}
+              </td>
+              <td>{{ item.name }}</td>
+              <td v-if="startFilters[item.name] !== undefined" :title="hoverFilters(item.name)">
+                {{ startFilters[item.name].length }}
+              </td>
+              <td v-else>0</td>
+            </tr>
+          </template>
+          </tbody>
+        </template>
+
+      </v-simple-table>
     </v-container>
   </div>
 </template>
@@ -141,7 +152,8 @@ export default {
       filterId: this.filterId,
       onlyConnected: true,
       startFilters: this.startFilters,
-      skipVis:true,
+      skipVis: true,
+      selectionTab: 1
     }
   },
   created() {
@@ -159,17 +171,20 @@ export default {
     this.edges = []
   },
   mounted() {
+    this.$refs.startgraph.hideAllGroups(true, true)
+    this.$refs.startgraph.hideAllEdges(true)
+    this.$refs.startgraph.setPhysics(true)
     this.initLists(this.metagraph)
   },
   methods: {
     initLists: function (selectionGraph) {
       selectionGraph.nodes.forEach(n => {
-        this.nodes.push({index: this.nodes.length, id: n.id, label: n.label})
+        this.nodes.push({index: this.nodes.length, id: parseInt(n.id), label: n.label})
       })
       selectionGraph.edges.forEach(e => {
-        let depends = [e.from]
+        let depends = [parseInt(e.from)]
         if (e.from !== e.to)
-          depends.push(e.to)
+          depends.push(parseInt(e.to))
         this.edges.push({index: this.edges.length, id: e.id, label: e.label, depends: depends})
       })
     },
@@ -219,9 +234,12 @@ export default {
           }
         }
       }
-      console.log(this.graphLoad)
-      this.graphLoad.post["uid"]= this.$cookies.get("uid")
-      this.graphLoad["skipVis"]=this.skipVis;
+      if (Object.keys(this.graphLoad.post.nodes).length === 0) {
+        this.$emit("printNotificationEvent", "Please select some nodes/edges first!", 1)
+        return
+      }
+      this.graphLoad.post["uid"] = this.$cookies.get("uid")
+      this.graphLoad["skipVis"] = this.skipVis;
       this.$emit("graphLoadEvent", this.graphLoad)
     },
     hoverFilters: function (name) {
@@ -231,8 +249,9 @@ export default {
       })
       return out
     },
-    toggleNode: function (nodeIndex, graphSelect) {
+    toggleNode: function (nodeIndex) {
       let index = this.nodeModel.indexOf(nodeIndex)
+      this.$refs.startgraph.toggleGroupVisibility(this.nodes[nodeIndex].label.toLowerCase(), true)
       if (index >= 0) {
         let remove = -1;
         for (let idx in this.selectedElements) {
@@ -242,63 +261,20 @@ export default {
           }
         }
         this.selectedElements.splice(remove, 1)
-        if (graphSelect)
-          this.nodeModel.splice(index, 1)
+        this.nodeModel.splice(index, 1)
+        Object.values(this.edges).filter(item => (item.depends.indexOf(this.nodes[nodeIndex].id) > -1 && this.edgeModel.indexOf(item.index) > -1)).map(item => item.index).forEach(this.toggleEdge)
+
       } else {
-        if (graphSelect)
-          this.nodeModel.push(nodeIndex)
+        this.nodeModel.push(nodeIndex)
         this.selectedElements.push({index: nodeIndex, type: "node", name: this.nodes[nodeIndex].label, filter: []})
       }
-    },
-    filterEdit: function (filterName) {
-      if (this.filterId === filterName) {
-        this.filterId = -1
-        this.$emit("filterEvent")
-      } else {
-        this.filterId = filterName
-        if(this.startFilters[filterName]=== undefined)
-          this.startFilters[filterName]=[]
-        let filters = this.startFilters[filterName]
-        this.$emit("filterEvent", {name: filterName, filters: filters})
-      }
-    },
-    minimizeSide: function () {
-      this.filterId = -1
-    },
-    setSelection: function (params) {
-      if (params !== undefined) {
-        if (params.nodes.length > 0) {
-        } else if (params.edges.length > 0) {
-          for (let idx in this.edges) {
-            if (this.edges[idx].id === params.edges[0]) {
-              this.toggleEdge(this.edges[idx].index, true)
-            }
-          }
-        }
-      }
-      this.resetSelection()
-    },
-
-    resetSelection: function () {
-      let edgeIds = []
-      this.edgeModel.forEach(e => {
-        edgeIds.push(this.edges[e].id)
+      this.$nextTick(() => {
+        this.$refs.nodeSelector.$forceUpdate()
       })
-      let nodeIds = []
-      this.nodeModel.forEach(n => {
-        nodeIds.push(this.nodes[n].id)
-      })
-      let data = {nodes: nodeIds, edges: edgeIds}
-      this.$refs.startgraph.setSelectionMultiple(data)
     },
-    removeFilter: function (data) {
-      console.log(this.startFilters[data.name])
-      console.log("removing index " + data.index)
-      this.startFilters[data.name].splice(data.index, 1)
-      console.log(this.startFilters[data.name])
-    },
-    toggleEdge: function (edgeIndex, graphSelect) {
+    toggleEdge: function (edgeIndex) {
       let index = this.edgeModel.indexOf(edgeIndex)
+      this.$refs.startgraph.toggleEdgeVisible(this.edges[edgeIndex].label)
       if (index >= 0) {
         let remove = -1;
         let restDepending = []
@@ -311,31 +287,34 @@ export default {
           }
         }
         this.selectedElements.splice(remove, 1)
-        this.edges[edgeIndex].depends.forEach(d => {
-          if (restDepending.indexOf(d) === -1)
-            for (let nodeIndex in this.nodes)
-              if (this.nodes[nodeIndex].id === d && this.nodeModel.indexOf(nodeIndex) > -1) {
-                this.toggleNode(nodeIndex, true)
-              }
-        })
-        if (graphSelect)
-          this.edgeModel.splice(index, 1)
+        this.edgeModel.splice(index, 1)
       } else {
-        if (graphSelect)
-          this.edgeModel.push(edgeIndex)
+        this.edgeModel.push(edgeIndex)
         let depending = []
         for (let idx in this.edges[edgeIndex].depends) {
           depending.push(this.edges[edgeIndex].depends[idx])
         }
-        for (let idx in depending) {
-          for (let nodeIndex in this.nodes)
-            if (this.nodes[nodeIndex].id === depending[idx] && this.nodeModel.indexOf(nodeIndex) === -1) {
-              this.toggleNode(nodeIndex, true)
-            }
-        }
+        Object.values(this.nodes).filter(item => depending.indexOf(item.id) >= 0 && this.nodeModel.indexOf(item.index) === -1).forEach(item => this.toggleNode(item.index))
         this.selectedElements.push({index: edgeIndex, type: "edge", name: this.edges[edgeIndex].label, filter: []})
       }
-      this.resetSelection()
+    },
+    filterEdit: function (filterName) {
+      if (this.filterId === filterName) {
+        this.filterId = -1
+        this.$emit("filterEvent")
+      } else {
+        this.filterId = filterName
+        if (this.startFilters[filterName] === undefined)
+          this.startFilters[filterName] = []
+        let filters = this.startFilters[filterName]
+        this.$emit("filterEvent", {name: filterName, filters: filters})
+      }
+    },
+    minimizeSide: function () {
+      this.filterId = -1
+    },
+    removeFilter: function (data) {
+      this.startFilters[data.name].splice(data.index, 1)
     },
     direction: function (edge) {
       let e = Object.values(this.metagraph.edges).filter(e => e.label === edge)[0];
@@ -345,11 +324,11 @@ export default {
     },
     getColoring: function (entity, name) {
       if (entity === "nodes") {
-        return this.metagraph.colorMap[name].main;
+        return this.metagraph.colorMap[Object.values(this.metagraph.nodes).filter(n => n.label === name)[0].group].main;
       } else {
         let edge = Object.values(this.metagraph.edges).filter(n => n.label === name)[0]
-        let n1 = Object.values(this.metagraph.nodes).filter(n=>n.id===edge.from)[0].group
-        let n2 = Object.values(this.metagraph.nodes).filter(n=>n.id===edge.to)[0].group
+        let n1 = Object.values(this.metagraph.nodes).filter(n => n.id === edge.from)[0].group
+        let n2 = Object.values(this.metagraph.nodes).filter(n => n.id === edge.to)[0].group
         return [this.metagraph.colorMap[n1].main, this.metagraph.colorMap[n2].main]
       }
     },

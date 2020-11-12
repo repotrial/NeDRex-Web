@@ -46,6 +46,9 @@
     </v-navigation-drawer>
 
     <v-main app style="padding-top: 0" @click.stop="hideSidecard()">
+      <v-snackbar v-model="notifications.style1.show" :multi-line="true" :timeout="notifications.style1.timeout">
+        {{notifications.style1.message}}
+      </v-snackbar>
       <v-dialog
         v-model="listDialog"
         v-if="listWarnObject !== undefined"
@@ -108,7 +111,10 @@
         </v-card>
       </v-dialog>
       <v-container v-show="selectedTabId===0" fluid>
-        <Start v-if="metagraph !== undefined" ref="start" v-on:graphLoadEvent="loadGraph" v-on:filterEvent="filter"
+        <Start v-if="metagraph !== undefined" ref="start"
+               v-on:graphLoadEvent="loadGraph"
+               v-on:filterEvent="filter"
+               v-on:printNotificationEvent="printNotification"
                :colors="colors" :metagraph="metagraph"></Start>
       </v-container>
       <v-container v-show="selectedTabId===1" fluid>
@@ -127,6 +133,7 @@
               v-on:selectionEvent="loadDetails"
               v-on:loadSelectionEvent="loadSubSelection"
               v-on:updateInfo="evalPostInfo"
+              v-on:printNotificationEvent="printNotification"
         ></List>
       </v-container>
       <v-container v-show="selectedTabId===3" fluid>
@@ -178,6 +185,7 @@ export default {
       metagraph: this.metagraph,
       listWarnObject: undefined,
       listDialog: false,
+      notifications: {style1:{show:false,message:"",timeout:2000},style2:{}}
     }
   },
   created() {
@@ -199,19 +207,16 @@ export default {
   },
   methods: {
     loadUser: function () {
-      console.log(this.$cookies.get("uid"))
       this.$http.get("/getUser?user=" + this.$cookies.get("uid")).then(response => {
         if (response.data !== undefined)
           return response.data
       }).then(data => {
         this.$cookies.set("uid", data.uid);
-        console.log(data.history)
       }).catch(err => console.log(err))
     },
     initGraphs: function () {
       this.$http.get("/getMetagraph").then(response => {
         this.metagraph = response.data;
-        console.log(response.data)
         this.$refs.list.setMetagraph(this.metagraph)
       }).catch(err => {
         console.log(err)
@@ -284,7 +289,6 @@ export default {
           type = n.group;
       })
       this.selectTab(2)
-      // this.$refs.list.selectNodeTab(type)
       this.loadDetails({type: "node", name: type, id: data.id})
     },
     setTabNotification: function (tabId) {
@@ -371,6 +375,15 @@ export default {
     loadDetails: function (params) {
       this.$refs.side.loadDetails(params)
       this.showSidecard = true;
+    },
+    printNotification: function (message, style){
+      if(style===1){
+          this.setNotification(this.notifications.style1,message)
+      }
+    },
+    setNotification: function(to, message){
+      to.message = message;
+      to.show = true;
     }
   },
   components: {
