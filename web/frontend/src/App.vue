@@ -26,123 +26,124 @@
         </template>
       </v-toolbar>
     </v-card>
-    <SideCard v-show="showSidecard" ref="side"
-              v-on:nodeSelectionEvent="setSelectedNode"
-              v-on:hideEvent="hideSidecard"
-              v-on:removeFilterEvent="removeFilter"
-              v-on:togglePhysicsEvent="togglePhysics"
-              v-on:nodeDetailsEvent="nodeDetails"
-    ></SideCard>
-    <v-navigation-drawer app right v-show="!showSidecard" style="width: 5%">
-      <v-list-item>
-        <v-list-item-content>
-          <v-navigation-drawer>
-            <v-btn v-on:click="showSidecard=true">
-              <v-icon>fas fa-caret-left</v-icon>
-            </v-btn>
-          </v-navigation-drawer>
-        </v-list-item-content>
-      </v-list-item>
-    </v-navigation-drawer>
 
-    <v-main app style="padding-top: 0" @click.stop="hideSidecard()">
-      <v-snackbar v-model="notifications.style1.show" :multi-line="true" :timeout="notifications.style1.timeout">
-        {{notifications.style1.message}}
-      </v-snackbar>
-      <v-dialog
-        v-model="listDialog"
-        v-if="listWarnObject !== undefined"
-        persistent
-        max-width="500"
-      >
-        <v-card>
-          <v-card-title class="headline">
-            List loading warning!
-          </v-card-title>
-          <v-card-text>The selected graph consists of the following number of elements:
-          </v-card-text>
-          <v-divider></v-divider>
-          <v-card-subtitle style="font-size: 15pt; margin-top: 10px;">Nodes:</v-card-subtitle>
-          <!--          <v-divider></v-divider>-->
-          <v-list class="transparent">
-            <v-list-item
-              v-for="item in Object.keys(listWarnObject.nodes)"
-              :key="item"
+    <v-container>
+      <v-row>
+        <v-col cols="9">
+
+          <v-main app style="padding-top: 0">
+
+            <v-container v-show="selectedTabId===0" fluid>
+              <Start v-if="metagraph !== undefined" ref="start"
+                     v-on:graphLoadEvent="loadGraph"
+                     v-on:printNotificationEvent="printNotification"
+                     :colors="colors" :metagraph="metagraph" :options="options.start" :filters="startFilters"></Start>
+            </v-container>
+            <v-container v-show="selectedTabId===1" fluid>
+              <Graph ref="graph"
+                     v-on:selectionEvent="loadSelection"
+                     v-on:finishedEvent="setTabNotification(1)"
+                     v-on:visualisationEvent="visualisationEvent"
+                     v-on:printNotificationEvent="printNotification"
+                     v-on:graphLoadedEvent="loadList"
+                     :configuration="options.graph"
+              ></Graph>
+
+            </v-container>
+            <v-container v-show="selectedTabId===2" fluid>
+              <List ref="list"
+                    v-on:finishedEvent="setTabNotification(2)"
+                    v-on:selectionEvent="loadDetails"
+                    v-on:loadSelectionEvent="loadSubSelection"
+                    v-on:updateInfo="evalPostInfo"
+                    v-on:printNotificationEvent="printNotification"
+              ></List>
+            </v-container>
+            <v-container v-show="selectedTabId===3" fluid>
+              <History ref="history"
+                       v-on:graphLoadEvent="loadGraph"
+                       v-on:printNotificationEvent="printNotification"
+              ></History>
+            </v-container>
+            <v-snackbar v-model="notifications.style1.show" :multi-line="true" :timeout="notifications.style1.timeout">
+              {{ notifications.style1.message }}
+            </v-snackbar>
+            <v-dialog
+              v-model="listDialog"
+              v-if="listWarnObject !== undefined"
+              persistent
+              max-width="500"
             >
-              <v-list-item-title>{{ item.toLocaleUpperCase() }}
-              </v-list-item-title>
-              <v-list-item-subtitle>
-                {{ listWarnObject.nodes[item] }}
-              </v-list-item-subtitle>
+              <v-card>
+                <v-card-title class="headline">
+                  List loading warning!
+                </v-card-title>
+                <v-card-text>The selected graph consists of the following number of elements:
+                </v-card-text>
+                <v-divider></v-divider>
+                <v-card-subtitle style="font-size: 15pt; margin-top: 10px;">Nodes:</v-card-subtitle>
+                <v-list class="transparent">
+                  <v-list-item
+                    v-for="item in Object.keys(listWarnObject.nodes)"
+                    :key="item"
+                  >
+                    <v-list-item-title>{{ item.toLocaleUpperCase() }}
+                    </v-list-item-title>
+                    <v-list-item-subtitle>
+                      {{ listWarnObject.nodes[item] }}
+                    </v-list-item-subtitle>
 
-            </v-list-item>
-          </v-list>
-          <v-divider></v-divider>
-          <v-card-subtitle style="font-size: 15pt; margin-top: 10px;">Edges:</v-card-subtitle>
-          <!--          <v-divider></v-divider>-->
-          <v-list class="transparent">
-            <v-list-item
-              v-for="item in Object.keys(listWarnObject.edges)"
-              :key="item"
-            >
-              <v-list-item-title>{{ item }}
-              </v-list-item-title>
-              <v-list-item-subtitle>
-                {{ listWarnObject.edges[item] }}
-              </v-list-item-subtitle>
+                  </v-list-item>
+                </v-list>
+                <v-divider></v-divider>
+                <v-card-subtitle style="font-size: 15pt; margin-top: 10px;">Edges:</v-card-subtitle>
+                <v-list class="transparent">
+                  <v-list-item
+                    v-for="item in Object.keys(listWarnObject.edges)"
+                    :key="item"
+                  >
+                    <v-list-item-title>{{ item }}
+                    </v-list-item-title>
+                    <v-list-item-subtitle>
+                      {{ listWarnObject.edges[item] }}
+                    </v-list-item-subtitle>
 
-            </v-list-item>
-          </v-list>
-          <v-divider></v-divider>
-          <v-card-text>
-            This exceeds the limit of elements that can handled by the browser, so please apply a more strict filter!
-          </v-card-text>
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn
-              color="green darken-1"
-              text
-              @click="listDialog=false"
-            >
-              Dismiss
-            </v-btn>
+                  </v-list-item>
+                </v-list>
+                <v-divider></v-divider>
+                <v-card-text>
+                  This exceeds the limit of elements that can handled by the browser, so please apply a more strict
+                  filter!
+                </v-card-text>
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-btn
+                    color="green darken-1"
+                    text
+                    @click="listDialog=false"
+                  >
+                    Dismiss
+                  </v-btn>
 
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
-      <v-container v-show="selectedTabId===0" fluid>
-        <Start v-if="metagraph !== undefined" ref="start"
-               v-on:graphLoadEvent="loadGraph"
-               v-on:filterEvent="filter"
-               v-on:printNotificationEvent="printNotification"
-               :colors="colors" :metagraph="metagraph"></Start>
-      </v-container>
-      <v-container v-show="selectedTabId===1" fluid>
-        <Graph ref="graph"
-               v-on:selectionEvent="loadSelection"
-               v-on:finishedEvent="setTabNotification(1)"
-               v-on:graphLoadedEvent="loadList"
-        ></Graph>
-        <v-card>
-          <v-checkbox v-model="physics" label="Enable physics" v-on:click="togglePhysics"></v-checkbox>
-        </v-card>
-      </v-container>
-      <v-container v-show="selectedTabId===2" fluid>
-        <List ref="list"
-              v-on:finishedEvent="setTabNotification(2)"
-              v-on:selectionEvent="loadDetails"
-              v-on:loadSelectionEvent="loadSubSelection"
-              v-on:updateInfo="evalPostInfo"
-              v-on:printNotificationEvent="printNotification"
-        ></List>
-      </v-container>
-      <v-container v-show="selectedTabId===3" fluid>
-        <History ref="history"
-                 v-on:graphLoadEvent="loadGraph"
-        ></History>
-      </v-container>
-    </v-main>
-
+                </v-card-actions>
+              </v-card>
+            </v-dialog>
+          </v-main>
+        </v-col>
+        <v-col cols="3">
+          <SideCard ref="side"
+                    v-on:printNotificationEvent="printNotification"
+                    v-on:nodeSelectionEvent="setSelectedNode"
+                    v-on:updatePhysicsEvent="updatePhysics"
+                    v-on:nodeDetailsEvent="nodeDetails"
+                    v-on:applyEvent="applyEvent"
+                    :options="options"
+                    :selected-tab="selectedTabId"
+                    :filters="startFilters"
+          ></SideCard>
+        </v-col>
+      </v-row>
+    </v-container>
     <v-footer app>
     </v-footer>
   </v-app>
@@ -159,33 +160,23 @@ import headerBar from './components/header.vue'
 
 export default {
   name: 'app',
-  graphLoad: {},
-  graphKey: 0,
   exampleGraph: undefined,
-  selectedNode: undefined,
-  neighborNodes: [],
-  selectedTabId: 0,
-  colors: {},
-  tabslist: {},
-  showSidecard: false,
-  physics: false,
-  metagraph: Object,
 
   data() {
     return {
-      graphLoad: this.graphLoad,
+      graphLoad: {},
       graphKey: 0,
-      neighborNodes: this.neighborNodes,
-      selectedNode: this.selectedNode,
-      tabslist: this.tabslist,
-      selectedTabId: this.selectedTabId,
-      colors: this.colors,
-      showSidecard: this.showSidecard,
-      physics: this.physics,
-      metagraph: this.metagraph,
+      neighborNodes: [],
+      selectedNode: undefined,
+      tabslist: {},
+      selectedTabId: 0,
+      colors: {},
+      metagraph: undefined,
       listWarnObject: undefined,
       listDialog: false,
-      notifications: {style1:{show:false,message:"",timeout:2000},style2:{}}
+      notifications: {style1: {show: false, message: "", timeout: 2000}, style2: {}},
+      options: {},
+      startFilters: {},
     }
   },
   created() {
@@ -195,7 +186,6 @@ export default {
       tabs: {active: "rgba(25 118 210)", inactive: "rgba(0,0,0,.54)"}
     }
     this.selectedTabId = 0;
-    this.physics = false
     this.tabslist = [
       {id: 0, label: "Start", icon: "fas fa-filter", color: this.colors.tabs.active, note: false},
       {id: 1, label: "Graph", icon: "fas fa-project-diagram", color: this.colors.tabs.inactive, note: false},
@@ -203,7 +193,7 @@ export default {
       {id: 3, label: "History", icon: "fas fa-history", color: this.colors.tabs.inactive, note: false},
     ]
     this.initGraphs()
-
+    this.initComponents()
   },
   methods: {
     loadUser: function () {
@@ -222,6 +212,13 @@ export default {
         console.log(err)
       })
     },
+    visualisationEvent: function () {
+      this.$refs.side.$forceUpdate()
+    },
+    initComponents: function () {
+      this.options.start = {skipVis: true, onlyConnected: true, selectedElements: []}
+      this.options.graph = {physics: false, visualized: false, sizeWarning: false}
+    },
     loadSubSelection: function (selection) {
       this.loadGraph({data: selection})
     },
@@ -230,14 +227,13 @@ export default {
       this.listDialog = true;
     },
     loadGraph: function (graph) {
-      this.$refs.side.hide()
       this.tabslist[1].icon = "fas fa-circle-notch fa-spin"
       this.tabslist[2].icon = "fas fa-circle-notch fa-spin"
-      this.$nextTick()
-      if (this.physics) {
-        this.physics = false;
-        this.togglePhysics()
+      if(this.options.graph.physics) {
+        this.options.graph.physics = false;
+        this.updatePhysics()
       }
+
       this.$http.post("/getGraphInfo", graph.post).then(response => {
         return response.data
       }).then(info => {
@@ -245,11 +241,7 @@ export default {
       }).catch(err => {
         console.log(err)
       })
-      // this.$refs.graph.loadData(graph)
     },
-    // loadInfo: function (info){
-    //   this.$refs.graph.loadData({info:info})
-    // },
     loadList: function (gid) {
       this.$refs.list.getList(gid, this.metagraph)
     },
@@ -274,13 +266,12 @@ export default {
         }).catch(err => console.log(err))
 
       }
-
     },
-    toggleSide: function () {
-      if (this.showSidecard) {
-        this.hideSidecard();
-      }
-      this.showSidecard = !this.showSidecard;
+    applyEvent: function () {
+      if (this.selectedTabId === 0)
+        this.$refs.start.loadGraph(-1)
+      if (this.selectedTabId === 1)
+        this.$refs.graph.visualizeNow()
     },
     nodeDetails: function (data) {
       let type = ""
@@ -302,16 +293,10 @@ export default {
       }
     }
     ,
-    togglePhysics: function () {
-      this.$refs.graph.togglePhysics()
-    },
-    hideSidecard: function () {
-      this.showSidecard = false
-      this.$refs.start.minimizeSide()
-      this.$refs.side.clearModels()
+    updatePhysics: function () {
+      this.$refs.graph.setPhysics(this.options.graph.physics)
     },
     loadSelection: function (params) {
-      this.showSidecard = true
       if (params !== undefined)
         this.$refs.side.loadSelection(this.$refs.graph.identifyNeighbors(params.nodes[0]))
       else {
@@ -346,42 +331,24 @@ export default {
 
       this.adaptSidecard()
     },
-    // addFilter: function (param) {
-    //   this.$refs.start.addFilter(param)
-    // },
-    removeFilter: function (param) {
-      this.$refs.start.removeFilter(param)
-    },
     adaptSidecard: function (param) {
-      this.$refs.side.setTabId(this.selectedTabId)
-      if (this.selectedTabId === 1) {
-        this.$refs.side.setTitle({title: "Current Selection", description: "Including neighbors of first degree"})
-      } else if (this.selectedTabId === 0) {
+      if (this.selectedTabId === 0) {
         if (param !== undefined) {
-          this.showSidecard = true
-          this.$refs.side.setTitle({
-            title: "Filter " + param.name,
-            description: "Apply a filter for better exploration"
-          })
           this.$refs.side.loadFilter(param)
         } else {
           this.$refs.side.loadFilter(undefined)
-          this.hideSidecard()
         }
-      } else if (this.selectedTabId === 2) {
-        this.$refs.side.setTitle({title: "Detailed Information", description: "No item selected!"})
       }
     },
     loadDetails: function (params) {
       this.$refs.side.loadDetails(params)
-      this.showSidecard = true;
     },
-    printNotification: function (message, style){
-      if(style===1){
-          this.setNotification(this.notifications.style1,message)
+    printNotification: function (message, style) {
+      if (style === 1) {
+        this.setNotification(this.notifications.style1, message)
       }
     },
-    setNotification: function(to, message){
+    setNotification: function (to, message) {
       to.message = message;
       to.show = true;
     }

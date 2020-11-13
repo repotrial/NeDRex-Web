@@ -2,7 +2,7 @@
   <div class="graph-window">
     <i>{{ text }}</i>
     <v-progress-linear v-show="loading" indeterminate :color=loadingColor></v-progress-linear>
-    <network v-if="nodeSet !== undefined && visualize" v-show="!loading" class="wrapper" ref="network"
+    <network v-if="nodeSet !== undefined && isVisualized()" v-show="!loading" class="wrapper" ref="network"
              :key="key"
              :nodes="nodeSet"
              :edges="edges"
@@ -12,38 +12,14 @@
              :events="['click','release','startStabilizing','stabilizationProgress','stabilizationIterationsDone']"
              @click="onClick"
              @release="onRelease">
-      <!--             @startStabilizing="onStabilizationStart"-->
-      <!--             @stabilizationProgress="onStabilizationProgress"-->
-      <!--             @stabilizationIterationsDone="onStabilizationDone"-->
-
-      <!--    >-->
     </network>
     <template>
-      <v-btn v-if="!sizeWarning()"
-             v-show="!visualize"
-             color="primary"
-             dark
-             v-on:click="dialogResolve(true)"
-      >
-        Visualize Graph!
-      </v-btn>
       <v-dialog
-        v-if="sizeWarning() && nodeSet !== undefined"
+        v-if="configuration.sizeWarning && nodeSet !== undefined"
         v-model="dialog"
         persistent
         max-width="290"
       >
-        <template v-slot:activator="{ on, attrs }">
-          <v-btn
-            v-show="!visualize"
-            color="primary"
-            dark
-            v-bind="attrs"
-            v-on="on"
-          >
-            Visualize Graph?
-          </v-btn>
-        </template>
         <v-card>
           <v-card-title class="headline">
             Load Visualization?
@@ -84,6 +60,7 @@ export default {
   props: {
     initgraph: Object,
     payload: Object,
+    configuration: Object,
     startGraph: false,
   },
   nodes: Object,
@@ -109,7 +86,6 @@ export default {
       loading: true,
       loadingColor: 'primary',
       dialog: false,
-      visualize: true,
       skipVis: false,
     }
   }
@@ -124,7 +100,7 @@ export default {
     this.physicsOn = false
     this.hideEdges = false
     this.dialog = false
-    this.visualize = true
+    this.configuration.visualized = true
     this.skipVis = true
     if (!this.startGraph) {
       this.gid = this.$route.params["gid"]
@@ -138,7 +114,7 @@ export default {
     reload: function () {
       this.key = 0
       this.loading = true;
-      this.visualize = false
+      this.configuration.visualized = false
       this.gid = this.$route.params["gid"]
       if (this.gid !== undefined)
         this.init()
@@ -158,7 +134,7 @@ export default {
     },
     init: function () {
       if (!this.skipVis)
-        this.visualize = true;
+        this.configuration.visualized = true;
       this.$http.get("/getGraph?id=" + this.gid).then(response => {
         if (response !== undefined)
           return response.data
@@ -185,21 +161,30 @@ export default {
         if (graph["options"] !== undefined)
           this.mergeOptions(graph.options)
       }
+      this.checkSizeWarning()
       if (this.skipVis) {
         this.dialog = false;
-        this.visualize = false;
-      } else if (!this.sizeWarning) {
+        this.configuration.visualized = false;
+      } else if (!this.configuration.sizeWarning) {
         this.dialog = false;
-        this.visualize = true
+        this.configuration.visualized = true
       }
       this.drawGraph();
     },
     dialogResolve: function (vis) {
       this.dialog = false;
-      this.visualize = vis;
+      this.configuration.visualized = vis;
+      if(vis) {
+        this.$forceUpdate()
+        this.$emit("visualisationEvent")
+      }
+    },
+    isVisualized: function () {
+      return this.configuration.visualized
     },
     showDialogCheck: function () {
-      if (!this.sizeWarning) {
+      this.checkSizeWarning()
+      if (!this.configuration.sizeWarning) {
         this.dialogResolve(true)
       }
     },
@@ -220,7 +205,7 @@ export default {
       this.$emit('finishedEvent')
     },
     loadData: function (payload) {
-      this.visualize = true
+      this.configuration.visualized = true
       this.loading = true
       if (payload !== undefined && payload.skipVis !== undefined)
         this.skipVis = payload.skipVis
@@ -243,10 +228,6 @@ export default {
       if (payload) {
         if (payload.get !== undefined)
           this.getData(payload.get)
-          // else if (payload.info !== undefined)
-          //   this.loadInfo(payload.info)
-          // else if (payload.post !== undefined)
-        //   this.postData(payload.post)
         else if (payload.data !== undefined)
           this.setGraph(payload.data)
         else
@@ -254,20 +235,12 @@ export default {
       } else
         this.drawGraph()
     },
-    sizeWarning: function () {
-      let warn = (this.nodeSet !== undefined && this.nodeSet.getIds().length > 1000) || (this.edges !== undefined && this.edges.getIds().length > 1000)
-      return warn
+    checkSizeWarning: function () {
+      this.configuration.sizeWarning = (this.nodeSet !== undefined && this.nodeSet.getIds().length > 1000) || (this.edges !== undefined && this.edges.getIds().length > 1000)
     },
-    // loadInfo: function (info){
-    //   this.visualize = false
-    //   this.loading = true;
-    //   this.directed = false;
-    //   this.loadingColor = this.colors.bar.backend;
-    //   this.evalPostInfo(info)
-    // },
 
     postData: function (post) {
-      this.visualize = false
+      this.visualized = false
       this.loading = true;
       this.directed = false;
       this.loadingColor = this.colors.bar.backend;
@@ -301,38 +274,6 @@ export default {
 
     }
     ,
-// setNodeColors: function () {
-//   let nodesContainColor = false
-//   if (this.options.nodes.color !== undefined) {
-//     this.nodeSet.getIds().forEach(id => {
-//       if (this.nodeSet.get(id).color !== undefined)
-//         nodesContainColor = true;
-//     })
-//     if (!nodesContainColor) {
-//       for (let id in this.nodes) {
-//         this.nodes[id].color = this.options.nodes.color
-//       }
-//     }
-//   }
-//   this.updateNodes()
-// },
-//     loadMetagraph: function () {
-//       return new Promise(() => {
-//         if (this.metagraph === undefined) {
-//           this.$http.get("/getMetagraph").then(response => {
-//             console.log("set metagraph")
-//             this.metagraph = response.data
-//             return response.data
-//           }).catch(err => {
-//             this.loadingColor = this.colors.bar.error;
-//             console.log(err)
-//           })
-//         } else {
-//           return this.metagraph
-//         }
-//       })
-//     }
-//     ,
 
     getDefaults: function () {
       return {
@@ -439,8 +380,8 @@ export default {
       this.options.edges.hidden = this.hideEdges
       this.updateOptions();
     },
-    setPhysics: function(boolean){
-      this.physicsOn=boolean;
+    setPhysics: function (boolean) {
+      this.physicsOn = boolean;
       this.options.physics.enabled = this.physicsOn
       this.updateOptions()
     },
@@ -454,36 +395,36 @@ export default {
       this.options = options;
     },
 
-    setEdgeVisible: function(name, boolean){
+    setEdgeVisible: function (name, boolean) {
       let updates = Object.values(this.edges.get({
           filter: function (item) {
             return item.label === name
           }
         }
-      )).map(item=>{
-        return {id:item.id, hidden:!boolean, physics:!boolean}
+      )).map(item => {
+        return {id: item.id, hidden: !boolean, physics: !boolean}
       })
       this.edges.update(updates)
     },
     hideAllEdges: function (boolean) {
       let updates = Object.values(this.edges.get()).map(item => {
-        return {id: item.id, hidden: boolean, physics:boolean}
+        return {id: item.id, hidden: boolean, physics: boolean}
       })
       if (updates)
         this.edges.update(updates)
     },
-    setEdgesHidden: function(){
+    setEdgesHidden: function () {
       this.options.edges.hidden = true;
       this.updateOptions()
     },
-    toggleEdgeVisible : function (name){
+    toggleEdgeVisible: function (name) {
       let updates = Object.values(this.edges.get({
           filter: function (item) {
             return item.label === name
           }
         }
-      )).map(item=>{
-        return {id:item.id, hidden:!item.hidden, physics: !item.hidden}
+      )).map(item => {
+        return {id: item.id, hidden: !item.hidden, physics: !item.hidden}
       })
       this.edges.update(updates)
     },
@@ -500,6 +441,13 @@ export default {
 
       if (update)
         this.updateOptions()
+    },
+    visualizeNow: function () {
+      if (this.configuration.sizeWarning)
+        this.dialog = true
+      else {
+        this.dialogResolve(true)
+      }
     },
     toggleGroupVisibility: function (name, update) {
       this.hideGroupVisibility(name, !this.options.groups[name].hidden, update)

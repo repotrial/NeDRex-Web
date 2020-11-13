@@ -699,7 +699,7 @@
       persistent
       max-width="500"
     >
-      <v-card v-if="options !== undefined && options.type !== undefined">
+      <v-card v-if="optionDialog && options !== undefined && options.type !== undefined">
         <v-card-title class="headline">
           Organize {{ options.title }} Attributes
         </v-card-title>
@@ -710,7 +710,7 @@
           <v-tabs v-model="optionTab">
             <v-tabs-slider color="blue"></v-tabs-slider>
             <v-tab v-for="name in Object.keys(options.attributes)" :key="name">
-              {{ Object.keys(nodes)[name] }}
+              {{ Object.keys(options.type)[name] }}
             </v-tab>
           </v-tabs>
           <v-tabs-items>
@@ -1238,7 +1238,6 @@ export default {
       this.$refs.dialog.$forceUpdate()
     },
     edgeOptions: function () {
-      this.optionDialog = true;
       this.optionsTab = 0
       this.options["title"] = (Object.keys(this.edges).length > 1) ? "Edges" : "Edge"
 
@@ -1251,7 +1250,8 @@ export default {
         this.options.attributes[edge] = models;
       }
       console.log(this.options)
-      this.options["type"] = "edges";
+      this.options.type = "edges";
+      this.optionDialog = true;
     }
     ,
     dialogResolve(apply) {
