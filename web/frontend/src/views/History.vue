@@ -3,23 +3,10 @@
     <v-container>
       <v-card style="margin:5px">
         <v-card-title>History</v-card-title>
-        <v-container>
+        <v-container ref="history">
           <v-row>
             <v-col>
-              <v-switch v-model="sort" label="Show chronological"></v-switch>
-            </v-col>
-            <v-col>
-              <v-switch v-show="sort" v-model="showOtherUsers" label="Show parent graphs of other users"></v-switch>
-            </v-col>
-            <v-col>
-
-              <v-chip v-show="sort" @click="reverseList">Reverse sorting</v-chip>
-
-            </v-col>
-          </v-row>
-          <v-row>
-            <v-col>
-              <v-treeview :items="sort? (showOtherUsers ? list:list.filter((l)=>l.user === user)): history"
+              <v-treeview :items="options.chronological? (options.otherUsers ? list:list.filter((l)=>l.user === user)): history"
                           hoverable
                           activatable
                           :active="[current]"
@@ -78,7 +65,9 @@
 <script>
 export default {
   name: "History.vue",
-
+  props:{
+    options:Object,
+  },
   data() {
     return {
       history: [],

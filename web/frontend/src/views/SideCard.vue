@@ -2,8 +2,8 @@
   <v-container style="position: fixed; width: 25%">
 
     <v-card elevation="3" style="padding-top: 15px; overflow-y: auto; max-height: 75vh">
+      <v-card-title>Toolbox</v-card-title>
       <v-card ref="options" elevation="3" style="margin:15px">
-
         <v-list-item @click="show.options=!show.options">
           <v-list-item-title>
             <v-icon left>{{ show.options ? "far fa-minus-square" : "far fa-plus-square" }}</v-icon>
@@ -54,6 +54,62 @@
                   Visualize Graph
                 </v-chip>
               </template>
+            </template>
+            <template v-if="selectedTab===2">
+              <v-list-item>
+                <v-switch
+                  v-model="options.list.showAll"
+                  @click="$emit('reloadTablesEvent')"
+                  label="Show all Items"
+                >
+                </v-switch>
+              </v-list-item>
+              <v-divider></v-divider>
+              <v-list-item>
+                <v-chip
+                  v-on:click="$emit('graphModificationEvent','extend')"
+                  class="pa-3"
+                  outlined
+                >
+                  <v-icon left>fas fa-plus-circle</v-icon>
+                  Extend Graph
+                </v-chip>
+              </v-list-item>
+              <v-list-item>
+                <v-chip
+                  v-on:click="$emit('graphModificationEvent','collapse')"
+                  class="pa-3"
+                  outlined
+                >
+                  <v-icon left>fas fa-compress-alt</v-icon>
+                  Collapse Graph
+
+                </v-chip>
+              </v-list-item>
+              <v-list-item>
+                <v-chip
+                  icon
+                  outlined
+                  v-on:click="$emit('graphModificationEvent','subselect')"
+                >
+                  <v-icon left>fas fa-project-diagram</v-icon>
+                  Load Selection
+                </v-chip>
+              </v-list-item>
+
+            </template>
+            <template v-if="selectedTab===3">
+              <v-list-item>
+                <v-switch v-model="options.history.chronological" label="Show Chronological" @click="$forceUpdate(); $emit('historyReloadEvent')"></v-switch>
+              </v-list-item>
+              <v-list v-show="options.history.chronological">
+                <v-list-item>
+                  <v-switch v-model="options.history.otherUsers" label="Show parent graphs of other users" @click="$emit('historyReloadEvent')"></v-switch>
+                </v-list-item>
+                <v-list-item>
+                  <v-chip outlined @click="$emit('reverseSortingEvent')">Reverse Sorting</v-chip>
+                </v-list-item>
+              </v-list>
             </template>
           </v-container>
         </v-list>
@@ -358,7 +414,7 @@ export default {
       if (this.filters[this.filterEntity] === undefined)
         this.filters[this.filterEntity] = []
 
-      if (this.filters[this.filterEntity].filter(f=>(f.type === this.filterTypeModel && f.expression === this.filterModel)).length===0) {
+      if (this.filters[this.filterEntity].filter(f => (f.type === this.filterTypeModel && f.expression === this.filterModel)).length === 0) {
         this.filters[this.filterEntity].push(data)
       }
       this.filterTypeModel = ""

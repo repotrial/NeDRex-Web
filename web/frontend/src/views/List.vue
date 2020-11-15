@@ -11,12 +11,12 @@
             width="5"
             indeterminate
           ></v-progress-circular>
-<!--          <v-progress-linear-->
-<!--            color="primary"-->
-<!--            height="5"-->
-<!--            indeterminate-->
-<!--          ></v-progress-linear>-->
-<!--          <v-card-title>General Information</v-card-title>-->
+          <!--          <v-progress-linear-->
+          <!--            color="primary"-->
+          <!--            height="5"-->
+          <!--            indeterminate-->
+          <!--          ></v-progress-linear>-->
+          <!--          <v-card-title>General Information</v-card-title>-->
         </template>
         <v-container v-if="!loading">
           <v-card-title>General Information</v-card-title>
@@ -66,51 +66,14 @@
 
         </v-container>
       </v-card>
-      <v-card style="margin:5px">
-        <v-card-title>General Options</v-card-title>
-        <v-container>
-          <v-row>
-            <v-col>
-              <v-switch
-                inset
-                v-model="showAllLists"
-                label="Show all Items"
-              ></v-switch>
-            </v-col>
-            <v-col>
-              <v-chip
-                v-on:click="extendGraph()"
-                class="pa-3"
-                outlined
-              >
-                <v-icon left>fas fa-plus-circle</v-icon>
-                Extend Graph
-              </v-chip>
-            </v-col>
-            <v-col>
-              <v-chip
-                v-on:click="collapseGraph()"
-                class="pa-3"
-                outlined
-              >
-                <v-icon left>fas fa-compress-alt</v-icon>
-                Collapse Graph
-
-              </v-chip>
-            </v-col>
-            <v-col>
-              <v-chip
-                icon
-                outlined
-                v-on:click="loadSelection"
-              >
-                <v-icon left>fas fa-project-diagram</v-icon>
-                Load Selection
-              </v-chip>
-            </v-col>
-          </v-row>
-        </v-container>
-      </v-card>
+      <!--      <v-card style="margin:5px">-->
+      <!--        <v-card-title>General Options</v-card-title>-->
+      <!--        <v-container>-->
+      <!--          <v-row>-->
+      <!--            -->
+      <!--          </v-row>-->
+      <!--        </v-container>-->
+      <!--      </v-card>-->
       <v-card style="margin:5px;padding-bottom: 15px" :loading="loading">
         <template slot="progress">
           <v-card-title>Nodes</v-card-title>
@@ -120,12 +83,12 @@
             width="5"
             indeterminate
           ></v-progress-circular>
-<!--          <v-progress-linear-->
-<!--            color="primary"-->
-<!--            height="5"-->
-<!--            indeterminate-->
-<!--          ></v-progress-linear>-->
-<!--          <v-card-title>Nodes</v-card-title>-->
+          <!--          <v-progress-linear-->
+          <!--            color="primary"-->
+          <!--            height="5"-->
+          <!--            indeterminate-->
+          <!--          ></v-progress-linear>-->
+          <!--          <v-card-title>Nodes</v-card-title>-->
         </template>
         <template v-if="!loading">
           <v-card-title id="nodes" ref="nodeTitle" v-on:mouseenter="nodeOptionHover=true"
@@ -168,7 +131,7 @@
                 dense
                 class="elevation-1"
                 :headers="headers('nodes',Object.keys(nodes)[nodeTab])"
-                :items="showAllLists ? nodes[Object.keys(nodes)[nodeTab]]: filterSelected(nodes[Object.keys(nodes)[nodeTab]])"
+                :items="configuration.showAll ? nodes[Object.keys(nodes)[nodeTab]]: filterSelected(nodes[Object.keys(nodes)[nodeTab]])"
                 item-key="id"
                 :loading="nodeTabLoading"
                 loading-text="Loading... Please wait"
@@ -194,6 +157,58 @@
                     <v-divider></v-divider>
                     <v-container v-show="selectionMenu.nodes">
                       <v-row>
+                        <v-col>
+                          <v-chip
+                            v-on:click="selectAll('nodes',nodeTab)"
+                            class="pa-3"
+                            outlined
+                          >
+                            <v-icon left>
+                              fas fa-check-double
+                            </v-icon>
+                            Select All Nodes
+
+                          </v-chip>
+                        </v-col>
+                        <v-col>
+                          <v-chip
+                            v-on:click="selectEdges()"
+                            class="pa-3"
+                            outlined
+                          >
+                            <v-icon left>
+                              fas fa-check
+                            </v-icon>
+                            Select Needed Edges
+                          </v-chip>
+                        </v-col>
+                        <v-col>
+                          <v-chip
+                            v-on:click="deselectAll('nodes',nodeTab)"
+                            class="pa-3"
+                            outlined
+                          >
+                            <v-icon
+                              left
+                            >fas fa-ban
+                            </v-icon>
+                            Unselect All Nodes
+                          </v-chip>
+                        </v-col>
+                      </v-row>
+                      <v-divider></v-divider>
+                      <v-row>
+                        <v-col
+                        >
+                          <v-switch
+                            label="Suggestions"
+                            v-model="filters.nodes.suggestions"
+                            v-on:click="toggleSuggestions('nodes')"
+                          >
+                          </v-switch>
+                        </v-col>
+                      </v-row>
+                      <v-row>
                         <v-col
                           cols="2"
                           v-show="!filters.nodes.suggestions"
@@ -218,7 +233,7 @@
                           ></v-select>
                         </v-col>
                         <v-col
-                          :cols="(filters.nodes.suggestions)?10:7"
+                          :cols="(filters.nodes.suggestions)?12:9"
                         >
                           <v-text-field
                             clearable
@@ -265,56 +280,9 @@
                             </template>
                           </v-autocomplete>
                         </v-col>
-                        <v-col
-                          cols="2"
-                        >
-                          <v-switch
-                            label="Suggestions"
-                            v-model="filters.nodes.suggestions"
-                            v-on:click="toggleSuggestions('nodes')"
-                          >
-                          </v-switch>
-                        </v-col>
-                      </v-row>
-                      <v-row>
-                        <v-col>
-                          <v-chip
-                            v-on:click="selectAll('nodes',nodeTab)"
-                            class="pa-3"
-                            outlined
-                          >
-                            <v-icon left>
-                              fas fa-check-double
-                            </v-icon>
-                            Select All Nodes
 
-                          </v-chip>
-                        </v-col>
-                        <v-col>
-                          <v-chip
-                            v-on:click="selectEdges()"
-                            class="pa-3"
-                            outlined
-                          >
-                            <v-icon left>
-                              fas fa-check
-                            </v-icon>
-                            Select Needed Edges
-                          </v-chip>
-                        </v-col>
-                        <v-col>
-                          <v-chip
-                            v-on:click="deselectAll('nodes',nodeTab)"
-                            class="pa-3"
-                            outlined
-                          >
-                            <v-icon
-                            left
-                            >fas fa-ban</v-icon>
-                            Unselect All Nodes
-                          </v-chip>
-                        </v-col>
                       </v-row>
+
                     </v-container>
                   </v-card>
                 </template>
@@ -358,12 +326,12 @@
             width="5"
             indeterminate
           ></v-progress-circular>
-<!--          <v-progress-linear-->
-<!--            color="primary"-->
-<!--            height="5"-->
-<!--            indeterminate-->
-<!--          ></v-progress-linear>-->
-<!--          <v-card-title>Edges</v-card-title>-->
+          <!--          <v-progress-linear-->
+          <!--            color="primary"-->
+          <!--            height="5"-->
+          <!--            indeterminate-->
+          <!--          ></v-progress-linear>-->
+          <!--          <v-card-title>Edges</v-card-title>-->
         </template>
         <template v-if="!loading">
           <v-card-title id="edges" ref="edgeTitle" v-on:mouseenter="edgeOptionHover=true"
@@ -406,7 +374,7 @@
                 dense
                 class="elevation-1"
                 :headers="headers('edges',Object.keys(edges)[edgeTab])"
-                :items="showAllLists ? edges[Object.keys(edges)[edgeTab]] : filterSelected(edges[Object.keys(edges)[edgeTab]])"
+                :items="configuration.showAll ? edges[Object.keys(edges)[edgeTab]] : filterSelected(edges[Object.keys(edges)[edgeTab]])"
                 :search="filters.edges.query"
                 :custom-filter="filterEdge"
                 loading-text="Loading... Please wait"
@@ -432,6 +400,29 @@
                     <v-container
                       v-show="selectionMenu.edges">
                       <v-row>
+                        <v-col>
+                          <v-chip
+                            v-on:click="selectAll('edges',edgeTab)"
+                            class="pa-3"
+                            outlined
+                          >
+                            <v-icon left>fas fa-check-double</v-icon>
+                            Select All Edges
+                          </v-chip>
+                        </v-col>
+                        <v-col>
+                          <v-chip
+                            v-on:click="deselectAll('edges',edgeTab)"
+                            class="pa-3"
+                            outlined
+                          >
+                            <v-icon left>fas fa-ban</v-icon>
+                            Unselect All Edges
+                          </v-chip>
+                        </v-col>
+                      </v-row>
+                      <v-divider style="margin-bottom: 15px"></v-divider>
+                      <v-row>
                         <v-col
                           cols="2"
                         >
@@ -454,7 +445,7 @@
                           ></v-select>
                         </v-col>
                         <v-col
-                          cols="7"
+                          cols="9"
                         >
                           <v-text-field
                             clearable
@@ -466,28 +457,6 @@
                         <v-col
                           cols="2"
                         >
-                        </v-col>
-                      </v-row>
-                      <v-row>
-                        <v-col>
-                          <v-chip
-                            v-on:click="selectAll('edges',edgeTab)"
-                            class="pa-3"
-                            outlined
-                          >
-                            <v-icon left>fas fa-check-double</v-icon>
-                            Select All Edges
-                          </v-chip>
-                        </v-col>
-                        <v-col>
-                          <v-chip
-                            v-on:click="deselectAll('edges',edgeTab)"
-                            class="pa-3"
-                            outlined
-                          >
-                            <v-icon left>fas fa-ban</v-icon>
-                            Unselect All Edges
-                          </v-chip>
                         </v-col>
                       </v-row>
                     </v-container>
@@ -880,6 +849,11 @@
 
 <script>
 export default {
+  props: {
+    configuration: {
+      showAll: Boolean,
+    },
+  },
   name: "List",
   nodes: {},
   edges: {},
@@ -898,7 +872,7 @@ export default {
       edgeTab: this.edgeTab,
       selectAllModel: {nodes: {}, edges: {}},
       nodepage: {},
-      showAllLists: true,
+      // showAllLists: true,
       nodeOptionHover: false,
       edgeOptionHover: false,
       optionDialog: false,
@@ -942,7 +916,7 @@ export default {
       },
       filterNodeModel: null,
       loading: true,
-      nodeTabLoading:false,
+      nodeTabLoading: false,
       countMap: {nodes: {}, edges: {}}
     }
   },
@@ -1025,6 +999,19 @@ export default {
       this.nodepage = {}
     }
     ,
+    recieveEvent: function (event) {
+      switch (event) {
+        case "collapse":
+          this.collapseGraph()
+          break
+        case "extend":
+          this.extendGraph()
+          break
+        case "subselect":
+          this.loadSelection()
+          break
+      }
+    },
     loadList: function (data) {
       this.attributes = {};
       this.edges = {};
@@ -1059,11 +1046,23 @@ export default {
       }
     }
     ,
+    reloadTables: function () {
+      this.$nextTick().then(() => {
+        let tmp = this.nodeTab;
+        this.nodeTab = -1
+        this.nodeTab = tmp
+        tmp = this.edgeTab
+        this.edgeTab = -1
+        this.edgeTab = tmp
+        this.$refs.nodeTab.$forceUpdate()
+        this.$refs.edgeTab.$forceUpdate()
+      })
+    },
     countSelected: function (type, name) {
       return this[type][name].filter(item => item.selected).length
     },
     applySuggestion: function (val) {
-      this.nodeTabLoading =true
+      this.nodeTabLoading = true
       if (val !== undefined) {
         let nodes = this.nodes[Object.keys(this.nodes)[this.nodeTab]]
         this.suggestions.nodes.chosen = this.suggestions.nodes.data.filter(item => item.value === val).flatMap(item => item.ids);

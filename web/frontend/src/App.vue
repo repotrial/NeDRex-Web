@@ -57,12 +57,14 @@
                     v-on:loadSelectionEvent="loadSubSelection"
                     v-on:updateInfo="evalPostInfo"
                     v-on:printNotificationEvent="printNotification"
+                    :configuration="options.list"
               ></List>
             </v-container>
             <v-container v-show="selectedTabId===3" fluid>
               <History ref="history"
                        v-on:graphLoadEvent="loadGraph"
                        v-on:printNotificationEvent="printNotification"
+                       :options="options.history"
               ></History>
             </v-container>
             <v-snackbar v-model="notifications.style1.show" :multi-line="true" :timeout="notifications.style1.timeout">
@@ -137,6 +139,10 @@
                     v-on:updatePhysicsEvent="updatePhysics"
                     v-on:nodeDetailsEvent="nodeDetails"
                     v-on:applyEvent="applyEvent"
+                    v-on:reloadTablesEvent="reloadTables"
+                    v-on:graphModificationEvent="listModification"
+                    v-on:historyReloadEvent="historyReloadEvent"
+                    v-on:reverseSortingEvent="reverseHistorySorting"
                     :options="options"
                     :selected-tab="selectedTabId"
                     :filters="startFilters"
@@ -218,6 +224,8 @@ export default {
     initComponents: function () {
       this.options.start = {skipVis: true, onlyConnected: true, selectedElements: []}
       this.options.graph = {physics: false, visualized: false, sizeWarning: false}
+      this.options.list= {showAll:true}
+      this.options.history= {chronological:false, otherUsers:false}
     },
     loadSubSelection: function (selection) {
       this.loadGraph({data: selection})
@@ -272,6 +280,15 @@ export default {
         this.$refs.start.loadGraph(-1)
       if (this.selectedTabId === 1)
         this.$refs.graph.visualizeNow()
+    },
+    listModification: function(event){
+      this.$refs.list.recieveEvent(event)
+    },
+    reverseHistorySorting: function (){
+      this.$refs.history.reverseList()
+    },
+    historyReloadEvent: function(){
+      this.$refs.history.$forceUpdate()
     },
     nodeDetails: function (data) {
       let type = ""
@@ -330,6 +347,9 @@ export default {
       this.selectedTabId = tabid;
 
       this.adaptSidecard()
+    },
+    reloadTables: function(){
+      this.$refs.list.reloadTables()
     },
     adaptSidecard: function (param) {
       if (this.selectedTabId === 0) {
