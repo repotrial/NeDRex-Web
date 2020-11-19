@@ -177,8 +177,8 @@ public class RequestController {
 
     @RequestMapping(value = "/getGraphList", method = RequestMethod.GET)
     @ResponseBody
-    public String getGraphList(@RequestParam("id") String id, @RequestParam("cached") boolean cached) {
-        log.info("got request for " + id + " from cache=" + cached);
+    public String getGraphList(@RequestParam("id") String id) {
+        log.info("got request for " + id);
         try {
             StringBuilder out = new StringBuilder("{\"edges\":{");
             WebGraphList list = webGraphService.getList(id, null);

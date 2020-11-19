@@ -98,6 +98,13 @@ public class ProteinInteractsWithProtein extends RepoTrialEdge implements Serial
         return values;
     }
 
+    public void flipIds(){
+        this.id.flipIds();
+        String tmp = memberOne;
+        memberOne=memberTwo;
+        memberTwo=tmp;
+    }
+
 
     public String getMemberOne() {
         return memberOne;

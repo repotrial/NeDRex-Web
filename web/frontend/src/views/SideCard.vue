@@ -100,11 +100,13 @@
             </template>
             <template v-if="selectedTab===3">
               <v-list-item>
-                <v-switch v-model="options.history.chronological" label="Show Chronological" @click="$forceUpdate(); $emit('historyReloadEvent')"></v-switch>
+                <v-switch v-model="options.history.chronological" label="Show Chronological"
+                          @click="$forceUpdate(); $emit('historyReloadEvent')"></v-switch>
               </v-list-item>
               <v-list v-show="options.history.chronological">
                 <v-list-item>
-                  <v-switch v-model="options.history.otherUsers" label="Show parent graphs of other users" @click="$emit('historyReloadEvent')"></v-switch>
+                  <v-switch v-model="options.history.otherUsers" label="Show parent graphs of other users"
+                            @click="$emit('historyReloadEvent')"></v-switch>
                 </v-list-item>
                 <v-list-item>
                   <v-chip outlined @click="$emit('reverseSortingEvent')">Reverse Sorting</v-chip>
@@ -130,7 +132,7 @@
             <v-col>
               <v-list-item>
                 <v-chip outlined
-                        @click="show.filterAdd=!show.filterAdd; show.filterSelectDisabled=false, filterEntity=''">
+                        @click="show.filterAdd=!show.filterAdd; show.filterSelectDisabled=false; filterEntity=''">
                   <v-icon left>{{ show.filterAdd ? "fas fa-check" : "fas fa-filter" }}</v-icon>
                   {{ show.filterAdd ? "Done" : "Edit Filters" }}
                 </v-chip>
@@ -264,15 +266,37 @@
 
         <v-container v-if="show.detail">
           <v-list class="transparent">
-            <v-list-item
+            <template
               v-for="item in Object.keys(detailedObject)"
-              :key="item"
             >
-              <v-list-item-title>{{ item }}</v-list-item-title>
-              <v-list-item-subtitle class="text-right">
-                {{ detailedObject[item] }}
-              </v-list-item-subtitle>
-            </v-list-item>
+
+              <v-list-item :key="item">
+
+                <v-list-item-title>{{ item }}</v-list-item-title>
+                <v-list-item-subtitle class="text-right">
+                  <v-list v-if="typeof detailedObject[item] === 'object'">
+                    <v-list-item v-for="i in detailedObject[item]" :key="i">
+                      <v-chip outlined v-if="getUrl(item,i).length>0" @click="openExternal(item,i)"
+                              :title="getExternalSource(item,i)">
+                        {{ format(item, i) }}
+                        <v-icon right size="14px" :color="getExternalColor(item,i)">fas fa-external-link-alt</v-icon>
+                      </v-chip>
+                      <span v-else>{{ format(item, i) }}</span>
+                    </v-list-item>
+                  </v-list>
+                  <v-chip outlined v-else-if="getUrl(item,detailedObject[item]).length>0"
+                          @click="openExternal(item,detailedObject[item])"
+                          :title="getExternalSource(item,detailedObject[item])">
+                    {{ format(item, detailedObject[item]) }}
+                    <v-icon right size="14px" :color="getExternalColor(item,detailedObject[item])">fas
+                      fa-external-link-alt
+                    </v-icon>
+                  </v-chip>
+                  <span v-else >{{ format(item, detailedObject[item]) }}</span>
+                </v-list-item-subtitle>
+              </v-list-item>
+              <v-divider></v-divider>
+            </template>
           </v-list>
         </v-container>
 
@@ -356,6 +380,170 @@ export default {
         this.neighborNodes = [];
       }
     },
+    format: function (item, value) {
+      if (item === "primaryDomainId" || item === "primaryDomainIds" || item === "domainIds") {
+        console.log("Format value='" + value + "'")
+        let split = value.split(".")
+        switch (split[0]) {
+          case "entrez":
+            return split[1]
+          case "drugbank":
+            return split[1]
+          case "uniprot":
+            return split[1]
+          case "reactome":
+            return split[1]
+          case "mondo":
+            return split[1]
+          case "ncit":
+            return split[1]
+          case "mesh":
+            return split[1]
+          case "doid":
+            return split[1]
+          case "snomedct":
+            return split[1]
+          case "omim":
+            return split[1]
+          case "orpha":
+            return split[1]
+          case "umls":
+            return split[1]
+        }
+      }
+      if (item === "mapLocation") {
+        let split = value.split("p");
+        return "Chr" + split[0] + ":" + split[1]
+      }
+      return value
+    },
+    getExternalSource: function (item, value) {
+      if (item === "primaryDomainId" || item === "primaryDomainIds" || item === "domainIds") {
+        let split = value.split(".")
+        switch (split[0]) {
+          case "entrez":
+            return "Entrez"
+          case "drugbank":
+            return "DrugBank"
+          case "uniprot":
+            return "UniProt"
+          case "reactome":
+            return "Reactome"
+          case "mondo":
+            return "Mondo"
+          case "ncit":
+            return "NCIthesaurus"
+          case "mesh":
+            return "Mesh"
+          case "doid":
+            return "DiseaseOntology"
+          case "snomedct":
+            return "SnomedCT"
+          case "omim":
+            return "OMIM"
+          case "orpha":
+            return "orpha"
+          case "umls":
+            return "NCImetathesaurus"
+        }
+      }
+      if (item === "icd10")
+        return "ICD"
+      if (item === "approvedSymbol")
+        return "GeneCards"
+      if (item === "mapLocation")
+        return "UCSC"
+      if (item === "casNumber")
+        return "Molbase"
+      return value
+    },
+    getUrl: function (item, value) {
+      let url = '';
+      if (item === "primaryDomainId" || item === "primaryDomainIds" || item === "domainIds") {
+        let split = value.split(".")
+        switch (split[0]) {
+          case "entrez":
+            return 'https://www.ncbi.nlm.nih.gov/gene/' + split[1]
+          case "drugbank":
+            return 'https://go.drugbank.com/drugs/' + split[1]
+          case "uniprot":
+            return 'https://www.uniprot.org/uniprot/' + split[1]
+          case "reactome":
+            return 'https://reactome.org/content/detail/' + split[1]
+          case "mondo":
+            return "https://monarchinitiative.org/disease/MONDO:" + split[1]
+          case "ncit":
+            return "https://ncit.nci.nih.gov/ncitbrowser/ConceptReport.jsp?dictionary=NCI_Thesaurus&code=" + split[1]
+          case "mesh":
+            return "https://meshb.nlm.nih.gov/record/ui?ui=" + split[1]
+          case "doid":
+            return "https://disease-ontology.org/term/DOID%3" + split[1]
+          case "snomedct":
+            return "https://snomedbrowser.com/Codes/Details/" + split[1]
+          case "omim":
+            return "https://www.omim.org/entry/" + split[1]
+          case "orpha":
+            return "https://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=EN&Expert=" + split[1]
+          case "umls":
+            return "https://ncim.nci.nih.gov/ncimbrowser/ConceptReport.jsp?dictionary=NCI%20MetaThesaurus&code=" + split[1]
+        }
+      }
+      if (item === "icd10")
+        return "https://icd.who.int/browse10/2016/en#/" + value
+      if (item === "approvedSymbol")
+        return "https://www.genecards.org/cgi-bin/carddisp.pl?gene=" + value
+      if (item === "mapLocation")
+        return "http://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&position=" + value
+      if (item === "casNumber")
+        return "http://www.molbase.com/en/cas-" + value + ".html"
+      return url;
+    },
+    getExternalColor: function (item, value) {
+      if (item === "primaryDomainId" || item === "primaryDomainIds" || item === "domainIds") {
+        let split = value.split(".")
+        switch (split[0]) {
+          case "entrez":
+            return "#369"
+          case "drugbank":
+            return "#ff00b8"
+          case "uniprot":
+            return "#5caecd"
+          case "reactome":
+            return "#2F9EC2"
+          case "mondo":
+            return "#15556a"
+          case "ncit":
+            return "#9f1314"
+          case "mesh":
+            return "#20558a"
+          case "doid":
+            return "#073399"
+          case "snomedct":
+            return "#234979"
+          case "omim":
+            return "#333333"
+          case "orpha":
+            return "#d42c56"
+          case "umls":
+            return "#c31f40"
+        }
+      }
+      if (item === "icd10")
+        return "#006000"
+      if (item === "approvedSymbol")
+        return "#f07b05"
+      if (item === "mapLocation")
+        return "#00457c"
+      if (item === "casNumber")
+        return "#749bc4"
+      return "black"
+    }
+    ,
+    openExternal: function (item, i) {
+      window.open(this.getUrl(item, i), '_blank')
+    }
+    ,
+
     visualizeGraph: function () {
       // this.options.graph.visualized = true;
       this.$emit('applyEvent');
@@ -364,10 +552,12 @@ export default {
         this.show.options = true;
       })
 
-    },
+    }
+    ,
     setFiltering: function () {
       this.show.filterAdding = true;
-    },
+    }
+    ,
     loadFilter: function (data) {
       if (data !== undefined) {
         this.filters = data.filters
@@ -375,11 +565,13 @@ export default {
           this.filters = []
         this.filterName = data.name
       }
-    },
+    }
+    ,
     nodeDetails: function (id) {
       let str = id.split("_")
       this.$emit("nodeDetailsEvent", {prefix: str[0], id: str[1]})
-    },
+    }
+    ,
     loadDetails: function (data) {
       if (data.type === "node") {
         this.$http.get("getNodeDetails?name=" + data.name + "&id=" + data.id).then(response => {
@@ -403,11 +595,13 @@ export default {
           console.log(err)
         })
       }
-    },
+    }
+    ,
     clearModels: function () {
       this.filterModel = ""
       this.filterTypeModel = ""
-    },
+    }
+    ,
     saveFilter: function () {
       let data = {type: this.filterTypeModel, expression: this.filterModel};
 
@@ -419,16 +613,30 @@ export default {
       }
       this.filterTypeModel = ""
       this.filterModel = ""
-    },
+    }
+    ,
     removeFilter: function (idx) {
       this.filters[this.filterEntity].splice(idx, 1)
       this.$refs.filterTable.$forceUpdate()
-    },
-  },
+    }
+    ,
+  }
+  ,
 
 }
 </script>
 
-<style scoped>
+<style lang="sass">
+
+
+.span::-webkit-scrollbar
+  display: none
+
+
+
+.span
+  -ms-overflow-style: none
+  scrollbar-width: none
+
 
 </style>

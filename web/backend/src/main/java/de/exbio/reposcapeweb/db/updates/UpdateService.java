@@ -281,8 +281,9 @@ public class UpdateService {
                         proteinInteractsWithProteinService.importEdges();
                         break;
                     case "protein_encoded_by":
-                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, ProteinEncodedBy.attributes))
-                            updateSuccessful = proteinEncodedByService.submitUpdates(runEdgeUpdates(ProteinEncodedBy.class, c, proteinEncodedByService::mapIds));
+                        //TODO should work
+//                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, ProteinEncodedBy.attributes))
+//                            updateSuccessful = proteinEncodedByService.submitUpdates(runEdgeUpdates(ProteinEncodedBy.class, c, proteinEncodedByService::mapIds));
                         proteinEncodedByService.importEdges();
                         break;
                 }

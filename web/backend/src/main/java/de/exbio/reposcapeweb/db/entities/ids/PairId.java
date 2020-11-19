@@ -58,4 +58,11 @@ public class PairId implements Serializable {
     public String toString() {
         return "("+id1+","+id2+")";
     }
+
+    public PairId flipIds() {
+        int temp = id1;
+        id1 = id2;
+        id2 = temp;
+        return this;
+    }
 }

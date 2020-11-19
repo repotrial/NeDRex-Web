@@ -33,13 +33,13 @@ public class ProteinInteractsWithProteinService {
     private final ProteinService proteinService;
     private final GeneService geneService;
 
-    private final boolean directed = true;
+    private final boolean directed = false;
     private final HashMap<Integer, HashMap<Integer, Boolean>> proteins = new HashMap<>();
     private final HashMap<Integer, HashMap<Integer, Boolean>> genes = new HashMap<>();
 
     private final DataSource dataSource;
     private final String clearQuery = "DELETE FROM gene_interacts_with_gene";
-    private final String generationQuery = "INSERT IGNORE INTO gene_interacts_with_gene SELECT enc1.id_2, enc2.id_2 FROM protein_interacts_with_protein ppi INNER JOIN protein_encoded_by enc1 ON ppi.id_1=enc1.id_1 INNER JOIN protein_encoded_by enc2 on ppi.id_2=enc2.id_1;";
+    private final String generationQuery = "INSERT IGNORE INTO gene_interacts_with_gene SELECT enc1.id_2, enc2.id_2 FROM protein_interacts_with_protein ppi INNER JOIN protein_encoded_by enc1 ON ppi.id_1=enc1.id_1 INNER JOIN protein_encoded_by enc2 on ppi.id_2=enc2.id_1 WHERE enc1.id_2 <enc2.id_2 UNION ALL ( SELECT enc2.id_2, enc1.id_2 FROM protein_interacts_with_protein ppi INNER JOIN protein_encoded_by enc1 ON ppi.id_1=enc1.id_1 INNER JOIN protein_encoded_by enc2 on ppi.id_2=enc2.id_1 WHERE enc1.id_2 >enc2.id_2);";
     private PreparedStatement clearPs = null;
     private PreparedStatement generationPs = null;
 
@@ -59,14 +59,18 @@ public class ProteinInteractsWithProteinService {
             return false;
 
         if (updates.containsKey(UpdateOperation.Deletion))
-            proteinInteractsWithProteinRepository.deleteAll(proteinInteractsWithProteinRepository.findProteinInteractsWithProteinsByIdIn(updates.get(UpdateOperation.Deletion).keySet().stream().map(o -> (PairId) o).collect(Collectors.toSet())));
+            proteinInteractsWithProteinRepository.deleteAll(proteinInteractsWithProteinRepository.findProteinInteractsWithProteinsByIdIn(updates.get(UpdateOperation.Deletion).keySet().stream().map(o -> o.getId1() > o.getId2() ? o.flipIds() : o).collect(Collectors.toSet())));
 
         LinkedList<ProteinInteractsWithProtein> toSave = new LinkedList(updates.get(UpdateOperation.Insertion).values());
         int insertCount = toSave.size();
+        toSave.forEach(p -> {
+            if (p.getPrimaryIds().getId1() > p.getPrimaryIds().getId2())
+                p.flipIds();
+        });
         if (updates.containsKey(UpdateOperation.Alteration)) {
             HashMap<PairId, ProteinInteractsWithProtein> toUpdate = updates.get(UpdateOperation.Alteration);
 
-            proteinInteractsWithProteinRepository.findProteinInteractsWithProteinsByIdIn(new HashSet<>(toUpdate.keySet().stream().map(o -> (PairId) o).collect(Collectors.toSet()))).forEach(d -> {
+            proteinInteractsWithProteinRepository.findProteinInteractsWithProteinsByIdIn(new HashSet<>(toUpdate.keySet().stream().map(o -> o.getId1() <= o.getId2() ? o : o.flipIds()).collect(Collectors.toSet()))).forEach(d -> {
                 d.setValues(toUpdate.get(d.getPrimaryIds()));
                 toSave.add(d);
             });
@@ -104,9 +108,7 @@ public class ProteinInteractsWithProteinService {
     }
 
     public void importEdges() {
-        findAllProteins().forEach(edge -> {
-            importProteinEdge(edge.getPrimaryIds());
-        });
+        findAllProteins().forEach(edge -> importProteinEdge(edge.getPrimaryIds()));
 
         findAllGenes().forEach(edge -> importGeneEdge(edge.getPrimaryIds()));
     }
@@ -161,7 +163,7 @@ public class ProteinInteractsWithProteinService {
     }
 
     public HashSet<Integer> getGenes(int id) {
-        return proteins.get(id).entrySet().stream().filter(Map.Entry::getValue).map(Map.Entry::getKey).collect(Collectors.toCollection(HashSet::new));
+        return genes.get(id).entrySet().stream().filter(Map.Entry::getValue).map(Map.Entry::getKey).collect(Collectors.toCollection(HashSet::new));
     }
 
 
@@ -175,6 +177,14 @@ public class ProteinInteractsWithProteinService {
 
     public List<ProteinInteractsWithProtein> getProteins(Collection<PairId> ids) {
         return proteinInteractsWithProteinRepository.findProteinInteractsWithProteinsByIdIn(ids);
+    }
+
+    public HashMap<Integer, HashMap<Integer, Boolean>> getProteins() {
+        return proteins;
+    }
+
+    public HashMap<Integer, HashMap<Integer, Boolean>> getGenes() {
+        return genes;
     }
 
     public List<GeneInteractsWithGene> getGenes(Collection<PairId> ids) {
