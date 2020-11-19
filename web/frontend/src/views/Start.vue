@@ -38,10 +38,10 @@
 
         <v-container v-if="metagraph !== undefined">
           <v-row>
-            <v-col>
+            <v-col cols="6">
               <Graph ref="startgraph" :initgraph="{graph:metagraph,name:'metagraph'}" :startGraph="true" :configuration="{visualized:true}"></Graph>
             </v-col>
-            <v-col>
+            <v-col cols="2">
               <v-list v-model="nodeModel" ref="nodeSelector">
                 <v-card-title>Nodes</v-card-title>
                 <v-list-item v-for="item in nodes" :key="item.index">
@@ -55,7 +55,7 @@
               </v-list>
 
             </v-col>
-            <v-col>
+            <v-col cols="3">
               <v-list v-model="edgeModel">
                 <v-card-title>Edges</v-card-title>
                 <v-list-item v-for="item in edges" :key="item.index">

@@ -6,6 +6,7 @@ import de.exbio.reposcapeweb.communication.cache.Edge;
 import de.exbio.reposcapeweb.communication.cache.Graph;
 import de.exbio.reposcapeweb.communication.cache.Graphs;
 import de.exbio.reposcapeweb.communication.cache.Node;
+import de.exbio.reposcapeweb.communication.jobs.Job;
 import de.exbio.reposcapeweb.communication.requests.*;
 import de.exbio.reposcapeweb.db.DbCommunicationService;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
@@ -775,4 +776,19 @@ public class WebGraphService {
         });
     }
 
+    public void applyModuleJob(Job j, Set<Integer> moduleIds) {
+        Graph g = getCachedGraph(j.getBasisGraph());
+        Graph derived = g.clone(historyController.getGraphId());
+        cache.put(derived.getId(),derived);
+        if(j.getRequest().algorithm.equals("diamond")){
+            int nodeTypeId = Graphs.getNode(j.getRequest().params.get("type"));
+            HashSet<Integer> allNodes = new HashSet<>(derived.getNodes().get(nodeTypeId).keySet());
+            allNodes.addAll(moduleIds);
+            NodeFilter nf = new NodeFilter(nodeController.getFilter(Graphs.getNode(nodeTypeId)),allNodes);
+            derived.saveNodeFilter(Graphs.getNode(nodeTypeId),nf);
+            derived.addNodes(nodeTypeId,nf.toList(-1).stream().map(e->new Node(e.getNodeId(),e.getName())).collect(Collectors.toList()));
+        }
+        j.setDerivedGraph(derived.getId());
+        addGraphToHistory(j.getUserId(),derived.getId());
+    }
 }

@@ -1,9 +1,13 @@
 package de.exbio.reposcapeweb.tools;
 
 import de.exbio.reposcapeweb.communication.cache.Graph;
+import de.exbio.reposcapeweb.communication.cache.Graphs;
+import de.exbio.reposcapeweb.communication.jobs.Job;
 import de.exbio.reposcapeweb.db.entities.edges.ProteinInteractsWithProtein;
 import de.exbio.reposcapeweb.db.services.edges.ProteinInteractsWithProteinService;
 import de.exbio.reposcapeweb.utils.ProcessUtils;
+import de.exbio.reposcapeweb.utils.ReaderUtils;
+import de.exbio.reposcapeweb.utils.StringUtils;
 import de.exbio.reposcapeweb.utils.WriterUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,12 +15,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 
 @Service
 public class ToolService {
@@ -26,7 +30,10 @@ public class ToolService {
 
     private File scriptDir = new File("/home/andimajore/projects/RepoScapeWeb/web/resources/scripts");
     private File dataDir;
+    private File executor;
     private File diamond;
+
+    private HashMap<String, File> tempDirs = new HashMap<>();
 
     private Logger log = LoggerFactory.getLogger(ToolService.class);
 
@@ -102,30 +109,38 @@ public class ToolService {
 
 
     public void validateTools() {
-        if (!dataDir.exists()) {
-            dataDir.mkdirs();
-            prepareDiamond();
-        }
+        validateJobExecutor();
+
+        prepareDiamond();
         validateDiamond();
 
+    }
+
+    private void validateJobExecutor() {
+        executor = new File(env.getProperty("jobs.scripts.executor"));
+        if (!executor.exists()) {
+            log.error("JobExecutor executable was not found in config.");
+            new RuntimeException("Missing reference.");
+        }
     }
 
     private void prepareDiamond() {
         log.info("Setting up DIAMOnD");
         File diamondSetUpScript = new File(scriptDir, "diamond_setup.sh");
         diamond = new File(env.getProperty("path.tool.diamond"));
-        if (!diamondSetUpScript.exists()) {
+        log.info("Diamond path=" + diamond.getAbsolutePath());
+        if (!diamond.exists()) {
             log.error("DIAMOnD executable was not found in config. Please make sure it is referenced correctly! For installation you can use " + diamondSetUpScript.getAbsolutePath());
             new RuntimeException("Missing reference.");
         }
     }
 
-    private void prepareFiles() {
-        if (!dataDir.exists()) {
-            dataDir.mkdirs();
-            createInteractionFiles();
-        }
-    }
+//    private void prepareFiles(String jobId, String algorithm, HashMap<String, String> params, Graph g) {
+//        if (!dataDir.exists()) {
+//            dataDir.mkdirs();
+//            createInteractionFiles();
+//        }
+//    }
 
     public void createInteractionFiles() {
         File ggi = new File(dataDir, "gene_gene_interaction.pairs");
@@ -190,18 +205,86 @@ public class ToolService {
 //        }
 //
 //    }
+//
+//    public void executeDiamond(boolean genes, HashSet<Integer> seeds) {
+//        File seed = null;
+//        try {
+//            seed = Files.createTempFile("/tmp", "diamond_seeds").toFile();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        BufferedWriter bw = WriterUtils.getBasicWriter(seed);
+//        seeds.forEach(s -> {
+//            try {
+//                bw.write(s + "\n");
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        });
+//        try {
+//            bw.close();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        StringBuffer sb = new StringBuffer();
+//        try {
+//            ProcessUtils.executeProcessWait(new ProcessBuilder("python3", diamond.getAbsolutePath(), (genes ? new File(dataDir, "gene_gene_interaction.pairs") : new File(dataDir, "protein_protein_interaction.pairs")).getAbsolutePath(), seed.getAbsolutePath(), "100"), sb);
+//        } catch (IOException | InterruptedException e) {
+//            e.printStackTrace();
+//        }
+//        System.out.println(sb.toString().strip());
+//
+//    }
 
-    public void executeDiamond(boolean genes, HashSet<Integer> seeds) {
-        File seed = null;
-        try {
-            seed = Files.createTempFile("/tmp", "diamond_seeds").toFile();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        BufferedWriter bw = WriterUtils.getBasicWriter(seed);
-        seeds.forEach(s -> {
+    private void validateDiamond() {
+        //TODO get version info of diamond
+    }
+
+    public File getTempDir(String jobId) {
+        if (!tempDirs.containsKey(jobId))
             try {
-                bw.write(s + "\n");
+                File f = Files.createTempDirectory(new File("/tmp").toPath(), "reposcape_web_job_" + jobId).toFile();
+                //TODO ignored for dev
+//                f.deleteOnExit();
+                tempDirs.put(jobId, f);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        return tempDirs.get(jobId);
+    }
+
+
+    public String createCommand(String jobId, String algorithm, HashMap<String, String> params) {
+        String command = "localhost:8090/backend/api/finishedJob?id=" + jobId + " " + getTempDir(jobId).getAbsolutePath() + " ";
+        switch (algorithm) {
+            case "diamond": {
+                command += "diamond " +
+                        diamond.getAbsolutePath() + " " +
+                        (params.get("type").equals("gene") ? new File(dataDir, "gene_gene_interaction.pairs") : new File(dataDir, "protein_protein_interaction.pairs")).getAbsolutePath() + " " +
+                        "seeds.list " +
+                        100;
+                break;
+            }
+        }
+        return command;
+    }
+
+    public void prepareJobFiles(String jobId, String algorithm, HashMap<String, String> params, Graph g) {
+        switch (algorithm) {
+            case "diamond": {
+                File seed = new File(getTempDir(jobId), "seeds.list");
+                writeSeedFile(params.get("type"), seed, g);
+                break;
+            }
+        }
+
+    }
+
+    private void writeSeedFile(String type, File file, Graph g) {
+        BufferedWriter bw = WriterUtils.getBasicWriter(file);
+        g.getNodes().get(Graphs.getNode(type)).keySet().forEach(node -> {
+            try {
+                bw.write(node + "\n");
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -211,20 +294,49 @@ public class ToolService {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        StringBuffer sb = new StringBuffer();
+    }
+
+    public void executeJob(String command) {
+//        ProcessBuilder pb = new ProcessBuilder(executor.getAbsolutePath(), command);
         try {
-            ProcessUtils.executeProcessWait(new ProcessBuilder("python3", diamond.getAbsolutePath(), (genes ? new File(dataDir, "gene_gene_interaction.pairs") : new File(dataDir, "protein_protein_interaction.pairs")).getAbsolutePath(), seed.getAbsolutePath(), "100"), sb);
-        } catch (IOException | InterruptedException e) {
+            Runtime.getRuntime().exec(executor.getAbsolutePath()+" "+ command);
+//            pb.start();
+        } catch (IOException e) {
             e.printStackTrace();
         }
-        System.out.println(sb.toString().strip());
-
     }
 
-    private void validateDiamond() {
-        //TODO get version info of diamond
-
+    public HashMap<Integer, HashMap<String, Object>> getJobResults(Job j) {
+        HashMap<Integer, HashMap<String, Object>> results;
+        for (File f : getTempDir(j.getJobId()).listFiles()) {
+            if (j.getRequest().algorithm.equals("diamond") && f.getName().endsWith(".txt")) {
+                return readDiamondResults(f);
+            }
+        }
+        return null;
     }
 
+    public void clearDirectories(Job j){
+        getTempDir(j.getJobId()).delete();
+    }
 
+    private HashMap<Integer, HashMap<String, Object>> readDiamondResults(File f) {
+        HashMap<Integer, HashMap<String, Object>> results = new HashMap<>();
+        try {
+            BufferedReader br = ReaderUtils.getBasicReader(f);
+            String line = "";
+            while ((line = br.readLine()) != null) {
+                if (line.charAt(0) == '#')
+                    continue;
+                LinkedList<String> attrs = StringUtils.split(line, "\t");
+                int id = Integer.parseInt(attrs.get(1));
+                results.put(id, new HashMap<>());
+                results.get(id).put("rank", Integer.parseInt(attrs.get(0)));
+                results.get(id).put("p_hyper", attrs.get(2));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return results;
+    }
 }

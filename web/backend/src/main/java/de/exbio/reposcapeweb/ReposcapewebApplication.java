@@ -2,6 +2,7 @@ package de.exbio.reposcapeweb;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.exbio.reposcapeweb.communication.cache.Graphs;
+import de.exbio.reposcapeweb.communication.jobs.JobController;
 import de.exbio.reposcapeweb.communication.reponses.WebGraphService;
 import de.exbio.reposcapeweb.db.history.HistoryController;
 import de.exbio.reposcapeweb.db.io.ImportService;
@@ -39,24 +40,17 @@ public class ReposcapewebApplication {
     private final UpdateService updateService;
     private final Environment env;
     private final ImportService importService;
-    private final FilterService filterService;
-    private final DisorderService disorderService;
-    private final ObjectMapper objectMapper;
-    private final EdgeController edgeController;
     private final ToolService toolService;
-    private final WebGraphService graphService;
+    private final JobController jobController;
 
     @Autowired
-    public ReposcapewebApplication(ObjectMapper objectMapper, EdgeController edgeController, DisorderService disorderService, UpdateService updateService, Environment environment, ImportService importService, FilterService filterService, ToolService toolService, WebGraphService graphService) {
+    public ReposcapewebApplication(JobController jobController,ObjectMapper objectMapper, EdgeController edgeController, DisorderService disorderService, UpdateService updateService, Environment environment, ImportService importService, FilterService filterService, ToolService toolService, WebGraphService graphService) {
         this.updateService = updateService;
         this.importService = importService;
         this.env = environment;
-        this.filterService = filterService;
-        this.disorderService = disorderService;
-        this.objectMapper = objectMapper;
-        this.edgeController = edgeController;
         this.toolService=toolService;
-        this.graphService = graphService;
+        this.jobController=jobController;
+
     }
 
 
@@ -67,6 +61,7 @@ public class ReposcapewebApplication {
     public void postConstruct() {
         toolService.validateTools();
         Graphs.setUp();
+        jobController.importJobsHistory();
         importService.importHistory();
         importService.importNodeData();
         log.debug("Current RAM usage: " + (int) ((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024)

@@ -1,18 +1,8 @@
 package de.exbio.reposcapeweb.configs;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.jdbc.datasource.init.DataSourceInitializer;
-import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.web.filter.CharacterEncodingFilter;
-
-import javax.sql.DataSource;
 
 
 /**
@@ -24,8 +14,14 @@ import javax.sql.DataSource;
 @Configuration
 @EnableAsync
 @EnableScheduling
+//@EnableRqueue
 public class SpringConfig {
 
+
+//    @Bean
+//    public RedisConnectionFactory redisConnectionFactory(){
+//        // return a redis connection factory
+//    }
 
 //    /**
 //     * A Bean for the ObjectMapper instance, but currently no need for use.

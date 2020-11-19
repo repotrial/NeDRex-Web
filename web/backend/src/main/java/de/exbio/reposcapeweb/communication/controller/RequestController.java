@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.exbio.reposcapeweb.communication.cache.Graph;
 import de.exbio.reposcapeweb.communication.cache.Graphs;
+import de.exbio.reposcapeweb.communication.jobs.JobController;
+import de.exbio.reposcapeweb.communication.jobs.JobRequest;
 import de.exbio.reposcapeweb.communication.reponses.SelectionResponse;
 import de.exbio.reposcapeweb.communication.reponses.WebGraph;
 import de.exbio.reposcapeweb.communication.reponses.WebGraphList;
@@ -39,15 +41,17 @@ public class RequestController {
     private final EdgeController edgeController;
     private final NodeController nodeController;
     private final HistoryController historyController;
+    private final JobController jobController;
 
     @Autowired
-    public RequestController(DrugService drugService, ObjectMapper objectMapper, WebGraphService webGraphService, EdgeController edgeController, NodeController nodeController, HistoryController historyController) {
+    public RequestController(DrugService drugService, ObjectMapper objectMapper, WebGraphService webGraphService, EdgeController edgeController, NodeController nodeController, HistoryController historyController, JobController jobController) {
         this.drugService = drugService;
         this.objectMapper = objectMapper;
         this.webGraphService = webGraphService;
         this.edgeController = edgeController;
         this.nodeController = nodeController;
         this.historyController = historyController;
+        this.jobController = jobController;
     }
 
 
@@ -165,10 +169,10 @@ public class RequestController {
 
     @RequestMapping(value = "/getConnectionGraph", method = RequestMethod.GET)
     @ResponseBody
-    public String getConnectionGraph(@RequestParam("gid") String gid){
-        try{
+    public String getConnectionGraph(@RequestParam("gid") String gid) {
+        try {
             return objectMapper.writeValueAsString(webGraphService.getConnectionGraph(gid));
-        }catch (JsonProcessingException e) {
+        } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
         return null;
@@ -244,16 +248,16 @@ public class RequestController {
 
     @RequestMapping(value = "/archiveHistory", method = RequestMethod.GET)
     @ResponseBody
-    public void archiveHistory(@RequestParam("uid") String uid, @RequestParam("gid") String gid){
-        log.info(uid+" is saving graph "+gid);
-        webGraphService.addGraphToHistory(uid,gid);
+    public void archiveHistory(@RequestParam("uid") String uid, @RequestParam("gid") String gid) {
+        log.info(uid + " is saving graph " + gid);
+        webGraphService.addGraphToHistory(uid, gid);
     }
 
     @RequestMapping(value = "/getGraph", method = RequestMethod.POST)
     @ResponseBody
     public String getGraph(@RequestBody GraphRequest request) {
         try {
-            log.info("Requested a graph " + objectMapper.writeValueAsString(request)+" uid="+request.uid);
+            log.info("Requested a graph " + objectMapper.writeValueAsString(request) + " uid=" + request.uid);
             String out = objectMapper.writeValueAsString(webGraphService.getWebGraph(request));
             log.info("Graph sent");
             return out;
@@ -265,7 +269,7 @@ public class RequestController {
 
     @RequestMapping(value = "/getUser", method = RequestMethod.GET)
     @ResponseBody
-    public String getUser(@RequestParam("user") String userId){
+    public String getUser(@RequestParam("user") String userId) {
         try {
             return objectMapper.writeValueAsString(historyController.getUserHistory(userId));
         } catch (JsonProcessingException e) {
@@ -295,6 +299,19 @@ public class RequestController {
             e.printStackTrace();
         }
         return null;
+    }
+
+    @RequestMapping(value = "/finishedJob", method = RequestMethod.GET)
+    @ResponseBody
+    public void finishedJob(@RequestParam("id") String id) {
+        log.info("Job "+id+" was just finished.");
+        jobController.finishJob(id);
+    }
+
+    @RequestMapping(value = "/submitJob", method = RequestMethod.POST)
+    @ResponseBody
+    public String submitJob(@RequestBody JobRequest request) {
+        return jobController.registerJob(request).getJobId();
     }
 
 }
