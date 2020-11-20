@@ -527,12 +527,15 @@ public class WebGraphService {
 
                 } else if (nodeIds.first.equals(nodeIds.second)) {
                     g.getNodes().get(nodeIds.first).keySet().forEach(nodeId1 -> {
-                        edgeController.getEdges(edgeId, nodeIds.first, nodeId1).forEach(nodeId2 -> {
-                            edges.add(!edgeController.getDirection(edgeId) & nodeId1 > nodeId2 ? new Edge(nodeId2, nodeId1) : new Edge(nodeId1, nodeId2));
-                            if (!g.getNodes().get(nodeIds.second).containsKey(nodeId2)) {
-                                nodes.add(nodeId2);
-                            }
-                        });
+                        try {
+                            edgeController.getEdges(edgeId, nodeIds.first, nodeId1).forEach(nodeId2 -> {
+                                edges.add(!edgeController.getDirection(edgeId) & nodeId1 > nodeId2 ? new Edge(nodeId2, nodeId1) : new Edge(nodeId1, nodeId2));
+                                if (!g.getNodes().get(nodeIds.second).containsKey(nodeId2)) {
+                                    nodes.add(nodeId2);
+                                }
+                            });
+                        } catch (NullPointerException ignore) {
+                        }
 
                     });
                     HashSet<Integer> allNodes = new HashSet<>(nodes);
@@ -779,16 +782,16 @@ public class WebGraphService {
     public void applyModuleJob(Job j, Set<Integer> moduleIds) {
         Graph g = getCachedGraph(j.getBasisGraph());
         Graph derived = g.clone(historyController.getGraphId());
-        cache.put(derived.getId(),derived);
-        if(j.getRequest().algorithm.equals("diamond")){
+        cache.put(derived.getId(), derived);
+        if (j.getRequest().algorithm.equals("diamond")) {
             int nodeTypeId = Graphs.getNode(j.getRequest().params.get("type"));
             HashSet<Integer> allNodes = new HashSet<>(derived.getNodes().get(nodeTypeId).keySet());
             allNodes.addAll(moduleIds);
-            NodeFilter nf = new NodeFilter(nodeController.getFilter(Graphs.getNode(nodeTypeId)),allNodes);
-            derived.saveNodeFilter(Graphs.getNode(nodeTypeId),nf);
-            derived.addNodes(nodeTypeId,nf.toList(-1).stream().map(e->new Node(e.getNodeId(),e.getName())).collect(Collectors.toList()));
+            NodeFilter nf = new NodeFilter(nodeController.getFilter(Graphs.getNode(nodeTypeId)), allNodes);
+            derived.saveNodeFilter(Graphs.getNode(nodeTypeId), nf);
+            derived.addNodes(nodeTypeId, nf.toList(-1).stream().map(e -> new Node(e.getNodeId(), e.getName())).collect(Collectors.toList()));
         }
         j.setDerivedGraph(derived.getId());
-        addGraphToHistory(j.getUserId(),derived.getId());
+        addGraphToHistory(j.getUserId(), derived.getId());
     }
 }
