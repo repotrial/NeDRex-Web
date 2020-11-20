@@ -227,13 +227,14 @@ public class UpdateService {
             attributeDefinition = getAttributeNames(ReaderUtils.getUrlContent(new URL(env.getProperty("url.api.db") + first + "/attributes")));
             if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, ProteinEncodedBy.attributes))
                 updateSuccessful = proteinEncodedByService.submitUpdates(runEdgeUpdates(ProteinEncodedBy.class, collections.get(first), proteinEncodedByService::mapIds));
+            proteinEncodedByService.importEdges();
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
 
-        if (updateSuccessful)
-            log.debug("Update execution for " + first + ": Success!");
-        else
+        if (!updateSuccessful)
+//            log.debug("Update execution for " + first + ": Success!");
+//        else
             log.warn("Update execution for " + first + ": Error!");
 
         for (String k : collections.keySet()) {
@@ -280,12 +281,12 @@ public class UpdateService {
                             updateSuccessful = proteinInteractsWithProteinService.submitUpdates(runEdgeUpdates(ProteinInteractsWithProtein.class, c, proteinInteractsWithProteinService::mapProteinIds));
                         proteinInteractsWithProteinService.importEdges();
                         break;
-                    case "protein_encoded_by":
+//                    case "protein_encoded_by":
                         //TODO should work
 //                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, ProteinEncodedBy.attributes))
 //                            updateSuccessful = proteinEncodedByService.submitUpdates(runEdgeUpdates(ProteinEncodedBy.class, c, proteinEncodedByService::mapIds));
-                        proteinEncodedByService.importEdges();
-                        break;
+//                        proteinEncodedByService.importEdges();
+//                        break;
                 }
                 if (updateSuccessful)
                     log.debug("Update execution for " + k + ": Success!");

@@ -44,12 +44,12 @@ public class ReposcapewebApplication {
     private final JobController jobController;
 
     @Autowired
-    public ReposcapewebApplication(JobController jobController,ObjectMapper objectMapper, EdgeController edgeController, DisorderService disorderService, UpdateService updateService, Environment environment, ImportService importService, FilterService filterService, ToolService toolService, WebGraphService graphService) {
+    public ReposcapewebApplication(JobController jobController, ObjectMapper objectMapper, EdgeController edgeController, DisorderService disorderService, UpdateService updateService, Environment environment, ImportService importService, FilterService filterService, ToolService toolService, WebGraphService graphService) {
         this.updateService = updateService;
         this.importService = importService;
         this.env = environment;
-        this.toolService=toolService;
-        this.jobController=jobController;
+        this.toolService = toolService;
+        this.jobController = jobController;
 
     }
 
@@ -64,8 +64,7 @@ public class ReposcapewebApplication {
         jobController.importJobsHistory();
         importService.importHistory();
         importService.importNodeData();
-        log.debug("Current RAM usage: " + (int) ((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024)
-                + "MB");
+
 
         if (Boolean.parseBoolean(env.getProperty("update.onstartup"))) {
             updateService.scheduleDataUpdate();
@@ -73,9 +72,9 @@ public class ReposcapewebApplication {
             importService.importEdges(false);
             log.warn("Startup Database update is deactivated! Activate it by setting 'update.onstartup=true' in the application.properties.");
         }
-
+        log.debug("Current RAM usage: " + (int) ((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024)
+                + "MB");
         toolService.createInteractionFiles();
-
 
 
         log.debug("Current RAM usage: " + (int) ((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024)

@@ -37,24 +37,35 @@ public class DisorderComorbidWithDisorderService {
             return false;
 
         if (updates.containsKey(UpdateOperation.Deletion))
-            disorderComorbidWithDisorderRepository.deleteAll(disorderComorbidWithDisorderRepository.findDisorderComorbidWithDisordersByIdIn(updates.get(UpdateOperation.Deletion).keySet().stream().map(o -> (PairId) o).collect(Collectors.toSet())));
+            disorderComorbidWithDisorderRepository.deleteAll(disorderComorbidWithDisorderRepository.findDisorderComorbidWithDisordersByIdIn(updates.get(UpdateOperation.Deletion).keySet().stream().map(o -> o.getId1()>o.getId2()?o.flipIds():o).collect(Collectors.toSet())));
 
         LinkedList<DisorderComorbidWithDisorder> toSave = new LinkedList(updates.get(UpdateOperation.Insertion).values());
+        toSave.forEach(dd->{
+            PairId p = dd.getPrimaryIds();
+            if(p.getId1()>p.getId2())
+                dd.flipIds();
+        });
         int insertCount = toSave.size();
+
         if (updates.containsKey(UpdateOperation.Alteration)) {
             HashMap<PairId, DisorderComorbidWithDisorder> toUpdate = updates.get(UpdateOperation.Alteration);
 
-            disorderComorbidWithDisorderRepository.findDisorderComorbidWithDisordersByIdIn(new HashSet<>(toUpdate.keySet().stream().map(o -> (PairId) o).collect(Collectors.toSet()))).forEach(d -> {
+            disorderComorbidWithDisorderRepository.findDisorderComorbidWithDisordersByIdIn(new HashSet<>(toUpdate.keySet().stream().map(o -> o.getId1()>o.getId2()?o.flipIds():o).collect(Collectors.toSet()))).forEach(d -> {
                 d.setValues(toUpdate.get(d.getPrimaryIds()));
                 toSave.add(d);
             });
         }
+
         disorderComorbidWithDisorderRepository.saveAll(toSave);
         log.debug("Updated comorbid_with_disorder table: " + insertCount + " Inserts, " + (updates.containsKey(UpdateOperation.Alteration) ? updates.get(UpdateOperation.Alteration).size() : 0) + " Changes, " + (updates.containsKey(UpdateOperation.Deletion) ? updates.get(UpdateOperation.Deletion).size() : 0) + " Deletions identified!");
         return true;
     }
 
     public List<DisorderComorbidWithDisorder> getEntries(Collection<PairId> toFind) {
+        toFind.forEach(p->{
+            if(p.getId1()>p.getId1())
+                p.flipIds();
+        });
         return disorderComorbidWithDisorderRepository.findDisorderComorbidWithDisordersByIdIn(toFind);
     }
 
@@ -100,6 +111,8 @@ public class DisorderComorbidWithDisorderService {
     }
 
     public Optional<DisorderComorbidWithDisorder> find(PairId id) {
+        if(id.getId1()>id.getId2())
+            id.flipIds();
         return disorderComorbidWithDisorderRepository.findById(id);
     }
 

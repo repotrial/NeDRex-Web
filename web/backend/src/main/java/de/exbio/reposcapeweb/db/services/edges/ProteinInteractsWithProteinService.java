@@ -176,6 +176,10 @@ public class ProteinInteractsWithProteinService {
     }
 
     public List<ProteinInteractsWithProtein> getProteins(Collection<PairId> ids) {
+        ids.forEach(p->{
+            if(p.getId1()>p.getId2())
+                p.flipIds();
+        });
         return proteinInteractsWithProteinRepository.findProteinInteractsWithProteinsByIdIn(ids);
     }
 
@@ -188,14 +192,22 @@ public class ProteinInteractsWithProteinService {
     }
 
     public List<GeneInteractsWithGene> getGenes(Collection<PairId> ids) {
+        ids.forEach(p->{
+            if(p.getId1()>p.getId1())
+                p.flipIds();
+        });
         return geneInteractsWithGeneRepository.findGeneInteractsWithGeneByIdIn(ids);
     }
 
     public Optional<GeneInteractsWithGene> findGene(PairId id) {
+        if(id.getId1()>id.getId2())
+            id.flipIds();
         return geneInteractsWithGeneRepository.findById(id);
     }
 
     public Optional<ProteinInteractsWithProtein> findProtein(PairId id) {
+        if(id.getId1()>id.getId2())
+            id.flipIds();
         return proteinInteractsWithProteinRepository.findById(id);
     }
 

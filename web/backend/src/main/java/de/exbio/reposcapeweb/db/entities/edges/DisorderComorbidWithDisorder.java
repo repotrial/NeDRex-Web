@@ -43,16 +43,15 @@ public class DisorderComorbidWithDisorder extends RepoTrialEdge implements Seria
 
     @Transient
     @JsonIgnore
-    public final static String[] allAttributes = new String[]{"id","idOne", "idTwo", "memberOne","memberTwo", "phiCor","rrGeoMean","rr12","rr21","type"};
+    public final static String[] allAttributes = new String[]{"id", "idOne", "idTwo", "memberOne", "memberTwo", "phiCor", "rrGeoMean", "rr12", "rr21", "type"};
 
     @Transient
     @JsonIgnore
-    public final static String[] allAttributeTypes = new String[]{"numeric","numeric", "numeric", "","", "numeric","numeric","numeric","numeric",""};
+    public final static String[] allAttributeTypes = new String[]{"numeric", "numeric", "numeric", "", "", "numeric", "numeric", "numeric", "numeric", ""};
 
     @Transient
     @JsonIgnore
     public final static boolean[] idAttributes = new boolean[]{true, true, true, true, true, false, false, false, false, false};
-
 
 
     @Transient
@@ -111,31 +110,31 @@ public class DisorderComorbidWithDisorder extends RepoTrialEdge implements Seria
     }
 
     public static String[] getListAttributes() {
-        return new String[]{"id","idOne", "idTwo", "type", "phiCor","rrGeoMean","rr12","rr21"};
+        return new String[]{"id", "idOne", "idTwo", "type", "phiCor", "rrGeoMean", "rr12", "rr21"};
     }
 
     @Override
     public HashMap<String, Object> getAsMap() {
-        HashMap<String,Object> values = new HashMap<>();
-        values.put("rr21",getRr21());
-        values.put("rr12",getRr12());
-        values.put("type",getType());
-        values.put("memberOne",getMemberOne());
-        values.put("memberTwo",getMemberTwo());
-        values.put("idOne",id.getId1());
-        values.put("idTwo",id.getId2());
-        values.put("rrGeoMean",getRrGeoMean());
-        values.put("phiCor",getPhiCor());
-        values.put("id",id.getId1()+"-"+id.getId2());
+        HashMap<String, Object> values = new HashMap<>();
+        values.put("rr21", getRr21());
+        values.put("rr12", getRr12());
+        values.put("type", getType());
+        values.put("memberOne", getMemberOne());
+        values.put("memberTwo", getMemberTwo());
+        values.put("idOne", id.getId1());
+        values.put("idTwo", id.getId2());
+        values.put("rrGeoMean", getRrGeoMean());
+        values.put("phiCor", getPhiCor());
+        values.put("id", id.getId1() + "-" + id.getId2());
         return values;
     }
 
     @Override
     public HashMap<String, Object> getAsMap(HashSet<String> attributes) {
-        HashMap<String,Object> values = new HashMap<>();
-        getAsMap().forEach((k,v)->{
-            if(attributes.contains(k))
-                values.put(k,v);
+        HashMap<String, Object> values = new HashMap<>();
+        getAsMap().forEach((k, v) -> {
+            if (attributes.contains(k))
+                values.put(k, v);
         });
         return values;
     }
@@ -143,6 +142,16 @@ public class DisorderComorbidWithDisorder extends RepoTrialEdge implements Seria
     @Override
     public PairId getPrimaryIds() {
         return id;
+    }
+
+    public void flipIds() {
+        this.id.flipIds();
+        String tmp = memberOne;
+        memberOne = memberTwo;
+        Float tempf = rr12;
+        rr12 = rr21;
+        rr12 = tempf;
+        memberTwo = tmp;
     }
 
     public void setId(PairId id) {
