@@ -2,6 +2,8 @@ package de.exbio.reposcapeweb.db.history;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonSetter;
+import de.exbio.reposcapeweb.communication.jobs.Job;
 import de.exbio.reposcapeweb.communication.reponses.WebGraphInfo;
 
 import javax.persistence.*;
@@ -36,6 +38,9 @@ public class GraphHistory {
     private HashMap<String, Integer> edgeMap;
     @Transient
     private HashMap<String, Integer> nodeMap;
+
+    @Transient
+    private Job.JobState jobState = null;
 
     public GraphHistory() {
         derived = new LinkedList<>();
@@ -123,10 +128,20 @@ public class GraphHistory {
         out.put("nodes", nodeMap);
         out.put("created", created.toEpochSecond(ZoneOffset.ofTotalSeconds(0)));
         out.put("comment", comment);
+        if(jobState!=null)
+            out.put("state",jobState.name());
         if (cascade) {
             ArrayList<Object> children = derived.stream().map(g -> g.toMap(true)).collect(Collectors.toCollection(ArrayList::new));
             out.put("children", children);
         }
         return out;
+    }
+
+    public Job.JobState getJobState() {
+        return jobState;
+    }
+
+    public void setJobState(Job.JobState jobState) {
+        this.jobState = jobState;
     }
 }

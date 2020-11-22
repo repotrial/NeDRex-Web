@@ -248,4 +248,12 @@ public class DrugHasTargetService {
     public boolean isDirected() {
         return directed;
     }
+
+    public Long getGeneCount() {
+        return drugHasTargetGeneRepository.count();
+    }
+
+    public Long getProteinCount() {
+        return drugHasTargetProteinRepository.count();
+    }
 }

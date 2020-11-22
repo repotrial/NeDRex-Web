@@ -143,4 +143,8 @@ public class DrugHasIndicationService {
         return directed;
     }
 
+    public Long getCount() {
+        return drugHasIndicationRepository.count();
+    }
+
 }

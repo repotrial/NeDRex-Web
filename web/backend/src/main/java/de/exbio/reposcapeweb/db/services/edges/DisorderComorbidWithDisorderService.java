@@ -129,4 +129,8 @@ public class DisorderComorbidWithDisorderService {
     public boolean isDirected() {
         return directed;
     }
+
+    public Long getCount() {
+        return disorderComorbidWithDisorderRepository.count();
+    }
 }

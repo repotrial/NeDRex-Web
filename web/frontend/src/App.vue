@@ -58,6 +58,7 @@
                     v-on:updateInfo="evalPostInfo"
                     v-on:printNotificationEvent="printNotification"
                     v-on:reloadSide="reloadSide"
+                    v-on:addJobGraphId="registerJobGraphId"
                     :configuration="options.list"
               ></List>
             </v-container>
@@ -145,6 +146,7 @@
                     v-on:historyReloadEvent="historyReloadEvent"
                     v-on:reverseSortingEvent="reverseHistorySorting"
                     v-on:selectionEvent="listSelectionEvent"
+                    v-on:executeAlgorithmEvent="executeAlgorithm"
                     :options="options"
                     :selected-tab="selectedTabId"
                     :filters="startFilters"
@@ -214,6 +216,7 @@ export default {
     },
     initGraphs: function () {
       this.$http.get("/getMetagraph").then(response => {
+        console.log(response.data)
         this.metagraph = response.data;
         this.$refs.list.setMetagraph(this.metagraph)
       }).catch(err => {
@@ -287,6 +290,13 @@ export default {
         }).catch(err => console.log(err))
 
       }
+    },
+    registerJobGraphId: function(newGraphId){
+      console.log("registering Job with graphId "+newGraphId);
+      // this.$refs.side.reloadJobs()
+    },
+    executeAlgorithm: function (algorithm, params){
+      this.$refs.list.executeAlgorithm(algorithm,params)
     },
     applyEvent: function () {
       if (this.selectedTabId === 0)

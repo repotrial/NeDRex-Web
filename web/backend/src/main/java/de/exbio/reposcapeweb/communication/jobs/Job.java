@@ -102,8 +102,13 @@ public class Job {
         return derivedGraph;
     }
 
-    enum JobState {
+    public enum JobState {
         INITIALIZED, QUEUED, EXECUTING, DONE
     }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
 
 }

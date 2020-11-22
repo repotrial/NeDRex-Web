@@ -10,4 +10,6 @@ public abstract class NodeService {
     public abstract String[] getListAttributes();
 
     public abstract String getName(int id);
+
+    public abstract Long getCount();
 }

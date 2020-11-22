@@ -316,55 +316,119 @@
         </v-container>
       </v-card>
 
-      <v-card ref="detail" elevation="3" style="margin:15px" v-if="selectedTab===2 && detailedObject !== undefined">
+      <template v-if="selectedTab===2">
+        <v-card elevation="3" style="margin:15px">
+          <v-list-item @click="show.algorithms=!show.algorithms">
+            <v-list-item-title>
+              <v-icon left>{{ show.algorithms ? "far fa-minus-square" : "far fa-plus-square" }}</v-icon>
+              Algorithms
+            </v-list-item-title>
+          </v-list-item>
+          <v-container v-show="show.algorithms">
+            <v-row>
+              <v-col cols="6">
+                <v-select
+                  v-model="algorithms.categoryModel"
+                  :items="algorithms.categories"
+                  item-text="label"
+                  item-value="id"
+                  label="Algorithm Category"
+                >
+                </v-select>
+              </v-col>
+              <v-col cols="6" v-if="algorithms.categoryModel >-1">
+                <v-select
+                  v-model="algorithms.categories.methodModel"
+                  :items="algorithms.categories[algorithms.categoryModel].methods"
+                  item-text="label"
+                  item-value="id"
+                  label="Method"
+                >
+                </v-select>
+              </v-col>
+            </v-row>
+            <v-divider></v-divider>
+            <v-row
+              v-if="algorithms.categoryModel >-1 && algorithms.categories.methodModel ==='diamond'">
+              <v-col cols="6">
+                <v-switch
+                label="Use Selection"
+                v-model="algorithms.selectionSwitch"
+                >
+                </v-switch>
+              </v-col>
+              <v-col cols="6">
+                <v-select
+                  item-text="label"
+                  item-value="id"
+                  :items="[{id:'gene',label:'Gene'},{id:'protein',label:'Protein'}]"
+                  label="Node"
+                  v-model="algorithms.nodeModel"
+                >
+                </v-select>
+              </v-col>
+            </v-row>
+            <v-row>
+              <v-col>
+                <v-chip outlined color="green" :disabled="algorithms.nodeModel === undefined || algorithms.nodeModel.length ===0" @click="$emit('executeAlgorithmEvent','diamond',{node:algorithms.nodeModel,selection:algorithms.selectionSwitch})">
+                  Submit
+                </v-chip>
+              </v-col>
+            </v-row>
+          </v-container>
 
-        <v-list-item @click="show.detail=!show.detail">
-          <v-list-item-title>
-            <v-icon left>{{ show.detail ? "far fa-minus-square" : "far fa-plus-square" }}</v-icon>
-            Detail
-          </v-list-item-title>
-        </v-list-item>
-        <v-divider></v-divider>
+        </v-card>
 
 
-        <v-container v-if="show.detail">
-          <v-list class="transparent">
-            <template
-              v-for="item in detailedObject.order"
-            >
+        <v-card ref="detail" elevation="3" style="margin:15px" v-if="detailedObject !== undefined">
 
-              <v-list-item :key="item">
+          <v-list-item @click="show.detail=!show.detail">
+            <v-list-item-title>
+              <v-icon left>{{ show.detail ? "far fa-minus-square" : "far fa-plus-square" }}</v-icon>
+              Detail
+            </v-list-item-title>
+          </v-list-item>
+          <v-divider></v-divider>
 
-                <v-list-item-title>{{ item }}</v-list-item-title>
-                <v-list-item-subtitle class="text-right">
-                  <v-list v-if="typeof detailedObject[item] === 'object'">
-                    <v-list-item v-for="i in detailedObject[item]" :key="i">
-                      <v-chip outlined v-if="getUrl(item,i).length>0" @click="openExternal(item,i)"
-                              :title="getExternalSource(item,i)">
-                        {{ format(item, i) }}
-                        <v-icon right size="14px" :color="getExternalColor(item,i)">fas fa-external-link-alt</v-icon>
-                      </v-chip>
-                      <span v-else>{{ format(item, i) }}</span>
-                    </v-list-item>
-                  </v-list>
-                  <v-chip outlined v-else-if="getUrl(item,detailedObject[item]).length>0"
-                          @click="openExternal(item,detailedObject[item])"
-                          :title="getExternalSource(item,detailedObject[item])">
-                    {{ format(item, detailedObject[item]) }}
-                    <v-icon right size="14px" :color="getExternalColor(item,detailedObject[item])">fas
-                      fa-external-link-alt
-                    </v-icon>
-                  </v-chip>
-                  <span v-else>{{ format(item, detailedObject[item]) }}</span>
-                </v-list-item-subtitle>
-              </v-list-item>
-              <v-divider></v-divider>
-            </template>
-          </v-list>
-        </v-container>
 
-      </v-card>
+          <v-container v-if="show.detail">
+            <v-list class="transparent">
+              <template
+                v-for="item in detailedObject.order"
+              >
 
+                <v-list-item :key="item">
+
+                  <v-list-item-title>{{ item }}</v-list-item-title>
+                  <v-list-item-subtitle class="text-right">
+                    <v-list v-if="typeof detailedObject[item] === 'object'">
+                      <v-list-item v-for="i in detailedObject[item]" :key="i">
+                        <v-chip outlined v-if="getUrl(item,i).length>0" @click="openExternal(item,i)"
+                                :title="getExternalSource(item,i)">
+                          {{ format(item, i) }}
+                          <v-icon right size="14px" :color="getExternalColor(item,i)">fas fa-external-link-alt</v-icon>
+                        </v-chip>
+                        <span v-else>{{ format(item, i) }}</span>
+                      </v-list-item>
+                    </v-list>
+                    <v-chip outlined v-else-if="getUrl(item,detailedObject[item]).length>0"
+                            @click="openExternal(item,detailedObject[item])"
+                            :title="getExternalSource(item,detailedObject[item])">
+                      {{ format(item, detailedObject[item]) }}
+                      <v-icon right size="14px" :color="getExternalColor(item,detailedObject[item])">fas
+                        fa-external-link-alt
+                      </v-icon>
+                    </v-chip>
+                    <span v-else>{{ format(item, detailedObject[item]) }}</span>
+                  </v-list-item-subtitle>
+                </v-list-item>
+                <v-divider></v-divider>
+              </template>
+            </v-list>
+          </v-container>
+
+        </v-card>
+      </template>
     </v-card>
   </v-container>
 
@@ -402,6 +466,7 @@ export default {
         info: false,
         legend: false,
         detail: false,
+        algorithms: false,
       },
       menu: {
         options: {
@@ -410,6 +475,21 @@ export default {
             tabs: [{id: 0, label: "General"}, {id: 1, label: "Nodes"}, {id: 2, label: "Edges"}]
           }
         }
+      },
+      algorithms: {
+        categoryModel: -1,
+        methodModel: "",
+        nodeModel:undefined,
+        selectionSwitch: false,
+        categories: [{
+          id: 0,
+          label: "Disease Modules",
+          methods: [{id: "diamond", label: "DIAMOnD"}, {id: "bicon", label: "BiCoN"}]
+        }, {
+          id: 1,
+          label: "Drug Ranking",
+          methods: [{id: "trustrank", label: "TrustRank"}, {id: "centrality", label: "Centrality"}]
+        }]
       },
       selectedNode: this.selectedNode,
       neighborNodes: this.neighborNodes,
@@ -488,7 +568,7 @@ export default {
             return split[1]
         }
       }
-      if(item==="_cls")
+      if (item === "_cls")
         return value.split('.')[1]
       if (item === "mapLocation") {
         console.log(value)
@@ -539,13 +619,13 @@ export default {
         return "UCSC"
       if (item === "casNumber")
         return "Molbase"
-      if(item==="molecularFormula")
+      if (item === "molecularFormula")
         return "ChemCalc"
       return value
     },
     getUrl: function (item, value) {
       let url = '';
-      if(value.length ===0)
+      if (value.length === 0)
         return value
       if (item === "primaryDomainId" || item === "primaryDomainIds" || item === "domainIds" || item === "sourceDomainId" || item === "targetDomainId" || item === "memberOne" || item === "memberTwo") {
         let split = value.split(".")
@@ -576,8 +656,8 @@ export default {
             return "https://ncim.nci.nih.gov/ncimbrowser/ConceptReport.jsp?dictionary=NCI%20MetaThesaurus&code=" + split[1]
           case "meddra":
             return "http://purl.bioontology.org/ontology/MEDDRA/" + split[1]
-            case "medgen":
-              return "https://www.ncbi.nlm.nih.gov/medgen/?term="+split[1]
+          case "medgen":
+            return "https://www.ncbi.nlm.nih.gov/medgen/?term=" + split[1]
 
         }
       }
@@ -589,7 +669,7 @@ export default {
         return "http://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&position=" + value
       if (item === "casNumber")
         return "http://www.molbase.com/en/cas-" + value + ".html"
-      if (item === "databases" || item==="allDatasets"|| item==="primaryDataset")
+      if (item === "databases" || item === "allDatasets" || item === "primaryDataset")
         switch (value) {
           case "biogrid":
             return "https://thebiogrid.org/"
@@ -624,8 +704,8 @@ export default {
         if (value === "disgenet")
           return "https://www.disgenet.org/"
       }
-      if(item==="molecularFormula")
-        return "https://www.chemcalc.org/?mf="+value
+      if (item === "molecularFormula")
+        return "https://www.chemcalc.org/?mf=" + value
       return url;
     },
     getExternalColor: function (item, value) {
@@ -670,7 +750,7 @@ export default {
         return "#00457c"
       if (item === "casNumber")
         return "#749bc4"
-      if (item === "databases"|| item==="allDatasets" || item==="primaryDataset")
+      if (item === "databases" || item === "allDatasets" || item === "primaryDataset")
         switch (value) {
           case "biogrid":
             return "773a3a"
@@ -705,7 +785,7 @@ export default {
         if (value === "disgenet")
           return "#ff00de"
       }
-      if(item ==="molecularFormula")
+      if (item === "molecularFormula")
         return "#33484d"
       return "black"
     }

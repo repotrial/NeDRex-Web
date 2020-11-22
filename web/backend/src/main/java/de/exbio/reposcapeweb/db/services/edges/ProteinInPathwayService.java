@@ -142,4 +142,8 @@ public class ProteinInPathwayService {
         return directed;
     }
 
+    public Long getCount() {
+        return proteinInPathwayRepository.count();
+    }
+
 }

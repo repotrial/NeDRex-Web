@@ -2,10 +2,13 @@ package de.exbio.reposcapeweb.db.history;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.exbio.reposcapeweb.communication.jobs.Job;
+import de.exbio.reposcapeweb.communication.jobs.JobController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
+import javax.print.attribute.standard.JobState;
 import java.io.File;
 import java.time.ZoneOffset;
 import java.util.*;
@@ -20,6 +23,7 @@ public class HistoryController {
 
     private HashMap<String, GraphHistory> graphMap;
     private HashMap<String, HashSet<String>> userMap;
+
 
     @Autowired
     public HistoryController(HistoryRepository historyRepository, ObjectMapper objectMapper, Environment env) {
@@ -74,11 +78,8 @@ public class HistoryController {
         return uid;
     }
 
-    public HashMap<String, Object> getUserHistory(String uid) {
-        HashMap<String, Object> out = new HashMap<>();
-        if (uid.equals("null")) {
-            uid = getNewUser();
-        }
+    public HashMap<String, Object> getUserHistory(String uid, HashMap<String, Job.JobState> jobs) {
+        HashMap<String,Object> out = new HashMap<>();
         out.put("uid", uid);
         if (!userMap.containsKey(uid))
             userMap.put(uid, new HashSet<>());
@@ -91,6 +92,11 @@ public class HistoryController {
             }
 
         });
+        map.forEach((gid, history) -> {
+            if (jobs.containsKey(gid))
+                history.setJobState(jobs.get(gid));
+        });
+
         out.put("history", getHistoryTree(map.values()));
 
         LinkedList<HashMap<String, Object>> list = map.values().stream().map(h -> h.toMap(false)).sorted((history, t1) -> {
@@ -123,11 +129,9 @@ public class HistoryController {
         return gid;
     }
 
-    public GraphHistory setDerivedHistory(String parentId, GraphHistory childHistory) {
+    public GraphHistory saveDerivedHistory(String parentId, GraphHistory childHistory) {
         GraphHistory parent = getHistory(parentId);
         GraphHistory child = save(childHistory);
-        parent.addDerivate(child);
-        save(child);
         save(parent);
         return child;
     }
@@ -137,5 +141,12 @@ public class HistoryController {
         String cachedir = env.getProperty("path.db.cache");
         GraphHistory history = getHistory(id);
         return new File(cachedir, "graphs/" + history.getUserId() + "/" + id + ".json");
+    }
+
+    public String validateUser(String userId) {
+        if (userId.equals("null")) {
+            userId = getNewUser();
+        }
+        return userId;
     }
 }

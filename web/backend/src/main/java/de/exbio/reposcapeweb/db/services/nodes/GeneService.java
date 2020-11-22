@@ -113,4 +113,9 @@ public class GeneService extends NodeService {
         return idToDomainMap.get(id).second;
     }
 
+    @Override
+    public Long getCount() {
+        return geneRepository.count();
+    }
+
 }

@@ -263,4 +263,20 @@ public class NodeController {
         }
         return null;
     }
+
+    public Long getNodeCount(String type) {
+        switch (type) {
+            case "disorder":
+                return disorderService.getCount();
+            case "drug":
+                return drugService.getCount();
+            case "gene":
+                return geneService.getCount();
+            case "pathway":
+                return pathwayService.getCount();
+            case "protein":
+                return proteinService.getCount();
+        }
+        return null;
+    }
 }

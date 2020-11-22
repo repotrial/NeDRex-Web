@@ -717,4 +717,32 @@ public class EdgeController {
         }
         return false;
     }
+
+    public Long getEdgeCount(String type) {
+        switch (type) {
+            case "GeneAssociatedWithDisorder":
+                return associatedWithDisorderService.getGeneCount();
+            case "DrugHasTargetGene":
+                return drugHasTargetService.getGeneCount();
+            case "ProteinEncodedBy":
+                return proteinEncodedByService.getCount();
+            case "DrugHasIndication":
+                return drugHasIndicationService.getCount();
+            case "DrugHasTargetProtein":
+                return drugHasTargetService.getProteinCount();
+            case "ProteinInteractsWithProtein":
+                return proteinInteractsWithProteinService.getProteinCount();
+            case "ProteinInPathway":
+                return proteinInPathwayService.getCount();
+            case "ProteinAssociatedWithDisorder":
+                return associatedWithDisorderService.getProteinCount();
+            case "DisorderIsADisorder":
+                return disorderIsADisorderService.getCount();
+            case "DisorderComorbidWithDisorder":
+                return disorderComorbidWithDisorderService.getCount();
+            case "GeneInteractsWithGene":
+                return proteinInteractsWithProteinService.getGeneCount();
+        }
+        return null;
+    }
 }

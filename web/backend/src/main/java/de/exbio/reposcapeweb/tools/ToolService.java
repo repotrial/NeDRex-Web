@@ -260,7 +260,7 @@ public class ToolService {
             case "diamond": {
                 command += "diamond " +
                         diamond.getAbsolutePath() + " " +
-                        (params.get("type").equals("gene") ? new File(dataDir, "gene_gene_interaction.pairs") : new File(dataDir, "protein_protein_interaction.pairs")).getAbsolutePath() + " " +
+                        (params.get("type").equals("genes") ? new File(dataDir, "gene_gene_interaction.pairs") : new File(dataDir, "protein_protein_interaction.pairs")).getAbsolutePath() + " " +
                         "seeds.list " +
                         100;
                 break;

@@ -62,7 +62,7 @@ public class WebGraphService {
         graph.addNode(new WebNode(3, "Pathway", "pathway", "Pathway"));
         graph.addNode(new WebNode(4, "Gene", "gene", "Gene"));
         graph.addNode(new WebNode(5, "Disorder", "disorder", "Disorder"));
-
+        graph.getNodes().forEach(n->graph.setWeight("nodes",n.group,nodeController.getNodeCount(n.group)));
 
         graph.addEdge(new WebEdge(1, 2, "DrugHasTargetProtein"));
         graph.addEdge(new WebEdge(1, 4, "DrugHasTargetGene").setDashes(true));
@@ -75,8 +75,11 @@ public class WebGraphService {
         graph.addEdge(new WebEdge(5, 5, "DisorderComorbidWithDisorder"));
         graph.addEdge(new WebEdge(5, 5, "DisorderIsADisorder"));
         graph.addEdge(new WebEdge(1, 5, "DrugHasIndication"));
+        graph.getEdges().forEach(e->graph.setWeight("edges",e.label,edgeController.getEdgeCount(e.label)));
+
 
         graph.setColorMap(this.getColorMap(null));
+
 
         return graph;
     }
@@ -749,11 +752,13 @@ public class WebGraphService {
         GraphHistory history;
         if (g.getParent() == null) {
             history = new GraphHistory(uid, g.getId(), g.toInfo());
+            historyController.save(history);
         } else {
             history = new GraphHistory(uid, g.getId(), g.toInfo(), historyController.getHistory(g.getParent()));
+            historyController.saveDerivedHistory(g.getParent(),history);
             cache.remove(gid);
         }
-        historyController.save(history);
+
         exportGraph(g);
     }
 
@@ -800,4 +805,5 @@ public class WebGraphService {
         j.setDerivedGraph(derived.getId());
         addGraphToHistory(j.getUserId(), derived.getId());
     }
+
 }

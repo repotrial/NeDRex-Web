@@ -237,4 +237,12 @@ public class AssociatedWithDisorderService {
     public boolean isDirected() {
         return directed;
     }
+
+    public Long getGeneCount() {
+        return geneAssociatedWithDisorderRepository.count();
+    }
+
+    public Long getProteinCount() {
+        return proteinAssociatedWithDisorderRepository.count();
+    }
 }

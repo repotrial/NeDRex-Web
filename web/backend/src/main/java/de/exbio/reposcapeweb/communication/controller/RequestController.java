@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.exbio.reposcapeweb.communication.cache.Graph;
 import de.exbio.reposcapeweb.communication.cache.Graphs;
+import de.exbio.reposcapeweb.communication.jobs.Job;
 import de.exbio.reposcapeweb.communication.jobs.JobController;
 import de.exbio.reposcapeweb.communication.jobs.JobRequest;
 import de.exbio.reposcapeweb.communication.reponses.SelectionResponse;
@@ -11,6 +12,7 @@ import de.exbio.reposcapeweb.communication.reponses.WebGraph;
 import de.exbio.reposcapeweb.communication.reponses.WebGraphList;
 import de.exbio.reposcapeweb.communication.requests.*;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
+import de.exbio.reposcapeweb.db.history.GraphHistory;
 import de.exbio.reposcapeweb.db.history.HistoryController;
 import de.exbio.reposcapeweb.db.services.controller.EdgeController;
 import de.exbio.reposcapeweb.db.services.controller.NodeController;
@@ -273,8 +275,12 @@ public class RequestController {
     @RequestMapping(value = "/getUser", method = RequestMethod.GET)
     @ResponseBody
     public String getUser(@RequestParam("user") String userId) {
+        userId = historyController.validateUser(userId);
+        HashMap<String, Job.JobState> jobs = jobController.getJobGraphStates(userId);
+        HashMap<String, Object> out = historyController.getUserHistory(userId,jobs);
+
         try {
-            return objectMapper.writeValueAsString(historyController.getUserHistory(userId));
+            return objectMapper.writeValueAsString(out);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
@@ -314,6 +320,11 @@ public class RequestController {
     @RequestMapping(value = "/submitJob", method = RequestMethod.POST)
     @ResponseBody
     public String submitJob(@RequestBody JobRequest request) {
+        try {
+            log.debug("Got job request: "+objectMapper.writeValueAsString(request));
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
         return jobController.registerJob(request).getJobId();
     }
 

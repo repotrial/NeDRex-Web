@@ -112,5 +112,10 @@ public class DrugService extends NodeService {
     public String getName(int id) {
         return idToDomainMap.get(id).second;
     }
+    @Override
+    public Long getCount() {
+        return drugRepository.count();
+    }
+
 
 }

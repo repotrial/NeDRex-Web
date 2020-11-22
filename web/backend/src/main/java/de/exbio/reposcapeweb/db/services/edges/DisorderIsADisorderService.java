@@ -119,4 +119,8 @@ public class DisorderIsADisorderService {
         return directed;
     }
 
+    public Long getCount() {
+        return disorderIsADisorderRepository.count();
+    }
+
 }

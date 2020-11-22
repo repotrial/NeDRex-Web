@@ -40,7 +40,6 @@ public class ReposcapewebApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(ReposcapewebApplication.class, args);
-
     }
 
     private final UpdateService updateService;

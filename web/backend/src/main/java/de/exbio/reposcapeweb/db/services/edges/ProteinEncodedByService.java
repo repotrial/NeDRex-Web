@@ -139,4 +139,8 @@ public class ProteinEncodedByService {
     public boolean isDirected() {
         return directed;
     }
+
+    public Long getCount() {
+        return proteinEncodedByRepository.count();
+    }
 }

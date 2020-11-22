@@ -15,8 +15,21 @@
                           :transition="true"
               >
                 <template v-slot:prepend="{item}">
-
                   <span style="color: darkgray; font-size: 10pt">
+<!--                    <template  v-if="(item.state !== undefined &&item.state !== 'DONE')">-->
+<!--                      <v-icon-->
+<!--                        size="17px"-->
+<!--                        color="primary"-->
+<!--                        dark-->
+<!--                        v-bind="attrs"-->
+<!--                        v-on="on"-->
+<!--                      >-->
+<!--                         fas fa-circle-notch fa-spin-->
+<!--                        </v-icon>-->
+<!--                      <span>{{ item.state }}</span>-->
+
+<!--                    </template>-->
+
                     <v-tooltip right>
                       <template v-slot:activator="{ on, attrs }">
                         <v-icon
@@ -40,7 +53,7 @@
                 </template>
                 <template v-slot:label="{item}"
                 >
-                  <v-chip :disabled="item.id === current" :color="item.id === current ? 'gray':'primary'"
+                  <v-chip :disabled="item.id === current || (item.state !== undefined &&item.state !== 'DONE')" :color="item.id === current ? 'gray': item.state===undefined ?'primary':'green'"
                           @click="loadGraph(item.id)">
                     <span>{{ getName(item) }}</span>
                   </v-chip>

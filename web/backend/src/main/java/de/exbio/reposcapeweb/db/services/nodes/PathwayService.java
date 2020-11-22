@@ -114,5 +114,10 @@ public class PathwayService extends NodeService {
         return idToDomainMap.get(id).second;
     }
 
+    @Override
+    public Long getCount() {
+        return pathwayRepository.count();
+    }
+
 
 }

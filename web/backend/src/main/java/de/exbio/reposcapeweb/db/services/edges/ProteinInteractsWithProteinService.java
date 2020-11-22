@@ -234,4 +234,12 @@ public class ProteinInteractsWithProteinService {
     public boolean isDirected() {
         return directed;
     }
+
+    public Long getGeneCount() {
+        return proteinInteractsWithProteinRepository.count();
+    }
+
+    public Long getProteinCount(){
+        return geneInteractsWithGeneRepository.count();
+    }
 }

@@ -792,6 +792,7 @@ export default {
   entityGraph: {},
   attributes: {},
   gid: undefined,
+  uid:undefined,
 
   data() {
     return {
@@ -850,6 +851,7 @@ export default {
   },
 
   created() {
+    this.uid=this.$cookies.get("uid")
     this.nodes = {}
     this.attributes = {}
     this.edges = {}
@@ -1672,6 +1674,24 @@ export default {
         let n2 = this.entityGraph.nodes[edge.node2].name;
         return [this.metagraph.colorMap[n1].main, this.metagraph.colorMap[n2].main]
       }
+    },
+    executeAlgorithm: function (algorithm, params) {
+      console.log("executing "+algorithm)
+      let payload = {userId: this.uid, graphId: this.gid, algorithm: algorithm, params:{}}
+      if (algorithm === "diamond") {
+        console.log(this.countMap.nodes[params.node])
+        if (this.countMap.nodes[params.node] === undefined || (this.selected && this.countMap.nodes[params.node].selected === 0)) {
+          this.$emit("printNotificationEvent", "Cannot execute " + algorithm + " without seed nodes!", 1)
+          return;
+        }
+        payload.params["type"] = params.node;
+      }
+      this.$http.post("/submitJob", payload).then(response =>{
+        if(response.data !==undefined)
+          return response.data
+      }).then(newGraphId=>{
+        this.$emit("addJobGraphId",newGraphId);
+      }).catch(console.log)
     },
     direction: function (edge) {
       let e = Object.values(this.entityGraph.edges).filter(e => e.name === edge)[0];

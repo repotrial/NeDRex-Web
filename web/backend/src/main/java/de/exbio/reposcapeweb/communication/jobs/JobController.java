@@ -17,6 +17,8 @@ public class JobController {
     private final JobQueue jobQueue;
     private final JobRepository jobRepository;
 
+    private HashMap<String, Job> jobs = new HashMap<>();
+
     @Autowired
     public JobController(WebGraphService graphService, ToolService toolService, JobQueue jobQueue, JobRepository jobRepository) {
         this.graphService = graphService;
@@ -24,9 +26,6 @@ public class JobController {
         this.jobQueue = jobQueue;
         this.jobRepository = jobRepository;
     }
-
-
-    private HashMap<String, Job> jobs = new HashMap<>();
 
 
     private Job createJob(JobRequest req) {
@@ -85,5 +84,11 @@ public class JobController {
         save(j);
         toolService.clearDirectories(j);
         //TODO send finished message to user frontend
+    }
+
+    public HashMap<String, Job.JobState> getJobGraphStates(String user) {
+        HashMap<String, Job.JobState> stateMap = new HashMap<>();
+        jobs.values().stream().filter(j -> j.getUserId().equals(user)).forEach(j -> stateMap.put(j.getDerivedGraph(), j.getState()));
+        return stateMap;
     }
 }

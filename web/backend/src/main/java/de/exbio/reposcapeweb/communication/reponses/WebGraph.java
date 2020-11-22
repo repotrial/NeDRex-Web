@@ -15,6 +15,7 @@ public class WebGraph {
     LinkedList<WebNode> nodes = new LinkedList<>();
     LinkedList<WebEdge> edges = new LinkedList<>();
     HashMap<String,Object> colorMap;
+    HashMap<String,HashMap<String,Long>> weights = new HashMap<>();
 
     public WebGraph(String id){
         this.id = id;
@@ -81,5 +82,15 @@ public class WebGraph {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public void setWeight(String type, String entity, Long weight) {
+        if(!weights.containsKey(type))
+            weights.put(type,new HashMap<>());
+        weights.get(type).put(entity,weight);
+    }
+
+    public HashMap<String, HashMap<String, Long>> getWeights() {
+        return weights;
     }
 }

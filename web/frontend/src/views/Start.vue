@@ -47,21 +47,24 @@
                 <v-list-item v-for="item in nodes" :key="item.index">
                   <v-chip outlined v-on:click="toggleNode(item.index)"
                           :color="nodeModel.indexOf(item.index)===-1?'gray':'primary'"
-                          :text-color="nodeModel.indexOf(item.index)===-1?'black':'gray'">
+                          :text-color="nodeModel.indexOf(item.index)===-1?'black':'gray'"
+                  >
                     <v-icon left :color="getColoring('nodes',item.label)">fas fa-genderless</v-icon>
                     {{ item.label }}
+                    <span style="color: gray; margin-left: 3pt" v-show="nodeModel.indexOf(item.index)>-1">({{metagraph.weights.nodes[item.label.toLowerCase()]}})</span>
                   </v-chip>
                 </v-list-item>
               </v-list>
 
             </v-col>
-            <v-col cols="3">
+            <v-col cols="4">
               <v-list v-model="edgeModel">
                 <v-card-title>Edges</v-card-title>
                 <v-list-item v-for="item in edges" :key="item.index">
                   <v-chip outlined v-on:click="toggleEdge(item.index)"
                           :color="edgeModel.indexOf(item.index)===-1?'gray':'primary'"
-                          :text-color="edgeModel.indexOf(item.index)===-1?'black':'gray'">
+                          :text-color="edgeModel.indexOf(item.index)===-1?'black':'gray'"
+                  >
 
                     <v-icon left :color="getColoring('edges',item.label)[0]">fas fa-genderless</v-icon>
                     <template v-if="direction(item.label)===0">
@@ -73,6 +76,7 @@
                       <v-icon left :color="getColoring('edges',item.label)[1]">fas fa-genderless</v-icon>
                     </template>
                     {{ item.label }}
+                    <span style="color: gray; margin-left: 3pt" v-show="edgeModel.indexOf(item.index)>-1">({{metagraph.weights.edges[item.label]}})</span>
                   </v-chip>
                 </v-list-item>
               </v-list>
