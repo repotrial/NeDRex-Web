@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.exbio.reposcapeweb.db.entities.edges.DisorderIsADisorder;
 import de.exbio.reposcapeweb.db.entities.edges.DrugHasIndication;
+import de.exbio.reposcapeweb.db.entities.edges.GeneAssociatedWithDisorder;
 import de.exbio.reposcapeweb.db.entities.edges.ProteinAssociatedWithDisorder;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
 import de.exbio.reposcapeweb.db.repositories.edges.DrugHasIndicationRepository;
@@ -134,6 +135,7 @@ public class DrugHasIndicationService {
     public DrugHasIndication setDomainIds(DrugHasIndication item) {
         item.setSourceDomainId(drugService.map(item.getPrimaryIds().getId1()));
         item.setTargetDomainId(disorderService.map(item.getPrimaryIds().getId2()));
+        item.setNodeNames(drugService.getName(item.getPrimaryIds().getId1()),disorderService.getName(item.getPrimaryIds().getId2()));
         return item;
     }
 

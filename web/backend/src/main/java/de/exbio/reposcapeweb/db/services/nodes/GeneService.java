@@ -6,6 +6,7 @@ import de.exbio.reposcapeweb.db.repositories.nodes.GeneRepository;
 import de.exbio.reposcapeweb.db.services.NodeService;
 import de.exbio.reposcapeweb.db.updates.UpdateOperation;
 import de.exbio.reposcapeweb.filter.NodeFilter;
+import de.exbio.reposcapeweb.utils.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +20,7 @@ public class GeneService extends NodeService {
     private final Logger log = LoggerFactory.getLogger(DrugService.class);
     private final GeneRepository geneRepository;
 
-    private HashMap<Integer, String> idToDomainMap = new HashMap<>();
+    private HashMap<Integer, Pair<String,String>> idToDomainMap = new HashMap<>();
     private HashMap<String, Integer> domainToIdMap = new HashMap<>();
 
     private NodeFilter allFilter;
@@ -54,7 +55,7 @@ public class GeneService extends NodeService {
             });
         }
         geneRepository.saveAll(toSave).forEach(d -> {
-            idToDomainMap.put(d.getId(), d.getPrimaryDomainId());
+            idToDomainMap.put(d.getId(), new Pair<>(d.getPrimaryDomainId(),d.getDisplayName()));
             domainToIdMap.put(d.getPrimaryDomainId(), d.getId());
             allFilter.add(d.toDistinctFilter(),d.toUniqueFilter());
         });
@@ -68,10 +69,10 @@ public class GeneService extends NodeService {
     }
 
     public String map(Integer id){
-        return getIdToDomainMap().get(id);
+        return getIdToDomainMap().get(id).first;
     }
 
-    public HashMap<Integer, String> getIdToDomainMap() {
+    public HashMap<Integer, Pair<String,String>> getIdToDomainMap() {
         return idToDomainMap;
     }
 
@@ -102,4 +103,14 @@ public class GeneService extends NodeService {
     public String[] getAttributes() {
         return Gene.attributes.toArray(String[]::new);
     }
+
+    public Iterable<Gene> findAll(){
+        return geneRepository.findAll();
+    }
+
+    @Override
+    public String getName(int id) {
+        return idToDomainMap.get(id).second;
+    }
+
 }

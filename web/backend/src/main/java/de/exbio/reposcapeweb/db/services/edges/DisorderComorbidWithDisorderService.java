@@ -1,6 +1,7 @@
 package de.exbio.reposcapeweb.db.services.edges;
 
 import de.exbio.reposcapeweb.db.entities.edges.DisorderComorbidWithDisorder;
+import de.exbio.reposcapeweb.db.entities.edges.GeneAssociatedWithDisorder;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
 import de.exbio.reposcapeweb.db.repositories.edges.DisorderComorbidWithDisorderRepository;
 import de.exbio.reposcapeweb.db.services.nodes.DisorderService;
@@ -119,6 +120,9 @@ public class DisorderComorbidWithDisorderService {
     public DisorderComorbidWithDisorder setDomainIds(DisorderComorbidWithDisorder item) {
         item.setMemberOne(disorderService.map(item.getPrimaryIds().getId1()));
         item.setMemberTwo(disorderService.map(item.getPrimaryIds().getId2()));
+
+        item.setNodeNames(disorderService.getName(item.getPrimaryIds().getId1()),disorderService.getName(item.getPrimaryIds().getId2()));
+
         return item;
     }
 

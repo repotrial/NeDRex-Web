@@ -1,5 +1,6 @@
 package de.exbio.reposcapeweb.db.services.edges;
 
+import de.exbio.reposcapeweb.db.entities.edges.DrugHasIndication;
 import de.exbio.reposcapeweb.db.entities.edges.DrugHasTargetGene;
 import de.exbio.reposcapeweb.db.entities.edges.ProteinEncodedBy;
 import de.exbio.reposcapeweb.db.entities.edges.ProteinInPathway;
@@ -132,8 +133,10 @@ public class ProteinInPathwayService {
     public ProteinInPathway setDomainIds(ProteinInPathway item) {
         item.setSourceDomainId(proteinService.map(item.getPrimaryIds().getId1()));
         item.setTargetDomainId(pathwayService.map(item.getPrimaryIds().getId2()));
+        item.setNodeNames(proteinService.getName(item.getPrimaryIds().getId1()),pathwayService.getName(item.getPrimaryIds().getId2()));
         return item;
     }
+
 
     public boolean isDirected() {
         return directed;

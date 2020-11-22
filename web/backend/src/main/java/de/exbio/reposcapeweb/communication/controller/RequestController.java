@@ -23,6 +23,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
+import java.util.HashMap;
 
 /**
  * Controller for the incoming requests on the RepoScape-WEB application.
@@ -94,7 +95,9 @@ public class RequestController {
         log.info("requested details for node " + name + " with id " + id);
         String out = "";
         try {
-            out = objectMapper.writeValueAsString(nodeController.nodeToAttributeList(Graphs.getNode(name), id));
+            HashMap<String,Object> details = nodeController.nodeToAttributeList(Graphs.getNode(name), id);
+            details.put("order",nodeController.getAttributes(Graphs.getNode(name)));
+            out = objectMapper.writeValueAsString(details);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }

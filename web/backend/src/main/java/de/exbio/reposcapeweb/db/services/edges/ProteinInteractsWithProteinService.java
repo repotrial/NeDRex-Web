@@ -1,5 +1,6 @@
 package de.exbio.reposcapeweb.db.services.edges;
 
+import de.exbio.reposcapeweb.db.entities.edges.DrugHasIndication;
 import de.exbio.reposcapeweb.db.entities.edges.GeneInteractsWithGene;
 import de.exbio.reposcapeweb.db.entities.edges.ProteinInteractsWithProtein;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
@@ -218,14 +219,17 @@ public class ProteinInteractsWithProteinService {
     public ProteinInteractsWithProtein setDomainIds(ProteinInteractsWithProtein item) {
         item.setMemberOne(proteinService.map(item.getPrimaryIds().getId1()));
         item.setMemberTwo(proteinService.map(item.getPrimaryIds().getId2()));
+        item.setNodeNames(proteinService.getName(item.getPrimaryIds().getId1()),proteinService.getName(item.getPrimaryIds().getId2()));
         return item;
     }
 
     public GeneInteractsWithGene setDomainIds(GeneInteractsWithGene item) {
         item.setMemberOne(geneService.map(item.getPrimaryIds().getId1()));
         item.setMemberTwo(geneService.map(item.getPrimaryIds().getId2()));
+        item.setNodeNames(geneService.getName(item.getPrimaryIds().getId1()),geneService.getName(item.getPrimaryIds().getId2()));
         return item;
     }
+
 
     public boolean isDirected() {
         return directed;

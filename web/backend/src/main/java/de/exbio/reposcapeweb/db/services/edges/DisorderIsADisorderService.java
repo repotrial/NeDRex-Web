@@ -28,9 +28,9 @@ public class DisorderIsADisorderService {
     private final DisorderService disorderService;
 
     @Autowired
-    public DisorderIsADisorderService(DisorderService disorderService, DisorderIsADisorderRepository disorderIsADisorderRepository){
-        this.disorderService=disorderService;
-        this.disorderIsADisorderRepository=disorderIsADisorderRepository;
+    public DisorderIsADisorderService(DisorderService disorderService, DisorderIsADisorderRepository disorderIsADisorderRepository) {
+        this.disorderService = disorderService;
+        this.disorderIsADisorderRepository = disorderIsADisorderRepository;
     }
 
 
@@ -40,7 +40,7 @@ public class DisorderIsADisorderService {
             return false;
 
         if (updates.containsKey(UpdateOperation.Deletion))
-            disorderIsADisorderRepository.deleteAll(disorderIsADisorderRepository.findDisorderIsADisordersByIdIn(updates.get(UpdateOperation.Deletion).keySet().stream().map(o->(PairId)o).collect(Collectors.toSet())));
+            disorderIsADisorderRepository.deleteAll(disorderIsADisorderRepository.findDisorderIsADisordersByIdIn(updates.get(UpdateOperation.Deletion).keySet().stream().map(o -> (PairId) o).collect(Collectors.toSet())));
 
 
         LinkedList<DisorderIsADisorder> toSave = new LinkedList(updates.get(UpdateOperation.Insertion).values());
@@ -48,7 +48,7 @@ public class DisorderIsADisorderService {
         if (updates.containsKey(UpdateOperation.Alteration)) {
             HashMap<PairId, DisorderIsADisorder> toUpdate = updates.get(UpdateOperation.Alteration);
 
-            disorderIsADisorderRepository.findDisorderIsADisordersByIdIn(new HashSet<>(toUpdate.keySet().stream().map(o->(PairId)o).collect(Collectors.toSet()))).forEach(d -> {
+            disorderIsADisorderRepository.findDisorderIsADisordersByIdIn(new HashSet<>(toUpdate.keySet().stream().map(o -> (PairId) o).collect(Collectors.toSet()))).forEach(d -> {
                 d.setValues(toUpdate.get(d.getPrimaryIds()));
                 toSave.add(d);
             });
@@ -90,18 +90,19 @@ public class DisorderIsADisorderService {
         }
     }
 
-    public HashSet<Integer> getEdges(int id){
-            return edges.get(id).entrySet().stream().filter(Map.Entry::getValue).map(Map.Entry::getKey).collect(Collectors.toCollection(HashSet::new));
+    public HashSet<Integer> getEdges(int id) {
+        return edges.get(id).entrySet().stream().filter(Map.Entry::getValue).map(Map.Entry::getKey).collect(Collectors.toCollection(HashSet::new));
     }
 
 
-    public PairId mapIds(Pair<String,String> ids) {
-        return new PairId(disorderService.map(ids.getFirst()),disorderService.map(ids.getSecond()));
+    public PairId mapIds(Pair<String, String> ids) {
+        return new PairId(disorderService.map(ids.getFirst()), disorderService.map(ids.getSecond()));
     }
 
     public List<DisorderIsADisorder> getEntries(Collection<PairId> ids) {
         return disorderIsADisorderRepository.findDisorderIsADisordersByIdIn(ids);
     }
+
     public Optional<DisorderIsADisorder> find(PairId id) {
         return disorderIsADisorderRepository.findById(id);
     }
@@ -109,8 +110,11 @@ public class DisorderIsADisorderService {
     public DisorderIsADisorder setDomainIds(DisorderIsADisorder item) {
         item.setSourceDomainId(disorderService.map(item.getPrimaryIds().getId1()));
         item.setTargetDomainId(disorderService.map(item.getPrimaryIds().getId2()));
+        item.setNodeNames(disorderService.getName(item.getPrimaryIds().getId1()), disorderService.getName(item.getPrimaryIds().getId2()));
+
         return item;
     }
+
     public boolean isDirected() {
         return directed;
     }

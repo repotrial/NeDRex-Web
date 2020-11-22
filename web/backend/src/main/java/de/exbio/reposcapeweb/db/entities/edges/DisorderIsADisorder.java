@@ -42,19 +42,19 @@ public class DisorderIsADisorder extends RepoTrialEdge implements Serializable {
 
     @Transient
     @JsonIgnore
-    public final static HashSet<String> attributes = new HashSet<>(Arrays.asList("targetDomainId", "sourceDomainId", "type"));
+    public final static HashSet<String> attributes = new HashSet<>(Arrays.asList( "sourceDomainId","targetDomainId","type"));
 
     @Transient
     @JsonIgnore
-    public final static String[] allAttributes = new String[]{"id","sourceId","targetId","targetDomainId", "sourceDomainId", "type"};
+    public final static String[] allAttributes = new String[]{"id","sourceId","targetId", "node1","node2","targetDomainId", "sourceDomainId", "type"};
 
     @Transient
     @JsonIgnore
-    public final static String[] allAttributeTypes = new String[]{"numeric","numeric","numeric","", "", ""};
+    public final static String[] allAttributeTypes = new String[]{"numeric","numeric","numeric","","","", "", ""};
 
     @Transient
     @JsonIgnore
-    public final static boolean[] idAttributes = new boolean[]{true, true, true, true, true, false};
+    public final static boolean[] idAttributes = new boolean[]{true, true, true,false,false, true, true, false};
 
 
     @Transient
@@ -62,9 +62,14 @@ public class DisorderIsADisorder extends RepoTrialEdge implements Serializable {
     @Transient
     private String sourceDomainId;
 
+    @Transient
+    private String nodeOne;
+    @Transient
+    private String nodeTwo;
+
 
     public static String[] getListAttributes() {
-        return new String[]{"id","sourceId","targetId"};
+        return new String[]{"id", "node1","node2"};
     }
 
     @Override
@@ -74,6 +79,8 @@ public class DisorderIsADisorder extends RepoTrialEdge implements Serializable {
         values.put("sourceDomainId",getSourceDomainId());
         values.put("sourceId",id.getId1());
         values.put("targetId",id.getId2());
+        values.put("node1",nodeOne);
+        values.put("node2",nodeTwo);
         values.put("type",getType());
         values.put("id",id.getId1()+"-"+id.getId2());
         return values;
@@ -87,6 +94,11 @@ public class DisorderIsADisorder extends RepoTrialEdge implements Serializable {
                 values.put(k,v);
         });
         return values;
+    }
+
+    public void setNodeNames(String node1, String node2){
+        nodeOne=node1;
+        nodeTwo=node2;
     }
 
     public DisorderIsADisorder() {

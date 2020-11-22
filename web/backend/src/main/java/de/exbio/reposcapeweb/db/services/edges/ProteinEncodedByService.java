@@ -1,5 +1,6 @@
 package de.exbio.reposcapeweb.db.services.edges;
 
+import de.exbio.reposcapeweb.db.entities.edges.DrugHasIndication;
 import de.exbio.reposcapeweb.db.entities.edges.DrugHasTargetGene;
 import de.exbio.reposcapeweb.db.entities.edges.ProteinEncodedBy;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
@@ -130,8 +131,10 @@ public class ProteinEncodedByService {
     public ProteinEncodedBy setDomainIds(ProteinEncodedBy item) {
         item.setSourceDomainId(proteinService.map(item.getPrimaryIds().getId1()));
         item.setTargetDomainId(geneService.map(item.getPrimaryIds().getId2()));
+        item.setNodeNames(proteinService.getName(item.getPrimaryIds().getId1()),geneService.getName(item.getPrimaryIds().getId2()));
         return item;
     }
+
 
     public boolean isDirected() {
         return directed;

@@ -48,20 +48,25 @@ public class GeneAssociatedWithDisorder extends RepoTrialEdge implements Seriali
 
     @Transient
     @JsonIgnore
-    public final static String[] allAttributes = new String[]{"id","sourceId","targetId","sourceDomainId","targetDomainId", "score", "assertedBy","type"};
+    public final static String[] allAttributes = new String[]{"id","sourceId","targetId","node1","node2","sourceDomainId","targetDomainId", "score", "assertedBy","type"};
 
     @Transient
     @JsonIgnore
-    public final static String[] allAttributeTypes = new String[]{"numeric","numeric","numeric","","", "numeric", "array",""};
+    public final static String[] allAttributeTypes = new String[]{"numeric","numeric","numeric","","","","", "numeric", "array",""};
 
     @Transient
     @JsonIgnore
-    public final static boolean[] idAttributes = new boolean[]{true, true, true, true, true, false, false, false};
+    public final static boolean[] idAttributes = new boolean[]{true, true, true, false,false,true, true, false, false, false};
 
     @Transient
     private String targetDomainId;
     @Transient
     private String sourceDomainId;
+
+    @Transient
+    private String nodeOne;
+    @Transient
+    private String nodeTwo;
 
     private Float score;
 
@@ -69,7 +74,7 @@ public class GeneAssociatedWithDisorder extends RepoTrialEdge implements Seriali
 
 
     public static String[] getListAttributes() {
-        return new String[]{"id","sourceId","targetId", "type",  "score", "assertedBy"};
+        return new String[]{"id","node1","node2","score", "assertedBy"};
     }
 
     @Override
@@ -79,11 +84,18 @@ public class GeneAssociatedWithDisorder extends RepoTrialEdge implements Seriali
         values.put("sourceDomainId",getSourceDomainId());
         values.put("sourceId",id.getId1());
         values.put("targetId",id.getId2());
+        values.put("node1",nodeOne);
+        values.put("node2",nodeTwo);
         values.put("type",getType());
         values.put("score",getScore());
         values.put("assertedBy",getAssertedBy());
         values.put("id",id.getId1()+"-"+id.getId2());
         return values;
+    }
+
+    public void setNodeNames(String node1, String node2){
+        nodeOne=node1;
+        nodeTwo=node2;
     }
 
     @Override

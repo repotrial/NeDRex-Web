@@ -59,7 +59,7 @@ public class Protein extends RepoTrialNode {
     @Column(columnDefinition = "TEXT")
     public String comments;
     public String geneName;
-    public String taxid;
+    public Integer taxid;
 
     public static String[] getListAttributes() {
         return new String[]{"id", "displayName", "geneName", "taxid"};
@@ -131,7 +131,7 @@ public class Protein extends RepoTrialNode {
         return geneName;
     }
 
-    public String getTaxid() {
+    public Integer getTaxid() {
         return taxid;
     }
 

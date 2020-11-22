@@ -4,10 +4,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.exbio.reposcapeweb.communication.cache.Graphs;
 import de.exbio.reposcapeweb.communication.jobs.JobController;
 import de.exbio.reposcapeweb.communication.reponses.WebGraphService;
+import de.exbio.reposcapeweb.db.entities.edges.DrugHasTargetProtein;
+import de.exbio.reposcapeweb.db.entities.edges.ProteinAssociatedWithDisorder;
+import de.exbio.reposcapeweb.db.entities.nodes.*;
 import de.exbio.reposcapeweb.db.history.HistoryController;
 import de.exbio.reposcapeweb.db.io.ImportService;
 import de.exbio.reposcapeweb.db.repositories.edges.DrugHasTargetProteinRepository;
 import de.exbio.reposcapeweb.db.services.controller.EdgeController;
+import de.exbio.reposcapeweb.db.services.controller.NodeController;
 import de.exbio.reposcapeweb.db.services.nodes.DisorderService;
 import de.exbio.reposcapeweb.db.updates.UpdateService;
 import de.exbio.reposcapeweb.filter.FilterService;
@@ -21,11 +25,13 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.env.Environment;
+import org.springframework.jdbc.support.incrementer.HanaSequenceMaxValueIncrementer;
 
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashSet;
 
 @SpringBootApplication
 public class ReposcapewebApplication {
@@ -42,14 +48,18 @@ public class ReposcapewebApplication {
     private final ImportService importService;
     private final ToolService toolService;
     private final JobController jobController;
+    private final EdgeController edgeController;
+    private final NodeController nodeController;
 
     @Autowired
-    public ReposcapewebApplication(JobController jobController, ObjectMapper objectMapper, EdgeController edgeController, DisorderService disorderService, UpdateService updateService, Environment environment, ImportService importService, FilterService filterService, ToolService toolService, WebGraphService graphService) {
+    public ReposcapewebApplication(JobController jobController, NodeController nodeController, ObjectMapper objectMapper, EdgeController edgeController, DisorderService disorderService, UpdateService updateService, Environment environment, ImportService importService, FilterService filterService, ToolService toolService, WebGraphService graphService) {
         this.updateService = updateService;
         this.importService = importService;
         this.env = environment;
         this.toolService = toolService;
         this.jobController = jobController;
+        this.edgeController = edgeController;
+        this.nodeController = nodeController;
 
     }
 
@@ -59,8 +69,10 @@ public class ReposcapewebApplication {
 
     @EventListener(ApplicationReadyEvent.class)
     public void postConstruct() {
-        toolService.validateTools();
         Graphs.setUp();
+
+        toolService.validateTools();
+
         jobController.importJobsHistory();
         importService.importHistory();
         importService.importNodeData();
@@ -77,7 +89,7 @@ public class ReposcapewebApplication {
         toolService.createInteractionFiles();
 
 
-        log.debug("Current RAM usage: " + (int) ((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024)
+        log.info("Current RAM usage: " + (int) ((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024)
                 + "MB");
 
 

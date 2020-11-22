@@ -56,47 +56,110 @@
               </template>
             </template>
             <template v-if="selectedTab===2">
+              <v-tabs
+                fixed-tabs
+                v-model="menu.options.list.tab"
+              >
+                <v-tabs-slider></v-tabs-slider>
+                <v-tab v-for="tab in menu.options.list.tabs" class="primary--text" :key=tab.id>
+                  {{ tab.label }}
+                </v-tab>
+              </v-tabs>
               <v-list-item>
                 <v-switch
                   v-model="options.list.showAll"
                   @click="$emit('reloadTablesEvent')"
-                  label="Show all Items"
-                >
+                  :label="'Show all Items ('+options.list.selected+'/'+options.list.total+')'">
+                  >
                 </v-switch>
               </v-list-item>
               <v-divider></v-divider>
-              <v-list-item>
-                <v-chip
-                  v-on:click="$emit('graphModificationEvent','extend')"
-                  class="pa-3"
-                  outlined
-                >
-                  <v-icon left>fas fa-plus-circle</v-icon>
-                  Extend Graph
-                </v-chip>
-              </v-list-item>
-              <v-list-item>
-                <v-chip
-                  v-on:click="$emit('graphModificationEvent','collapse')"
-                  class="pa-3"
-                  outlined
-                >
-                  <v-icon left>fas fa-compress-alt</v-icon>
-                  Collapse Graph
-
-                </v-chip>
-              </v-list-item>
-              <v-list-item>
-                <v-chip
-                  icon
-                  outlined
-                  v-on:click="$emit('graphModificationEvent','subselect')"
-                >
-                  <v-icon left>fas fa-project-diagram</v-icon>
-                  Load Selection
-                </v-chip>
-              </v-list-item>
-
+              <template v-if="menu.options.list.tab===0">
+                <v-list-item>
+                  <v-chip
+                    v-on:click="$emit('graphModificationEvent','extend')"
+                    class="pa-3"
+                    outlined
+                  >
+                    <v-icon left>fas fa-plus-circle</v-icon>
+                    Extend Graph
+                  </v-chip>
+                </v-list-item>
+                <v-list-item>
+                  <v-chip
+                    v-on:click="$emit('graphModificationEvent','collapse')"
+                    class="pa-3"
+                    outlined
+                  >
+                    <v-icon left>fas fa-compress-alt</v-icon>
+                    Collapse Graph
+                  </v-chip>
+                </v-list-item>
+                <v-list-item>
+                  <v-chip
+                    icon
+                    outlined
+                    v-on:click="$emit('graphModificationEvent','subselect')"
+                  >
+                    <v-icon left>fas fa-project-diagram</v-icon>
+                    Load Selection
+                  </v-chip>
+                </v-list-item>
+              </template>
+              <template v-if="menu.options.list.tab===1">
+                <v-list-item>
+                  <v-chip
+                    icon
+                    outlined
+                    v-on:click="$emit('selectionEvent','nodes','all')"
+                  >
+                    <v-icon left>fas fa-check-double</v-icon>
+                    Select All
+                  </v-chip>
+                </v-list-item>
+                <v-list-item>
+                  <v-chip
+                    icon
+                    outlined
+                    v-on:click="$emit('selectionEvent','nodes','induced')"
+                  >
+                    <v-icon left>fas fa-check</v-icon>
+                    Select Induced
+                  </v-chip>
+                </v-list-item>
+                <v-list-item>
+                  <v-chip
+                    icon
+                    outlined
+                    v-on:click="$emit('selectionEvent','nodes','none')"
+                  >
+                    <v-icon left>fas fa-ban</v-icon>
+                    Unselect All
+                  </v-chip>
+                </v-list-item>
+              </template>
+              <template v-if="menu.options.list.tab===2">
+                <v-list-item>
+                  <v-chip
+                    icon
+                    outlined
+                    v-on:click="$emit('selectionEvent','edges','all')"
+                  >
+                    <v-icon left>fas fa-check-double</v-icon>
+                    Select All
+                  </v-chip>
+                </v-list-item>
+                <v-list-item>
+                  <v-chip
+                    icon
+                    outlined
+                    v-on:click="$emit('selectionEvent','edges','none')"
+                  >
+                    <v-icon left>fas fa-ban</v-icon>
+                    Unselect All
+                  </v-chip>
+                </v-list-item>
+              </template>
             </template>
             <template v-if="selectedTab===3">
               <v-list-item>
@@ -267,7 +330,7 @@
         <v-container v-if="show.detail">
           <v-list class="transparent">
             <template
-              v-for="item in Object.keys(detailedObject)"
+              v-for="item in detailedObject.order"
             >
 
               <v-list-item :key="item">
@@ -292,7 +355,7 @@
                       fa-external-link-alt
                     </v-icon>
                   </v-chip>
-                  <span v-else >{{ format(item, detailedObject[item]) }}</span>
+                  <span v-else>{{ format(item, detailedObject[item]) }}</span>
                 </v-list-item-subtitle>
               </v-list-item>
               <v-divider></v-divider>
@@ -326,6 +389,7 @@ export default {
   filterModel: "",
   filterName: "",
   detailedObject: undefined,
+  gid: undefined,
 
   data() {
     return {
@@ -338,6 +402,14 @@ export default {
         info: false,
         legend: false,
         detail: false,
+      },
+      menu: {
+        options: {
+          list: {
+            tab: 0,
+            tabs: [{id: 0, label: "General"}, {id: 1, label: "Nodes"}, {id: 2, label: "Edges"}]
+          }
+        }
       },
       selectedNode: this.selectedNode,
       neighborNodes: this.neighborNodes,
@@ -352,8 +424,8 @@ export default {
     }
   },
   created() {
-    this.filterTypes = ['startsWith', 'contain', 'match'
-    ]
+    this.filterTypes = ['startsWith', 'contain', 'match']
+    this.gid = this.$route.params["gid"]
     console.log(this.options)
   },
 
@@ -372,6 +444,7 @@ export default {
       this.$emit("nodeSelectionEvent", nodeId)
     },
     loadSelection: function (params) {
+      this.gid = this.$route.params["gid"]
       if (params !== undefined) {
         this.selectedNode = params.primary;
         this.neighborNodes = params.neighbors;
@@ -381,7 +454,7 @@ export default {
       }
     },
     format: function (item, value) {
-      if (item === "primaryDomainId" || item === "primaryDomainIds" || item === "domainIds") {
+      if (item === "primaryDomainId" || item === "primaryDomainIds" || item === "domainIds" || item === "sourceDomainId" || item === "targetDomainId" || item === "memberOne" || item === "memberTwo") {
         console.log("Format value='" + value + "'")
         let split = value.split(".")
         switch (split[0]) {
@@ -409,16 +482,23 @@ export default {
             return split[1]
           case "umls":
             return split[1]
+          case "meddra":
+            return split[1]
+          case "medgen":
+            return split[1]
         }
       }
+      if(item==="_cls")
+        return value.split('.')[1]
       if (item === "mapLocation") {
-        let split = value.split("p");
+        console.log(value)
+        let split = value.indexOf("p") > 0 ? value.split("p") : value.split("q");
         return "Chr" + split[0] + ":" + split[1]
       }
       return value
     },
     getExternalSource: function (item, value) {
-      if (item === "primaryDomainId" || item === "primaryDomainIds" || item === "domainIds") {
+      if (item === "primaryDomainId" || item === "primaryDomainIds" || item === "domainIds" || item === "sourceDomainId" || item === "targetDomainId" || item === "memberOne" || item === "memberTwo") {
         let split = value.split(".")
         switch (split[0]) {
           case "entrez":
@@ -445,6 +525,10 @@ export default {
             return "orpha"
           case "umls":
             return "NCImetathesaurus"
+          case "meddra":
+            return "BioPortal"
+          case "medgen":
+            return "NCBI"
         }
       }
       if (item === "icd10")
@@ -455,11 +539,15 @@ export default {
         return "UCSC"
       if (item === "casNumber")
         return "Molbase"
+      if(item==="molecularFormula")
+        return "ChemCalc"
       return value
     },
     getUrl: function (item, value) {
       let url = '';
-      if (item === "primaryDomainId" || item === "primaryDomainIds" || item === "domainIds") {
+      if(value.length ===0)
+        return value
+      if (item === "primaryDomainId" || item === "primaryDomainIds" || item === "domainIds" || item === "sourceDomainId" || item === "targetDomainId" || item === "memberOne" || item === "memberTwo") {
         let split = value.split(".")
         switch (split[0]) {
           case "entrez":
@@ -486,6 +574,11 @@ export default {
             return "https://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=EN&Expert=" + split[1]
           case "umls":
             return "https://ncim.nci.nih.gov/ncimbrowser/ConceptReport.jsp?dictionary=NCI%20MetaThesaurus&code=" + split[1]
+          case "meddra":
+            return "http://purl.bioontology.org/ontology/MEDDRA/" + split[1]
+            case "medgen":
+              return "https://www.ncbi.nlm.nih.gov/medgen/?term="+split[1]
+
         }
       }
       if (item === "icd10")
@@ -496,10 +589,47 @@ export default {
         return "http://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&position=" + value
       if (item === "casNumber")
         return "http://www.molbase.com/en/cas-" + value + ".html"
+      if (item === "databases" || item==="allDatasets"|| item==="primaryDataset")
+        switch (value) {
+          case "biogrid":
+            return "https://thebiogrid.org/"
+          case "hprd":
+            return "https://www.hprd.org/"
+          case "DrugBank":
+            return "https://go.drugbank.com/"
+          case "DrugCentral":
+            return "https://drugcentral.org/"
+          case "iid-pred":
+            return "http://iid.ophid.utoronto.ca/"
+          case "mint":
+            return "https://mint.bio.uniroma2.it/"
+          case "intact":
+            return "https://www.ebi.ac.uk/intact/"
+          case "iid":
+            return "http://iid.ophid.utoronto.ca/"
+          case "iid-ortho":
+            return "http://iid.ophid.utoronto.ca/"
+          case "bci":
+            return "http://califano.c2b2.columbia.edu/b-cell-interactome"
+          case "dip":
+            return "https://dip.doe-mbi.ucla.edu/dip/Main.cgi"
+          case "i2d":
+            return "http://ophid.utoronto.ca/ophidv2.204/"
+          case "innatedb":
+            return "https://www.innatedb.com/"
+        }
+      if (item === "assertedBy") {
+        if (value === "omim")
+          return "https://www.omim.org/"
+        if (value === "disgenet")
+          return "https://www.disgenet.org/"
+      }
+      if(item==="molecularFormula")
+        return "https://www.chemcalc.org/?mf="+value
       return url;
     },
     getExternalColor: function (item, value) {
-      if (item === "primaryDomainId" || item === "primaryDomainIds" || item === "domainIds") {
+      if (item === "primaryDomainId" || item === "primaryDomainIds" || item === "domainIds" || item === "sourceDomainId" || item === "targetDomainId" || item === "memberOne" || item === "memberTwo") {
         let split = value.split(".")
         switch (split[0]) {
           case "entrez":
@@ -526,6 +656,10 @@ export default {
             return "#d42c56"
           case "umls":
             return "#c31f40"
+          case "meddra":
+            return "#234979"
+          case "medgen":
+            return "#369"
         }
       }
       if (item === "icd10")
@@ -536,6 +670,43 @@ export default {
         return "#00457c"
       if (item === "casNumber")
         return "#749bc4"
+      if (item === "databases"|| item==="allDatasets" || item==="primaryDataset")
+        switch (value) {
+          case "biogrid":
+            return "773a3a"
+          case "DrugBank":
+            return "#ff00b8"
+          case "DrugCentral":
+            return "#e00600"
+          case "iid-pred":
+            return "#3a332d"
+          case "hprd":
+            return "#333466"
+          case "mint":
+            return "#228b22"
+          case "intact":
+            return "#57A7A7"
+          case "iid":
+            return "#3a332d"
+          case "iid-ortho":
+            return "#3a332d"
+          case "bci":
+            return "#4f54b0"
+          case "dip":
+            return "#a0c0f5"
+          case "i2d":
+            return "#3b3b6b"
+          case "innatedb":
+            return "#2572a6"
+        }
+      if (item === "assertedBy") {
+        if (value === "omim")
+          return "#333333"
+        if (value === "disgenet")
+          return "#ff00de"
+      }
+      if(item ==="molecularFormula")
+        return "#33484d"
       return "black"
     }
     ,
@@ -583,7 +754,7 @@ export default {
           console.log(err)
         })
       } else if (data.type === "edge") {
-        this.$http.get("getEdgeDetails?name=" + data.name + "&id1=" + data.id1 + "&id2=" + data.id2 + "&gid=" + this.$cookies.get("gid")).then(response => {
+        this.$http.get("getEdgeDetails?name=" + data.name + "&id1=" + data.id1 + "&id2=" + data.id2 + "&gid=" + this.gid).then(response => {
           if (response.data !== undefined) {
             this.detailedObject = response.data
             if (this.detailedObject.sourceId !== undefined)
@@ -631,7 +802,6 @@ export default {
 
 .span::-webkit-scrollbar
   display: none
-
 
 
 .span

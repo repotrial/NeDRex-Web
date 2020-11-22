@@ -133,7 +133,7 @@ public class WebGraphService {
                 g.getEdges().keySet().forEach(k -> {
                     if (!finalReq.attributes.containsKey("edges"))
                         finalReq.attributes.put("edges", new HashMap<>());
-                    finalReq.attributes.get("edges").put(g.getEdge(k), k < 0 ? new String[]{"id", "idOne", "idTwo", "weight", "jaccardIndex"} : edgeController.getListAttributes(k));
+                    finalReq.attributes.get("edges").put(g.getEdge(k), k < 0 ? new String[]{"id", "node1","node2", "weight", "jaccardIndex"} : edgeController.getListAttributes(k));
                 });
             }
             log.debug("Converting nodes from Graph to WebList for " + id);
@@ -163,11 +163,11 @@ public class WebGraphService {
                 List<PairId> edges = edgeList.stream().map(e -> new PairId(e.getId1(), e.getId2())).collect(Collectors.toList());
                 if (type < 0) {
                     Pair<Integer, Integer> nodeIds = g.getNodesfromEdge(type);
-                    String[] attributeArray = new String[]{"id", "idOne", "idTwo", "memberOne", "memberTwo", "weight", "jaccardIndex"};
+                    String[] attributeArray = new String[]{"id", "node1","node2", "weight", "jaccardIndex"};
                     finalList.addAttributes("edges", stringType, attributeArray);
                     LinkedList<String> attrMaps = edges.stream().map(p -> getCustomEdgeAttributeList(g, type, p)).collect(Collectors.toCollection(LinkedList::new));
                     finalList.addEdges(stringType, attrMaps);
-                    finalList.setTypes("edges", stringType, attributeArray, new String[]{"", "numeric", "numeric", "", "", "numeric", "numeric"}, new boolean[]{true, true, true, true, true, false, false});
+                    finalList.setTypes("edges", stringType, attributeArray, new String[]{"", "", "", "numeric", "numeric"}, new boolean[]{true, false, false, false, false});
                 } else {
                     String[] attributeArray = edgeController.getAttributes(type);
                     finalList.addAttributes("edges", stringType, attributeArray);
@@ -512,20 +512,8 @@ public class WebGraphService {
                 added.add(e);
                 LinkedList<Edge> edges = new LinkedList<>();
                 HashSet<Integer> nodes = new HashSet<>();
-                if (g.getNodes().containsKey(nodeIds.first) & g.getNodes().containsKey(nodeIds.second) && !nodeIds.first.equals(nodeIds.second)) {
-                    g.getNodes().get(nodeIds.first).keySet().forEach(nodeId1 -> {
 
-                        try {
-                            if (!nodeIds.first.equals(nodeIds.second))
-                                edgeController.getEdges(edgeId, nodeIds.first, nodeId1).forEach(nodeId2 -> {
-                                    if (g.getNodes().get(nodeIds.second).containsKey(nodeId2))
-                                        edges.add(new Edge(nodeId1, nodeId2));
-                                });
-                        } catch (NullPointerException ignore) {
-                        }
-                    });
-
-                } else if (nodeIds.first.equals(nodeIds.second)) {
+                if (g.getNodes().containsKey(nodeIds.first) & nodeIds.first.equals(nodeIds.second)) {
                     g.getNodes().get(nodeIds.first).keySet().forEach(nodeId1 -> {
                         try {
                             edgeController.getEdges(edgeId, nodeIds.first, nodeId1).forEach(nodeId2 -> {
@@ -548,8 +536,21 @@ public class WebGraphService {
                         if (!nodeMap.containsKey(entry.getNodeId()))
                             nodeMap.put(entry.getNodeId(), new Node(entry.getNodeId(), entry.getName()));
                     });
-                } else {
+                }
+                if (g.getNodes().containsKey(nodeIds.first) & g.getNodes().containsKey(nodeIds.second) && !nodeIds.first.equals(nodeIds.second)) {
+                    g.getNodes().get(nodeIds.first).keySet().forEach(nodeId1 -> {
+                        try {
+                            if (!nodeIds.first.equals(nodeIds.second))
+                                edgeController.getEdges(edgeId, nodeIds.first, nodeId1).forEach(nodeId2 -> {
+                                    if (g.getNodes().get(nodeIds.second).containsKey(nodeId2))
+                                        edges.add(new Edge(nodeId1, nodeId2));
+                                });
+                        } catch (NullPointerException ignore) {
+                        }
+                    });
 
+                }
+                if ((g.getNodes().containsKey(nodeIds.first) & !g.getNodes().containsKey(nodeIds.second)) | (g.getNodes().containsKey(nodeIds.second) & !g.getNodes().containsKey(nodeIds.first))) {
                     int existing = g.getNodes().containsKey(nodeIds.first) ? nodeIds.first : nodeIds.second;
                     int adding = existing == nodeIds.first ? nodeIds.second : nodeIds.first;
 
@@ -694,10 +695,13 @@ public class WebGraphService {
         as.put("id", p.getId1() + "-" + p.getId2());
         as.put("idOne", p.getId1());
         as.put("idTwo", p.getId2());
+        as.put("node1",nodeController.getName(nodeIds.first,p.getId1()));
+        as.put("node2",nodeController.getName(nodeIds.second,p.getId2()));
         as.put("memberOne", nodeController.getDomainId(nodeIds.first, p.getId1()));
         as.put("memberTwo", nodeController.getDomainId(nodeIds.second, p.getId2()));
         as.put("weight", graph.getCustomEdgeWeights().get(edgeId).get(p.getId1()).get(p.getId2()));
         as.put("jaccardIndex", graph.getCustomJaccardIndex().get(edgeId).get(p.getId1()).get(p.getId2()));
+        as.put("order",new String[]{"id","idOne","idTwo","node1","node2","memberOne","memberTwo","weight","jaccardIndex"});
         try {
             return objectMapper.writeValueAsString(as);
         } catch (JsonProcessingException e) {
@@ -730,7 +734,9 @@ public class WebGraphService {
             return getCustomEdgeAttributeList(graph, edgeId, p);
         else {
             try {
-                return objectMapper.writeValueAsString(edgeController.edgeToAttributeList(edgeId, p));
+                HashMap<String,Object> details = edgeController.edgeToAttributeList(edgeId, p);
+                details.put("order",edgeController.getAttributes(edgeId));
+                return objectMapper.writeValueAsString(details);
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
                 return null;

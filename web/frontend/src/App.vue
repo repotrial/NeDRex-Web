@@ -57,6 +57,7 @@
                     v-on:loadSelectionEvent="loadSubSelection"
                     v-on:updateInfo="evalPostInfo"
                     v-on:printNotificationEvent="printNotification"
+                    v-on:reloadSide="reloadSide"
                     :configuration="options.list"
               ></List>
             </v-container>
@@ -143,6 +144,7 @@
                     v-on:graphModificationEvent="listModification"
                     v-on:historyReloadEvent="historyReloadEvent"
                     v-on:reverseSortingEvent="reverseHistorySorting"
+                    v-on:selectionEvent="listSelectionEvent"
                     :options="options"
                     :selected-tab="selectedTabId"
                     :filters="startFilters"
@@ -219,13 +221,16 @@ export default {
       })
     },
     visualisationEvent: function () {
+      this.reloadSide()
+    },
+    reloadSide: function () {
       this.$refs.side.$forceUpdate()
     },
     initComponents: function () {
       this.options.start = {skipVis: true, onlyConnected: true, selectedElements: []}
       this.options.graph = {physics: false, visualized: false, sizeWarning: false}
-      this.options.list= {showAll:true}
-      this.options.history= {chronological:false, otherUsers:false}
+      this.options.list = {showAll: true, selected: 0, total: 0}
+      this.options.history = {chronological: false, otherUsers: false}
     },
     loadSubSelection: function (selection) {
       this.loadGraph({data: selection})
@@ -237,7 +242,7 @@ export default {
     loadGraph: function (graph) {
       this.tabslist[1].icon = "fas fa-circle-notch fa-spin"
       this.tabslist[2].icon = "fas fa-circle-notch fa-spin"
-      if(this.options.graph.physics) {
+      if (this.options.graph.physics) {
         this.options.graph.physics = false;
         this.updatePhysics()
       }
@@ -249,6 +254,14 @@ export default {
       }).catch(err => {
         console.log(err)
       })
+    },
+    listSelectionEvent: function (type, operation) {
+      if (operation === "all")
+        this.$refs.list.selectAll(type)
+      if(operation ==="none")
+        this.$refs.list.deselectAll(type)
+      if(operation ==="induced")
+        this.$refs.list.selectEdges()
     },
     loadList: function (gid) {
       this.$refs.list.getList(gid, this.metagraph)
@@ -281,13 +294,13 @@ export default {
       if (this.selectedTabId === 1)
         this.$refs.graph.visualizeNow()
     },
-    listModification: function(event){
+    listModification: function (event) {
       this.$refs.list.recieveEvent(event)
     },
-    reverseHistorySorting: function (){
+    reverseHistorySorting: function () {
       this.$refs.history.reverseList()
     },
-    historyReloadEvent: function(){
+    historyReloadEvent: function () {
       this.$refs.history.$forceUpdate()
     },
     nodeDetails: function (data) {
@@ -348,7 +361,7 @@ export default {
 
       this.adaptSidecard()
     },
-    reloadTables: function(){
+    reloadTables: function () {
       this.$refs.list.reloadTables()
     },
     adaptSidecard: function (param) {

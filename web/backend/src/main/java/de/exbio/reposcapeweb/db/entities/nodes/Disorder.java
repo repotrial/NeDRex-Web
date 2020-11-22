@@ -36,7 +36,7 @@ public class Disorder extends RepoTrialNode {
 
     @Transient
     @JsonIgnore
-    public final static String[] allAttributeTypes = new String[]{"numeric","id","","","array","", "array",  "",""};
+    public final static String[] allAttributeTypes = new String[]{"numeric","","","array","","array", "",  ""};
 
     @Transient
     @JsonIgnore

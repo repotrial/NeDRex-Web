@@ -230,15 +230,20 @@ public class DrugHasTargetService {
     public DrugHasTargetProtein setDomainIds(DrugHasTargetProtein item) {
         item.setSourceDomainId(drugService.map(item.getPrimaryIds().getId1()));
         item.setTargetDomainId(proteinService.map(item.getPrimaryIds().getId2()));
+        item.setNodeNames(drugService.getName(item.getPrimaryIds().getId1()),proteinService.getName(item.getPrimaryIds().getId2()));
         return item;
     }
-
-
     public DrugHasTargetGene setDomainIds(DrugHasTargetGene item) {
         item.setSourceDomainId(drugService.map(item.getPrimaryIds().getId1()));
         item.setTargetDomainId(geneService.map(item.getPrimaryIds().getId2()));
+        item.setNodeNames(drugService.getName(item.getPrimaryIds().getId1()),geneService.getName(item.getPrimaryIds().getId2()));
         return item;
     }
+
+
+
+
+
 
     public boolean isDirected() {
         return directed;

@@ -49,15 +49,15 @@ public class DrugHasTargetProtein extends RepoTrialEdge implements Serializable 
 
     @Transient
     @JsonIgnore
-    public final static String[] allAttributes = new String[]{"id","sourceId","targetId","sourceDomainId", "targetDomainId", "actions", "databases","type"};
+    public final static String[] allAttributes = new String[]{"id","sourceId","targetId","node1","node2","sourceDomainId", "targetDomainId", "actions", "databases","type"};
 
     @Transient
     @JsonIgnore
-    public final static String[] allAttributeTypes = new String[]{"numeric","numeric","numeric","", "", "array", "array",""};
+    public final static String[] allAttributeTypes = new String[]{"numeric","numeric","numeric","","","", "", "array", "array",""};
 
     @Transient
     @JsonIgnore
-    public final static boolean[] idAttributes = new boolean[]{true, true, true, true, true, false, false, false};
+    public final static boolean[] idAttributes = new boolean[]{true, true, true, false,false,true, true, false, false, false};
 
 
 
@@ -65,6 +65,11 @@ public class DrugHasTargetProtein extends RepoTrialEdge implements Serializable 
     private String targetDomainId;
     @Transient
     private String sourceDomainId;
+
+    @Transient
+    private String nodeOne;
+    @Transient
+    private String nodeTwo;
 
     private String actions;
 
@@ -76,7 +81,7 @@ public class DrugHasTargetProtein extends RepoTrialEdge implements Serializable 
 
 
     public static String[] getListAttributes() {
-        return new String[]{"id","sourceId","targetId", "actions"};
+        return new String[]{"id","node1","node2", "actions"};
     }
 
     @Override
@@ -86,6 +91,8 @@ public class DrugHasTargetProtein extends RepoTrialEdge implements Serializable 
         values.put("sourceDomainId",getSourceDomainId());
         values.put("sourceId",id.getId1());
         values.put("targetId",id.getId2());
+        values.put("node1",nodeOne);
+        values.put("node2",nodeTwo);
         values.put("type",getType());
         values.put("actions",getActions());
         values.put("databases",getDatabases());
@@ -102,6 +109,11 @@ public class DrugHasTargetProtein extends RepoTrialEdge implements Serializable 
         });
         return values;
     }
+    public void setNodeNames(String node1, String node2){
+        nodeOne=node1;
+        nodeTwo=node2;
+    }
+
 
     public String getTargetDomainId() {
         return targetDomainId;

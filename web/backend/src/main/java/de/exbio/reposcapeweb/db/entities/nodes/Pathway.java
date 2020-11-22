@@ -32,15 +32,15 @@ public class Pathway extends RepoTrialNode {
 
     @Transient
     @JsonIgnore
-    public final static String[] allAttributes = new String[]{"id", "primaryDomainId", "displayName", "domainIds", "species", "domainIds", "type"};
+    public final static String[] allAttributes = new String[]{"id", "primaryDomainId", "displayName", "domainIds", "species", "type"};
 
     @Transient
     @JsonIgnore
-    public final static String[] allAttributeTypes = new String[]{"numeric", "", "", "array", "array", "array", ""};
+    public final static String[] allAttributeTypes = new String[]{"numeric", "", "", "array", "array", ""};
 
     @Transient
     @JsonIgnore
-    public final static boolean[] idAttributes = new boolean[]{true, true, false, true, false, false, false};
+    public final static boolean[] idAttributes = new boolean[]{true, true, false, true, false, false};
 
 
     @Column(nullable = false)

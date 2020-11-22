@@ -38,6 +38,11 @@ public class GeneInteractsWithGene extends RepoTrialEdge implements Serializable
     private String memberOne;
     @Transient
     private String memberTwo;
+
+    @Transient
+    private String nodeOne;
+    @Transient
+    private String nodeTwo;
 //    @Column(columnDefinition = "TEXT")
 //    private String methods;
 //
@@ -48,21 +53,21 @@ public class GeneInteractsWithGene extends RepoTrialEdge implements Serializable
     }
 
     public static String[] getListAttributes() {
-        return new String[]{"id","idOne","idTwo"};
+        return new String[]{"id","node1","node2"};
     }
 
 
     @Transient
     @JsonIgnore
-    public final static String[] allAttributes = new String[]{"id","idOne","idTwo","memberOne","memberTwo","type"};
+    public final static String[] allAttributes = new String[]{"id","idOne","idTwo","node1","node2","memberOne","memberTwo","type"};
 
     @Transient
     @JsonIgnore
-    public final static String[] allAttributeTypes = new String[]{"numeric","numeric","numeric","","", ""};
+    public final static String[] allAttributeTypes = new String[]{"numeric","numeric","numeric","","","","", ""};
 
     @Transient
     @JsonIgnore
-    public final static boolean[] idAttributes = new boolean[]{true, true, true, true, true, false};
+    public final static boolean[] idAttributes = new boolean[]{true, true, true, false,false,true, true, false};
 
     @Override
     public HashMap<String, Object> getAsMap() {
@@ -71,9 +76,16 @@ public class GeneInteractsWithGene extends RepoTrialEdge implements Serializable
         values.put("memberTwo",memberTwo);
         values.put("idOne",id.getId1());
         values.put("idTwo",id.getId2());
+        values.put("node1",nodeOne);
+        values.put("node2",nodeTwo);
         values.put("type",getType());
         values.put("id",id.getId1()+"-"+id.getId2());
         return values;
+    }
+
+    public void setNodeNames(String node1, String node2){
+        nodeOne=node1;
+        nodeTwo=node2;
     }
 
     @Override

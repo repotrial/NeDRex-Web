@@ -36,13 +36,13 @@ public class RepoTrialUtils {
         return urlAttributes.isEmpty();
     }
 
-    public static void writeNodeMap(File f, HashMap<Integer, String> idToDomainMap) {
+    public static void writeNodeMap(File f, HashMap<Integer, Pair<String,String>> idToDomainMap) {
         try {
             BufferedWriter bw = new BufferedWriter(new FileWriter(f));
             bw.write("#id\tprimaryDomainId\n");
             idToDomainMap.forEach((k, v) -> {
                 try {
-                    bw.write(k + "\t" + v + "\n");
+                    bw.write(k + "\t" + v.first +"\t"+v.second+ "\n");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

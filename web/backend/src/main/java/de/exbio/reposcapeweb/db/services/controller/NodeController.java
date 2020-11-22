@@ -1,6 +1,7 @@
 package de.exbio.reposcapeweb.db.services.controller;
 
 import de.exbio.reposcapeweb.communication.cache.Graphs;
+import de.exbio.reposcapeweb.db.entities.edges.ProteinAssociatedWithDisorder;
 import de.exbio.reposcapeweb.db.entities.nodes.*;
 import de.exbio.reposcapeweb.db.services.nodes.*;
 import de.exbio.reposcapeweb.filter.NodeFilter;
@@ -215,6 +216,22 @@ public class NodeController {
         return null;
     }
 
+    public String getName(Integer typeId, Integer id) {
+        switch (Graphs.getNode(typeId)) {
+            case "disorder":
+                return disorderService.getName(id);
+            case "drug":
+                return drugService.getName(id);
+            case "gene":
+                return geneService.getName(id);
+            case "pathway":
+                return pathwayService.getName(id);
+            case "protein":
+                return proteinService.getName(id);
+        }
+        return null;
+    }
+
     public boolean[] getIdAttributes(Integer typeId) {
         switch (Graphs.getNode(typeId)) {
             case "disorder":
@@ -227,6 +244,22 @@ public class NodeController {
                 return Pathway.idAttributes;
             case "protein":
                 return Protein.idAttributes;
+        }
+        return null;
+    }
+
+    public Iterable findAll(Integer typeId) {
+        switch (Graphs.getNode(typeId)) {
+            case "disorder":
+                return disorderService.findAll();
+            case "drug":
+                return drugService.findAll();
+            case "gene":
+                return geneService.findAll();
+            case "pathway":
+                return pathwayService.findAll();
+            case "protein":
+                return proteinService.findAll();
         }
         return null;
     }

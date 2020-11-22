@@ -7,6 +7,7 @@ import de.exbio.reposcapeweb.db.services.edges.*;
 import de.exbio.reposcapeweb.db.services.nodes.*;
 import de.exbio.reposcapeweb.filter.FilterService;
 import de.exbio.reposcapeweb.tools.ToolService;
+import de.exbio.reposcapeweb.utils.Pair;
 import de.exbio.reposcapeweb.utils.ReaderUtils;
 import de.exbio.reposcapeweb.utils.RepoTrialUtils;
 import de.exbio.reposcapeweb.utils.StringUtils;
@@ -130,7 +131,7 @@ public class ImportService {
     }
 
 
-    private void importNodeIdMaps(File cacheDir, String table, HashMap<Integer, String> idToDomain, HashMap<String, Integer> domainToString) {
+    private void importNodeIdMaps(File cacheDir, String table, HashMap<Integer, Pair<String,String>> idToDomain, HashMap<String, Integer> domainToString) {
         File nodeDir = new File(cacheDir, "nodes");
 
         File f = new File(nodeDir, table + ".map");
@@ -146,7 +147,7 @@ public class ImportService {
                     continue;
                 ArrayList<String> entry = StringUtils.split(line, '\t', 2);
                 int id = Integer.parseInt(entry.get(0));
-                idToDomain.put(id, entry.get(1));
+                idToDomain.put(id, new Pair<>(entry.get(1),entry.get(2)));
                 domainToString.put(entry.get(1), id);
             }
             log.debug("NodeIdMap import: Updated " + table);

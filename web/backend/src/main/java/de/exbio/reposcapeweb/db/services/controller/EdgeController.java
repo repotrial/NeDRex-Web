@@ -289,6 +289,10 @@ public class EdgeController {
         return proteinInteractsWithProteinService.getProteins(ids);
     }
 
+    public Iterable<ProteinInteractsWithProtein> findAllProteinInteractsWithProtein(){
+        return proteinInteractsWithProteinService.findAllProteins();
+    }
+
     public ProteinInteractsWithProtein findProteinInteractsWithProtein(PairId id) {
         return proteinInteractsWithProteinService.setDomainIds(proteinInteractsWithProteinService.findProtein(id).orElseGet(null));
     }
@@ -298,6 +302,34 @@ public class EdgeController {
         if (Graphs.getNodesfromEdge(edgeId).first == node1)
             return isEdgeFrom(edgeId, node1, node2, k1, k2);
         return isEdgeFrom(edgeId, node2, node1, k2, k1);
+    }
+
+    public Iterable findAll(int edgeId) {
+        switch (Graphs.getEdge(edgeId)) {
+            case "GeneAssociatedWithDisorder":
+                return associatedWithDisorderService.findAllGenes();
+            case "DrugHasTargetGene":
+                return drugHasTargetService.findAllGenes();
+            case "ProteinEncodedBy":
+                return proteinEncodedByService.findAll();
+            case "DrugHasIndication":
+                return drugHasIndicationService.findAll();
+            case "DrugHasTargetProtein":
+                return drugHasTargetService.findAllProteins();
+            case "ProteinInteractsWithProtein":
+                return proteinInteractsWithProteinService.findAllProteins();
+            case "ProteinInPathway":
+                return proteinInPathwayService.findAll();
+            case "ProteinAssociatedWithDisorder":
+                return associatedWithDisorderService.findAllProteins();
+            case "DisorderIsADisorder":
+                return disorderIsADisorderService.findAll();
+            case "DisorderComorbidWithDisorder":
+                return disorderComorbidWithDisorderService.findAll();
+            case "GeneInteractsWithGene":
+                return proteinInteractsWithProteinService.findAllGenes();
+        }
+        return null;
     }
 
     public boolean isEdgeFrom(int edgeId, int node1, int node2, Integer k1, Integer k2) {
@@ -435,6 +467,7 @@ public class EdgeController {
         switch (Graphs.getEdge(type)) {
             case "GeneAssociatedWithDisorder":
                 chunks.stream().map(this::findAllGeneAssociatedWithDisorder).flatMap(Collection::stream).collect(Collectors.toList()).forEach(e -> {
+                    associatedWithDisorderService.setDomainIds(e);
                     try {
                         values.add(objectMapper.writeValueAsString(e.getAsMap(attributes)));
                     } catch (JsonProcessingException jsonProcessingException) {
@@ -444,6 +477,7 @@ public class EdgeController {
                 break;
             case "DrugHasTargetGene":
                 chunks.stream().map(this::findAllDrugHasTargetGene).flatMap(Collection::stream).collect(Collectors.toList()).forEach(e -> {
+                    drugHasTargetService.setDomainIds(e);
                     try {
                         values.add(objectMapper.writeValueAsString(e.getAsMap(attributes)));
                     } catch (JsonProcessingException jsonProcessingException) {
@@ -453,6 +487,7 @@ public class EdgeController {
                 break;
             case "ProteinEncodedBy":
                 chunks.stream().map(this::findAllProteinEncodedBy).flatMap(Collection::stream).collect(Collectors.toList()).forEach(e -> {
+                    proteinEncodedByService.setDomainIds(e);
                     try {
                         values.add(objectMapper.writeValueAsString(e.getAsMap(attributes)));
                     } catch (JsonProcessingException jsonProcessingException) {
@@ -462,6 +497,7 @@ public class EdgeController {
                 break;
             case "DrugHasIndication":
                 chunks.stream().map(this::findAllDrugHasIndication).flatMap(Collection::stream).collect(Collectors.toList()).forEach(e -> {
+                    drugHasIndicationService.setDomainIds(e);
                     try {
                         values.add(objectMapper.writeValueAsString(e.getAsMap(attributes)));
                     } catch (JsonProcessingException jsonProcessingException) {
@@ -471,6 +507,7 @@ public class EdgeController {
                 break;
             case "DrugHasTargetProtein":
                 chunks.stream().map(this::findAllDrugHasTargetProtein).flatMap(Collection::stream).collect(Collectors.toList()).forEach(e -> {
+                    drugHasTargetService.setDomainIds(e);
                     try {
                         values.add(objectMapper.writeValueAsString(e.getAsMap(attributes)));
                     } catch (JsonProcessingException jsonProcessingException) {
@@ -480,6 +517,7 @@ public class EdgeController {
                 break;
             case "ProteinInteractsWithProtein":
                 chunks.stream().map(this::findAllProteinInteractsWithProtein).flatMap(Collection::stream).collect(Collectors.toList()).forEach(e -> {
+                    proteinInteractsWithProteinService.setDomainIds(e);
                     try {
                         values.add(objectMapper.writeValueAsString(e.getAsMap(attributes)));
                     } catch (JsonProcessingException jsonProcessingException) {
@@ -489,6 +527,7 @@ public class EdgeController {
                 break;
             case "GeneInteractsWithGene":
                 chunks.stream().map(this::findAllGeneInteractsWithGene).flatMap(Collection::stream).collect(Collectors.toList()).forEach(e -> {
+                    proteinInteractsWithProteinService.setDomainIds(e);
                     try {
                         values.add(objectMapper.writeValueAsString(e.getAsMap(attributes)));
                     } catch (JsonProcessingException jsonProcessingException) {
@@ -498,6 +537,7 @@ public class EdgeController {
                 break;
             case "ProteinInPathway":
                 chunks.stream().map(this::findAllProteinInPathway).flatMap(Collection::stream).collect(Collectors.toList()).forEach(e -> {
+                    proteinInPathwayService.setDomainIds(e);
                     try {
                         values.add(objectMapper.writeValueAsString(e.getAsMap(attributes)));
                     } catch (JsonProcessingException jsonProcessingException) {
@@ -507,6 +547,7 @@ public class EdgeController {
                 break;
             case "ProteinAssociatedWithDisorder":
                 chunks.stream().map(this::findAllProteinAssociatedWithDisorder).flatMap(Collection::stream).collect(Collectors.toList()).forEach(e -> {
+                    associatedWithDisorderService.setDomainIds(e);
                     try {
                         values.add(objectMapper.writeValueAsString(e.getAsMap(attributes)));
                     } catch (JsonProcessingException jsonProcessingException) {
@@ -516,6 +557,7 @@ public class EdgeController {
                 break;
             case "DisorderIsADisorder":
                 chunks.stream().map(this::findAllDisorderIsADisorder).flatMap(Collection::stream).collect(Collectors.toList()).forEach(e -> {
+                    disorderIsADisorderService.setDomainIds(e);
                     try {
                         values.add(objectMapper.writeValueAsString(e.getAsMap(attributes)));
                     } catch (JsonProcessingException jsonProcessingException) {
@@ -525,6 +567,7 @@ public class EdgeController {
                 break;
             case "DisorderComorbidWithDisorder":
                 chunks.stream().map(this::findAllDisorderComorbidWithDisorder).flatMap(Collection::stream).collect(Collectors.toList()).forEach(e -> {
+                    disorderComorbidWithDisorderService.setDomainIds(e);
                     try {
                         values.add(objectMapper.writeValueAsString(e.getAsMap(attributes)));
                     } catch (JsonProcessingException jsonProcessingException) {

@@ -282,7 +282,7 @@ public class UpdateService {
                         proteinInteractsWithProteinService.importEdges();
                         break;
 //                    case "protein_encoded_by":
-                        //TODO should work
+                    //TODO should work
 //                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, ProteinEncodedBy.attributes))
 //                            updateSuccessful = proteinEncodedByService.submitUpdates(runEdgeUpdates(ProteinEncodedBy.class, c, proteinEncodedByService::mapIds));
 //                        proteinEncodedByService.importEdges();
@@ -514,6 +514,8 @@ public class UpdateService {
                 } catch (MismatchedInputException e) {
                     e.printStackTrace();
                     log.error("Malformed input line in " + updateFile.getName() + ": " + line);
+                } catch (NullPointerException e) {
+                    continue;
                 }
                 if (line.charAt(line.length() - 1) == ']')
                     break;

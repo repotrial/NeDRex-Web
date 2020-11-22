@@ -204,6 +204,7 @@ public class AssociatedWithDisorderService {
         return new PairId(geneService.map(ids.getFirst()), disorderService.map(ids.getSecond()));
     }
 
+
     public List<GeneAssociatedWithDisorder> getGenes(Collection<PairId> ids) {
         return geneAssociatedWithDisorderRepository.findGeneAssociatedWithDisorderByIdIn(ids);
     }
@@ -223,11 +224,13 @@ public class AssociatedWithDisorderService {
     public ProteinAssociatedWithDisorder setDomainIds(ProteinAssociatedWithDisorder item) {
         item.setSourceDomainId(proteinService.map(item.getPrimaryIds().getId1()));
         item.setTargetDomainId(disorderService.map(item.getPrimaryIds().getId2()));
+        item.setNodeNames(proteinService.getName(item.getPrimaryIds().getId1()),disorderService.getName(item.getPrimaryIds().getId2()));
         return item;
     }
     public GeneAssociatedWithDisorder setDomainIds(GeneAssociatedWithDisorder item) {
         item.setSourceDomainId(geneService.map(item.getPrimaryIds().getId1()));
         item.setTargetDomainId(disorderService.map(item.getPrimaryIds().getId2()));
+        item.setNodeNames(geneService.getName(item.getPrimaryIds().getId1()),disorderService.getName(item.getPrimaryIds().getId2()));
         return item;
     }
 
