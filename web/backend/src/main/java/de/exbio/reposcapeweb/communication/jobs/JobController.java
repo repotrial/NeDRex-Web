@@ -1,6 +1,7 @@
 package de.exbio.reposcapeweb.communication.jobs;
 
 import de.exbio.reposcapeweb.communication.cache.Graph;
+import de.exbio.reposcapeweb.communication.controller.SocketController;
 import de.exbio.reposcapeweb.communication.reponses.WebGraphService;
 import de.exbio.reposcapeweb.tools.ToolService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,15 +17,17 @@ public class JobController {
     private final ToolService toolService;
     private final JobQueue jobQueue;
     private final JobRepository jobRepository;
+    private final SocketController socketController;
 
     private HashMap<String, Job> jobs = new HashMap<>();
 
     @Autowired
-    public JobController(WebGraphService graphService, ToolService toolService, JobQueue jobQueue, JobRepository jobRepository) {
+    public JobController(WebGraphService graphService, ToolService toolService, JobQueue jobQueue, JobRepository jobRepository, SocketController socketController) {
         this.graphService = graphService;
         this.toolService = toolService;
         this.jobQueue = jobQueue;
         this.jobRepository = jobRepository;
+        this.socketController=socketController;
     }
 
 
@@ -82,6 +85,7 @@ public class JobController {
         //TODO do something more with the results?
         graphService.applyModuleJob(j, results.keySet());
         save(j);
+        socketController.setJobUpdate(j);
         toolService.clearDirectories(j);
         //TODO send finished message to user frontend
     }

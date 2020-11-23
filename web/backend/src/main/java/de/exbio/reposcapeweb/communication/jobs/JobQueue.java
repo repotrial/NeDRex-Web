@@ -1,5 +1,6 @@
 package de.exbio.reposcapeweb.communication.jobs;
 
+import de.exbio.reposcapeweb.communication.controller.SocketController;
 import de.exbio.reposcapeweb.tools.ToolService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -15,15 +16,17 @@ public class JobQueue {
 
     private final Environment env;
     private final ToolService toolService;
+    private final SocketController socketController;
 
     private LinkedList<Job> queue = new LinkedList<>();
     private HashMap<String, Job> running = new HashMap<>();
     private final int simultaniousExecutes;
 
     @Autowired
-    public JobQueue(Environment env, ToolService toolService) {
+    public JobQueue(Environment env, ToolService toolService, SocketController socketController) {
         this.env = env;
         this.toolService=toolService;
+        this.socketController= socketController;
         simultaniousExecutes = Integer.parseInt(env.getProperty("jobs.parallel.number"));
     }
 
@@ -50,8 +53,8 @@ public class JobQueue {
     @Async
     public void executeJob(Job j){
         j.setStatus(Job.JobState.EXECUTING);
+        socketController.setJobUpdate(j);
         toolService.executeJob(j.getCommand());
-
     }
 
 

@@ -58,7 +58,7 @@
                     v-on:updateInfo="evalPostInfo"
                     v-on:printNotificationEvent="printNotification"
                     v-on:reloadSide="reloadSide"
-                    v-on:addJobGraphId="registerJobGraphId"
+                    v-on:addJobEvent="registerJob"
                     :configuration="options.list"
               ></List>
             </v-container>
@@ -147,6 +147,7 @@
                     v-on:reverseSortingEvent="reverseHistorySorting"
                     v-on:selectionEvent="listSelectionEvent"
                     v-on:executeAlgorithmEvent="executeAlgorithm"
+                    v-on:graphLoadEvent="loadGraph"
                     :options="options"
                     :selected-tab="selectedTabId"
                     :filters="startFilters"
@@ -190,20 +191,20 @@ export default {
     }
   },
   created() {
-    this.loadUser()
-    this.colors = {
-      buttons: {graphs: {active: "deep-purple accent-2", inactive: undefined}},
-      tabs: {active: "rgba(25 118 210)", inactive: "rgba(0,0,0,.54)"}
-    }
-    this.selectedTabId = 0;
-    this.tabslist = [
-      {id: 0, label: "Start", icon: "fas fa-filter", color: this.colors.tabs.active, note: false},
-      {id: 1, label: "Graph", icon: "fas fa-project-diagram", color: this.colors.tabs.inactive, note: false},
-      {id: 2, label: "List", icon: "fas fa-list-ul", color: this.colors.tabs.inactive, note: false},
-      {id: 3, label: "History", icon: "fas fa-history", color: this.colors.tabs.inactive, note: false},
-    ]
-    this.initGraphs()
-    this.initComponents()
+      this.loadUser()
+      this.colors = {
+        buttons: {graphs: {active: "deep-purple accent-2", inactive: undefined}},
+        tabs: {active: "rgba(25 118 210)", inactive: "rgba(0,0,0,.54)"}
+      }
+      this.selectedTabId = 0;
+      this.tabslist = [
+        {id: 0, label: "Start", icon: "fas fa-filter", color: this.colors.tabs.active, note: false},
+        {id: 1, label: "Graph", icon: "fas fa-project-diagram", color: this.colors.tabs.inactive, note: false},
+        {id: 2, label: "List", icon: "fas fa-list-ul", color: this.colors.tabs.inactive, note: false},
+        {id: 3, label: "History", icon: "fas fa-history", color: this.colors.tabs.inactive, note: false},
+      ]
+      this.initGraphs()
+      this.initComponents()
   },
   methods: {
     loadUser: function () {
@@ -261,9 +262,9 @@ export default {
     listSelectionEvent: function (type, operation) {
       if (operation === "all")
         this.$refs.list.selectAll(type)
-      if(operation ==="none")
+      if (operation === "none")
         this.$refs.list.deselectAll(type)
-      if(operation ==="induced")
+      if (operation === "induced")
         this.$refs.list.selectEdges()
     },
     loadList: function (gid) {
@@ -291,12 +292,11 @@ export default {
 
       }
     },
-    registerJobGraphId: function(newGraphId){
-      console.log("registering Job with graphId "+newGraphId);
-      // this.$refs.side.reloadJobs()
+    registerJob: function (data) {
+      this.$refs.side.addJob(data)
     },
-    executeAlgorithm: function (algorithm, params){
-      this.$refs.list.executeAlgorithm(algorithm,params)
+    executeAlgorithm: function (algorithm, params) {
+      this.$refs.list.executeAlgorithm(algorithm, params)
     },
     applyEvent: function () {
       if (this.selectedTabId === 0)

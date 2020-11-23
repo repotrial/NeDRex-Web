@@ -21,9 +21,12 @@ import de.exbio.reposcapeweb.communication.reponses.WebGraphService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.HashMap;
 
@@ -45,9 +48,10 @@ public class RequestController {
     private final NodeController nodeController;
     private final HistoryController historyController;
     private final JobController jobController;
+    private final SimpMessagingTemplate socketTemplate;
 
     @Autowired
-    public RequestController(DrugService drugService, ObjectMapper objectMapper, WebGraphService webGraphService, EdgeController edgeController, NodeController nodeController, HistoryController historyController, JobController jobController) {
+    public RequestController(SimpMessagingTemplate simpMessagingTemplate, DrugService drugService, ObjectMapper objectMapper, WebGraphService webGraphService, EdgeController edgeController, NodeController nodeController, HistoryController historyController, JobController jobController) {
         this.drugService = drugService;
         this.objectMapper = objectMapper;
         this.webGraphService = webGraphService;
@@ -55,6 +59,7 @@ public class RequestController {
         this.nodeController = nodeController;
         this.historyController = historyController;
         this.jobController = jobController;
+        this.socketTemplate = simpMessagingTemplate;
     }
 
 
@@ -97,8 +102,8 @@ public class RequestController {
         log.info("requested details for node " + name + " with id " + id);
         String out = "";
         try {
-            HashMap<String,Object> details = nodeController.nodeToAttributeList(Graphs.getNode(name), id);
-            details.put("order",nodeController.getAttributes(Graphs.getNode(name)));
+            HashMap<String, Object> details = nodeController.nodeToAttributeList(Graphs.getNode(name), id);
+            details.put("order", nodeController.getAttributes(Graphs.getNode(name)));
             out = objectMapper.writeValueAsString(details);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
@@ -277,7 +282,7 @@ public class RequestController {
     public String getUser(@RequestParam("user") String userId) {
         userId = historyController.validateUser(userId);
         HashMap<String, Job.JobState> jobs = jobController.getJobGraphStates(userId);
-        HashMap<String, Object> out = historyController.getUserHistory(userId,jobs);
+        HashMap<String, Object> out = historyController.getUserHistory(userId, jobs);
 
         try {
             return objectMapper.writeValueAsString(out);
@@ -313,19 +318,39 @@ public class RequestController {
     @RequestMapping(value = "/finishedJob", method = RequestMethod.GET)
     @ResponseBody
     public void finishedJob(@RequestParam("id") String id) {
-        log.info("Job "+id+" was just finished.");
+        log.info("Job " + id + " was just finished.");
         jobController.finishJob(id);
     }
 
     @RequestMapping(value = "/submitJob", method = RequestMethod.POST)
     @ResponseBody
     public String submitJob(@RequestBody JobRequest request) {
+        log.debug("Got job request: " + toJson(request));
+        HashMap<String, Object> out = new HashMap<>();
+        Job j = jobController.registerJob(request);
+        out.put("jid", j.getJobId());
+        out.put("uid", j.getUserId());
+        out.put("p_gid", j.getBasisGraph());
+        out.put("created", j.getCreated().toEpochSecond(ZoneOffset.ofTotalSeconds(0)));
+        out.put("state", j.getState().name());
+        return toJson(out);
+    }
+
+    private String toJson(Object o) {
         try {
-            log.debug("Got job request: "+objectMapper.writeValueAsString(request));
+            return objectMapper.writeValueAsString(o);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
-        return jobController.registerJob(request).getJobId();
+        return null;
     }
+
+//    @RequestMapping(value="/testSocket", method=RequestMethod.GET)
+//    @ResponseBody
+//    @MessageMapping("/jobs")
+//    public void testSocket(@RequestParam("route") String route, @RequestParam("message") String message){
+//        System.out.println("Testing socket on '"+route+"' with message "+ message);
+//        socketTemplate.convertAndSend(route,message);
+//    }
 
 }

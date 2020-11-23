@@ -352,8 +352,8 @@
               v-if="algorithms.categoryModel >-1 && algorithms.categories.methodModel ==='diamond'">
               <v-col cols="6">
                 <v-switch
-                label="Use Selection"
-                v-model="algorithms.selectionSwitch"
+                  label="Use Selection"
+                  v-model="algorithms.selectionSwitch"
                 >
                 </v-switch>
               </v-col>
@@ -370,13 +370,38 @@
             </v-row>
             <v-row>
               <v-col>
-                <v-chip outlined color="green" :disabled="algorithms.nodeModel === undefined || algorithms.nodeModel.length ===0" @click="$emit('executeAlgorithmEvent','diamond',{node:algorithms.nodeModel,selection:algorithms.selectionSwitch})">
+                <v-chip outlined color="green"
+                        :disabled="algorithms.nodeModel === undefined || algorithms.nodeModel.length ===0"
+                        @click="$emit('executeAlgorithmEvent','diamond',{node:algorithms.nodeModel,selection:algorithms.selectionSwitch})">
                   Submit
                 </v-chip>
               </v-col>
             </v-row>
           </v-container>
 
+        </v-card>
+        <v-card ref="jobs" elevation="3" style="margin:15px">
+          <v-list-item @click="show.jobs=!show.jobs">
+            <v-list-item-title>
+              <v-icon left>{{ show.jobs ? "far fa-minus-square" : "far fa-plus-square" }}</v-icon>
+              Jobs
+            </v-list-item-title>
+          </v-list-item>
+          <v-divider></v-divider>
+          <v-container v-if="show.jobs">
+            <v-list-item v-for="job in jobs" :key="job.jid">
+              <v-chip :color="job.state==='DONE'?'green':'orange'" :disabled="job.state!=='DONE'"
+                      @click="$emit('graphLoadEvent', {post: {id: job.gid}})">
+                <v-icon left v-if="job.state==='DONE'">
+                  fas fa-check
+                </v-icon>
+                <v-icon left v-else>
+                  fas fa-circle-notch fa-spin
+                </v-icon>
+                [{{ job.state }}] {{formatTime(job.created)[1]}} ago ({{formatTime(job.created)[0]}})
+              </v-chip>
+            </v-list-item>
+          </v-container>
         </v-card>
 
 
@@ -467,7 +492,9 @@ export default {
         legend: false,
         detail: false,
         algorithms: false,
+        jobs: false,
       },
+      jobs: [],
       menu: {
         options: {
           list: {
@@ -479,7 +506,7 @@ export default {
       algorithms: {
         categoryModel: -1,
         methodModel: "",
-        nodeModel:undefined,
+        nodeModel: undefined,
         selectionSwitch: false,
         categories: [{
           id: 0,
@@ -507,6 +534,7 @@ export default {
     this.filterTypes = ['startsWith', 'contain', 'match']
     this.gid = this.$route.params["gid"]
     console.log(this.options)
+    this.$socket.$on("jobUpdateEvent", this.updateJob)
   },
 
   methods: {
@@ -846,8 +874,23 @@ export default {
           console.log(err)
         })
       }
+    },
+    addJob: function (data) {
+      this.$socket.subscribeJob(data.jid, "jobUpdateEvent")
+      this.jobs.push({gid: data.gid, jid: data.jid,created:data.created, state: data.state})
     }
     ,
+    updateJob: function (response) {
+      let params = JSON.parse(response)
+      this.jobs.forEach(j => {
+        if (j.jid === params.jid) {
+          j.state = params.state;
+          j.gid = params.gid;
+        }
+      })
+      if(params.state==='DONE')
+        this.$socket.unsubscribeJob(params.jid)
+    },
     clearModels: function () {
       this.filterModel = ""
       this.filterTypeModel = ""
@@ -871,6 +914,24 @@ export default {
       this.$refs.filterTable.$forceUpdate()
     }
     ,
+    formatTime: function (timestamp) {
+      timestamp *= 1000
+      let d = new Date();
+      let date = new Date(timestamp);
+      let diff = ((d.getTime() - (d.getTimezoneOffset() * 60 * 1000)) - timestamp) / 1000;
+      let diff_str = "~";
+      if (diff < 60)
+        diff_str = "<1m";
+      else if (diff < 60 * 60)
+        diff_str += Math.round(diff / (60)) + "m";
+      else if (diff < 60 * 60 * 24)
+        diff_str += Math.round(diff / (60 * 60)) + "h";
+      else if (diff < 60 * 60 * 24 * 365)
+        diff_str += Math.round(diff / (60 * 60 * 24)) + "d";
+      else
+        diff_str += Math.round(diff / (60 * 60 * 24 * 356)) + "a";
+      return [date.toISOString().slice(0, -8), diff_str]
+    },
   }
   ,
 

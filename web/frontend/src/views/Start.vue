@@ -6,7 +6,8 @@
           <v-list-item-title class="title">Select your exploration path</v-list-item-title>
         </v-list-item>
         <v-list-item>
-          <v-list-item-subtitle>For new users or basic tasks like drug-target identification, the guided path is recommended.
+          <v-list-item-subtitle>For new users or basic tasks like drug-target identification, the guided path is
+            recommended.
           </v-list-item-subtitle>
         </v-list-item>
         <v-divider></v-divider>
@@ -24,9 +25,9 @@
       <v-card class="mx-auto">
         <v-list>
           <v-list-item>
-              <v-list-item-title class="title">
-                Customized Exploration
-              </v-list-item-title>
+            <v-list-item-title class="title">
+              Customized Exploration
+            </v-list-item-title>
           </v-list-item>
           <v-list-item>
             <v-list-item-subtitle>
@@ -34,12 +35,13 @@
             </v-list-item-subtitle>
           </v-list-item>
         </v-list>
-          <v-divider></v-divider>
+        <v-divider></v-divider>
 
         <v-container v-if="metagraph !== undefined">
           <v-row>
             <v-col cols="6">
-              <Graph ref="startgraph" :initgraph="{graph:metagraph,name:'metagraph'}" :startGraph="true" :configuration="{visualized:true}"></Graph>
+              <Graph ref="startgraph" :initgraph="{graph:metagraph,name:'metagraph'}" :startGraph="true"
+                     :configuration="{visualized:true}"></Graph>
             </v-col>
             <v-col cols="2">
               <v-list v-model="nodeModel" ref="nodeSelector">
@@ -51,7 +53,8 @@
                   >
                     <v-icon left :color="getColoring('nodes',item.label)">fas fa-genderless</v-icon>
                     {{ item.label }}
-                    <span style="color: gray; margin-left: 3pt" v-show="nodeModel.indexOf(item.index)>-1">({{metagraph.weights.nodes[item.label.toLowerCase()]}})</span>
+                    <span style="color: gray; margin-left: 3pt"
+                          v-show="nodeModel.indexOf(item.index)>-1">({{ metagraph.weights.nodes[item.label.toLowerCase()] }})</span>
                   </v-chip>
                 </v-list-item>
               </v-list>
@@ -76,7 +79,8 @@
                       <v-icon left :color="getColoring('edges',item.label)[1]">fas fa-genderless</v-icon>
                     </template>
                     {{ item.label }}
-                    <span style="color: gray; margin-left: 3pt" v-show="edgeModel.indexOf(item.index)>-1">({{metagraph.weights.edges[item.label]}})</span>
+                    <span style="color: gray; margin-left: 3pt"
+                          v-show="edgeModel.indexOf(item.index)>-1">({{ metagraph.weights.edges[item.label] }})</span>
                   </v-chip>
                 </v-list-item>
               </v-list>
@@ -90,6 +94,7 @@
 
 <script>
 import Graph from "./Graph.vue"
+import socket from "../services/socket.js"
 
 export default {
   name: "Start",
@@ -149,7 +154,7 @@ export default {
         this.edges.push({index: this.edges.length, id: e.id, label: e.label, depends: depends})
       })
     },
-    setOptions: function(options){
+    setOptions: function (options) {
       this.options = options;
     },
     loadGraph: function (id) {
@@ -223,7 +228,12 @@ export default {
 
       } else {
         this.nodeModel.push(nodeIndex)
-        this.options.selectedElements.push({index: nodeIndex, type: "node", name: this.nodes[nodeIndex].label, filter: []})
+        this.options.selectedElements.push({
+          index: nodeIndex,
+          type: "node",
+          name: this.nodes[nodeIndex].label,
+          filter: []
+        })
       }
       this.$nextTick(() => {
         this.$refs.nodeSelector.$forceUpdate()
@@ -252,7 +262,12 @@ export default {
           depending.push(this.edges[edgeIndex].depends[idx])
         }
         Object.values(this.nodes).filter(item => depending.indexOf(item.id) >= 0 && this.nodeModel.indexOf(item.index) === -1).forEach(item => this.toggleNode(item.index))
-        this.options.selectedElements.push({index: edgeIndex, type: "edge", name: this.edges[edgeIndex].label, filter: []})
+        this.options.selectedElements.push({
+          index: edgeIndex,
+          type: "edge",
+          name: this.edges[edgeIndex].label,
+          filter: []
+        })
       }
     },
     direction: function (edge) {

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-container>
+    <v-container v-if="metagraph!==undefined">
       <v-card style="margin:5px;padding-bottom:15px" ref="info" :loading="loading">
 
         <template slot="progress">
@@ -788,11 +788,10 @@ export default {
     },
   },
   name: "List",
-  metagraph: {},
   entityGraph: {},
   attributes: {},
   gid: undefined,
-  uid:undefined,
+  uid: undefined,
 
   data() {
     return {
@@ -805,6 +804,7 @@ export default {
       nodeOptionHover: false,
       edgeOptionHover: false,
       optionDialog: false,
+      metagraph: undefined,
       selectionDialog: {
         show: false,
         type: "",
@@ -851,7 +851,7 @@ export default {
   },
 
   created() {
-    this.uid=this.$cookies.get("uid")
+    this.uid = this.$cookies.get("uid")
     this.nodes = {}
     this.attributes = {}
     this.edges = {}
@@ -1618,10 +1618,12 @@ export default {
 
     },
     reloadMetagraph: function () {
-      return this.$http.get("/getMetagraph").then(response => {
+      this.$http.get("/getMetagraph").then(response => {
         if (response.data !== undefined)
           return response.data
-      }).then(this.setMetagraph).catch(err => console.log(err))
+      }).then(response=> {
+        this.setMetagraph(response)
+      }).catch(err => console.log(err))
     },
     getList: function (gid, metagraph) {
       this.setMetagraph(metagraph)
@@ -1664,8 +1666,11 @@ export default {
       return out
     },
     getColoring: function (entity, name) {
-      if (this.metagraph === undefined || Object.keys(this.metagraph.colorMap).length === 0)
-        return this.reloadMetagraph().then(() => this.getColoring(entity, name))
+      if (this.metagraph === undefined) {
+        return this.reloadMetagraph().then(function () {
+          return this.getColoring(entity, name)
+        })
+      }
       if (entity === "nodes") {
         return this.metagraph.colorMap[name].main;
       } else {
@@ -1676,8 +1681,8 @@ export default {
       }
     },
     executeAlgorithm: function (algorithm, params) {
-      console.log("executing "+algorithm)
-      let payload = {userId: this.uid, graphId: this.gid, algorithm: algorithm, params:{}}
+      console.log("executing " + algorithm)
+      let payload = {userId: this.uid, graphId: this.gid, algorithm: algorithm, params: {}}
       if (algorithm === "diamond") {
         console.log(this.countMap.nodes[params.node])
         if (this.countMap.nodes[params.node] === undefined || (this.selected && this.countMap.nodes[params.node].selected === 0)) {
@@ -1686,11 +1691,11 @@ export default {
         }
         payload.params["type"] = params.node;
       }
-      this.$http.post("/submitJob", payload).then(response =>{
-        if(response.data !==undefined)
+      this.$http.post("/submitJob", payload).then(response => {
+        if (response.data !== undefined)
           return response.data
-      }).then(newGraphId=>{
-        this.$emit("addJobGraphId",newGraphId);
+      }).then(data => {
+        this.$emit("addJobEvent", data);
       }).catch(console.log)
     },
     direction: function (edge) {
