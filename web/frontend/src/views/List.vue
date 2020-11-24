@@ -90,7 +90,7 @@
           <!--          ></v-progress-linear>-->
           <!--          <v-card-title>Nodes</v-card-title>-->
         </template>
-        <template v-if="!loading">
+        <template v-if="!loading" v-show="!nodeTabLoading">
           <v-card-title id="nodes" ref="nodeTitle" v-on:mouseenter="nodeOptionHover=true"
                         v-on:mouseleave="nodeOptionHover=false">
             Nodes
@@ -382,6 +382,7 @@
                         hide-details
                         primary
                         style="margin-top: -4px"
+                        @click="countClick('edges',edgeTab,item)"
                       ></v-checkbox>
                     </v-col>
                     <v-col cols="1">
@@ -1322,6 +1323,7 @@ export default {
             let directed = this.attributes.edges[k.name].filter(attr => attr.name === "sourceId").length > 0;
             let id1 = directed ? "sourceId" : "idOne"
             let id2 = directed ? "targetId" : "idTwo"
+
             payload.edges[k.name] = v.filter((v1, k1) => v1.selected).map((v1, k1) => {
                 return {id1: v1[id1], id2: v1[id2]}
               }
@@ -1349,6 +1351,7 @@ export default {
         if (response.data !== undefined)
           return response.data
       }).then(data => {
+        console.log(data)
         // if (this.selectionDialog.type === "edges")
         for (let ntype in data.nodes) {
           this.select("nodes", ntype, data.nodes[ntype])
@@ -1397,23 +1400,19 @@ export default {
     }
     ,
     select: function (type, name, ids) {
-      let data = {nodes: this.nodes, edges: this.edges}
-      let items = data[type][name]
-      let count = 0;
+      // let data = {nodes: this.nodes, edges: this.edges}
+      let items = this[type][name]
       if (type === "nodes")
         items.forEach(item => {
           if (ids.indexOf(item.id) !== -1)
             item.selected = true;
         })
       else {
-        let directed = this.attributes.edges[name].filter(attr => attr.name === "sourceId").length > 0;
-        let id1 = directed ? "sourceId" : "idOne"
-        let id2 = directed ? "targetId" : "idTwo"
         items.forEach(item => {
-          let node2s = ids[item[id1]]
-          if (node2s !== undefined && node2s.indexOf(item[id2]) !== -1) {
+          let id = item.id.split("-")
+          let node2s = ids[parseInt(id[0])]
+          if (node2s !== undefined && node2s.indexOf(parseInt(id[1])) !== -1) {
             item.selected = true;
-            count++
           }
         })
       }
@@ -1424,7 +1423,39 @@ export default {
           this.$refs.edgeTab.$forceUpdate()
       })
     },
+    selectDependentNodes: function (type, edges) {
+      let meta = this.metagraph.edges.filter(e => e.label === type)[0]
+      let nodeName1 = this.metagraph.nodes.filter(n => n.id === meta.from).map(n => n.group)[0];
+      let nodeName2 = this.metagraph.nodes.filter(n => n.id === meta.to).map(n => n.group)[0];
+      let nodeTab1 = Object.keys(this.attributes.nodes).indexOf(nodeName1)
+      let nodeTab2 = Object.keys(this.attributes.nodes).indexOf(nodeName2)
+      let nodeIds1 = []
+      let nodeIds2 = []
+      edges.forEach(edge => {
+        let ids = edge.id.split("-");
+        nodeIds1.push(parseInt(ids[0]))
+        nodeIds2.push(parseInt(ids[1]))
+      })
+      this.nodes[nodeName1].filter(n => nodeIds1.indexOf(n.id) > -1 && !n.selected).forEach(n => {
+        if (!n.selected) {
+          n.selected = true
+          this.countClick('nodes', nodeTab1, true)
+        }
+      })
+
+      this.nodes[nodeName2].filter(n => nodeIds2.indexOf(n.id) > -1 && !n.selected).forEach(n => {
+        if (!n.selected) {
+          n.selected = true
+          this.countClick('nodes', nodeTab2, true)
+        }
+      })
+    },
+
     selectAll: function (type) {
+      // this.$nextTick().then(() => {
+      //   this.nodeTabLoading = true;
+      //   this.edgeTabLoading = true;
+      // })
       let tab = (type === "nodes") ? this.nodeTab : this.edgeTab
       let name = Object.keys(this[type])[tab]
       let items = this[type][name]
@@ -1439,23 +1470,14 @@ export default {
         }
       )
 
-      if (type === "edges") {
-        this.selectionDialog.seeds = [{select: true, name: name}]
-        let edge = Object.values(this.entityGraph.edges).filter(e => e.name === name)[0]
-        let nodes = Object.values(this.entityGraph.nodes).filter(n => n.id === edge.node1 || n.id === edge.node2)
-        this.selectionDialog.targets = nodes.map(n => {
-          return {name: n.name, select: true}
-        })
-        this.selectionDialog.type = type
-        this.selectionDialog.extendSelect = false
-        this.selectionDialog.extendScope = false
-        this.selectionDialogResolve(true)
-      }
+      if (type === "edges")
+        this.selectDependentNodes(name, items)
       this.$nextTick().then(() => {
         this.reloadCountMap()
         if ("edges" === type)
           this.$refs.edgeTab.$forceUpdate()
         this.$refs.nodeTab.$forceUpdate()
+
       })
     }
     ,
@@ -1621,7 +1643,7 @@ export default {
       this.$http.get("/getMetagraph").then(response => {
         if (response.data !== undefined)
           return response.data
-      }).then(response=> {
+      }).then(response => {
         this.setMetagraph(response)
       }).catch(err => console.log(err))
     },
@@ -1704,10 +1726,13 @@ export default {
         return 0
       return e.directed ? 1 : 2
     },
-    countClick: function (entity, tabId, boolean) {
+    countClick: function (entity, tabId, item) {
+      let bool = entity === 'nodes' ? item : item.selected;
       let name = Object.keys(this.attributes[entity])[tabId]
-      this.countMap[entity][name].selected += (boolean ? 1 : -1)
-      this.configuration.selected += (boolean ? 1 : -1)
+      this.countMap[entity][name].selected += (bool ? 1 : -1)
+      this.configuration.selected += (bool ? 1 : -1)
+      if (entity === 'edges' && bool)
+        this.selectDependentNodes(name, [item])
       this.$emit("reloadSide")
     },
     focus: function (entity, tabId) {

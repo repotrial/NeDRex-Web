@@ -398,7 +398,7 @@
                 <v-icon left v-else>
                   fas fa-circle-notch fa-spin
                 </v-icon>
-                [{{ job.state }}] {{formatTime(job.created)[1]}} ago ({{formatTime(job.created)[0]}})
+                [{{ job.state }}] {{ formatTime(job.created)[1] }} ago ({{ formatTime(job.created)[0] }})
               </v-chip>
             </v-list-item>
           </v-container>
@@ -417,39 +417,106 @@
 
 
           <v-container v-if="show.detail">
-            <v-list class="transparent">
-              <template
-                v-for="item in detailedObject.order"
-              >
-
-                <v-list-item :key="item">
-
-                  <v-list-item-title>{{ item }}</v-list-item-title>
-                  <v-list-item-subtitle class="text-right">
-                    <v-list v-if="typeof detailedObject[item] === 'object'">
-                      <v-list-item v-for="i in detailedObject[item]" :key="i">
-                        <v-chip outlined v-if="getUrl(item,i).length>0" @click="openExternal(item,i)"
-                                :title="getExternalSource(item,i)">
-                          {{ format(item, i) }}
-                          <v-icon right size="14px" :color="getExternalColor(item,i)">fas fa-external-link-alt</v-icon>
-                        </v-chip>
-                        <span v-else>{{ format(item, i) }}</span>
-                      </v-list-item>
-                    </v-list>
-                    <v-chip outlined v-else-if="getUrl(item,detailedObject[item]).length>0"
-                            @click="openExternal(item,detailedObject[item])"
-                            :title="getExternalSource(item,detailedObject[item])">
-                      {{ format(item, detailedObject[item]) }}
-                      <v-icon right size="14px" :color="getExternalColor(item,detailedObject[item])">fas
-                        fa-external-link-alt
-                      </v-icon>
-                    </v-chip>
-                    <span v-else>{{ format(item, detailedObject[item]) }}</span>
-                  </v-list-item-subtitle>
-                </v-list-item>
-                <v-divider></v-divider>
+            <v-card :loading="metagraph===undefined">
+              <template slot="progress">
+                <v-progress-linear
+                  color="primary"
+                  height="5"
+                  indeterminate
+                ></v-progress-linear>
               </template>
-            </v-list>
+
+              <v-card-text>
+                <template class="text--primary" style="font-size: x-large">
+                  <div class="text-h5">{{ detailedObject.node1 }}</div>
+                  <div>
+                    <v-tooltip right>
+                      <template v-slot:activator="{ on, attrs }">
+                        <v-icon
+                          color="rgb(239 85 59)"
+                          v-bind="attrs"
+                          v-on="on"
+                          :title="detailedObject.type"
+                          :size="hover.node1?'45px':'35px'"
+                          @mouseleave.native="hover.node1=false"
+                          @mouseover.native="hover.node1=true">
+                          > fas fa-genderless
+                        </v-icon>
+                      </template>
+                      <span>Gene</span>
+                    </v-tooltip>
+                  </div>
+                  <div>
+                    <v-tooltip right>
+                      <template v-slot:activator="{ on, attrs }">
+                        <v-icon
+                          v-bind="attrs"
+                          v-on="on"
+                          :title="detailedObject.type"
+                          :size="hover.arrow?'45px':'35px'"
+                          @mouseleave.native="hover.arrow=false"
+                          @mouseover.native="hover.arrow=true">
+                          fas fa-long-arrow-alt-down
+                        </v-icon>
+                      </template>
+                      <span>{{ detailedObject.type }}</span>
+                    </v-tooltip>
+                  </div>
+                  <div>
+                    <v-tooltip right>
+                      <template v-slot:activator="{ on, attrs }">
+                        <v-icon
+                          color="rgb(99 110 250)"
+                          v-bind="attrs"
+                          v-on="on"
+                          :title="detailedObject.type"
+                          :size="hover.node2?'45px':'35px'"
+                          @mouseleave.native="hover.node2=false"
+                          @mouseover.native="hover.node2=true">
+                          > fas fa-genderless
+                        </v-icon>
+                      </template>
+                      <span>Disorder</span>
+                    </v-tooltip>
+                  </div>
+
+
+                  <div class="text-h5">{{ detailedObject.node2 }}</div>
+                </template>
+              </v-card-text>
+
+              <v-divider></v-divider>
+              <v-timeline class="transparent" align-top dense>
+
+
+                  <v-timeline-item small v-for="item in detailedObject.order" :key="item">
+
+                    <div><strong>{{ item }}</strong></div>
+                    <div>
+                      <v-list v-if="typeof detailedObject[item] === 'object'">
+                        <div v-for="i in detailedObject[item]" :key="i">
+                          <v-chip outlined v-if="getUrl(item,i).length>0" @click="openExternal(item,i)"
+                                  :title="getExternalSource(item,i)">
+                            {{ format(item, i) }}
+                            <v-icon right size="14px" :color="getExternalColor(item,i)">fas fa-external-link-alt
+                            </v-icon>
+                          </v-chip>
+                          <span v-else>{{ format(item, i) }}</span>
+                        </div>
+                      </v-list>
+                      <v-chip outlined v-else-if="getUrl(item,detailedObject[item]).length>0"
+                              @click="openExternal(item,detailedObject[item])"
+                              :title="getExternalSource(item,detailedObject[item])">
+                        {{ format(item, detailedObject[item]) }}
+                        <v-icon right size="14px" :color="getExternalColor(item,detailedObject[item])">fas
+                          fa-external-link-alt
+                        </v-icon>
+                      </v-chip>
+                      <span v-else>{{ format(item, detailedObject[item]) }}</span>
+                    </div>
+                  </v-timeline-item>
+              </v-timeline>
+            </v-card>
           </v-container>
 
         </v-card>
@@ -465,6 +532,7 @@ export default {
     options: Object,
     selectedTab: Number,
     filters: Object,
+    metagraph: Object,
   },
   name: "SideCard",
   title: "",
@@ -528,6 +596,7 @@ export default {
       filterModel: this.filterModel,
       detailedObject: this.detailedObject,
       filterEntity: "",
+      hover: {arrow: false,},
     }
   },
   created() {
@@ -877,7 +946,7 @@ export default {
     },
     addJob: function (data) {
       this.$socket.subscribeJob(data.jid, "jobUpdateEvent")
-      this.jobs.push({gid: data.gid, jid: data.jid,created:data.created, state: data.state})
+      this.jobs.push({gid: data.gid, jid: data.jid, created: data.created, state: data.state})
     }
     ,
     updateJob: function (response) {
@@ -888,7 +957,7 @@ export default {
           j.gid = params.gid;
         }
       })
-      if(params.state==='DONE')
+      if (params.state === 'DONE')
         this.$socket.unsubscribeJob(params.jid)
     },
     clearModels: function () {

@@ -151,6 +151,7 @@
                     :options="options"
                     :selected-tab="selectedTabId"
                     :filters="startFilters"
+                    :metagraph="metagraph"
           ></SideCard>
         </v-col>
       </v-row>
