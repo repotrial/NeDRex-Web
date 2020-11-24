@@ -51,6 +51,7 @@
                           :color="nodeModel.indexOf(item.index)===-1?'gray':'primary'"
                           :text-color="nodeModel.indexOf(item.index)===-1?'black':'gray'"
                   >
+<!--                    <v-icon left :color="getColoring('nodes',item.label)">fas fa-genderless</v-icon>-->
                     <v-icon left :color="getColoring('nodes',item.label)">fas fa-genderless</v-icon>
                     {{ item.label }}
                     <span style="color: gray; margin-left: 3pt"
@@ -95,6 +96,7 @@
 <script>
 import Graph from "./Graph.vue"
 import socket from "../services/socket.js"
+import Utils from "../scripts/Utils"
 
 export default {
   name: "Start",
@@ -271,20 +273,12 @@ export default {
       }
     },
     direction: function (edge) {
-      let e = Object.values(this.metagraph.edges).filter(e => e.label === edge)[0];
-      if (e.from === e.to)
-        return 0
-      return 1
+      if (Utils.isEdgeDirected(this.metagraph,edge))
+        return 1
+      return 0
     },
     getColoring: function (entity, name) {
-      if (entity === "nodes") {
-        return this.metagraph.colorMap[Object.values(this.metagraph.nodes).filter(n => n.label === name)[0].group].main;
-      } else {
-        let edge = Object.values(this.metagraph.edges).filter(n => n.label === name)[0]
-        let n1 = Object.values(this.metagraph.nodes).filter(n => n.id === edge.from)[0].group
-        let n2 = Object.values(this.metagraph.nodes).filter(n => n.id === edge.to)[0].group
-        return [this.metagraph.colorMap[n1].main, this.metagraph.colorMap[n2].main]
-      }
+      return Utils.getColoring(this.metagraph,entity,name)
     },
   },
   components: {

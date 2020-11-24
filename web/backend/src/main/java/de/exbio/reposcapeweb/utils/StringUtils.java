@@ -29,7 +29,7 @@ public class StringUtils {
     }
 
     public static LinkedList<String> split(String line, String separator) {
-        LinkedList<String> v = new LinkedList<String>();
+        LinkedList<String> v = new LinkedList<>();
         String tab = separator;
 
         int lastTab = 0;
@@ -40,7 +40,7 @@ public class StringUtils {
                 break;
             }
             v.add(line.substring(lastTab, nextTab));
-            lastTab = nextTab + 1;
+            lastTab = nextTab + separator.length();
         }
         return v;
     }
@@ -152,7 +152,7 @@ public class StringUtils {
     }
 
     public static String listToString(List<String> list) {
-        return replaceAll(list.toString(), ' ', "");
+        return replaceAll(list.toString(),", ",",");
     }
 
     public static LinkedList<String> stringToList(String s) {

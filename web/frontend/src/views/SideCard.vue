@@ -99,7 +99,7 @@
                   <v-chip
                     icon
                     outlined
-                    v-on:click="$emit('graphModificationEvent','subselect')"
+                    v-on:click="$emit('graphModificationEvent','subselect');$forceUpdate"
                   >
                     <v-icon left>fas fa-project-diagram</v-icon>
                     Load Selection
@@ -390,7 +390,7 @@
           <v-divider></v-divider>
           <v-container v-if="show.jobs">
             <v-list-item v-for="job in jobs" :key="job.jid">
-              <v-chip :color="job.state==='DONE'?'green':'orange'" :disabled="job.state!=='DONE'"
+              <v-chip :color="job.state==='DONE'?(job.gid===gid?'blue':'green'):'orange'" :disabled="job.state!=='DONE'||job.gid===gid"
                       @click="$emit('graphLoadEvent', {post: {id: job.gid}})">
                 <v-icon left v-if="job.state==='DONE'">
                   fas fa-check
@@ -405,7 +405,8 @@
         </v-card>
 
 
-        <v-card ref="detail" elevation="3" style="margin:15px" v-if="detailedObject !== undefined">
+        <v-card ref="detail" elevation="3" style="margin:15px" v-if="detailedObject !== undefined"
+                :loading="metagraph===undefined">
 
           <v-list-item @click="show.detail=!show.detail">
             <v-list-item-title>
@@ -417,106 +418,127 @@
 
 
           <v-container v-if="show.detail">
-            <v-card :loading="metagraph===undefined">
-              <template slot="progress">
-                <v-progress-linear
-                  color="primary"
-                  height="5"
-                  indeterminate
-                ></v-progress-linear>
+            <template slot="progress">
+              <v-progress-linear
+                color="primary"
+                height="5"
+                indeterminate
+              ></v-progress-linear>
+            </template>
+
+            <v-chip outlined v-if="details.redirected" @click="loadDetails({...details.redirected})">
+              <v-icon>fas fa-arrow-left</v-icon>
+            </v-chip>
+            <v-card-text>
+              <template class="text--primary" style="font-size: x-large" v-if="detailedObject.node">
+                <div class="text-h5">
+                  <v-tooltip left>
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-icon
+                        left
+                        :color="getColoring('nodes',detailedObject.type)"
+                        v-bind="attrs"
+                        v-on="on"
+                        :size="hover.node1?'45px':'35px'"
+                        @mouseleave.native="hover.node1=false"
+                        @mouseover.native="hover.node1=true"
+                      >
+                        > fas fa-genderless
+                      </v-icon>
+                    </template>
+                    <span>{{ detailedObject.type }}</span>
+                  </v-tooltip>
+                  {{ detailedObject.displayName }}
+                </div>
+
               </template>
+              <template class="text--primary" style="font-size: x-large" v-if="detailedObject.edge">
+                <div class="text-h5">
+                  <v-tooltip left>
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-icon
+                        :color="getColoring('edges',detailedObject.type)[0]"
+                        v-bind="attrs"
+                        v-on="on"
+                        :size="hover.node1?'45px':'35px'"
+                        @mouseleave.native="hover.node1=false"
+                        @mouseover.native="hover.node1=true"
+                        @click="loadDetails( {type:'node',name:getNodeNames(detailedObject.type)[0],id:detailedObject.id.split('-')[0]},{type: 'edge', name:detailedObject.type,id1:detailedObject.id.split('-')[0],id2:detailedObject.id.split('-')[1]})"
+                      >
+                        > fas fa-genderless
+                      </v-icon>
+                    </template>
+                    <span>{{ getNodeNames(detailedObject.type)[0] }}</span>
+                  </v-tooltip>
+                  {{ detailedObject.node1 }}
+                </div>
+                <div>
+                  <v-tooltip left>
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-icon
+                        v-bind="attrs"
+                        v-on="on"
+                        :size="hover.arrow?'45px':'35px'"
+                        @mouseleave.native="hover.arrow=false"
+                        @mouseover.native="hover.arrow=true">
+                        {{detailedObject.directed? 'fas fa-long-arrow-alt-down':'fas fa-arrows-alt-v'}}
+                      </v-icon>
+                    </template>
+                    <span>{{ detailedObject.type }}</span>
+                  </v-tooltip>
+                </div>
+                <div class="text-h5">
+                  <v-tooltip left>
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-icon
+                        :color="getColoring('edges',detailedObject.type)[1]"
+                        v-bind="attrs"
+                        v-on="on"
+                        :size="hover.node2?'45px':'35px'"
+                        @mouseleave.native="hover.node2=false"
+                        @mouseover.native="hover.node2=true"
+                        @click="loadDetails({type:'node',name:getNodeNames(detailedObject.type)[1],id:detailedObject.id.split('-')[1]},{type: 'edge', name:detailedObject.type,id1:detailedObject.id.split('-')[0],id2:detailedObject.id.split('-')[1]})"
+                      >
+                        > fas fa-genderless
+                      </v-icon>
+                    </template>
+                    <span>{{ getNodeNames(detailedObject.type)[1] }}</span>
+                  </v-tooltip>
+                  {{ detailedObject.node2 }}
+                </div>
+              </template>
+            </v-card-text>
 
-              <v-card-text>
-                <template class="text--primary" style="font-size: x-large">
-                  <div class="text-h5">{{ detailedObject.node1 }}</div>
-                  <div>
-                    <v-tooltip right>
-                      <template v-slot:activator="{ on, attrs }">
-                        <v-icon
-                          color="rgb(239 85 59)"
-                          v-bind="attrs"
-                          v-on="on"
-                          :title="detailedObject.type"
-                          :size="hover.node1?'45px':'35px'"
-                          @mouseleave.native="hover.node1=false"
-                          @mouseover.native="hover.node1=true">
-                          > fas fa-genderless
-                        </v-icon>
-                      </template>
-                      <span>Gene</span>
-                    </v-tooltip>
-                  </div>
-                  <div>
-                    <v-tooltip right>
-                      <template v-slot:activator="{ on, attrs }">
-                        <v-icon
-                          v-bind="attrs"
-                          v-on="on"
-                          :title="detailedObject.type"
-                          :size="hover.arrow?'45px':'35px'"
-                          @mouseleave.native="hover.arrow=false"
-                          @mouseover.native="hover.arrow=true">
-                          fas fa-long-arrow-alt-down
-                        </v-icon>
-                      </template>
-                      <span>{{ detailedObject.type }}</span>
-                    </v-tooltip>
-                  </div>
-                  <div>
-                    <v-tooltip right>
-                      <template v-slot:activator="{ on, attrs }">
-                        <v-icon
-                          color="rgb(99 110 250)"
-                          v-bind="attrs"
-                          v-on="on"
-                          :title="detailedObject.type"
-                          :size="hover.node2?'45px':'35px'"
-                          @mouseleave.native="hover.node2=false"
-                          @mouseover.native="hover.node2=true">
-                          > fas fa-genderless
-                        </v-icon>
-                      </template>
-                      <span>Disorder</span>
-                    </v-tooltip>
-                  </div>
+            <v-divider></v-divider>
+            <v-timeline align-top dense>
+              <v-timeline-item small :color="getDetailDotColor(item)" v-for="item in detailedObject.order"
+                               :key="item">
 
-
-                  <div class="text-h5">{{ detailedObject.node2 }}</div>
-                </template>
-              </v-card-text>
-
-              <v-divider></v-divider>
-              <v-timeline class="transparent" align-top dense>
-
-
-                  <v-timeline-item small v-for="item in detailedObject.order" :key="item">
-
-                    <div><strong>{{ item }}</strong></div>
-                    <div>
-                      <v-list v-if="typeof detailedObject[item] === 'object'">
-                        <div v-for="i in detailedObject[item]" :key="i">
-                          <v-chip outlined v-if="getUrl(item,i).length>0" @click="openExternal(item,i)"
-                                  :title="getExternalSource(item,i)">
-                            {{ format(item, i) }}
-                            <v-icon right size="14px" :color="getExternalColor(item,i)">fas fa-external-link-alt
-                            </v-icon>
-                          </v-chip>
-                          <span v-else>{{ format(item, i) }}</span>
-                        </div>
-                      </v-list>
-                      <v-chip outlined v-else-if="getUrl(item,detailedObject[item]).length>0"
-                              @click="openExternal(item,detailedObject[item])"
-                              :title="getExternalSource(item,detailedObject[item])">
-                        {{ format(item, detailedObject[item]) }}
-                        <v-icon right size="14px" :color="getExternalColor(item,detailedObject[item])">fas
-                          fa-external-link-alt
+                <div><strong>{{ item }}</strong></div>
+                <div>
+                  <v-list v-if="typeof detailedObject[item] === 'object'">
+                    <div v-for="i in detailedObject[item]" :key="i">
+                      <v-chip outlined v-if="getUrl(item,i).length>0" @click="openExternal(item,i)"
+                              :title="getExternalSource(item,i)">
+                        {{ format(item, i) }}
+                        <v-icon right size="14px" :color="getExternalColor(item,i)">fas fa-external-link-alt
                         </v-icon>
                       </v-chip>
-                      <span v-else>{{ format(item, detailedObject[item]) }}</span>
+                      <span v-else>{{ format(item, i) }}</span>
                     </div>
-                  </v-timeline-item>
-              </v-timeline>
-            </v-card>
+                  </v-list>
+                  <v-chip outlined v-else-if="getUrl(item,detailedObject[item]).length>0"
+                          @click="openExternal(item,detailedObject[item])"
+                          :title="getExternalSource(item,detailedObject[item])">
+                    {{ format(item, detailedObject[item]) }}
+                    <v-icon right size="14px" :color="getExternalColor(item,detailedObject[item])">fas
+                      fa-external-link-alt
+                    </v-icon>
+                  </v-chip>
+                  <span v-else>{{ format(item, detailedObject[item]) }}</span>
+                </div>
+              </v-timeline-item>
+            </v-timeline>
           </v-container>
 
         </v-card>
@@ -527,6 +549,8 @@
 </template>
 
 <script>
+import Utils from "../scripts/Utils"
+
 export default {
   props: {
     options: Object,
@@ -546,10 +570,11 @@ export default {
   filterModel: "",
   filterName: "",
   detailedObject: undefined,
-  gid: undefined,
+
 
   data() {
     return {
+      gid: undefined,
       show: {
         options: true,
         filters: false,
@@ -597,13 +622,14 @@ export default {
       detailedObject: this.detailedObject,
       filterEntity: "",
       hover: {arrow: false,},
+      details: {redirected: false}
     }
   },
   created() {
     this.filterTypes = ['startsWith', 'contain', 'match']
     this.gid = this.$route.params["gid"]
-    console.log(this.options)
     this.$socket.$on("jobUpdateEvent", this.updateJob)
+    this.loadJobs()
   },
 
   methods: {
@@ -630,9 +656,9 @@ export default {
         this.neighborNodes = [];
       }
     },
+
     format: function (item, value) {
       if (item === "primaryDomainId" || item === "primaryDomainIds" || item === "domainIds" || item === "sourceDomainId" || item === "targetDomainId" || item === "memberOne" || item === "memberTwo") {
-        console.log("Format value='" + value + "'")
         let split = value.split(".")
         switch (split[0]) {
           case "entrez":
@@ -668,7 +694,6 @@ export default {
       if (item === "_cls")
         return value.split('.')[1]
       if (item === "mapLocation") {
-        console.log(value)
         let split = value.indexOf("p") > 0 ? value.split("p") : value.split("q");
         return "Chr" + split[0] + ":" + split[1]
       }
@@ -891,6 +916,12 @@ export default {
       window.open(this.getUrl(item, i), '_blank')
     }
     ,
+    getColoring: function (type, name) {
+      return Utils.getColoring(this.metagraph, type, name)
+    },
+    getNodeNames: function (type) {
+      return Utils.getNodes(this.metagraph, type)
+    },
 
     visualizeGraph: function () {
       // this.options.graph.visualized = true;
@@ -915,16 +946,28 @@ export default {
       }
     }
     ,
+    resetAlgorithms: function (){
+      this.algorithms.nodeModel=undefined
+      this.algorithms.selectionSwitch=false
+      this.algorithms.categoryModel=undefined
+      this.algorithms.methodModel=undefined
+      this.show.algorithms=false
+    },
     nodeDetails: function (id) {
       let str = id.split("_")
       this.$emit("nodeDetailsEvent", {prefix: str[0], id: str[1]})
     }
     ,
-    loadDetails: function (data) {
+    loadDetails: function (data, redirect) {
+      console.log(this.metagraph)
+      this.details.redirected = false;
+      if (redirect)
+        this.details.redirected = redirect
       if (data.type === "node") {
         this.$http.get("getNodeDetails?name=" + data.name + "&id=" + data.id).then(response => {
           if (response.data !== undefined) {
             this.detailedObject = response.data
+            this.detailedObject.node = true;
             this.description = "for " + data.name + " " + this.detailedObject.displayName + " (id:" + this.detailedObject.id + ")"
           }
         }).catch(err => {
@@ -934,6 +977,8 @@ export default {
         this.$http.get("getEdgeDetails?name=" + data.name + "&id1=" + data.id1 + "&id2=" + data.id2 + "&gid=" + this.gid).then(response => {
           if (response.data !== undefined) {
             this.detailedObject = response.data
+            this.detailedObject.edge = true;
+            this.detailedObject.directed = Utils.isEdgeDirected(this.metagraph,data.name)
             if (this.detailedObject.sourceId !== undefined)
               this.description = "for " + data.name + " " + this.detailedObject.displayName + " (id:" + this.detailedObject.sourceId + "->" + this.detailedObject.targetId + ")"
             if (this.detailedObject.idOne !== undefined)
@@ -943,8 +988,24 @@ export default {
           console.log(err)
         })
       }
+      this.show.detail=true
+    },
+    loadJobs: function(){
+      this.$http.get("/getJobs?uid="+this.$cookies.get("uid")+"&gid="+this.gid).then(response=>{
+        if(response.data!==undefined)
+          return response.data
+      }).then(data=>{
+        console.log(data)
+        data.forEach(job=>{
+          if(job.state!=="DONE")
+            this.$socket.subscribeJob(job.jid, "jobUpdateEvent")
+          this.jobs.push(job)
+        })
+      }).catch(console.log)
+
     },
     addJob: function (data) {
+      this.resetAlgorithms()
       this.$socket.subscribeJob(data.jid, "jobUpdateEvent")
       this.jobs.push({gid: data.gid, jid: data.jid, created: data.created, state: data.state})
     }
@@ -983,7 +1044,30 @@ export default {
       this.$refs.filterTable.$forceUpdate()
     }
     ,
+    getDetailDotColor: function (attribute) {
+      if (this.detailedObject.node)
+        return this.getColoring('nodes', this.detailedObject.type);
+      let basic = "#464e53";
+      let colors = this.getColoring('edges', this.detailedObject.type);
+      switch (attribute) {
+        case "sourceId":
+          return colors[0]
+        case "targetId":
+          return colors[1]
+        case "node1":
+          return colors[0]
+        case "node2":
+          return colors[1]
+        case "sourceDomainId":
+          return colors[0]
+        case "targetDomainId":
+          return colors[1]
+      }
+      return basic;
+    },
     formatTime: function (timestamp) {
+      if(timestamp===undefined)
+        return ["0","0"]
       timestamp *= 1000
       let d = new Date();
       let date = new Date(timestamp);

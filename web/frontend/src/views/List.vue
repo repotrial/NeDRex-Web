@@ -1706,13 +1706,16 @@ export default {
       console.log("executing " + algorithm)
       let payload = {userId: this.uid, graphId: this.gid, algorithm: algorithm, params: {}}
       if (algorithm === "diamond") {
-        console.log(this.countMap.nodes[params.node])
-        if (this.countMap.nodes[params.node] === undefined || (this.selected && this.countMap.nodes[params.node].selected === 0)) {
+        if (this.countMap.nodes[params.node] === undefined || (params.selection && this.countMap.nodes[params.node].selected === 0)) {
           this.$emit("printNotificationEvent", "Cannot execute " + algorithm + " without seed nodes!", 1)
           return;
         }
         payload.params["type"] = params.node;
+        payload.selection = params.selection
+        if(params.selection)
+          payload["nodes"]=this.nodes[params.node].filter(n=>n.selected).map(n=>n.id)
       }
+      console.log(payload)
       this.$http.post("/submitJob", payload).then(response => {
         if (response.data !== undefined)
           return response.data

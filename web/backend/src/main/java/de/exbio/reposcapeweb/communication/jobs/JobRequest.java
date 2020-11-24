@@ -1,13 +1,16 @@
 package de.exbio.reposcapeweb.communication.jobs;
 
 import java.util.HashMap;
+import java.util.List;
 
 public class JobRequest {
 
     public String userId;
     public String graphId;
     public String algorithm;
-    public HashMap<String,String> params;
+    public HashMap<String, String> params;
+    public boolean selection;
+    public List<Integer> nodes;
 
 
     public String getUserId() {

@@ -330,10 +330,16 @@ public class RequestController {
         Job j = jobController.registerJob(request);
         out.put("jid", j.getJobId());
         out.put("uid", j.getUserId());
-        out.put("p_gid", j.getBasisGraph());
+        out.put("basis", j.getBasisGraph());
         out.put("created", j.getCreated().toEpochSecond(ZoneOffset.ofTotalSeconds(0)));
         out.put("state", j.getState().name());
         return toJson(out);
+    }
+
+    @RequestMapping(value="/getJobs", method = RequestMethod.GET)
+    @ResponseBody
+    public String getJobs(@RequestParam("uid") String uid, @RequestParam("gid") String gid){
+        return toJson(jobController.getJobGraphStates(uid, gid));
     }
 
     private String toJson(Object o) {

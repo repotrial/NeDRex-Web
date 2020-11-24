@@ -31,12 +31,17 @@ const emitter = new Vue({
   methods: {
 
     init: function () {
-      return new Promise(((resolve, reject) => {
-        if (this.client !== undefined)
-          resolve();
-        else
-          setTimeout(init(), 100);
-      }));
+      let context = this
+      return new Promise(function (resolve, reject) {
+        (function waitForConnect() {
+          if (context.client.connected) return resolve();
+          setTimeout(waitForConnect, 30);
+        })();
+      });
+    },
+
+    print: function (message) {
+      console.log(message)
     },
 
     subscribe: function (route, event) {

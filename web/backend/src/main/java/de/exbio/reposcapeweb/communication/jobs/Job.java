@@ -103,7 +103,7 @@ public class Job {
     }
 
     public enum JobState {
-        INITIALIZED, QUEUED, EXECUTING, DONE
+        INITIALIZED, QUEUED, EXECUTING, DONE, NOCHANGE, ERROR
     }
 
     public void setUserId(String userId) {

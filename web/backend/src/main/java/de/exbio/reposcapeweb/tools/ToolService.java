@@ -3,6 +3,7 @@ package de.exbio.reposcapeweb.tools;
 import de.exbio.reposcapeweb.communication.cache.Graph;
 import de.exbio.reposcapeweb.communication.cache.Graphs;
 import de.exbio.reposcapeweb.communication.jobs.Job;
+import de.exbio.reposcapeweb.communication.jobs.JobRequest;
 import de.exbio.reposcapeweb.db.entities.edges.ProteinInteractsWithProtein;
 import de.exbio.reposcapeweb.db.services.edges.ProteinInteractsWithProteinService;
 import de.exbio.reposcapeweb.utils.ProcessUtils;
@@ -17,10 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.*;
 import java.nio.file.Files;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
+import java.util.*;
 
 @Service
 public class ToolService {
@@ -269,11 +267,14 @@ public class ToolService {
         return command;
     }
 
-    public void prepareJobFiles(String jobId, String algorithm, HashMap<String, String> params, Graph g) {
-        switch (algorithm) {
+    public void prepareJobFiles(String jobId, JobRequest req, Graph g) {
+        switch (req.algorithm) {
             case "diamond": {
                 File seed = new File(getTempDir(jobId), "seeds.list");
-                writeSeedFile(params.get("type"), seed, g);
+                if (req.selection)
+                    writeSeedFile(req.params.get("type"), seed, req.nodes);
+                else
+                    writeSeedFile(req.params.get("type"), seed, g);
                 break;
             }
         }
@@ -281,8 +282,12 @@ public class ToolService {
     }
 
     private void writeSeedFile(String type, File file, Graph g) {
+        writeSeedFile(type, file, g.getNodes().get(Graphs.getNode(type)).keySet());
+    }
+
+    private void writeSeedFile(String type, File file, Collection<Integer> nodeIds) {
         BufferedWriter bw = WriterUtils.getBasicWriter(file);
-        g.getNodes().get(Graphs.getNode(type)).keySet().forEach(node -> {
+        nodeIds.forEach(node -> {
             try {
                 bw.write(node + "\n");
             } catch (IOException e) {
@@ -299,7 +304,7 @@ public class ToolService {
     public void executeJob(String command) {
 //        ProcessBuilder pb = new ProcessBuilder(executor.getAbsolutePath(), command);
         try {
-            Runtime.getRuntime().exec(executor.getAbsolutePath()+" "+ command);
+            Runtime.getRuntime().exec(executor.getAbsolutePath() + " " + command);
 //            pb.start();
         } catch (IOException e) {
             e.printStackTrace();
@@ -316,7 +321,7 @@ public class ToolService {
         return null;
     }
 
-    public void clearDirectories(Job j){
+    public void clearDirectories(Job j) {
         getTempDir(j.getJobId()).delete();
     }
 

@@ -42,6 +42,7 @@ public class SocketController {
         HashMap<String, Object> out = new HashMap<>();
         out.put("jid", j.getJobId());
         out.put("state", j.getState().name());
+        out.put("basis", j.getBasisGraph());
         out.put("gid",j.getDerivedGraph());
         socketTemplate.convertAndSend("/graph/status-job" + j.getJobId(), toJson(out));
     }

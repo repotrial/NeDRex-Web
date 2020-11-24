@@ -16,6 +16,7 @@ import de.exbio.reposcapeweb.db.services.nodes.DisorderService;
 import de.exbio.reposcapeweb.db.updates.UpdateService;
 import de.exbio.reposcapeweb.filter.FilterService;
 import de.exbio.reposcapeweb.tools.ToolService;
+import de.exbio.reposcapeweb.utils.StringUtils;
 import de.exbio.reposcapeweb.utils.WriterUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +31,7 @@ import org.springframework.jdbc.support.incrementer.HanaSequenceMaxValueIncremen
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 
@@ -68,6 +70,7 @@ public class ReposcapewebApplication {
 
     @EventListener(ApplicationReadyEvent.class)
     public void postConstruct() {
+
         Graphs.setUp();
 
         toolService.validateTools();

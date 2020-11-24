@@ -7,7 +7,10 @@ import de.exbio.reposcapeweb.tools.ToolService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.ZoneOffset;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -27,7 +30,7 @@ public class JobController {
         this.toolService = toolService;
         this.jobQueue = jobQueue;
         this.jobRepository = jobRepository;
-        this.socketController=socketController;
+        this.socketController = socketController;
     }
 
 
@@ -48,7 +51,6 @@ public class JobController {
     public Job registerJob(JobRequest req) {
         Job j = createJob(req);
         Graph g = graphService.getCachedGraph(req.graphId);
-
         prepareJob(j, g);
         queue(j);
         return j;
@@ -70,7 +72,7 @@ public class JobController {
     }
 
     private void prepareFiles(Job j, Graph g) {
-        toolService.prepareJobFiles(j.getJobId(), j.getRequest().algorithm, j.getRequest().params, g);
+        toolService.prepareJobFiles(j.getJobId(), j.getRequest(), g);
     }
 
     private String createCommand(Job j) {
@@ -82,8 +84,11 @@ public class JobController {
         Job j = jobs.get(id);
         jobQueue.finishJob(j);
         HashMap<Integer, HashMap<String, Object>> results = toolService.getJobResults(j);
-        //TODO do something more with the results?
-        graphService.applyModuleJob(j, results.keySet());
+        if (results == null) {
+            j.setDerivedGraph(j.getBasisGraph());
+        } else
+            //TODO do something more with the results?
+            graphService.applyModuleJob(j, results.keySet());
         save(j);
         socketController.setJobUpdate(j);
         toolService.clearDirectories(j);
@@ -93,6 +98,21 @@ public class JobController {
     public HashMap<String, Job.JobState> getJobGraphStates(String user) {
         HashMap<String, Job.JobState> stateMap = new HashMap<>();
         jobs.values().stream().filter(j -> j.getUserId().equals(user)).forEach(j -> stateMap.put(j.getDerivedGraph(), j.getState()));
+        return stateMap;
+    }
+
+    public LinkedList<HashMap<String, Object>> getJobGraphStates(String user, String gid) {
+        LinkedList<HashMap<String, Object>> stateMap = new LinkedList<>();
+        jobs.values().stream().filter(j -> j.getUserId().equals(user)).forEach(j -> {
+            if ((gid == null || j.getBasisGraph().equals(gid)) | !j.getState().equals(Job.JobState.DONE)) {
+                stateMap.add(new HashMap<>());
+                stateMap.getLast().put("state", j.getState().name());
+                stateMap.getLast().put("gid",j.getDerivedGraph());
+                stateMap.getLast().put("basis",j.getBasisGraph());
+                stateMap.getLast().put("jid",j.getJobId());
+                stateMap.getLast().put("created", j.getCreated().toEpochSecond(ZoneOffset.ofTotalSeconds(0)));
+            }
+        });
         return stateMap;
     }
 }
