@@ -342,6 +342,12 @@ public class RequestController {
         return toJson(jobController.getJobGraphStates(uid, gid));
     }
 
+    @RequestMapping(value="/getUserJobs", method = RequestMethod.GET)
+    @ResponseBody
+    public String getJobs(@RequestParam("uid") String uid){
+        return toJson(jobController.getJobGraphStates(uid, null));
+    }
+
     private String toJson(Object o) {
         try {
             return objectMapper.writeValueAsString(o);

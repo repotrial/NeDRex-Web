@@ -79,7 +79,6 @@ public class ReposcapewebApplication {
         importService.importHistory();
         importService.importNodeData();
 
-
         if (Boolean.parseBoolean(env.getProperty("update.onstartup"))) {
             updateService.scheduleDataUpdate();
         } else {

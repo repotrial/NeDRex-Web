@@ -803,11 +803,7 @@ public class WebGraphService {
             j.setUpdate("" + (allNodes.size() - beforeCount));
             NodeFilter nf = new NodeFilter(nodeController.getFilter(Graphs.getNode(nodeTypeId)), allNodes);
             derived.saveNodeFilter(Graphs.getNode(nodeTypeId), nf);
-
-            if (j.getTarget().equals("gene"))
-                nodeController.findGenes(moduleIds).forEach(n->derived.addNode(nodeTypeId,new Node(n.getId(),n.getDisplayName())));
-            if(j.getTarget().equals("protein"))
-                nodeController.findProteins(moduleIds).forEach(n->derived.addNode(nodeTypeId,new Node(n.getId(),n.getDisplayName())));
+            derived.addNodes(nodeTypeId, nf.toList(-1).stream().map(e -> new Node(e.getNodeId(), e.getName())).collect(Collectors.toList()));
         }
         j.setDerivedGraph(derived.getId());
         addGraphToHistory(j.getUserId(), derived.getId());
