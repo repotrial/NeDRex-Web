@@ -159,6 +159,7 @@ public class NodeFilter {
         return filtered;
     }
 
+    //TODO check usage and fix if needed
     public LinkedList<FilterEntry> toList(int size) {
         LinkedList<FilterEntry> filtered = new LinkedList<>();
 

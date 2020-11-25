@@ -338,7 +338,7 @@
               </v-col>
               <v-col cols="6" v-if="algorithms.categoryModel >-1">
                 <v-select
-                  v-model="algorithms.categories.methodModel"
+                  v-model="algorithms.methodModel"
                   :items="algorithms.categories[algorithms.categoryModel].methods"
                   item-text="label"
                   item-value="id"
@@ -347,9 +347,8 @@
                 </v-select>
               </v-col>
             </v-row>
-            <v-divider></v-divider>
             <v-row
-              v-if="algorithms.categoryModel >-1 && algorithms.categories.methodModel ==='diamond'">
+              v-if="algorithms.categoryModel >-1 && algorithms.methodModel ==='diamond'">
               <v-col cols="6">
                 <v-switch
                   label="Use Selection"
@@ -368,12 +367,109 @@
                 </v-select>
               </v-col>
             </v-row>
+
+            <v-divider></v-divider>
+            <v-row>
+              <v-col cols="1">
+                <v-tooltip right>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn icon @click="algorithms.advanced=!algorithms.advanced" color="gray" v-bind="attrs"
+                           v-on="on" :disabled="algorithms.methodModel ===undefined">
+                      <v-icon>
+                        {{ algorithms.advanced ? 'fas fa-ellipsis-v' : 'fas fa-ellipsis-h' }}
+                      </v-icon>
+                    </v-btn>
+                  </template>
+                  <span>Advanced</span>
+                </v-tooltip>
+              </v-col>
+            </v-row>
+            <template v-if="algorithms.advanced">
+              <template v-if="algorithms.methodModel==='diamond'">
+                <v-row>
+                  <v-col>
+                    <v-slider
+                      hide-details
+                      class="align-center"
+                      v-model="algorithms.models.diamond.nModel"
+                      min="1"
+                      max="1000"
+                    >
+                      <template v-slot:prepend>
+                        <v-text-field
+                          v-model="algorithms.models.diamond.nModel"
+                          class="mt-0 pt-0"
+                          type="number"
+                          style="width: 60px"
+                          label="n"
+                        ></v-text-field>
+                      </template>
+                      <template v-slot:append>
+                        <v-tooltip left>
+                          <template v-slot:activator="{ on, attrs }">
+                            <v-icon
+                              v-bind="attrs"
+                              v-on="on"
+                              left> far fa-question-circle
+                            </v-icon>
+                          </template>
+                          <span>Desired number of DIAMOnD genes, 200 is a reasonable
+                       starting point.</span>
+                        </v-tooltip>
+                      </template>
+                    </v-slider>
+                  </v-col>
+                </v-row>
+                <v-row>
+                  <v-col>
+                    <v-slider
+                      hide-details
+                      class="align-center"
+                      v-model="algorithms.models.diamond.alphaModel"
+                      min="1"
+                      max="100"
+                    >
+                      <template v-slot:prepend>
+                        <v-text-field
+                          v-model="algorithms.models.diamond.alphaModel"
+                          class="mt-0 pt-0"
+                          type="number"
+                          style="width: 60px"
+                          label="alpha"
+                        ></v-text-field>
+                      </template>
+                      <template v-slot:append>
+                        <v-tooltip left>
+                          <template v-slot:activator="{ on, attrs }">
+                            <v-icon
+                              v-bind="attrs"
+                              v-on="on"
+                              left> far fa-question-circle
+                            </v-icon>
+                          </template>
+                          <span>an integer representing weight of the seeds,default
+                       value is set to 1.</span>
+                        </v-tooltip>
+                      </template>
+                    </v-slider>
+                  </v-col>
+                </v-row>
+              </template>
+              <v-row>
+                <v-col></v-col>
+              </v-row>
+            </template>
             <v-row>
               <v-col>
                 <v-chip outlined color="green"
                         :disabled="algorithms.nodeModel === undefined || algorithms.nodeModel.length ===0"
-                        @click="$emit('executeAlgorithmEvent','diamond',{node:algorithms.nodeModel,selection:algorithms.selectionSwitch})">
+                        @click="submitAlgorithm">
                   Submit
+                </v-chip>
+              </v-col>
+              <v-col>
+                <v-chip outlined color="red" @click="resetAlgorithms">
+                  Reset
                 </v-chip>
               </v-col>
             </v-row>
@@ -388,20 +484,68 @@
             </v-list-item-title>
           </v-list-item>
           <v-divider></v-divider>
-          <v-container v-if="show.jobs">
-            <v-list-item v-for="job in jobs" :key="job.jid">
-              <v-chip :color="job.state==='DONE'?(job.gid===gid?'blue':'green'):'orange'" :disabled="job.state!=='DONE'||job.gid===gid"
-                      @click="$emit('graphLoadEvent', {post: {id: job.gid}})">
-                <v-icon left v-if="job.state==='DONE'">
-                  fas fa-check
-                </v-icon>
-                <v-icon left v-else>
-                  fas fa-circle-notch fa-spin
-                </v-icon>
-                [{{ job.state }}] {{ formatTime(job.created)[1] }} ago ({{ formatTime(job.created)[0] }})
-              </v-chip>
-            </v-list-item>
-          </v-container>
+          <v-simple-table v-if="show.jobs">
+            <template v-slot:default>
+              <thead>
+              <tr>
+                <th class="text-left">
+                  Status
+                </th>
+                <th class="text-left">
+                  Tool
+                </th>
+                <th class="text-left">
+                  Result
+                </th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr
+                v-for="job in jobs" :key="job.jid"
+              >
+                <td>
+                  <v-chip :color="job.state==='DONE'?(job.gid===gid?'blue':'green'):'orange'"
+                          :disabled="job.state!=='DONE'||job.gid===gid"
+                          @click="$emit('graphLoadEvent', {post: {id: job.gid}})">
+                    <v-icon left v-if="job.state==='DONE'">
+                      fas fa-check
+                    </v-icon>
+                    <v-icon left v-else>
+                      fas fa-circle-notch fa-spin
+                    </v-icon>
+                    [{{ job.state }}]
+                    <v-tooltip left>
+                      <template v-slot:activator="{ on, attrs }">
+                        <v-icon v-bind="attrs" v-on="on" right>
+                          fas fa-history
+                        </v-icon>
+                      </template>
+                      <span>{{ formatTime(job.created)[0] }}</span>
+                    </v-tooltip>
+                    {{ formatTime(job.created)[1] }} ago
+                  </v-chip>
+                </td>
+                <td>
+                  {{ job.algorithm }}
+                </td>
+                <td>
+                  <template  v-if="job.state==='DONE'">
+                    <v-tooltip left>
+                      <template v-slot:activator="{ on, attrs }">
+                        <v-icon v-bind="attrs" v-on="on" right>
+                          fas fa-dna
+                        </v-icon>
+                      </template>
+                      <span> added {{ job.update }} {{ job.target }} nodes</span>
+                    </v-tooltip>
+                    +{{ job.update }}
+                  </template>
+                </td>
+              </tr>
+              </tbody>
+            </template>
+
+          </v-simple-table>
         </v-card>
 
 
@@ -481,7 +625,7 @@
                         :size="hover.arrow?'45px':'35px'"
                         @mouseleave.native="hover.arrow=false"
                         @mouseover.native="hover.arrow=true">
-                        {{detailedObject.directed? 'fas fa-long-arrow-alt-down':'fas fa-arrows-alt-v'}}
+                        {{ detailedObject.directed ? 'fas fa-long-arrow-alt-down' : 'fas fa-arrows-alt-v' }}
                       </v-icon>
                     </template>
                     <span>{{ detailedObject.type }}</span>
@@ -601,6 +745,13 @@ export default {
         methodModel: "",
         nodeModel: undefined,
         selectionSwitch: false,
+        advanced: false,
+        models: {
+          diamond: {
+            nModel: 200,
+            alphaModel: 1
+          }
+        },
         categories: [{
           id: 0,
           label: "Disease Modules",
@@ -655,6 +806,17 @@ export default {
         this.selectedNode = undefined;
         this.neighborNodes = [];
       }
+    },
+    submitAlgorithm: function () {
+      let params = {}
+      if (this.algorithms.methodModel === 'diamond') {
+        params['type'] = this.algorithms.nodeModel
+        params['n'] = this.algorithms.models.diamond.nModel;
+        params['alpha'] = this.algorithms.models.diamond.alphaModel;
+      }
+      if (this.algorithms.methodModel === 'diamond' || this.algorithms.methodModel === 'bicon')
+        params.selection = this.algorithms.selectionSwitch
+      this.$emit('executeAlgorithmEvent', this.algorithms.methodModel, params)
     },
 
     format: function (item, value) {
@@ -946,12 +1108,16 @@ export default {
       }
     }
     ,
-    resetAlgorithms: function (){
-      this.algorithms.nodeModel=undefined
-      this.algorithms.selectionSwitch=false
-      this.algorithms.categoryModel=undefined
-      this.algorithms.methodModel=undefined
-      this.show.algorithms=false
+    resetAlgorithms: function () {
+      this.algorithms.nodeModel = undefined
+      this.algorithms.selectionSwitch = false
+      this.algorithms.categoryModel = undefined
+      this.algorithms.methodModel = undefined
+      this.algorithms.categories.methodModel = undefined
+      this.algorithms.advanced = false;
+      this.show.algorithms = false
+      this.algorithms.models.diamond.nModel = 200
+      this.algorithms.models.diamond.alphaModel = 1
     },
     nodeDetails: function (id) {
       let str = id.split("_")
@@ -978,7 +1144,7 @@ export default {
           if (response.data !== undefined) {
             this.detailedObject = response.data
             this.detailedObject.edge = true;
-            this.detailedObject.directed = Utils.isEdgeDirected(this.metagraph,data.name)
+            this.detailedObject.directed = Utils.isEdgeDirected(this.metagraph, data.name)
             if (this.detailedObject.sourceId !== undefined)
               this.description = "for " + data.name + " " + this.detailedObject.displayName + " (id:" + this.detailedObject.sourceId + "->" + this.detailedObject.targetId + ")"
             if (this.detailedObject.idOne !== undefined)
@@ -988,16 +1154,16 @@ export default {
           console.log(err)
         })
       }
-      this.show.detail=true
+      this.show.detail = true
     },
-    loadJobs: function(){
-      this.$http.get("/getJobs?uid="+this.$cookies.get("uid")+"&gid="+this.gid).then(response=>{
-        if(response.data!==undefined)
+    loadJobs: function () {
+      this.$http.get("/getJobs?uid=" + this.$cookies.get("uid") + "&gid=" + this.gid).then(response => {
+        if (response.data !== undefined)
           return response.data
-      }).then(data=>{
+      }).then(data => {
         console.log(data)
-        data.forEach(job=>{
-          if(job.state!=="DONE")
+        data.forEach(job => {
+          if (job.state !== "DONE")
             this.$socket.subscribeJob(job.jid, "jobUpdateEvent")
           this.jobs.push(job)
         })
@@ -1007,7 +1173,9 @@ export default {
     addJob: function (data) {
       this.resetAlgorithms()
       this.$socket.subscribeJob(data.jid, "jobUpdateEvent")
-      this.jobs.push({gid: data.gid, jid: data.jid, created: data.created, state: data.state})
+      this.jobs.push(data)
+      this.show.jobs = true
+      // this.$refs.jobs.$forceUpdate()
     }
     ,
     updateJob: function (response) {
@@ -1016,10 +1184,14 @@ export default {
         if (j.jid === params.jid) {
           j.state = params.state;
           j.gid = params.gid;
+          j.algorithm=params.algorithm;
+          j.target=params.target;
+          j.update = params.update
         }
       })
-      if (params.state === 'DONE')
+      if (params.state === 'DONE') {
         this.$socket.unsubscribeJob(params.jid)
+      }
     },
     clearModels: function () {
       this.filterModel = ""
@@ -1066,8 +1238,8 @@ export default {
       return basic;
     },
     formatTime: function (timestamp) {
-      if(timestamp===undefined)
-        return ["0","0"]
+      if (timestamp === undefined)
+        return ["0", "0"]
       timestamp *= 1000
       let d = new Date();
       let date = new Date(timestamp);

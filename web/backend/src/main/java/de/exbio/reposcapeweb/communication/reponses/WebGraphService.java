@@ -15,6 +15,7 @@ import de.exbio.reposcapeweb.db.history.HistoryController;
 import de.exbio.reposcapeweb.db.services.controller.EdgeController;
 import de.exbio.reposcapeweb.db.services.controller.NodeController;
 import de.exbio.reposcapeweb.filter.NodeFilter;
+import de.exbio.reposcapeweb.tools.ToolService;
 import de.exbio.reposcapeweb.utils.Pair;
 import de.exbio.reposcapeweb.utils.StatUtils;
 import de.exbio.reposcapeweb.utils.WriterUtils;
@@ -62,7 +63,7 @@ public class WebGraphService {
         graph.addNode(new WebNode(3, "Pathway", "pathway", "Pathway"));
         graph.addNode(new WebNode(4, "Gene", "gene", "Gene"));
         graph.addNode(new WebNode(5, "Disorder", "disorder", "Disorder"));
-        graph.getNodes().forEach(n->graph.setWeight("nodes",n.group,nodeController.getNodeCount(n.group)));
+        graph.getNodes().forEach(n -> graph.setWeight("nodes", n.group, nodeController.getNodeCount(n.group)));
 
         graph.addEdge(new WebEdge(1, 2, "DrugHasTargetProtein"));
         graph.addEdge(new WebEdge(1, 4, "DrugHasTargetGene").setDashes(true));
@@ -75,7 +76,7 @@ public class WebGraphService {
         graph.addEdge(new WebEdge(5, 5, "DisorderComorbidWithDisorder"));
         graph.addEdge(new WebEdge(5, 5, "DisorderIsADisorder"));
         graph.addEdge(new WebEdge(1, 5, "DrugHasIndication"));
-        graph.getEdges().forEach(e->graph.setWeight("edges",e.label,edgeController.getEdgeCount(e.label)));
+        graph.getEdges().forEach(e -> graph.setWeight("edges", e.label, edgeController.getEdgeCount(e.label)));
 
 
         graph.setColorMap(this.getColorMap(null));
@@ -136,7 +137,7 @@ public class WebGraphService {
                 g.getEdges().keySet().forEach(k -> {
                     if (!finalReq.attributes.containsKey("edges"))
                         finalReq.attributes.put("edges", new HashMap<>());
-                    finalReq.attributes.get("edges").put(g.getEdge(k), k < 0 ? new String[]{"id", "node1","node2", "weight", "jaccardIndex"} : edgeController.getListAttributes(k));
+                    finalReq.attributes.get("edges").put(g.getEdge(k), k < 0 ? new String[]{"id", "node1", "node2", "weight", "jaccardIndex"} : edgeController.getListAttributes(k));
                 });
             }
             log.debug("Converting nodes from Graph to WebList for " + id);
@@ -166,7 +167,7 @@ public class WebGraphService {
                 List<PairId> edges = edgeList.stream().map(e -> new PairId(e.getId1(), e.getId2())).collect(Collectors.toList());
                 if (type < 0) {
                     Pair<Integer, Integer> nodeIds = g.getNodesfromEdge(type);
-                    String[] attributeArray = new String[]{"id", "node1","node2", "weight", "jaccardIndex"};
+                    String[] attributeArray = new String[]{"id", "node1", "node2", "weight", "jaccardIndex"};
                     finalList.addAttributes("edges", stringType, attributeArray);
                     LinkedList<String> attrMaps = edges.stream().map(p -> getCustomEdgeAttributeList(g, type, p)).collect(Collectors.toCollection(LinkedList::new));
                     finalList.addEdges(stringType, attrMaps);
@@ -698,13 +699,13 @@ public class WebGraphService {
         as.put("id", p.getId1() + "-" + p.getId2());
         as.put("idOne", p.getId1());
         as.put("idTwo", p.getId2());
-        as.put("node1",nodeController.getName(nodeIds.first,p.getId1()));
-        as.put("node2",nodeController.getName(nodeIds.second,p.getId2()));
+        as.put("node1", nodeController.getName(nodeIds.first, p.getId1()));
+        as.put("node2", nodeController.getName(nodeIds.second, p.getId2()));
         as.put("memberOne", nodeController.getDomainId(nodeIds.first, p.getId1()));
         as.put("memberTwo", nodeController.getDomainId(nodeIds.second, p.getId2()));
         as.put("weight", graph.getCustomEdgeWeights().get(edgeId).get(p.getId1()).get(p.getId2()));
         as.put("jaccardIndex", graph.getCustomJaccardIndex().get(edgeId).get(p.getId1()).get(p.getId2()));
-        as.put("order",new String[]{"id","idOne","idTwo","node1","node2","memberOne","memberTwo","weight","jaccardIndex"});
+        as.put("order", new String[]{"id", "idOne", "idTwo", "node1", "node2", "memberOne", "memberTwo", "weight", "jaccardIndex"});
         try {
             return objectMapper.writeValueAsString(as);
         } catch (JsonProcessingException e) {
@@ -737,8 +738,8 @@ public class WebGraphService {
             return getCustomEdgeAttributeList(graph, edgeId, p);
         else {
             try {
-                HashMap<String,Object> details = edgeController.edgeToAttributeList(edgeId, p);
-                details.put("order",edgeController.getAttributes(edgeId));
+                HashMap<String, Object> details = edgeController.edgeToAttributeList(edgeId, p);
+                details.put("order", edgeController.getAttributes(edgeId));
                 return objectMapper.writeValueAsString(details);
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
@@ -755,7 +756,7 @@ public class WebGraphService {
             historyController.save(history);
         } else {
             history = new GraphHistory(uid, g.getId(), g.toInfo(), historyController.getHistory(g.getParent()));
-            historyController.saveDerivedHistory(g.getParent(),history);
+            historyController.saveDerivedHistory(g.getParent(), history);
             cache.remove(gid);
         }
 
@@ -794,13 +795,19 @@ public class WebGraphService {
         Graph g = getCachedGraph(j.getBasisGraph());
         Graph derived = g.clone(historyController.getGraphId());
         cache.put(derived.getId(), derived);
-        if (j.getRequest().algorithm.equals("diamond")) {
-            int nodeTypeId = Graphs.getNode(j.getRequest().params.get("type"));
+        if (j.getMethod().equals(ToolService.Tool.DIAMOND)) {
+            int nodeTypeId = Graphs.getNode(j.getTarget());
             HashSet<Integer> allNodes = new HashSet<>(derived.getNodes().get(nodeTypeId).keySet());
+            int beforeCount = allNodes.size();
             allNodes.addAll(moduleIds);
+            j.setUpdate("" + (allNodes.size() - beforeCount));
             NodeFilter nf = new NodeFilter(nodeController.getFilter(Graphs.getNode(nodeTypeId)), allNodes);
             derived.saveNodeFilter(Graphs.getNode(nodeTypeId), nf);
-            derived.addNodes(nodeTypeId, nf.toList(-1).stream().map(e -> new Node(e.getNodeId(), e.getName())).collect(Collectors.toList()));
+
+            if (j.getTarget().equals("gene"))
+                nodeController.findGenes(moduleIds).forEach(n->derived.addNode(nodeTypeId,new Node(n.getId(),n.getDisplayName())));
+            if(j.getTarget().equals("protein"))
+                nodeController.findProteins(moduleIds).forEach(n->derived.addNode(nodeTypeId,new Node(n.getId(),n.getDisplayName())));
         }
         j.setDerivedGraph(derived.getId());
         addGraphToHistory(j.getUserId(), derived.getId());

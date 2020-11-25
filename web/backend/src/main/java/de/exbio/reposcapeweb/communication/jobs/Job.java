@@ -1,8 +1,12 @@
 package de.exbio.reposcapeweb.communication.jobs;
 
 
+import de.exbio.reposcapeweb.tools.ToolService;
+
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.HashMap;
 
 @Entity
 @Table(name = "jobs")
@@ -15,15 +19,22 @@ public class Job {
     private String derivedGraph;
 
     @Enumerated(EnumType.ORDINAL)
+    private ToolService.Tool method = null;
+
+    @Enumerated(EnumType.ORDINAL)
     private JobState state = JobState.INITIALIZED;
 
-    @Transient
-    private JobRequest request;
+//    @Transient
+//    private JobRequest request;
 
 
     private LocalDateTime created;
 
     private LocalDateTime finished;
+
+    private String message;
+
+    private String target;
 
     @Column(columnDefinition = "text")
     private String command;
@@ -34,14 +45,16 @@ public class Job {
     }
 
     public Job(String id,JobRequest job){
-        this(id,job.userId,job.graphId);
-        this.request=job;
+        this(id,job.userId,job.graphId, job.algorithm, job.params.get("type"));
+//        this.request=job;
     }
 
-    public Job(String jobId, String userId, String graphId) {
+    public Job(String jobId, String userId, String graphId, String algorithm, String target) {
         this.userId = userId;
         this.basisGraph = graphId;
         this.jobId = jobId;
+        this.method= ToolService.Tool.valueOf(algorithm.toUpperCase());
+        this.target= target;
         created = LocalDateTime.now();
     }
 
@@ -78,9 +91,9 @@ public class Job {
         return state;
     }
 
-    public JobRequest getRequest() {
-        return request;
-    }
+//    public JobRequest getRequest() {
+//        return request;
+//    }
 
     public LocalDateTime getCreated() {
         return created;
@@ -111,4 +124,33 @@ public class Job {
     }
 
 
+
+    public String getUpdate() {
+        return message;
+    }
+
+    public void setUpdate(String update) {
+        this.message = update;
+    }
+
+    public String getTarget() {
+        return target;
+    }
+
+    public ToolService.Tool getMethod() {
+        return method;
+    }
+
+    public HashMap<String,Object> toMap() {
+        HashMap<String,Object> out = new HashMap<>();
+        out.put("state", getState().name());
+        out.put("gid",getDerivedGraph());
+        out.put("basis",getBasisGraph());
+        out.put("jid",getJobId());
+        out.put("update",message);
+        out.put("algorithm",getMethod().name());
+        out.put("target",getTarget());
+        out.put("created", getCreated().toEpochSecond(ZoneOffset.ofTotalSeconds(0)));
+        return out;
+    }
 }

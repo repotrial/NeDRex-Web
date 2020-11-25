@@ -252,18 +252,19 @@ public class ToolService {
     }
 
 
-    public String createCommand(String jobId, String algorithm, HashMap<String, String> params) {
-        String command = "localhost:8090/backend/api/finishedJob?id=" + jobId + " " + getTempDir(jobId).getAbsolutePath() + " ";
-        switch (algorithm) {
-            case "diamond": {
+    public String createCommand(Job job,JobRequest request) {
+        String command = "localhost:8090/backend/api/finishedJob?id=" + job.getJobId() + " " + getTempDir(job.getJobId()).getAbsolutePath() + " ";
+        switch (job.getMethod()) {
+            case DIAMOND: {
                 command += "diamond " +
                         diamond.getAbsolutePath() + " " +
-                        (params.get("type").equals("genes") ? new File(dataDir, "gene_gene_interaction.pairs") : new File(dataDir, "protein_protein_interaction.pairs")).getAbsolutePath() + " " +
+                        (request.getParams().get("type").equals("gene") ? new File(dataDir, "gene_gene_interaction.pairs") : new File(dataDir, "protein_protein_interaction.pairs")).getAbsolutePath() + " " +
                         "seeds.list " +
-                        100;
+                        request.getParams().get("n")+ " "+request.getParams().get("alpha");
                 break;
             }
         }
+        System.out.println(command);
         return command;
     }
 
@@ -314,7 +315,7 @@ public class ToolService {
     public HashMap<Integer, HashMap<String, Object>> getJobResults(Job j) {
         HashMap<Integer, HashMap<String, Object>> results;
         for (File f : getTempDir(j.getJobId()).listFiles()) {
-            if (j.getRequest().algorithm.equals("diamond") && f.getName().endsWith(".txt")) {
+            if (j.getMethod().equals(Tool.DIAMOND) && f.getName().endsWith(".txt")) {
                 return readDiamondResults(f);
             }
         }
@@ -343,5 +344,9 @@ public class ToolService {
             e.printStackTrace();
         }
         return results;
+    }
+
+    public enum Tool{
+        DIAMOND, BICON, TRUSTRANK, CENTRALITY
     }
 }
