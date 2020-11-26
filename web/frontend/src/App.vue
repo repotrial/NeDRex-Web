@@ -209,12 +209,18 @@ export default {
   },
   watch: {
     '$route'(to, from) {
-      this.applyUrlTab()
       let new_gid = this.$route.params["gid"]
-      console.log("old:+" + this.gid + " -> " + new_gid)
+        this.applyUrlTab(true)
       if (new_gid !== this.gid) {
+        console.log("reloading")
         this.gid = new_gid
-        location.reload()
+        // this.loadGraph({post: {id: new_gid}, tab: 'list'})
+        this.tabslist[1].icon = "fas fa-project-diagram"
+        this.tabslist[2].icon = "fas fa-list-ul"
+        this.$refs.list.setLoading(true)
+        this.$refs.graph.reload()
+        this.$refs.list.reload()
+        this.$refs.history.reload()
       }
     }
   },
@@ -241,7 +247,6 @@ export default {
       this.gid = this.$route.params["gid"]
       this.initComponents()
       this.$http.get("/getMetagraph").then(response => {
-        console.log(response.data)
         this.metagraph = response.data;
         this.$refs.list.setMetagraph(this.metagraph)
       }).then(() => {
@@ -280,7 +285,7 @@ export default {
       this.$http.post("/getGraphInfo", graph.post).then(response => {
         return response.data
       }).then(info => {
-        this.evalPostInfo(info)
+        this.evalPostInfo(info, graph.post.tab)
       }).catch(err => {
         console.log(err)
       })
@@ -296,7 +301,7 @@ export default {
     loadList: function (gid) {
       this.$refs.list.getList(gid, this.metagraph)
     },
-    evalPostInfo: function (info) {
+    evalPostInfo: function (info, tab) {
       let sum = 0
       for (let n in info.nodes)
         sum += info.nodes[n];
@@ -308,9 +313,10 @@ export default {
         this.tabslist[2].icon = "fas fa-list-ul"
         this.$refs.list.setLoading(false)
       } else {
-        console.log(info)
+        this.gid = info.id
+        let tab = tab !== undefined ? tab : "list"
         this.$http.get("/archiveHistory?uid=" + this.$cookies.get("uid") + "&gid=" + info.id).then(() => {
-          this.$router.push({path: '/' + info.id})
+          this.$router.push({path: '/' + info.id + "/" + tab})
           this.$refs.graph.reload()
           this.$refs.list.reload()
           this.$refs.history.reload()
@@ -382,8 +388,10 @@ export default {
       this.adaptSidecard(filterData)
     },
     selectTab: function (tabid, skipReroute) {
+      console.log(this.selectedTabId+"->"+tabid)
       if (this.selectedTabId === tabid)
         return
+      console.log("loading tab")
       let colInactive = this.colors.tabs.inactive;
       let colActive = this.colors.tabs.active;
       for (let idx in this.tabslist) {
@@ -394,8 +402,11 @@ export default {
           this.tabslist[idx].color = colInactive
       }
       this.selectedTabId = tabid;
-      if (!skipReroute)
-        this.$router.replace("/" + this.gid + "/" + ['start', 'graph', 'list', 'history'][tabid])
+      if (!skipReroute && this.gid!==undefined)
+        try {
+          this.$router.push("/" + this.gid + "/" + ['start', 'graph', 'list', 'history'][tabid])
+        }catch(createRouterError){
+        }
 
       this.adaptSidecard()
     },

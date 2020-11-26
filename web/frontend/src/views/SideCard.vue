@@ -855,7 +855,6 @@ export default {
     }
     ,
     loadDetails: function (data, redirect) {
-      console.log(this.metagraph)
       this.details.redirected = false;
       if (redirect)
         this.details.redirected = redirect
