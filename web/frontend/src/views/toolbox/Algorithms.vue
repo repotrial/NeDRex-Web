@@ -135,6 +135,40 @@
               </v-slider>
             </v-col>
           </v-row>
+          <v-row>
+            <v-col>
+              <v-slider
+                hide-details
+                class="align-center"
+                v-model="models.diamond.pModel"
+                min="-100"
+                max="0"
+              >
+                <template v-slot:prepend>
+                  <v-text-field
+                    prefix="10^"
+                    v-model="models.diamond.pModel"
+                    class="mt-0 pt-0"
+                    type="number"
+                    style="width: 80px"
+                    label="p-cutoff"
+                  ></v-text-field>
+                </template>
+                <template v-slot:append>
+                  <v-tooltip left>
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-icon
+                        v-bind="attrs"
+                        v-on="on"
+                        left> far fa-question-circle
+                      </v-icon>
+                    </template>
+                    <span>Choose a cutoff for the resulting p_hyper scores.</span>
+                  </v-tooltip>
+                </template>
+              </v-slider>
+            </v-col>
+          </v-row>
         </template>
         <v-row>
           <v-col></v-col>
@@ -179,7 +213,8 @@ export default {
       models: {
         diamond: {
           nModel: 200,
-          alphaModel: 1
+          alphaModel: 1,
+          pModel:0
         }
       },
       categories: [{
@@ -201,6 +236,7 @@ export default {
         params['type'] = this.nodeModel
         params['n'] = this.models.diamond.nModel;
         params['alpha'] = this.models.diamond.alphaModel;
+        params['pcutoff']=this.models.diamond.pModel;
       }
       if (this.methodModel === 'diamond' || this.methodModel === 'bicon')
         params.selection = this.selectionSwitch

@@ -2,11 +2,13 @@ package de.exbio.reposcapeweb.communication.jobs;
 
 
 import de.exbio.reposcapeweb.tools.ToolService;
+import de.exbio.reposcapeweb.utils.StringUtils;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.HashMap;
+import java.util.LinkedList;
 
 @Entity
 @Table(name = "jobs")
@@ -17,6 +19,7 @@ public class Job {
     private String userId;
     private String basisGraph;
     private String derivedGraph;
+    private String params;
 
     @Enumerated(EnumType.ORDINAL)
     private ToolService.Tool method = null;
@@ -152,5 +155,19 @@ public class Job {
         out.put("target",getTarget());
         out.put("created", getCreated().toEpochSecond(ZoneOffset.ofTotalSeconds(0)));
         return out;
+    }
+
+    public HashMap<String,String> getParams() {
+        return params!=null ?StringUtils.stringToMap(params):new HashMap<>();
+    }
+
+    public void addParam(String key, Object value){
+        HashMap<String,String> map = getParams();
+        map.put(key,value.toString());
+        setParams(StringUtils.mapToString(map));
+    }
+
+    public void setParams(String params) {
+        this.params = params;
     }
 }

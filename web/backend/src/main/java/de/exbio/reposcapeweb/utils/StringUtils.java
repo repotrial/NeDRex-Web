@@ -1,6 +1,7 @@
 package de.exbio.reposcapeweb.utils;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class StringUtils {
 
@@ -157,6 +158,19 @@ public class StringUtils {
 
     public static LinkedList<String> stringToList(String s) {
         return split(s.substring(s.charAt(0) == '[' ? 1 : 0, s.charAt(s.length() - 1) == ']' ? s.length() - 1 : s.length()), ',');
+    }
+
+    public static HashMap<String,String> stringToMap(String s){
+        HashMap<String,String> out = new HashMap<>();
+        stringToList(s).forEach(i->{
+            LinkedList<String> e = split(i,':');
+            out.put(e.get(0),e.get(1));
+        });
+        return out;
+    }
+
+    public static String mapToString(HashMap<String,String> map){
+        return listToString(map.entrySet().stream().map(e->e.getKey()+":"+e.getValue()).collect(Collectors.toList()));
     }
 
 }

@@ -196,7 +196,7 @@ public class ToolService {
     }
 
 
-    public String createCommand(Job job,JobRequest request) {
+    public String createCommand(Job job, JobRequest request) {
         String command = "localhost:8090/backend/api/finishedJob?id=" + job.getJobId() + " " + getTempDir(job.getJobId()).getAbsolutePath() + " ";
         switch (job.getMethod()) {
             case DIAMOND: {
@@ -204,7 +204,7 @@ public class ToolService {
                         diamond.getAbsolutePath() + " " +
                         (request.getParams().get("type").equals("gene") ? new File(dataDir, "gene_gene_interaction.pairs") : new File(dataDir, "protein_protein_interaction.pairs")).getAbsolutePath() + " " +
                         "seeds.list " +
-                        request.getParams().get("n")+ " "+request.getParams().get("alpha");
+                        request.getParams().get("n") + " " + request.getParams().get("alpha");
                 break;
             }
         }
@@ -260,7 +260,7 @@ public class ToolService {
         HashMap<Integer, HashMap<String, Object>> results;
         for (File f : getTempDir(j.getJobId()).listFiles()) {
             if (j.getMethod().equals(Tool.DIAMOND) && f.getName().endsWith(".txt")) {
-                return readDiamondResults(f);
+                return readDiamondResults(f, Double.parseDouble(j.getParams().get("pcutoff")));
             }
         }
         return null;
@@ -270,7 +270,7 @@ public class ToolService {
         getTempDir(j.getJobId()).delete();
     }
 
-    private HashMap<Integer, HashMap<String, Object>> readDiamondResults(File f) {
+    private HashMap<Integer, HashMap<String, Object>> readDiamondResults(File f, double p_cutoff) {
         HashMap<Integer, HashMap<String, Object>> results = new HashMap<>();
         try {
             BufferedReader br = ReaderUtils.getBasicReader(f);
@@ -280,9 +280,11 @@ public class ToolService {
                     continue;
                 LinkedList<String> attrs = StringUtils.split(line, "\t");
                 int id = Integer.parseInt(attrs.get(1));
-                results.put(id, new HashMap<>());
-                results.get(id).put("rank", Integer.parseInt(attrs.get(0)));
-                results.get(id).put("p_hyper", attrs.get(2));
+                if (Double.parseDouble(attrs.get(2)) < p_cutoff) {
+                    results.put(id, new HashMap<>());
+                    results.get(id).put("rank", Integer.parseInt(attrs.get(0)));
+                    results.get(id).put("p_hyper", Double.parseDouble(attrs.get(2)));
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -290,7 +292,7 @@ public class ToolService {
         return results;
     }
 
-    public enum Tool{
+    public enum Tool {
         DIAMOND, BICON, TRUSTRANK, CENTRALITY
     }
 }

@@ -54,8 +54,10 @@ public class JobController {
 
     public Job registerJob(JobRequest req) {
         Job j = createJob(req);
+        if (j.getMethod().equals(ToolService.Tool.DIAMOND))
+            j.addParam("pcutoff", req.getParams().containsKey("pcutoff") ? Math.pow(10,Double.parseDouble(req.getParams().get("pcutoff"))) : 1);
         Graph g = graphService.getCachedGraph(req.graphId);
-        prepareJob(j, req,g);
+        prepareJob(j, req, g);
         queue(j);
         return j;
     }
@@ -69,13 +71,13 @@ public class JobController {
         jobRepository.save(j);
     }
 
-    private void prepareJob(Job j,JobRequest req, Graph g) {
-        String command = createCommand(j,req);
+    private void prepareJob(Job j, JobRequest req, Graph g) {
+        String command = createCommand(j, req);
         j.setCommand(command);
-        prepareFiles(j, req,g);
+        prepareFiles(j, req, g);
     }
 
-    private void prepareFiles(Job j, JobRequest req,Graph g) {
+    private void prepareFiles(Job j, JobRequest req, Graph g) {
         toolService.prepareJobFiles(j.getJobId(), req, g);
     }
 
@@ -95,8 +97,8 @@ public class JobController {
                 //TODO do something more with the results?
                 graphService.applyModuleJob(j, results.keySet());
             save(j);
-        }catch (Exception e){
-            log.error("Error on finishing job: "+id);
+        } catch (Exception e) {
+            log.error("Error on finishing job: " + id);
             e.printStackTrace();
             j.setStatus(Job.JobState.ERROR);
         }

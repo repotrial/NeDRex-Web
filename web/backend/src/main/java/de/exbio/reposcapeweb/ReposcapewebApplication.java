@@ -33,6 +33,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 
 @SpringBootApplication
@@ -70,7 +71,6 @@ public class ReposcapewebApplication {
 
     @EventListener(ApplicationReadyEvent.class)
     public void postConstruct() {
-
         Graphs.setUp();
 
         toolService.validateTools();
