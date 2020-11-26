@@ -10,18 +10,18 @@
       <v-row>
         <v-col cols="6">
           <v-select
-            v-model="algorithms.categoryModel"
-            :items="algorithms.categories"
+            v-model="categoryModel"
+            :items="categories"
             item-text="label"
             item-value="id"
             label="Algorithm Category"
           >
           </v-select>
         </v-col>
-        <v-col cols="6" v-if="algorithms.categoryModel >-1">
+        <v-col cols="6" v-if="categoryModel >-1">
           <v-select
-            v-model="algorithms.methodModel"
-            :items="algorithms.categories[algorithms.categoryModel].methods"
+            v-model="methodModel"
+            :items="categories[categoryModel].methods"
             item-text="label"
             item-value="id"
             label="Method"
@@ -30,11 +30,11 @@
         </v-col>
       </v-row>
       <v-row
-        v-if="algorithms.categoryModel >-1 && algorithms.methodModel ==='diamond'">
+        v-if="categoryModel >-1 && methodModel ==='diamond'">
         <v-col cols="6">
           <v-switch
             label="Use Selection"
-            v-model="algorithms.selectionSwitch"
+            v-model="selectionSwitch"
           >
           </v-switch>
         </v-col>
@@ -44,7 +44,7 @@
             item-value="id"
             :items="[{id:'gene',label:'Gene'},{id:'protein',label:'Protein'}]"
             label="Node"
-            v-model="algorithms.nodeModel"
+            v-model="nodeModel"
           >
           </v-select>
         </v-col>
@@ -54,10 +54,10 @@
         <v-col cols="1">
           <v-tooltip right>
             <template v-slot:activator="{ on, attrs }">
-              <v-btn icon @click="algorithms.advanced=!algorithms.advanced" color="gray" v-bind="attrs"
-                     v-on="on" :disabled="algorithms.methodModel ===undefined">
+              <v-btn icon @click="advanced=!advanced" color="gray" v-bind="attrs"
+                     v-on="on" :disabled="methodModel ===undefined">
                 <v-icon>
-                  {{ algorithms.advanced ? 'fas fa-ellipsis-v' : 'fas fa-ellipsis-h' }}
+                  {{ advanced ? 'fas fa-ellipsis-v' : 'fas fa-ellipsis-h' }}
                 </v-icon>
               </v-btn>
             </template>
@@ -65,20 +65,20 @@
           </v-tooltip>
         </v-col>
       </v-row>
-      <template v-if="algorithms.advanced">
-        <template v-if="algorithms.methodModel==='diamond'">
+      <template v-if="advanced">
+        <template v-if="methodModel==='diamond'">
           <v-row>
             <v-col>
               <v-slider
                 hide-details
                 class="align-center"
-                v-model="algorithms.models.diamond.nModel"
+                v-model="models.diamond.nModel"
                 min="1"
                 max="1000"
               >
                 <template v-slot:prepend>
                   <v-text-field
-                    v-model="algorithms.models.diamond.nModel"
+                    v-model="models.diamond.nModel"
                     class="mt-0 pt-0"
                     type="number"
                     style="width: 60px"
@@ -106,13 +106,13 @@
               <v-slider
                 hide-details
                 class="align-center"
-                v-model="algorithms.models.diamond.alphaModel"
+                v-model="models.diamond.alphaModel"
                 min="1"
                 max="100"
               >
                 <template v-slot:prepend>
                   <v-text-field
-                    v-model="algorithms.models.diamond.alphaModel"
+                    v-model="models.diamond.alphaModel"
                     class="mt-0 pt-0"
                     type="number"
                     style="width: 60px"
@@ -143,7 +143,7 @@
       <v-row>
         <v-col>
           <v-chip outlined color="green"
-                  :disabled="algorithms.nodeModel === undefined || algorithms.nodeModel.length ===0"
+                  :disabled="nodeModel === undefined || nodeModel.length ===0"
                   @click="submitAlgorithm">
             Submit
           </v-chip>
@@ -170,43 +170,41 @@ export default {
 
   data() {
     return {
-      show:false,
-      algorithms: {
-        categoryModel: -1,
-        methodModel: "",
-        nodeModel: undefined,
-        selectionSwitch: false,
-        advanced: false,
-        models: {
-          diamond: {
-            nModel: 200,
-            alphaModel: 1
-          }
-        },
-        categories: [{
-          id: 0,
-          label: "Disease Modules",
-          methods: [{id: "diamond", label: "DIAMOnD"}, {id: "bicon", label: "BiCoN"}]
-        }, {
-          id: 1,
-          label: "Drug Ranking",
-          methods: [{id: "trustrank", label: "TrustRank"}, {id: "centrality", label: "Centrality"}]
-        }]
+      show: false,
+      categoryModel: -1,
+      methodModel: "",
+      nodeModel: undefined,
+      selectionSwitch: false,
+      advanced: false,
+      models: {
+        diamond: {
+          nModel: 200,
+          alphaModel: 1
+        }
       },
+      categories: [{
+        id: 0,
+        label: "Disease Modules",
+        methods: [{id: "diamond", label: "DIAMOnD"}, {id: "bicon", label: "BiCoN"}]
+      }, {
+        id: 1,
+        label: "Drug Ranking",
+        methods: [{id: "trustrank", label: "TrustRank"}, {id: "centrality", label: "Centrality"}]
+      }]
     }
   },
-  methods:{
+  methods: {
 
     submitAlgorithm: function () {
       let params = {}
-      if (this.algorithms.methodModel === 'diamond') {
-        params['type'] = this.algorithms.nodeModel
-        params['n'] = this.algorithms.models.diamond.nModel;
-        params['alpha'] = this.algorithms.models.diamond.alphaModel;
+      if (this.methodModel === 'diamond') {
+        params['type'] = this.nodeModel
+        params['n'] = this.models.diamond.nModel;
+        params['alpha'] = this.models.diamond.alphaModel;
       }
-      if (this.algorithms.methodModel === 'diamond' || this.algorithms.methodModel === 'bicon')
-        params.selection = this.algorithms.selectionSwitch
-      this.$emit('executeAlgorithmEvent', this.algorithms.methodModel, params)
+      if (this.methodModel === 'diamond' || this.methodModel === 'bicon')
+        params.selection = this.selectionSwitch
+      this.$emit('executeAlgorithmEvent', this.methodModel, params)
     },
 
     getColoring: function (type, name) {
@@ -217,15 +215,15 @@ export default {
     },
 
     resetAlgorithms: function () {
-      this.algorithms.nodeModel = undefined
-      this.algorithms.selectionSwitch = false
-      this.algorithms.categoryModel = undefined
-      this.algorithms.methodModel = undefined
-      this.algorithms.categories.methodModel = undefined
-      this.algorithms.advanced = false;
+      this.nodeModel = undefined
+      this.selectionSwitch = false
+      this.categoryModel = undefined
+      this.methodModel = undefined
+      this.categories.methodModel = undefined
+      this.advanced = false;
       this.show = false
-      this.algorithms.models.diamond.nModel = 200
-      this.algorithms.models.diamond.alphaModel = 1
+      this.models.diamond.nModel = 200
+      this.models.diamond.alphaModel = 1
     },
 
     formatTime: function (timestamp) {

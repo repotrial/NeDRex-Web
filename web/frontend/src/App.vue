@@ -210,9 +210,8 @@ export default {
   watch: {
     '$route'(to, from) {
       let new_gid = this.$route.params["gid"]
-        this.applyUrlTab(true)
+      this.applyUrlTab(true)
       if (new_gid !== this.gid) {
-        console.log("reloading")
         this.gid = new_gid
         // this.loadGraph({post: {id: new_gid}, tab: 'list'})
         this.tabslist[1].icon = "fas fa-project-diagram"
@@ -221,6 +220,7 @@ export default {
         this.$refs.graph.reload()
         this.$refs.list.reload()
         this.$refs.history.reload()
+        this.$refs.side.reload()
       }
     }
   },
@@ -320,6 +320,7 @@ export default {
           this.$refs.graph.reload()
           this.$refs.list.reload()
           this.$refs.history.reload()
+          this.$refs.side.reload()
         }).catch(err => console.log(err))
 
       }
@@ -388,10 +389,8 @@ export default {
       this.adaptSidecard(filterData)
     },
     selectTab: function (tabid, skipReroute) {
-      console.log(this.selectedTabId+"->"+tabid)
       if (this.selectedTabId === tabid)
         return
-      console.log("loading tab")
       let colInactive = this.colors.tabs.inactive;
       let colActive = this.colors.tabs.active;
       for (let idx in this.tabslist) {
@@ -402,11 +401,8 @@ export default {
           this.tabslist[idx].color = colInactive
       }
       this.selectedTabId = tabid;
-      if (!skipReroute && this.gid!==undefined)
-        try {
+      if (!skipReroute && this.gid !== undefined)
           this.$router.push("/" + this.gid + "/" + ['start', 'graph', 'list', 'history'][tabid])
-        }catch(createRouterError){
-        }
 
       this.adaptSidecard()
     },

@@ -101,11 +101,17 @@ export default {
   },
   created() {
     this.$socket.$on("jobUpdateEvent", this.updateJob)
-    this.gid = this.$route.params["gid"]
-    this.loadJobs()
+    this.reload()
   },
   methods: {
+    reload : function (){
+      this.gid = this.$route.params["gid"]
+      this.loadJobs()
+    },
     loadJobs: function () {
+      console.log("loading jobs")
+      this.jobs = []
+      this.graphjobs=[]
       this.$http.get("/getUserJobs?uid=" + this.$cookies.get("uid")).then(response => {
         if (response.data !== undefined)
           return response.data
@@ -120,9 +126,6 @@ export default {
         this.graphjobs.sort(this.sortJobs)
         this.jobs.sort(this.sortJobs)
       }).catch(console.log)
-
-      console.log(this.jobs)
-      console.log(this.graphjobs)
 
     },
     sortJobs: function (j1, j2) {

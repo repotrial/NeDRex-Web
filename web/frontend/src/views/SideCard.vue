@@ -535,6 +535,10 @@ export default {
   },
 
   methods: {
+    reload: function (){
+      this.$refs.algorithms.resetAlgorithms()
+      this.$refs.jobs.reload()
+    },
     print: function (message) {
       console.log(message)
     },
