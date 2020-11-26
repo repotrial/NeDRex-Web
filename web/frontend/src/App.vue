@@ -173,6 +173,8 @@ import headerBar from './components/header.vue'
 export default {
   name: 'app',
   exampleGraph: undefined,
+  gid: undefined,
+  tab: undefined,
 
   data() {
     return {
@@ -192,20 +194,29 @@ export default {
     }
   },
   created() {
-      this.loadUser()
-      this.colors = {
-        buttons: {graphs: {active: "deep-purple accent-2", inactive: undefined}},
-        tabs: {active: "rgba(25 118 210)", inactive: "rgba(0,0,0,.54)"}
+    this.loadUser()
+    this.colors = {
+      buttons: {graphs: {active: "deep-purple accent-2", inactive: undefined}},
+      tabs: {active: "rgba(25 118 210)", inactive: "rgba(0,0,0,.54)"}
+    }
+    this.tabslist = [
+      {id: 0, label: "Start", icon: "fas fa-filter", color: this.colors.tabs.active, note: false},
+      {id: 1, label: "Graph", icon: "fas fa-project-diagram", color: this.colors.tabs.inactive, note: false},
+      {id: 2, label: "List", icon: "fas fa-list-ul", color: this.colors.tabs.inactive, note: false},
+      {id: 3, label: "History", icon: "fas fa-history", color: this.colors.tabs.inactive, note: false},
+    ]
+    this.initGraphs()
+  },
+  watch: {
+    '$route'(to, from) {
+      this.applyUrlTab()
+      let new_gid = this.$route.params["gid"]
+      console.log("old:+" + this.gid + " -> " + new_gid)
+      if (new_gid !== this.gid) {
+        this.gid = new_gid
+        location.reload()
       }
-      this.selectedTabId = 0;
-      this.tabslist = [
-        {id: 0, label: "Start", icon: "fas fa-filter", color: this.colors.tabs.active, note: false},
-        {id: 1, label: "Graph", icon: "fas fa-project-diagram", color: this.colors.tabs.inactive, note: false},
-        {id: 2, label: "List", icon: "fas fa-list-ul", color: this.colors.tabs.inactive, note: false},
-        {id: 3, label: "History", icon: "fas fa-history", color: this.colors.tabs.inactive, note: false},
-      ]
-      this.initGraphs()
-      this.initComponents()
+    }
   },
   methods: {
     loadUser: function () {
@@ -216,11 +227,25 @@ export default {
         this.$cookies.set("uid", data.uid);
       }).catch(err => console.log(err))
     },
+    setTabId: function (tab, skipReroute) {
+      this.selectTab(['start', 'graph', 'list', 'history'].indexOf(tab), skipReroute)
+    },
+    applyUrlTab: function (skipReroute) {
+      let new_tab = this.$route.params["tab"]
+      if (new_tab !== this.tab) {
+        this.tab = new_tab
+        this.setTabId(new_tab, skipReroute)
+      }
+    },
     initGraphs: function () {
+      this.gid = this.$route.params["gid"]
+      this.initComponents()
       this.$http.get("/getMetagraph").then(response => {
         console.log(response.data)
         this.metagraph = response.data;
         this.$refs.list.setMetagraph(this.metagraph)
+      }).then(() => {
+        this.applyUrlTab(true)
       }).catch(err => {
         console.log(err)
       })
@@ -356,7 +381,7 @@ export default {
     filter: function (filterData) {
       this.adaptSidecard(filterData)
     },
-    selectTab: function (tabid) {
+    selectTab: function (tabid, skipReroute) {
       if (this.selectedTabId === tabid)
         return
       let colInactive = this.colors.tabs.inactive;
@@ -369,6 +394,8 @@ export default {
           this.tabslist[idx].color = colInactive
       }
       this.selectedTabId = tabid;
+      if (!skipReroute)
+        this.$router.replace("/" + this.gid + "/" + ['start', 'graph', 'list', 'history'][tabid])
 
       this.adaptSidecard()
     },
@@ -396,7 +423,8 @@ export default {
       to.message = message;
       to.show = true;
     }
-  },
+  }
+  ,
   components: {
     headerBar,
     Graph,
@@ -404,7 +432,8 @@ export default {
     Start,
     List,
     History
-  },
+  }
+  ,
 
 
 }

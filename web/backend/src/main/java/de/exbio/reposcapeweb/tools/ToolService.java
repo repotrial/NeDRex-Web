@@ -177,62 +177,6 @@ public class ToolService {
 
     }
 
-//    public void writeGraphToGraphML(Graph g, File outfile, boolean idsOnly) {
-//        BufferedWriter bw = WriterUtils.getBasicWriter(outfile);
-//        char nl = '\n';
-//        HashMap<String, String> keymap = new HashMap();
-//        keymap.put("id", "id");
-//        keymap.put("idOne", "source");
-//        keymap.put("sourceId", "source");
-//        keymap.put("idTwo", "target");
-//        keymap.put("targetId", "target");
-//        if (!idsOnly) {
-//
-//        }
-//        g.getNodes().
-//
-//                keySet()
-//
-//        try {
-//            bw.write("<?xml version='1.0' encoding='utf-8'?>" + nl + "<graphml xmlns=\"http://graphml.graphdrawing.org/xmlns\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd\">" + nl);
-//
-//
-//        } catch (
-//                IOException e) {
-//            e.printStackTrace();
-//        }
-//
-//    }
-//
-//    public void executeDiamond(boolean genes, HashSet<Integer> seeds) {
-//        File seed = null;
-//        try {
-//            seed = Files.createTempFile("/tmp", "diamond_seeds").toFile();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        BufferedWriter bw = WriterUtils.getBasicWriter(seed);
-//        seeds.forEach(s -> {
-//            try {
-//                bw.write(s + "\n");
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//        });
-//        try {
-//            bw.close();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        StringBuffer sb = new StringBuffer();
-//        try {
-//            ProcessUtils.executeProcessWait(new ProcessBuilder("python3", diamond.getAbsolutePath(), (genes ? new File(dataDir, "gene_gene_interaction.pairs") : new File(dataDir, "protein_protein_interaction.pairs")).getAbsolutePath(), seed.getAbsolutePath(), "100"), sb);
-//        } catch (IOException | InterruptedException e) {
-//            e.printStackTrace();
-//        }
-//        System.out.println(sb.toString().strip());
-//
-//    }
 
     private void validateDiamond() {
         //TODO get version info of diamond
