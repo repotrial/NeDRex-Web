@@ -29,6 +29,7 @@ public class ToolService {
     private File scriptDir = new File("/home/andimajore/projects/RepoScapeWeb/web/resources/scripts");
     private File dataDir;
     private File executor;
+    private File bicon;
     private File diamond;
 
     private HashMap<String, File> tempDirs = new HashMap<>();
@@ -110,6 +111,7 @@ public class ToolService {
         validateJobExecutor();
 
         prepareDiamond();
+        prepareBicon();
         validateDiamond();
 
     }
@@ -129,6 +131,16 @@ public class ToolService {
         log.info("Diamond path=" + diamond.getAbsolutePath());
         if (!diamond.exists()) {
             log.error("DIAMOnD executable was not found in config. Please make sure it is referenced correctly! For installation you can use " + diamondSetUpScript.getAbsolutePath());
+            new RuntimeException("Missing reference.");
+        }
+    }
+
+    private void prepareBicon() {
+        log.info("Setting up BiCon");
+        bicon = new File(env.getProperty("path.tool.bicon"));
+        log.info("BiCon path=" + bicon.getAbsolutePath());
+        if (!bicon.exists()) {
+            log.error("BiCon executable was not found in config. Please make sure it is referenced correctly!");
             new RuntimeException("Missing reference.");
         }
     }
@@ -207,20 +219,33 @@ public class ToolService {
                         request.getParams().get("n") + " " + request.getParams().get("alpha");
                 break;
             }
+            case BICON: {
+                command += "bicon " + bicon.getAbsolutePath() + " exprFile " + new File(dataDir, "gene_gene_interaction.pairs").getAbsolutePath() + " genes.txt";
+                break;
+            }
         }
         System.out.println(command);
         return command;
     }
 
-    public void prepareJobFiles(String jobId, JobRequest req, Graph g) {
-        switch (req.algorithm) {
-            case "diamond": {
-                File seed = new File(getTempDir(jobId), "seeds.list");
+    public void prepareJobFiles(Job job, JobRequest req, Graph g) {
+        switch (job.getMethod()) {
+            case DIAMOND: {
+                File seed = new File(getTempDir(job.getJobId()), "seeds.list");
                 if (req.selection)
                     writeSeedFile(req.params.get("type"), seed, req.nodes);
                 else
                     writeSeedFile(req.params.get("type"), seed, g);
                 break;
+            }
+            case BICON: {
+                File exprFile = new File(getTempDir(job.getJobId()), "exprFile");
+                System.out.println(exprFile.getAbsolutePath());
+                try (BufferedWriter bw = WriterUtils.getBasicWriter(exprFile)) {
+                    bw.write(req.getParams().get("exprData"));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
 
@@ -256,22 +281,38 @@ public class ToolService {
         }
     }
 
-    public HashMap<Integer, HashMap<String, Object>> getJobResults(Job j) {
-        HashMap<Integer, HashMap<String, Object>> results;
-        for (File f : getTempDir(j.getJobId()).listFiles()) {
-            if (j.getMethod().equals(Tool.DIAMOND) && f.getName().endsWith(".txt")) {
-                return readDiamondResults(f, Double.parseDouble(j.getParams().get("pcutoff")));
+    public HashSet<Integer> getJobResults(Job j) {
+        HashSet<Integer> results = new HashSet<>();
+        switch (j.getMethod()) {
+            case DIAMOND: {
+                for (File f : getTempDir(j.getJobId()).listFiles()) {
+                    if (j.getMethod().equals(Tool.DIAMOND) && f.getName().endsWith(".txt")) {
+                        return readDiamondResults(f, Double.parseDouble(j.getParams().get("pcutoff")));
+                    }
+                }
+                break;
             }
+            case BICON: {
+                try (BufferedReader br = ReaderUtils.getBasicReader(new File(getTempDir(j.getJobId()), "genes.txt"))) {
+                    String line = "";
+                    while ((line = br.readLine()) != null)
+                        results.add(Integer.parseInt(line));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                break;
+            }
+
         }
-        return null;
+        return results;
     }
 
     public void clearDirectories(Job j) {
         getTempDir(j.getJobId()).delete();
     }
 
-    private HashMap<Integer, HashMap<String, Object>> readDiamondResults(File f, double p_cutoff) {
-        HashMap<Integer, HashMap<String, Object>> results = new HashMap<>();
+    private HashSet<Integer> readDiamondResults(File f, double p_cutoff) {
+        HashSet<Integer> results = new HashSet<>();
         try {
             BufferedReader br = ReaderUtils.getBasicReader(f);
             String line = "";
@@ -281,9 +322,10 @@ public class ToolService {
                 LinkedList<String> attrs = StringUtils.split(line, "\t");
                 int id = Integer.parseInt(attrs.get(1));
                 if (Double.parseDouble(attrs.get(2)) < p_cutoff) {
-                    results.put(id, new HashMap<>());
-                    results.get(id).put("rank", Integer.parseInt(attrs.get(0)));
-                    results.get(id).put("p_hyper", Double.parseDouble(attrs.get(2)));
+                    results.add(id);
+//                    results.put(id, new HashMap<>());
+//                    results.get(id).put("rank", Integer.parseInt(attrs.get(0)));
+//                    results.get(id).put("p_hyper", Double.parseDouble(attrs.get(2)));
                 }
             }
         } catch (IOException e) {

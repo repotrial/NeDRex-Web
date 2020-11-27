@@ -1,6 +1,5 @@
 package de.exbio.reposcapeweb.db.services.nodes;
 
-import de.exbio.reposcapeweb.db.entities.nodes.Disorder;
 import de.exbio.reposcapeweb.db.entities.nodes.Gene;
 import de.exbio.reposcapeweb.db.repositories.nodes.GeneRepository;
 import de.exbio.reposcapeweb.db.services.NodeService;

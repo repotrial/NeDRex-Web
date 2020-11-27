@@ -29,8 +29,7 @@
           </v-select>
         </v-col>
       </v-row>
-      <v-row
-        v-if="categoryModel >-1 && methodModel ==='diamond'">
+      <v-row v-if="categoryModel >-1 && methodModel ==='diamond'">
         <v-col cols="6">
           <v-switch
             label="Use Selection"
@@ -49,6 +48,19 @@
           </v-select>
         </v-col>
       </v-row>
+      <v-row v-if="methodModel==='bicon'" style="margin: 0">
+        <v-file-input
+          v-on:change="onFileSelected"
+          show-size
+          placeholder="Load an expression file"
+          prepend-icon="fas fa-file-medical"
+          label="Expression File"
+          dense
+        >
+        </v-file-input>
+
+      </v-row>
+
       <v-divider></v-divider>
       <v-row>
         <v-col cols="1">
@@ -170,6 +182,7 @@
             </v-col>
           </v-row>
         </template>
+
         <v-row>
           <v-col></v-col>
         </v-row>
@@ -177,7 +190,7 @@
       <v-row>
         <v-col>
           <v-chip outlined color="green"
-                  :disabled="nodeModel === undefined || nodeModel.length ===0"
+                  :disabled="isDisabled()"
                   @click="submitAlgorithm">
             Submit
           </v-chip>
@@ -214,7 +227,10 @@ export default {
         diamond: {
           nModel: 200,
           alphaModel: 1,
-          pModel:0
+          pModel: 0
+        },
+        bicon: {
+          exprFile: undefined
         }
       },
       categories: [{
@@ -229,19 +245,30 @@ export default {
     }
   },
   methods: {
-
+    onFileSelected: function (file) {
+      this.models.bicon.exprFile = file
+    },
     submitAlgorithm: function () {
       let params = {}
       if (this.methodModel === 'diamond') {
         params['type'] = this.nodeModel
         params['n'] = this.models.diamond.nModel;
         params['alpha'] = this.models.diamond.alphaModel;
-        params['pcutoff']=this.models.diamond.pModel;
+        params['pcutoff'] = this.models.diamond.pModel;
+      }
+      if (this.methodModel === 'bicon') {
+        let file = this.models.bicon.exprFile;
+        Utils.readFile(this.models.bicon.exprFile).then(content => {
+          params['exprData'] = content
+          this.$emit('executeAlgorithmEvent', this.methodModel, params)
+        })
+        return
       }
       if (this.methodModel === 'diamond' || this.methodModel === 'bicon')
         params.selection = this.selectionSwitch
       this.$emit('executeAlgorithmEvent', this.methodModel, params)
     },
+
 
     getColoring: function (type, name) {
       return Utils.getColoring(this.metagraph, type, name)
@@ -249,7 +276,17 @@ export default {
     getNodeNames: function (type) {
       return Utils.getNodes(this.metagraph, type)
     },
+    isDisabled: function () {
+      if (this.methodModel === undefined || this.methodModel.length === 0)
+        return true;
+      switch (this.methodModel) {
+        case "diamond":
+          return (this.nodeModel === undefined || this.nodeModel.length === 0)
+        case "bicon" :
+          return this.models.bicon.exprFile === undefined
+      }
 
+    },
     resetAlgorithms: function () {
       this.nodeModel = undefined
       this.selectionSwitch = false
@@ -260,6 +297,8 @@ export default {
       this.show = false
       this.models.diamond.nModel = 200
       this.models.diamond.alphaModel = 1
+      this.models.diamond.nModel = 0
+      this.models.bicon.exprFile = undefined
     },
 
     formatTime: function (timestamp) {

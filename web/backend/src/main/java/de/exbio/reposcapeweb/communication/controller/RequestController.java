@@ -325,15 +325,9 @@ public class RequestController {
     @RequestMapping(value = "/submitJob", method = RequestMethod.POST)
     @ResponseBody
     public String submitJob(@RequestBody JobRequest request) {
-        log.debug("Got job request: " + toJson(request));
         HashMap<String, Object> out = new HashMap<>();
         Job j = jobController.registerJob(request);
-        out.put("jid", j.getJobId());
-        out.put("uid", j.getUserId());
-        out.put("basis", j.getBasisGraph());
-        out.put("created", j.getCreated().toEpochSecond(ZoneOffset.ofTotalSeconds(0)));
-        out.put("state", j.getState().name());
-        return toJson(out);
+        return toJson(j.toMap());
     }
 
     @RequestMapping(value="/getJobs", method = RequestMethod.GET)

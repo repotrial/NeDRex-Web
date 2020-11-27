@@ -154,7 +154,6 @@ export default {
           j.update = params.update
         }
       })
-      this.$refs.jobs.$forceUpdate()
       if (params.state === 'DONE') {
         this.$socket.unsubscribeJob(params.jid)
       }

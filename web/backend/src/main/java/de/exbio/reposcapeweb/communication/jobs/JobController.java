@@ -4,17 +4,19 @@ import de.exbio.reposcapeweb.ReposcapewebApplication;
 import de.exbio.reposcapeweb.communication.cache.Graph;
 import de.exbio.reposcapeweb.communication.controller.SocketController;
 import de.exbio.reposcapeweb.communication.reponses.WebGraphService;
+import de.exbio.reposcapeweb.db.services.nodes.GeneService;
 import de.exbio.reposcapeweb.tools.ToolService;
+import de.exbio.reposcapeweb.utils.ReaderUtils;
+import de.exbio.reposcapeweb.utils.StringUtils;
+import de.exbio.reposcapeweb.utils.WriterUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.*;
 import java.time.ZoneOffset;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class JobController {
@@ -24,17 +26,19 @@ public class JobController {
     private final JobQueue jobQueue;
     private final JobRepository jobRepository;
     private final SocketController socketController;
+    private final GeneService geneService;
 
     private HashMap<String, Job> jobs = new HashMap<>();
     private Logger log = LoggerFactory.getLogger(JobController.class);
 
     @Autowired
-    public JobController(WebGraphService graphService, ToolService toolService, JobQueue jobQueue, JobRepository jobRepository, SocketController socketController) {
+    public JobController(GeneService geneService, WebGraphService graphService, ToolService toolService, JobQueue jobQueue, JobRepository jobRepository, SocketController socketController) {
         this.graphService = graphService;
         this.toolService = toolService;
         this.jobQueue = jobQueue;
         this.jobRepository = jobRepository;
         this.socketController = socketController;
+        this.geneService = geneService;
     }
 
 
@@ -55,9 +59,16 @@ public class JobController {
     public Job registerJob(JobRequest req) {
         Job j = createJob(req);
         if (j.getMethod().equals(ToolService.Tool.DIAMOND))
-            j.addParam("pcutoff", req.getParams().containsKey("pcutoff") ? Math.pow(10,Double.parseDouble(req.getParams().get("pcutoff"))) : 1);
+            j.addParam("pcutoff", req.getParams().containsKey("pcutoff") ? Math.pow(10, Double.parseDouble(req.getParams().get("pcutoff"))) : 1);
+
         Graph g = graphService.getCachedGraph(req.graphId);
-        prepareJob(j, req, g);
+        try {
+            prepareJob(j, req, g);
+        } catch (Exception e) {
+            log.error("Error on job submission");
+            j.setStatus(Job.JobState.ERROR);
+            return j;
+        }
         queue(j);
         return j;
     }
@@ -72,13 +83,50 @@ public class JobController {
     }
 
     private void prepareJob(Job j, JobRequest req, Graph g) {
+        if (j.getMethod().equals(ToolService.Tool.BICON))
+            prepareExpressionFile(req);
         String command = createCommand(j, req);
         j.setCommand(command);
         prepareFiles(j, req, g);
     }
 
+    private void prepareExpressionFile(JobRequest req) {
+        String data = req.getParams().get("exprData");
+        if (data.indexOf(',') > -1)
+            data = StringUtils.split(data, ',').get(1);
+        final boolean[] header = {true};
+        char tab = '\t';
+        char n = '\n';
+        StringBuilder mapped = new StringBuilder();
+        StringUtils.split(new String(Base64.getDecoder().decode(data)), '\n').forEach(line -> {
+                    if (line.length() == 0 || line.charAt(0) == '!') {
+                        return;
+                    }
+                    if (header[0]) {
+                        mapped.append(line).append(n);
+                        header[0] = false;
+                        return;
+                    }
+                    LinkedList<String> split = StringUtils.split(line, "\t");
+                    String entrez = split.get(0);
+                    if (entrez.charAt(0) == '"')
+                        entrez = entrez.substring(1, entrez.length() - 1);
+
+                    if (!entrez.startsWith("entrez."))
+                        entrez = "entrez." + entrez;
+                    Integer id = geneService.getDomainToIdMap().get(entrez);
+                    if (id != null) {
+                        mapped.append(id);
+                        split.subList(1, split.size()).forEach(e -> mapped.append(tab).append(e));
+                        mapped.append(n);
+                    }
+                }
+        );
+        req.getParams().put("exprData", mapped.toString());
+    }
+
     private void prepareFiles(Job j, JobRequest req, Graph g) {
-        toolService.prepareJobFiles(j.getJobId(), req, g);
+        toolService.prepareJobFiles(j, req, g);
     }
 
     private String createCommand(Job j, JobRequest req) {
@@ -90,14 +138,13 @@ public class JobController {
         Job j = jobs.get(id);
         try {
             jobQueue.finishJob(j);
-            HashMap<Integer, HashMap<String, Object>> results = toolService.getJobResults(j);
-            if (results == null) {
+            HashSet<Integer> results = toolService.getJobResults(j);
+            if (results == null || results.isEmpty()) {
                 j.setDerivedGraph(j.getBasisGraph());
             } else
-                //TODO do something more with the results?
-                graphService.applyModuleJob(j, results.keySet());
-            save(j);
+                graphService.applyModuleJob(j, results);
         } catch (Exception e) {
+            save(j);
             log.error("Error on finishing job: " + id);
             e.printStackTrace();
             j.setStatus(Job.JobState.ERROR);

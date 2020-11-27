@@ -805,6 +805,16 @@ public class WebGraphService {
             derived.saveNodeFilter(Graphs.getNode(nodeTypeId), nf);
             derived.addNodes(nodeTypeId, nf.toList(-1).stream().map(e -> new Node(e.getNodeId(), e.getName())).collect(Collectors.toList()));
         }
+        if(j.getMethod().equals(ToolService.Tool.BICON)){
+            int nodeTypeId = Graphs.getNode("gene");
+            HashSet<Integer> allNodes = new HashSet<>(derived.getNodes().get(nodeTypeId).keySet());
+            int beforeCount = allNodes.size();
+            allNodes.addAll(moduleIds);
+            j.setUpdate("" + (allNodes.size() - beforeCount));
+            NodeFilter nf = new NodeFilter(nodeController.getFilter(Graphs.getNode(nodeTypeId)), allNodes);
+            derived.saveNodeFilter(Graphs.getNode(nodeTypeId), nf);
+            derived.addNodes(nodeTypeId, nf.toList(-1).stream().map(e -> new Node(e.getNodeId(), e.getName())).collect(Collectors.toList()));
+        }
         j.setDerivedGraph(derived.getId());
         addGraphToHistory(j.getUserId(), derived.getId());
     }

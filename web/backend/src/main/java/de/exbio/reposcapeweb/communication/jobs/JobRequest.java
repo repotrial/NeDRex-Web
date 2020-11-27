@@ -11,6 +11,7 @@ public class JobRequest {
     public HashMap<String, String> params;
     public boolean selection;
     public List<Integer> nodes;
+    public String exprData;
 
 
     public String getUserId() {

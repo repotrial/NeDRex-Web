@@ -8,6 +8,7 @@ import sys
 
 path_expr = sys.argv[1]
 path_net = sys.argv[2]
+path_out = sys.argv[3]
 
 GE, G, labels, _ = data_preprocessing(path_expr, path_net)
 L_g_min = 10
@@ -17,5 +18,10 @@ model = BiCoN(GE, G, L_g_min, L_g_max)
 solution, scores = model.run_search()
 
 results = results_analysis(solution, labels)
-print(results.genes1)
+genes = []
+genes.extend(results.genes1)
+genes.extend(results.genes2)
 
+with open(path_out, 'w') as fh:
+    for gene in genes:
+        fh.write(gene + "\n")
