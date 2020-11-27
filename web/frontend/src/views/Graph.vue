@@ -345,7 +345,7 @@ export default {
             hidden: false,
             // arrows:{to:{enabled:true}},
             // scaling:{label:{enabled: true}},
-            smooth: {enabled: true},
+            smooth: {enabled: false},
             color: '#454545',
             // hidden: true,
             width: 0.3,
@@ -354,8 +354,17 @@ export default {
           },
           physics: {
             // solver: 'repulsion',
+            barnesHut:{
+              // theta: 0.7,
+              gravitationalConstant:  -25000,
+              centralGravity:0.1,
+              springLength:100,
+              springConstant:0.01,
+              damping:0.05,
+              avoidOverlap:0.5
+            },
             enabled: false,
-            stabilization: {enabled: true, updateInterval: 10, iterations: 1000, fit: true},
+            // stabilization: {enabled: true, updateInterval: 10, iterations: 1000, fit: true},
             timestep: 0.3,
             // wind: {x: 20, y: 20}
           }
@@ -377,7 +386,7 @@ export default {
         this.physicsOn = true;
       }
       this.options.physics.enabled = this.physicsOn
-      this.options.edges.hidden = this.hideEdges
+      // this.options.edges.hidden = this.hideEdges
       this.updateOptions();
     },
     setPhysics: function (boolean) {
@@ -420,14 +429,15 @@ export default {
     toggleEdgeVisible: function (name) {
       let updates = Object.values(this.edges.get({
           filter: function (item) {
-            return item.label === name
+            return item.title === name
           }
         }
       )).map(item => {
-        return {id: item.id, hidden: !item.hidden, physics: !item.hidden}
+        return {id: item.id, hidden: !item.hidden, physics: item.hidden}
       })
       this.edges.update(updates)
     },
+
     hideAllGroups: function (boolean, update) {
       Object.keys(this.options.groups).forEach(n => {
           this.options.groups[n].hidden = boolean
@@ -611,7 +621,17 @@ export default {
     ,
     getNetwork: function () {
       return this.$refs.network;
-    }
+    },
+
+    graphViewEvent: function (data){
+      if(data.event === "toggle"){
+        let params = data.params;
+        if(params.type==="nodes")
+          this.toggleGroupVisibility(params.name,true)
+        else if(params.type==="edges")
+          this.toggleEdgeVisible(params.name)
+      }
+    },
 
 
   }

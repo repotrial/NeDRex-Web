@@ -26,9 +26,9 @@ public class Graph {
     // edgetype -> node1 -> node2 -> edge
 //    private HashMap<Integer,HashMap<Integer,HashMap<Integer,Node>>> edges;
     private HashMap<Integer, LinkedList<Edge>> edges;
-    private HashMap<Integer,String> customEdges;
-    private HashMap<Integer,Pair<Integer,Integer>> customEdgeNodes;
-    private HashMap<Integer,HashMap<Integer,HashMap<Integer,Integer>>> customEdgeWeights;
+    private HashMap<Integer, String> customEdges;
+    private HashMap<Integer, Pair<Integer, Integer>> customEdgeNodes;
+    private HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>> customEdgeWeights;
     private HashMap<Integer, HashMap<Integer, HashMap<Integer, Double>>> customJaccardIndex;
     @JsonIgnore
     private WebGraph webgraph;
@@ -43,8 +43,8 @@ public class Graph {
         nodeFilters = new HashMap<>();
         customEdges = new HashMap<>();
         customEdgeNodes = new HashMap<>();
-        customEdgeWeights= new HashMap<>();
-        customJaccardIndex=new HashMap<>();
+        customEdgeWeights = new HashMap<>();
+        customJaccardIndex = new HashMap<>();
     }
 
     public Graph(String id) {
@@ -53,7 +53,7 @@ public class Graph {
 
     }
 
-    public void setParent(String id){
+    public void setParent(String id) {
         this.parent = id;
     }
 
@@ -61,7 +61,7 @@ public class Graph {
         return parent;
     }
 
-    public WebGraph toWebGraph(HashMap<String,Object> colors) {
+    public WebGraph toWebGraph(HashMap<String, Object> colors) {
         if (webgraph == null) {
             int nodeCount = nodes.values().stream().mapToInt(HashMap::size).sum();
             int edgeCount = edges.values().stream().mapToInt(LinkedList::size).sum();
@@ -73,11 +73,12 @@ public class Graph {
                 webgraph.addNodes(nodeMap.values().stream().map(node -> node.toWebNode().setPrefix(prefix).setGroup(group)).collect(Collectors.toSet()));
             });
             edges.forEach((typeId, edges) -> {
+                String name = getEdge(typeId);
                 Pair<Integer, Integer> ns = getNodesfromEdge(typeId);
                 String pref1 = Graphs.getPrefix(ns.first);
                 String pref2 = Graphs.getPrefix(ns.second);
                 //TODO add directional?
-                webgraph.addEdges(edges.stream().map(edge -> edge.toWebEdge().addPrefixes(pref1, pref2)).collect(Collectors.toSet()));
+                webgraph.addEdges(edges.stream().map(edge -> edge.toWebEdge().setTitle(name).addPrefixes(pref1, pref2)).collect(Collectors.toSet()));
             });
         }
         webgraph.setColorMap(colors);
@@ -104,27 +105,26 @@ public class Graph {
         return info;
     }
 
-    public String getEdge(int id){
-        return id<0 ? customEdges.get(id) : Graphs.getEdge(id);
+    public String getEdge(int id) {
+        return id < 0 ? customEdges.get(id) : Graphs.getEdge(id);
     }
 
-    public Integer getEdge(String id){
-        try{
+    public Integer getEdge(String id) {
+        try {
             return Graphs.getEdge(id);
-        }catch (NullPointerException e) {
+        } catch (NullPointerException e) {
             AtomicReference<Integer> out = new AtomicReference<>();
-            customEdges.forEach((k,v)->{
-                if(v.equals(id))
+            customEdges.forEach((k, v) -> {
+                if (v.equals(id))
                     out.set(k);
             });
             return out.get();
         }
     }
 
-    public Pair<Integer,Integer> getNodesfromEdge(int id){
-        return id<0 ? customEdgeNodes.get(id) : Graphs.getNodesfromEdge(id);
+    public Pair<Integer, Integer> getNodesfromEdge(int id) {
+        return id < 0 ? customEdgeNodes.get(id) : Graphs.getNodesfromEdge(id);
     }
-
 
 
     public WebGraphList toWebList() {
@@ -184,18 +184,18 @@ public class Graph {
         getNodeFilters().forEach(g::saveNodeFilter);
         nodes.forEach((type, map) -> g.addNodes(type, map.values()));
         edges.forEach(g::addEdges);
-        customEdgeNodes.forEach((k,v)->g.addCollapsedEdges(v.getFirst(),v.getSecond(),customEdges.get(k),new LinkedList<>()));
+        customEdgeNodes.forEach((k, v) -> g.addCollapsedEdges(v.getFirst(), v.getSecond(), customEdges.get(k), new LinkedList<>()));
         g.setParent(this.id);
-        customEdgeWeights.forEach((k,v)->g.addCollapsedWeights(g.getEdge(k),v));
-        customJaccardIndex.forEach((k,v)->g.addCollapsedJaccardIndex(g.getEdge(k),v));
+        customEdgeWeights.forEach((k, v) -> g.addCollapsedWeights(g.getEdge(k), v));
+        customJaccardIndex.forEach((k, v) -> g.addCollapsedJaccardIndex(g.getEdge(k), v));
         return g;
     }
 
     public void addCollapsedEdges(int node1, int node2, String edgeName, LinkedList<Edge> edges) {
-        int edgeId = (customEdges.size()+1)*-1;
-        customEdgeNodes.put(edgeId, new Pair<>(node1,node2));
-        customEdges.put(edgeId,edgeName);
-        addEdges(edgeId,edges);
+        int edgeId = (customEdges.size() + 1) * -1;
+        customEdgeNodes.put(edgeId, new Pair<>(node1, node2));
+        customEdges.put(edgeId, edgeName);
+        addEdges(edgeId, edges);
     }
 
     public HashMap<Integer, String> getCustomEdges() {
@@ -207,7 +207,7 @@ public class Graph {
     }
 
     public void addCollapsedWeights(String edgeName, HashMap<Integer, HashMap<Integer, Integer>> edgeWeights) {
-        customEdgeWeights.put(getEdge(edgeName),edgeWeights);
+        customEdgeWeights.put(getEdge(edgeName), edgeWeights);
     }
 
     public HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>> getCustomEdgeWeights() {

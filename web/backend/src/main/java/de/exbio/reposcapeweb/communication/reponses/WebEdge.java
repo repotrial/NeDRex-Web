@@ -7,6 +7,7 @@ public class WebEdge {
     String from;
     String to;
     String label ="";
+    String title="";
     boolean dashes=false;
 
     public WebEdge(int from, int to) {
@@ -17,6 +18,11 @@ public class WebEdge {
     public WebEdge(int from, int to, String label){
         this(from,to);
         this.label=label;
+    }
+
+    public WebEdge setTitle(String title){
+        this.title=title;
+        return this;
     }
 
     public WebEdge(String prefix1, int from, String prefix2, int to){
@@ -71,5 +77,9 @@ public class WebEdge {
         this.from=prefix1+this.from;
         this.to = prefix2+this.to;
         return this;
+    }
+
+    public String getTitle() {
+        return title;
     }
 }

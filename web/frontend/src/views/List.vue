@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-container v-if="metagraph!==undefined">
-      <v-card style="margin:5px;padding-bottom:15px" ref="info" :loading="loading">
+      <v-card style="margin:5px;padding-bottom:15px" :loading="loading" ref="info" >
 
         <template slot="progress">
           <v-card-title>General Information</v-card-title>
@@ -26,7 +26,8 @@
                 <v-list-item>
                   <b>Nodes ({{ getCounts('nodes') }})</b>
                 </v-list-item>
-                <v-list-item v-for="node in Object.values(countMap.nodes)" :key="node.name">
+                <v-list-item v-for="node in Object.values(configuration.countMap.nodes)"
+                             :key="node.name">
                   <v-chip outlined @click="focus('nodes',Object.keys(attributes.nodes).indexOf(node.name))">
                     <v-icon left :color="getColoring('nodes',node.name)">fas fa-genderless</v-icon>
                     {{ node.name }} ({{ node.selected }}/{{ node.total }})
@@ -40,7 +41,7 @@
                 <v-list-item>
                   <b>Edges ({{ getCounts('edges') }})</b>
                 </v-list-item>
-                <v-list-item v-for="edge in Object.values(countMap.edges)" :key="edge.name">
+                <v-list-item v-for="edge in Object.values(configuration.countMap.edges)" :key="edge.name">
                   <v-chip outlined @click="focus('edges',Object.keys(attributes.edges).indexOf(edge.name))">
                     <v-icon left :color="getColoring('edges',edge.name)[0]">fas fa-genderless</v-icon>
                     <template v-if="direction(edge.name)===0">
@@ -59,8 +60,6 @@
 
               </v-list>
             </v-col>
-
-
           </v-row>
 
 
@@ -782,14 +781,16 @@
 </template>
 
 <script>
+import Utils from "../scripts/Utils";
+
 export default {
   props: {
     configuration: {
       showAll: Boolean,
+      countMap: Object,
     },
   },
   name: "List",
-  entityGraph: {},
   attributes: {},
   gid: undefined,
   uid: undefined,
@@ -798,6 +799,7 @@ export default {
     return {
       edges: {},
       nodes: {},
+      countMap: undefined,
       nodeTab: undefined,
       edgeTab: undefined,
       selectAllModel: {nodes: {}, edges: {}},
@@ -847,7 +849,7 @@ export default {
       filterNodeModel: null,
       loading: true,
       nodeTabLoading: false,
-      countMap: {nodes: {}, edges: {}}
+
     }
   },
 
@@ -856,6 +858,8 @@ export default {
     this.nodes = {}
     this.attributes = {}
     this.edges = {}
+    this.countMap={nodes:{},edges:{}}
+    this.configuration.countMap=this.countMap
     this.backup = {nodes: {}, edges: {}}
     this.gid = this.$route.params["gid"]
     this.reloadMetagraph()
@@ -864,6 +868,11 @@ export default {
   },
 
   watch: {
+    // configuration.countMap: function (value) {
+    //   console.log(value)
+    //   this.$refs.info.$forceUpdate()
+    // },
+
     filterNodeModel: function (val) {
       this.applySuggestion(val)
     },
@@ -912,7 +921,7 @@ export default {
         if (response.data !== undefined)
           return response.data
       }).then(data => {
-        this.entityGraph = data
+        this.configuration.entityGraph = data
         this.reloadCountMap()
         this.loading = false
       })
@@ -930,6 +939,9 @@ export default {
       this.nodepage = {}
     }
     ,
+    getInfoText: function (type, name) {
+      return name + ' (' + this.configuration.countMap[type][name].selected + '/' + this.configuration.countMap[type][name].total + ')'
+    },
     recieveEvent: function (event) {
       switch (event) {
         case "collapse":
@@ -991,6 +1003,9 @@ export default {
     },
     countSelected: function (type, name) {
       return this[type][name].filter(item => item.selected).length
+    },
+    getSelectedCount: function (type, name) {
+      return this.configuration.countMap[type][name].selected
     },
     applySuggestion: function (val) {
       this.nodeTabLoading = true
@@ -1370,7 +1385,7 @@ export default {
 
       //TODO check if correct (nodes connected by edge)
       let update = {id: this.gid, nodes: {}, edges: {}}
-      if (Object.values(this.countMap.nodes).map(n => n.selected).reduce((i, v) => i + v) === 0) {
+      if (Object.values(this.configuration.countMap.nodes).map(n => n.selected).reduce((i, v) => i + v) === 0) {
         this.$emit("printNotificationEvent", "Please select some nodes first!", 1)
         return;
       }
@@ -1424,9 +1439,13 @@ export default {
       })
     },
     selectDependentNodes: function (type, edges) {
-      let meta = this.metagraph.edges.filter(e => e.label === type)[0]
-      let nodeName1 = this.metagraph.nodes.filter(n => n.id === meta.from).map(n => n.group)[0];
-      let nodeName2 = this.metagraph.nodes.filter(n => n.id === meta.to).map(n => n.group)[0];
+      // console.log(this.configuration.entityGraph)
+      let nodes = Utils.getNodesExtended(this.configuration.entityGraph, type)
+      // let meta = this.metagraph.edges.filter(e => e.label === type)[0]
+      // let nodeName1 = this.metagraph.nodes.filter(n => n.id === meta.from).map(n => n.group)[0];
+      // let nodeName2 = this.metagraph.nodes.filter(n => n.id === meta.to).map(n => n.group)[0];
+      let nodeName1 = nodes[0];
+      let nodeName2 = nodes[1];
       let nodeTab1 = Object.keys(this.attributes.nodes).indexOf(nodeName1)
       let nodeTab2 = Object.keys(this.attributes.nodes).indexOf(nodeName2)
       let nodeIds1 = []
@@ -1474,11 +1493,12 @@ export default {
         this.selectDependentNodes(name, items)
       this.$nextTick().then(() => {
         this.reloadCountMap()
+      }).then(() => {
         if ("edges" === type)
           this.$refs.edgeTab.$forceUpdate()
         this.$refs.nodeTab.$forceUpdate()
-
       })
+      console.log(this.getSelectedCount('nodes', 'gene'))
     }
     ,
     deselectAll: function (type) {
@@ -1496,7 +1516,6 @@ export default {
       })
       this.reloadCountMap()
       this.$nextTick().then(() => {
-        this.$refs.info.$forceUpdate()
         if ("nodes" === type)
           this.$refs.nodeTab.$forceUpdate()
         else
@@ -1577,10 +1596,10 @@ export default {
       this.$nextTick()
     },
     collapseGraph: function () {
-      this.collapse.nodes = Object.values(this.entityGraph.nodes).map(n => {
+      this.collapse.nodes = Object.values(this.configuration.entityGraph.nodes).map(n => {
         return {name: n.name, selected: false, id: n.id, disabled: false}
       })
-      this.collapse.edges = Object.values(this.entityGraph.edges).map(e => {
+      this.collapse.edges = Object.values(this.configuration.entityGraph.edges).map(e => {
         return {name: e.name, selected: false, from: e.node1, to: e.node2, disabled: false}
       })
       if (this.collapse.edges.length < 2) {
@@ -1667,18 +1686,21 @@ export default {
       return objects === undefined || objects.length === 0 ? 0 : objects.map(e => e.length).reduce((i, j) => i + j)
     },
     reloadCountMap: function () {
-      this.countMap.nodes = this.getCountMap("nodes");
-      this.countMap.edges = this.getCountMap("edges");
+      this.configuration.countMap.nodes = this.getCountMap("nodes")
+      this.configuration.countMap.edges = this.getCountMap("edges");
 
-      if (Object.values(this.countMap.nodes).length > 0) {
-        this.configuration.total = Object.values(this.countMap.nodes).map(o => o.total).reduce((i, s) => i + s)
-        this.configuration.selected = Object.values(this.countMap.nodes).map(o => o.selected).reduce((i, s) => i + s)
+      if (Object.values(this.configuration.countMap.nodes).length > 0) {
+        this.configuration.total = Object.values(this.configuration.countMap.nodes).map(o => o.total).reduce((i, s) => i + s)
+        this.configuration.selected = Object.values(this.configuration.countMap.nodes).map(o => o.selected).reduce((i, s) => i + s)
       }
-      if (Object.values(this.countMap.edges).length > 0) {
-        this.configuration.selected += Object.values(this.countMap.edges).map(o => o.selected).reduce((i, s) => i + s)
-        this.configuration.total += Object.values(this.countMap.edges).map(o => o.total).reduce((i, s) => i + s)
+      if (Object.values(this.configuration.countMap.edges).length > 0) {
+        this.configuration.selected += Object.values(this.configuration.countMap.edges).map(o => o.selected).reduce((i, s) => i + s)
+        this.configuration.total += Object.values(this.configuration.countMap.edges).map(o => o.total).reduce((i, s) => i + s)
       }
       this.$emit("reloadSide")
+      if (this.$refs.info !== undefined) {
+        this.$refs.info.$forceUpdate()
+      }
     },
     getCountMap: function (entity) {
       let out = {}
@@ -1696,9 +1718,9 @@ export default {
       if (entity === "nodes") {
         return this.metagraph.colorMap[name].main;
       } else {
-        let edge = Object.values(this.entityGraph.edges).filter(n => n.name === name)[0]
-        let n1 = this.entityGraph.nodes[edge.node1].name;
-        let n2 = this.entityGraph.nodes[edge.node2].name;
+        let edge = Object.values(this.configuration.entityGraph.edges).filter(n => n.name === name)[0]
+        let n1 = this.configuration.entityGraph.nodes[edge.node1].name;
+        let n2 = this.configuration.entityGraph.nodes[edge.node2].name;
         return [this.metagraph.colorMap[n1].main, this.metagraph.colorMap[n2].main]
       }
     },
@@ -1706,13 +1728,13 @@ export default {
       console.log("executing " + algorithm)
       let payload = {userId: this.uid, graphId: this.gid, algorithm: algorithm, params: params}
       if (algorithm === "diamond") {
-        if (this.countMap.nodes[params.type] === undefined || (params.selection && this.countMap.nodes[params.type].selected === 0)) {
+        if (this.configuration.countMap.nodes[params.type] === undefined || (params.selection && this.configuration.countMap.nodes[params.type].selected === 0)) {
           this.$emit("printNotificationEvent", "Cannot execute " + algorithm + " without seed nodes!", 1)
           return;
         }
         payload.selection = params.selection
-        if(params.selection)
-          payload["nodes"]=this.nodes[params.type].filter(n=>n.selected).map(n=>n.id)
+        if (params.selection)
+          payload["nodes"] = this.nodes[params.type].filter(n => n.selected).map(n => n.id)
       }
       this.$http.post("/submitJob", payload).then(response => {
         if (response.data !== undefined)
@@ -1722,7 +1744,7 @@ export default {
       }).catch(console.log)
     },
     direction: function (edge) {
-      let e = Object.values(this.entityGraph.edges).filter(e => e.name === edge)[0];
+      let e = Object.values(this.configuration.entityGraph.edges).filter(e => e.name === edge)[0];
       if (e.node1 === e.node2)
         return 0
       return e.directed ? 1 : 2
@@ -1730,7 +1752,7 @@ export default {
     countClick: function (entity, tabId, item) {
       let bool = entity === 'nodes' ? item : item.selected;
       let name = Object.keys(this.attributes[entity])[tabId]
-      this.countMap[entity][name].selected += (bool ? 1 : -1)
+      this.configuration.countMap[entity][name].selected += (bool ? 1 : -1)
       this.configuration.selected += (bool ? 1 : -1)
       if (entity === 'edges' && bool)
         this.selectDependentNodes(name, [item])

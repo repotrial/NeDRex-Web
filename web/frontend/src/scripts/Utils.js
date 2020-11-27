@@ -9,6 +9,29 @@ const Utils =
       }
     },
 
+    getColoringExtended(metagraph, entityGraph, entity, name) {
+      if (entity === "nodes") {
+        return metagraph.colorMap[name.toLowerCase()].main;
+      } else {
+        let names = this.getNodesExtended(entityGraph, name)
+        return [metagraph.colorMap[names[0]].main, metagraph.colorMap[names[1]].main]
+      }
+    },
+
+    directionExtended: function (entityGraph, edge) {
+      let e = Object.values(entityGraph.edges).filter(e => e.name === edge)[0];
+      if (e.node1 === e.node2)
+        return 0
+      return e.directed ? 1 : 2
+    },
+
+    getNodesExtended(entityGraph, name) {
+      let edge = Object.values(entityGraph.edges).filter(n => n.name === name)[0]
+      let n1 = entityGraph.nodes[edge.node1].name;
+      let n2 = entityGraph.nodes[edge.node2].name;
+      return [n1, n2]
+    },
+
     getNodes(metagraph, name) {
       let edge = Object.values(metagraph.edges).filter(n => n.label === name)[0]
       let n1 = Object.values(metagraph.nodes).filter(n => n.id === edge.from)[0].group
@@ -42,7 +65,7 @@ const Utils =
     },
 
     readFile: function (file) {
-      if(file===undefined)
+      if (file === undefined)
         return undefined
       return new Promise((resolve, reject) => {
         var fr = new FileReader();
@@ -55,7 +78,7 @@ const Utils =
 
 
     waitForFileContent: function (file) {
-      return this.readFile(file).then(content =>{
+      return this.readFile(file).then(content => {
         return content
       })
     }

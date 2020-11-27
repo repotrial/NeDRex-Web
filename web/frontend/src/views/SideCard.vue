@@ -263,17 +263,10 @@
       </v-card>
 
 
-      <v-card ref="legend" elevation="3" style="margin:15px" v-if="(selectedTab===1 && options.graph.visualized)">
-        <v-list-item @click="show.legend=!show.legend">
-          <v-list-item-title>
-            <v-icon left>{{ show.legend ? "far fa-minus-square" : "far fa-plus-square" }}</v-icon>
-            Legend
-          </v-list-item-title>
-        </v-list-item>
-        <v-divider></v-divider>
-
-
-      </v-card>
+      <Legend :metagraph="metagraph" :countMap="options.list.countMap" :entity-graph="options.list.entityGraph"
+              v-if="(selectedTab===1 && options.graph.visualized)"
+              @graphViewEvent="graphViewEvent"
+      ></Legend>
 
       <v-card ref="info" elevation="3" style="margin:15px" v-if="(selectedTab===1 && options.graph.visualized)">
 
@@ -317,7 +310,7 @@
       </v-card>
 
       <template v-if="selectedTab===2">
-       <Algorithms ref="algorithms" @executeAlgorithmEvent="submitAlgorithm"></Algorithms>
+        <Algorithms ref="algorithms" @executeAlgorithmEvent="submitAlgorithm"></Algorithms>
         <Jobs ref="jobs" @graphLoadEvent="graphLoadEvent"></Jobs>
 
 
@@ -468,6 +461,7 @@
 import Utils from "../scripts/Utils"
 import Algorithms from "./toolbox/Algorithms.vue"
 import Jobs from "./toolbox/Jobs"
+import Legend from "./toolbox/Legend"
 
 export default {
   props: {
@@ -535,7 +529,7 @@ export default {
   },
 
   methods: {
-    reload: function (){
+    reload: function () {
       this.$refs.algorithms.resetAlgorithms()
       this.$refs.jobs.reload()
     },
@@ -934,24 +928,28 @@ export default {
       }
       return basic;
     },
-    submitAlgorithm: function (algorithm,params) {
+    submitAlgorithm: function (algorithm, params) {
       this.$emit('executeAlgorithmEvent', algorithm, params)
     },
-    addJob: function(data){
+    graphViewEvent: function (data) {
+      this.$emit("graphViewEvent", data)
+    },
+    addJob: function (data) {
       this.$refs.algorithms.resetAlgorithms()
       this.$refs.jobs.addJob(data)
     },
-    graphLoadEvent: function (data){
-      this.$emit("graphLoadEvent",data)
+    graphLoadEvent: function (data) {
+      this.$emit("graphLoadEvent", data)
     },
     formatTime: function (timestamp) {
-     Utils.formatTime(timestamp)
+      Utils.formatTime(timestamp)
     },
   }
   ,
   components: {
-   Algorithms,
-    Jobs
+    Algorithms,
+    Jobs,
+    Legend
   },
 
 }

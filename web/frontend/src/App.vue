@@ -148,6 +148,7 @@
                     v-on:selectionEvent="listSelectionEvent"
                     v-on:executeAlgorithmEvent="executeAlgorithm"
                     v-on:graphLoadEvent="loadGraph"
+                    @graphViewEvent="graphViewEvent"
                     :options="options"
                     :selected-tab="selectedTabId"
                     :filters="startFilters"
@@ -264,7 +265,7 @@ export default {
     initComponents: function () {
       this.options.start = {skipVis: true, onlyConnected: true, selectedElements: []}
       this.options.graph = {physics: false, visualized: false, sizeWarning: false}
-      this.options.list = {showAll: true, selected: 0, total: 0}
+      this.options.list = {showAll: true, selected: 0, total: 0,countMap: {nodes:{},edges:{}}, entityGraph:{}}
       this.options.history = {chronological: false, otherUsers: false}
     },
     loadSubSelection: function (selection) {
@@ -429,7 +430,10 @@ export default {
     setNotification: function (to, message) {
       to.message = message;
       to.show = true;
-    }
+    },
+    graphViewEvent: function (data){
+      this.$refs.graph.graphViewEvent(data)
+    },
   }
   ,
   components: {
