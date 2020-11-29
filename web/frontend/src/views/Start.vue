@@ -51,11 +51,13 @@
                           :color="nodeModel.indexOf(item.index)===-1?'gray':'primary'"
                           :text-color="nodeModel.indexOf(item.index)===-1?'black':'gray'"
                   >
-<!--                    <v-icon left :color="getColoring('nodes',item.label)">fas fa-genderless</v-icon>-->
+                    <!--                    <v-icon left :color="getColoring('nodes',item.label)">fas fa-genderless</v-icon>-->
                     <v-icon left :color="getColoring('nodes',item.label)">fas fa-genderless</v-icon>
                     {{ item.label }}
                     <span style="color: gray; margin-left: 3pt"
-                          v-show="nodeModel.indexOf(item.index)>-1">({{ metagraph.weights.nodes[item.label.toLowerCase()] }})</span>
+                          v-show="nodeModel.indexOf(item.index)>-1">({{
+                        metagraph.weights.nodes[item.label.toLowerCase()]
+                      }})</span>
                   </v-chip>
                 </v-list-item>
               </v-list>
@@ -159,9 +161,25 @@ export default {
     setOptions: function (options) {
       this.options = options;
     },
-    loadGraph: function (id) {
+    loadGraph: function (id, bool) {
       console.log("load graph")
       if (id === -1) {
+        if (!bool) {
+          this.options.selectedElements.forEach(e => {
+            if (e.type === "node") {
+              this.$refs.startgraph.toggleGroupVisibility(this.nodes[e.index].label.toLowerCase(), true)
+            } else
+              this.$refs.startgraph.toggleEdgeVisible(this.edges[e.index].label)
+          })
+          this.nodeModel=[]
+          this.edgeModel=[]
+          this.options.selectedElements.length=0
+          this.filters.length=0
+          this.$nextTick(() => {
+            this.$refs.nodeSelector.$forceUpdate()
+          })
+          return
+        }
         this.graphLoad = {post: {nodes: {}, edges: {}}}
         this.options.selectedElements.forEach(element => {
           let filter = this.filters[element.name]
@@ -277,12 +295,12 @@ export default {
       })
     },
     direction: function (edge) {
-      if (Utils.isEdgeDirected(this.metagraph,edge))
+      if (Utils.isEdgeDirected(this.metagraph, edge))
         return 1
       return 0
     },
     getColoring: function (entity, name) {
-      return Utils.getColoring(this.metagraph,entity,name)
+      return Utils.getColoring(this.metagraph, entity, name)
     },
   },
   components: {

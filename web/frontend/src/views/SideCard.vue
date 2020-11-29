@@ -15,17 +15,34 @@
           <v-container v-if="show.options">
             <template v-if="selectedTab===0">
               <template v-if="options.start!==undefined">
+
                 <v-list-item>
-                  <v-chip outlined @click="$emit('applyEvent')">
-                    <v-icon left>far fa-check-circle</v-icon>
-                    Apply Selection
-                  </v-chip>
+                  <v-col>
+                    <v-switch v-model="options.start.onlyConnected" label="Hide unconnected"></v-switch>
+                  </v-col>
                 </v-list-item>
                 <v-list-item>
-                  <v-switch v-model="options.start.onlyConnected" label="Hide unconnected"></v-switch>
+                  <v-col>
+                    <v-switch v-model="options.start.skipVis" label="Skip visualisation"></v-switch>
+                  </v-col>
                 </v-list-item>
                 <v-list-item>
-                  <v-switch v-model="options.start.skipVis" label="Skip visualisation"></v-switch>
+                  <v-container>
+                    <v-row>
+                      <v-col>
+                        <v-chip outlined color="green" @click="$emit('applyEvent',true); $emit('applyEvent',false)">
+                          Apply Subgraph
+                          <v-icon right>far fa-check-circle</v-icon>
+                        </v-chip>
+                      </v-col>
+                      <v-col>
+                        <v-chip outlined color="red" @click="$emit('applyEvent',false)">
+                          Reset
+                          <v-icon right>far fa-trash-alt</v-icon>
+                        </v-chip>
+                      </v-col>
+                    </v-row>
+                  </v-container>
                 </v-list-item>
               </template>
               <v-progress-circular v-else>
@@ -530,8 +547,10 @@ export default {
 
   methods: {
     reload: function () {
-      this.$refs.algorithms.resetAlgorithms()
-      this.$refs.jobs.reload()
+      if (this.$refs.algorithms !== undefined)
+        this.$refs.algorithms.resetAlgorithms()
+      if (this.$refs.jobs !== undefined)
+        this.$refs.jobs.reload()
     },
     print: function (message) {
       console.log(message)

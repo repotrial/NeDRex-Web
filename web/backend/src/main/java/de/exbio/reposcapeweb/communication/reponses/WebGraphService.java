@@ -65,17 +65,17 @@ public class WebGraphService {
         graph.addNode(new WebNode(5, "Disorder", "disorder", "Disorder"));
         graph.getNodes().forEach(n -> graph.setWeight("nodes", n.group, nodeController.getNodeCount(n.group)));
 
-        graph.addEdge(new WebEdge(1, 2, "DrugHasTargetProtein"));
-        graph.addEdge(new WebEdge(1, 4, "DrugHasTargetGene").setDashes(true));
-        graph.addEdge(new WebEdge(2, 2, "ProteinInteractsWithProtein"));
-        graph.addEdge(new WebEdge(2, 3, "ProteinInPathway"));
-        graph.addEdge(new WebEdge(2, 4, "ProteinEncodedBy"));
-        graph.addEdge(new WebEdge(2, 5, "ProteinAssociatedWithDisorder").setDashes(true));
-        graph.addEdge(new WebEdge(4, 4, "GeneInteractsWithGene").setDashes(true));
-        graph.addEdge(new WebEdge(4, 5, "GeneAssociatedWithDisorder"));
-        graph.addEdge(new WebEdge(5, 5, "DisorderComorbidWithDisorder"));
-        graph.addEdge(new WebEdge(5, 5, "DisorderIsADisorder"));
-        graph.addEdge(new WebEdge(1, 5, "DrugHasIndication"));
+        graph.addEdge(new WebEdge(1, 2, "DrugHasTargetProtein").setTitle("DrugHasTargetProtein"));
+        graph.addEdge(new WebEdge(1, 4, "DrugHasTargetGene").setDashes(true).setTitle("DrugHasTargetGene"));
+        graph.addEdge(new WebEdge(2, 2, "ProteinInteractsWithProtein").setTitle("ProteinInteractsWithProtein"));
+        graph.addEdge(new WebEdge(2, 3, "ProteinInPathway").setTitle("ProteinInPathway"));
+        graph.addEdge(new WebEdge(2, 4, "ProteinEncodedBy").setTitle("ProteinEncodedBy"));
+        graph.addEdge(new WebEdge(2, 5, "ProteinAssociatedWithDisorder").setDashes(true).setTitle("ProteinAssociatedWithDisorder"));
+        graph.addEdge(new WebEdge(4, 4, "GeneInteractsWithGene").setDashes(true).setTitle("GeneInteractsWithGene"));
+        graph.addEdge(new WebEdge(4, 5, "GeneAssociatedWithDisorder").setTitle("GeneAssociatedWithDisorder"));
+        graph.addEdge(new WebEdge(5, 5, "DisorderComorbidWithDisorder").setTitle("DisorderComorbidWithDisorder"));
+        graph.addEdge(new WebEdge(5, 5, "DisorderIsADisorder").setTitle("DisorderIsADisorder"));
+        graph.addEdge(new WebEdge(1, 5, "DrugHasIndication").setTitle("DrugHasIndication"));
         graph.getEdges().forEach(e -> graph.setWeight("edges", e.label, edgeController.getEdgeCount(e.label)));
 
 

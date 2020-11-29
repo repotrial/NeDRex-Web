@@ -332,9 +332,9 @@ export default {
     executeAlgorithm: function (algorithm, params) {
       this.$refs.list.executeAlgorithm(algorithm, params)
     },
-    applyEvent: function () {
+    applyEvent: function (bool) {
       if (this.selectedTabId === 0)
-        this.$refs.start.loadGraph(-1)
+        this.$refs.start.loadGraph(-1,bool)
       if (this.selectedTabId === 1)
         this.$refs.graph.visualizeNow()
     },
