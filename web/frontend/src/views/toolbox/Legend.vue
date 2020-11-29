@@ -8,26 +8,27 @@
     </v-list-item>
     <v-divider></v-divider>
     <v-container v-show="show">
-      <v-row>
-        <v-col>
-          <v-list>
-            <!--            <v-list-item>-->
-            <!--              <b>Nodes ({{ getCounts('nodes') }})</b>-->
-            <!--            </v-list-item>-->
+      <v-tabs
+        fixed-tabs
+        v-model="tabModel"
+      >
+        <v-tabs-slider></v-tabs-slider>
+        <v-tab class="primary--text">
+         Nodes
+        </v-tab>
+        <v-tab class="primary--text">
+          Edges
+        </v-tab>
+      </v-tabs>
+          <v-list v-show="tabModel===0">
             <v-list-item v-for="node in Object.values(countMap.nodes)" :key="node.name">
               <v-chip outlined @click="toggleNode(node.name)">
                 <v-icon left :color="getColoring('nodes',node.name)">fas fa-genderless</v-icon>
                 {{ node.name }} ({{ node.total }})
               </v-chip>
             </v-list-item>
-
           </v-list>
-        </v-col>
-        <v-col>
-          <v-list>
-            <!--            <v-list-item>-->
-            <!--              <b>Edges ({{ getCounts('edges') }})</b>-->
-            <!--            </v-list-item>-->
+          <v-list v-show="tabModel===1">
             <v-list-item v-for="edge in Object.values(countMap.edges)" :key="edge.name">
               <v-chip outlined @click="toggleEdge(edge.name)">
                 <v-icon left :color="getColoring('edges',edge.name)[0]" >fas fa-genderless</v-icon>
@@ -40,17 +41,10 @@
                   <v-icon left :color="getColoring('edges',edge.name)[1]">fas fa-genderless</v-icon>
                 </template>
                 {{ edge.name }} ({{ edge.total }})
-
               </v-chip>
-
             </v-list-item>
-
           </v-list>
-        </v-col>
-      </v-row>
     </v-container>
-
-
   </v-card>
 </template>
 
@@ -70,6 +64,7 @@ export default {
     return {
       show: true,
       toggled: {},
+      tabModel:0,
     }
   },
   methods: {

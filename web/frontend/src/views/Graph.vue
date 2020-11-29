@@ -300,7 +300,6 @@ export default {
               hidden: false,
               color: {
                 border: '#EF553B',
-
                 background: '#ecd0cb',
                 highlight: {border: '#EF553B', background: '#ecd0cb'}
               }
@@ -356,8 +355,8 @@ export default {
             // solver: 'repulsion',
             barnesHut:{
               // theta: 0.7,
-              gravitationalConstant:  -25000,
-              centralGravity:0.1,
+              gravitationalConstant:  -20000,
+              centralGravity:0.2,
               springLength:100,
               springConstant:0.01,
               damping:0.05,
@@ -437,6 +436,17 @@ export default {
       })
       this.edges.update(updates)
     },
+    // toggleEdgeVisibleByLabel: function (name) {
+    //   let updates = Object.values(this.edges.get({
+    //       filter: function (item) {
+    //         return item.title === name
+    //       }
+    //     }
+    //   )).map(item => {
+    //     return {id: item.id, hidden: !item.hidden, physics: item.hidden}
+    //   })
+    //   this.edges.update(updates)
+    // },
 
     hideAllGroups: function (boolean, update) {
       Object.keys(this.options.groups).forEach(n => {

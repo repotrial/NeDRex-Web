@@ -238,6 +238,7 @@ export default {
         })
       }
       this.$nextTick(() => {
+        this.$refs.startgraph.focusNode()
         this.$refs.nodeSelector.$forceUpdate()
       })
     },
@@ -271,6 +272,9 @@ export default {
           filter: []
         })
       }
+      this.$nextTick(() => {
+        this.$refs.startgraph.focusNode()
+      })
     },
     direction: function (edge) {
       if (Utils.isEdgeDirected(this.metagraph,edge))
