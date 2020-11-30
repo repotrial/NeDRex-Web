@@ -60,7 +60,10 @@ public class JobController {
         Job j = createJob(req);
         if (j.getMethod().equals(ToolService.Tool.DIAMOND))
             j.addParam("pcutoff", req.getParams().containsKey("pcutoff") ? Math.pow(10, Double.parseDouble(req.getParams().get("pcutoff"))) : 1);
-
+        if (j.getMethod().equals(ToolService.Tool.DIAMOND) | j.getMethod().equals(ToolService.Tool.BICON)) {
+            j.addParam("nodesOnly", req.getParams().get("nodesOnly"));
+            j.addParam("addInteractions", req.getParams().get("addInteractions"));
+        }
         Graph g = graphService.getCachedGraph(req.graphId);
         try {
             prepareJob(j, req, g);
@@ -139,16 +142,16 @@ public class JobController {
         try {
             jobQueue.finishJob(j);
             HashSet<Integer> results = toolService.getJobResults(j);
-            if (results == null || results.isEmpty()) {
+            if ((results == null || results.isEmpty()) & !j.getParams().get("nodesOnly").equals("true")) {
                 j.setDerivedGraph(j.getBasisGraph());
             } else
                 graphService.applyModuleJob(j, results);
         } catch (Exception e) {
-            save(j);
             log.error("Error on finishing job: " + id);
             e.printStackTrace();
             j.setStatus(Job.JobState.ERROR);
         }
+        save(j);
         socketController.setJobUpdate(j);
         toolService.clearDirectories(j);
         //TODO send finished message to user frontend

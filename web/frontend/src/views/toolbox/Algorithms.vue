@@ -78,7 +78,18 @@
         </v-col>
       </v-row>
       <template v-if="advanced">
+        <template>
+          <v-row>
+            <v-col>
+              <v-switch v-model="models.advanced.keepNodesOnly" label="Keep only derived Nodes"></v-switch>
+            </v-col>
+            <v-col>
+              <v-switch v-model="models.advanced.addInteractions" label="Add new interaction Edges" ></v-switch>
+            </v-col>
+          </v-row>
+        </template>
         <template v-if="methodModel==='diamond'">
+          <v-divider></v-divider>
           <v-row>
             <v-col>
               <v-slider
@@ -211,10 +222,6 @@ import Utils from "../../scripts/Utils";
 
 export default {
   name: "Algorithms",
-  // props:{
-  //   show:Boolean,
-  // },
-
   data() {
     return {
       show: false,
@@ -224,6 +231,10 @@ export default {
       selectionSwitch: false,
       advanced: false,
       models: {
+        advanced:{
+          keepNodesOnly:false,
+          addInteractions:false
+        },
         diamond: {
           nModel: 200,
           alphaModel: 1,
@@ -233,15 +244,16 @@ export default {
           exprFile: undefined
         }
       },
-      categories: [{
-        id: 0,
-        label: "Disease Modules",
-        methods: [{id: "diamond", label: "DIAMOnD"}, {id: "bicon", label: "BiCoN"}]
-      }, {
-        id: 1,
-        label: "Drug Ranking",
-        methods: [{id: "trustrank", label: "TrustRank"}, {id: "centrality", label: "Centrality"}]
-      }]
+      categories:
+        [{
+          id: 0,
+          label: "Disease Modules",
+          methods: [{id: "diamond", label: "DIAMOnD"}, {id: "bicon", label: "BiCoN"}]
+        }, {
+          id: 1,
+          label: "Drug Ranking",
+          methods: [{id: "trustrank", label: "TrustRank"}, {id: "centrality", label: "Centrality"}]
+        }]
     }
   },
   methods: {
@@ -249,7 +261,7 @@ export default {
       this.models.bicon.exprFile = file
     },
     submitAlgorithm: function () {
-      let params = {}
+      let params = {addInteractions: this.models.advanced.addInteractions, nodesOnly: this.models.advanced.keepNodesOnly}
       if (this.methodModel === 'diamond') {
         params['type'] = this.nodeModel
         params['n'] = this.models.diamond.nModel;
@@ -257,7 +269,6 @@ export default {
         params['pcutoff'] = this.models.diamond.pModel;
       }
       if (this.methodModel === 'bicon') {
-        let file = this.models.bicon.exprFile;
         Utils.readFile(this.models.bicon.exprFile).then(content => {
           params['exprData'] = content
           this.$emit('executeAlgorithmEvent', this.methodModel, params)

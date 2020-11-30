@@ -1725,7 +1725,6 @@ export default {
       }
     },
     executeAlgorithm: function (algorithm, params) {
-      console.log("executing " + algorithm)
       let payload = {userId: this.uid, graphId: this.gid, algorithm: algorithm, params: params}
       if (algorithm === "diamond") {
         if (this.configuration.countMap.nodes[params.type] === undefined || (params.selection && this.configuration.countMap.nodes[params.type].selected === 0)) {

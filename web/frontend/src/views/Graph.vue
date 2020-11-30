@@ -136,6 +136,7 @@ export default {
       if (!this.skipVis)
         this.configuration.visualized = true;
       this.$http.get("/getGraph?id=" + this.gid).then(response => {
+
         if (response !== undefined)
           return response.data
       })
@@ -355,11 +356,11 @@ export default {
             // solver: 'repulsion',
             barnesHut:{
               // theta: 0.7,
-              gravitationalConstant:  -20000,
-              centralGravity:0.2,
+              gravitationalConstant:  -15000,
+              centralGravity:0.25,
               springLength:100,
-              springConstant:0.01,
-              damping:0.05,
+              springConstant:0.02,
+              damping:0.25,
               avoidOverlap:0.5
             },
             enabled: false,

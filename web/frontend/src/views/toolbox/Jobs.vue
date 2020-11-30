@@ -38,11 +38,14 @@
             v-for="job in (jobsTabModel===0? graphjobs:jobs)" :key="job.jid"
           >
             <td>
-              <v-chip :color="job.state==='DONE'?(job.gid===gid?'blue':'green'):'orange'"
+              <v-chip :color="job.state==='DONE'?(job.gid===gid?'blue':'green'):(job.state ==='ERROR'?'red':'orange')"
                       :disabled="job.state!=='DONE'||job.gid===gid"
                       @click="$emit('graphLoadEvent', {post: {id: job.gid}})">
                 <v-icon left v-if="job.state==='DONE'">
                   fas fa-check
+                </v-icon>
+                <v-icon letf v-else-if="job.state==='ERROR'">
+                  fas fa-exclamation-triangle
                 </v-icon>
                 <v-icon left v-else>
                   fas fa-circle-notch fa-spin
@@ -116,6 +119,7 @@ export default {
         if (response.data !== undefined)
           return response.data
       }).then(data => {
+        console.log(data)
         data.forEach(job => {
           if (job.state !== "DONE")
             this.$socket.subscribeJob(job.jid, "jobUpdateEvent")

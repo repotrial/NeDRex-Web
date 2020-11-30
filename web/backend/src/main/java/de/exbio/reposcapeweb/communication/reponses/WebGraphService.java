@@ -795,8 +795,16 @@ public class WebGraphService {
         Graph g = getCachedGraph(j.getBasisGraph());
         Graph derived = g.clone(historyController.getGraphId());
         cache.put(derived.getId(), derived);
-        if (j.getMethod().equals(ToolService.Tool.DIAMOND)) {
-            int nodeTypeId = Graphs.getNode(j.getTarget());
+        Integer nodeTypeId = null;
+
+        if (j.getMethod().equals(ToolService.Tool.DIAMOND) | j.getMethod().equals(ToolService.Tool.BICON)) {
+            if (j.getMethod().equals(ToolService.Tool.DIAMOND)) {
+                nodeTypeId = Graphs.getNode(j.getTarget());
+            } else {
+                nodeTypeId = Graphs.getNode("gene");
+            }
+            if (j.getParams().containsKey("nodesOnly") && j.getParams().get("nodesOnly").equals("true"))
+                derived.getNodes().put(nodeTypeId, new HashMap<>());
             HashSet<Integer> allNodes = new HashSet<>(derived.getNodes().get(nodeTypeId).keySet());
             int beforeCount = allNodes.size();
             allNodes.addAll(moduleIds);
@@ -804,19 +812,61 @@ public class WebGraphService {
             NodeFilter nf = new NodeFilter(nodeController.getFilter(Graphs.getNode(nodeTypeId)), allNodes);
             derived.saveNodeFilter(Graphs.getNode(nodeTypeId), nf);
             derived.addNodes(nodeTypeId, nf.toList(-1).stream().map(e -> new Node(e.getNodeId(), e.getName())).collect(Collectors.toList()));
-        }
-        if(j.getMethod().equals(ToolService.Tool.BICON)){
-            int nodeTypeId = Graphs.getNode("gene");
-            HashSet<Integer> allNodes = new HashSet<>(derived.getNodes().get(nodeTypeId).keySet());
-            int beforeCount = allNodes.size();
-            allNodes.addAll(moduleIds);
-            j.setUpdate("" + (allNodes.size() - beforeCount));
-            NodeFilter nf = new NodeFilter(nodeController.getFilter(Graphs.getNode(nodeTypeId)), allNodes);
-            derived.saveNodeFilter(Graphs.getNode(nodeTypeId), nf);
-            derived.addNodes(nodeTypeId, nf.toList(-1).stream().map(e -> new Node(e.getNodeId(), e.getName())).collect(Collectors.toList()));
+            updateEdges(derived, j, nodeTypeId);
         }
         j.setDerivedGraph(derived.getId());
         addGraphToHistory(j.getUserId(), derived.getId());
+    }
+
+    private void updateEdges(Graph g, Job j, Integer nodeTypeId) {
+        HashMap<Integer, LinkedList<Edge>> keeping = new HashMap<>();
+        g.getEdges().forEach((k, v) -> {
+            if (g.getNodesfromEdge(k).first.equals(nodeTypeId)) {
+                if (!keeping.containsKey(k))
+                    keeping.put(k, new LinkedList<>());
+                keeping.get(k).addAll(v.stream().filter(e -> g.getNodes().get(nodeTypeId).containsKey(e.getId1())).collect(Collectors.toList()));
+            }
+            if (g.getNodesfromEdge(k).second.equals(nodeTypeId)) {
+                if (!keeping.containsKey(k))
+                    keeping.put(k, new LinkedList<>());
+                keeping.get(k).addAll(v.stream().filter(e -> g.getNodes().get(nodeTypeId).containsKey(e.getId2())).collect(Collectors.toList()));
+            }
+        });
+        keeping.forEach((k, v) -> {
+            if (v.size() == 0)
+                g.getEdges().remove(k);
+            else
+                g.getEdges().put(k, v);
+        });
+
+        if (j.getParams().containsKey("addInteractions") && j.getParams().get("addInteractions").equals("true")) {
+            int edgeId = Graphs.getEdgesfromNodes(nodeTypeId, nodeTypeId).get(0);
+            if (!g.getEdges().containsKey(edgeId))
+                g.getEdges().put(edgeId, new LinkedList<>());
+            HashMap<Integer, HashSet<Integer>> edges = new HashMap<>();
+            g.getNodes().get(nodeTypeId).keySet().forEach(n -> {
+                try {
+                    edgeController.getEdges(edgeId, nodeTypeId, n).stream().filter(e -> g.getNodes().get(nodeTypeId).containsKey(e)).forEach(e -> {
+                        if (n < e) {
+                            if (!edges.containsKey(n))
+                                edges.put(n, new HashSet<>());
+                            edges.get(n).add(e);
+                        } else {
+                            if (!edges.containsKey(e))
+                                edges.put(e, new HashSet<>());
+                            edges.get(e).add(n);
+                        }
+                    });
+                }catch (NullPointerException ignore){}
+            });
+            g.getEdges().get(edgeId).forEach(e -> {
+                if (edges.containsKey(e.getId1()) && edges.get(e.getId2()).contains(e.getId2()))
+                    edges.get(e.getId1()).remove(e.getId2());
+            });
+            edges.forEach((id1, l) -> l.forEach(id2 -> g.getEdges().get(edgeId).add(new Edge(id1, id2))));
+        }
+
+
     }
 
 }
