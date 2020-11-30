@@ -220,7 +220,7 @@ public class ToolService {
                 break;
             }
             case BICON: {
-                command += "bicon " + bicon.getAbsolutePath() + " exprFile " + new File(dataDir, "gene_gene_interaction.pairs").getAbsolutePath() + " genes.txt";
+                command += "bicon " + bicon.getAbsolutePath() + " exprFile " + new File(dataDir, "gene_gene_interaction.pairs").getAbsolutePath() + " genes.txt "+ request.getParams().get("lg_min")+" "+request.getParams().get("lg_max");
                 break;
             }
         }
@@ -281,7 +281,7 @@ public class ToolService {
         }
     }
 
-    public HashSet<Integer> getJobResults(Job j) {
+    public HashSet<Integer> getJobResults(Job j) throws IOException {
         HashSet<Integer> results = new HashSet<>();
         switch (j.getMethod()) {
             case DIAMOND: {
@@ -299,6 +299,7 @@ public class ToolService {
                         results.add(Integer.parseInt(line));
                 } catch (IOException e) {
                     e.printStackTrace();
+                    throw e;
                 }
                 break;
             }

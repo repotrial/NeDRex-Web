@@ -70,6 +70,10 @@ export default {
   methods: {
 
     toggleNode: function (nodeName) {
+      // if (this.toggled.nodes === undefined)
+      //   this.toggled['nodes'] = {}
+      // if (this.toggled.nodes[nodeName] === undefined)
+      //   this.toggled.nodes[nodeName] = true;
       this.graphChangeVisEvent('nodes', nodeName)
 
     },
@@ -79,6 +83,10 @@ export default {
       this.$emit("graphViewEvent", {event: "toggle", params: {type: type, name: name}})
     },
     toggleEdge: function (edgeName) {
+      // if (this.toggled.edges === undefined)
+      //   this.toggled['edges'] = {}
+      // if (this.toggled.edges[edgeName] === undefined)
+      //   this.toggled.edges[edgeName] = true;
       this.graphChangeVisEvent('edges', edgeName)
     },
     getColoring: function (entity, name) {

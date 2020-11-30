@@ -88,6 +88,76 @@
             </v-col>
           </v-row>
         </template>
+        <templaste v-if="methodModel==='bicon'">
+          <v-divider></v-divider>
+          <v-row>
+            <v-col>
+              <v-slider
+                hide-details
+                class="align-center"
+                v-model="models.bicon.lg_min"
+                min="0"
+                :max=models.bicon.lg_max
+              >
+                <template v-slot:prepend>
+                  <v-text-field
+                    v-model="models.bicon.lg_min"
+                    class="mt-0 pt-0"
+                    type="number"
+                    style="width: 60px"
+                    label="n"
+                  ></v-text-field>
+                </template>
+                <template v-slot:append>
+                  <v-tooltip left>
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-icon
+                        v-bind="attrs"
+                        v-on="on"
+                        left> far fa-question-circle
+                      </v-icon>
+                    </template>
+                    <span>Minimal solution subnetwork size.</span>
+                  </v-tooltip>
+                </template>
+              </v-slider>
+            </v-col>
+          </v-row>
+          <v-row>
+            <v-col>
+              <v-slider
+                hide-details
+                class="align-center"
+                v-model="models.bicon.lg_max"
+                min="1"
+                max="1000"
+              >
+                <template v-slot:prepend>
+                  <v-text-field
+                    v-model="models.bicon.lg_max"
+                    class="mt-0 pt-0"
+                    type="number"
+                    style="width: 60px"
+                    label="n"
+                  ></v-text-field>
+                </template>
+                <template v-slot:append>
+                  <v-tooltip left>
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-icon
+                        v-bind="attrs"
+                        v-on="on"
+                        left> far fa-question-circle
+                      </v-icon>
+                    </template>
+                    <span>Maximal solution subnetwork size.</span>
+                  </v-tooltip>
+                </template>
+              </v-slider>
+            </v-col>
+          </v-row>
+
+        </templaste>
         <template v-if="methodModel==='diamond'">
           <v-divider></v-divider>
           <v-row>
@@ -241,7 +311,9 @@ export default {
           pModel: 0
         },
         bicon: {
-          exprFile: undefined
+          exprFile: undefined,
+          lg_min:10,
+          lg_max:15
         }
       },
       categories:
@@ -269,6 +341,8 @@ export default {
         params['pcutoff'] = this.models.diamond.pModel;
       }
       if (this.methodModel === 'bicon') {
+        params['lg_min']=this.models.bicon.lg_min;
+        params['lg_max']=this.models.bicon.lg_max;
         Utils.readFile(this.models.bicon.exprFile).then(content => {
           params['exprData'] = content
           this.$emit('executeAlgorithmEvent', this.methodModel, params)
@@ -310,6 +384,8 @@ export default {
       this.models.diamond.alphaModel = 1
       this.models.diamond.nModel = 0
       this.models.bicon.exprFile = undefined
+      this.models.bicon.lg_min=10
+      this.models.bicon.lg_max=15
     },
 
     formatTime: function (timestamp) {

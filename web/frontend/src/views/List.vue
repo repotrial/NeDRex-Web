@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-container v-if="metagraph!==undefined">
-      <v-card style="margin:5px;padding-bottom:15px" :loading="loading" ref="info" >
+      <v-card style="margin:5px;padding-bottom:15px" :loading="loading" ref="info">
 
         <template slot="progress">
           <v-card-title>General Information</v-card-title>
@@ -29,7 +29,7 @@
                 <v-list-item v-for="node in Object.values(configuration.countMap.nodes)"
                              :key="node.name">
                   <v-chip outlined @click="focus('nodes',Object.keys(attributes.nodes).indexOf(node.name))">
-                    <v-icon left :color="getColoring('nodes',node.name)">fas fa-genderless</v-icon>
+                    <v-icon left :color="getExtendedColoring('nodes',node.name)">fas fa-genderless</v-icon>
                     {{ node.name }} ({{ node.selected }}/{{ node.total }})
                   </v-chip>
                 </v-list-item>
@@ -43,14 +43,14 @@
                 </v-list-item>
                 <v-list-item v-for="edge in Object.values(configuration.countMap.edges)" :key="edge.name">
                   <v-chip outlined @click="focus('edges',Object.keys(attributes.edges).indexOf(edge.name))">
-                    <v-icon left :color="getColoring('edges',edge.name)[0]">fas fa-genderless</v-icon>
-                    <template v-if="direction(edge.name)===0">
+                    <v-icon left :color="getExtendedColoring('edges',edge.name)[0]">fas fa-genderless</v-icon>
+                    <template v-if="directionExtended(edge.name)===0">
                       <v-icon left>fas fa-undo-alt</v-icon>
                     </template>
                     <template v-else>
-                      <v-icon v-if="direction(edge.name)===1" left>fas fa-long-arrow-alt-right</v-icon>
+                      <v-icon v-if="directionExtended(edge.name)===1" left>fas fa-long-arrow-alt-right</v-icon>
                       <v-icon v-else left>fas fa-arrows-alt-h</v-icon>
-                      <v-icon left :color="getColoring('edges',edge.name)[1]">fas fa-genderless</v-icon>
+                      <v-icon left :color="getExtendedColoring('edges',edge.name)[1]">fas fa-genderless</v-icon>
                     </template>
                     {{ edge.name }} ({{ edge.selected }}/{{ edge.total }})
 
@@ -442,26 +442,43 @@
     >
       <v-card v-if="extension.show">
         <v-card-title class="headline">
-          Add more edges to our current graph
+          Add more edges to your current graph
         </v-card-title>
         <v-card-text>Adjust the attributes of the general item tables.
         </v-card-text>
         <v-divider></v-divider>
-        <v-tabs-items>
-          <v-list>
-            <v-list-item v-for="attr in extension.edges" :key="attr.name">
-              <v-switch v-model="attr.selected" :label="attr.name" :disabled="attr.disabled">
+        <v-list>
+          <template v-for="attr in extension.edges">
+            <v-list-item :key="attr.name">
+              <v-switch v-model="attr.selected" :disabled="attr.disabled">
               </v-switch>
+              <span>
+                <v-icon left :color="getColoring('edges',attr.name)[0]">fas fa-genderless</v-icon>
+                    <template v-if="direction(attr.name)===0">
+                      <v-icon left>fas fa-undo-alt</v-icon>
+                    </template>
+                    <template v-else>
+                      <v-icon>fas fa-arrows-alt-h</v-icon>
+                      <v-icon left :color="getColoring('edges',attr.name)[1]">fas fa-genderless</v-icon>
+                    </template>
+                {{ attr.name }}
+              </span>
             </v-list-item>
-          </v-list>
-        </v-tabs-items>
+            <v-list-item v-if="attr.both>0 && attr.selected" :key="attr.name+'_addition'">
+              <v-divider vertical style="margin-right:15px; margin-left:15px"></v-divider>
+              <span>Extend by new nodes</span>
+              <v-switch v-model="attr.induced" style="margin-left:5px"></v-switch>
+              <span>Add induced edges only</span>
+            </v-list-item>
+          </template>
+        </v-list>
 
         <v-divider></v-divider>
 
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn
-            color="green darken-1"
+            color="red darken-1"
             text
             @click="extensionDialogResolve(false)"
           >
@@ -858,8 +875,8 @@ export default {
     this.nodes = {}
     this.attributes = {}
     this.edges = {}
-    this.countMap={nodes:{},edges:{}}
-    this.configuration.countMap=this.countMap
+    this.countMap = {nodes: {}, edges: {}}
+    this.configuration.countMap = this.countMap
     this.backup = {nodes: {}, edges: {}}
     this.gid = this.$route.params["gid"]
     this.reloadMetagraph()
@@ -1123,7 +1140,6 @@ export default {
         })
         this.options.attributes[node] = models;
       }
-      console.log(this.options)
       this.options["type"] = "nodes";
     }
     ,
@@ -1194,7 +1210,6 @@ export default {
         })
         this.options.attributes[edge] = models;
       }
-      console.log(this.options)
       this.options.type = "edges";
       this.optionDialog = true;
     }
@@ -1260,8 +1275,9 @@ export default {
     extensionDialogResolve: function (apply) {
       let payload = {
         gid: this.gid,
-        nodes: this.extension.nodes.filter(n => n.selected).map(n => n.name),
-        edges: this.extension.edges.filter(n => n.selected && !n.disabled).map(n => n.name)
+        // nodes: this.extension.nodes.filter(n => n.selected).map(n => n.name),
+        edges: this.extension.edges.filter(e => e.selected).map(e => e.name),
+        induced: this.extension.edges.filter(e => e.selected && e.induced).map(e => e.name)
       }
       this.extension.nodes = []
       this.extension.edges = []
@@ -1498,7 +1514,6 @@ export default {
           this.$refs.edgeTab.$forceUpdate()
         this.$refs.nodeTab.$forceUpdate()
       })
-      console.log(this.getSelectedCount('nodes', 'gene'))
     }
     ,
     deselectAll: function (type) {
@@ -1649,12 +1664,15 @@ export default {
       return true
     },
     extendGraph: function () {
-      this.extension.edges = this.metagraph.edges.map(e => e.label).map(e => {
-        let there = Object.keys(this.attributes.edges).indexOf(e) !== -1
-        return {name: e, selected: there, disabled: there}
+      this.extension.edges = []
+      this.metagraph.edges.map(e => e.label).map(e => {
+        let idx1 = Object.keys(this.attributes.nodes).indexOf(Utils.getNodes(this.metagraph, e)[0])
+        let idx2 = Object.keys(this.attributes.nodes).indexOf(Utils.getNodes(this.metagraph, e)[1])
+
+        if (Object.keys(this.attributes.edges).indexOf(e) === -1 && idx1 + idx2 > -2)
+          this.extension.edges.push({name: e, both: idx1 > -1 && idx2 > -1, induced: false})
       })
       this.extension.show = true;
-      console.log(this.extension)
       this.$refs.extensionDialog.$forceUpdate()
 
     },
@@ -1709,20 +1727,21 @@ export default {
       )
       return out
     },
+    getExtendedColoring: function (entity, name) {
+      if (this.metagraph === undefined) {
+        return this.reloadMetagraph().then(function () {
+          return this.getExtendedColoring(entity, name)
+        })
+      }
+      return Utils.getColoringExtended(this.metagraph, this.configuration.entityGraph, entity, name)
+    },
     getColoring: function (entity, name) {
       if (this.metagraph === undefined) {
         return this.reloadMetagraph().then(function () {
           return this.getColoring(entity, name)
         })
       }
-      if (entity === "nodes") {
-        return this.metagraph.colorMap[name].main;
-      } else {
-        let edge = Object.values(this.configuration.entityGraph.edges).filter(n => n.name === name)[0]
-        let n1 = this.configuration.entityGraph.nodes[edge.node1].name;
-        let n2 = this.configuration.entityGraph.nodes[edge.node2].name;
-        return [this.metagraph.colorMap[n1].main, this.metagraph.colorMap[n2].main]
-      }
+      return Utils.getColoring(this.metagraph, entity, name)
     },
     executeAlgorithm: function (algorithm, params) {
       let payload = {userId: this.uid, graphId: this.gid, algorithm: algorithm, params: params}
@@ -1742,9 +1761,15 @@ export default {
         this.$emit("addJobEvent", data);
       }).catch(console.log)
     },
-    direction: function (edge) {
+    directionExtended: function (edge) {
       let e = Object.values(this.configuration.entityGraph.edges).filter(e => e.name === edge)[0];
       if (e.node1 === e.node2)
+        return 0
+      return e.directed ? 1 : 2
+    },
+    direction: function (edge) {
+      let e = Object.values(this.metagraph.edges).filter(e => e.title === edge)[0];
+      if (e.from === e.to)
         return 0
       return e.directed ? 1 : 2
     },

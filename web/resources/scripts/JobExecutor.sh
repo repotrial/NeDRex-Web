@@ -11,7 +11,7 @@ then
 fi
 if [ $tool == "bicon" ]
 then
-  python3 $4 $5 $6 $7
+  python3 $4 $5 $6 $7 $8 $9
 fi
 
 curl $response

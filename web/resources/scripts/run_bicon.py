@@ -11,8 +11,8 @@ path_net = sys.argv[2]
 path_out = sys.argv[3]
 
 GE, G, labels, _ = data_preprocessing(path_expr, path_net)
-L_g_min = 10
-L_g_max = 15
+L_g_min = int(sys.argv[4])
+L_g_max = int(sys.argv[5])
 
 model = BiCoN(GE, G, L_g_min, L_g_max)
 solution, scores = model.run_search()
