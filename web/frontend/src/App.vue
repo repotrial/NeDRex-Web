@@ -156,6 +156,31 @@
           ></SideCard>
         </v-col>
       </v-row>
+      <v-dialog
+        v-model="cookiesPopup"
+        persistent
+        max-width="500"
+      >
+        <v-card>
+          <v-card-title>This page uses cookies</v-card-title>
+          <v-card-text>This graph browser uses cookies to store an identification for your user. This is used to show
+            you
+            your previous explorations.
+          </v-card-text>
+          <v-divider></v-divider>
+
+          <v-card-actions>
+            <v-btn
+              color="green darken-1"
+              text
+              @click="cookiesPopup=false"
+            >
+              Accept
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+
+      </v-dialog>
     </v-container>
     <v-footer app>
     </v-footer>
@@ -191,6 +216,7 @@ export default {
       listDialog: false,
       notifications: {style1: {show: false, message: "", timeout: 2000}, style2: {}},
       options: {},
+      cookiesPopup: false,
       startFilters: {},
     }
   },
@@ -227,6 +253,8 @@ export default {
   },
   methods: {
     loadUser: function () {
+      if (this.$cookies.get("uid") === null)
+        this.cookiesPopup = true
       this.$http.get("/getUser?user=" + this.$cookies.get("uid")).then(response => {
         if (response.data !== undefined)
           return response.data
@@ -265,7 +293,7 @@ export default {
     initComponents: function () {
       this.options.start = {skipVis: true, onlyConnected: true, selectedElements: []}
       this.options.graph = {physics: false, visualized: false, sizeWarning: false}
-      this.options.list = {showAll: true, selected: 0, total: 0,countMap: {nodes:{},edges:{}}, entityGraph:{}}
+      this.options.list = {showAll: true, selected: 0, total: 0, countMap: {nodes: {}, edges: {}}, entityGraph: {}}
       this.options.history = {chronological: false, otherUsers: false}
     },
     loadSubSelection: function (selection) {
@@ -334,7 +362,7 @@ export default {
     },
     applyEvent: function (bool) {
       if (this.selectedTabId === 0)
-        this.$refs.start.loadGraph(-1,bool)
+        this.$refs.start.loadGraph(-1, bool)
       if (this.selectedTabId === 1)
         this.$refs.graph.visualizeNow()
     },
@@ -403,7 +431,7 @@ export default {
       }
       this.selectedTabId = tabid;
       if (!skipReroute && this.gid !== undefined)
-          this.$router.push("/" + this.gid + "/" + ['start', 'graph', 'list', 'history'][tabid])
+        this.$router.push("/" + this.gid + "/" + ['start', 'graph', 'list', 'history'][tabid])
 
       this.adaptSidecard()
     },
@@ -431,7 +459,7 @@ export default {
       to.message = message;
       to.show = true;
     },
-    graphViewEvent: function (data){
+    graphViewEvent: function (data) {
       this.$refs.graph.graphViewEvent(data)
     },
   }

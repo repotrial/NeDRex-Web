@@ -1,6 +1,9 @@
 package de.exbio.reposcapeweb.communication.jobs;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 public class JobRequest {
@@ -12,6 +15,8 @@ public class JobRequest {
     public boolean selection;
     public List<Integer> nodes;
     public String exprData;
+    @JsonIgnore
+    public HashSet<String> ids;
 
 
     public String getUserId() {
@@ -45,4 +50,5 @@ public class JobRequest {
     public void setParams(HashMap<String, String> params) {
         this.params = params;
     }
+
 }

@@ -125,7 +125,7 @@ export default {
       nodeModel: this.nodeModel,
       edgeModel: this.edgeModel,
       filterId: this.filterId,
-      selectionTab: 1
+      selectionTab: 1,
     }
   },
   created() {
@@ -171,10 +171,10 @@ export default {
             } else
               this.$refs.startgraph.toggleEdgeVisible(this.edges[e.index].label)
           })
-          this.nodeModel=[]
-          this.edgeModel=[]
-          this.options.selectedElements.length=0
-          this.filters.length=0
+          this.nodeModel = []
+          this.edgeModel = []
+          this.options.selectedElements.length = 0
+          this.filters.length = 0
           this.$nextTick(() => {
             this.$refs.nodeSelector.$forceUpdate()
           })

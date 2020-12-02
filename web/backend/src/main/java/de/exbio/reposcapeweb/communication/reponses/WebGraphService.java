@@ -828,6 +828,19 @@ public class WebGraphService {
             derived.addNodes(nodeTypeId, nf.toList(-1).stream().map(e -> new Node(e.getNodeId(), e.getName())).collect(Collectors.toList()));
             updateEdges(derived, j, nodeTypeId);
         }
+        if (j.getMethod().equals(ToolService.Tool.TRUSTRANK)) {
+            int disorderId = Graphs.getNode("drug");
+            if (!derived.getEdges().containsKey(disorderId) | (j.getParams().containsKey("nodesOnly") && j.getParams().get("nodesOnly").equals("true")))
+                derived.getNodes().put(disorderId, new HashMap<>());
+            HashSet<Integer> allNodes = new HashSet<>(derived.getNodes().get(disorderId).keySet());
+            int beforeCount = allNodes.size();
+            allNodes.addAll(moduleIds);
+            j.setUpdate("" + (allNodes.size() - beforeCount));
+            NodeFilter nf = new NodeFilter(nodeController.getFilter(Graphs.getNode(disorderId)), allNodes);
+            derived.saveNodeFilter(Graphs.getNode(disorderId), nf);
+            derived.addNodes(disorderId, nf.toList(-1).stream().map(e -> new Node(e.getNodeId(), e.getName())).collect(Collectors.toList()));
+            updateEdges(derived, j, disorderId);
+        }
         j.setDerivedGraph(derived.getId());
         addGraphToHistory(j.getUserId(), derived.getId());
     }
@@ -854,7 +867,7 @@ public class WebGraphService {
         });
 
         if (j.getParams().containsKey("addInteractions") && j.getParams().get("addInteractions").equals("true")) {
-            int edgeId = Graphs.getEdgesfromNodes(nodeTypeId, nodeTypeId).get(0);
+            int edgeId = j.getMethod().equals(ToolService.Tool.TRUSTRANK) ? Graphs.getEdgesfromNodes(nodeTypeId, Graphs.getNode(j.getParams().get("type"))).get(0) : Graphs.getEdgesfromNodes(nodeTypeId, nodeTypeId).get(0);
             if (!g.getEdges().containsKey(edgeId))
                 g.getEdges().put(edgeId, new LinkedList<>());
             HashMap<Integer, HashSet<Integer>> edges = new HashMap<>();

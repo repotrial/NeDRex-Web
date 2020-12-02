@@ -1745,15 +1745,16 @@ export default {
     },
     executeAlgorithm: function (algorithm, params) {
       let payload = {userId: this.uid, graphId: this.gid, algorithm: algorithm, params: params}
-      if (algorithm === "diamond") {
+      payload.selection = params.selection
+      if (params.selection)
+        payload["nodes"] = this.nodes[params.type].filter(n => n.selected).map(n => n.id)
+      if (algorithm === "diamond" || algorithm==="trustrank") {
         if (this.configuration.countMap.nodes[params.type] === undefined || (params.selection && this.configuration.countMap.nodes[params.type].selected === 0)) {
           this.$emit("printNotificationEvent", "Cannot execute " + algorithm + " without seed nodes!", 1)
           return;
         }
-        payload.selection = params.selection
-        if (params.selection)
-          payload["nodes"] = this.nodes[params.type].filter(n => n.selected).map(n => n.id)
       }
+      console.log(payload)
       this.$http.post("/submitJob", payload).then(response => {
         if (response.data !== undefined)
           return response.data

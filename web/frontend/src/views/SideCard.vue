@@ -837,6 +837,8 @@ export default {
     }
     ,
     getColoring: function (type, name) {
+      if(name.endsWith("Drug"))
+        name = "drug"
       return Utils.getColoring(this.metagraph, type, name)
     },
     getNodeNames: function (type) {
@@ -872,6 +874,8 @@ export default {
     }
     ,
     loadDetails: function (data, redirect) {
+      console.log(data)
+      console.log(redirect)
       this.details.redirected = false;
       if (redirect)
         this.details.redirected = redirect

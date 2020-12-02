@@ -31,6 +31,7 @@ public class ToolService {
     private File executor;
     private File bicon;
     private File diamond;
+    private File trustrank;
 
     private HashMap<String, File> tempDirs = new HashMap<>();
 
@@ -68,44 +69,6 @@ public class ToolService {
         log.info("Using " + component + ": " + sb.toString().strip() + " [version: " + version.toString().strip() + "]");
     }
 
-//    private void pythonValidate(String lib, boolean install) {
-//        StringBuffer sb = new StringBuffer();
-//
-//        try {
-//            ProcessUtils.executeProcessWait(new ProcessBuilder("pip3", "freeze"), sb);
-//        } catch (IOException | InterruptedException e) {
-//            e.printStackTrace();
-//        }
-//        List<String> libs = StringUtils.split(sb.toString(), '\n').stream().filter(s -> s.startsWith(lib + "==")).collect(Collectors.toList());
-//        if (libs.size() == 0) {
-//            log.error("Missing python library '" + lib + "'");
-//            if (install)
-//                pythonInstall(lib);
-//        } else {
-//            log.info("Python library installed: " + libs.get(0));
-//        }
-//    }
-
-//    private void installRequirements(File directory) {
-//        try {
-//            ProcessUtils.executeProcessWait(new ProcessBuilder("pipreqs", directory.getAbsolutePath()));
-//            ProcessUtils.executeProcessWait(new ProcessBuilder("pip3", "install", "-r", new File(directory, "requirements.txt").getAbsolutePath()));
-//        } catch (IOException | InterruptedException e) {
-//            e.printStackTrace();
-//        }
-//
-//    }
-//
-//    private void pythonInstall(String lib) {
-//        log.info("Installing python lib '" + lib + "'");
-//        try {
-//            ProcessUtils.executeProcessWait(new ProcessBuilder("pip3", "install", "pipreqs"));
-//        } catch (IOException | InterruptedException e) {
-//            e.printStackTrace();
-//        }
-//        pythonValidate(lib, false);
-//    }
-
 
     public void validateTools() {
         validateJobExecutor();
@@ -113,6 +76,7 @@ public class ToolService {
         prepareDiamond();
         prepareBicon();
         validateDiamond();
+        prepareTrustRank();
 
     }
 
@@ -141,6 +105,16 @@ public class ToolService {
         log.info("BiCon path=" + bicon.getAbsolutePath());
         if (!bicon.exists()) {
             log.error("BiCon executable was not found in config. Please make sure it is referenced correctly!");
+            new RuntimeException("Missing reference.");
+        }
+    }
+
+    private void prepareTrustRank() {
+        log.info("Setting up TrustRank");
+        trustrank = new File(env.getProperty("path.tool.trustrank"));
+        log.info("TrustRank path=" + trustrank.getAbsolutePath());
+        if (!trustrank.exists()) {
+            log.error("TrustRank executable was not found in config. Please make sure it is referenced correctly!");
             new RuntimeException("Missing reference.");
         }
     }
@@ -187,6 +161,18 @@ public class ToolService {
         }
 
 
+        File rankCache = new File(dataDir, "ranking_files");
+        if (rankCache.exists()) {
+            rankCache.delete();
+        }
+        rankCache.mkdir();
+        try {
+            ProcessUtils.executeProcessWait(new ProcessBuilder("python3", env.getProperty("jobs.scripts.ranking_preparation"), rankCache.getAbsolutePath()));
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+
+
     }
 
 
@@ -220,8 +206,11 @@ public class ToolService {
                 break;
             }
             case BICON: {
-                command += "bicon " + bicon.getAbsolutePath() + " exprFile " + new File(dataDir, "gene_gene_interaction.pairs").getAbsolutePath() + " genes.txt "+ request.getParams().get("lg_min")+" "+request.getParams().get("lg_max");
+                command += "bicon " + bicon.getAbsolutePath() + " exprFile " + new File(dataDir, "gene_gene_interaction.pairs").getAbsolutePath() + " genes.txt " + request.getParams().get("lg_min") + " " + request.getParams().get("lg_max");
                 break;
+            }
+            case TRUSTRANK:{
+                command += "trustrank "+trustrank.getAbsolutePath()+" "+ new File(dataDir, "ranking_files/PPdr-for-ranking.gt").getAbsolutePath() +" seeds.list Y Y";
             }
         }
         System.out.println(command);
@@ -229,6 +218,7 @@ public class ToolService {
     }
 
     public void prepareJobFiles(Job job, JobRequest req, Graph g) {
+        System.out.println("preparing job");
         switch (job.getMethod()) {
             case DIAMOND: {
                 File seed = new File(getTempDir(job.getJobId()), "seeds.list");
@@ -247,6 +237,33 @@ public class ToolService {
                     e.printStackTrace();
                 }
             }
+            case TRUSTRANK:{
+                File seed = new File(getTempDir(job.getJobId()), "seeds.list");
+
+//                if (req.selection)
+                    writeSeedFile(req.params.get("type"), seed, req.ids);
+//                else
+//                    writeSeedFile(req.params.get("type"), seed, g);
+
+//                BufferedReader br = null;
+//                try {
+//                    br = ReaderUtils.getBasicReader(seed);
+//                } catch (FileNotFoundException e) {
+//                    e.printStackTrace();
+//                }
+//                String line = "";
+//                while(true){
+//                    try {
+//                        if ((line = br.readLine()) == null) break;
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    }
+//                    System.out.println(line);
+//                }
+//
+//                break;
+
+            }
         }
 
     }
@@ -255,7 +272,7 @@ public class ToolService {
         writeSeedFile(type, file, g.getNodes().get(Graphs.getNode(type)).keySet());
     }
 
-    private void writeSeedFile(String type, File file, Collection<Integer> nodeIds) {
+    private void writeSeedFile(String type, File file, Collection nodeIds) {
         BufferedWriter bw = WriterUtils.getBasicWriter(file);
         nodeIds.forEach(node -> {
             try {
@@ -281,7 +298,7 @@ public class ToolService {
         }
     }
 
-    public HashSet<Integer> getJobResults(Job j) throws IOException {
+    public HashSet getJobResults(Job j) throws IOException {
         HashSet<Integer> results = new HashSet<>();
         switch (j.getMethod()) {
             case DIAMOND: {
@@ -303,13 +320,37 @@ public class ToolService {
                 }
                 break;
             }
+            case TRUSTRANK:{
+                for(File f: getTempDir(j.getJobId()).listFiles()){
+                   if(!f.getName().equals("seed.list")){
+                       return readTrustRankResults(f, 0);
+                   }
+                }
+                break;
+
+            }
 
         }
         return results;
     }
 
+    private HashSet<String> readTrustRankResults(File f, int i) {
+        HashSet<String> out = new HashSet<>();
+        try(BufferedReader br = ReaderUtils.getBasicReader(f)){
+            String line = br.readLine();
+            while((line=br.readLine())!=null){
+                LinkedList<String> split = StringUtils.split(line,"\t");
+                if(Double.parseDouble(split.get(1))>i)
+                    out.add(split.getFirst());
+            }
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+        return out;
+    }
+
     public void clearDirectories(Job j) {
-        getTempDir(j.getJobId()).delete();
+//        getTempDir(j.getJobId()).delete();
     }
 
     private HashSet<Integer> readDiamondResults(File f, double p_cutoff) {

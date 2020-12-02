@@ -2,9 +2,14 @@ package de.exbio.reposcapeweb.communication.jobs;
 
 import de.exbio.reposcapeweb.ReposcapewebApplication;
 import de.exbio.reposcapeweb.communication.cache.Graph;
+import de.exbio.reposcapeweb.communication.cache.Graphs;
 import de.exbio.reposcapeweb.communication.controller.SocketController;
 import de.exbio.reposcapeweb.communication.reponses.WebGraphService;
+import de.exbio.reposcapeweb.db.services.controller.NodeController;
+import de.exbio.reposcapeweb.db.services.nodes.DisorderService;
+import de.exbio.reposcapeweb.db.services.nodes.DrugService;
 import de.exbio.reposcapeweb.db.services.nodes.GeneService;
+import de.exbio.reposcapeweb.db.services.nodes.ProteinService;
 import de.exbio.reposcapeweb.tools.ToolService;
 import de.exbio.reposcapeweb.utils.ReaderUtils;
 import de.exbio.reposcapeweb.utils.StringUtils;
@@ -27,18 +32,22 @@ public class JobController {
     private final JobRepository jobRepository;
     private final SocketController socketController;
     private final GeneService geneService;
+    private final ProteinService proteinService;
+    private final DrugService drugService;
 
     private HashMap<String, Job> jobs = new HashMap<>();
     private Logger log = LoggerFactory.getLogger(JobController.class);
 
     @Autowired
-    public JobController(GeneService geneService, WebGraphService graphService, ToolService toolService, JobQueue jobQueue, JobRepository jobRepository, SocketController socketController) {
+    public JobController(DrugService drugService, ProteinService proteinService, GeneService geneService, WebGraphService graphService, ToolService toolService, JobQueue jobQueue, JobRepository jobRepository, SocketController socketController) {
         this.graphService = graphService;
         this.toolService = toolService;
         this.jobQueue = jobQueue;
         this.jobRepository = jobRepository;
         this.socketController = socketController;
         this.geneService = geneService;
+        this.proteinService = proteinService;
+        this.drugService = drugService;
     }
 
 
@@ -129,6 +138,15 @@ public class JobController {
     }
 
     private void prepareFiles(Job j, JobRequest req, Graph g) {
+        if (j.getMethod().equals(ToolService.Tool.TRUSTRANK)) {
+            HashSet<String> domainIds = new HashSet<>();
+            HashSet<Integer> ids = new HashSet<>(req.selection ? req.nodes : g.getNodes().get(Graphs.getNode(req.getParams().get("type"))).keySet());
+            if (req.getParams().get("type").equals("gene"))
+                ids.forEach(n -> domainIds.add(geneService.map(n)));
+            else
+                ids.forEach(n -> domainIds.add(proteinService.map(n)));
+            req.ids= domainIds;
+        }
         toolService.prepareJobFiles(j, req, g);
     }
 
@@ -141,8 +159,8 @@ public class JobController {
         Job j = jobs.get(id);
         try {
             jobQueue.finishJob(j);
-            HashSet<Integer> results = toolService.getJobResults(j);
-            if ((results == null || results.isEmpty()) & !j.getParams().get("nodesOnly").equals("true")) {
+            HashSet<Integer> results = toIds(j,toolService.getJobResults(j));
+            if ((results == null || results.isEmpty()) & (!j.getParams().containsKey("nodesOnly") || !j.getParams().get("nodesOnly").equals("true"))) {
                 j.setDerivedGraph(j.getBasisGraph());
             } else
                 graphService.applyModuleJob(j, results);
@@ -155,6 +173,17 @@ public class JobController {
         socketController.setJobUpdate(j);
         toolService.clearDirectories(j);
         //TODO send finished message to user frontend
+    }
+
+    private HashSet<Integer> toIds(Job j, HashSet jobResults) {
+        if(j.getMethod().equals(ToolService.Tool.DIAMOND)| j.getMethod().equals(ToolService.Tool.BICON))
+            return jobResults;
+        if(j.getMethod().equals(ToolService.Tool.TRUSTRANK)){
+            HashSet<Integer> out = new HashSet<>();
+            jobResults.forEach(s->out.add(drugService.map((String)s)));
+            return out;
+        }
+        return null;
     }
 
     public HashMap<String, Job.JobState> getJobGraphStates(String user) {

@@ -29,7 +29,7 @@
           </v-select>
         </v-col>
       </v-row>
-      <v-row v-if="categoryModel >-1 && methodModel ==='diamond'">
+      <v-row v-if="categoryModel >-1 && (methodModel ==='diamond'|| methodModel ==='trustrank')">
         <v-col cols="6">
           <v-switch
             label="Use Selection"
@@ -78,13 +78,13 @@
         </v-col>
       </v-row>
       <template v-if="advanced">
-        <template>
+        <template v-if="categoryModel===0">
           <v-row>
             <v-col>
               <v-switch v-model="models.advanced.keepNodesOnly" label="Keep only derived Nodes"></v-switch>
             </v-col>
             <v-col>
-              <v-switch v-model="models.advanced.addInteractions" label="Add new interaction Edges" ></v-switch>
+              <v-switch v-model="models.advanced.addInteractions" label="Add new interaction Edges"></v-switch>
             </v-col>
           </v-row>
         </template>
@@ -301,9 +301,9 @@ export default {
       selectionSwitch: false,
       advanced: false,
       models: {
-        advanced:{
-          keepNodesOnly:false,
-          addInteractions:false
+        advanced: {
+          keepNodesOnly: false,
+          addInteractions: false
         },
         diamond: {
           nModel: 200,
@@ -312,8 +312,8 @@ export default {
         },
         bicon: {
           exprFile: undefined,
-          lg_min:10,
-          lg_max:15
+          lg_min: 10,
+          lg_max: 15
         }
       },
       categories:
@@ -333,7 +333,11 @@ export default {
       this.models.bicon.exprFile = file
     },
     submitAlgorithm: function () {
-      let params = {addInteractions: this.models.advanced.addInteractions, nodesOnly: this.models.advanced.keepNodesOnly}
+      let params = {}
+      if (this.categoryModel === 0) {
+        params["addInteractions"] = this.models.advanced.addInteractions
+        params["nodesOnly"] = this.models.advanced.keepNodesOnly
+      }
       if (this.methodModel === 'diamond') {
         params['type'] = this.nodeModel
         params['n'] = this.models.diamond.nModel;
@@ -341,16 +345,19 @@ export default {
         params['pcutoff'] = this.models.diamond.pModel;
       }
       if (this.methodModel === 'bicon') {
-        params['lg_min']=this.models.bicon.lg_min;
-        params['lg_max']=this.models.bicon.lg_max;
+        params['lg_min'] = this.models.bicon.lg_min;
+        params['lg_max'] = this.models.bicon.lg_max;
         Utils.readFile(this.models.bicon.exprFile).then(content => {
           params['exprData'] = content
           this.$emit('executeAlgorithmEvent', this.methodModel, params)
         })
         return
       }
-      if (this.methodModel === 'diamond' || this.methodModel === 'bicon')
-        params.selection = this.selectionSwitch
+      if (this.methodModel === 'trustrank') {
+        params['type'] = this.nodeModel
+      }
+      // if (this.methodModel === 'diamond' || this.methodModel === 'bicon'|| this.methodModel='trustran')
+      params.selection = this.selectionSwitch
       this.$emit('executeAlgorithmEvent', this.methodModel, params)
     },
 
@@ -384,8 +391,8 @@ export default {
       this.models.diamond.alphaModel = 1
       this.models.diamond.nModel = 0
       this.models.bicon.exprFile = undefined
-      this.models.bicon.lg_min=10
-      this.models.bicon.lg_max=15
+      this.models.bicon.lg_min = 10
+      this.models.bicon.lg_max = 15
     },
 
     formatTime: function (timestamp) {
