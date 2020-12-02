@@ -15,13 +15,66 @@
           <v-tabs v-model="selectionTab" centered>
             <v-tabs-slider color="blue"></v-tabs-slider>
             <v-tab>Guided Exploration</v-tab>
+            <v-tab>Quick Start: Disease Modules</v-tab>
+            <v-tab>Quick Start: Drug Repurposing</v-tab>
             <v-tab>Advanced Exploration</v-tab>
           </v-tabs>
         </v-list-item>
       </v-list>
     </v-card>
 
+    <v-container v-show="selectionTab===0">
+      <v-card class="mx-auto">
+        <v-list>
+          <v-list-item>
+            <v-list-item-title class="title">
+              Guided exploration
+            </v-list-item-title>
+          </v-list-item>
+          <v-list-item>
+            <v-list-item-subtitle>
+              Selection of a starting point (e.g. Disorder) and then targets of interest (e.g. Drug or Gene/Protein) in different steps for easy usage.
+            </v-list-item-subtitle>
+          </v-list-item>
+        </v-list>
+      </v-card>
+    </v-container>
+
     <v-container v-show="selectionTab===1">
+      <v-card class="mx-auto">
+        <v-list>
+          <v-list-item>
+            <v-list-item-title class="title">
+              Disease Modules
+            </v-list-item-title>
+          </v-list-item>
+          <v-list-item>
+            <v-list-item-subtitle>
+              Selection of seed Genes/Proteins (manual or BiCon) for algorithmic disease module identification
+            </v-list-item-subtitle>
+          </v-list-item>
+        </v-list>
+      </v-card>
+    </v-container>
+
+    <v-container v-show="selectionTab===2">
+      <v-card class="mx-auto">
+        <v-list>
+          <v-list-item>
+            <v-list-item-title class="title">
+              Drug Repurposing
+            </v-list-item-title>
+          </v-list-item>
+          <v-list-item>
+            <v-list-item-subtitle>
+              Starting e.g. with a disorder to derive Genes/Proteins for module identification and subsequent drug ranking (e.g. trustrank)
+            </v-list-item-subtitle>
+          </v-list-item>
+        </v-list>
+      </v-card>
+    </v-container>
+
+    <v-container v-show="selectionTab===3">
       <v-card class="mx-auto">
         <v-list>
           <v-list-item>
@@ -125,7 +178,7 @@ export default {
       nodeModel: this.nodeModel,
       edgeModel: this.edgeModel,
       filterId: this.filterId,
-      selectionTab: 1,
+      selectionTab: 3,
     }
   },
   created() {

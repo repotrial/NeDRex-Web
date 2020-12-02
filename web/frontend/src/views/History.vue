@@ -115,7 +115,9 @@ export default {
           if (response.data !== undefined)
             return response.data;
         }).then(data => {
-          this.history = data.history;
+          this.history = data.history.sort((a,b)=>{
+            return b.created-a.created
+          });
           this.list = data.chronology;
         }).catch(err => console.log(err))
     },

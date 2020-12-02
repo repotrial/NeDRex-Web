@@ -11,6 +11,7 @@ import de.exbio.reposcapeweb.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.processing.FilerException;
 import javax.persistence.*;
 import java.util.*;
 
@@ -191,11 +192,18 @@ public class Gene extends RepoTrialNode {
         return getPrimaryId();
     }
 
+    @Transient
+    private FilterEntry ids = null;
+
+    public void createFilterEntry(){
+        ids =new FilterEntry(displayName, FilterType.DOMAIN_ID, id);
+    }
+
     @Override
     public EnumMap<FilterType, Map<FilterKey, FilterEntry>> toUniqueFilter() {
+        if(ids ==null)
+            createFilterEntry();
         EnumMap<FilterType, Map<FilterKey, FilterEntry>> map = new EnumMap<>(FilterType.class);
-
-        FilterEntry ids = new FilterEntry(displayName, FilterType.DOMAIN_ID, id);
 
 
         map.put(FilterType.DOMAIN_ID, new HashMap<>());
@@ -212,12 +220,11 @@ public class Gene extends RepoTrialNode {
         map.put(FilterType.DISPLAY_NAME, new HashMap<>());
         map.get(FilterType.DISPLAY_NAME).put(new FilterKey(displayName), new FilterEntry(displayName, FilterType.DISPLAY_NAME, id));
 
-        if (!displayName.equals(approvedSymbol) & !getSymbols().contains(approvedSymbol)) {
+        if (!displayName.equals(approvedSymbol) & !getSymbols().contains(approvedSymbol) & symbols.length()<2) {
             map.put(FilterType.SYMBOLS, new HashMap<>());
             FilterEntry symbolEntry = new FilterEntry(displayName, FilterType.SYMBOLS, id);
             getSymbols().stream().filter(s -> !s.equals(displayName) | !s.equals(approvedSymbol)).forEach(s -> map.get(FilterType.SYMBOLS).put(new FilterKey(s), symbolEntry));
         }
-
 
         FilterEntry syns = new FilterEntry(displayName, FilterType.SYNONYM, id);
         map.put(FilterType.SYNONYM, new HashMap<>());
@@ -232,7 +239,18 @@ public class Gene extends RepoTrialNode {
 
     @Override
     public EnumMap<FilterType, Map<FilterKey, FilterEntry>> toDistinctFilter() {
-        return new EnumMap<>(FilterType.class);
+        if(ids ==null)
+            createFilterEntry();
+        EnumMap<FilterType,Map<FilterKey,FilterEntry>> filters = new EnumMap<>(FilterType.class);
+        HashMap<FilterKey,FilterEntry> geneType = new HashMap<>();
+        geneType.put(new FilterKey(this.geneType),new FilterEntry(displayName,FilterType.CATEGORY,id));
+        filters.put(FilterType.CATEGORY,geneType);
+        HashMap<FilterKey, FilterEntry> chromType = new HashMap<>();
+        chromType.put(new FilterKey(this.chromosome), new FilterEntry(displayName, FilterType.GROUP,id));
+        filters.put(FilterType.GROUP, chromType);
+
+
+        return filters;
     }
 
 }

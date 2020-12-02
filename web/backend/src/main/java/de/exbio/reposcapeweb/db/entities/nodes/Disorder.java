@@ -199,7 +199,6 @@ public class Disorder extends RepoTrialNode {
         map.put(FilterType.ICD10, new HashMap<>());
         map.get(FilterType.ICD10).put(new FilterKey(icd10), new FilterEntry(displayName, FilterType.ICD10, id));
 
-        boolean notNull = false;
         map.put(FilterType.DISPLAY_NAME, new HashMap<>());
         map.get(FilterType.DISPLAY_NAME).put(new FilterKey(displayName), new FilterEntry(displayName, FilterType.DISPLAY_NAME, id));
 

@@ -389,7 +389,7 @@ export default {
       this.show = false
       this.models.diamond.nModel = 200
       this.models.diamond.alphaModel = 1
-      this.models.diamond.nModel = 0
+      this.models.diamond.pModel = 0
       this.models.bicon.exprFile = undefined
       this.models.bicon.lg_min = 10
       this.models.bicon.lg_max = 15

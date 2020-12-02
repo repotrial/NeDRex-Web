@@ -73,6 +73,36 @@
               </template>
             </template>
             <template v-if="selectedTab===2">
+              <v-list-item>
+                <v-switch
+                  v-model="options.list.showAll"
+                  @click="$emit('reloadTablesEvent')"
+                  :label="'Show all Items ('+options.list.selected+'/'+options.list.total+')'">
+                  >
+                </v-switch>
+              </v-list-item>
+              <v-list-item>
+                <v-row>
+                  <v-col>
+                    <v-chip
+                      outlined
+                      v-on:click="$emit('selectionEvent','all','none')"
+                    >
+                      <v-icon left color="red">fas fa-trash</v-icon>
+                      Unselect All
+                    </v-chip>
+                  </v-col>
+                  <v-col>
+                    <v-chip
+                      outlined
+                      v-on:click="$emit('graphModificationEvent','subselect');$forceUpdate"
+                    >
+                      <v-icon left color="green">fas fa-project-diagram</v-icon>
+                      Load Selection
+                    </v-chip>
+                  </v-col>
+                </v-row>
+              </v-list-item>
               <v-tabs
                 fixed-tabs
                 v-model="menu.options.list.tab"
@@ -82,16 +112,7 @@
                   {{ tab.label }}
                 </v-tab>
               </v-tabs>
-              <v-list-item>
-                <v-switch
-                  v-model="options.list.showAll"
-                  @click="$emit('reloadTablesEvent')"
-                  :label="'Show all Items ('+options.list.selected+'/'+options.list.total+')'">
-                  >
-                </v-switch>
-              </v-list-item>
-              <v-divider></v-divider>
-              <template v-if="menu.options.list.tab===0">
+              <template v-if="menu.options.list.tab===0" style="margin-top:10px">
                 <v-list-item>
                   <v-chip
                     v-on:click="$emit('graphModificationEvent','extend')"
@@ -109,17 +130,7 @@
                     outlined
                   >
                     <v-icon left>fas fa-compress-alt</v-icon>
-                    Collapse Graph
-                  </v-chip>
-                </v-list-item>
-                <v-list-item>
-                  <v-chip
-                    icon
-                    outlined
-                    v-on:click="$emit('graphModificationEvent','subselect');$forceUpdate"
-                  >
-                    <v-icon left>fas fa-project-diagram</v-icon>
-                    Load Selection
+                    Infer new edge
                   </v-chip>
                 </v-list-item>
               </template>
@@ -131,7 +142,7 @@
                     v-on:click="$emit('selectionEvent','nodes','all')"
                   >
                     <v-icon left>fas fa-check-double</v-icon>
-                    Select All
+                    Select All Nodes
                   </v-chip>
                 </v-list-item>
                 <v-list-item>
@@ -151,7 +162,7 @@
                     v-on:click="$emit('selectionEvent','nodes','none')"
                   >
                     <v-icon left>fas fa-ban</v-icon>
-                    Unselect All
+                    Unselect All Nodes
                   </v-chip>
                 </v-list-item>
               </template>
@@ -163,7 +174,7 @@
                     v-on:click="$emit('selectionEvent','edges','all')"
                   >
                     <v-icon left>fas fa-check-double</v-icon>
-                    Select All
+                    Select All Edges
                   </v-chip>
                 </v-list-item>
                 <v-list-item>
@@ -173,7 +184,7 @@
                     v-on:click="$emit('selectionEvent','edges','none')"
                   >
                     <v-icon left>fas fa-ban</v-icon>
-                    Unselect All
+                    Unselect All Edges
                   </v-chip>
                 </v-list-item>
               </template>
@@ -837,7 +848,7 @@ export default {
     }
     ,
     getColoring: function (type, name) {
-      if(name.endsWith("Drug"))
+      if (name.endsWith("Drug"))
         name = "drug"
       return Utils.getColoring(this.metagraph, type, name)
     },

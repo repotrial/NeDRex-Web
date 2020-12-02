@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.exbio.reposcapeweb.communication.cache.Graphs;
 import de.exbio.reposcapeweb.communication.jobs.JobController;
 import de.exbio.reposcapeweb.communication.reponses.WebGraphService;
+import de.exbio.reposcapeweb.db.entities.edges.DrugHasTargetGene;
 import de.exbio.reposcapeweb.db.entities.edges.DrugHasTargetProtein;
+import de.exbio.reposcapeweb.db.entities.edges.GeneInteractsWithGene;
 import de.exbio.reposcapeweb.db.entities.edges.ProteinAssociatedWithDisorder;
 import de.exbio.reposcapeweb.db.entities.nodes.*;
 import de.exbio.reposcapeweb.db.history.HistoryController;
@@ -79,12 +81,35 @@ public class ReposcapewebApplication {
         importService.importHistory();
         importService.importNodeData();
 
+
         if (Boolean.parseBoolean(env.getProperty("update.onstartup"))) {
             updateService.scheduleDataUpdate();
         } else {
             importService.importEdges(false);
             log.warn("Startup Database update is deactivated! Activate it by setting 'update.onstartup=true' in the application.properties.");
         }
+
+
+//        int gene = Graphs.getNode("gene");
+//
+//        BufferedWriter bw = WriterUtils.getBasicWriter(new File("/home/andimajore/Downloads/GeneInteractsWithGene.tsv"));
+//        try {
+//        bw.write("#gene1\tgene2\n");
+//
+//        edgeController.findAll(Graphs.getEdge("GeneInteractsWithGene")).forEach(e->{
+//            GeneInteractsWithGene g = (GeneInteractsWithGene)e;
+//            try {
+//                bw.write(nodeController.getDomainId(gene,g.getPrimaryIds().getId1())+"\t"+nodeController.getDomainId(gene,g.getPrimaryIds().getId2())+"\n");
+//            } catch (IOException ioException) {
+//                ioException.printStackTrace();
+//            }
+//        });
+//
+//            bw.close();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+
         log.debug("Current RAM usage: " + (int) ((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024)
                 + "MB");
         toolService.createInteractionFiles();

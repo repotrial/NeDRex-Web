@@ -719,32 +719,57 @@
       max-width="500"
     >
       <v-card v-if="selectionDialog.show && selectionDialog.type !== undefined">
-        <v-card-title class="headline">
-          Advanced {{ selectionDialog.title }} Selection
-        </v-card-title>
-        <v-card-text>Adjust the attributes of the general item tables.
-        </v-card-text>
-        <v-card-subtitle>Seeds ({{ selectionDialog.type }})</v-card-subtitle>
+        <v-list>
+          <v-list-item>
+            <v-list-item-title class="text-h4">
+              Select induced graph
+            </v-list-item-title>
+          </v-list-item>
+          <v-list-item>
+            <v-card-text>Extend your selection based on already selected nodes. Make sure to select the "extend" option
+              to not only select edges but also nodes that are directly reachable.
+            </v-card-text>
+          </v-list-item>
+        </v-list>
+        <v-card-subtitle>Nodes</v-card-subtitle>
         <v-divider></v-divider>
         <v-tabs-items>
           <v-list>
-            <v-list-item v-for="attr in selectionDialog.seeds" :key="attr.name">
-              <v-switch v-model="attr.select"
-                        :label="attr.name+ ' ('+countSelected(selectionDialog.type ,attr.name)+')'">
+            <template v-for="attr in selectionDialog.seeds" >
+            <v-list-item :key="attr.name">
+              <v-switch v-model="attr.selected" :disabled="attr.disabled">
               </v-switch>
+              <span>
+                <v-icon left :color="getColoring('nodes',attr.name)">fas fa-genderless</v-icon>
+                {{ attr.name }} ({{countSelected('nodes',attr.name)}})
+              </span>
             </v-list-item>
+            </template>
+
           </v-list>
         </v-tabs-items>
 
-        <v-card-subtitle>Targets ({{ selectionDialog.type === "nodes" ? "edges" : "nodes" }})</v-card-subtitle>
+        <v-card-subtitle>Edges</v-card-subtitle>
         <v-divider></v-divider>
         <v-tabs-items>
           <v-list>
-            <v-list-item v-for="attr in selectionDialog.targets" :key="attr.name">
-              <v-switch v-model="attr.select"
-                        :label="attr.name + ' ('+countSelected(selectionDialog.type === 'nodes' ? 'edges' : 'nodes' ,attr.name)+')'">
-              </v-switch>
-            </v-list-item>
+            <template v-for="attr in selectionDialog.targets" >
+              <v-list-item :key="attr.name">
+                <v-switch v-model="attr.selected" :disabled="attr.disabled">
+                </v-switch>
+                <span>
+                <v-icon left :color="getColoring('edges',attr.name)[0]">fas fa-genderless</v-icon>
+                    <template v-if="direction(attr.name)===0">
+                      <v-icon left>fas fa-undo-alt</v-icon>
+                    </template>
+                    <template v-else>
+                      <v-icon>fas fa-arrows-alt-h</v-icon>
+                      <v-icon left :color="getColoring('edges',attr.name)[1]">fas fa-genderless</v-icon>
+                    </template>
+                {{ attr.name}} ({{countSelected( 'edges',attr.name)}})
+              </span>
+              </v-list-item>
+            </template>
           </v-list>
         </v-tabs-items>
 
@@ -754,18 +779,18 @@
             <v-col v-show="selectionDialog.type === 'nodes'">
               <v-switch v-model="selectionDialog.extendSelect" label=''>
                 <template v-slot:label>
-                  extend seed selection
+                  Extend start selection
                   <v-tooltip
                     right>
                     <template v-slot:activator="{ on, attrs }">
                       <v-icon
-                        size="17px"
-                        color="primary"
+                        color="grey"
                         dark
                         v-bind="attrs"
                         v-on="on"
+                        right
                       >
-                        fas fa-question-circle
+                        far fa-question-circle
                       </v-icon>
                     </template>
                     <span>{{ selectionDialog.extendDescription }}</span>
@@ -831,7 +856,7 @@ export default {
         title: "",
         seeds: [],
         targets: [],
-        extendDescription: "Adding all edges of the seed categories, which contain at least one node. The 'missing' nodes are also added to selection.",
+        extendDescription: "Adding all edges of the target categories, which contain at least one node. The 'missing' nodes are also added to selection.",
         extendSelect: false,
         extendScope: false
       },
@@ -1072,6 +1097,7 @@ export default {
         return out;
       }
       switch (operator) {
+
         //TODO between case????
         case "empty":
           return value === undefined || value == null || value === ""
@@ -1094,7 +1120,11 @@ export default {
         case "contains":
           return value !== undefined && value != null && value.indexOf(search) !== -1
         case "matches":
-          return value !== undefined && value != null && value.match(search) != null
+          try {
+            return value !== undefined && value != null && value.match(search) != null
+          } catch (err) {
+            return false
+          }
         default:
           return false
       }
@@ -1748,7 +1778,7 @@ export default {
       payload.selection = params.selection
       if (params.selection)
         payload["nodes"] = this.nodes[params.type].filter(n => n.selected).map(n => n.id)
-      if (algorithm === "diamond" || algorithm==="trustrank") {
+      if (algorithm === "diamond" || algorithm === "trustrank") {
         if (this.configuration.countMap.nodes[params.type] === undefined || (params.selection && this.configuration.countMap.nodes[params.type].selected === 0)) {
           this.$emit("printNotificationEvent", "Cannot execute " + algorithm + " without seed nodes!", 1)
           return;
