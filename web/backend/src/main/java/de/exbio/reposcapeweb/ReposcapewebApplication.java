@@ -89,27 +89,6 @@ public class ReposcapewebApplication {
             log.warn("Startup Database update is deactivated! Activate it by setting 'update.onstartup=true' in the application.properties.");
         }
 
-
-//        int gene = Graphs.getNode("gene");
-//
-//        BufferedWriter bw = WriterUtils.getBasicWriter(new File("/home/andimajore/Downloads/GeneInteractsWithGene.tsv"));
-//        try {
-//        bw.write("#gene1\tgene2\n");
-//
-//        edgeController.findAll(Graphs.getEdge("GeneInteractsWithGene")).forEach(e->{
-//            GeneInteractsWithGene g = (GeneInteractsWithGene)e;
-//            try {
-//                bw.write(nodeController.getDomainId(gene,g.getPrimaryIds().getId1())+"\t"+nodeController.getDomainId(gene,g.getPrimaryIds().getId2())+"\n");
-//            } catch (IOException ioException) {
-//                ioException.printStackTrace();
-//            }
-//        });
-//
-//            bw.close();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-
         log.debug("Current RAM usage: " + (int) ((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024)
                 + "MB");
         toolService.createInteractionFiles();

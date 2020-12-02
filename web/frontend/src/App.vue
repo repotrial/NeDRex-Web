@@ -292,7 +292,7 @@ export default {
     },
     initComponents: function () {
       this.options.start = {skipVis: true, onlyConnected: true, selectedElements: []}
-      this.options.graph = {physics: false, visualized: false, sizeWarning: false}
+      this.options.graph = {physics: false, visualized: false, sizeWarning: false, legend:{}}
       this.options.list = {showAll: true, selected: 0, total: 0, countMap: {nodes: {}, edges: {}}, entityGraph: {}}
       this.options.history = {chronological: false, otherUsers: false}
     },

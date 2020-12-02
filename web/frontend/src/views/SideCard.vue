@@ -291,7 +291,7 @@
       </v-card>
 
 
-      <Legend :metagraph="metagraph" :countMap="options.list.countMap" :entity-graph="options.list.entityGraph"
+      <Legend :metagraph="metagraph" :countMap="options.list.countMap" :entity-graph="options.list.entityGraph" :options="options.graph.legend"
               v-if="(selectedTab===1 && options.graph.visualized)"
               @graphViewEvent="graphViewEvent"
       ></Legend>

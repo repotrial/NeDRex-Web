@@ -57,13 +57,14 @@ export default {
     metagraph: undefined,
     countMap: undefined,
     entityGraph: undefined,
+    options:Object,
   },
   name: "Legend",
 
   data() {
     return {
       show: true,
-      toggled: {},
+      // toggled: {},
       tabModel:0,
     }
   },
@@ -78,7 +79,7 @@ export default {
 
     },
     graphChangeVisEvent(type, name) {
-      this.toggled[type][name]=!this.toggled[type][name]
+      this.options.toggled[type][name]=!this.options.toggled[type][name]
       this.$forceUpdate()
       this.$emit("graphViewEvent", {event: "toggle", params: {type: type, name: name}})
     },
@@ -90,11 +91,12 @@ export default {
       this.graphChangeVisEvent('edges', edgeName)
     },
     getColoring: function (entity, name) {
-      if (this.toggled[entity] === undefined)
-        this.toggled[entity] = {}
-      if (this.toggled[entity][name] === undefined)
-        this.toggled[entity][name] = true;
-      if(!this.toggled[entity][name])
+      console.log(this.options.toggled)
+      if (this.options.toggled[entity] === undefined)
+        this.options.toggled[entity] = {}
+      if (this.options.toggled[entity][name] === undefined)
+        this.options.toggled[entity][name] = true;
+      if(!this.options.toggled[entity][name])
         return "gray";
       return Utils.getColoringExtended(this.metagraph, this.entityGraph, entity, name);
     },

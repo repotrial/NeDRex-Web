@@ -458,7 +458,7 @@
                       <v-icon left>fas fa-undo-alt</v-icon>
                     </template>
                     <template v-else>
-                      <v-icon>fas fa-arrows-alt-h</v-icon>
+                      <v-icon>fas fa-long-arrow-alt-right</v-icon>
                       <v-icon left :color="getColoring('edges',attr.name)[1]">fas fa-genderless</v-icon>
                     </template>
                 {{ attr.name }}
@@ -501,9 +501,9 @@
     >
       <v-card v-if="collapse.show" ref="dialog">
         <v-card-title class="headline">
-          Collapse Configuration
+          Edge Creation Configuration
         </v-card-title>
-        <v-card-text>Select a node and two edges which should be replaced by a new edge.
+        <v-card-text>Select a node and one or two edges which should be combined to a new edge.
         </v-card-text>
         <v-divider></v-divider>
         <v-container>
@@ -524,23 +524,43 @@
                 <v-list-item>
                   <v-card-title>Nodes</v-card-title>
                 </v-list-item>
-                <v-list-item v-for="attr in collapse.nodes" :key="attr.name">
-                  <v-switch v-model="attr.selected" @click="isDisabled('nodes',attr.name)" :label="attr.name"
-                            :disabled="attr.disabled">
-                  </v-switch>
-                </v-list-item>
+                <template v-for="attr in collapse.nodes">
+                  <v-list-item :key="attr.name">
+                    <v-switch v-model="attr.selected" :disabled="attr.disabled" @click="isDisabled('nodes',attr.name)">
+                    </v-switch>
+                    <span>
+                <v-icon left :color="getColoring('nodes',attr.name)">fas fa-genderless</v-icon>
+                {{ attr.name }}
+              </span>
+                  </v-list-item>
+                </template>
               </v-list>
+
             </v-col>
+          </v-row>
+          <v-row>
             <v-col>
               <v-list>
                 <v-list-item>
                   <v-card-title>Edges</v-card-title>
                 </v-list-item>
-                <v-list-item v-for="attr in collapse.edges" :key="attr.name">
-                  <v-switch v-model="attr.selected" @click="isDisabled('edges',attr.name)" :label="attr.name"
-                            :disabled="attr.disabled">
-                  </v-switch>
-                </v-list-item>
+                <template v-for="attr in collapse.edges">
+                  <v-list-item :key="attr.name">
+                    <v-switch v-model="attr.selected" :disabled="attr.disabled" @click="isDisabled('edges',attr.name)">
+                    </v-switch>
+                    <span>
+                <v-icon left :color="getExtendedColoring('edges',attr.name)[0]">fas fa-genderless</v-icon>
+                    <template v-if="directionExtended(attr.name)===0">
+                      <v-icon left>fas fa-undo-alt</v-icon>
+                    </template>
+                    <template v-else>
+                      <v-icon>fas fa-long-arrow-alt-right</v-icon>
+                      <v-icon left :color="getExtendedColoring('edges',attr.name)[1]">fas fa-genderless</v-icon>
+                    </template>
+                {{ attr.name }}
+              </span>
+                  </v-list-item>
+                </template>
               </v-list>
             </v-col>
           </v-row>
@@ -551,6 +571,19 @@
           outlined
           v-model="collapse.edgeName">
         </v-text-field>
+        <v-row v-if="collapse.accept">
+          <v-col>
+
+            <v-icon :color="getExtendedColoring('nodes',getExtendedNodes(collapse.edge1,collapse.nodes.filter(n => n.selected)[0].name))">fas fa-genderless</v-icon>
+            <v-icon>fas fa-long-arrow-alt-right</v-icon>
+            <v-icon :color="getExtendedColoring('nodes',collapse.nodes.filter(n => n.selected)[0].name)">fas fa-genderless</v-icon>
+            <v-icon>fas fa-long-arrow-alt-right</v-icon>
+            <v-icon v-if="collapse.self.selected" :color="getExtendedColoring('nodes',getExtendedNodes(collapse.edge1,collapse.nodes.filter(n => n.selected)[0].name))">fas
+              fa-genderless
+            </v-icon>
+            <v-icon v-else :color="getExtendedColoring('nodes',getExtendedNodes(collapse.edge2,collapse.nodes.filter(n => n.selected)[0].name))">fas fa-genderless</v-icon>
+          </v-col>
+        </v-row>
         <v-card-text v-if="collapse.accept">
           <template v-if="!collapse.self.selected">
             Generate edge by merging {{ collapse.edge1 }} and
@@ -563,9 +596,9 @@
         <v-container v-if="collapse.accept">
           <v-row>
             <v-col v-if="!collapse.self.selected">
-              <v-chip @click="switchCollapseEdges">Switch edges</v-chip>
+              <v-chip outlined @click="switchCollapseEdges">Switch edges</v-chip>
             </v-col>
-            <v-col>
+            <v-col style="margin-top:-15px">
               <v-switch
                 v-model="collapse.keep"
               >
@@ -575,8 +608,8 @@
                     right>
                     <template v-slot:activator="{ on, attrs }">
                       <v-icon
-                        size="17px"
-                        color="primary"
+                        right
+                        color="grey"
                         dark
                         v-bind="attrs"
                         v-on="on"
@@ -735,15 +768,15 @@
         <v-divider></v-divider>
         <v-tabs-items>
           <v-list>
-            <template v-for="attr in selectionDialog.seeds" >
-            <v-list-item :key="attr.name">
-              <v-switch v-model="attr.selected" :disabled="attr.disabled">
-              </v-switch>
-              <span>
+            <template v-for="attr in selectionDialog.seeds">
+              <v-list-item :key="attr.name">
+                <v-switch v-model="attr.select" :disabled="attr.disabled">
+                </v-switch>
+                <span>
                 <v-icon left :color="getColoring('nodes',attr.name)">fas fa-genderless</v-icon>
-                {{ attr.name }} ({{countSelected('nodes',attr.name)}})
+                {{ attr.name }} ({{ countSelected('nodes', attr.name) }})
               </span>
-            </v-list-item>
+              </v-list-item>
             </template>
 
           </v-list>
@@ -753,20 +786,20 @@
         <v-divider></v-divider>
         <v-tabs-items>
           <v-list>
-            <template v-for="attr in selectionDialog.targets" >
+            <template v-for="attr in selectionDialog.targets">
               <v-list-item :key="attr.name">
-                <v-switch v-model="attr.selected" :disabled="attr.disabled">
+                <v-switch v-model="attr.select" :disabled="attr.disabled">
                 </v-switch>
                 <span>
-                <v-icon left :color="getColoring('edges',attr.name)[0]">fas fa-genderless</v-icon>
-                    <template v-if="direction(attr.name)===0">
+                <v-icon left :color="getExtendedColoring('edges',attr.name)[0]">fas fa-genderless</v-icon>
+                    <template v-if="directionExtended(attr.name)===0">
                       <v-icon left>fas fa-undo-alt</v-icon>
                     </template>
                     <template v-else>
-                      <v-icon>fas fa-arrows-alt-h</v-icon>
-                      <v-icon left :color="getColoring('edges',attr.name)[1]">fas fa-genderless</v-icon>
+                      <v-icon>fas fa-long-arrow-alt-right</v-icon>
+                      <v-icon left :color="getExtendedColoring('edges',attr.name)[1]">fas fa-genderless</v-icon>
                     </template>
-                {{ attr.name}} ({{countSelected( 'edges',attr.name)}})
+                {{ attr.name }} ({{ countSelected('edges', attr.name) }})
               </span>
               </v-list-item>
             </template>
@@ -1196,8 +1229,7 @@ export default {
       let edges = this.collapse.edges.filter(e => e.selected)
 
       this.collapse.edges.forEach(e => {
-
-        if (!e.selected && (((node !== undefined && (e.from !== node.id && e.to !== node.id))) || edges.length === 2 || (edges.length === 1 && this.collapse.self.selected)))
+        if (node === undefined || (!e.selected && (((e.from !== node.id && e.to !== node.id)) || edges.length === 2 || (edges.length === 1 && this.collapse.self.selected))))
           e.disabled = true
         else
           e.disabled = false
@@ -1647,27 +1679,32 @@ export default {
       this.collapse.edges = Object.values(this.configuration.entityGraph.edges).map(e => {
         return {name: e.name, selected: false, from: e.node1, to: e.node2, disabled: false}
       })
+      this.collapse.self.selected = false
       if (this.collapse.edges.length < 2) {
         this.collapse.self.selected = true
         this.collapse.self.disabled = true
         this.collapse.edges.forEach(e => {
-          e.disabled = true
+          // e.disabled = true
           e.selected = true
           this.collapse.edge1 = e.name
         })
       } else if (this.collapse.edges.length === 2 && !this.collapse.self.selected) {
         this.collapse.edges.forEach(e => {
-          e.disabled = true
+          // e.disabled = true
           e.selected = true
           if (this.collapse.edge1.length === 0)
             this.collapse.edge1 = e.name
           else
             this.collapse.edge2 = e.name
         })
+      } else if (this.collapse.nodes.length > 1) {
+        this.collapse.edges.forEach(e => {
+          e.disabled = true;
+        })
       }
       if (this.collapse.nodes.length === 1) {
         this.collapse.nodes.forEach(n => {
-          n.disabled = true
+          // n.disabled = true
           n.selected = true
         })
       }
@@ -1764,6 +1801,12 @@ export default {
         })
       }
       return Utils.getColoringExtended(this.metagraph, this.configuration.entityGraph, entity, name)
+    },
+    getExtendedNodes: function(name, not){
+      let nodes = Utils.getNodesExtended(this.configuration.entityGraph,name)
+      if(not ===undefined)
+        return nodes;
+      return nodes[0]===not ? nodes[1]:nodes[0]
     },
     getColoring: function (entity, name) {
       if (this.metagraph === undefined) {
