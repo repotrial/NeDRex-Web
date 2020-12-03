@@ -33,11 +33,17 @@ public class Job {
 
     private LocalDateTime created;
 
+    @Transient
+    private LocalDateTime started;
+
     private LocalDateTime finished;
 
     private String message;
 
     private String target;
+
+    @Transient
+    private Process process;
 
     @Column(columnDefinition = "text")
     private String command;
@@ -47,8 +53,8 @@ public class Job {
 
     }
 
-    public Job(String id,JobRequest job){
-        this(id,job.userId,job.graphId, job.algorithm, job.params.get("type"));
+    public Job(String id, JobRequest job) {
+        this(id, job.userId, job.graphId, job.algorithm, job.params.get("type"));
 //        this.request=job;
     }
 
@@ -56,8 +62,8 @@ public class Job {
         this.userId = userId;
         this.basisGraph = graphId;
         this.jobId = jobId;
-        this.method= ToolService.Tool.valueOf(algorithm.toUpperCase());
-        this.target= target;
+        this.method = ToolService.Tool.valueOf(algorithm.toUpperCase());
+        this.target = target;
         created = LocalDateTime.now();
     }
 
@@ -111,21 +117,36 @@ public class Job {
     }
 
     public void setDerivedGraph(String id) {
-        this.derivedGraph=id;
+        this.derivedGraph = id;
     }
 
     public String getDerivedGraph() {
         return derivedGraph;
     }
 
+    public void setProcess(Process executeJob) {
+        this.process = executeJob;
+    }
+
+    public void setStarted() {
+        this.started = LocalDateTime.now();
+    }
+
+    public LocalDateTime getStarted() {
+        return this.started;
+    }
+
+    public Process getProcess() {
+        return process;
+    }
+
     public enum JobState {
-        INITIALIZED, QUEUED, EXECUTING, DONE, NOCHANGE, ERROR
+        INITIALIZED, QUEUED, EXECUTING, DONE, NOCHANGE, ERROR, TIMEOUT
     }
 
     public void setUserId(String userId) {
         this.userId = userId;
     }
-
 
 
     public String getUpdate() {
@@ -144,26 +165,26 @@ public class Job {
         return method;
     }
 
-    public HashMap<String,Object> toMap() {
-        HashMap<String,Object> out = new HashMap<>();
+    public HashMap<String, Object> toMap() {
+        HashMap<String, Object> out = new HashMap<>();
         out.put("state", getState().name());
-        out.put("gid",getDerivedGraph());
-        out.put("basis",getBasisGraph());
-        out.put("jid",getJobId());
-        out.put("update",message);
-        out.put("algorithm",getMethod().name());
-        out.put("target",getTarget());
+        out.put("gid", getDerivedGraph());
+        out.put("basis", getBasisGraph());
+        out.put("jid", getJobId());
+        out.put("update", message);
+        out.put("algorithm", getMethod().name());
+        out.put("target", getTarget());
         out.put("created", getCreated().toEpochSecond(ZoneOffset.ofTotalSeconds(0)));
         return out;
     }
 
-    public HashMap<String,String> getParams() {
-        return params!=null ?StringUtils.stringToMap(params):new HashMap<>();
+    public HashMap<String, String> getParams() {
+        return params != null ? StringUtils.stringToMap(params) : new HashMap<>();
     }
 
-    public void addParam(String key, Object value){
-        HashMap<String,String> map = getParams();
-        map.put(key,value.toString());
+    public void addParam(String key, Object value) {
+        HashMap<String, String> map = getParams();
+        map.put(key, value.toString());
         setParams(StringUtils.mapToString(map));
     }
 

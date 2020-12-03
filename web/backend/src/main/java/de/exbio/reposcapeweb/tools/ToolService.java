@@ -288,14 +288,13 @@ public class ToolService {
         }
     }
 
-    public void executeJob(String command) {
-//        ProcessBuilder pb = new ProcessBuilder(executor.getAbsolutePath(), command);
+    public Process executeJob(String command) {
         try {
-            Runtime.getRuntime().exec(executor.getAbsolutePath() + " " + command);
-//            pb.start();
+            return Runtime.getRuntime().exec(executor.getAbsolutePath() + " " + command);
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return null;
     }
 
     public HashSet getJobResults(Job j) throws IOException {

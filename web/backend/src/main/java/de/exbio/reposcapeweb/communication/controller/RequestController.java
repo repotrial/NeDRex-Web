@@ -283,7 +283,6 @@ public class RequestController {
         if(userId==null)
             return "";
         userId = historyController.validateUser(userId);
-        System.out.println(userId);
         HashMap<String, Job.JobState> jobs = jobController.getJobGraphStates(userId);
         HashMap<String, Object> out = historyController.getUserHistory(userId, jobs);
 
