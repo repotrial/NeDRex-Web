@@ -144,7 +144,7 @@ public class HistoryController {
     }
 
     public String validateUser(String userId) {
-        if (userId.equals("null")) {
+        if (userId==null) {
             userId = getNewUser();
         }
         return userId;

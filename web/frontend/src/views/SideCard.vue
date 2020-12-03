@@ -394,18 +394,18 @@
                   <v-tooltip left>
                     <template v-slot:activator="{ on, attrs }">
                       <v-icon
-                        :color="getColoring('edges',detailedObject.type)[0]"
+                        :color="getExtendedColoring('edges',detailedObject.type)[0]"
                         v-bind="attrs"
                         v-on="on"
                         :size="hover.node1?'45px':'35px'"
                         @mouseleave.native="hover.node1=false"
                         @mouseover.native="hover.node1=true"
-                        @click="loadDetails( {type:'node',name:getNodeNames(detailedObject.type)[0],id:detailedObject.id.split('-')[0]},{type: 'edge', name:detailedObject.type,id1:detailedObject.id.split('-')[0],id2:detailedObject.id.split('-')[1]})"
+                        @click="loadDetails( {type:'node',name:getExtendedNodeNames(detailedObject.type)[0],id:detailedObject.id.split('-')[0]},{type: 'edge', name:detailedObject.type,id1:detailedObject.id.split('-')[0],id2:detailedObject.id.split('-')[1]})"
                       >
                         > fas fa-genderless
                       </v-icon>
                     </template>
-                    <span>{{ getNodeNames(detailedObject.type)[0] }}</span>
+                    <span>{{ getExtendedNodeNames(detailedObject.type)[0] }}</span>
                   </v-tooltip>
                   {{ detailedObject.node1 }}
                 </div>
@@ -428,18 +428,18 @@
                   <v-tooltip left>
                     <template v-slot:activator="{ on, attrs }">
                       <v-icon
-                        :color="getColoring('edges',detailedObject.type)[1]"
+                        :color="getExtendedColoring('edges',detailedObject.type)[1]"
                         v-bind="attrs"
                         v-on="on"
                         :size="hover.node2?'45px':'35px'"
                         @mouseleave.native="hover.node2=false"
                         @mouseover.native="hover.node2=true"
-                        @click="loadDetails({type:'node',name:getNodeNames(detailedObject.type)[1],id:detailedObject.id.split('-')[1]},{type: 'edge', name:detailedObject.type,id1:detailedObject.id.split('-')[0],id2:detailedObject.id.split('-')[1]})"
+                        @click="loadDetails({type:'node',name:getExtendedNodeNames(detailedObject.type)[1],id:detailedObject.id.split('-')[1]},{type: 'edge', name:detailedObject.type,id1:detailedObject.id.split('-')[0],id2:detailedObject.id.split('-')[1]})"
                       >
                         > fas fa-genderless
                       </v-icon>
                     </template>
-                    <span>{{ getNodeNames(detailedObject.type)[1] }}</span>
+                    <span>{{ getExtendedNodeNames(detailedObject.type)[1] }}</span>
                   </v-tooltip>
                   {{ detailedObject.node2 }}
                 </div>
@@ -852,8 +852,17 @@ export default {
         name = "drug"
       return Utils.getColoring(this.metagraph, type, name)
     },
+
+    getExtendedColoring: function(type,name){
+      if (name.endsWith("Drug"))
+        name = "drug"
+      return Utils.getColoringExtended(this.metagraph,this.options.list.entityGraph, type, name)
+    },
     getNodeNames: function (type) {
       return Utils.getNodes(this.metagraph, type)
+    },
+    getExtendedNodeNames: function(type){
+      return Utils.getNodesExtended(this.options.list.entityGraph, type)
     },
 
     visualizeGraph: function () {
@@ -945,7 +954,7 @@ export default {
       if (this.detailedObject.node)
         return this.getColoring('nodes', this.detailedObject.type);
       let basic = "#464e53";
-      let colors = this.getColoring('edges', this.detailedObject.type);
+      let colors = this.getExtendedColoring('edges', this.detailedObject.type);
       switch (attribute) {
         case "sourceId":
           return colors[0]

@@ -280,7 +280,10 @@ public class RequestController {
     @RequestMapping(value = "/getUser", method = RequestMethod.GET)
     @ResponseBody
     public String getUser(@RequestParam("user") String userId) {
+        if(userId==null)
+            return "";
         userId = historyController.validateUser(userId);
+        System.out.println(userId);
         HashMap<String, Job.JobState> jobs = jobController.getJobGraphStates(userId);
         HashMap<String, Object> out = historyController.getUserHistory(userId, jobs);
 
@@ -290,6 +293,12 @@ public class RequestController {
             e.printStackTrace();
         }
         return null;
+    }
+
+    @RequestMapping(value="/initUser", method=RequestMethod.GET)
+    @ResponseBody
+    public String initUser(){
+        return historyController.validateUser(null);
     }
 
     @RequestMapping(value = "/updateGraph", method = RequestMethod.POST)

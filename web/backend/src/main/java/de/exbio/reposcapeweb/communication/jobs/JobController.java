@@ -188,17 +188,18 @@ public class JobController {
 
     public HashMap<String, Job.JobState> getJobGraphStates(String user) {
         HashMap<String, Job.JobState> stateMap = new HashMap<>();
-        jobs.values().stream().filter(j -> j.getUserId().equals(user)).forEach(j -> stateMap.put(j.getDerivedGraph(), j.getState()));
+            jobs.values().stream().filter(j -> j.getUserId().equals(user)).forEach(j -> stateMap.put(j.getDerivedGraph(), j.getState()));
         return stateMap;
     }
 
     public LinkedList<HashMap<String, Object>> getJobGraphStates(String user, String gid) {
         LinkedList<HashMap<String, Object>> stateMap = new LinkedList<>();
-        jobs.values().stream().filter(j -> j.getUserId().equals(user)).forEach(j -> {
-            if ((gid == null || j.getBasisGraph().equals(gid)) | !j.getState().equals(Job.JobState.DONE)) {
-                stateMap.add(j.toMap());
-            }
-        });
+            jobs.values().stream().filter(j -> j.getUserId().equals(user)).forEach(j -> {
+                if ((gid == null || j.getBasisGraph().equals(gid)) | !j.getState().equals(Job.JobState.DONE)) {
+                    stateMap.add(j.toMap());
+                }
+            });
         return stateMap;
     }
+
 }

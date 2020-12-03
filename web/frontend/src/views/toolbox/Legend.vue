@@ -1,5 +1,5 @@
 <template>
-  <v-card ref="legend" elevation="3" style="margin:15px" v-if="metagraph!==undefined">
+  <v-card ref="legend" elevation="3" style="margin:15px" v-if="metagraph!==undefined && entityGraph!==undefined">
     <v-list-item @click="show=!show">
       <v-list-item-title>
         <v-icon left>{{ show ? "far fa-minus-square" : "far fa-plus-square" }}</v-icon>
@@ -66,6 +66,11 @@ export default {
       show: true,
       // toggled: {},
       tabModel:0,
+    }
+  },
+  created(){
+    if(this.options.toggled === undefined){
+      this.options.toggled = {}
     }
   },
   methods: {

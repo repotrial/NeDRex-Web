@@ -253,14 +253,25 @@ export default {
   },
   methods: {
     loadUser: function () {
-      if (this.$cookies.get("uid") === null)
+      if (this.$cookies.get("uid") === null) {
         this.cookiesPopup = true
-      this.$http.get("/getUser?user=" + this.$cookies.get("uid")).then(response => {
-        if (response.data !== undefined)
-          return response.data
-      }).then(data => {
-        this.$cookies.set("uid", data.uid);
-      }).catch(err => console.log(err))
+        this.$http.get("/initUser").then(response => {
+          if (response.data !== undefined) {
+            return response.data;
+          }
+        }).then(userId => {
+          console.log(userId)
+          this.$cookies.set("uid", userId);
+          this.$router.go()
+        }).catch(err => console.log)
+      } else {
+        this.$http.get("/getUser?user=" + this.$cookies.get("uid")).then(response => {
+          if (response.data !== undefined)
+            return response.data
+        }).then(data => {
+          this.$cookies.set("uid", data.uid);
+        }).catch(err => console.log(err))
+      }
     },
     setTabId: function (tab, skipReroute) {
       this.selectTab(['start', 'graph', 'list', 'history'].indexOf(tab), skipReroute)
@@ -292,7 +303,7 @@ export default {
     },
     initComponents: function () {
       this.options.start = {skipVis: true, onlyConnected: true, selectedElements: []}
-      this.options.graph = {physics: false, visualized: false, sizeWarning: false, legend:{}}
+      this.options.graph = {physics: false, visualized: false, sizeWarning: false, legend: {}}
       this.options.list = {showAll: true, selected: 0, total: 0, countMap: {nodes: {}, edges: {}}, entityGraph: {}}
       this.options.history = {chronological: false, otherUsers: false}
     },

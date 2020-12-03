@@ -719,7 +719,8 @@ public class WebGraphService {
         as.put("memberTwo", nodeController.getDomainId(nodeIds.second, p.getId2()));
         as.put("weight", graph.getCustomEdgeWeights().get(edgeId).get(p.getId1()).get(p.getId2()));
         as.put("jaccardIndex", graph.getCustomJaccardIndex().get(edgeId).get(p.getId1()).get(p.getId2()));
-        as.put("order", new String[]{"id", "idOne", "idTwo", "node1", "node2", "memberOne", "memberTwo", "weight", "jaccardIndex"});
+        as.put("type",graph.getEdge(edgeId));
+        as.put("order", new String[]{"id", "idOne", "idTwo", "node1", "node2", "memberOne", "memberTwo", "weight", "jaccardIndex", "type"});
         try {
             return objectMapper.writeValueAsString(as);
         } catch (JsonProcessingException e) {
