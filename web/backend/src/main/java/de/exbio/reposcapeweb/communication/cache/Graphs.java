@@ -30,7 +30,7 @@ public class Graphs {
             idToNodePrefixMap.put(i, name.substring(0, 3) + "_");
         }
 
-        String[] edges = new String[]{"DrugHasTargetProtein", "DrugHasTargetGene", "ProteinInteractsWithProtein", "ProteinInPathway", "ProteinEncodedBy", "ProteinAssociatedWithDisorder", "GeneInteractsWithGene", "GeneAssociatedWithDisorder", "DisorderComorbidWithDisorder", "DisorderIsADisorder", "DrugHasIndication"};
+        String[] edges = new String[]{"DrugHasTargetProtein", "DrugHasTargetGene", "ProteinInteractsWithProtein", "ProteinInPathway", "ProteinEncodedBy", "ProteinAssociatedWithDisorder", "GeneInteractsWithGene", "GeneAssociatedWithDisorder", "DisorderComorbidWithDisorder", "DisorderIsSubtypeOfDisorder", "DrugHasIndication"};
         edgeToIdMap = new HashMap<>();
         idToEdgeMap = new HashMap<>();
 
@@ -54,7 +54,7 @@ public class Graphs {
         edge2node.put(Graphs.getEdge("ProteinInPathway"), new Pair<>(Graphs.getNode("protein"), Graphs.getNode("pathway")));
         edge2node.put(Graphs.getEdge("ProteinAssociatedWithDisorder"), new Pair<>(Graphs.getNode("protein"), Graphs.getNode("disorder")));
 
-        edge2node.put(Graphs.getEdge("DisorderIsADisorder"), new Pair<>(Graphs.getNode("disorder"), Graphs.getNode("disorder")));
+        edge2node.put(Graphs.getEdge("DisorderIsSubtypeOfDisorder"), new Pair<>(Graphs.getNode("disorder"), Graphs.getNode("disorder")));
         edge2node.put(Graphs.getEdge("DisorderComorbidWithDisorder"), new Pair<>(Graphs.getNode("disorder"), Graphs.getNode("disorder")));
 
         edge2node.put(Graphs.getEdge("GeneInteractsWithGene"),new Pair<>(Graphs.getNode("gene"),Graphs.getNode("gene")));

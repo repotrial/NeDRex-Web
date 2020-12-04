@@ -171,7 +171,7 @@ public class ImportService {
                 case "disorder_comorbid_with_disorder":
                     disorderComorbidWithDisorderService.importEdges();
                     break;
-                case "disorder_is_a_disorder":
+                case "disorder_is_subtype_of_disorder":
                     disorderIsADisorderService.importEdges();
                     break;
                 case "drug_has_indication":

@@ -17,11 +17,11 @@ public interface StatisticsRepository extends CrudRepository<Disorder, Integer> 
     List<Degrees> get_disorder_comorbid_with_disorder_in();
 
 
-    @Query(nativeQuery = true, value = "SELECT * FROM disorder_is_a_disorder_out")
-    List<Degrees> get_disorder_is_a_disorder_out();
+    @Query(nativeQuery = true, value = "SELECT * FROM disorder_is_subtype_of_disorder_out")
+    List<Degrees> get_disorder_is_subtype_of_disorder_out();
 
-    @Query(nativeQuery = true, value = "SELECT * FROM disorder_is_a_disorder_in")
-    List<Degrees> get_disorder_is_a_disorder_in();
+    @Query(nativeQuery = true, value = "SELECT * FROM disorder_is_subtype_of_disorder_in")
+    List<Degrees> get_disorder_is_subtype_of_disorder_in();
 
 
     @Query(nativeQuery = true, value = "SELECT * FROM drug_has_indication_out")

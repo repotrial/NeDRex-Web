@@ -73,9 +73,10 @@ public class WebGraphService {
         graph.addEdge(new WebEdge(2, 5, "ProteinAssociatedWithDisorder").setDashes(true).setTitle("ProteinAssociatedWithDisorder"));
         graph.addEdge(new WebEdge(4, 4, "GeneInteractsWithGene").setDashes(true).setTitle("GeneInteractsWithGene"));
         graph.addEdge(new WebEdge(4, 5, "GeneAssociatedWithDisorder").setTitle("GeneAssociatedWithDisorder"));
-        graph.addEdge(new WebEdge(5, 5, "DisorderComorbidWithDisorder").setTitle("DisorderComorbidWithDisorder"));
-        graph.addEdge(new WebEdge(5, 5, "DisorderIsADisorder").setTitle("DisorderIsADisorder"));
+//        graph.addEdge(new WebEdge(5, 5, "DisorderComorbidWithDisorder").setTitle("DisorderComorbidWithDisorder"));
+        graph.addEdge(new WebEdge(5, 5, "DisorderIsSubtypeOfDisorder").setTitle("DisorderIsSubtypeOfDisorder"));
         graph.addEdge(new WebEdge(1, 5, "DrugHasIndication").setTitle("DrugHasIndication"));
+        graph.addEdge(new WebEdge(1, 5, "DrugHasContraindication").setTitle("DrugHasContraindication"));
         graph.getEdges().forEach(e -> graph.setWeight("edges", e.label, edgeController.getEdgeCount(e.label)));
 
 

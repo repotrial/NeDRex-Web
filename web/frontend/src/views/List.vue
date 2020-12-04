@@ -1438,13 +1438,11 @@ export default {
             payload.nodes[k.name] = []
         }
       })
-      console.log(payload)
       this.selectionDialog.extendSelect = false;
       this.$http.post("/getConnectedSelection", payload).then(response => {
         if (response.data !== undefined)
           return response.data
       }).then(data => {
-        console.log(data)
         // if (this.selectionDialog.type === "edges")
         for (let ntype in data.nodes) {
           this.select("nodes", ntype, data.nodes[ntype])

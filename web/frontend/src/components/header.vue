@@ -2,7 +2,7 @@
   <v-app-bar app prominent elevation="0" hide-on-scroll color="white">
     <div id="particles-js"></div>
     <div id="title-div" style="position:fixed">
-      <h1 id="title" >RepoScape-Browser</h1>
+      <h1 id="title" >NeDRex</h1>
     </div>
   </v-app-bar>
 

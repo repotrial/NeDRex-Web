@@ -4,11 +4,11 @@ create view disorder_comorbid_with_disorder_out as (with outdeg as (select id_1,
 ##in / disorder
 create view disorder_comorbid_with_disorder_in as (with indeg as (select id_2, count(id_2) as degree from disorder_comorbid_with_disorder group by id_2),indist as(select degree as degree, count(*) as count from indeg group by degree)select * from indist union select 0 as degree, nodes.count-deg.count as count from (select count(id) as count from disorders) as nodes,(select sum(count) as count from indist) as deg order by degree);
 
-#disorder_is_a_disorder
+#disorder_is_subtype_of_disorder
 ##out / disorder
-create view disorder_is_a_disorder_out as (with outdeg as (select id_1, count(id_1) as degree from disorder_is_a_disorder group by id_1),outdist as(select degree , count(*) as count from outdeg group by degree)select * from outdist union select 0 as degree, nodes.count-deg.count as count from (select count(id) as count from disorders) as nodes,(select sum(count) as count from outdist) as deg order by degree);
+create view disorder_is_subtype_of_disorder_out as (with outdeg as (select id_1, count(id_1) as degree from disorder_is_subtype_of_disorder group by id_1),outdist as(select degree , count(*) as count from outdeg group by degree)select * from outdist union select 0 as degree, nodes.count-deg.count as count from (select count(id) as count from disorders) as nodes,(select sum(count) as count from outdist) as deg order by degree);
 ##in / disorder
-create view disorder_is_a_disorder_in as (with indeg as (select id_2, count(id_2) as degree from disorder_is_a_disorder group by id_2),indist as(select degree as degree, count(*) as count from indeg group by degree)select * from indist union select 0 as degree, nodes.count-deg.count as count from (select count(id) as count from disorders) as nodes,(select sum(count) as count from indist) as deg order by degree);
+create view disorder_is_subtype_of_disorder_in as (with indeg as (select id_2, count(id_2) as degree from disorder_is_subtype_of_disorder group by id_2),indist as(select degree as degree, count(*) as count from indeg group by degree)select * from indist union select 0 as degree, nodes.count-deg.count as count from (select count(id) as count from disorders) as nodes,(select sum(count) as count from indist) as deg order by degree);
 
 #drug_has_indication
 ##out / drug

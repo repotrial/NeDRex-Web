@@ -63,6 +63,7 @@ public class UpdateService {
     private final ProteinEncodedByService proteinEncodedByService;
     private final ProteinInPathwayService proteinInPathwayService;
     private final ProteinInteractsWithProteinService proteinInteractsWithProteinService;
+    private final DrugHasContraindicationService drugHasContraindicationService;
 
 
     @Autowired
@@ -84,7 +85,8 @@ public class UpdateService {
                          AssociatedWithDisorderService associatedWithDisorderService,
                          ProteinEncodedByService proteinEncodedByService,
                          ProteinInPathwayService proteinInPathwayService,
-                         ProteinInteractsWithProteinService proteinInteractsWithProteinService
+                         ProteinInteractsWithProteinService proteinInteractsWithProteinService,
+                         DrugHasContraindicationService drugHasContraindicationService
     ) {
         this.env = environment;
         this.objectMapper = objectMapper;
@@ -105,6 +107,7 @@ public class UpdateService {
         this.proteinEncodedByService = proteinEncodedByService;
         this.proteinInPathwayService = proteinInPathwayService;
         this.proteinInteractsWithProteinService = proteinInteractsWithProteinService;
+        this.drugHasContraindicationService = drugHasContraindicationService;
 
     }
 
@@ -251,7 +254,7 @@ public class UpdateService {
                             updateSuccessful = disorderComorbidWithDisorderService.submitUpdates(runEdgeUpdates(DisorderComorbidWithDisorder.class, c, disorderComorbidWithDisorderService::mapIds));
                         disorderComorbidWithDisorderService.importEdges();
                         break;
-                    case "disorder_is_a_disorder":
+                    case "disorder_is_subtype_of_disorder":
                         if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, DisorderIsADisorder.attributes))
                             updateSuccessful = disorderIsADisorderService.submitUpdates(runEdgeUpdates(DisorderIsADisorder.class, c, disorderIsADisorderService::mapIds));
                         disorderIsADisorderService.importEdges();
@@ -259,6 +262,11 @@ public class UpdateService {
                     case "drug_has_indication":
                         if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, DrugHasIndication.attributes))
                             updateSuccessful = drugHasIndicationService.submitUpdates(runEdgeUpdates(DrugHasIndication.class, c, drugHasIndicationService::mapIds));
+                        drugHasIndicationService.importEdges();
+                        break;
+                    case "drug_has_contraindication":
+                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, DrugHasContraindication.attributes))
+                            updateSuccessful = drugHasContraindicationService.submitUpdates(runEdgeUpdates(DrugHasContraindication.class, c, drugHasIndicationService::mapIds));
                         drugHasIndicationService.importEdges();
                         break;
                     case "drug_has_target":

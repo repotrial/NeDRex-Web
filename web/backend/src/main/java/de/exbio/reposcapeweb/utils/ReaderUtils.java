@@ -31,8 +31,8 @@ public class ReaderUtils {
             return new BufferedReader(new InputStreamReader(url.openStream()));
         } catch (IOException e) {
             e.printStackTrace();
+            throw new RuntimeException("Unable to read attributes from "+url+ "! Either the network is down or names have changed.");
         }
-        return null;
     }
 
     public static String getUrlContent(URL url) {

@@ -1,0 +1,466 @@
+{
+  "db": {
+    "nodes": {
+      "disorder": {
+        "name": "disorder",
+        "label": "Disorder",
+        "colors": {
+          "main": "#00CC96",
+          "light": "#b4cdcc"
+        },
+        "attributes": {
+          "id": {
+            "source": false,
+            "list": true,
+            "detail": true,
+            "id": true,
+            "type": "numeric",
+            "label": "ID"
+          },
+          "displayName": {
+            "source": true,
+            "list": true,
+            "detail": true,
+            "id": false,
+            "label": "Name"
+          },
+          "primaryDomainId": {
+            "source": true,
+            "list": false,
+            "detail": true,
+            "id": true,
+            "label": "SourceID"
+          },
+          "domainIds": {
+            "source": true,
+            "list": false,
+            "detail": true,
+            "id": true,
+            "type": "array",
+            "label": "SourceIDs"
+          },
+          "icd10": {
+            "source": true,
+            "list": true,
+            "detail": true,
+            "id": false,
+            "label": "ICD-10"
+          },
+          "synonyms": {
+            "source": true,
+            "list": false,
+            "detail": true,
+            "id": false,
+            "type": "array",
+            "label": "Synonyms"
+          },
+          "description": {
+            "source": true,
+            "list": false,
+            "detail": true,
+            "id": false,
+            "type": "text",
+            "label": "Description"
+          },
+          "type": {
+            "source": true,
+            "list": false,
+            "detail": true,
+            "id": false,
+            "label": "Type"
+          }
+        }
+      },
+      "drug": {
+        "name": "drug",
+        "label": "Drug",
+        "colors": {
+          "main": "#EF553B",
+          "light": "#ecd0cb"
+        },
+        "attributes": {
+          "id": {
+            "source": false,
+            "list": true,
+            "detail": true,
+            "id": true,
+            "type": "numeric",
+            "label": "ID"
+          },
+          "displayName": {
+            "source": true,
+            "list": true,
+            "detail": true,
+            "id": false,
+            "label": "Name"
+          },
+          "primaryDomainId": {
+            "source": true,
+            "list": false,
+            "detail": true,
+            "id": true,
+            "label": "SourceID"
+          },
+          "domainIds": {
+            "source": true,
+            "list": false,
+            "detail": true,
+            "id": true,
+            "type": "array",
+            "label": "SourceIDs"
+          },
+          "indication": {
+            "source": true,
+            "list": true,
+            "detail": true,
+            "id": false,
+            "label": "Indication"
+          },
+          "drugGroups": {
+            "source": true,
+            "list": true,
+            "detail": true,
+            "id": false,
+            "type": "array",
+            "label": "Groups"
+          },
+          "iupacName": {
+            "source": true,
+            "list": true,
+            "detail": true,
+            "id": false,
+            "label": "IUPAC-Name"
+          },
+          "molecularFormula": {
+            "source": true,
+            "list": true,
+            "detail": true,
+            "id": false,
+            "label": "Formula"
+          },
+          "casNumber": {
+            "source": true,
+            "list": true,
+            "detail": true,
+            "id": true,
+            "label": "CAS-Number"
+          },
+          "primaryDataset": {
+            "source": true,
+            "list": false,
+            "detail": true,
+            "id": false,
+            "label": "Primary Dataset"
+          },
+          "allDatasets": {
+            "source": true,
+            "list": false,
+            "detail": true,
+            "id": false,
+            "type": "array",
+            "label": "Datasets"
+          },
+          "inchi": {
+            "source": true,
+            "list": false,
+            "detail": true,
+            "id": false,
+            "label": "InChI"
+          },
+          "smiles": {
+            "source": true,
+            "list": false,
+            "detail": true,
+            "id": false,
+            "label": "SMILES"
+          },
+          "drugCategories": {
+            "source": true,
+            "list": false,
+            "detail": true,
+            "id": false,
+            "type": "array",
+            "label": "Categories"
+          },
+          "_cls": {
+            "source": true,
+            "list": false,
+            "detail": true,
+            "id": false,
+            "label": "Drug-CLS"
+          },
+          "sequences": {
+            "source": true,
+            "list": false,
+            "detail": true,
+            "id": false,
+            "type": "array",
+            "label": "Sequences"
+          },
+          "synonyms": {
+            "source": true,
+            "list": false,
+            "detail": true,
+            "id": false,
+            "type": "array",
+            "label": "Synonyms"
+          },
+          "description": {
+            "source": true,
+            "list": false,
+            "detail": true,
+            "id": false,
+            "type": "text",
+            "label": "Description"
+          },
+          "type": {
+            "source": true,
+            "list": false,
+            "detail": true,
+            "id": false,
+            "label": "Type"
+          }
+        }
+      },
+      "gene": {
+        "name": "gene",
+        "label": "Gene",
+        "colors": {
+          "main": "#636EFA",
+          "light": "#d6d9f8"
+        },
+        "attributes": {
+          "id": {
+            "source": false,
+            "list": true,
+            "detail": true,
+            "id": true,
+            "type": "numeric",
+            "label": "ID"
+          },
+          "displayName": {
+            "source": true,
+            "list": true,
+            "detail": true,
+            "id": false,
+            "label": "Name"
+          },
+          "primaryDomainId": {
+            "source": true,
+            "list": false,
+            "detail": true,
+            "id": true,
+            "label": "SourceID"
+          },
+          "domainIds": {
+            "source": true,
+            "list": false,
+            "detail": true,
+            "id": true,
+            "type": "array",
+            "label": "SourceIDs"
+          },
+          "approvedSymbol": {
+            "source": true,
+            "list": true,
+            "detail": true,
+            "id": false,
+            "label": "Symbol"
+          },
+          "symbols": {
+            "source": true,
+            "list": false,
+            "detail": true,
+            "id": false,
+            "type": "array",
+            "label": "Symbols"
+          },
+          "geneType": {
+            "source": true,
+            "list": true,
+            "detail": true,
+            "id": false,
+            "type": "numeric",
+            "label": "Gene-Type"
+          },
+          "chromosome": {
+            "source": true,
+            "list": true,
+            "detail": true,
+            "id": false,
+            "label": "Chromosome"
+          },
+          "mapLocation": {
+            "source": true,
+            "list": true,
+            "detail": true,
+            "id": false,
+            "label": "Genomic Location"
+          },
+          "synonyms": {
+            "source": true,
+            "list": false,
+            "detail": true,
+            "id": false,
+            "type": "array",
+            "label": "Synonyms"
+          },
+          "description": {
+            "source": true,
+            "list": false,
+            "detail": true,
+            "id": false,
+            "type": "text",
+            "label": "Description"
+          },
+          "type": {
+            "source": true,
+            "list": false,
+            "detail": true,
+            "id": false,
+            "label": "Type"
+          }
+        }
+      },
+      "pathway": {
+        "name": "pathway",
+        "label": "Pathway",
+        "colors": {
+          "main": "#fecb52",
+          "light": "#fae6c1"
+        },
+        "attributes": {
+          "id": {
+            "source": false,
+            "list": true,
+            "detail": true,
+            "id": true,
+            "type": "numeric",
+            "label": "ID"
+          },
+          "displayName": {
+            "source": true,
+            "list": true,
+            "detail": true,
+            "id": false,
+            "label": "Name"
+          },
+          "primaryDomainId": {
+            "source": true,
+            "list": true,
+            "detail": true,
+            "id": true,
+            "label": "SourceID"
+          },
+          "domainIds": {
+            "source": true,
+            "list": false,
+            "detail": true,
+            "id": true,
+            "type": "array",
+            "label": "SourceIDs"
+          },
+          "species": {
+            "source": true,
+            "list": false,
+            "id": false,
+            "detail": true,
+            "label": "Species"
+          },
+          "type": {
+            "source": true,
+            "list": false,
+            "detail": true,
+            "id": false,
+            "label": "Type"
+          }
+        }
+      },
+      "protein": {
+        "name": "protein",
+        "label": "Protein",
+        "colors": {
+          "main": "#19d3f3",
+          "light": "#bcdfe5"
+        },
+        "attributes": {
+          "id": {
+            "source": false,
+            "list": true,
+            "detail": true,
+            "id": true,
+            "type": "numeric",
+            "label": "ID"
+          },
+          "displayName": {
+            "source": true,
+            "list": true,
+            "detail": true,
+            "id": false,
+            "label": "Name"
+          },
+          "primaryDomainId": {
+            "source": true,
+            "list": true,
+            "detail": true,
+            "id": true,
+            "label": "SourceID"
+          },
+          "domainIds": {
+            "source": true,
+            "list": false,
+            "detail": true,
+            "id": true,
+            "type": "array",
+            "label": "SourceIDs"
+          },
+          "geneName": {
+            "source": true,
+            "list": true,
+            "detail": true,
+            "id": false,
+            "label": "Gene"
+          },
+          "taxid": {
+            "source": true,
+            "list": true,
+            "detail": true,
+            "id": true,
+            "type": "numeric",
+            "label": "TaxonomyID"
+          },
+          "sequence": {
+            "source": true,
+            "list": false,
+            "detail": true,
+            "id": false,
+            "label": "AA-Sequence"
+          },
+          "synonyms": {
+            "source": true,
+            "list": false,
+            "detail": true,
+            "id": false,
+            "type": "array",
+            "label": "Synonyms"
+          },
+          "comments": {
+            "source": true,
+            "list": false,
+            "detail": true,
+            "id": false,
+            "type": "array",
+            "label": "Comments"
+          },
+          "type": {
+            "source": true,
+            "list": false,
+            "detail": true,
+            "id": false,
+            "label": "Type"
+          }
+        }
+      }
+    }
+  }
+}

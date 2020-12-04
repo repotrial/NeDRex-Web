@@ -322,7 +322,7 @@ public class EdgeController {
                 return proteinInPathwayService.findAll();
             case "ProteinAssociatedWithDisorder":
                 return associatedWithDisorderService.findAllProteins();
-            case "DisorderIsADisorder":
+            case "DisorderIsSubtypeOfDisorder":
                 return disorderIsADisorderService.findAll();
             case "DisorderComorbidWithDisorder":
                 return disorderComorbidWithDisorderService.findAll();
@@ -350,7 +350,7 @@ public class EdgeController {
                 return isProteinInPathwayFrom(k1, k2);
             case "ProteinAssociatedWithDisorder":
                 return isProteinAssociatedWithDisorderFrom(k1, k2);
-            case "DisorderIsADisorder":
+            case "DisorderIsSubtypeOfDisorder":
                 return isDisorderIsADisorder(k1, k2);
             case "DisorderComorbidWithDisorder":
                 return isDisorderComorbidWithDisorder(k1, k2);
@@ -384,7 +384,7 @@ public class EdgeController {
                 return getProteinInPathwayFrom(node);
             case "ProteinAssociatedWithDisorder":
                 return getProteinAssociatedWithDisorderFrom(node);
-            case "DisorderIsADisorder":
+            case "DisorderIsSubtypeOfDisorder":
                 return getDisorderIsADisorder(node);
             case "DisorderComorbidWithDisorder":
                 return getDisorderComorbidWithDisorder(node);
@@ -412,7 +412,7 @@ public class EdgeController {
                 return getProteinInPathwayTo(node);
             case "ProteinAssociatedWithDisorder":
                 return getProteinAssociatedWithDisorderTo(node);
-            case "DisorderIsADisorder":
+            case "DisorderIsSubtypeOfDisorder":
                 return getDisorderIsADisorder(node);
             case "DisorderComorbidWithDisorder":
                 return getDisorderComorbidWithDisorder(node);
@@ -441,7 +441,7 @@ public class EdgeController {
                 return ProteinInPathway.getListAttributes();
             case "ProteinAssociatedWithDisorder":
                 return ProteinAssociatedWithDisorder.getListAttributes();
-            case "DisorderIsADisorder":
+            case "DisorderIsSubtypeOfDisorder":
                 return DisorderIsADisorder.getListAttributes();
             case "DisorderComorbidWithDisorder":
                 return DisorderComorbidWithDisorder.getListAttributes();
@@ -555,7 +555,7 @@ public class EdgeController {
                     }
                 });
                 break;
-            case "DisorderIsADisorder":
+            case "DisorderIsSubtypeOfDisorder":
                 chunks.stream().map(this::findAllDisorderIsADisorder).flatMap(Collection::stream).collect(Collectors.toList()).forEach(e -> {
                     disorderIsADisorderService.setDomainIds(e);
                     try {
@@ -598,7 +598,7 @@ public class EdgeController {
                 return findProteinInPathway(id).getAsMap();
             case "ProteinAssociatedWithDisorder":
                 return findProteinAssociatedWithDisorder(id).getAsMap();
-            case "DisorderIsADisorder":
+            case "DisorderIsSubtypeOfDisorder":
                 return findDisorderIsADisorder(id).getAsMap();
             case "DisorderComorbidWithDisorder":
                 return findDisorderComorbidWithDisorder(id).getAsMap();
@@ -624,7 +624,7 @@ public class EdgeController {
                 return ProteinInPathway.allAttributes;
             case "ProteinAssociatedWithDisorder":
                 return ProteinAssociatedWithDisorder.allAttributes;
-            case "DisorderIsADisorder":
+            case "DisorderIsSubtypeOfDisorder":
                 return DisorderIsADisorder.allAttributes;
             case "DisorderComorbidWithDisorder":
                 return DisorderComorbidWithDisorder.allAttributes;
@@ -652,7 +652,7 @@ public class EdgeController {
                 return ProteinInPathway.allAttributeTypes;
             case "ProteinAssociatedWithDisorder":
                 return ProteinAssociatedWithDisorder.allAttributeTypes;
-            case "DisorderIsADisorder":
+            case "DisorderIsSubtypeOfDisorder":
                 return DisorderIsADisorder.allAttributeTypes;
             case "DisorderComorbidWithDisorder":
                 return DisorderComorbidWithDisorder.allAttributeTypes;
@@ -680,7 +680,7 @@ public class EdgeController {
                 return ProteinInPathway.idAttributes;
             case "ProteinAssociatedWithDisorder":
                 return ProteinAssociatedWithDisorder.idAttributes;
-            case "DisorderIsADisorder":
+            case "DisorderIsSubtypeOfDisorder":
                 return DisorderIsADisorder.idAttributes;
             case "DisorderComorbidWithDisorder":
                 return DisorderComorbidWithDisorder.idAttributes;
@@ -708,7 +708,7 @@ public class EdgeController {
                 return proteinInPathwayService.isDirected();
             case "ProteinAssociatedWithDisorder":
                 return associatedWithDisorderService.isDirected();
-            case "DisorderIsADisorder":
+            case "DisorderIsSubtypeOfDisorder":
                 return disorderIsADisorderService.isDirected();
             case "DisorderComorbidWithDisorder":
                 return disorderComorbidWithDisorderService.isDirected();
@@ -736,7 +736,7 @@ public class EdgeController {
                 return proteinInPathwayService.getCount();
             case "ProteinAssociatedWithDisorder":
                 return associatedWithDisorderService.getProteinCount();
-            case "DisorderIsADisorder":
+            case "DisorderIsSubtypeOfDisorder":
                 return disorderIsADisorderService.getCount();
             case "DisorderComorbidWithDisorder":
                 return disorderComorbidWithDisorderService.getCount();

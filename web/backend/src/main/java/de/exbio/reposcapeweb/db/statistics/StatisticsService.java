@@ -31,13 +31,13 @@ public class StatisticsService {
 
     public TreeMap<Integer, Integer> getDisorderIsADisorderOut() {
         TreeMap<Integer, Integer> result = new TreeMap<>();
-        statisticsRepository.get_disorder_is_a_disorder_out().forEach(d -> result.put(d.getDegree(), d.getCount()));
+        statisticsRepository.get_disorder_is_subtype_of_disorder_out().forEach(d -> result.put(d.getDegree(), d.getCount()));
         return result;
     }
 
     public TreeMap<Integer, Integer> getDisorderIsADisorderIn() {
         TreeMap<Integer, Integer> result = new TreeMap<>();
-        statisticsRepository.get_disorder_is_a_disorder_in().forEach(d -> result.put(d.getDegree(), d.getCount()));
+        statisticsRepository.get_disorder_is_subtype_of_disorder_in().forEach(d -> result.put(d.getDegree(), d.getCount()));
         return result;
     }
 
