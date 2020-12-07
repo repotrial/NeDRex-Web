@@ -223,7 +223,7 @@ public class UpdateService {
     private void importRepoTrialEdges(HashMap<String, de.exbio.reposcapeweb.db.io.Collection> collections) {
 
         boolean updateSuccessful = true;
-
+        File filterCacheDir = new File(env.getProperty("path.db.cache") + "filters");
         String first = "protein_encoded_by";
         HashSet<String> attributeDefinition = null;
         try {
@@ -257,6 +257,7 @@ public class UpdateService {
                     case "disorder_is_subtype_of_disorder":
                         if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, DisorderIsADisorder.attributes))
                             updateSuccessful = disorderIsADisorderService.submitUpdates(runEdgeUpdates(DisorderIsADisorder.class, c, disorderIsADisorderService::mapIds));
+                        filterService.writeToFile(disorderService.getFilter(), new File(filterCacheDir, k));
                         disorderIsADisorderService.importEdges();
                         break;
                     case "drug_has_indication":

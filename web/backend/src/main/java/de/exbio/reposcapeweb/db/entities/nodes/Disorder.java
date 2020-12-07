@@ -151,7 +151,9 @@ public class Disorder extends RepoTrialNode {
     public EnumMap<FilterType, Map<FilterKey, FilterEntry>> toDistinctFilter() {
         EnumMap<FilterType, Map<FilterKey, FilterEntry>> map = new EnumMap<>(FilterType.class);
 
-        //TODO add disorder groups/parents
+        map.put(FilterType.ICD10, new HashMap<>());
+        FilterEntry icd10Entry = new FilterEntry(displayName, FilterType.ICD10, id);
+        getIcd10().forEach(icd-> map.get(FilterType.ICD10).put(new FilterKey(icd), icd10Entry));
 
         return map;
     }
@@ -196,8 +198,6 @@ public class Disorder extends RepoTrialNode {
             }
         getDomainIds().forEach(id -> map.get(FilterType.DOMAIN_ID).put(new FilterKey(id), ids));
 
-        map.put(FilterType.ICD10, new HashMap<>());
-        map.get(FilterType.ICD10).put(new FilterKey(icd10), new FilterEntry(displayName, FilterType.ICD10, id));
 
         map.put(FilterType.DISPLAY_NAME, new HashMap<>());
         map.get(FilterType.DISPLAY_NAME).put(new FilterKey(displayName), new FilterEntry(displayName, FilterType.DISPLAY_NAME, id));

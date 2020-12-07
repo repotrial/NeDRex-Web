@@ -8,6 +8,7 @@ import de.exbio.reposcapeweb.communication.cache.Graphs;
 import de.exbio.reposcapeweb.communication.cache.Node;
 import de.exbio.reposcapeweb.communication.jobs.Job;
 import de.exbio.reposcapeweb.communication.requests.*;
+import de.exbio.reposcapeweb.configs.DBConfig;
 import de.exbio.reposcapeweb.db.DbCommunicationService;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
 import de.exbio.reposcapeweb.db.history.GraphHistory;
@@ -154,6 +155,27 @@ public class WebGraphService {
                 finalList.addAttributes("nodes", stringType, nodeController.getAttributes(type));
                 finalList.addNodes(stringType, nodeController.nodesToAttributeList(type, nodeMap.keySet(), new HashSet<>(Arrays.asList(attributes))));
                 finalList.setTypes("nodes", stringType, nodeController.getAttributes(type), nodeController.getAttributeTypes(type), nodeController.getIdAttributes(type));
+
+
+                try {
+                    HashMap<String, HashSet<String>> distinctValues = new HashMap<>();
+                    HashSet<String> distinctAttrs = DBConfig.getDistinctAttributes("node", stringType);
+                    distinctAttrs.forEach(a -> distinctValues.put(a, new HashSet<>()));
+                    finalList.getNodes().get(stringType).forEach(attrs -> {
+                        distinctAttrs.forEach(attr -> {
+                            Object value = attrs.get(attr);
+                            try {
+                                if (value instanceof String)
+                                    distinctValues.get(attr).add((String) value);
+                                else
+                                    distinctValues.get(attr).addAll((LinkedList<String>) value);
+                            } catch (NullPointerException ignore) {
+                            }
+                        });
+                    });
+                    finalList.setDistinctAttributes("nodes", stringType, distinctValues);
+                } catch (NullPointerException e) {
+                }
             });
             log.debug("Converting edges from Graph to WebList for " + id);
 
@@ -170,16 +192,35 @@ public class WebGraphService {
                     Pair<Integer, Integer> nodeIds = g.getNodesfromEdge(type);
                     String[] attributeArray = new String[]{"id", "node1", "node2", "weight", "jaccardIndex"};
                     finalList.addAttributes("edges", stringType, attributeArray);
-                    LinkedList<String> attrMaps = edges.stream().map(p -> getCustomEdgeAttributeList(g, type, p)).collect(Collectors.toCollection(LinkedList::new));
+                    LinkedList<HashMap<String, Object>> attrMaps = edges.stream().map(p -> getCustomEdgeAttributeList(g, type, p)).collect(Collectors.toCollection(LinkedList::new));
                     finalList.addEdges(stringType, attrMaps);
                     finalList.setTypes("edges", stringType, attributeArray, new String[]{"", "", "", "numeric", "numeric"}, new boolean[]{true, false, false, false, false});
                 } else {
                     String[] attributeArray = edgeController.getAttributes(type);
                     finalList.addAttributes("edges", stringType, attributeArray);
 
-                    LinkedList<String> attrMaps = edgeController.edgesToAttributeList(type, edges, attrs);
+                    LinkedList<HashMap<String, Object>> attrMaps = edgeController.edgesToAttributeList(type, edges, attrs);
                     finalList.addEdges(stringType, attrMaps);
                     finalList.setTypes("edges", stringType, attributeArray, edgeController.getAttributeTypes(type), edgeController.getIdAttributes(type));
+                    try {
+                        HashMap<String, HashSet<String>> distinctValues = new HashMap<>();
+                        HashSet<String> distinctAttrs = DBConfig.getDistinctAttributes("edge", stringType);
+                        distinctAttrs.forEach(a -> distinctValues.put(a, new HashSet<>()));
+                        finalList.getEdges().get(stringType).forEach(edgeAttrs -> {
+                            distinctAttrs.forEach(attr -> {
+                                Object value = edgeAttrs.get(attr);
+                                try {
+                                    if (value instanceof String)
+                                        distinctValues.get(attr).add((String) value);
+                                    else
+                                        distinctValues.get(attr).addAll((LinkedList<String>) value);
+                                } catch (NullPointerException ignore) {
+                                }
+                            });
+                        });
+                        finalList.setDistinctAttributes("edges", stringType, distinctValues);
+                    } catch (NullPointerException e) {
+                    }
 
                 }
             });
@@ -708,7 +749,7 @@ public class WebGraphService {
         return g.toInfo();
     }
 
-    public String getCustomEdgeAttributeList(Graph graph, int edgeId, PairId p) {
+    public HashMap<String, Object> getCustomEdgeAttributeList(Graph graph, int edgeId, PairId p) {
         Pair<Integer, Integer> nodeIds = graph.getNodesfromEdge(edgeId);
         HashMap<String, Object> as = new HashMap<>();
         as.put("id", p.getId1() + "-" + p.getId2());
@@ -720,14 +761,9 @@ public class WebGraphService {
         as.put("memberTwo", nodeController.getDomainId(nodeIds.second, p.getId2()));
         as.put("weight", graph.getCustomEdgeWeights().get(edgeId).get(p.getId1()).get(p.getId2()));
         as.put("jaccardIndex", graph.getCustomJaccardIndex().get(edgeId).get(p.getId1()).get(p.getId2()));
-        as.put("type",graph.getEdge(edgeId));
+        as.put("type", graph.getEdge(edgeId));
         as.put("order", new String[]{"id", "idOne", "idTwo", "node1", "node2", "memberOne", "memberTwo", "weight", "jaccardIndex", "type"});
-        try {
-            return objectMapper.writeValueAsString(as);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-        return null;
+        return as;
     }
 
     public ConnectionGraph getConnectionGraph(String gid) {
@@ -747,20 +783,15 @@ public class WebGraphService {
         return cg;
     }
 
-    public String getEdgeDetails(String gid, String name, PairId p) {
+    public HashMap<String, Object> getEdgeDetails(String gid, String name, PairId p) {
         Graph graph = getCachedGraph(gid);
         int edgeId = graph.getEdge(name);
         if (edgeId < 0)
             return getCustomEdgeAttributeList(graph, edgeId, p);
         else {
-            try {
-                HashMap<String, Object> details = edgeController.edgeToAttributeList(edgeId, p);
-                details.put("order", edgeController.getAttributes(edgeId));
-                return objectMapper.writeValueAsString(details);
-            } catch (JsonProcessingException e) {
-                e.printStackTrace();
-                return null;
-            }
+            HashMap<String, Object> details = edgeController.edgeToAttributeList(edgeId, p);
+            details.put("order", edgeController.getAttributes(edgeId));
+            return details;
         }
     }
 

@@ -115,7 +115,7 @@ public class RequestController {
     @ResponseBody
     public String getDetails(@RequestParam("gid") String gid, @RequestParam("name") String name, @RequestParam("id1") int id1, @RequestParam("id2") int id2) {
         log.info("requested details for edge " + name + " with id (" + id1 + " -> " + id2 + ")");
-        return webGraphService.getEdgeDetails(gid, name, new PairId(id1, id2));
+        return toJson(webGraphService.getEdgeDetails(gid, name, new PairId(id1, id2)));
     }
 
 //    @RequestMapping(value = "/getExampleGraph2", method = RequestMethod.GET)
@@ -193,47 +193,31 @@ public class RequestController {
     @ResponseBody
     public String getGraphList(@RequestParam("id") String id) {
         log.info("got request for " + id);
-        try {
-            StringBuilder out = new StringBuilder("{\"edges\":{");
-            WebGraphList list = webGraphService.getList(id, null);
-            StringBuilder edgeBuilder = new StringBuilder();
-            list.getEdges().forEach((type, edges) -> {
-                edgeBuilder.append("\"").append(type).append("\":[");
-                StringBuilder sb = new StringBuilder("");
-                edges.forEach(e -> sb.append(e).append(','));
-                edgeBuilder.append(sb.substring(0, edges.size() > 0 ? sb.length() - 1 : sb.length()));
-                edgeBuilder.append("],");
-            });
-            out.append(edgeBuilder.substring(0, list.getEdges().size() > 0 ? edgeBuilder.length() - 1 : edgeBuilder.length())).append("},");
-            out.append(objectMapper.writeValueAsString(list).substring(1));
-            return out.toString();
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-        return null;
+//        try {
+//            StringBuilder out = new StringBuilder("{\"edges\":{");
+        WebGraphList list = webGraphService.getList(id, null);
+        return toJson(list);
+//            StringBuilder edgeBuilder = new StringBuilder();
+//            list.getEdges().forEach((type, edges) -> {
+//                edgeBuilder.append("\"").append(type).append("\":[");
+//                StringBuilder sb = new StringBuilder("");
+//                edges.forEach(e -> sb.append(e).append(','));
+//                edgeBuilder.append(sb.substring(0, edges.size() > 0 ? sb.length() - 1 : sb.length()));
+//                edgeBuilder.append("],");
+//            });
+//            out.append(edgeBuilder.substring(0, list.getEdges().size() > 0 ? edgeBuilder.length() - 1 : edgeBuilder.length())).append("},");
+//            out.append(objectMapper.writeValueAsString(list)/*.substring(1)*/);
+//            return out.toString();
+//        } catch (JsonProcessingException e) {
+//            e.printStackTrace();
+//        }
+//        return null;
     }
 
     @RequestMapping(value = "/getCustomGraphList", method = RequestMethod.POST)
     @ResponseBody
     public String getCustomGraphList(@RequestBody CustomListRequest req) {
-        try {
-            StringBuilder out = new StringBuilder("{\"edges\":{");
-            WebGraphList list = webGraphService.getList(req.id, req);
-            StringBuilder edgeBuilder = new StringBuilder();
-            list.getEdges().forEach((type, edges) -> {
-                edgeBuilder.append("\"").append(type).append("\":[");
-                StringBuilder sb = new StringBuilder("");
-                edges.forEach(e -> sb.append(e).append(','));
-                edgeBuilder.append(sb.substring(0, edges.size() > 0 ? sb.length() - 1 : sb.length()));
-                edgeBuilder.append("],");
-            });
-            out.append(edgeBuilder.substring(0, list.getEdges().size() > 0 ? edgeBuilder.length() - 1 : edgeBuilder.length())).append("},");
-            out.append(objectMapper.writeValueAsString(list).substring(1));
-            return out.toString();
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-        return null;
+        return toJson(webGraphService.getList(req.id, req));
     }
 
     @RequestMapping(value = "/getFiltered", method = RequestMethod.POST)
@@ -280,7 +264,7 @@ public class RequestController {
     @RequestMapping(value = "/getUser", method = RequestMethod.GET)
     @ResponseBody
     public String getUser(@RequestParam("user") String userId) {
-        if(userId==null)
+        if (userId == null)
             return "";
         userId = historyController.validateUser(userId);
         HashMap<String, Job.JobState> jobs = jobController.getJobGraphStates(userId);
@@ -294,9 +278,9 @@ public class RequestController {
         return null;
     }
 
-    @RequestMapping(value="/initUser", method=RequestMethod.GET)
+    @RequestMapping(value = "/initUser", method = RequestMethod.GET)
     @ResponseBody
-    public String initUser(){
+    public String initUser() {
         return historyController.validateUser(null);
     }
 
@@ -338,15 +322,15 @@ public class RequestController {
         return toJson(j.toMap());
     }
 
-    @RequestMapping(value="/getJobs", method = RequestMethod.GET)
+    @RequestMapping(value = "/getJobs", method = RequestMethod.GET)
     @ResponseBody
-    public String getJobs(@RequestParam("uid") String uid, @RequestParam("gid") String gid){
+    public String getJobs(@RequestParam("uid") String uid, @RequestParam("gid") String gid) {
         return toJson(jobController.getJobGraphStates(uid, gid));
     }
 
-    @RequestMapping(value="/getUserJobs", method = RequestMethod.GET)
+    @RequestMapping(value = "/getUserJobs", method = RequestMethod.GET)
     @ResponseBody
-    public String getJobs(@RequestParam("uid") String uid){
+    public String getJobs(@RequestParam("uid") String uid) {
         return toJson(jobController.getJobGraphStates(uid, null));
     }
 

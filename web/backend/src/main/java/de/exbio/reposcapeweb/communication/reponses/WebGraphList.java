@@ -9,8 +9,8 @@ public class WebGraphList {
     public String id;
     public HashMap<String, HashMap<String, LinkedList<WebAttribute>>> attributes;
     public HashMap<String, LinkedList<HashMap<String, Object>>> nodes;
-    @JsonIgnore
-    public HashMap<String, LinkedList<String>> edges;
+    //    @JsonIgnore
+    public HashMap<String, LinkedList<HashMap<String, Object>>> edges;
 
 
     public WebGraphList(String id) {
@@ -47,11 +47,11 @@ public class WebGraphList {
         this.nodes = nodes;
     }
 
-    public HashMap<String, LinkedList<String>> getEdges() {
+    public HashMap<String, LinkedList<HashMap<String, Object>>> getEdges() {
         return edges;
     }
 
-    public void setEdges(HashMap<String, LinkedList<String>> edges) {
+    public void setEdges(HashMap<String, LinkedList<HashMap<String, Object>>> edges) {
         this.edges = edges;
     }
 
@@ -61,7 +61,7 @@ public class WebGraphList {
         nodes.get(type).add(entry);
     }
 
-    public void addEdge(String type, String entry) {
+    public void addEdge(String type, HashMap<String, Object> entry) {
         if (!edges.containsKey(type))
             edges.put(type, new LinkedList<>());
         edges.get(type).add(entry);
@@ -92,7 +92,14 @@ public class WebGraphList {
         this.attributes.get(entity).get(type).stream().filter(s -> attrSet.contains(s.name)).forEach(WebAttribute::isSent);
     }
 
-    public void addEdges(String type, LinkedList<String> edgesToAttributeList) {
+    public void setDistinctAttributes(String entity, String type, HashMap<String, HashSet<String>> valueMap) {
+        this.attributes.get(entity).get(type).forEach(a -> {
+            if (valueMap.containsKey(a.name))
+                a.setValues(valueMap.get(a.name).toArray(new String[valueMap.get(a.name).size()]));
+        });
+    }
+
+    public void addEdges(String type, LinkedList<HashMap<String, Object>> edgesToAttributeList) {
         if (!edges.containsKey(type))
             edges.put(type, edgesToAttributeList);
         else
@@ -115,7 +122,7 @@ public class WebGraphList {
                 a.isNumeric();
             if (t.equals("array"))
                 a.isArray();
-            if(ids[idx])
+            if (ids[idx])
                 a.isId();
         });
     }
@@ -127,6 +134,7 @@ public class WebGraphList {
         public boolean numeric;
         public boolean array;
         public boolean id;
+        public String[] values;
 
         public WebAttribute(String name) {
             this.name = name;
@@ -151,6 +159,10 @@ public class WebGraphList {
 
         public void isId() {
             this.id = true;
+        }
+
+        public void setValues(String[] values) {
+            this.values = values;
         }
     }
 

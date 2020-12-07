@@ -45,7 +45,7 @@ public class DisorderService extends NodeService {
             });
             allFilter.removeByNodeIds(updates.get(UpdateOperation.Deletion).values().stream().map(Disorder::getId).collect(Collectors.toSet()));
         }
-        LinkedList<Disorder> toSave = new LinkedList(updates.get(UpdateOperation.Insertion).values());
+        LinkedList<Disorder> toSave = new LinkedList<>(updates.get(UpdateOperation.Insertion).values());
         int insertCount = toSave.size();
         if (updates.containsKey(UpdateOperation.Alteration)) {
             HashMap<String, Disorder> toUpdate = updates.get(UpdateOperation.Alteration);

@@ -92,6 +92,7 @@ public class ProteinInteractsWithProtein extends RepoTrialEdge implements Serial
         values.put("evidenceTypes", getEvidenceTypes());
         values.put("type", getType());
         values.put("id", id.getId1() + "-" + id.getId2());
+        values.put("methods",getMethods());
         return values;
     }
 

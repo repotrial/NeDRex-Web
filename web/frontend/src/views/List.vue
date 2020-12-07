@@ -117,6 +117,7 @@
                     prev-icon="mdi-arrow-left-bold-box-outline"
                     show-arrows
                     v-model="nodeTab"
+                    @change="resetFilters('nodes')"
             >
               <v-tabs-slider color="blue"></v-tabs-slider>
               <v-tab v-for="node in Object.keys(nodes)" :key="node">
@@ -129,13 +130,14 @@
                 fixed-header
                 class="elevation-1"
                 :headers="headers('nodes',Object.keys(nodes)[nodeTab])"
-                :items="configuration.showAll ? nodes[Object.keys(nodes)[nodeTab]]: filterSelected(nodes[Object.keys(nodes)[nodeTab]])"
+                :items="configuration.showAll ? (filters.nodes.attribute.dist ? distinctFilter('nodes',nodes[Object.keys(nodes)[nodeTab]]): nodes[Object.keys(nodes)[nodeTab]]) : filterSelected(nodes[Object.keys(nodes)[nodeTab]])"
                 item-key="id"
                 :loading="nodeTabLoading"
                 loading-text="Loading... Please wait"
                 :search="filters.nodes.query"
                 :custom-filter="filterNode"
               >
+
                 <template v-slot:top>
                   <v-container style="margin-top: 15px;margin-bottom: -40px">
                     <v-row>
@@ -160,6 +162,7 @@
                           :items="headerNames('nodes',Object.keys(nodes)[nodeTab])"
                           label="Attribute"
                           v-model="filters.nodes.attribute.name"
+                          @change="resetFilter('nodes')"
                           outlined
                         ></v-select>
                       </v-col>
@@ -168,17 +171,28 @@
                         v-if="!filters.nodes.suggestions"
                       >
                         <v-select
+                          v-if="filters.nodes.attribute.name === undefined || filters.nodes.attribute.name == null || !isDistinctAttribute('nodes',filters.nodes.attribute.name)"
                           v-model="filters.nodes.attribute.operator"
                           :disabled="filters.nodes.attribute.name === undefined || filters.nodes.attribute.name == null || filters.nodes.attribute.name.length ===0"
                           :items="operatorNames('nodes',Object.keys(nodes)[nodeTab],filters.nodes.attribute.name)"
                           label="Operator"
                           outlined
                         ></v-select>
+                        <v-select
+                          v-else
+                          v-model="filters.nodes.attribute.operator"
+                          @change="filters.nodes.attribute.dist=true"
+                          :items="attributes.nodes[Object.keys(nodes)[nodeTab]].filter(a=>a.name===filters.nodes.attribute.name)[0].values"
+                          label="Value"
+                          outlined
+                        >
+                        </v-select>
                       </v-col>
                       <v-col
                         :cols="(filters.nodes.suggestions)?12:8"
                       >
                         <v-text-field
+                          :disabled="filters.nodes.attribute.name == null || filters.nodes.attribute.name.length ===0 || filters.nodes.attribute.operator == null|| filters.nodes.attribute.dist"
                           clearable
                           v-show="!filters.nodes.suggestions"
                           v-model="filters.nodes.query"
@@ -324,7 +338,7 @@
                 fixed-header
                 class="elevation-1"
                 :headers="headers('edges',Object.keys(edges)[edgeTab])"
-                :items="configuration.showAll ? edges[Object.keys(edges)[edgeTab]] : filterSelected(edges[Object.keys(edges)[edgeTab]])"
+                :items="configuration.showAll ? (filters.edges.attribute.dist ? distinctFilter('edges',edges[Object.keys(edges)[edgeTab]]): edges[Object.keys(edges)[edgeTab]]) : filterSelected(edges[Object.keys(edges)[edgeTab]])"
                 :search="filters.edges.query"
                 :custom-filter="filterEdge"
                 loading-text="Loading... Please wait"
@@ -340,6 +354,7 @@
                           :items="headerNames('edges',Object.keys(edges)[edgeTab])"
                           label="Attribute"
                           v-model="filters.edges.attribute.name"
+                          @change="resetFilter('edges')"
                           outlined
                         ></v-select>
                       </v-col>
@@ -347,17 +362,30 @@
                         cols="1"
                         v-if="!filters.edges.suggestions"
                       >
+
                         <v-select
+                          v-if="filters.edges.attribute.name === undefined || filters.edges.attribute.name == null || !isDistinctAttribute('edges',filters.edges.attribute.name)"
                           v-model="filters.edges.attribute.operator"
                           :items="operatorNames('edges',Object.keys(edges)[edgeTab],filters.edges.attribute.name)"
+                          :disabled="filters.edges.attribute.name === undefined || filters.edges.attribute.name == null || filters.edges.attribute.name.length ===0"
                           label="Operator"
                           outlined
                         ></v-select>
+                        <v-select
+                          v-else
+                          v-model="filters.edges.attribute.operator"
+                          @change="filters.edges.attribute.dist=true"
+                          :items="attributes.edges[Object.keys(edges)[edgeTab]].filter(a=>a.name===filters.edges.attribute.name)[0].values"
+                          label="Value"
+                          outlined
+                        >
+                        </v-select>
                       </v-col>
                       <v-col
                         cols="9"
                       >
                         <v-text-field
+                          :disabled="filters.edges.attribute.name == null || filters.edges.attribute.name.length ===0 || filters.edges.attribute.operator == null|| filters.edges.attribute.dist"
                           clearable
                           v-model="filters.edges.query"
                           label="Query (case sensitive)"
@@ -574,14 +602,24 @@
         <v-row v-if="collapse.accept">
           <v-col>
 
-            <v-icon :color="getExtendedColoring('nodes',getExtendedNodes(collapse.edge1,collapse.nodes.filter(n => n.selected)[0].name))">fas fa-genderless</v-icon>
+            <v-icon
+              :color="getExtendedColoring('nodes',getExtendedNodes(collapse.edge1,collapse.nodes.filter(n => n.selected)[0].name))">
+              fas fa-genderless
+            </v-icon>
             <v-icon>fas fa-long-arrow-alt-right</v-icon>
-            <v-icon :color="getExtendedColoring('nodes',collapse.nodes.filter(n => n.selected)[0].name)">fas fa-genderless</v-icon>
-            <v-icon>fas fa-long-arrow-alt-right</v-icon>
-            <v-icon v-if="collapse.self.selected" :color="getExtendedColoring('nodes',getExtendedNodes(collapse.edge1,collapse.nodes.filter(n => n.selected)[0].name))">fas
+            <v-icon :color="getExtendedColoring('nodes',collapse.nodes.filter(n => n.selected)[0].name)">fas
               fa-genderless
             </v-icon>
-            <v-icon v-else :color="getExtendedColoring('nodes',getExtendedNodes(collapse.edge2,collapse.nodes.filter(n => n.selected)[0].name))">fas fa-genderless</v-icon>
+            <v-icon>fas fa-long-arrow-alt-right</v-icon>
+            <v-icon v-if="collapse.self.selected"
+                    :color="getExtendedColoring('nodes',getExtendedNodes(collapse.edge1,collapse.nodes.filter(n => n.selected)[0].name))">
+              fas
+              fa-genderless
+            </v-icon>
+            <v-icon v-else
+                    :color="getExtendedColoring('nodes',getExtendedNodes(collapse.edge2,collapse.nodes.filter(n => n.selected)[0].name))">
+              fas fa-genderless
+            </v-icon>
           </v-col>
         </v-row>
         <v-card-text v-if="collapse.accept">
@@ -645,57 +683,57 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-    <v-dialog
-      v-model="optionDialog"
-      persistent
-      max-width="500"
-      v-if="optionDialog && options !== undefined && options.type !== undefined"
-    >
-      <v-card>
-        <v-card-title class="headline">
-          Organize {{ options.title }} Attributes
-        </v-card-title>
-        <v-card-text>Adjust the attributes of the general item tables.
-        </v-card-text>
-        <v-divider></v-divider>
-        <template v-if="Object.keys(options.type).length>0">
-          <v-tabs v-model="optionTab">
-            <v-tabs-slider color="blue"></v-tabs-slider>
-            <v-tab v-for="name in Object.keys(options.attributes)" :key="name">
-              {{ Object.keys(options.type)[name] }}
-            </v-tab>
-          </v-tabs>
-          <v-tabs-items>
-            <v-list>
-              <v-list-item v-for="attr in options.attributes[optionTab]" :key="attr.name">
-                <v-switch v-model="attr.selected" :label="attr.name" :disabled="(attr.name === 'id')">
-                </v-switch>
-              </v-list-item>
-            </v-list>
-          </v-tabs-items>
-        </template>
+<!--    <v-dialog-->
+<!--      v-model="optionDialog"-->
+<!--      persistent-->
+<!--      max-width="500"-->
+<!--      v-if="optionDialog && options !== undefined && options.type !== undefined"-->
+<!--    >-->
+<!--      <v-card>-->
+<!--        <v-card-title class="headline">-->
+<!--          Organize {{ options.title }} Attributes-->
+<!--        </v-card-title>-->
+<!--        <v-card-text>Adjust the attributes of the general item tables.-->
+<!--        </v-card-text>-->
+<!--        <v-divider></v-divider>-->
+<!--        <template v-if="options.type.length>0">-->
+<!--          <v-tabs v-model="optionTab">-->
+<!--            <v-tabs-slider color="blue"></v-tabs-slider>-->
+<!--            <v-tab v-for="name in Object.keys(options.attributes)" :key="name">-->
+<!--              {{options.type}}-->
+<!--            </v-tab>-->
+<!--          </v-tabs>-->
+<!--          <v-tabs-items>-->
+<!--            <v-list>-->
+<!--              <v-list-item v-for="attr in options.attributes[optionTab]" :key="attr.name">-->
+<!--                <v-switch v-model="attr.selected" :label="attr.name" :disabled="(attr.name === 'id')">-->
+<!--                </v-switch>-->
+<!--              </v-list-item>-->
+<!--            </v-list>-->
+<!--          </v-tabs-items>-->
+<!--        </template>-->
 
-        <v-divider></v-divider>
+<!--        <v-divider></v-divider>-->
 
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn
-            color="green darken-1"
-            text
-            @click="dialogResolve(false)"
-          >
-            Cancel
-          </v-btn>
-          <v-btn
-            color="green darken-1"
-            text
-            @click="dialogResolve(true)"
-          >
-            Apply
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+<!--        <v-card-actions>-->
+<!--          <v-spacer></v-spacer>-->
+<!--          <v-btn-->
+<!--            color="green darken-1"-->
+<!--            text-->
+<!--            @click="dialogResolve(false)"-->
+<!--          >-->
+<!--            Cancel-->
+<!--          </v-btn>-->
+<!--          <v-btn-->
+<!--            color="green darken-1"-->
+<!--            text-->
+<!--            @click="dialogResolve(true)"-->
+<!--          >-->
+<!--            Apply-->
+<!--          </v-btn>-->
+<!--        </v-card-actions>-->
+<!--      </v-card>-->
+<!--    </v-dialog>-->
     <v-dialog
       v-model="optionDialog"
       persistent
@@ -712,7 +750,7 @@
           <v-tabs v-model="optionTab">
             <v-tabs-slider color="blue"></v-tabs-slider>
             <v-tab v-for="name in Object.keys(options.attributes)" :key="name">
-              {{ Object.keys(nodes)[name] }}
+              {{ Object.keys(attributes[options.type])[name] }}
             </v-tab>
           </v-tabs>
           <v-tabs-items>
@@ -866,7 +904,6 @@ export default {
     },
   },
   name: "List",
-  attributes: {},
   gid: undefined,
   uid: undefined,
 
@@ -874,6 +911,7 @@ export default {
     return {
       edges: {},
       nodes: {},
+      attributes: {},
       countMap: undefined,
       nodeTab: undefined,
       edgeTab: undefined,
@@ -969,6 +1007,9 @@ export default {
             return response.data
           }
         }).then(data => {
+          data.suggestions.sort((e1, e2) => {
+            return e2.ids.length - e1.ids.length
+          })
           this.suggestions[type].data = data.suggestions;
         }).catch(err =>
           console.log(err)
@@ -1036,8 +1077,8 @@ export default {
       this.nodes = {};
       this.nodeTab = 0
       this.edgeTab = 0
-      this.filters.edges.query = ''
-      this.filters.nodes.query = ''
+      this.resetFilters('nodes')
+      this.resetFilters('edges')
       if (data !== undefined) {
         this.attributes = data.attributes;
         for (let ni = 0; ni < Object.keys(this.attributes.nodes).length; ni++) {
@@ -1189,23 +1230,12 @@ export default {
       this.collapse.edge2 = tmp
       this.collapse.edgeName = this.collapse.edge1 + "_and_" + this.collapse.edge2
     },
+    isDistinctAttribute: function (type, attribute) {
+      let object = this.attributes[type][Object.keys(this[type])[type === "nodes" ? this.nodeTab : this.edgeTab]].filter(a => a.name === attribute)[0]
+      return object !== undefined && object.values !== undefined && object.values != null && object.values.length > 0
+    },
 
-    nodeOptions: function () {
-      this.optionDialog = true;
-      this.optionsTab = 0
-      this.options["title"] = (Object.keys(this.nodes).length > 1) ? "Nodes" : "Node"
 
-      this.options["attributes"] = {}
-      for (let node in Object.keys(this.attributes.nodes)) {
-        let models = []
-        this.attributes.nodes[Object.keys(this.attributes.nodes)[node]].forEach(attr => {
-          models.push({name: attr.name, selected: attr.list})
-        })
-        this.options.attributes[node] = models;
-      }
-      this.options["type"] = "nodes";
-    }
-    ,
     isDisabled: function (type, name) {
       if (type !== undefined && name !== undefined) {
         let clicked = this.collapse[type].filter(x => x.name === name)[0]
@@ -1260,6 +1290,22 @@ export default {
       this.collapse.accept = this.isConnectedCollapse()
       this.$refs.dialog.$forceUpdate()
     },
+    nodeOptions: function () {
+      this.optionDialog = true;
+      this.optionsTab = 0
+      this.options["title"] = (Object.keys(this.nodes).length > 1) ? "Nodes" : "Node"
+
+      this.options["attributes"] = {}
+      for (let node in Object.keys(this.attributes.nodes)) {
+        let models = []
+        this.attributes.nodes[Object.keys(this.attributes.nodes)[node]].forEach(attr => {
+          models.push({name: attr.name, selected: attr.list})
+        })
+        this.options.attributes[node] = models;
+      }
+      this.options.type = "nodes";
+    }
+    ,
     edgeOptions: function () {
       this.optionsTab = 0
       this.options["title"] = (Object.keys(this.edges).length > 1) ? "Edges" : "Edge"
@@ -1362,6 +1408,18 @@ export default {
       this.collapse.self.disabled = false;
       this.collapse.edge1 = ""
       this.collapse.edge2 = ""
+    },
+    distinctFilter: function (type, nodes) {
+      let value = this.filters[type].attribute.operator
+      let attr = this.filters[type].attribute.name
+      return nodes.filter(n => {
+        let data = n[attr]
+        if (typeof data === "object")
+          return data.indexOf(value) > -1
+        else
+          return data === value
+      })
+
     },
     collapseDialogResolve: function (apply) {
       this.collapse.show = false;
@@ -1554,17 +1612,22 @@ export default {
       let tab = (type === "nodes") ? this.nodeTab : this.edgeTab
       let name = Object.keys(this[type])[tab]
       let items = this[type][name]
-
-      let filterActive = this.filters[type].attribute.name !== undefined && this.filters[type].attribute.name.length > 0 && this.filters[type].query !== null && this.filters[type].query.length > 0 && this.filters[type].attribute.operator !== undefined && this.filters[type].attribute.operator.length > 0
-      items.forEach(item => {
-          if (type === "nodes") {
-            if (!filterActive || (filterActive && this.filterNode(undefined, this.filters[type].query, item)))
-              item.selected = true;
-          } else if (!filterActive || (filterActive && this.filterEdge(undefined, this.filters[type].query, item)))
-            item.selected = true
-        }
-      )
-
+      let isDistinct = this.isDistinctAttribute(type, this.filters[type].attribute.name)
+      if (isDistinct) {
+        this.distinctFilter(type, items).forEach(item => {
+          item.selected = true
+        })
+      } else {
+        let filterActive = this.filters[type].attribute.name !== undefined && this.filters[type].attribute.name.length > 0 && this.filters[type].query !== null && this.filters[type].query.length > 0 && this.filters[type].attribute.operator !== undefined && this.filters[type].attribute.operator.length > 0
+        items.forEach(item => {
+            if (type === "nodes") {
+              if (!filterActive || (filterActive && this.filterNode(undefined, this.filters[type].query, item)))
+                item.selected = true;
+            } else if (!filterActive || (filterActive && this.filterEdge(undefined, this.filters[type].query, item)))
+              item.selected = true
+          }
+        )
+      }
       if (type === "edges")
         this.selectDependentNodes(name, items)
       this.$nextTick().then(() => {
@@ -1580,15 +1643,22 @@ export default {
       let tab = (type === "nodes") ? this.nodeTab : this.edgeTab
       let data = {nodes: this.nodes, edges: this.edges}
       let items = data[type][Object.keys(data[type])[tab]]
-      let filterActive = this.filters[type].attribute.name !== undefined && this.filters[type].attribute.name.length > 0 && this.filters[type].query !== null && this.filters[type].query.length > 0 && this.filters[type].attribute.operator !== undefined && this.filters[type].attribute.operator.length > 0
-      items.forEach(item => {
-        if (type === "nodes") {
-          if (!filterActive || (filterActive && this.filterNode(undefined, this.filters[type].query, item)))
+      let isDistinct = this.isDistinctAttribute(type, this.filters[type].attribute.name)
+      if (isDistinct) {
+        this.distinctFilter(type, items).forEach(item => {
+          item.selected = false
+        })
+      } else {
+        let filterActive = this.filters[type].attribute.name !== undefined && this.filters[type].attribute.name.length > 0 && this.filters[type].query !== null && this.filters[type].query.length > 0 && this.filters[type].attribute.operator !== undefined && this.filters[type].attribute.operator.length > 0
+        items.forEach(item => {
+          if (type === "nodes") {
+            if (!filterActive || (filterActive && this.filterNode(undefined, this.filters[type].query, item)))
+              item.selected = false;
+          } else if (!filterActive || (filterActive && this.filterEdge(undefined, this.filters[type].query, item)))
             item.selected = false;
-        } else if (!filterActive || (filterActive && this.filterEdge(undefined, this.filters[type].query, item)))
-          item.selected = false;
 
-      })
+        })
+      }
       this.reloadCountMap()
       this.$nextTick().then(() => {
         if ("nodes" === type)
@@ -1602,6 +1672,16 @@ export default {
       this.$emit("selectionEvent", {type: "node", name: Object.keys(this.nodes)[this.nodeTab], id: nodeId})
     }
     ,
+    resetFilters: function (type) {
+      this.filters[type].suggestions = false;
+      this.filters[type].query = "";
+      this.filters[type].attribute = {operator: undefined, dist: false, name: undefined,}
+    },
+    resetFilter: function (type) {
+      this.filters[type].query = "";
+      this.filters[type].attribute.dist = false;
+      this.filters[type].operator = undefined;
+    },
     edgeDetails: function (id) {
       let ids = id.split("-")
       this.$emit("selectionEvent", {
@@ -1753,6 +1833,7 @@ export default {
       this.setMetagraph(metagraph)
       this.clearLists()
       this.$http.get("/getGraphList?id=" + gid + "&cached=true").then(response => {
+        console.log(response.data)
         this.loadList(response.data)
       }).then(() => {
         this.gid = gid;
@@ -1800,11 +1881,11 @@ export default {
       }
       return Utils.getColoringExtended(this.metagraph, this.configuration.entityGraph, entity, name)
     },
-    getExtendedNodes: function(name, not){
-      let nodes = Utils.getNodesExtended(this.configuration.entityGraph,name)
-      if(not ===undefined)
+    getExtendedNodes: function (name, not) {
+      let nodes = Utils.getNodesExtended(this.configuration.entityGraph, name)
+      if (not === undefined)
         return nodes;
-      return nodes[0]===not ? nodes[1]:nodes[0]
+      return nodes[0] === not ? nodes[1] : nodes[0]
     },
     getColoring: function (entity, name) {
       if (this.metagraph === undefined) {

@@ -48,7 +48,7 @@ public class EdgeController {
         this.proteinEncodedByService = proteinEncodedByService;
         this.proteinInPathwayService = proteinInPathwayService;
         this.proteinInteractsWithProteinService = proteinInteractsWithProteinService;
-        this.objectMapper= objectMapper;
+        this.objectMapper = objectMapper;
     }
 
 
@@ -289,7 +289,7 @@ public class EdgeController {
         return proteinInteractsWithProteinService.getProteins(ids);
     }
 
-    public Iterable<ProteinInteractsWithProtein> findAllProteinInteractsWithProtein(){
+    public Iterable<ProteinInteractsWithProtein> findAllProteinInteractsWithProtein() {
         return proteinInteractsWithProteinService.findAllProteins();
     }
 
@@ -355,7 +355,7 @@ public class EdgeController {
             case "DisorderComorbidWithDisorder":
                 return isDisorderComorbidWithDisorder(k1, k2);
             case "GeneInteractsWithGene":
-                return isGeneInteractsWithGene(k1,k2);
+                return isGeneInteractsWithGene(k1, k2);
         }
         return false;
     }
@@ -451,128 +451,84 @@ public class EdgeController {
         return null;
     }
 
-    public LinkedList<String> edgesToAttributeList(Integer type, List<PairId> ids, HashSet<String> attributes) {
-        int chunksize= 1000;
+    public LinkedList<HashMap<String,Object>> edgesToAttributeList(Integer type, List<PairId> ids, HashSet<String> attributes) {
+        int chunksize = 1000;
         LinkedList<LinkedList<PairId>> chunks = new LinkedList<>();
-        for(int i = 0; i<ids.size()/chunksize+1; i++){
+        for (int i = 0; i < ids.size() / chunksize + 1; i++) {
             LinkedList<PairId> idChunk = new LinkedList<>();
-            for(int j = 0; j<chunksize;j++){
-                if(ids.size()<=i*chunksize+j)
+            for (int j = 0; j < chunksize; j++) {
+                if (ids.size() <= i * chunksize + j)
                     break;
-                idChunk.add(ids.get(i*chunksize+j));
+                idChunk.add(ids.get(i * chunksize + j));
             }
             chunks.add(idChunk);
         }
-        LinkedList<String> values = new LinkedList<>();
+        LinkedList<HashMap<String, Object>> values = new LinkedList<>();
         switch (Graphs.getEdge(type)) {
             case "GeneAssociatedWithDisorder":
                 chunks.stream().map(this::findAllGeneAssociatedWithDisorder).flatMap(Collection::stream).collect(Collectors.toList()).forEach(e -> {
                     associatedWithDisorderService.setDomainIds(e);
-                    try {
-                        values.add(objectMapper.writeValueAsString(e.getAsMap(attributes)));
-                    } catch (JsonProcessingException jsonProcessingException) {
-                        jsonProcessingException.printStackTrace();
-                    }
+                    values.add(e.getAsMap(attributes));
                 });
                 break;
             case "DrugHasTargetGene":
                 chunks.stream().map(this::findAllDrugHasTargetGene).flatMap(Collection::stream).collect(Collectors.toList()).forEach(e -> {
                     drugHasTargetService.setDomainIds(e);
-                    try {
-                        values.add(objectMapper.writeValueAsString(e.getAsMap(attributes)));
-                    } catch (JsonProcessingException jsonProcessingException) {
-                        jsonProcessingException.printStackTrace();
-                    }
+                    values.add(e.getAsMap(attributes));
                 });
                 break;
             case "ProteinEncodedBy":
                 chunks.stream().map(this::findAllProteinEncodedBy).flatMap(Collection::stream).collect(Collectors.toList()).forEach(e -> {
                     proteinEncodedByService.setDomainIds(e);
-                    try {
-                        values.add(objectMapper.writeValueAsString(e.getAsMap(attributes)));
-                    } catch (JsonProcessingException jsonProcessingException) {
-                        jsonProcessingException.printStackTrace();
-                    }
+                    values.add(e.getAsMap(attributes));
                 });
                 break;
             case "DrugHasIndication":
                 chunks.stream().map(this::findAllDrugHasIndication).flatMap(Collection::stream).collect(Collectors.toList()).forEach(e -> {
                     drugHasIndicationService.setDomainIds(e);
-                    try {
-                        values.add(objectMapper.writeValueAsString(e.getAsMap(attributes)));
-                    } catch (JsonProcessingException jsonProcessingException) {
-                        jsonProcessingException.printStackTrace();
-                    }
+                    values.add(e.getAsMap(attributes));
                 });
                 break;
             case "DrugHasTargetProtein":
                 chunks.stream().map(this::findAllDrugHasTargetProtein).flatMap(Collection::stream).collect(Collectors.toList()).forEach(e -> {
                     drugHasTargetService.setDomainIds(e);
-                    try {
-                        values.add(objectMapper.writeValueAsString(e.getAsMap(attributes)));
-                    } catch (JsonProcessingException jsonProcessingException) {
-                        jsonProcessingException.printStackTrace();
-                    }
+                    values.add(e.getAsMap(attributes));
                 });
                 break;
             case "ProteinInteractsWithProtein":
                 chunks.stream().map(this::findAllProteinInteractsWithProtein).flatMap(Collection::stream).collect(Collectors.toList()).forEach(e -> {
                     proteinInteractsWithProteinService.setDomainIds(e);
-                    try {
-                        values.add(objectMapper.writeValueAsString(e.getAsMap(attributes)));
-                    } catch (JsonProcessingException jsonProcessingException) {
-                        jsonProcessingException.printStackTrace();
-                    }
+                        values.add(e.getAsMap(attributes));
                 });
                 break;
             case "GeneInteractsWithGene":
                 chunks.stream().map(this::findAllGeneInteractsWithGene).flatMap(Collection::stream).collect(Collectors.toList()).forEach(e -> {
                     proteinInteractsWithProteinService.setDomainIds(e);
-                    try {
-                        values.add(objectMapper.writeValueAsString(e.getAsMap(attributes)));
-                    } catch (JsonProcessingException jsonProcessingException) {
-                        jsonProcessingException.printStackTrace();
-                    }
+                        values.add(e.getAsMap(attributes));
                 });
                 break;
             case "ProteinInPathway":
                 chunks.stream().map(this::findAllProteinInPathway).flatMap(Collection::stream).collect(Collectors.toList()).forEach(e -> {
                     proteinInPathwayService.setDomainIds(e);
-                    try {
-                        values.add(objectMapper.writeValueAsString(e.getAsMap(attributes)));
-                    } catch (JsonProcessingException jsonProcessingException) {
-                        jsonProcessingException.printStackTrace();
-                    }
+                        values.add(e.getAsMap(attributes));
                 });
                 break;
             case "ProteinAssociatedWithDisorder":
                 chunks.stream().map(this::findAllProteinAssociatedWithDisorder).flatMap(Collection::stream).collect(Collectors.toList()).forEach(e -> {
                     associatedWithDisorderService.setDomainIds(e);
-                    try {
-                        values.add(objectMapper.writeValueAsString(e.getAsMap(attributes)));
-                    } catch (JsonProcessingException jsonProcessingException) {
-                        jsonProcessingException.printStackTrace();
-                    }
+                        values.add(e.getAsMap(attributes));
                 });
                 break;
             case "DisorderIsSubtypeOfDisorder":
                 chunks.stream().map(this::findAllDisorderIsADisorder).flatMap(Collection::stream).collect(Collectors.toList()).forEach(e -> {
                     disorderIsADisorderService.setDomainIds(e);
-                    try {
-                        values.add(objectMapper.writeValueAsString(e.getAsMap(attributes)));
-                    } catch (JsonProcessingException jsonProcessingException) {
-                        jsonProcessingException.printStackTrace();
-                    }
+                        values.add(e.getAsMap(attributes));
                 });
                 break;
             case "DisorderComorbidWithDisorder":
                 chunks.stream().map(this::findAllDisorderComorbidWithDisorder).flatMap(Collection::stream).collect(Collectors.toList()).forEach(e -> {
                     disorderComorbidWithDisorderService.setDomainIds(e);
-                    try {
-                        values.add(objectMapper.writeValueAsString(e.getAsMap(attributes)));
-                    } catch (JsonProcessingException jsonProcessingException) {
-                        jsonProcessingException.printStackTrace();
-                    }
+                        values.add(e.getAsMap(attributes));
                 });
         }
         return values;

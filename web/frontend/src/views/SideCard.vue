@@ -454,7 +454,7 @@
                 <div><strong>{{ item }}</strong></div>
                 <div>
                   <v-list v-if="typeof detailedObject[item] === 'object'">
-                    <div v-for="i in detailedObject[item]" :key="i">
+                    <div v-for="(i, index) in detailedObject[item]" :key="index">
                       <v-chip outlined v-if="getUrl(item,i).length>0" @click="openExternal(item,i)"
                               :title="getExternalSource(item,i)">
                         {{ format(item, i) }}
@@ -678,8 +678,8 @@ export default {
     },
     getUrl: function (item, value) {
       let url = '';
-      if (value.length === 0)
-        return value
+      if (value===undefined || value.length === 0)
+        return ""
       if (item === "primaryDomainId" || item === "primaryDomainIds" || item === "domainIds" || item === "sourceDomainId" || item === "targetDomainId" || item === "memberOne" || item === "memberTwo") {
         let split = value.split(".")
         switch (split[0]) {

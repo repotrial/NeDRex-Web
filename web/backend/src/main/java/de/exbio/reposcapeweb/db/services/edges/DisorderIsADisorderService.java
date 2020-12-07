@@ -4,9 +4,14 @@ import de.exbio.reposcapeweb.db.entities.edges.DisorderComorbidWithDisorder;
 import de.exbio.reposcapeweb.db.entities.edges.DisorderIsADisorder;
 import de.exbio.reposcapeweb.db.entities.edges.GeneAssociatedWithDisorder;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
+import de.exbio.reposcapeweb.db.entities.nodes.Disorder;
+import de.exbio.reposcapeweb.db.entities.nodes.Drug;
 import de.exbio.reposcapeweb.db.repositories.edges.DisorderIsADisorderRepository;
 import de.exbio.reposcapeweb.db.services.nodes.DisorderService;
 import de.exbio.reposcapeweb.db.updates.UpdateOperation;
+import de.exbio.reposcapeweb.filter.FilterEntry;
+import de.exbio.reposcapeweb.filter.FilterKey;
+import de.exbio.reposcapeweb.filter.FilterType;
 import de.exbio.reposcapeweb.utils.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,7 +59,13 @@ public class DisorderIsADisorderService {
             });
         }
         disorderIsADisorderRepository.saveAll(toSave);
+
         log.debug("Updated disorder_is_subtype_of_disorder table: " + insertCount + " Inserts, " + (updates.containsKey(UpdateOperation.Alteration) ? updates.get(UpdateOperation.Alteration).size() : 0) + " Changes, " + (updates.containsKey(UpdateOperation.Deletion) ? updates.get(UpdateOperation.Deletion).size() : 0) + " Deletions identified!");
+        if (toSave.size() > 0) {
+            log.debug("Rebuilding disorder-hierarchy for filters");
+            createDistinctFilters();
+        }
+
         return true;
     }
 
@@ -121,6 +132,16 @@ public class DisorderIsADisorderService {
 
     public Long getCount() {
         return disorderIsADisorderRepository.count();
+    }
+
+    public void createDistinctFilters() {
+        HashMap<Integer, FilterEntry> entryMap = new HashMap<>();
+        disorderService.findAll().forEach(d -> entryMap.put(d.getId(),new FilterEntry(d.getDisplayName(),FilterType.GROUP,d.getId())));
+
+        findAll().forEach(dd -> {
+            disorderService.getFilter().addDistinct(FilterType.GROUP,new FilterKey(entryMap.get(dd.getPrimaryIds().getId2()).getName()),entryMap.get(dd.getPrimaryIds().getId2()));
+            disorderService.getFilter().addDistinct(FilterType.GROUP,new FilterKey(entryMap.get(dd.getPrimaryIds().getId2()).getName()),entryMap.get(dd.getPrimaryIds().getId1()));
+        });
     }
 
 }
