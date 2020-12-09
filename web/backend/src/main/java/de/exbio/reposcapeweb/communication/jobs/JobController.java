@@ -159,7 +159,7 @@ public class JobController {
         Job j = jobs.get(id);
         try {
             jobQueue.finishJob(j);
-            HashSet<Integer> results = toIds(j,toolService.getJobResults(j));
+            HashSet<Integer> results = toolService.getJobResults(j);
             if ((results == null || results.isEmpty()) & (!j.getParams().containsKey("nodesOnly") || !j.getParams().get("nodesOnly").equals("true"))) {
                 j.setDerivedGraph(j.getBasisGraph());
             } else
@@ -172,7 +172,6 @@ public class JobController {
         save(j);
         socketController.setJobUpdate(j);
         toolService.clearDirectories(j);
-        //TODO send finished message to user frontend
     }
 
     private HashSet<Integer> toIds(Job j, HashSet jobResults) {

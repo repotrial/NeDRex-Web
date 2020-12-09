@@ -14,10 +14,8 @@ import de.exbio.reposcapeweb.db.io.Node;
 import de.exbio.reposcapeweb.db.services.edges.*;
 import de.exbio.reposcapeweb.db.services.nodes.*;
 import de.exbio.reposcapeweb.filter.FilterService;
-import de.exbio.reposcapeweb.utils.FileUtils;
-import de.exbio.reposcapeweb.utils.ReaderUtils;
-import de.exbio.reposcapeweb.utils.RepoTrialUtils;
-import de.exbio.reposcapeweb.utils.StringUtils;
+import de.exbio.reposcapeweb.tools.ToolService;
+import de.exbio.reposcapeweb.utils.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,10 +25,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import javax.sql.DataSource;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -64,7 +59,7 @@ public class UpdateService {
     private final ProteinInPathwayService proteinInPathwayService;
     private final ProteinInteractsWithProteinService proteinInteractsWithProteinService;
     private final DrugHasContraindicationService drugHasContraindicationService;
-
+    private final ToolService toolService;
 
     @Autowired
     public UpdateService(Environment environment,
@@ -86,7 +81,8 @@ public class UpdateService {
                          ProteinEncodedByService proteinEncodedByService,
                          ProteinInPathwayService proteinInPathwayService,
                          ProteinInteractsWithProteinService proteinInteractsWithProteinService,
-                         DrugHasContraindicationService drugHasContraindicationService
+                         DrugHasContraindicationService drugHasContraindicationService,
+                         ToolService toolService
     ) {
         this.env = environment;
         this.objectMapper = objectMapper;
@@ -108,6 +104,7 @@ public class UpdateService {
         this.proteinInPathwayService = proteinInPathwayService;
         this.proteinInteractsWithProteinService = proteinInteractsWithProteinService;
         this.drugHasContraindicationService = drugHasContraindicationService;
+        this.toolService = toolService;
 
     }
 
@@ -120,6 +117,75 @@ public class UpdateService {
         }
         dbCommunication.scheduleUpdate();
         executeDataUpdate();
+        renewDBDumps();
+    }
+
+    public void renewDBDumps() {
+        File dir = new File(env.getProperty("path.external.cache"));
+        File ppiFile = new File(dir, "proteinInteractsWithProtein.tsv");
+        try (BufferedWriter bw = WriterUtils.getBasicWriter(ppiFile)) {
+            proteinInteractsWithProteinService.findAllProteins().forEach(ppi -> {
+                try {
+                    bw.write(proteinService.map(ppi.getPrimaryIds().getId1()) + "\t" + proteinService.map(ppi.getPrimaryIds().getId2()) + "\t" + ppi.getEvidenceTypes().contains("exp") + "\n");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+        } catch (IOException e) {
+        }
+
+        File ggiFile = new File(dir, "geneInteractsWithGene.tsv");
+        try (BufferedWriter bw = WriterUtils.getBasicWriter(ggiFile)) {
+            proteinInteractsWithProteinService.findAllGenes().forEach(ggi -> {
+                try {
+                    bw.write(geneService.map(ggi.getPrimaryIds().getId1()) + "\t" + geneService.map(ggi.getPrimaryIds().getId2()) + "\t" + ggi.getEvidenceTypes().contains("exp") + "\n");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+        } catch (IOException e) {
+        }
+        File gdFile = new File(dir, "drugHasTargetGene.tsv");
+        try (BufferedWriter bw = WriterUtils.getBasicWriter(gdFile)) {
+            drugHasTargetService.findAllGenes().forEach(gd -> {
+                try {
+                    bw.write(gd.getPrimaryIds().getId1() + "\t" + geneService.map(gd.getPrimaryIds().getId2()) + "\n");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+        } catch (IOException e) {
+        }
+
+        File pdFile = new File(dir, "drugHasTargetProtein.tsv");
+        try (BufferedWriter bw = WriterUtils.getBasicWriter(pdFile)) {
+            drugHasTargetService.findAllProteins().forEach(pd -> {
+                try {
+                    bw.write(pd.getPrimaryIds().getId1() + "\t" + proteinService.map(pd.getPrimaryIds().getId2()) + "\n");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+        } catch (IOException e) {
+        }
+
+        File dFile = new File(dir, "drugs.tsv");
+        try (BufferedWriter bw = WriterUtils.getBasicWriter(dFile)) {
+            drugService.findAll().forEach(d -> {
+                try {
+                    bw.write(d.getId() + "\t");
+                    Iterator<String> groups = d.getDrugGroups().iterator();
+                    while (groups.hasNext())
+                        bw.write(groups.next() + (groups.hasNext() ? ", " : ""));
+                    bw.write("\n");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+        } catch (IOException e) {
+        }
+
+        toolService.createInteractionFiles();
     }
 
     @Async

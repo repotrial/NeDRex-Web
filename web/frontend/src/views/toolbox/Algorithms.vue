@@ -48,6 +48,17 @@
           </v-select>
         </v-col>
       </v-row>
+      <v-row>
+        <v-col>
+          <v-switch
+            label="Experimental Interactions only"
+            v-model="expSwitch"
+          >
+          </v-switch>
+
+        </v-col>
+
+      </v-row>
       <v-row v-if="methodModel==='bicon'" style="margin: 0">
         <v-file-input
           v-on:change="onFileSelected"
@@ -88,60 +99,67 @@
             </v-col>
           </v-row>
         </template>
-        <templaste v-if="methodModel==='bicon'">
+        <template v-if="methodModel==='bicon'">
           <v-divider></v-divider>
+<!--          <v-row>-->
+<!--            <v-col>-->
+<!--              <v-slider-->
+<!--                hide-details-->
+<!--                class="align-center"-->
+<!--                v-model="models.bicon.lg_min"-->
+<!--                min="0"-->
+<!--                :max=models.bicon.lg_max-->
+<!--              >-->
+<!--                <template v-slot:prepend>-->
+<!--                  <v-text-field-->
+<!--                    v-model="models.bicon.lg_min"-->
+<!--                    class="mt-0 pt-0"-->
+<!--                    type="number"-->
+<!--                    style="width: 60px"-->
+<!--                    label="n"-->
+<!--                  ></v-text-field>-->
+<!--                </template>-->
+<!--                <template v-slot:append>-->
+<!--                  <v-tooltip left>-->
+<!--                    <template v-slot:activator="{ on, attrs }">-->
+<!--                      <v-icon-->
+<!--                        v-bind="attrs"-->
+<!--                        v-on="on"-->
+<!--                        left> far fa-question-circle-->
+<!--                      </v-icon>-->
+<!--                    </template>-->
+<!--                    <span>Minimal solution subnetwork size.</span>-->
+<!--                  </v-tooltip>-->
+<!--                </template>-->
+<!--              </v-slider>-->
+<!--            </v-col>-->
+<!--          </v-row>-->
           <v-row>
             <v-col>
-              <v-slider
+              <v-range-slider
                 hide-details
                 class="align-center"
-                v-model="models.bicon.lg_min"
-                min="0"
-                :max=models.bicon.lg_max
-              >
-                <template v-slot:prepend>
-                  <v-text-field
-                    v-model="models.bicon.lg_min"
-                    class="mt-0 pt-0"
-                    type="number"
-                    style="width: 60px"
-                    label="n"
-                  ></v-text-field>
-                </template>
-                <template v-slot:append>
-                  <v-tooltip left>
-                    <template v-slot:activator="{ on, attrs }">
-                      <v-icon
-                        v-bind="attrs"
-                        v-on="on"
-                        left> far fa-question-circle
-                      </v-icon>
-                    </template>
-                    <span>Minimal solution subnetwork size.</span>
-                  </v-tooltip>
-                </template>
-              </v-slider>
-            </v-col>
-          </v-row>
-          <v-row>
-            <v-col>
-              <v-slider
-                hide-details
-                class="align-center"
-                v-model="models.bicon.lg_max"
+                v-model="models.bicon.lg"
                 min="1"
                 max="1000"
               >
                 <template v-slot:prepend>
                   <v-text-field
-                    v-model="models.bicon.lg_max"
+                    v-model="models.bicon.lg[0]"
                     class="mt-0 pt-0"
                     type="number"
                     style="width: 60px"
-                    label="n"
+                    label="min"
                   ></v-text-field>
                 </template>
                 <template v-slot:append>
+                  <v-text-field
+                    v-model="models.bicon.lg[1]"
+                    class="mt-0 pt-0"
+                    type="number"
+                    style="width: 60px"
+                    label="max"
+                  ></v-text-field>
                   <v-tooltip left>
                     <template v-slot:activator="{ on, attrs }">
                       <v-icon
@@ -153,11 +171,11 @@
                     <span>Maximal solution subnetwork size.</span>
                   </v-tooltip>
                 </template>
-              </v-slider>
+              </v-range-slider>
             </v-col>
           </v-row>
 
-        </templaste>
+        </template>
         <template v-if="methodModel==='diamond'">
           <v-divider></v-divider>
           <v-row>
@@ -263,7 +281,85 @@
             </v-col>
           </v-row>
         </template>
-
+        <template v-if="methodModel==='trustrank'">
+          <v-divider></v-divider>
+          <v-row>
+            <v-col>
+              <v-switch
+                label="Only direct Drugs"
+                v-model="models.trustrank.onlyDirect"
+              >
+                <template v-slot:append>
+                  <v-tooltip left>
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-icon
+                        v-bind="attrs"
+                        v-on="on"
+                        left> far fa-question-circle
+                      </v-icon>
+                    </template>
+                    <span>If only the drugs interacting directly with seeds should be considered in the ranking,
+                             this should be selected. If including the non-direct drugs is desired unselect.</span>
+                  </v-tooltip>
+                </template>
+              </v-switch>
+            </v-col>
+            <v-col>
+              <v-switch
+                label="Only direct Drugs"
+                v-model="models.trustrank.onlyApproved"
+              >
+                <template v-slot:append>
+                  <v-tooltip left>
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-icon
+                        v-bind="attrs"
+                        v-on="on"
+                        left> far fa-question-circle
+                      </v-icon>
+                    </template>
+                    <span>If only approved drugs should be considered in the ranking,
+                             this should be selected. If including all approved and unapproved drugs is desired unselect.</span>
+                  </v-tooltip>
+                </template>
+              </v-switch>
+            </v-col>
+          </v-row>
+          <v-row>
+            <v-col>
+              <v-slider
+                hide-details
+                class="align-center"
+                v-model="models.trustrank.damping"
+                step="0.01"
+                min="0"
+                max="1"
+              >
+                <template v-slot:prepend>
+                  <v-text-field
+                    v-model="models.trustrank.damping"
+                    class="mt-0 pt-0"
+                    type="float"
+                    style="width: 60px"
+                    label="damping-factor"
+                  ></v-text-field>
+                </template>
+                <template v-slot:append>
+                  <v-tooltip left>
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-icon
+                        v-bind="attrs"
+                        v-on="on"
+                        left> far fa-question-circle
+                      </v-icon>
+                    </template>
+                    <span>A float value between 0-1 to be used as damping factor parameter.</span>
+                  </v-tooltip>
+                </template>
+              </v-slider>
+            </v-col>
+          </v-row>
+        </template>
         <v-row>
           <v-col></v-col>
         </v-row>
@@ -299,6 +395,7 @@ export default {
       methodModel: "",
       nodeModel: undefined,
       selectionSwitch: false,
+      expSwitch: true,
       advanced: false,
       models: {
         advanced: {
@@ -312,8 +409,12 @@ export default {
         },
         bicon: {
           exprFile: undefined,
-          lg_min: 10,
-          lg_max: 15
+          lg:[10,15]
+        },
+        trustrank: {
+          onlyApproved: true,
+          onlyDirect: true,
+          damping: 0.85
         }
       },
       categories:
@@ -334,6 +435,7 @@ export default {
     },
     submitAlgorithm: function () {
       let params = {}
+      params.experimentalOnly = this.expSwitch
       if (this.categoryModel === 0) {
         params["addInteractions"] = this.models.advanced.addInteractions
         params["nodesOnly"] = this.models.advanced.keepNodesOnly
@@ -345,8 +447,8 @@ export default {
         params['pcutoff'] = this.models.diamond.pModel;
       }
       if (this.methodModel === 'bicon') {
-        params['lg_min'] = this.models.bicon.lg_min;
-        params['lg_max'] = this.models.bicon.lg_max;
+        params['lg_min'] = this.models.bicon.lg[0];
+        params['lg_max'] = this.models.bicon.lg[1];
         Utils.readFile(this.models.bicon.exprFile).then(content => {
           params['exprData'] = content
           this.$emit('executeAlgorithmEvent', this.methodModel, params)
@@ -355,9 +457,13 @@ export default {
       }
       if (this.methodModel === 'trustrank') {
         params['type'] = this.nodeModel
+        params['direct'] = this.models.trustrank.onlyDirect;
+        params['approved'] = this.models.trustrank.onlyApproved;
+        params['damping'] = this.models.trustrank.damping;
       }
       // if (this.methodModel === 'diamond' || this.methodModel === 'bicon'|| this.methodModel='trustran')
       params.selection = this.selectionSwitch
+
       this.$emit('executeAlgorithmEvent', this.methodModel, params)
     },
 
@@ -382,6 +488,7 @@ export default {
     resetAlgorithms: function () {
       this.nodeModel = undefined
       this.selectionSwitch = false
+      this.expSwitch = true
       this.categoryModel = undefined
       this.methodModel = undefined
       this.categories.methodModel = undefined
@@ -391,8 +498,10 @@ export default {
       this.models.diamond.alphaModel = 1
       this.models.diamond.pModel = 0
       this.models.bicon.exprFile = undefined
-      this.models.bicon.lg_min = 10
-      this.models.bicon.lg_max = 15
+      this.models.bicon.lg= [10,15]
+      this.models.trustrank.onlyApproved = true
+      this.models.trustrank.onlyDirect = true
+      this.models.trustrank.damping = 0.85
     },
 
     formatTime: function (timestamp) {

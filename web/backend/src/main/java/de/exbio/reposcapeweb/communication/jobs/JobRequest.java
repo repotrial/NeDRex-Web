@@ -15,6 +15,7 @@ public class JobRequest {
     public boolean selection;
     public List<Integer> nodes;
     public String exprData;
+    public boolean experimentalOnly;
     @JsonIgnore
     public HashSet<String> ids;
 

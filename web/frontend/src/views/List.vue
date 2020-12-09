@@ -1898,6 +1898,7 @@ export default {
     executeAlgorithm: function (algorithm, params) {
       let payload = {userId: this.uid, graphId: this.gid, algorithm: algorithm, params: params}
       payload.selection = params.selection
+      payload.experimentalOnly = params.experimentalOnly
       if (params.selection)
         payload["nodes"] = this.nodes[params.type].filter(n => n.selected).map(n => n.id)
       if (algorithm === "diamond" || algorithm === "trustrank") {

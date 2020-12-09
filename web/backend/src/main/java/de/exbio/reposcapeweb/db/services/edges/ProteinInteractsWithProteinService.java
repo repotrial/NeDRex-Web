@@ -1,6 +1,5 @@
 package de.exbio.reposcapeweb.db.services.edges;
 
-import de.exbio.reposcapeweb.db.entities.edges.DrugHasIndication;
 import de.exbio.reposcapeweb.db.entities.edges.GeneInteractsWithGene;
 import de.exbio.reposcapeweb.db.entities.edges.ProteinInteractsWithProtein;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
@@ -20,6 +19,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 
@@ -30,6 +30,7 @@ public class ProteinInteractsWithProteinService {
 
     private final ProteinInteractsWithProteinRepository proteinInteractsWithProteinRepository;
     private final GeneInteractsWithGeneRepository geneInteractsWithGeneRepository;
+    private final ProteinEncodedByService proteinEncodedByService;
 
     private final ProteinService proteinService;
     private final GeneService geneService;
@@ -40,17 +41,18 @@ public class ProteinInteractsWithProteinService {
 
     private final DataSource dataSource;
     private final String clearQuery = "DELETE FROM gene_interacts_with_gene";
-    private final String generationQuery = "INSERT IGNORE INTO gene_interacts_with_gene SELECT enc1.id_2, enc2.id_2 FROM protein_interacts_with_protein ppi INNER JOIN protein_encoded_by enc1 ON ppi.id_1=enc1.id_1 INNER JOIN protein_encoded_by enc2 on ppi.id_2=enc2.id_1 WHERE enc1.id_2 <enc2.id_2 UNION ALL ( SELECT enc2.id_2, enc1.id_2 FROM protein_interacts_with_protein ppi INNER JOIN protein_encoded_by enc1 ON ppi.id_1=enc1.id_1 INNER JOIN protein_encoded_by enc2 on ppi.id_2=enc2.id_1 WHERE enc1.id_2 >enc2.id_2);";
+    private final String generationQuery = "INSERT IGNORE INTO gene_interacts_with_gene (id_1,id_2) SELECT enc1.id_2, enc2.id_2 FROM protein_interacts_with_protein ppi INNER JOIN protein_encoded_by enc1 ON ppi.id_1=enc1.id_1 INNER JOIN protein_encoded_by enc2 on ppi.id_2=enc2.id_1 WHERE enc1.id_2 <enc2.id_2 UNION ALL ( SELECT enc2.id_2, enc1.id_2 FROM protein_interacts_with_protein ppi INNER JOIN protein_encoded_by enc1 ON ppi.id_1=enc1.id_1 INNER JOIN protein_encoded_by enc2 on ppi.id_2=enc2.id_1 WHERE enc1.id_2 >enc2.id_2);";
     private PreparedStatement clearPs = null;
     private PreparedStatement generationPs = null;
 
     @Autowired
-    public ProteinInteractsWithProteinService(ProteinService proteinService, ProteinInteractsWithProteinRepository proteinInteractsWithProteinRepository, GeneInteractsWithGeneRepository geneInteractsWithGeneRepository, DataSource dataSource, GeneService geneService) {
+    public ProteinInteractsWithProteinService(ProteinEncodedByService proteinEncodedByService, ProteinService proteinService, ProteinInteractsWithProteinRepository proteinInteractsWithProteinRepository, GeneInteractsWithGeneRepository geneInteractsWithGeneRepository, DataSource dataSource, GeneService geneService) {
         this.proteinInteractsWithProteinRepository = proteinInteractsWithProteinRepository;
         this.geneInteractsWithGeneRepository = geneInteractsWithGeneRepository;
         this.proteinService = proteinService;
         this.dataSource = dataSource;
         this.geneService = geneService;
+        this.proteinEncodedByService = proteinEncodedByService;
     }
 
 
@@ -77,9 +79,10 @@ public class ProteinInteractsWithProteinService {
             });
         }
         proteinInteractsWithProteinRepository.saveAll(toSave);
+        int changes = insertCount + (updates.containsKey(UpdateOperation.Alteration) ? updates.get(UpdateOperation.Alteration).size() : 0) + (updates.containsKey(UpdateOperation.Deletion) ? updates.get(UpdateOperation.Deletion).size() : 0);
         log.debug("Updated protein_interacts_with_protein table: " + insertCount + " Inserts, " + (updates.containsKey(UpdateOperation.Alteration) ? updates.get(UpdateOperation.Alteration).size() : 0) + " Changes, " + (updates.containsKey(UpdateOperation.Deletion) ? updates.get(UpdateOperation.Deletion).size() : 0) + " Deletions identified!");
         log.debug("Deriving entries for gene_interacts_with_gene.");
-        if (!generateGeneEntries())
+        if (changes > 0 && !generateGeneEntries())
             return false;
         log.debug("Derived " + geneInteractsWithGeneRepository.count() + " gene -> gene relations.");
 
@@ -87,16 +90,47 @@ public class ProteinInteractsWithProteinService {
     }
 
     public boolean generateGeneEntries() {
+        //TODO only update changed entries?
         log.debug("Generating entries for gene_interacts_with_gene from drug_has_target(_protein).");
+        HashMap<Integer, HashSet<Integer>> geneProteinMap = new HashMap<>();
+        HashMap<Integer, Integer> proteinGeneMap = new HashMap<>();
+        proteinEncodedByService.findAll().forEach(e -> {
+            if (!geneProteinMap.containsKey(e.getPrimaryIds().getId1()))
+                geneProteinMap.put(e.getPrimaryIds().getId1(), new HashSet<>());
+            geneProteinMap.get(e.getPrimaryIds().getId1()).add(e.getPrimaryIds().getId2());
+            proteinGeneMap.put(e.getPrimaryIds().getId1(), e.getPrimaryIds().getId2());
+        });
+
+
         try (Connection con = dataSource.getConnection()) {
             clearPs = con.prepareCall(clearQuery);
-            generationPs = con.prepareStatement(generationQuery);
             clearPs.executeUpdate();
-            generationPs.executeUpdate();
         } catch (SQLException throwables) {
             throwables.printStackTrace();
             return false;
         }
+        HashMap<Integer, HashMap<Integer, GeneInteractsWithGene>> ggis = new HashMap<>();
+        LinkedList<GeneInteractsWithGene> ggiList = new LinkedList<>();
+
+        findAllProteins().forEach(ppi -> {
+            try {
+                int gid1 = proteinGeneMap.get(ppi.getPrimaryIds().getId1());
+                int gid2 = proteinGeneMap.get(ppi.getPrimaryIds().getId2());
+                if (gid1 > gid2) {
+                    int tmp = gid2;
+                    gid2 = gid1;
+                    gid1 = tmp;
+                }
+                GeneInteractsWithGene ggi = new GeneInteractsWithGene(gid1, gid2);
+                ggi.addEvidenceTypes(ppi.getEvidenceTypes());
+                if (!ggis.containsKey(gid1))
+                    ggis.put(gid1, new HashMap<>());
+                ggis.get(gid1).put(gid2, ggi);
+                ggiList.add(ggi);
+            } catch (NullPointerException ignore) {
+            }
+        });
+        geneInteractsWithGeneRepository.saveAll(ggiList);
         return true;
     }
 
@@ -177,8 +211,8 @@ public class ProteinInteractsWithProteinService {
     }
 
     public List<ProteinInteractsWithProtein> getProteins(Collection<PairId> ids) {
-        ids.forEach(p->{
-            if(p.getId1()>p.getId2())
+        ids.forEach(p -> {
+            if (p.getId1() > p.getId2())
                 p.flipIds();
         });
         return proteinInteractsWithProteinRepository.findProteinInteractsWithProteinsByIdIn(ids);
@@ -193,21 +227,21 @@ public class ProteinInteractsWithProteinService {
     }
 
     public List<GeneInteractsWithGene> getGenes(Collection<PairId> ids) {
-        ids.forEach(p->{
-            if(p.getId1()>p.getId1())
+        ids.forEach(p -> {
+            if (p.getId1() > p.getId1())
                 p.flipIds();
         });
         return geneInteractsWithGeneRepository.findGeneInteractsWithGeneByIdIn(ids);
     }
 
     public Optional<GeneInteractsWithGene> findGene(PairId id) {
-        if(id.getId1()>id.getId2())
+        if (id.getId1() > id.getId2())
             id.flipIds();
         return geneInteractsWithGeneRepository.findById(id);
     }
 
     public Optional<ProteinInteractsWithProtein> findProtein(PairId id) {
-        if(id.getId1()>id.getId2())
+        if (id.getId1() > id.getId2())
             id.flipIds();
         return proteinInteractsWithProteinRepository.findById(id);
     }
@@ -219,14 +253,14 @@ public class ProteinInteractsWithProteinService {
     public ProteinInteractsWithProtein setDomainIds(ProteinInteractsWithProtein item) {
         item.setMemberOne(proteinService.map(item.getPrimaryIds().getId1()));
         item.setMemberTwo(proteinService.map(item.getPrimaryIds().getId2()));
-        item.setNodeNames(proteinService.getName(item.getPrimaryIds().getId1()),proteinService.getName(item.getPrimaryIds().getId2()));
+        item.setNodeNames(proteinService.getName(item.getPrimaryIds().getId1()), proteinService.getName(item.getPrimaryIds().getId2()));
         return item;
     }
 
     public GeneInteractsWithGene setDomainIds(GeneInteractsWithGene item) {
         item.setMemberOne(geneService.map(item.getPrimaryIds().getId1()));
         item.setMemberTwo(geneService.map(item.getPrimaryIds().getId2()));
-        item.setNodeNames(geneService.getName(item.getPrimaryIds().getId1()),geneService.getName(item.getPrimaryIds().getId2()));
+        item.setNodeNames(geneService.getName(item.getPrimaryIds().getId1()), geneService.getName(item.getPrimaryIds().getId2()));
         return item;
     }
 
@@ -239,7 +273,7 @@ public class ProteinInteractsWithProteinService {
         return proteinInteractsWithProteinRepository.count();
     }
 
-    public Long getProteinCount(){
+    public Long getProteinCount() {
         return geneInteractsWithGeneRepository.count();
     }
 }

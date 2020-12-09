@@ -14,6 +14,7 @@ import de.exbio.reposcapeweb.db.io.ImportService;
 import de.exbio.reposcapeweb.db.repositories.edges.DrugHasTargetProteinRepository;
 import de.exbio.reposcapeweb.db.services.controller.EdgeController;
 import de.exbio.reposcapeweb.db.services.controller.NodeController;
+import de.exbio.reposcapeweb.db.services.edges.ProteinInteractsWithProteinService;
 import de.exbio.reposcapeweb.db.services.nodes.DisorderService;
 import de.exbio.reposcapeweb.db.updates.UpdateService;
 import de.exbio.reposcapeweb.filter.FilterService;
@@ -54,9 +55,10 @@ public class ReposcapewebApplication {
     private final JobController jobController;
     private final EdgeController edgeController;
     private final NodeController nodeController;
+    private final ProteinInteractsWithProteinService proteinInteractsWithProteinService;
 
     @Autowired
-    public ReposcapewebApplication(JobController jobController, NodeController nodeController, ObjectMapper objectMapper, EdgeController edgeController, DisorderService disorderService, UpdateService updateService, Environment environment, ImportService importService, FilterService filterService, ToolService toolService, WebGraphService graphService) {
+    public ReposcapewebApplication(ProteinInteractsWithProteinService proteinInteractsWithProteinService,JobController jobController, NodeController nodeController, ObjectMapper objectMapper, EdgeController edgeController, DisorderService disorderService, UpdateService updateService, Environment environment, ImportService importService, FilterService filterService, ToolService toolService, WebGraphService graphService) {
         this.updateService = updateService;
         this.importService = importService;
         this.env = environment;
@@ -64,6 +66,7 @@ public class ReposcapewebApplication {
         this.jobController = jobController;
         this.edgeController = edgeController;
         this.nodeController = nodeController;
+        this.proteinInteractsWithProteinService = proteinInteractsWithProteinService;
 
     }
 
@@ -75,13 +78,11 @@ public class ReposcapewebApplication {
     public void postConstruct() {
         Graphs.setUp();
 
-        toolService.validateTools();
-
         jobController.importJobsHistory();
         importService.importHistory();
         importService.importNodeData();
 
-
+        toolService.validateTools();
         if (Boolean.parseBoolean(env.getProperty("update.onstartup"))) {
             updateService.scheduleDataUpdate();
         } else {
@@ -89,14 +90,13 @@ public class ReposcapewebApplication {
             log.warn("Startup Database update is deactivated! Activate it by setting 'update.onstartup=true' in the application.properties.");
         }
 
+//        updateService.renewDBDumps();
         log.debug("Current RAM usage: " + (int) ((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024)
                 + "MB");
-        toolService.createInteractionFiles();
-
+//        toolService.createInteractionFiles();
 
         log.info("Current RAM usage: " + (int) ((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024)
                 + "MB");
-
 
         log.info("Service can be used!");
 

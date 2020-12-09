@@ -210,7 +210,12 @@ public class ToolService {
                 break;
             }
             case TRUSTRANK:{
-                command += "trustrank "+trustrank.getAbsolutePath()+" "+ new File(dataDir, "ranking_files/PPdr-for-ranking.gt").getAbsolutePath() +" seeds.list Y Y";
+                command += "trustrank "+trustrank.getAbsolutePath()+" "+
+                        (request.getParams().get("type").equals("gene") ? new File(dataDir, "ranking_files/GGDr_"+(request.experimentalOnly?"exp":"all")+".gt").getAbsolutePath(): new File(dataDir, "ranking_files/PPDr_all.gt").getAbsolutePath()) +
+                        " seeds.list "+
+                        request.getParams().get("damping")+
+                        (request.getParams().get("direct").charAt(0)=='t' ?" Y":" N") +
+                        (request.getParams().get("approved").charAt(0)=='t' ?" Y":" N");
             }
         }
         System.out.println(command);
@@ -240,10 +245,12 @@ public class ToolService {
             case TRUSTRANK:{
                 File seed = new File(getTempDir(job.getJobId()), "seeds.list");
 
+                writeSeedFile(req.params.get("type"),seed, req.ids);
 //                if (req.selection)
-                    writeSeedFile(req.params.get("type"), seed, req.ids);
+//                    writeSeedFile(req.params.get("type"), seed, req.nodes);
 //                else
 //                    writeSeedFile(req.params.get("type"), seed, g);
+//                writeSeedFile(req.params.get("type"),new File(getTempDir(job.getJobId()),"mapped.list"), req.ids);
 
 //                BufferedReader br = null;
 //                try {
@@ -333,14 +340,15 @@ public class ToolService {
         return results;
     }
 
-    private HashSet<String> readTrustRankResults(File f, int i) {
-        HashSet<String> out = new HashSet<>();
+    private HashSet<Integer> readTrustRankResults(File f, int i) {
+        //TODO return ranking scores
+        HashSet<Integer> out = new HashSet<>();
         try(BufferedReader br = ReaderUtils.getBasicReader(f)){
             String line = br.readLine();
             while((line=br.readLine())!=null){
                 LinkedList<String> split = StringUtils.split(line,"\t");
                 if(Double.parseDouble(split.get(1))>i)
-                    out.add(split.getFirst());
+                    out.add(Integer.parseInt(split.getFirst()));
             }
         }catch (IOException e){
             e.printStackTrace();
@@ -349,7 +357,7 @@ public class ToolService {
     }
 
     public void clearDirectories(Job j) {
-//        getTempDir(j.getJobId()).delete();
+        getTempDir(j.getJobId()).delete();
     }
 
     private HashSet<Integer> readDiamondResults(File f, double p_cutoff) {

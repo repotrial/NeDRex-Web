@@ -12,10 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 
 /**
@@ -43,6 +40,10 @@ public class GeneInteractsWithGene extends RepoTrialEdge implements Serializable
     private String nodeOne;
     @Transient
     private String nodeTwo;
+
+    private String evidenceTypes;
+
+//    private String conservativeEvidences;
 //    @Column(columnDefinition = "TEXT")
 //    private String methods;
 //
@@ -52,51 +53,76 @@ public class GeneInteractsWithGene extends RepoTrialEdge implements Serializable
     public GeneInteractsWithGene() {
     }
 
+    public GeneInteractsWithGene(int id1, int id2) {
+        if (id1 < id2)
+            id = new PairId(id1, id2);
+        else
+            id = new PairId(id2, id1);
+    }
+
+
     public static String[] getListAttributes() {
-        return new String[]{"id","node1","node2"};
+        return new String[]{"id", "node1", "node2", "evidenceTypes"};
     }
 
 
     @Transient
     @JsonIgnore
-    public final static String[] allAttributes = new String[]{"id","idOne","idTwo","node1","node2","memberOne","memberTwo","type"};
+    public final static String[] allAttributes = new String[]{"id", "idOne", "idTwo", "node1", "node2", "memberOne", "memberTwo", "evidenceTypes", "type"};
 
     @Transient
     @JsonIgnore
-    public final static String[] allAttributeTypes = new String[]{"numeric","numeric","numeric","","","","", ""};
+    public final static String[] allAttributeTypes = new String[]{"numeric", "numeric", "numeric", "", "", "", "", "array", ""};
 
     @Transient
     @JsonIgnore
-    public final static boolean[] idAttributes = new boolean[]{true, true, true, false,false,true, true, false};
+    public final static boolean[] idAttributes = new boolean[]{true, true, true, false, false, true, true, false, false};
 
     @Override
     public HashMap<String, Object> getAsMap() {
-        HashMap<String,Object> values = new HashMap<>();
-        values.put("memberOne",memberOne);
-        values.put("memberTwo",memberTwo);
-        values.put("idOne",id.getId1());
-        values.put("idTwo",id.getId2());
-        values.put("node1",nodeOne);
-        values.put("node2",nodeTwo);
-        values.put("type",getType());
-        values.put("id",id.getId1()+"-"+id.getId2());
+        HashMap<String, Object> values = new HashMap<>();
+        values.put("memberOne", memberOne);
+        values.put("memberTwo", memberTwo);
+        values.put("idOne", id.getId1());
+        values.put("idTwo", id.getId2());
+        values.put("node1", nodeOne);
+        values.put("node2", nodeTwo);
+        values.put("type", getType());
+        values.put("evidenceTypes", getEvidenceTypes());
+        values.put("id", id.getId1() + "-" + id.getId2());
         return values;
     }
 
-    public void setNodeNames(String node1, String node2){
-        nodeOne=node1;
-        nodeTwo=node2;
+    public void setNodeNames(String node1, String node2) {
+        nodeOne = node1;
+        nodeTwo = node2;
     }
 
     @Override
     public HashMap<String, Object> getAsMap(HashSet<String> attributes) {
-        HashMap<String,Object> values = new HashMap<>();
-        getAsMap().forEach((k,v)->{
-            if(attributes.contains(k))
-                values.put(k,v);
+        HashMap<String, Object> values = new HashMap<>();
+        getAsMap().forEach((k, v) -> {
+            if (attributes.contains(k))
+                values.put(k, v);
         });
         return values;
     }
+
+    public List<String> getEvidenceTypes() {
+        return StringUtils.stringToList(evidenceTypes);
+    }
+
+    public void setEvidenceTypes(List<String> evidenceTypes) {
+        this.evidenceTypes = StringUtils.listToString(evidenceTypes);
+    }
+
+//    public List<String> getConservativeEvidences() {
+//        return StringUtils.stringToList(conservativeEvidences);
+//    }
+//
+//    public void setConservativeEvidences(List<String> conservativeEvidences) {
+//        this.conservativeEvidences = StringUtils.listToString(conservativeEvidences);
+//    }
 
 
     public String getMemberOne() {
@@ -168,5 +194,22 @@ public class GeneInteractsWithGene extends RepoTrialEdge implements Serializable
 
     public void setMemberTwo(String memberTwo) {
         this.memberTwo = memberTwo;
+    }
+
+    public void addEvidenceTypes(List<String> evidenceTypes) {
+        List<String> all = this.evidenceTypes == null ? new LinkedList<>(evidenceTypes) : getEvidenceTypes();
+//        List<String> conservative = this.conservativeEvidences == null ? new LinkedList<>(evidenceTypes) : getConservativeEvidences();
+        evidenceTypes.forEach(t -> {
+            if (!all.contains(t))
+                all.add(t);
+        });
+//        LinkedList<String> rem = new LinkedList<>();
+//        conservative.forEach(t -> {
+//            if (!evidenceTypes.contains(t))
+//                rem.add(t);
+//        });
+//        conservative.removeAll(rem);
+        setEvidenceTypes(all);
+//        setConservativeEvidences(conservative);
     }
 }
