@@ -38,6 +38,8 @@ public class Job {
 
     private LocalDateTime finished;
 
+    private boolean resultFile;
+
     private String message;
 
     private String target;
@@ -175,6 +177,7 @@ public class Job {
         out.put("algorithm", getMethod().name());
         out.put("target", getTarget());
         out.put("created", getCreated().toEpochSecond(ZoneOffset.ofTotalSeconds(0)));
+        out.put("download",resultFile);
         return out;
     }
 
@@ -190,5 +193,13 @@ public class Job {
 
     public void setParams(String params) {
         this.params = params;
+    }
+
+    public boolean isResultFile() {
+        return resultFile;
+    }
+
+    public void setResultFile(boolean resultFile) {
+        this.resultFile = resultFile;
     }
 }

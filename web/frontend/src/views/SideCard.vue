@@ -339,7 +339,7 @@
 
       <template v-if="selectedTab===2">
         <Algorithms ref="algorithms" @executeAlgorithmEvent="submitAlgorithm"></Algorithms>
-        <Jobs ref="jobs" @graphLoadEvent="graphLoadEvent"></Jobs>
+        <Jobs ref="jobs" @graphLoadEvent="graphLoadEvent" @printNotificationEvent="printNotification"></Jobs>
 
 
         <v-card ref="detail" elevation="3" style="margin:15px" v-if="detailedObject !== undefined"
@@ -891,6 +891,9 @@ export default {
     nodeDetails: function (id) {
       let str = id.split("_")
       this.$emit("nodeDetailsEvent", {prefix: str[0], id: str[1]})
+    },
+    printNotification: function(message,type){
+      this.$emit("printNotificationEvent",message,type)
     }
     ,
     loadDetails: function (data, redirect) {

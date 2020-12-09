@@ -5,6 +5,7 @@ import de.exbio.reposcapeweb.communication.cache.Graph;
 import de.exbio.reposcapeweb.communication.cache.Graphs;
 import de.exbio.reposcapeweb.communication.controller.SocketController;
 import de.exbio.reposcapeweb.communication.reponses.WebGraphService;
+import de.exbio.reposcapeweb.db.history.HistoryController;
 import de.exbio.reposcapeweb.db.services.controller.NodeController;
 import de.exbio.reposcapeweb.db.services.nodes.DisorderService;
 import de.exbio.reposcapeweb.db.services.nodes.DrugService;
@@ -14,6 +15,7 @@ import de.exbio.reposcapeweb.tools.ToolService;
 import de.exbio.reposcapeweb.utils.ReaderUtils;
 import de.exbio.reposcapeweb.utils.StringUtils;
 import de.exbio.reposcapeweb.utils.WriterUtils;
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,12 +36,13 @@ public class JobController {
     private final GeneService geneService;
     private final ProteinService proteinService;
     private final DrugService drugService;
+    private final HistoryController historyController;
 
     private HashMap<String, Job> jobs = new HashMap<>();
     private Logger log = LoggerFactory.getLogger(JobController.class);
 
     @Autowired
-    public JobController(DrugService drugService, ProteinService proteinService, GeneService geneService, WebGraphService graphService, ToolService toolService, JobQueue jobQueue, JobRepository jobRepository, SocketController socketController) {
+    public JobController(HistoryController historyController, DrugService drugService, ProteinService proteinService, GeneService geneService, WebGraphService graphService, ToolService toolService, JobQueue jobQueue, JobRepository jobRepository, SocketController socketController) {
         this.graphService = graphService;
         this.toolService = toolService;
         this.jobQueue = jobQueue;
@@ -48,6 +51,7 @@ public class JobController {
         this.geneService = geneService;
         this.proteinService = proteinService;
         this.drugService = drugService;
+        this.historyController = historyController;
     }
 
 
@@ -79,6 +83,7 @@ public class JobController {
         } catch (Exception e) {
             log.error("Error on job submission");
             j.setStatus(Job.JobState.ERROR);
+            e.printStackTrace();
             return j;
         }
         queue(j);
@@ -138,14 +143,14 @@ public class JobController {
     }
 
     private void prepareFiles(Job j, JobRequest req, Graph g) {
-        if (j.getMethod().equals(ToolService.Tool.TRUSTRANK)) {
+        if (j.getMethod().equals(ToolService.Tool.TRUSTRANK) || j.getMethod().equals(ToolService.Tool.CENTRALITY)) {
             HashSet<String> domainIds = new HashSet<>();
             HashSet<Integer> ids = new HashSet<>(req.selection ? req.nodes : g.getNodes().get(Graphs.getNode(req.getParams().get("type"))).keySet());
             if (req.getParams().get("type").equals("gene"))
                 ids.forEach(n -> domainIds.add(geneService.map(n)));
             else
                 ids.forEach(n -> domainIds.add(proteinService.map(n)));
-            req.ids= domainIds;
+            req.ids = domainIds;
         }
         toolService.prepareJobFiles(j, req, g);
     }
@@ -159,7 +164,7 @@ public class JobController {
         Job j = jobs.get(id);
         try {
             jobQueue.finishJob(j);
-            HashSet<Integer> results = toolService.getJobResults(j);
+            HashMap<Integer, HashMap<String, Object>> results = toolService.getJobResults(j);
             if ((results == null || results.isEmpty()) & (!j.getParams().containsKey("nodesOnly") || !j.getParams().get("nodesOnly").equals("true"))) {
                 j.setDerivedGraph(j.getBasisGraph());
             } else
@@ -169,35 +174,45 @@ public class JobController {
             e.printStackTrace();
             j.setStatus(Job.JobState.ERROR);
         }
+        try {
+            toolService.clearDirectories(j, historyController.getJobPath(j));
+        }catch (Exception e){
+            log.error("Error on finishing job: " + id);
+            e.printStackTrace();
+            j.setStatus(Job.JobState.ERROR);
+        }
         save(j);
         socketController.setJobUpdate(j);
-        toolService.clearDirectories(j);
     }
 
-    private HashSet<Integer> toIds(Job j, HashSet jobResults) {
-        if(j.getMethod().equals(ToolService.Tool.DIAMOND)| j.getMethod().equals(ToolService.Tool.BICON))
-            return jobResults;
-        if(j.getMethod().equals(ToolService.Tool.TRUSTRANK)){
-            HashSet<Integer> out = new HashSet<>();
-            jobResults.forEach(s->out.add(drugService.map((String)s)));
-            return out;
-        }
-        return null;
+    public File getDownload(String id) {
+        return historyController.getJobPath(jobs.get(id));
     }
+
+//    private HashSet<Integer> toIds(Job j, HashSet jobResults) {
+//        if (j.getMethod().equals(ToolService.Tool.DIAMOND) | j.getMethod().equals(ToolService.Tool.BICON))
+//            return jobResults;
+//        if (j.getMethod().equals(ToolService.Tool.TRUSTRANK)) {
+//            HashSet<Integer> out = new HashSet<>();
+//            jobResults.forEach(s -> out.add(drugService.map((String) s)));
+//            return out;
+//        }
+//        return null;
+//    }
 
     public HashMap<String, Job.JobState> getJobGraphStates(String user) {
         HashMap<String, Job.JobState> stateMap = new HashMap<>();
-            jobs.values().stream().filter(j -> j.getUserId().equals(user)).forEach(j -> stateMap.put(j.getDerivedGraph(), j.getState()));
+        jobs.values().stream().filter(j -> j.getUserId().equals(user)).forEach(j -> stateMap.put(j.getDerivedGraph(), j.getState()));
         return stateMap;
     }
 
     public LinkedList<HashMap<String, Object>> getJobGraphStates(String user, String gid) {
         LinkedList<HashMap<String, Object>> stateMap = new LinkedList<>();
-            jobs.values().stream().filter(j -> j.getUserId().equals(user)).forEach(j -> {
-                if ((gid == null || j.getBasisGraph().equals(gid)) | !j.getState().equals(Job.JobState.DONE)) {
-                    stateMap.add(j.toMap());
-                }
-            });
+        jobs.values().stream().filter(j -> j.getUserId().equals(user)).forEach(j -> {
+            if ((gid == null || j.getBasisGraph().equals(gid)) | !j.getState().equals(Job.JobState.DONE)) {
+                stateMap.add(j.toMap());
+            }
+        });
         return stateMap;
     }
 

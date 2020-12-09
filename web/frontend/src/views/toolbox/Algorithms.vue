@@ -29,7 +29,7 @@
           </v-select>
         </v-col>
       </v-row>
-      <v-row v-if="categoryModel >-1 && (methodModel ==='diamond'|| methodModel ==='trustrank')">
+      <v-row v-if="categoryModel >-1 && (methodModel ==='diamond'|| methodModel ==='trustrank' || methodModel==='centrality' || methodModel ==='must')">
         <v-col cols="6">
           <v-switch
             label="Use Selection"
@@ -101,39 +101,39 @@
         </template>
         <template v-if="methodModel==='bicon'">
           <v-divider></v-divider>
-<!--          <v-row>-->
-<!--            <v-col>-->
-<!--              <v-slider-->
-<!--                hide-details-->
-<!--                class="align-center"-->
-<!--                v-model="models.bicon.lg_min"-->
-<!--                min="0"-->
-<!--                :max=models.bicon.lg_max-->
-<!--              >-->
-<!--                <template v-slot:prepend>-->
-<!--                  <v-text-field-->
-<!--                    v-model="models.bicon.lg_min"-->
-<!--                    class="mt-0 pt-0"-->
-<!--                    type="number"-->
-<!--                    style="width: 60px"-->
-<!--                    label="n"-->
-<!--                  ></v-text-field>-->
-<!--                </template>-->
-<!--                <template v-slot:append>-->
-<!--                  <v-tooltip left>-->
-<!--                    <template v-slot:activator="{ on, attrs }">-->
-<!--                      <v-icon-->
-<!--                        v-bind="attrs"-->
-<!--                        v-on="on"-->
-<!--                        left> far fa-question-circle-->
-<!--                      </v-icon>-->
-<!--                    </template>-->
-<!--                    <span>Minimal solution subnetwork size.</span>-->
-<!--                  </v-tooltip>-->
-<!--                </template>-->
-<!--              </v-slider>-->
-<!--            </v-col>-->
-<!--          </v-row>-->
+          <!--          <v-row>-->
+          <!--            <v-col>-->
+          <!--              <v-slider-->
+          <!--                hide-details-->
+          <!--                class="align-center"-->
+          <!--                v-model="models.bicon.lg_min"-->
+          <!--                min="0"-->
+          <!--                :max=models.bicon.lg_max-->
+          <!--              >-->
+          <!--                <template v-slot:prepend>-->
+          <!--                  <v-text-field-->
+          <!--                    v-model="models.bicon.lg_min"-->
+          <!--                    class="mt-0 pt-0"-->
+          <!--                    type="number"-->
+          <!--                    style="width: 60px"-->
+          <!--                    label="n"-->
+          <!--                  ></v-text-field>-->
+          <!--                </template>-->
+          <!--                <template v-slot:append>-->
+          <!--                  <v-tooltip left>-->
+          <!--                    <template v-slot:activator="{ on, attrs }">-->
+          <!--                      <v-icon-->
+          <!--                        v-bind="attrs"-->
+          <!--                        v-on="on"-->
+          <!--                        left> far fa-question-circle-->
+          <!--                      </v-icon>-->
+          <!--                    </template>-->
+          <!--                    <span>Minimal solution subnetwork size.</span>-->
+          <!--                  </v-tooltip>-->
+          <!--                </template>-->
+          <!--              </v-slider>-->
+          <!--            </v-col>-->
+          <!--          </v-row>-->
           <v-row>
             <v-col>
               <v-range-slider
@@ -281,7 +281,7 @@
             </v-col>
           </v-row>
         </template>
-        <template v-if="methodModel==='trustrank'">
+        <template v-if="methodModel==='trustrank'||methodModel==='centrality'">
           <v-divider></v-divider>
           <v-row>
             <v-col>
@@ -409,9 +409,14 @@ export default {
         },
         bicon: {
           exprFile: undefined,
-          lg:[10,15]
+          lg: [10, 15]
         },
         trustrank: {
+          onlyApproved: true,
+          onlyDirect: true,
+          damping: 0.85
+        },
+        centrality: {
           onlyApproved: true,
           onlyDirect: true,
           damping: 0.85
@@ -421,7 +426,7 @@ export default {
         [{
           id: 0,
           label: "Disease Modules",
-          methods: [{id: "diamond", label: "DIAMOnD"}, {id: "bicon", label: "BiCoN"}]
+          methods: [{id: "diamond", label: "DIAMOnD"}, {id: "bicon", label: "BiCoN"}, {id:"must", label:"MuST"}]
         }, {
           id: 1,
           label: "Drug Ranking",
@@ -441,7 +446,6 @@ export default {
         params["nodesOnly"] = this.models.advanced.keepNodesOnly
       }
       if (this.methodModel === 'diamond') {
-        params['type'] = this.nodeModel
         params['n'] = this.models.diamond.nModel;
         params['alpha'] = this.models.diamond.alphaModel;
         params['pcutoff'] = this.models.diamond.pModel;
@@ -455,13 +459,13 @@ export default {
         })
         return
       }
-      if (this.methodModel === 'trustrank') {
-        params['type'] = this.nodeModel
-        params['direct'] = this.models.trustrank.onlyDirect;
-        params['approved'] = this.models.trustrank.onlyApproved;
-        params['damping'] = this.models.trustrank.damping;
+      if (this.methodModel === 'trustrank' || this.methodModel ==='centrality') {
+        params['direct'] = this.models[this.methodModel].onlyDirect;
+        params['approved'] = this.models[this.methodModel].onlyApproved;
+        params['damping'] = this.models[this.methodModel].damping;
       }
       // if (this.methodModel === 'diamond' || this.methodModel === 'bicon'|| this.methodModel='trustran')
+      params['type'] = this.nodeModel
       params.selection = this.selectionSwitch
 
       this.$emit('executeAlgorithmEvent', this.methodModel, params)
@@ -477,12 +481,9 @@ export default {
     isDisabled: function () {
       if (this.methodModel === undefined || this.methodModel.length === 0)
         return true;
-      switch (this.methodModel) {
-        case "diamond":
-          return (this.nodeModel === undefined || this.nodeModel.length === 0)
-        case "bicon" :
-          return this.models.bicon.exprFile === undefined
-      }
+      if (this.methodModel === "bicon")
+        return this.models.bicon.exprFile === undefined
+      return (this.nodeModel === undefined || this.nodeModel.length === 0)
 
     },
     resetAlgorithms: function () {
@@ -498,10 +499,13 @@ export default {
       this.models.diamond.alphaModel = 1
       this.models.diamond.pModel = 0
       this.models.bicon.exprFile = undefined
-      this.models.bicon.lg= [10,15]
+      this.models.bicon.lg = [10, 15]
       this.models.trustrank.onlyApproved = true
       this.models.trustrank.onlyDirect = true
       this.models.trustrank.damping = 0.85
+      this.models.centrality.onlyApproved = true
+      this.models.centrality.onlyDirect = true
+      this.models.centrality.damping = 0.85
     },
 
     formatTime: function (timestamp) {

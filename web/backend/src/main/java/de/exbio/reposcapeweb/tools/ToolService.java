@@ -6,6 +6,8 @@ import de.exbio.reposcapeweb.communication.jobs.Job;
 import de.exbio.reposcapeweb.communication.jobs.JobRequest;
 import de.exbio.reposcapeweb.db.entities.edges.ProteinInteractsWithProtein;
 import de.exbio.reposcapeweb.db.services.edges.ProteinInteractsWithProteinService;
+import de.exbio.reposcapeweb.db.services.nodes.GeneService;
+import de.exbio.reposcapeweb.db.services.nodes.ProteinService;
 import de.exbio.reposcapeweb.utils.ProcessUtils;
 import de.exbio.reposcapeweb.utils.ReaderUtils;
 import de.exbio.reposcapeweb.utils.StringUtils;
@@ -14,17 +16,27 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
+import org.springframework.objenesis.SpringObjenesis;
 import org.springframework.stereotype.Service;
+import org.zeroturnaround.zip.ZipEntrySource;
+import org.zeroturnaround.zip.ZipUtil;
+import org.zeroturnaround.zip.transform.ZipEntryTransformer;
 
 import java.io.*;
+import java.nio.file.CopyOption;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
+import java.util.zip.ZipEntry;
 
 @Service
 public class ToolService {
 
     private final Environment env;
     private final ProteinInteractsWithProteinService interactionService;
+    private final ProteinService proteinService;
+    private final GeneService geneService;
 
     private File scriptDir = new File("/home/andimajore/projects/RepoScapeWeb/web/resources/scripts");
     private File dataDir;
@@ -32,15 +44,19 @@ public class ToolService {
     private File bicon;
     private File diamond;
     private File trustrank;
+    private File centrality;
+    private File must;
 
     private HashMap<String, File> tempDirs = new HashMap<>();
 
     private Logger log = LoggerFactory.getLogger(ToolService.class);
 
     @Autowired
-    public ToolService(Environment env, ProteinInteractsWithProteinService interactionService) {
+    public ToolService(ProteinService proteinService, GeneService geneService, Environment env, ProteinInteractsWithProteinService interactionService) {
         this.env = env;
         this.interactionService = interactionService;
+        this.proteinService = proteinService;
+        this.geneService = geneService;
         dataDir = new File(env.getProperty("path.external.cache"));
         validateEnvironment();
     }
@@ -77,6 +93,8 @@ public class ToolService {
         prepareBicon();
         validateDiamond();
         prepareTrustRank();
+        prepareCentrality();
+        prepareMust();
 
     }
 
@@ -119,6 +137,26 @@ public class ToolService {
         }
     }
 
+    private void prepareCentrality() {
+        log.info("Setting up Centrality");
+        centrality = new File(env.getProperty("path.tool.centrality"));
+        log.info("Centrality path=" + centrality.getAbsolutePath());
+        if (!centrality.exists()) {
+            log.error("Centrality executable was not found in config. Please make sure it is referenced correctly!");
+            new RuntimeException("Missing reference.");
+        }
+    }
+
+    private void prepareMust() {
+        log.info("Setting up Must");
+        must = new File(env.getProperty("path.tool.must"));
+        log.info("Must path=" + must.getAbsolutePath());
+        if (!must.exists()) {
+            log.error("Must executable was not found in config. Please make sure it is referenced correctly!");
+            new RuntimeException("Missing reference.");
+        }
+    }
+
 //    private void prepareFiles(String jobId, String algorithm, HashMap<String, String> params, Graph g) {
 //        if (!dataDir.exists()) {
 //            dataDir.mkdirs();
@@ -128,34 +166,62 @@ public class ToolService {
 
     public void createInteractionFiles() {
         File ggi = new File(dataDir, "gene_gene_interaction.pairs");
-        BufferedWriter bw = WriterUtils.getBasicWriter(ggi);
-        interactionService.getGenes().forEach((id1, list) -> list.forEach((id2, bool) -> {
-            if (id1 < id2) {
-                try {
-                    bw.write(id1 + "," + id2 + "\n");
-                } catch (IOException e) {
-                    e.printStackTrace();
+        try (BufferedWriter bw = WriterUtils.getBasicWriter(ggi)) {
+            interactionService.getGenes().forEach((id1, list) -> list.forEach((id2, bool) -> {
+                if (id1 < id2) {
+                    try {
+                        bw.write(id1 + "," + id2 + "\n");
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
-            }
-        }));
-        try {
-            bw.close();
+            }));
         } catch (IOException e) {
             e.printStackTrace();
         }
-        File ppi = new File(dataDir, "protein_protein_interaction.pairs");
-        BufferedWriter bw2 = WriterUtils.getBasicWriter(ppi);
-        interactionService.getProteins().forEach((id1, list) -> list.forEach((id2, bool) -> {
-            if (id1 < id2) {
-                try {
-                    bw2.write(id1 + "," + id2 + "\n");
-                } catch (IOException e) {
-                    e.printStackTrace();
+
+        ggi = new File(dataDir, "gene_gene_interaction_domain.pairs");
+        try (BufferedWriter bw = WriterUtils.getBasicWriter(ggi)) {
+            bw.write("id1\tid2");
+            interactionService.getGenes().forEach((id1, list) -> list.forEach((id2, bool) -> {
+                if (id1 < id2) {
+                    try {
+                        bw.write(id1 + "\t" + id2 + "\n");
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
-            }
-        }));
-        try {
-            bw2.close();
+            }));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        File ppi = new File(dataDir, "protein_protein_interaction.pairs");
+        try (BufferedWriter bw2 = WriterUtils.getBasicWriter(ppi)) {
+            interactionService.getProteins().forEach((id1, list) -> list.forEach((id2, bool) -> {
+                if (id1 < id2) {
+                    try {
+                        bw2.write(id1 + "," + id2 + "\n");
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        ppi = new File(dataDir, "protein_protein_interaction_domain.pairs");
+        try (BufferedWriter bw2 = WriterUtils.getBasicWriter(ppi)) {
+            bw2.write("domainId1\tdomainId2");
+            interactionService.getProteins().forEach((id1, list) -> list.forEach((id2, bool) -> {
+                if (id1 < id2) {
+                    try {
+                        bw2.write(proteinService.map(id1) + "\t" + proteinService.map(id2) + "\n");
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -209,13 +275,30 @@ public class ToolService {
                 command += "bicon " + bicon.getAbsolutePath() + " exprFile " + new File(dataDir, "gene_gene_interaction.pairs").getAbsolutePath() + " genes.txt " + request.getParams().get("lg_min") + " " + request.getParams().get("lg_max");
                 break;
             }
-            case TRUSTRANK:{
-                command += "trustrank "+trustrank.getAbsolutePath()+" "+
-                        (request.getParams().get("type").equals("gene") ? new File(dataDir, "ranking_files/GGDr_"+(request.experimentalOnly?"exp":"all")+".gt").getAbsolutePath(): new File(dataDir, "ranking_files/PPDr_all.gt").getAbsolutePath()) +
-                        " seeds.list "+
-                        request.getParams().get("damping")+
-                        (request.getParams().get("direct").charAt(0)=='t' ?" Y":" N") +
-                        (request.getParams().get("approved").charAt(0)=='t' ?" Y":" N");
+            case MUST: {
+                command += "must " +
+                        must.getAbsolutePath() + " " +
+                        (request.getParams().get("type").equals("gene") ? new File(dataDir, "gene_gene_interaction_domain.pairs") : new File(dataDir, "protein_protein_interaction_domain.pairs")).getAbsolutePath() + " " +
+                        "seeds.list edges.list nodes.list";
+                break;
+            }
+            case TRUSTRANK: {
+                command += "trustrank " + trustrank.getAbsolutePath() + " " +
+                        (request.getParams().get("type").equals("gene") ? new File(dataDir, "ranking_files/GGDr_" + (request.experimentalOnly ? "exp" : "all") + ".gt").getAbsolutePath() : new File(dataDir, "ranking_files/PPDr_all.gt").getAbsolutePath()) +
+                        " seeds.list " +
+                        request.getParams().get("damping") +
+                        (request.getParams().get("direct").charAt(0) == 't' ? " Y" : " N") +
+                        (request.getParams().get("approved").charAt(0) == 't' ? " Y" : " N");
+                break;
+            }
+            case CENTRALITY: {
+                command += "centrality " + centrality.getAbsolutePath() + " " +
+                        (request.getParams().get("type").equals("gene") ? new File(dataDir, "ranking_files/GGDr_" + (request.experimentalOnly ? "exp" : "all") + ".gt").getAbsolutePath() : new File(dataDir, "ranking_files/PPDr_all.gt").getAbsolutePath()) +
+                        " seeds.list " +
+                        request.getParams().get("damping") +
+                        (request.getParams().get("direct").charAt(0) == 't' ? " Y" : " N") +
+                        (request.getParams().get("approved").charAt(0) == 't' ? " Y" : " N");
+                break;
             }
         }
         System.out.println(command);
@@ -225,7 +308,7 @@ public class ToolService {
     public void prepareJobFiles(Job job, JobRequest req, Graph g) {
         System.out.println("preparing job");
         switch (job.getMethod()) {
-            case DIAMOND: {
+            case DIAMOND, MUST: {
                 File seed = new File(getTempDir(job.getJobId()), "seeds.list");
                 if (req.selection)
                     writeSeedFile(req.params.get("type"), seed, req.nodes);
@@ -235,41 +318,15 @@ public class ToolService {
             }
             case BICON: {
                 File exprFile = new File(getTempDir(job.getJobId()), "exprFile");
-                System.out.println(exprFile.getAbsolutePath());
                 try (BufferedWriter bw = WriterUtils.getBasicWriter(exprFile)) {
                     bw.write(req.getParams().get("exprData"));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
-            case TRUSTRANK:{
+            case TRUSTRANK, CENTRALITY: {
                 File seed = new File(getTempDir(job.getJobId()), "seeds.list");
-
-                writeSeedFile(req.params.get("type"),seed, req.ids);
-//                if (req.selection)
-//                    writeSeedFile(req.params.get("type"), seed, req.nodes);
-//                else
-//                    writeSeedFile(req.params.get("type"), seed, g);
-//                writeSeedFile(req.params.get("type"),new File(getTempDir(job.getJobId()),"mapped.list"), req.ids);
-
-//                BufferedReader br = null;
-//                try {
-//                    br = ReaderUtils.getBasicReader(seed);
-//                } catch (FileNotFoundException e) {
-//                    e.printStackTrace();
-//                }
-//                String line = "";
-//                while(true){
-//                    try {
-//                        if ((line = br.readLine()) == null) break;
-//                    } catch (IOException e) {
-//                        e.printStackTrace();
-//                    }
-//                    System.out.println(line);
-//                }
-//
-//                break;
-
+                writeSeedFile(req.params.get("type"), seed, req.ids);
             }
         }
 
@@ -304,8 +361,8 @@ public class ToolService {
         return null;
     }
 
-    public HashSet getJobResults(Job j) throws IOException {
-        HashSet<Integer> results = new HashSet<>();
+    public HashMap<Integer, HashMap<String, Object>> getJobResults(Job j) throws IOException {
+        HashMap<Integer, HashMap<String, Object>> results = new HashMap<>();
         switch (j.getMethod()) {
             case DIAMOND: {
                 for (File f : getTempDir(j.getJobId()).listFiles()) {
@@ -315,53 +372,111 @@ public class ToolService {
                 }
                 break;
             }
+            case MUST: {
+//                try (BufferedReader br = ReaderUtils.getBasicReader(new File(getTempDir(j.getJobId()), "edges.list"))) {
+//                    String line = br.readLine();
+//                    while ((line = br.readLine()) != null){
+//                        LinkedList<String> split = StringUtils.split(line,"\t");
+//                        results.get(-1).
+//                    }
+//                }
+                try (BufferedReader br = ReaderUtils.getBasicReader(new File(getTempDir(j.getJobId()), "nodes.list"))) {
+                    String line = br.readLine();
+                    while ((line = br.readLine()) != null){
+                        LinkedList<String> split = StringUtils.split(line,"\t");
+                        int id = Integer.parseInt(split.get(0));
+                        results.put(id,new HashMap<>());
+                        results.get(id).put("participation_number",split.get(1));
+                    }
+                }
+                break;
+            }
             case BICON: {
                 try (BufferedReader br = ReaderUtils.getBasicReader(new File(getTempDir(j.getJobId()), "genes.txt"))) {
                     String line = "";
                     while ((line = br.readLine()) != null)
-                        results.add(Integer.parseInt(line));
+                        results.put(Integer.parseInt(line), null);
                 } catch (IOException e) {
                     e.printStackTrace();
                     throw e;
                 }
                 break;
             }
-            case TRUSTRANK:{
-                for(File f: getTempDir(j.getJobId()).listFiles()){
-                   if(!f.getName().equals("seed.list")){
-                       return readTrustRankResults(f, 0);
-                   }
+            case TRUSTRANK, CENTRALITY: {
+                for (File f : getTempDir(j.getJobId()).listFiles()) {
+                    if (!f.getName().equals("seed.list")) {
+                        return readTrustRankResults(f);
+                    }
                 }
                 break;
-
             }
-
         }
         return results;
     }
 
-    private HashSet<Integer> readTrustRankResults(File f, int i) {
-        //TODO return ranking scores
-        HashSet<Integer> out = new HashSet<>();
-        try(BufferedReader br = ReaderUtils.getBasicReader(f)){
+    private HashMap<Integer, HashMap<String, Object>> readTrustRankResults(File f) {
+        HashMap<Integer, HashMap<String, Object>> out = new HashMap<>();
+        try (BufferedReader br = ReaderUtils.getBasicReader(f)) {
             String line = br.readLine();
-            while((line=br.readLine())!=null){
-                LinkedList<String> split = StringUtils.split(line,"\t");
-                if(Double.parseDouble(split.get(1))>i)
-                    out.add(Integer.parseInt(split.getFirst()));
+            while ((line = br.readLine()) != null) {
+                LinkedList<String> split = StringUtils.split(line, "\t");
+                int id = Integer.parseInt(split.getFirst());
+                out.put(id, new HashMap<>());
+                out.get(id).put("score", Double.parseDouble(split.get(1)));
             }
-        }catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
         return out;
     }
 
-    public void clearDirectories(Job j) {
+
+    public void clearDirectories(Job j, File dest) throws Exception {
+        File result = null;
+        switch (j.getMethod()) {
+            case DIAMOND: {
+                for (File f : getTempDir(j.getJobId()).listFiles()) {
+                    if (j.getMethod().equals(Tool.DIAMOND) && f.getName().endsWith(".txt")) {
+                        result = f;
+                        break;
+                    }
+                }
+                break;
+            }
+            case BICON: {
+                result = new File(getTempDir(j.getJobId()), "genes.txt");
+                break;
+            }
+            case TRUSTRANK, CENTRALITY: {
+                for (File f : getTempDir(j.getJobId()).listFiles()) {
+                    if (!f.getName().equals("seed.list")) {
+                        result = f;
+                        break;
+                    }
+                }
+                break;
+            }
+            case MUST: {
+                File tmp = getTempDir(j.getJobId());
+                result = new File(tmp, "results.zip");
+                ZipUtil.packEntries(new File[]{new File(tmp, "edges.list"),new File(tmp, "nodes.list")}, result);
+            }
+        }
+        try {
+            if (result.exists())
+                j.setResultFile(true);
+            dest.getParentFile().mkdirs();
+            Files.move(result.toPath(), dest.toPath());
+        } catch (IOException e) {
+            getTempDir(j.getJobId()).delete();
+            e.printStackTrace();
+            throw new Exception("Missing results exception");
+        }
         getTempDir(j.getJobId()).delete();
     }
 
-    private HashSet<Integer> readDiamondResults(File f, double p_cutoff) {
-        HashSet<Integer> results = new HashSet<>();
+    private HashMap<Integer, HashMap<String, Object>> readDiamondResults(File f, double cutoff) {
+        HashMap<Integer, HashMap<String, Object>> results = new HashMap<>();
         try {
             BufferedReader br = ReaderUtils.getBasicReader(f);
             String line = "";
@@ -369,12 +484,12 @@ public class ToolService {
                 if (line.charAt(0) == '#')
                     continue;
                 LinkedList<String> attrs = StringUtils.split(line, "\t");
-                int id = Integer.parseInt(attrs.get(1));
-                if (Double.parseDouble(attrs.get(2)) < p_cutoff) {
-                    results.add(id);
-//                    results.put(id, new HashMap<>());
-//                    results.get(id).put("rank", Integer.parseInt(attrs.get(0)));
-//                    results.get(id).put("p_hyper", Double.parseDouble(attrs.get(2)));
+                double p_val = Double.parseDouble(attrs.get(2));
+                if (p_val < cutoff) {
+                    int id = Integer.parseInt(attrs.get(1));
+                    results.put(id, new HashMap<>());
+                    results.get(id).put("p_hyper", p_val);
+                    results.get(id).put("rank", Integer.parseInt(attrs.get(1)));
                 }
             }
         } catch (IOException e) {
@@ -384,6 +499,6 @@ public class ToolService {
     }
 
     public enum Tool {
-        DIAMOND, BICON, TRUSTRANK, CENTRALITY
+        DIAMOND, BICON, TRUSTRANK, CENTRALITY, MUST
     }
 }

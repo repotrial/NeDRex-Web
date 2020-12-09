@@ -26,11 +26,15 @@
               Status
             </th>
             <th class="text-left">
-              Tool
-            </th>
-            <th class="text-left">
               Result
             </th>
+            <th>
+              Timestamp
+            </th>
+            <th class="text-left">
+              Tool
+            </th>
+
           </tr>
           </thead>
           <tbody>
@@ -41,6 +45,7 @@
               <v-chip :color="job.state==='DONE'?(job.gid===gid?'blue':'green'):(job.state ==='ERROR'?'red':'orange')"
                       :disabled="job.state!=='DONE'||job.gid===gid"
                       @click="$emit('graphLoadEvent', {post: {id: job.gid}})">
+
                 <v-icon left v-if="job.state==='DONE'">
                   fas fa-check
                 </v-icon>
@@ -51,33 +56,40 @@
                   fas fa-circle-notch fa-spin
                 </v-icon>
                 [{{ job.state }}]
-                <v-tooltip left>
-                  <template v-slot:activator="{ on, attrs }">
-                    <v-icon v-bind="attrs" v-on="on" right>
-                      fas fa-history
-                    </v-icon>
-                  </template>
-                  <span>{{ formatTime(job.created)[0] }}</span>
-                </v-tooltip>
-                {{ formatTime(job.created)[1] }} ago
               </v-chip>
-            </td>
-            <td>
-              {{ job.algorithm }}
             </td>
             <td>
               <template v-if="job.state==='DONE'">
                 <v-tooltip left>
                   <template v-slot:activator="{ on, attrs }">
-                    <v-icon v-bind="attrs" v-on="on" right>
-                      fas fa-dna
+                    <v-icon v-if="job.download" v-bind="attrs" v-on="on" right
+                    @click="downloadJob(job)"
+                    >
+                      fas fa-download
                     </v-icon>
+                    <v-icon v-else v-bind="attrs" v-on="on" right @click="$emit('printNotificationEvent', 'No Download Available', 1)">fas fa-dna</v-icon>
                   </template>
                   <span> added {{ job.update }} {{ job.target }} nodes</span>
                 </v-tooltip>
                 +{{ job.update }}
               </template>
             </td>
+            <td>
+              <v-tooltip left>
+                <template v-slot:activator="{ on, attrs }">
+                  <v-icon v-bind="attrs" v-on="on" right>
+                    fas fa-history
+                  </v-icon>
+                </template>
+                <span>{{ formatTime(job.created)[0] }}</span>
+              </v-tooltip>
+              {{ formatTime(job.created)[1] }} ago
+
+            </td>
+            <td>
+              {{ job.algorithm }}
+            </td>
+
           </tr>
           </tbody>
         </template>
@@ -107,14 +119,14 @@ export default {
     this.reload()
   },
   methods: {
-    reload : function (){
+    reload: function () {
       this.gid = this.$route.params["gid"]
       this.loadJobs()
     },
     loadJobs: function () {
       console.log("loading jobs")
       this.jobs = []
-      this.graphjobs=[]
+      this.graphjobs = []
       this.$http.get("/getUserJobs?uid=" + this.$cookies.get("uid")).then(response => {
         if (response.data !== undefined)
           return response.data
@@ -145,6 +157,20 @@ export default {
       this.graphjobs.reverse()
       this.show = true
       // this.$refs.jobs.$forceUpdate()
+    },
+    downloadJob: function(job){
+      this.$http.get("/downloadJobResult?jid="+job.jid).then(response=>{
+        this.forceFileDownload(response.data,response.headers["content-disposition"].split("=")[1])
+      })
+
+    },
+    forceFileDownload: function(data, title) {
+      const url = window.URL.createObjectURL(new Blob([data]))
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', title)
+      document.body.appendChild(link)
+      link.click()
     }
     ,
     updateJob: function (response) {
@@ -156,6 +182,7 @@ export default {
           j.algorithm = params.algorithm;
           j.target = params.target;
           j.update = params.update
+          j.download = params.download
         }
       })
       if (params.state === 'DONE') {

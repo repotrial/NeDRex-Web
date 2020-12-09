@@ -1901,7 +1901,7 @@ export default {
       payload.experimentalOnly = params.experimentalOnly
       if (params.selection)
         payload["nodes"] = this.nodes[params.type].filter(n => n.selected).map(n => n.id)
-      if (algorithm === "diamond" || algorithm === "trustrank") {
+      if (algorithm === "diamond" || algorithm === "trustrank" || algorithm==="centrality") {
         if (this.configuration.countMap.nodes[params.type] === undefined || (params.selection && this.configuration.countMap.nodes[params.type].selected === 0)) {
           this.$emit("printNotificationEvent", "Cannot execute " + algorithm + " without seed nodes!", 1)
           return;

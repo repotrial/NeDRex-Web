@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.exbio.reposcapeweb.communication.jobs.Job;
 import de.exbio.reposcapeweb.communication.jobs.JobController;
+import de.exbio.reposcapeweb.tools.ToolService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
@@ -79,7 +80,7 @@ public class HistoryController {
     }
 
     public HashMap<String, Object> getUserHistory(String uid, HashMap<String, Job.JobState> jobs) {
-        HashMap<String,Object> out = new HashMap<>();
+        HashMap<String, Object> out = new HashMap<>();
         out.put("uid", uid);
         if (!userMap.containsKey(uid))
             userMap.put(uid, new HashSet<>());
@@ -140,11 +141,19 @@ public class HistoryController {
     public File getGraphPath(String id) {
         String cachedir = env.getProperty("path.db.cache");
         GraphHistory history = getHistory(id);
-        return new File(cachedir, "graphs/" + history.getUserId() + "/" + id + ".json");
+        return new File(cachedir, "users/" + history.getUserId() + "/graphs/" + id + ".json");
+    }
+
+    public File getJobPath(Job j) {
+        String cachedir = env.getProperty("path.db.cache");
+        if (j.getMethod().equals(ToolService.Tool.MUST))
+            return new File(cachedir, "users/" + j.getUserId() + "/jobs/" + j.getJobId() + "_result.zip");
+        else
+            return new File(cachedir, "users/" + j.getUserId() + "/jobs/" + j.getJobId() + "_result.txt");
     }
 
     public String validateUser(String userId) {
-        if (userId==null) {
+        if (userId == null) {
             userId = getNewUser();
         }
         return userId;

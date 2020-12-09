@@ -21,11 +21,18 @@ import de.exbio.reposcapeweb.communication.reponses.WebGraphService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
+import java.io.File;
 import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -193,25 +200,8 @@ public class RequestController {
     @ResponseBody
     public String getGraphList(@RequestParam("id") String id) {
         log.info("got request for " + id);
-//        try {
-//            StringBuilder out = new StringBuilder("{\"edges\":{");
         WebGraphList list = webGraphService.getList(id, null);
         return toJson(list);
-//            StringBuilder edgeBuilder = new StringBuilder();
-//            list.getEdges().forEach((type, edges) -> {
-//                edgeBuilder.append("\"").append(type).append("\":[");
-//                StringBuilder sb = new StringBuilder("");
-//                edges.forEach(e -> sb.append(e).append(','));
-//                edgeBuilder.append(sb.substring(0, edges.size() > 0 ? sb.length() - 1 : sb.length()));
-//                edgeBuilder.append("],");
-//            });
-//            out.append(edgeBuilder.substring(0, list.getEdges().size() > 0 ? edgeBuilder.length() - 1 : edgeBuilder.length())).append("},");
-//            out.append(objectMapper.writeValueAsString(list)/*.substring(1)*/);
-//            return out.toString();
-//        } catch (JsonProcessingException e) {
-//            e.printStackTrace();
-//        }
-//        return null;
     }
 
     @RequestMapping(value = "/getCustomGraphList", method = RequestMethod.POST)
@@ -245,6 +235,18 @@ public class RequestController {
     public void archiveHistory(@RequestParam("uid") String uid, @RequestParam("gid") String gid) {
         log.info(uid + " is saving graph " + gid);
         webGraphService.addGraphToHistory(uid, gid);
+    }
+
+    @RequestMapping(value = "/downloadJobResult", method = RequestMethod.GET)
+    @ResponseBody
+    public ResponseEntity<Resource> downloadJobResult(@RequestParam("jid") String jid, HttpServletRequest request){
+        File f = jobController.getDownload(jid);
+        Resource resource = new FileSystemResource(jobController.getDownload(jid));
+        String contentType = request.getServletContext().getMimeType(jobController.getDownload(jid).getAbsolutePath());
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(contentType))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" +f.getName())
+                .body(resource);
     }
 
     @RequestMapping(value = "/getGraph", method = RequestMethod.POST)
@@ -317,7 +319,6 @@ public class RequestController {
     @RequestMapping(value = "/submitJob", method = RequestMethod.POST)
     @ResponseBody
     public String submitJob(@RequestBody JobRequest request) {
-        HashMap<String, Object> out = new HashMap<>();
         Job j = jobController.registerJob(request);
         return toJson(j.toMap());
     }
