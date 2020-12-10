@@ -159,20 +159,8 @@ export default {
       // this.$refs.jobs.$forceUpdate()
     },
     downloadJob: function(job){
-      this.$http.get("/downloadJobResult?jid="+job.jid).then(response=>{
-        this.forceFileDownload(response.data,response.headers["content-disposition"].split("=")[1])
-      })
-
+        window.open('http://localhost:8090/backend/api/downloadJobResult?jid='+job.jid, '_blank');
     },
-    forceFileDownload: function(data, title) {
-      const url = window.URL.createObjectURL(new Blob([data]))
-      const link = document.createElement('a')
-      link.href = url
-      link.setAttribute('download', title)
-      document.body.appendChild(link)
-      link.click()
-    }
-    ,
     updateJob: function (response) {
       let params = JSON.parse(response)
       this.jobs.forEach(j => {
