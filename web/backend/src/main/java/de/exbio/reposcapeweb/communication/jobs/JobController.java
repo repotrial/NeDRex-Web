@@ -164,11 +164,11 @@ public class JobController {
         Job j = jobs.get(id);
         try {
             jobQueue.finishJob(j);
-            HashMap<Integer, HashMap<String, Object>> results = toolService.getJobResults(j);
-            if ((results == null || results.isEmpty()) & (!j.getParams().containsKey("nodesOnly") || !j.getParams().get("nodesOnly").equals("true"))) {
+            toolService.getJobResults(j);
+            if ((j.getResult().getNodes().isEmpty()) & (!j.getParams().containsKey("nodesOnly") || !j.getParams().get("nodesOnly").equals("true"))) {
                 j.setDerivedGraph(j.getBasisGraph());
             } else
-                graphService.applyModuleJob(j, results);
+                graphService.applyModuleJob(j);
         } catch (Exception e) {
             log.error("Error on finishing job: " + id);
             e.printStackTrace();

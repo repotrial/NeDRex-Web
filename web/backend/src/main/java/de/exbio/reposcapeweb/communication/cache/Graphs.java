@@ -92,7 +92,7 @@ public class Graphs {
     }
 
 
-    public static int getEdge(String name){
+    public static Integer getEdge(String name){
         return edgeToIdMap.get(name);
     }
 

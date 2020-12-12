@@ -124,14 +124,12 @@ export default {
       this.loadJobs()
     },
     loadJobs: function () {
-      console.log("loading jobs")
       this.jobs = []
       this.graphjobs = []
       this.$http.get("/getUserJobs?uid=" + this.$cookies.get("uid")).then(response => {
         if (response.data !== undefined)
           return response.data
       }).then(data => {
-        console.log(data)
         data.forEach(job => {
           if (job.state !== "DONE")
             this.$socket.subscribeJob(job.jid, "jobUpdateEvent")

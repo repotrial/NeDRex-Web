@@ -50,6 +50,9 @@ public class Job {
     @Column(columnDefinition = "text")
     private String command;
 
+    @Transient
+    private JobResult result;
+
 
     public Job() {
 
@@ -142,6 +145,11 @@ public class Job {
         return process;
     }
 
+    public void setThreads(int threads) {
+        if (this.method.equals(ToolService.Tool.MUST))
+            this.command += " " + threads;
+    }
+
     public enum JobState {
         INITIALIZED, QUEUED, EXECUTING, DONE, NOCHANGE, ERROR, TIMEOUT
     }
@@ -177,7 +185,7 @@ public class Job {
         out.put("algorithm", getMethod().name());
         out.put("target", getTarget());
         out.put("created", getCreated().toEpochSecond(ZoneOffset.ofTotalSeconds(0)));
-        out.put("download",resultFile);
+        out.put("download", resultFile);
         return out;
     }
 
@@ -201,5 +209,13 @@ public class Job {
 
     public void setResultFile(boolean resultFile) {
         this.resultFile = resultFile;
+    }
+
+    public void setResult(JobResult result) {
+        this.result = result;
+    }
+
+    public JobResult getResult() {
+        return result;
     }
 }

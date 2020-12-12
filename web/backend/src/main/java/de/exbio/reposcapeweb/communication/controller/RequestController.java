@@ -121,7 +121,7 @@ public class RequestController {
     @RequestMapping(value = "/getEdgeDetails", method = RequestMethod.GET)
     @ResponseBody
     public String getDetails(@RequestParam("gid") String gid, @RequestParam("name") String name, @RequestParam("id1") int id1, @RequestParam("id2") int id2) {
-        log.info("requested details for edge " + name + " with id (" + id1 + " -> " + id2 + ")");
+        log.info("requested details for edge " + name + " with id (" + id1 + " -> " + id2 + ") ["+gid+"]");
         return toJson(webGraphService.getEdgeDetails(gid, name, new PairId(id1, id2)));
     }
 

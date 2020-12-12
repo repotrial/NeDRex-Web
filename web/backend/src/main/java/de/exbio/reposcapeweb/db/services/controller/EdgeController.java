@@ -618,7 +618,7 @@ public class EdgeController {
         return null;
     }
 
-    public boolean[] getIdAttributes(Integer type) {
+    public Boolean[] getIdAttributes(Integer type) {
         switch (Graphs.getEdge(type)) {
             case "GeneAssociatedWithDisorder":
                 return GeneAssociatedWithDisorder.idAttributes;

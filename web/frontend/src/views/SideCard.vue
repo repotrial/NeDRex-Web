@@ -558,13 +558,12 @@ export default {
 
   methods: {
     reload: function () {
+      this.gid = this.$route.params["gid"]
       if (this.$refs.algorithms !== undefined)
         this.$refs.algorithms.resetAlgorithms()
       if (this.$refs.jobs !== undefined)
         this.$refs.jobs.reload()
-    },
-    print: function (message) {
-      console.log(message)
+      this.detailedObject=undefined
     },
     setAllSelected: function () {
       this.$emit("nodeSelectionEvent")
@@ -897,8 +896,6 @@ export default {
     }
     ,
     loadDetails: function (data, redirect) {
-      console.log(data)
-      console.log(redirect)
       this.details.redirected = false;
       if (redirect)
         this.details.redirected = redirect
@@ -917,7 +914,7 @@ export default {
           if (response.data !== undefined) {
             this.detailedObject = response.data
             this.detailedObject.edge = true;
-            this.detailedObject.directed = Utils.isEdgeDirected(this.metagraph, data.name)
+            this.detailedObject.directed = Utils.directionExtended(this.options.list.entityGraph, data.name)
             if (this.detailedObject.sourceId !== undefined)
               this.description = "for " + data.name + " " + this.detailedObject.displayName + " (id:" + this.detailedObject.sourceId + "->" + this.detailedObject.targetId + ")"
             if (this.detailedObject.idOne !== undefined)

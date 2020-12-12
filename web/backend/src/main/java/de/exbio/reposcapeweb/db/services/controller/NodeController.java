@@ -232,7 +232,7 @@ public class NodeController {
         return null;
     }
 
-    public boolean[] getIdAttributes(Integer typeId) {
+    public Boolean[] getIdAttributes(Integer typeId) {
         switch (Graphs.getNode(typeId)) {
             case "disorder":
                 return Disorder.idAttributes;

@@ -8,7 +8,6 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import javax.print.attribute.standard.JobState;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.HashMap;
@@ -24,6 +23,7 @@ public class JobQueue {
     private LinkedList<Job> queue = new LinkedList<>();
     private HashMap<String, Job> running = new HashMap<>();
     private final int simultaniousExecutes;
+    private final int maxThreadsPerJob;
     private final long timeoutSeconds;
 
     @Autowired
@@ -32,7 +32,8 @@ public class JobQueue {
         this.toolService = toolService;
         this.socketController = socketController;
         simultaniousExecutes = Integer.parseInt(env.getProperty("jobs.parallel.number"));
-        this.timeoutSeconds=Integer.parseInt(env.getProperty("jobs.timeout.mins"))*60;
+        maxThreadsPerJob = Integer.parseInt(env.getProperty("jobs.parallel.task-max"));
+        this.timeoutSeconds = Integer.parseInt(env.getProperty("jobs.timeout.mins")) * 60;
     }
 
 
@@ -45,8 +46,8 @@ public class JobQueue {
     protected void updateQueue() {
         while (running.size() < simultaniousExecutes & queue.size() > 0)
             startNext();
-        running.forEach((k,j)->{
-            if((j.getStarted().toEpochSecond(ZoneOffset.ofTotalSeconds(0))- LocalDateTime.now().toEpochSecond(ZoneOffset.ofTotalSeconds(0)))>timeoutSeconds){
+        running.forEach((k, j) -> {
+            if ((j.getStarted().toEpochSecond(ZoneOffset.ofTotalSeconds(0)) - LocalDateTime.now().toEpochSecond(ZoneOffset.ofTotalSeconds(0))) > timeoutSeconds) {
                 terminate(j);
             }
         });
@@ -59,8 +60,10 @@ public class JobQueue {
     }
 
     private void startNext() {
+        //TODO try queue.pop()
         Job j = queue.getFirst();
         queue.removeFirst();
+        j.setThreads(Math.max(1, Math.min(maxThreadsPerJob, (simultaniousExecutes - running.size()) / 2)));
         running.put(j.getJobId(), j);
         executeJob(j);
         j.setStarted();
@@ -83,7 +86,7 @@ public class JobQueue {
         finishJob(j, Job.JobState.DONE);
     }
 
-    public void finishJob(Job j, Job.JobState state){
+    public void finishJob(Job j, Job.JobState state) {
         running.remove(j.getJobId());
         j.setStatus(state);
     }

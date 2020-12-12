@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo ${11}
+
 response=$1
 wd=$2
 tool=$3
@@ -20,7 +22,12 @@ fi
 
 if [ $tool == "must" ]
 then
-  java -jar $4 -nw $5 -s $6 -oe $7 -on $8
+  if [ -z "${12}" ]
+  then
+    java -jar $4 -nw $5 -s $6 -oe $7 -on $8 -hp $9 -mi ${10} -pd -ncd ${11}
+  else
+    java -jar $4 -nw $5 -s $6 -oe $7 -on $8 -hp $9 -mi ${10} -m -t ${11} -pd -ncd ${12}
+  fi
 fi
 
 curl $response

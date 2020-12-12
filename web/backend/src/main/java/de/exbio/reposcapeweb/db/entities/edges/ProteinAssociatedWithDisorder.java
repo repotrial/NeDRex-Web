@@ -72,7 +72,7 @@ public class ProteinAssociatedWithDisorder extends RepoTrialEdge implements Seri
 
     @Transient
     @JsonIgnore
-    public final static boolean[] idAttributes = new boolean[]{true, true, true,false,false, true, true, false, false, false};
+    public final static Boolean[] idAttributes = new Boolean[]{true, true, true,false,false, true, true, false, false, false};
 
     @Override
     public HashMap<String, Object> getAsMap() {

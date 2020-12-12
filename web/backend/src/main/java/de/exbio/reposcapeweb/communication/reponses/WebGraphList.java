@@ -113,7 +113,7 @@ public class WebGraphList {
             nodes.get(type).addAll(nodesToAttributeList);
     }
 
-    public void setTypes(String type, String name, String[] attributes, String[] types, boolean[] ids) {
+    public void setTypes(String type, String name, String[] attributes, String[] types, Boolean[] ids) {
         ArrayList<String> names = new ArrayList<>(Arrays.asList(attributes));
         this.attributes.get(type).get(name).forEach(a -> {
             int idx = names.indexOf(a.name);

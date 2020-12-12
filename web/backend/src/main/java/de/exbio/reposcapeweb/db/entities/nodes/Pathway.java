@@ -40,7 +40,7 @@ public class Pathway extends RepoTrialNode {
 
     @Transient
     @JsonIgnore
-    public final static boolean[] idAttributes = new boolean[]{true, true, false, true, false, false};
+    public final static Boolean[] idAttributes = new Boolean[]{true, true, false, true, false, false};
 
 
     @Column(nullable = false)

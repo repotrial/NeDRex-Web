@@ -981,10 +981,6 @@ export default {
   },
 
   watch: {
-    // configuration.countMap: function (value) {
-    //   console.log(value)
-    //   this.$refs.info.$forceUpdate()
-    // },
 
     filterNodeModel: function (val) {
       this.applySuggestion(val)
@@ -1188,7 +1184,7 @@ export default {
         case ">=":
           return value >= Number(search)
         case ">":
-          return value >= Number(search)
+          return value > Number(search)
         case "equals":
           return value === search
         case "contains":
@@ -1394,7 +1390,6 @@ export default {
         return
       }
       this.loading = true
-      console.log(payload)
       this.$http.post("/extendGraph", payload).then(response => {
         if (response.data !== undefined)
           return response.data
@@ -1439,7 +1434,6 @@ export default {
         keep: this.collapse.keep
       }
       this.resetCollapseDialog()
-      console.log(payload)
       this.$http.post("/collapseGraph", payload).then(response => {
         if (response.data !== undefined)
           return response.data
@@ -1833,7 +1827,6 @@ export default {
       this.setMetagraph(metagraph)
       this.clearLists()
       this.$http.get("/getGraphList?id=" + gid + "&cached=true").then(response => {
-        console.log(response.data)
         this.loadList(response.data)
       }).then(() => {
         this.gid = gid;
@@ -1907,7 +1900,6 @@ export default {
           return;
         }
       }
-      console.log(payload)
       this.$http.post("/submitJob", payload).then(response => {
         if (response.data !== undefined)
           return response.data

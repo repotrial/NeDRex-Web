@@ -54,7 +54,7 @@ public class DrugHasIndication extends RepoTrialEdge implements Serializable {
 
     @Transient
     @JsonIgnore
-    public final static boolean[] idAttributes = new boolean[]{true, true, true, false,false,true, true, false};
+    public final static Boolean[] idAttributes = new Boolean[]{true, true, true, false,false,true, true, false};
 
 
 

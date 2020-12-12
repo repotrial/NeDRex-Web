@@ -9,10 +9,9 @@ import de.exbio.reposcapeweb.utils.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 public class Graph {
@@ -28,8 +27,10 @@ public class Graph {
     private HashMap<Integer, LinkedList<Edge>> edges;
     private HashMap<Integer, String> customEdges;
     private HashMap<Integer, Pair<Integer, Integer>> customEdgeNodes;
-    private HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>> customEdgeWeights;
-    private HashMap<Integer, HashMap<Integer, HashMap<Integer, Double>>> customJaccardIndex;
+//    private HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>> customEdgeWeights;
+//    private HashMap<Integer, HashMap<Integer, HashMap<Integer, Double>>> customJaccardIndex;
+    private HashMap<Integer,HashMap<Integer, HashMap<Integer, HashMap<String, Object>>>> customAttributes;
+    private HashMap<Integer,HashMap<String,String>> customAttributeTypes;
     @JsonIgnore
     private WebGraph webgraph;
     @JsonIgnore
@@ -43,8 +44,10 @@ public class Graph {
         nodeFilters = new HashMap<>();
         customEdges = new HashMap<>();
         customEdgeNodes = new HashMap<>();
-        customEdgeWeights = new HashMap<>();
-        customJaccardIndex = new HashMap<>();
+//        customEdgeWeights = new HashMap<>();
+//        customJaccardIndex = new HashMap<>();
+        customAttributes=new HashMap<>();
+        customAttributeTypes=new HashMap<>();
     }
 
     public Graph(String id) {
@@ -109,9 +112,9 @@ public class Graph {
         return id < 0 ? customEdges.get(id) : Graphs.getEdge(id);
     }
 
-    public Integer getEdge(String id) {
+    public int getEdge(String id) {
         try {
-            return Graphs.getEdge(id);
+            return Graphs.getEdge(id).intValue();
         } catch (NullPointerException e) {
             AtomicReference<Integer> out = new AtomicReference<>();
             customEdges.forEach((k, v) -> {
@@ -186,9 +189,43 @@ public class Graph {
         edges.forEach(g::addEdges);
         customEdgeNodes.forEach((k, v) -> g.addCollapsedEdges(v.getFirst(), v.getSecond(), customEdges.get(k), new LinkedList<>()));
         g.setParent(this.id);
-        customEdgeWeights.forEach((k, v) -> g.addCollapsedWeights(g.getEdge(k), v));
-        customJaccardIndex.forEach((k, v) -> g.addCollapsedJaccardIndex(g.getEdge(k), v));
+        getCustomAttributeTypes().forEach(g::addCustomAttributeTypes);
+        getCustomAttributes().forEach(g::addCustomAttribute);
         return g;
+    }
+
+    public void addCustomAttribute(int eid, HashMap<Integer, HashMap<Integer, HashMap<String, Object>>> values) {
+        if(!customAttributes.containsKey(eid))
+        customAttributes.put(eid,new HashMap<>());
+        values.forEach((id1,map)->{
+            if(!customAttributes.get(eid).containsKey(id1))
+                customAttributes.get(eid).put(id1,new HashMap<>());
+            map.forEach((id2,attrs)->{
+                if(!customAttributes.get(eid).get(id1).containsKey(id2))
+                    customAttributes.get(eid).get(id1).put(id2,new HashMap<>());
+                customAttributes.get(eid).get(id1).get(id2).putAll(attrs);
+            });
+        });
+    }
+
+    public void addCustomAttribute(int eid, String attr, HashMap<Integer, HashMap<Integer, Object>> values) {
+        if(!customAttributes.containsKey(eid))
+            customAttributes.put(eid,new HashMap<>());
+        values.forEach((id1,map)->{
+            if(!customAttributes.get(eid).containsKey(id1))
+                customAttributes.get(eid).put(id1,new HashMap<>());
+            map.forEach((id2,value)->{
+                if(!customAttributes.get(eid).get(id1).containsKey(id2))
+                    customAttributes.get(eid).get(id1).put(id2,new HashMap<>());
+                customAttributes.get(eid).get(id1).get(id2).put(attr,value);
+            });
+        });
+    }
+
+    public void addCustomAttributeTypes(int eid, HashMap<String,String> v) {
+        if(!customAttributeTypes.containsKey(eid))
+            customAttributeTypes.put(eid,new HashMap<>());
+        customAttributeTypes.get(eid).putAll(v);
     }
 
     public void addCollapsedEdges(int node1, int node2, String edgeName, LinkedList<Edge> edges) {
@@ -206,20 +243,48 @@ public class Graph {
         return customEdgeNodes;
     }
 
-    public void addCollapsedWeights(String edgeName, HashMap<Integer, HashMap<Integer, Integer>> edgeWeights) {
-        customEdgeWeights.put(getEdge(edgeName), edgeWeights);
+
+    public HashMap<String, String> getCustomAttributeTypes(int eid) {
+        return customAttributeTypes.get(eid);
     }
 
-    public HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>> getCustomEdgeWeights() {
-        return customEdgeWeights;
+    public HashMap<String, String> getCustomAttributeTypes(String eid) {
+        return getCustomAttributeTypes(getEdge(eid));
     }
 
-
-    public void addCollapsedJaccardIndex(String edgeName, HashMap<Integer, HashMap<Integer, Double>> jaccardIndex) {
-        customJaccardIndex.put(getEdge(edgeName), jaccardIndex);
+    public String[] getCustomListAttributes(int eid) {
+        ArrayList<String> list = new ArrayList<>(Arrays.asList("id", "node1", "node2"));
+        list.addAll(getCustomAttributeTypes(eid).keySet());
+        return list.toArray(new String[list.size()]);
     }
 
-    public HashMap<Integer, HashMap<Integer, HashMap<Integer, Double>>> getCustomJaccardIndex() {
-        return customJaccardIndex;
+    public String[] getCustomListAttributeTypes(int eid) {
+        ArrayList<String> list = new ArrayList<>(Arrays.asList("", "", ""));
+        list.addAll(getCustomAttributeTypes(eid).values());
+        return list.toArray(new String[list.size()]);
+    }
+
+    public HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<String, Object>>>> getCustomAttributes() {
+        return customAttributes;
+    }
+
+    public HashMap<Integer, HashMap<String, String>> getCustomAttributeTypes() {
+        return customAttributeTypes;
+    }
+
+    public Boolean[] areCustomListAttributeIds(int eid) {
+        ArrayList<Boolean> list = new ArrayList<>(Arrays.asList(true,false,false));
+        getCustomAttributeTypes(eid).forEach((k,v)->list.add(false));
+        return list.toArray(new Boolean[list.size()]);
+    }
+
+    public HashMap<Integer, HashMap<Integer, HashMap<String, Object>>> getCustomAttributes(int eid) {
+        return customAttributes.get(eid);
+    }
+
+    public void addCustomAttributeType(int eid, String attrName, String type) {
+        if(!this.customAttributeTypes.containsKey(eid))
+            this.customAttributeTypes.put(eid,new HashMap<>());
+        this.customAttributeTypes.get(eid).put(attrName,type);
     }
 }

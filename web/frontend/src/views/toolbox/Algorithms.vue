@@ -29,7 +29,8 @@
           </v-select>
         </v-col>
       </v-row>
-      <v-row v-if="categoryModel >-1 && (methodModel ==='diamond'|| methodModel ==='trustrank' || methodModel==='centrality' || methodModel ==='must')">
+      <v-row
+        v-if="categoryModel >-1 && (methodModel ==='diamond'|| methodModel ==='trustrank' || methodModel==='centrality' || methodModel ==='must')">
         <v-col cols="6">
           <v-switch
             label="Use Selection"
@@ -89,51 +90,18 @@
         </v-col>
       </v-row>
       <template v-if="advanced">
-        <template v-if="categoryModel===0">
+        <template v-if="categoryModel===0 &&! (methodModel !==undefined && methodModel==='must')">
           <v-row>
             <v-col>
-              <v-switch v-model="models.advanced.keepNodesOnly" label="Keep only derived Nodes"></v-switch>
+              <v-switch v-model="models.advanced.keepNodesOnly"  label="Keep only derived Graph"></v-switch>
             </v-col>
             <v-col>
               <v-switch v-model="models.advanced.addInteractions" label="Add new interaction Edges"></v-switch>
             </v-col>
           </v-row>
+          <v-divider></v-divider>
         </template>
         <template v-if="methodModel==='bicon'">
-          <v-divider></v-divider>
-          <!--          <v-row>-->
-          <!--            <v-col>-->
-          <!--              <v-slider-->
-          <!--                hide-details-->
-          <!--                class="align-center"-->
-          <!--                v-model="models.bicon.lg_min"-->
-          <!--                min="0"-->
-          <!--                :max=models.bicon.lg_max-->
-          <!--              >-->
-          <!--                <template v-slot:prepend>-->
-          <!--                  <v-text-field-->
-          <!--                    v-model="models.bicon.lg_min"-->
-          <!--                    class="mt-0 pt-0"-->
-          <!--                    type="number"-->
-          <!--                    style="width: 60px"-->
-          <!--                    label="n"-->
-          <!--                  ></v-text-field>-->
-          <!--                </template>-->
-          <!--                <template v-slot:append>-->
-          <!--                  <v-tooltip left>-->
-          <!--                    <template v-slot:activator="{ on, attrs }">-->
-          <!--                      <v-icon-->
-          <!--                        v-bind="attrs"-->
-          <!--                        v-on="on"-->
-          <!--                        left> far fa-question-circle-->
-          <!--                      </v-icon>-->
-          <!--                    </template>-->
-          <!--                    <span>Minimal solution subnetwork size.</span>-->
-          <!--                  </v-tooltip>-->
-          <!--                </template>-->
-          <!--              </v-slider>-->
-          <!--            </v-col>-->
-          <!--          </v-row>-->
           <v-row>
             <v-col>
               <v-range-slider
@@ -177,7 +145,6 @@
 
         </template>
         <template v-if="methodModel==='diamond'">
-          <v-divider></v-divider>
           <v-row>
             <v-col>
               <v-slider
@@ -282,7 +249,6 @@
           </v-row>
         </template>
         <template v-if="methodModel==='trustrank'||methodModel==='centrality'">
-          <v-divider></v-divider>
           <v-row>
             <v-col>
               <v-switch
@@ -306,7 +272,7 @@
             </v-col>
             <v-col>
               <v-switch
-                label="Only direct Drugs"
+                label="Only approved Drugs"
                 v-model="models.trustrank.onlyApproved"
               >
                 <template v-slot:append>
@@ -360,10 +326,134 @@
             </v-col>
           </v-row>
         </template>
+        <template v-if="methodModel==='must'">
+          <v-row>
+            <v-col>
+              <v-slider
+                hide-details
+                class="align-center"
+                v-model="models.must.hubpenalty"
+                min="0"
+                max="1"
+                step="0.01"
+              >
+                <template v-slot:prepend>
+                  <v-text-field
+                    v-model="models.must.hubpenalty"
+                    class="mt-0 pt-0"
+                    type="number"
+                    style="width: 70px"
+                    label="hub-penalty"
+                  ></v-text-field>
+                </template>
+                <template v-slot:append>
+                  <v-tooltip left>
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-icon
+                        v-bind="attrs"
+                        v-on="on"
+                        left> far fa-question-circle
+                      </v-icon>
+                    </template>
+                    <span>Choose this option if you want to return multiple results.</span>
+                  </v-tooltip>
+                </template>
+              </v-slider>
+            </v-col>
+          </v-row>
+          <v-row>
+            <v-col>
+              <v-switch
+                label="Multiple"
+                v-model="models.must.multiple"
+              >
+                <template v-slot:append>
+                  <v-tooltip left>
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-icon
+                        v-bind="attrs"
+                        v-on="on"
+                        left> far fa-question-circle
+                      </v-icon>
+                    </template>
+                    <span>Specify hub penality between 0.0 and 1.0. If none is specified, there will be no hub penalty.</span>
+                  </v-tooltip>
+                </template>
+              </v-switch>
+            </v-col>
+          </v-row>
+          <v-row v-show="models.must.multiple">
+            <v-col>
+              <v-slider
+                hide-details
+                class="align-center"
+                v-model="models.must.trees"
+                min="2"
+                max="100"
+              >
+                <template v-slot:prepend>
+                  <v-text-field
+                    v-model="models.must.trees"
+                    class="mt-0 pt-0"
+                    type="number"
+                    style="width: 70px"
+                    label="trees"
+                  ></v-text-field>
+                </template>
+                <template v-slot:append>
+                  <v-tooltip left>
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-icon
+                        v-bind="attrs"
+                        v-on="on"
+                        left> far fa-question-circle
+                      </v-icon>
+                    </template>
+                    <span>Number of Trees to be returned (Integer).</span>
+                  </v-tooltip>
+                </template>
+              </v-slider>
+            </v-col>
+          </v-row>
+          <v-row>
+            <v-col>
+              <v-slider
+                hide-details
+                class="align-center"
+                v-model="models.must.maxit"
+                min="0"
+                max="20"
+              >
+                <template v-slot:prepend>
+                  <v-text-field
+                    v-model="models.must.maxit"
+                    class="mt-0 pt-0"
+                    type="number"
+                    style="width: 70px"
+                    label="iterations"
+                  ></v-text-field>
+                </template>
+                <template v-slot:append>
+                  <v-tooltip left>
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-icon
+                        v-bind="attrs"
+                        v-on="on"
+                        left> far fa-question-circle
+                      </v-icon>
+                    </template>
+                    <span>The maximum number of iterations is defined as trees + iterations.</span>
+                  </v-tooltip>
+                </template>
+              </v-slider>
+            </v-col>
+          </v-row>
+        </template>
         <v-row>
           <v-col></v-col>
         </v-row>
       </template>
+
       <v-row>
         <v-col>
           <v-chip outlined color="green"
@@ -420,13 +510,19 @@ export default {
           onlyApproved: true,
           onlyDirect: true,
           damping: 0.85
+        },
+        must: {
+          hubpenalty: 0,
+          multiple: false,
+          trees: 10,
+          maxit: 10,
         }
       },
       categories:
         [{
           id: 0,
           label: "Disease Modules",
-          methods: [{id: "diamond", label: "DIAMOnD"}, {id: "bicon", label: "BiCoN"}, {id:"must", label:"MuST"}]
+          methods: [{id: "diamond", label: "DIAMOnD"}, {id: "bicon", label: "BiCoN"}, {id: "must", label: "MuST"}]
         }, {
           id: 1,
           label: "Drug Ranking",
@@ -441,15 +537,6 @@ export default {
     submitAlgorithm: function () {
       let params = {}
       params.experimentalOnly = this.expSwitch
-      if (this.categoryModel === 0) {
-        params["addInteractions"] = this.models.advanced.addInteractions
-        params["nodesOnly"] = this.models.advanced.keepNodesOnly
-      }
-      if (this.methodModel === 'diamond') {
-        params['n'] = this.models.diamond.nModel;
-        params['alpha'] = this.models.diamond.alphaModel;
-        params['pcutoff'] = this.models.diamond.pModel;
-      }
       if (this.methodModel === 'bicon') {
         params['lg_min'] = this.models.bicon.lg[0];
         params['lg_max'] = this.models.bicon.lg[1];
@@ -459,10 +546,26 @@ export default {
         })
         return
       }
-      if (this.methodModel === 'trustrank' || this.methodModel ==='centrality') {
+      if (this.categoryModel === 0) {
+        params["addInteractions"] = this.models.advanced.addInteractions
+        params["nodesOnly"] = this.models.advanced.keepNodesOnly
+      }
+      if (this.methodModel === 'diamond') {
+        params['n'] = this.models.diamond.nModel;
+        params['alpha'] = this.models.diamond.alphaModel;
+        params['pcutoff'] = this.models.diamond.pModel;
+      }
+
+      if (this.methodModel === 'trustrank' || this.methodModel === 'centrality') {
         params['direct'] = this.models[this.methodModel].onlyDirect;
         params['approved'] = this.models[this.methodModel].onlyApproved;
         params['damping'] = this.models[this.methodModel].damping;
+      }
+      if (this.methodModel === 'must') {
+        params["penalty"] = this.models.must.hubpenalty;
+        params["multiple"] = this.models.must.multiple
+        params["trees"] = this.models.must.trees
+        params["maxit"] = this.models.must.maxit
       }
       // if (this.methodModel === 'diamond' || this.methodModel === 'bicon'|| this.methodModel='trustran')
       params['type'] = this.nodeModel
@@ -506,6 +609,10 @@ export default {
       this.models.centrality.onlyApproved = true
       this.models.centrality.onlyDirect = true
       this.models.centrality.damping = 0.85
+      this.models.must.hubpenalty = 0
+      this.models.must.multiple = false;
+      this.models.must.trees = 10;
+      this.models.must.maxit = 10;
     },
 
     formatTime: function (timestamp) {

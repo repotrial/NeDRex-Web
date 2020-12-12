@@ -4,6 +4,7 @@ import de.exbio.reposcapeweb.communication.cache.Graph;
 import de.exbio.reposcapeweb.communication.cache.Graphs;
 import de.exbio.reposcapeweb.communication.jobs.Job;
 import de.exbio.reposcapeweb.communication.jobs.JobRequest;
+import de.exbio.reposcapeweb.communication.jobs.JobResult;
 import de.exbio.reposcapeweb.db.entities.edges.ProteinInteractsWithProtein;
 import de.exbio.reposcapeweb.db.services.edges.ProteinInteractsWithProteinService;
 import de.exbio.reposcapeweb.db.services.nodes.GeneService;
@@ -279,7 +280,9 @@ public class ToolService {
                 command += "must " +
                         must.getAbsolutePath() + " " +
                         (request.getParams().get("type").equals("gene") ? new File(dataDir, "gene_gene_interaction_domain.pairs") : new File(dataDir, "protein_protein_interaction_domain.pairs")).getAbsolutePath() + " " +
-                        "seeds.list edges.list nodes.list";
+                        "seeds.list edges.list nodes.list " +
+                        request.getParams().get("penalty") + " " +
+                        request.getParams().get("maxit") + (request.getParams().get("multiple").equals("true") ? " " + request.getParams().get("trees") : "");
                 break;
             }
             case TRUSTRANK: {
@@ -361,32 +364,46 @@ public class ToolService {
         return null;
     }
 
-    public HashMap<Integer, HashMap<String, Object>> getJobResults(Job j) throws IOException {
-        HashMap<Integer, HashMap<String, Object>> results = new HashMap<>();
+    public void getJobResults(Job j) throws IOException {
+        JobResult result = new JobResult();
+        j.setResult(result);
+        HashMap<Integer, HashMap<String, Object>> nodes = new HashMap<>();
+        HashMap<Integer, HashMap<Integer, HashMap<String, Object>>> edges = new HashMap<>();
         switch (j.getMethod()) {
             case DIAMOND: {
                 for (File f : getTempDir(j.getJobId()).listFiles()) {
                     if (j.getMethod().equals(Tool.DIAMOND) && f.getName().endsWith(".txt")) {
-                        return readDiamondResults(f, Double.parseDouble(j.getParams().get("pcutoff")));
+                        nodes = readDiamondResults(f, Double.parseDouble(j.getParams().get("pcutoff")));
                     }
                 }
                 break;
             }
             case MUST: {
-//                try (BufferedReader br = ReaderUtils.getBasicReader(new File(getTempDir(j.getJobId()), "edges.list"))) {
-//                    String line = br.readLine();
-//                    while ((line = br.readLine()) != null){
-//                        LinkedList<String> split = StringUtils.split(line,"\t");
-//                        results.get(-1).
-//                    }
-//                }
                 try (BufferedReader br = ReaderUtils.getBasicReader(new File(getTempDir(j.getJobId()), "nodes.list"))) {
                     String line = br.readLine();
-                    while ((line = br.readLine()) != null){
-                        LinkedList<String> split = StringUtils.split(line,"\t");
+                    while ((line = br.readLine()) != null) {
+                        LinkedList<String> split = StringUtils.split(line, "\t");
                         int id = Integer.parseInt(split.get(0));
-                        results.put(id,new HashMap<>());
-                        results.get(id).put("participation_number",split.get(1));
+                        nodes.put(id, new HashMap<>());
+                        nodes.get(id).put("participation_number", split.get(1));
+                    }
+                }
+                try (BufferedReader br = ReaderUtils.getBasicReader(new File(getTempDir(j.getJobId()), "edges.list"))) {
+                    String line = br.readLine();
+                    while ((line = br.readLine()) != null) {
+                        LinkedList<String> split = StringUtils.split(line, "\t");
+                        int id1 = Integer.parseInt(split.get(0));
+                        int id2 = Integer.parseInt(split.get(1));
+                        if(id2<id1){
+                            int tmp = id1;
+                            id1 = id2;
+                            id2 = tmp;
+                        }
+                        if (!edges.containsKey(id1))
+                            edges.put(id1, new HashMap<>());
+                        if (!edges.get(id1).containsKey(id2))
+                            edges.get(id1).put(id2,new HashMap<>());
+                        edges.get(id1).get(id2).put("participation_number", Integer.parseInt(split.get(2)));
                     }
                 }
                 break;
@@ -395,7 +412,7 @@ public class ToolService {
                 try (BufferedReader br = ReaderUtils.getBasicReader(new File(getTempDir(j.getJobId()), "genes.txt"))) {
                     String line = "";
                     while ((line = br.readLine()) != null)
-                        results.put(Integer.parseInt(line), null);
+                        nodes.put(Integer.parseInt(line), null);
                 } catch (IOException e) {
                     e.printStackTrace();
                     throw e;
@@ -405,24 +422,29 @@ public class ToolService {
             case TRUSTRANK, CENTRALITY: {
                 for (File f : getTempDir(j.getJobId()).listFiles()) {
                     if (!f.getName().equals("seed.list")) {
-                        return readTrustRankResults(f);
+                        nodes = readTrustRankResults(f);
                     }
                 }
                 break;
             }
         }
-        return results;
+        result.setNodes(nodes);
+        result.setEdges(edges);
     }
 
     private HashMap<Integer, HashMap<String, Object>> readTrustRankResults(File f) {
         HashMap<Integer, HashMap<String, Object>> out = new HashMap<>();
         try (BufferedReader br = ReaderUtils.getBasicReader(f)) {
             String line = br.readLine();
+            System.out.println(line);
             while ((line = br.readLine()) != null) {
                 LinkedList<String> split = StringUtils.split(line, "\t");
-                int id = Integer.parseInt(split.getFirst());
-                out.put(id, new HashMap<>());
-                out.get(id).put("score", Double.parseDouble(split.get(1)));
+                if(split.size()==2) {
+                    //TODO why having seeds on bottom of list
+                    int id = Integer.parseInt(split.getFirst());
+                    out.put(id, new HashMap<>());
+                    out.get(id).put("score", Double.parseDouble(split.get(1)));
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -458,8 +480,13 @@ public class ToolService {
             }
             case MUST: {
                 File tmp = getTempDir(j.getJobId());
-                result = new File(tmp, "results.zip");
-                ZipUtil.packEntries(new File[]{new File(tmp, "edges.list"),new File(tmp, "nodes.list")}, result);
+                new File(tmp, "seeds.list").delete();
+
+//                ZipUtil.packEntries(new File[]{new File(tmp, "edges.list"),new File(tmp, "nodes.list")}, result);
+                if (tmp.list().length > 0) {
+                    result = new File(tmp, "results.zip");
+                    ZipUtil.packEntries(tmp.listFiles(), result);
+                }
             }
         }
         try {

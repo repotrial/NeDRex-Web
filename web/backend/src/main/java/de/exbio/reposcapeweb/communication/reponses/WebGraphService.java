@@ -139,7 +139,7 @@ public class WebGraphService {
                 g.getEdges().keySet().forEach(k -> {
                     if (!finalReq.attributes.containsKey("edges"))
                         finalReq.attributes.put("edges", new HashMap<>());
-                    finalReq.attributes.get("edges").put(g.getEdge(k), k < 0 ? new String[]{"id", "node1", "node2", "weight", "jaccardIndex"} : edgeController.getListAttributes(k));
+                    finalReq.attributes.get("edges").put(g.getEdge(k), k < 0 ? g.getCustomListAttributes(k) : edgeController.getListAttributes(k));
                 });
             }
             log.debug("Converting nodes from Graph to WebList for " + id);
@@ -190,11 +190,11 @@ public class WebGraphService {
                 List<PairId> edges = edgeList.stream().map(e -> new PairId(e.getId1(), e.getId2())).collect(Collectors.toList());
                 if (type < 0) {
                     Pair<Integer, Integer> nodeIds = g.getNodesfromEdge(type);
-                    String[] attributeArray = new String[]{"id", "node1", "node2", "weight", "jaccardIndex"};
+                    String[] attributeArray = g.getCustomListAttributes(type);
                     finalList.addAttributes("edges", stringType, attributeArray);
                     LinkedList<HashMap<String, Object>> attrMaps = edges.stream().map(p -> getCustomEdgeAttributeList(g, type, p)).collect(Collectors.toCollection(LinkedList::new));
                     finalList.addEdges(stringType, attrMaps);
-                    finalList.setTypes("edges", stringType, attributeArray, new String[]{"", "", "", "numeric", "numeric"}, new boolean[]{true, false, false, false, false});
+                    finalList.setTypes("edges", stringType, attributeArray, g.getCustomListAttributeTypes(type), g.areCustomListAttributeIds(type));
                 } else {
                     String[] attributeArray = edgeController.getAttributes(type);
                     finalList.addAttributes("edges", stringType, attributeArray);
@@ -240,6 +240,7 @@ public class WebGraphService {
     }
 
     public WebGraphInfo updateGraph(UpdateRequest request) {
+        //TODO rewrite with clone?
         Graph basis = getCachedGraph(request.id);
         Graph g = new Graph(historyController.getGraphId());
         g.setParent(request.id);
@@ -264,11 +265,13 @@ public class WebGraphService {
                 return;
             int typeId = basis.getEdge(type);
             HashSet<String> edgeIds = new HashSet<>(Arrays.asList(ids));
+            System.out.println(basis.getCustomAttributeTypes().keySet());
             if (typeId < 0) {
                 Pair<Integer, Integer> nodeIds = basis.getNodesfromEdge(typeId);
                 g.addCollapsedEdges(nodeIds.getFirst(), nodeIds.getSecond(), type, basis.getEdges().get(typeId).stream().filter(e -> edgeIds.contains(e.getId1() + "-" + e.getId2())).collect(Collectors.toCollection(LinkedList::new)));
-                g.addCollapsedWeights(type, filterIdMaps(basis.getCustomEdgeWeights().get(typeId), g.getNodes().get(nodeIds.first).keySet(), g.getNodes().get(nodeIds.second).keySet()));
-                g.addCollapsedJaccardIndex(type, filterIdMaps(basis.getCustomJaccardIndex().get(typeId), g.getNodes().get(nodeIds.first).keySet(), g.getNodes().get(nodeIds.second).keySet()));
+                int newId = g.getEdge(basis.getEdge(typeId));
+                g.addCustomAttributeTypes(newId, basis.getCustomAttributeTypes(typeId));
+                g.addCustomAttribute(newId,basis.getCustomAttributes(typeId));
             } else {
                 g.addEdges(typeId, basis.getEdges().get(typeId).stream().filter(e -> edgeIds.contains(e.getId1() + "-" + e.getId2())).collect(Collectors.toCollection(LinkedList::new)));
             }
@@ -620,8 +623,8 @@ public class WebGraphService {
         LinkedList<Edge> edges = new LinkedList<>();
         int startNodeId = nodes1.getFirst() == collapseNode ? nodes1.getSecond() : nodes1.getFirst();
         int targetNodeId;
-        HashMap<Integer, HashMap<Integer, Integer>> edgeWeights = new HashMap<>();
-        HashMap<Integer, HashMap<Integer, Double>> jaccardIndex = new HashMap<>();
+        HashMap<Integer, HashMap<Integer, Object>> edgeWeights = new HashMap<>();
+        HashMap<Integer, HashMap<Integer, Object>> jaccardIndex = new HashMap<>();
         if (request.self) {
             targetNodeId = startNodeId;
             edgeMap1.forEach((middle, startNodes) ->
@@ -630,7 +633,7 @@ public class WebGraphService {
                                 int weight = 1;
                                 if (!startNode.equals(targetNode)) {
                                     if (edgeWeights.containsKey(startNode) && edgeWeights.get(startNode).containsKey(targetNode))
-                                        weight += edgeWeights.get(startNode).get(targetNode);
+                                        weight += (int) edgeWeights.get(startNode).get(targetNode);
                                     if (!edgeWeights.containsKey(startNode)) {
                                         edgeWeights.put(startNode, new HashMap<>());
                                         jaccardIndex.put(startNode, new HashMap<>());
@@ -660,7 +663,7 @@ public class WebGraphService {
                                 int weight = 1;
                                 if (!startNode.equals(targetNode)) {
                                     if (edgeWeights.containsKey(startNode) && edgeWeights.get(startNode).containsKey(targetNode))
-                                        weight += edgeWeights.get(startNode).get(targetNode);
+                                        weight += (int)edgeWeights.get(startNode).get(targetNode);
                                     if (!edgeWeights.containsKey(startNode)) {
                                         edgeWeights.put(startNode, new HashMap<>());
                                         jaccardIndex.put(startNode, new HashMap<>());
@@ -679,8 +682,11 @@ public class WebGraphService {
                 g.getEdges().remove(edgeId2);
         }
         g.addCollapsedEdges(startNodeId, targetNodeId, request.edgeName, edges);
-        g.addCollapsedWeights(request.edgeName, edgeWeights);
-        g.addCollapsedJaccardIndex(request.edgeName, jaccardIndex);
+        int eid = g.getEdge(request.edgeName);
+        g.addCustomAttribute(eid,"weight",edgeWeights);
+        g.addCustomAttributeType(eid,"weight","numeric");
+        g.addCustomAttribute(eid,"jaccardIndex",jaccardIndex);
+        g.addCustomAttributeType(eid,"jaccardIndex","numeric");
         if (!request.keep) {
             g.getEdges().remove(edgeId1);
             HashSet<Integer> otherConnectedEdges = new HashSet<>();
@@ -705,10 +711,14 @@ public class WebGraphService {
         as.put("node2", nodeController.getName(nodeIds.second, p.getId2()));
         as.put("memberOne", nodeController.getDomainId(nodeIds.first, p.getId1()));
         as.put("memberTwo", nodeController.getDomainId(nodeIds.second, p.getId2()));
-        as.put("weight", graph.getCustomEdgeWeights().get(edgeId).get(p.getId1()).get(p.getId2()));
-        as.put("jaccardIndex", graph.getCustomJaccardIndex().get(edgeId).get(p.getId1()).get(p.getId2()));
+        ArrayList<String> order = new ArrayList<>(Arrays.asList("id", "idOne", "idTwo", "node1", "node2", "memberOne", "memberTwo"));
+        graph.getCustomAttributeTypes(edgeId).keySet().forEach(attrName->{
+            as.put(attrName, graph.getCustomAttributes(edgeId).get(p.getId1()).get(p.getId2()).get(attrName));
+            order.add(attrName);
+        });
+        order.add("type");
         as.put("type", graph.getEdge(edgeId));
-        as.put("order", new String[]{"id", "idOne", "idTwo", "node1", "node2", "memberOne", "memberTwo", "weight", "jaccardIndex", "type"});
+        as.put("order", order);
         return as;
     }
 
@@ -784,61 +794,70 @@ public class WebGraphService {
         });
     }
 
-    public void applyModuleJob(Job j, HashMap<Integer,HashMap<String,Object>> moduleIds) {
+    public void applyModuleJob(Job j) {
         Graph g = getCachedGraph(j.getBasisGraph());
+
         Graph derived = g.clone(historyController.getGraphId());
-        cache.put(derived.getId(), derived);
         Integer nodeTypeId = null;
-
-        if (j.getMethod().equals(ToolService.Tool.DIAMOND) | j.getMethod().equals(ToolService.Tool.BICON)) {
-            if (j.getMethod().equals(ToolService.Tool.DIAMOND)) {
-                nodeTypeId = Graphs.getNode(j.getTarget());
-            } else {
-                nodeTypeId = Graphs.getNode("gene");
+        if (j.getMethod() != ToolService.Tool.MUST) {
+            if (j.getMethod().equals(ToolService.Tool.DIAMOND) | j.getMethod().equals(ToolService.Tool.BICON)) {
+                if (j.getMethod().equals(ToolService.Tool.DIAMOND)) {
+                    nodeTypeId = Graphs.getNode(j.getTarget());
+                } else {
+                    nodeTypeId = Graphs.getNode("gene");
+                }
+                if (j.getParams().containsKey("nodesOnly") && j.getParams().get("nodesOnly").equals("true"))
+                    derived.getNodes().put(nodeTypeId, new HashMap<>());
+                HashSet<Integer> allNodes = new HashSet<>(derived.getNodes().get(nodeTypeId).keySet());
+                int beforeCount = allNodes.size();
+                allNodes.addAll(j.getResult().getNodes().keySet());
+                j.setUpdate("" + (allNodes.size() - beforeCount));
+                NodeFilter nf = new NodeFilter(nodeController.getFilter(Graphs.getNode(nodeTypeId)), allNodes);
+                derived.saveNodeFilter(Graphs.getNode(nodeTypeId), nf);
+                derived.addNodes(nodeTypeId, nf.toList(-1).stream().map(e -> new Node(e.getNodeId(), e.getName())).collect(Collectors.toList()));
+                updateEdges(derived, j, nodeTypeId);
             }
-            if (j.getParams().containsKey("nodesOnly") && j.getParams().get("nodesOnly").equals("true"))
-                derived.getNodes().put(nodeTypeId, new HashMap<>());
-            HashSet<Integer> allNodes = new HashSet<>(derived.getNodes().get(nodeTypeId).keySet());
-            int beforeCount = allNodes.size();
-            allNodes.addAll(moduleIds.keySet());
-            j.setUpdate("" + (allNodes.size() - beforeCount));
-            NodeFilter nf = new NodeFilter(nodeController.getFilter(Graphs.getNode(nodeTypeId)), allNodes);
+            if (j.getMethod().equals(ToolService.Tool.TRUSTRANK) || j.getMethod().equals(ToolService.Tool.CENTRALITY)) {
+                int disorderId = Graphs.getNode("drug");
+                if (!derived.getEdges().containsKey(disorderId) | (j.getParams().containsKey("nodesOnly") && j.getParams().get("nodesOnly").equals("true")))
+                    derived.getNodes().put(disorderId, new HashMap<>());
+                HashSet<Integer> allNodes = new HashSet<>(derived.getNodes().get(disorderId).keySet());
+                int beforeCount = allNodes.size();
+                allNodes.addAll(j.getResult().getNodes().keySet());
+                j.setUpdate("" + (allNodes.size() - beforeCount));
+                NodeFilter nf = new NodeFilter(nodeController.getFilter(Graphs.getNode(disorderId)), allNodes);
+                derived.saveNodeFilter(Graphs.getNode(disorderId), nf);
+                derived.addNodes(disorderId, nf.toList(-1).stream().map(e -> new Node(e.getNodeId(), e.getName())).collect(Collectors.toList()));
+                updateEdges(derived, j, disorderId);
+            }
+        } else {
+//            TODO make new graph for results
+            derived = new Graph(historyController.getGraphId());
+            derived.setParent(g.getId());
+            nodeTypeId = Graphs.getNode(j.getTarget());
+////            if (j.getParams().containsKey("nodesOnly") && j.getParams().get("nodesOnly").equals("true"))
+//            derived.addNodes(nodeTypeId, new HashMap<>());
+////            HashSet<Integer> allNodes = new HashSet<>(derived.getNodes().get(nodeTypeId).keySet());
+////            int beforeCount = 0;
+////            derived.addNodes(nodeTypeId,new LinkedList<>(moduleIds.keySet()));
+            j.setUpdate("" + (j.getResult().getNodes().size()));
+            NodeFilter nf = new NodeFilter(nodeController.getFilter(Graphs.getNode(nodeTypeId)), j.getResult().getNodes().keySet());
             derived.saveNodeFilter(Graphs.getNode(nodeTypeId), nf);
             derived.addNodes(nodeTypeId, nf.toList(-1).stream().map(e -> new Node(e.getNodeId(), e.getName())).collect(Collectors.toList()));
-            updateEdges(derived, j, nodeTypeId);
-        }
-        if (j.getMethod().equals(ToolService.Tool.TRUSTRANK)|| j.getMethod().equals(ToolService.Tool.CENTRALITY)) {
-            int disorderId = Graphs.getNode("drug");
-            if (!derived.getEdges().containsKey(disorderId) | (j.getParams().containsKey("nodesOnly") && j.getParams().get("nodesOnly").equals("true")))
-                derived.getNodes().put(disorderId, new HashMap<>());
-            HashSet<Integer> allNodes = new HashSet<>(derived.getNodes().get(disorderId).keySet());
-            int beforeCount = allNodes.size();
-            allNodes.addAll(moduleIds.keySet());
-            j.setUpdate("" + (allNodes.size() - beforeCount));
-            NodeFilter nf = new NodeFilter(nodeController.getFilter(Graphs.getNode(disorderId)), allNodes);
-            derived.saveNodeFilter(Graphs.getNode(disorderId), nf);
-            derived.addNodes(disorderId, nf.toList(-1).stream().map(e -> new Node(e.getNodeId(), e.getName())).collect(Collectors.toList()));
-            updateEdges(derived, j, disorderId);
-        }
-
-        if(j.getMethod().equals(ToolService.Tool.MUST)){
-            if (j.getMethod().equals(ToolService.Tool.DIAMOND)) {
-                nodeTypeId = Graphs.getNode(j.getTarget());
-            } else {
-                nodeTypeId = Graphs.getNode("gene");
-            }
-            if (j.getParams().containsKey("nodesOnly") && j.getParams().get("nodesOnly").equals("true"))
-                derived.getNodes().put(nodeTypeId, new HashMap<>());
-            HashSet<Integer> allNodes = new HashSet<>(derived.getNodes().get(nodeTypeId).keySet());
-            int beforeCount = allNodes.size();
-            allNodes.addAll(moduleIds.keySet());
-            j.setUpdate("" + (allNodes.size() - beforeCount));
-            NodeFilter nf = new NodeFilter(nodeController.getFilter(Graphs.getNode(nodeTypeId)), allNodes);
-            derived.saveNodeFilter(Graphs.getNode(nodeTypeId), nf);
-            derived.addNodes(nodeTypeId, nf.toList(-1).stream().map(e -> new Node(e.getNodeId(), e.getName())).collect(Collectors.toList()));
-            updateEdges(derived, j, nodeTypeId);
+            LinkedList<Edge> edges = new LinkedList<>();
+            j.getResult().getEdges().forEach((id1, map) -> {
+                map.forEach((id2, attributes) -> {
+                    edges.add(new Edge(id1, id2));
+                });
+            });
+            derived.addCollapsedEdges(nodeTypeId, nodeTypeId, "MuST_Interaction", edges);
+            int eid = derived.getEdge("MuST_Interaction");
+            derived.addCustomAttribute(eid,j.getResult().getEdges());
+            derived.addCustomAttributeType(eid,"participation_number", "numeric");
+//            updateEdges(derived, j, nodeTypeId);
 
         }
+        cache.put(derived.getId(), derived);
         j.setDerivedGraph(derived.getId());
         addGraphToHistory(j.getUserId(), derived.getId());
     }

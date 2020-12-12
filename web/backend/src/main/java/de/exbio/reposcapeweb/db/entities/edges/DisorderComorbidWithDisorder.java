@@ -43,15 +43,15 @@ public class DisorderComorbidWithDisorder extends RepoTrialEdge implements Seria
 
     @Transient
     @JsonIgnore
-    public final static String[] allAttributes = new String[]{"id", "idOne", "idTwo", "node1","node2","memberOne", "memberTwo", "phiCor", "rrGeoMean", "rr12", "rr21", "type"};
+    public final static String[] allAttributes = new String[]{"id", "idOne", "idTwo", "node1", "node2", "memberOne", "memberTwo", "phiCor", "rrGeoMean", "rr12", "rr21", "type"};
 
     @Transient
     @JsonIgnore
-    public final static String[] allAttributeTypes = new String[]{"numeric", "numeric", "numeric","","", "", "", "numeric", "numeric", "numeric", "numeric", ""};
+    public final static String[] allAttributeTypes = new String[]{"numeric", "numeric", "numeric", "", "", "", "", "numeric", "numeric", "numeric", "numeric", ""};
 
     @Transient
     @JsonIgnore
-    public final static boolean[] idAttributes = new boolean[]{true, true, true, false,false,true, true, false, false, false, false, false};
+    public final static Boolean[] idAttributes = new Boolean[]{true, true, true, false, false, true, true, false, false, false, false, false};
 
 
     @Transient
@@ -114,7 +114,7 @@ public class DisorderComorbidWithDisorder extends RepoTrialEdge implements Seria
     }
 
     public static String[] getListAttributes() {
-        return new String[]{"id", "node1", "node2",  "phiCor", "rrGeoMean", "rr12", "rr21"};
+        return new String[]{"id", "node1", "node2", "phiCor", "rrGeoMean", "rr12", "rr21"};
     }
 
     @Override
@@ -127,17 +127,17 @@ public class DisorderComorbidWithDisorder extends RepoTrialEdge implements Seria
         values.put("memberTwo", getMemberTwo());
         values.put("idOne", id.getId1());
         values.put("idTwo", id.getId2());
-        values.put("node1",nodeOne);
-        values.put("node2",nodeTwo);
+        values.put("node1", nodeOne);
+        values.put("node2", nodeTwo);
         values.put("rrGeoMean", getRrGeoMean());
         values.put("phiCor", getPhiCor());
         values.put("id", id.getId1() + "-" + id.getId2());
         return values;
     }
 
-    public void setNodeNames(String node1, String node2){
-        nodeOne=node1;
-        nodeTwo=node2;
+    public void setNodeNames(String node1, String node2) {
+        nodeOne = node1;
+        nodeTwo = node2;
     }
 
     @Override
