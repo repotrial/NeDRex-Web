@@ -13,25 +13,20 @@ apiNetwork_path = sys.argv[1]
 inputFiles = "/home/andimajore/projects/RepoScapeWeb/web/resources/externalTools"
 os.chdir(apiNetwork_path)
 
-
-
 drug_groups_map = dict()
 with open(inputFiles + '/drugs.tsv', 'r') as f:
     for i in f:
         line = i.strip().split('\t')
         drug_groups_map[line[0]] = line[1]
 
-
-data = [{"name":"PPDr", "interactions":"proteinInteractsWithProtein.tsv", "targets":"drugHasTargetProtein.tsv"},
-        {"name":"GGDr", "interactions":"geneInteractsWithGene.tsv", "targets":"drugHasTargetGene.tsv"}]
-
-
+data = [{"name": "PPDr", "interactions": "proteinInteractsWithProtein.tsv", "targets": "drugHasTargetProtein.tsv"},
+        {"name": "GGDr", "interactions": "geneInteractsWithGene.tsv", "targets": "drugHasTargetGene.tsv"}]
 
 for d in data:
 
     drug_set = set()
     drug_gene_map = dict()
-    with open(inputFiles + '/'+d["targets"], 'r') as f:
+    with open(inputFiles + '/' + d["targets"], 'r') as f:
         for i in f:
             line = i.strip().split('\t')
             if line[0] not in drug_set:
@@ -44,7 +39,7 @@ for d in data:
     gene_gene_map = dict()
     gene_set_exp = set()
     gene_gene_map_exp = dict()
-    with open(inputFiles + '/'+d["interactions"], 'r') as f:
+    with open(inputFiles + '/' + d["interactions"], 'r') as f:
         for i in f:
             line = i.strip().split('\t')
             for pos in range(0, 2):
@@ -69,7 +64,8 @@ for d in data:
     # add gene-gene edges
     for g1, gg in gene_gene_map.items():
         for g2 in gg:
-            allNet.add_edge(g1, g2, **{'type': 'ProteinInteractsWithProtein'})  # ,'evidenceTypes': evidence_map[g1][g2]})
+            allNet.add_edge(g1, g2,
+                            **{'type': 'ProteinInteractsWithProtein'})  # ,'evidenceTypes': evidence_map[g1][g2]})
 
     expNet = nx.Graph()
 
@@ -80,7 +76,8 @@ for d in data:
     # add gene-gene edges
     for g1, gg in gene_gene_map_exp.items():
         for g2 in gg:
-            expNet.add_edge(g1, g2, **{'type': 'ProteinInteractsWithProtein'})  # , 'evidenceTypes': evidence_map[g1][g2]})
+            expNet.add_edge(g1, g2,
+                            **{'type': 'ProteinInteractsWithProtein'})  # , 'evidenceTypes': evidence_map[g1][g2]})
 
     # add drug nodes and drug-gene edges
     for dr, gg in drug_gene_map.items():
@@ -101,16 +98,15 @@ for d in data:
 
     nx.write_graphml(allNet, 'temp.graphml')
     gg = gt.load_graph('temp.graphml')
-    gg.save(prefix+'_all.gt')
+    gg.save(prefix + '_all.gt')
     os.remove('temp.graphml')
-    print(allNet.number_of_nodes())    # 22619
-    print(allNet.number_of_edges())    # 362801
+    print(allNet.number_of_nodes())  # 22619
+    print(allNet.number_of_edges())  # 362801
 
     nx.write_graphml(expNet, 'exp-temp.graphml')
     gg_exp = gt.load_graph('exp-temp.graphml')
-    gg_exp.save(prefix+'_exp.gt')
+    gg_exp.save(prefix + '_exp.gt')
     os.remove('exp-temp.graphml')
 
-    print(expNet.number_of_nodes())    # 22619
+    print(expNet.number_of_nodes())  # 22619
     print(expNet.number_of_edges())
-

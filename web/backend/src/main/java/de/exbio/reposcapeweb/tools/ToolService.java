@@ -9,10 +9,7 @@ import de.exbio.reposcapeweb.db.entities.edges.ProteinInteractsWithProtein;
 import de.exbio.reposcapeweb.db.services.edges.ProteinInteractsWithProteinService;
 import de.exbio.reposcapeweb.db.services.nodes.GeneService;
 import de.exbio.reposcapeweb.db.services.nodes.ProteinService;
-import de.exbio.reposcapeweb.utils.ProcessUtils;
-import de.exbio.reposcapeweb.utils.ReaderUtils;
-import de.exbio.reposcapeweb.utils.StringUtils;
-import de.exbio.reposcapeweb.utils.WriterUtils;
+import de.exbio.reposcapeweb.utils.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -166,66 +163,64 @@ public class ToolService {
 //    }
 
     public void createInteractionFiles() {
-        File ggi = new File(dataDir, "gene_gene_interaction.pairs");
-        try (BufferedWriter bw = WriterUtils.getBasicWriter(ggi)) {
-            interactionService.getGenes().forEach((id1, list) -> list.forEach((id2, bool) -> {
-                if (id1 < id2) {
-                    try {
-                        bw.write(id1 + "," + id2 + "\n");
-                    } catch (IOException e) {
-                        e.printStackTrace();
+        File ggi_all = new File(dataDir, "gene_gene_interaction_all.pairs");
+        File ggi_exp = new File(dataDir, "gene_gene_interaction_exp.pairs");
+        File ggi_all_must = new File(dataDir, "gene_gene_interaction_all_must.pairs");
+        File ggi_exp_must = new File(dataDir, "gene_gene_interaction_exp_must.pairs");
+        try (BufferedWriter bw_all = WriterUtils.getBasicWriter(ggi_all); BufferedWriter bw_exp = WriterUtils.getBasicWriter(ggi_exp);BufferedWriter bw_all_must = WriterUtils.getBasicWriter(ggi_all_must); BufferedWriter bw_exp_must = WriterUtils.getBasicWriter(ggi_exp_must)) {
+            interactionService.findAllGenes().forEach(gg -> {
+                try {
+                    bw_all.write(geneService.map(gg.getPrimaryIds().getId1()) + "," + geneService.map(gg.getPrimaryIds().getId2()) + "\n");
+                    bw_all_must.write(geneService.map(gg.getPrimaryIds().getId1()) + "\t" + geneService.map(gg.getPrimaryIds().getId2()) + "\n");
+                    if (gg.getEvidenceTypes().contains("exp")) {
+                        bw_exp.write(geneService.map(gg.getPrimaryIds().getId1()) + "," + geneService.map(gg.getPrimaryIds().getId2()) + "\n");
+                        bw_exp_must.write(geneService.map(gg.getPrimaryIds().getId1()) + "\t" + geneService.map(gg.getPrimaryIds().getId2()) + "\n");
                     }
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-            }));
+//                }
+            });
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        ggi = new File(dataDir, "gene_gene_interaction_domain.pairs");
-        try (BufferedWriter bw = WriterUtils.getBasicWriter(ggi)) {
-            bw.write("id1\tid2");
-            interactionService.getGenes().forEach((id1, list) -> list.forEach((id2, bool) -> {
-                if (id1 < id2) {
-                    try {
-                        bw.write(id1 + "\t" + id2 + "\n");
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
-        File ppi = new File(dataDir, "protein_protein_interaction.pairs");
-        try (BufferedWriter bw2 = WriterUtils.getBasicWriter(ppi)) {
-            interactionService.getProteins().forEach((id1, list) -> list.forEach((id2, bool) -> {
-                if (id1 < id2) {
-                    try {
-                        bw2.write(id1 + "," + id2 + "\n");
-                    } catch (IOException e) {
-                        e.printStackTrace();
+        File ppi_all = new File(dataDir, "protein_protein_interaction_all.pairs");
+        File ppi_exp = new File(dataDir, "protein_protein_interaction_exp.pairs");
+        File ppi_all_must = new File(dataDir, "protein_protein_interaction_all_must.pairs");
+        File ppi_exp_must = new File(dataDir, "protein_protein_interaction_exp_must.pairs");
+        try (BufferedWriter bw_all = WriterUtils.getBasicWriter(ppi_all); BufferedWriter bw_exp = WriterUtils.getBasicWriter(ppi_exp);BufferedWriter bw_all_must = WriterUtils.getBasicWriter(ppi_all_must); BufferedWriter bw_exp_must = WriterUtils.getBasicWriter(ppi_exp_must)) {
+            interactionService.findAllProteins().forEach(pp -> {
+                try {
+                    bw_all.write(proteinService.map(pp.getPrimaryIds().getId1()) + "," + proteinService.map(pp.getPrimaryIds().getId2()) + "\n");
+                    bw_all_must.write(proteinService.map(pp.getPrimaryIds().getId1()) + "\t" + proteinService.map(pp.getPrimaryIds().getId2()) + "\n");
+                    if (pp.getEvidenceTypes().contains("exp")){
+                        bw_exp.write(proteinService.map(pp.getPrimaryIds().getId1()) + "," + proteinService.map(pp.getPrimaryIds().getId2()) + "\n");
+                        bw_exp_must.write(proteinService.map(pp.getPrimaryIds().getId1()) + "\t" + proteinService.map(pp.getPrimaryIds().getId2()) + "\n");
                     }
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-            }));
+            });
         } catch (IOException e) {
             e.printStackTrace();
         }
-        ppi = new File(dataDir, "protein_protein_interaction_domain.pairs");
-        try (BufferedWriter bw2 = WriterUtils.getBasicWriter(ppi)) {
-            bw2.write("domainId1\tdomainId2");
-            interactionService.getProteins().forEach((id1, list) -> list.forEach((id2, bool) -> {
-                if (id1 < id2) {
-                    try {
-                        bw2.write(proteinService.map(id1) + "\t" + proteinService.map(id2) + "\n");
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        ppi = new File(dataDir, "protein_protein_interaction_domain.pairs");
+//        try (BufferedWriter bw2 = WriterUtils.getBasicWriter(ppi)) {
+//            bw2.write("domainId1\tdomainId2");
+//            interactionService.getProteins().forEach((id1, list) -> list.forEach((id2, bool) -> {
+//                if (id1 < id2) {
+//                    try {
+//                        bw2.write(proteinService.map(id1) + "\t" + proteinService.map(id2) + "\n");
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//            }));
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
 
 
         File rankCache = new File(dataDir, "ranking_files");
@@ -251,8 +246,7 @@ public class ToolService {
         if (!tempDirs.containsKey(jobId))
             try {
                 File f = Files.createTempDirectory(new File("/tmp").toPath(), "reposcape_web_job_" + jobId).toFile();
-                //TODO ignored for dev
-//                f.deleteOnExit();
+                f.deleteOnExit();
                 tempDirs.put(jobId, f);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -267,19 +261,19 @@ public class ToolService {
             case DIAMOND: {
                 command += "diamond " +
                         diamond.getAbsolutePath() + " " +
-                        (request.getParams().get("type").equals("gene") ? new File(dataDir, "gene_gene_interaction.pairs") : new File(dataDir, "protein_protein_interaction.pairs")).getAbsolutePath() + " " +
+                        (request.getParams().get("type").equals("gene") ? new File(dataDir, "gene_gene_interaction_"+(request.experimentalOnly ? "exp" : "all")+".pairs") : new File(dataDir, "protein_protein_interaction_"+(request.experimentalOnly ? "exp" : "all")+".pairs")).getAbsolutePath() + " " +
                         "seeds.list " +
                         request.getParams().get("n") + " " + request.getParams().get("alpha");
                 break;
             }
             case BICON: {
-                command += "bicon " + bicon.getAbsolutePath() + " exprFile " + new File(dataDir, "gene_gene_interaction.pairs").getAbsolutePath() + " genes.txt " + request.getParams().get("lg_min") + " " + request.getParams().get("lg_max");
+                command += "bicon " + bicon.getAbsolutePath() + " exprFile " + new File(dataDir, "gene_gene_interaction_"+(request.experimentalOnly ? "exp" : "all")+".pairs").getAbsolutePath() + " genes.txt " + request.getParams().get("lg_min") + " " + request.getParams().get("lg_max");
                 break;
             }
             case MUST: {
                 command += "must " +
                         must.getAbsolutePath() + " " +
-                        (request.getParams().get("type").equals("gene") ? new File(dataDir, "gene_gene_interaction_domain.pairs") : new File(dataDir, "protein_protein_interaction_domain.pairs")).getAbsolutePath() + " " +
+                        (request.getParams().get("type").equals("gene") ? new File(dataDir, "gene_gene_interaction_"+(request.experimentalOnly ? "exp" : "all")+"_must.pairs") : new File(dataDir, "protein_protein_interaction_"+(request.experimentalOnly ? "exp" : "all")+"_must.pairs")).getAbsolutePath() + " " +
                         "seeds.list edges.list nodes.list " +
                         request.getParams().get("penalty") + " " +
                         request.getParams().get("maxit") + (request.getParams().get("multiple").equals("true") ? " " + request.getParams().get("trees") : "");
@@ -304,46 +298,52 @@ public class ToolService {
                 break;
             }
         }
-        System.out.println(command);
         return command;
     }
 
-    public void prepareJobFiles(Job job, JobRequest req, Graph g) {
+    public void prepareJobFiles(Job job, JobRequest req, Graph g, HashMap<Integer, Pair<String, String>> domainMap) {
         System.out.println("preparing job");
         switch (job.getMethod()) {
-            case DIAMOND, MUST: {
+            case DIAMOND, MUST,TRUSTRANK, CENTRALITY: {
                 File seed = new File(getTempDir(job.getJobId()), "seeds.list");
                 if (req.selection)
-                    writeSeedFile(req.params.get("type"), seed, req.nodes);
+                    writeSeedFile(req.params.get("type"), seed, req.nodes, domainMap);
                 else
-                    writeSeedFile(req.params.get("type"), seed, g);
+                    writeSeedFile(req.params.get("type"), seed, g, domainMap);
                 break;
             }
             case BICON: {
                 File exprFile = new File(getTempDir(job.getJobId()), "exprFile");
+                boolean header = true;
                 try (BufferedWriter bw = WriterUtils.getBasicWriter(exprFile)) {
-                    bw.write(req.getParams().get("exprData"));
+                    for (String line : StringUtils.split(req.getParams().get("exprData"), "\n")) {
+                        bw.write((header ? "" : "entrez.") + line + "\n");
+                        if (header)
+                            header = false;
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+                break;
             }
-            case TRUSTRANK, CENTRALITY: {
-                File seed = new File(getTempDir(job.getJobId()), "seeds.list");
-                writeSeedFile(req.params.get("type"), seed, req.ids);
-            }
+//            case TRUSTRANK, CENTRALITY: {
+//                File seed = new File(getTempDir(job.getJobId()), "seeds.list");
+//                writeSeedFile(req.params.get("type"), seed, req.ids, domainMap);
+//                break;
+//            }
         }
 
     }
 
-    private void writeSeedFile(String type, File file, Graph g) {
-        writeSeedFile(type, file, g.getNodes().get(Graphs.getNode(type)).keySet());
+    private void writeSeedFile(String type, File file, Graph g, HashMap<Integer, Pair<String, String>> domainMap) {
+        writeSeedFile(type, file, g.getNodes().get(Graphs.getNode(type)).keySet(), domainMap);
     }
 
-    private void writeSeedFile(String type, File file, Collection nodeIds) {
+    private void writeSeedFile(String type, File file, Collection nodeIds, HashMap<Integer, Pair<String, String>> domainMap) {
         BufferedWriter bw = WriterUtils.getBasicWriter(file);
         nodeIds.forEach(node -> {
             try {
-                bw.write(node + "\n");
+                bw.write(domainMap.get(node).getFirst() + "\n");
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -364,7 +364,7 @@ public class ToolService {
         return null;
     }
 
-    public void getJobResults(Job j) throws IOException {
+    public void getJobResults(Job j, HashMap<Integer, HashMap<String, Integer>> domainMaps) throws IOException {
         JobResult result = new JobResult();
         j.setResult(result);
         HashMap<Integer, HashMap<String, Object>> nodes = new HashMap<>();
@@ -373,17 +373,18 @@ public class ToolService {
             case DIAMOND: {
                 for (File f : getTempDir(j.getJobId()).listFiles()) {
                     if (j.getMethod().equals(Tool.DIAMOND) && f.getName().endsWith(".txt")) {
-                        nodes = readDiamondResults(f, Double.parseDouble(j.getParams().get("pcutoff")));
+                        nodes = readDiamondResults(f, Double.parseDouble(j.getParams().get("pcutoff")), domainMaps.get(Graphs.getNode(j.getTarget())));
                     }
                 }
                 break;
             }
             case MUST: {
+                HashMap<String, Integer> domainMap = domainMaps.get(Graphs.getNode(j.getTarget()));
                 try (BufferedReader br = ReaderUtils.getBasicReader(new File(getTempDir(j.getJobId()), "nodes.list"))) {
                     String line = br.readLine();
                     while ((line = br.readLine()) != null) {
                         LinkedList<String> split = StringUtils.split(line, "\t");
-                        int id = Integer.parseInt(split.get(0));
+                        int id = domainMaps.get(Graphs.getNode(j.getTarget())).get(split.get(0));
                         nodes.put(id, new HashMap<>());
                         nodes.get(id).put("participation_number", split.get(1));
                     }
@@ -392,9 +393,9 @@ public class ToolService {
                     String line = br.readLine();
                     while ((line = br.readLine()) != null) {
                         LinkedList<String> split = StringUtils.split(line, "\t");
-                        int id1 = Integer.parseInt(split.get(0));
-                        int id2 = Integer.parseInt(split.get(1));
-                        if(id2<id1){
+                        int id1 = domainMap.get(split.get(0));
+                        int id2 = domainMap.get(split.get(1));
+                        if (id2 < id1) {
                             int tmp = id1;
                             id1 = id2;
                             id2 = tmp;
@@ -402,7 +403,7 @@ public class ToolService {
                         if (!edges.containsKey(id1))
                             edges.put(id1, new HashMap<>());
                         if (!edges.get(id1).containsKey(id2))
-                            edges.get(id1).put(id2,new HashMap<>());
+                            edges.get(id1).put(id2, new HashMap<>());
                         edges.get(id1).get(id2).put("participation_number", Integer.parseInt(split.get(2)));
                     }
                 }
@@ -412,7 +413,7 @@ public class ToolService {
                 try (BufferedReader br = ReaderUtils.getBasicReader(new File(getTempDir(j.getJobId()), "genes.txt"))) {
                     String line = "";
                     while ((line = br.readLine()) != null)
-                        nodes.put(Integer.parseInt(line), null);
+                        nodes.put(domainMaps.get(Graphs.getNode("gene")).get(line), null);
                 } catch (IOException e) {
                     e.printStackTrace();
                     throw e;
@@ -421,8 +422,8 @@ public class ToolService {
             }
             case TRUSTRANK, CENTRALITY: {
                 for (File f : getTempDir(j.getJobId()).listFiles()) {
-                    if (!f.getName().equals("seed.list")) {
-                        nodes = readTrustRankResults(f);
+                    if (!f.getName().equals("seeds.list")) {
+                        nodes = readTrustRankResults(f, domainMaps.get(Graphs.getNode("drug")));
                     }
                 }
                 break;
@@ -432,16 +433,16 @@ public class ToolService {
         result.setEdges(edges);
     }
 
-    private HashMap<Integer, HashMap<String, Object>> readTrustRankResults(File f) {
+    private HashMap<Integer, HashMap<String, Object>> readTrustRankResults(File f, HashMap<String, Integer> domainMap) {
         HashMap<Integer, HashMap<String, Object>> out = new HashMap<>();
         try (BufferedReader br = ReaderUtils.getBasicReader(f)) {
             String line = br.readLine();
-            System.out.println(line);
             while ((line = br.readLine()) != null) {
                 LinkedList<String> split = StringUtils.split(line, "\t");
-                if(split.size()==2) {
+                if (split.size() == 2) {
+                    //TODO check correct input files-> create new edges from output? or customized nodes somehow
                     //TODO why having seeds on bottom of list
-                    int id = Integer.parseInt(split.getFirst());
+                    int id = domainMap.get(split.getFirst());
                     out.put(id, new HashMap<>());
                     out.get(id).put("score", Double.parseDouble(split.get(1)));
                 }
@@ -471,7 +472,7 @@ public class ToolService {
             }
             case TRUSTRANK, CENTRALITY: {
                 for (File f : getTempDir(j.getJobId()).listFiles()) {
-                    if (!f.getName().equals("seed.list")) {
+                    if (!f.getName().equals("seeds.list")) {
                         result = f;
                         break;
                     }
@@ -502,7 +503,7 @@ public class ToolService {
         getTempDir(j.getJobId()).delete();
     }
 
-    private HashMap<Integer, HashMap<String, Object>> readDiamondResults(File f, double cutoff) {
+    private HashMap<Integer, HashMap<String, Object>> readDiamondResults(File f, double cutoff, HashMap<String, Integer> domainMap) {
         HashMap<Integer, HashMap<String, Object>> results = new HashMap<>();
         try {
             BufferedReader br = ReaderUtils.getBasicReader(f);
@@ -513,10 +514,10 @@ public class ToolService {
                 LinkedList<String> attrs = StringUtils.split(line, "\t");
                 double p_val = Double.parseDouble(attrs.get(2));
                 if (p_val < cutoff) {
-                    int id = Integer.parseInt(attrs.get(1));
+                    int id = domainMap.get(attrs.get(1));
                     results.put(id, new HashMap<>());
                     results.get(id).put("p_hyper", p_val);
-                    results.get(id).put("rank", Integer.parseInt(attrs.get(1)));
+                    results.get(id).put("rank", Integer.parseInt(attrs.get(0)));
                 }
             }
         } catch (IOException e) {

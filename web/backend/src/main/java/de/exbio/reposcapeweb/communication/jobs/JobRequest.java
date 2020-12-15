@@ -17,7 +17,7 @@ public class JobRequest {
     public String exprData;
     public boolean experimentalOnly;
     @JsonIgnore
-    public HashSet<String> ids;
+    public HashSet<Integer> ids;
 
 
     public String getUserId() {

@@ -149,7 +149,7 @@ public class UpdateService {
         try (BufferedWriter bw = WriterUtils.getBasicWriter(gdFile)) {
             drugHasTargetService.findAllGenes().forEach(gd -> {
                 try {
-                    bw.write(gd.getPrimaryIds().getId1() + "\t" + geneService.map(gd.getPrimaryIds().getId2()) + "\n");
+                    bw.write(drugService.map(gd.getPrimaryIds().getId1()) + "\t" + geneService.map(gd.getPrimaryIds().getId2()) + "\n");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -161,7 +161,7 @@ public class UpdateService {
         try (BufferedWriter bw = WriterUtils.getBasicWriter(pdFile)) {
             drugHasTargetService.findAllProteins().forEach(pd -> {
                 try {
-                    bw.write(pd.getPrimaryIds().getId1() + "\t" + proteinService.map(pd.getPrimaryIds().getId2()) + "\n");
+                    bw.write(drugService.map(pd.getPrimaryIds().getId1()) + "\t" + proteinService.map(pd.getPrimaryIds().getId2()) + "\n");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -173,7 +173,7 @@ public class UpdateService {
         try (BufferedWriter bw = WriterUtils.getBasicWriter(dFile)) {
             drugService.findAll().forEach(d -> {
                 try {
-                    bw.write(d.getId() + "\t");
+                    bw.write(d.getPrimaryDomainId() + "\t");
                     Iterator<String> groups = d.getDrugGroups().iterator();
                     while (groups.hasNext())
                         bw.write(groups.next() + (groups.hasNext() ? ", " : ""));

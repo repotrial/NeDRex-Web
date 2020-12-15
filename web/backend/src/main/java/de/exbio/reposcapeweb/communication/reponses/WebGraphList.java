@@ -1,15 +1,13 @@
 package de.exbio.reposcapeweb.communication.reponses;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class WebGraphList {
     public String id;
     public HashMap<String, HashMap<String, LinkedList<WebAttribute>>> attributes;
+    public HashMap<String, HashMap<String, Object>> marks;
     public HashMap<String, LinkedList<HashMap<String, Object>>> nodes;
-    //    @JsonIgnore
     public HashMap<String, LinkedList<HashMap<String, Object>>> edges;
 
 
@@ -20,6 +18,7 @@ public class WebGraphList {
         attributes.put("edges", new HashMap<>());
         nodes = new HashMap<>();
         edges = new HashMap<>();
+        marks = new HashMap<>();
     }
 
 
@@ -77,6 +76,12 @@ public class WebGraphList {
         });
     }
 
+    public void addMarks(String entity, String type, Object marks) {
+        if (!this.marks.containsKey(entity))
+            this.marks.put(entity, new HashMap<>());
+        this.marks.get(entity).put(type, marks);
+    }
+
     public void addListAttributes(String entity, String type, String[] attributes) {
         this.addAttributes(entity, type, attributes);
         this.setListAttributes(entity, type, attributes);
@@ -113,18 +118,22 @@ public class WebGraphList {
             nodes.get(type).addAll(nodesToAttributeList);
     }
 
-    public void setTypes(String type, String name, String[] attributes, String[] types, Boolean[] ids) {
+    public void setTypes(String type, String name, String[] attributes, String[] types, Boolean[] ids, HashMap<String, String> customAttributes) {
         ArrayList<String> names = new ArrayList<>(Arrays.asList(attributes));
         this.attributes.get(type).get(name).forEach(a -> {
             int idx = names.indexOf(a.name);
-            String t = types[idx];
+            String t = idx == -1 ? customAttributes.get(a.name) : types[idx];
             if (t.equals("numeric"))
                 a.isNumeric();
             if (t.equals("array"))
                 a.isArray();
-            if (ids[idx])
+            if (idx > -1 && ids[idx])
                 a.isId();
         });
+    }
+
+    public HashMap<String, HashMap<String, Object>> getMarks() {
+        return marks;
     }
 
     private class WebAttribute {

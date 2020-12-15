@@ -12,6 +12,7 @@ import de.exbio.reposcapeweb.db.services.nodes.DrugService;
 import de.exbio.reposcapeweb.db.services.nodes.GeneService;
 import de.exbio.reposcapeweb.db.services.nodes.ProteinService;
 import de.exbio.reposcapeweb.tools.ToolService;
+import de.exbio.reposcapeweb.utils.Pair;
 import de.exbio.reposcapeweb.utils.ReaderUtils;
 import de.exbio.reposcapeweb.utils.StringUtils;
 import de.exbio.reposcapeweb.utils.WriterUtils;
@@ -143,16 +144,27 @@ public class JobController {
     }
 
     private void prepareFiles(Job j, JobRequest req, Graph g) {
-        if (j.getMethod().equals(ToolService.Tool.TRUSTRANK) || j.getMethod().equals(ToolService.Tool.CENTRALITY)) {
-            HashSet<String> domainIds = new HashSet<>();
-            HashSet<Integer> ids = new HashSet<>(req.selection ? req.nodes : g.getNodes().get(Graphs.getNode(req.getParams().get("type"))).keySet());
-            if (req.getParams().get("type").equals("gene"))
-                ids.forEach(n -> domainIds.add(geneService.map(n)));
-            else
-                ids.forEach(n -> domainIds.add(proteinService.map(n)));
-            req.ids = domainIds;
+        HashMap<Integer, Pair<String, String>> domainMap;
+        if (req.getParams().get("type").equals("gene")) {
+            domainMap = geneService.getIdToDomainMap();
+//                ids.forEach(n -> domainIds.add(geneService.map(n)));
+        }else {
+            domainMap= proteinService.getIdToDomainMap();
+//                ids.forEach(n -> domainIds.add(proteinService.map(n)));
         }
-        toolService.prepareJobFiles(j, req, g);
+//        if (j.getMethod().equals(ToolService.Tool.TRUSTRANK) || j.getMethod().equals(ToolService.Tool.CENTRALITY)) {
+//            HashSet<String> domainIds = new HashSet<>();
+//            HashSet<Integer> ids = new HashSet<>(req.selection ? req.nodes : g.getNodes().get(Graphs.getNode(req.getParams().get("type"))).keySet());
+//            req.ids = ids;
+//            if (req.getParams().get("type").equals("gene")) {
+//                ids.forEach(n -> domainIds.add(geneService.map(n)));
+//            }else {
+//                ids.forEach(n -> domainIds.add(proteinService.map(n)));
+//            }
+//            req.ids = domainIds;
+//            req.ids = domainIds;
+//        }
+        toolService.prepareJobFiles(j, req, g,domainMap);
     }
 
     private String createCommand(Job j, JobRequest req) {
@@ -163,8 +175,12 @@ public class JobController {
     public void finishJob(String id) {
         Job j = jobs.get(id);
         try {
+            HashMap<Integer, HashMap<String,Integer>> domainIds = new HashMap<>();
+            domainIds.put(Graphs.getNode("gene"),geneService.getDomainToIdMap());
+            domainIds.put(Graphs.getNode("protein"),proteinService.getDomainToIdMap());
+            domainIds.put(Graphs.getNode("drug"),drugService.getDomainToIdMap());
             jobQueue.finishJob(j);
-            toolService.getJobResults(j);
+            toolService.getJobResults(j,domainIds);
             if ((j.getResult().getNodes().isEmpty()) & (!j.getParams().containsKey("nodesOnly") || !j.getParams().get("nodesOnly").equals("true"))) {
                 j.setDerivedGraph(j.getBasisGraph());
             } else

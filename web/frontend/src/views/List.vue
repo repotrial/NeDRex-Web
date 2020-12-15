@@ -271,6 +271,22 @@
                         <span>id:{{ item.id }}</span>
                       </v-tooltip>
                     </v-col>
+                    <v-col cols="1">
+                      <v-tooltip right>
+                        <template v-slot:activator="{ on, attrs }"
+                                  v-if="marks.nodes && marks.nodes[Object.keys(attributes.nodes)[nodeTab]] &&marks.nodes[Object.keys(attributes.nodes)[nodeTab]].indexOf(item.id)>-1">
+                          <v-icon
+                            color="primary"
+                            dark
+                            v-bind="attrs"
+                            v-on="on"
+                          >
+                            fas fa-star
+                          </v-icon>
+                        </template>
+                        <span>Added by Algorithm</span>
+                      </v-tooltip>
+                    </v-col>
                   </v-row>
 
                 </template>
@@ -426,6 +442,22 @@
                           </v-icon>
                         </template>
                         <span>id:{{ item.id }}</span>
+                      </v-tooltip>
+                    </v-col>
+                    <v-col cols="1">
+                      <v-tooltip right>
+                        <template v-slot:activator="{ on, attrs }"
+                                  v-if="marks.edges && marks.edges[Object.keys(attributes.edges)[edgeTab]] &&marks.edges[Object.keys(attributes.edges)[edgeTab]].indexOf(item.id)>-1">
+                          <v-icon
+                            color="primary"
+                            dark
+                            v-bind="attrs"
+                            v-on="on"
+                          >
+                            fas fa-star
+                          </v-icon>
+                        </template>
+                        <span>Added by Algorithm</span>
                       </v-tooltip>
                     </v-col>
                   </v-row>
@@ -683,57 +715,57 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-<!--    <v-dialog-->
-<!--      v-model="optionDialog"-->
-<!--      persistent-->
-<!--      max-width="500"-->
-<!--      v-if="optionDialog && options !== undefined && options.type !== undefined"-->
-<!--    >-->
-<!--      <v-card>-->
-<!--        <v-card-title class="headline">-->
-<!--          Organize {{ options.title }} Attributes-->
-<!--        </v-card-title>-->
-<!--        <v-card-text>Adjust the attributes of the general item tables.-->
-<!--        </v-card-text>-->
-<!--        <v-divider></v-divider>-->
-<!--        <template v-if="options.type.length>0">-->
-<!--          <v-tabs v-model="optionTab">-->
-<!--            <v-tabs-slider color="blue"></v-tabs-slider>-->
-<!--            <v-tab v-for="name in Object.keys(options.attributes)" :key="name">-->
-<!--              {{options.type}}-->
-<!--            </v-tab>-->
-<!--          </v-tabs>-->
-<!--          <v-tabs-items>-->
-<!--            <v-list>-->
-<!--              <v-list-item v-for="attr in options.attributes[optionTab]" :key="attr.name">-->
-<!--                <v-switch v-model="attr.selected" :label="attr.name" :disabled="(attr.name === 'id')">-->
-<!--                </v-switch>-->
-<!--              </v-list-item>-->
-<!--            </v-list>-->
-<!--          </v-tabs-items>-->
-<!--        </template>-->
+    <!--    <v-dialog-->
+    <!--      v-model="optionDialog"-->
+    <!--      persistent-->
+    <!--      max-width="500"-->
+    <!--      v-if="optionDialog && options !== undefined && options.type !== undefined"-->
+    <!--    >-->
+    <!--      <v-card>-->
+    <!--        <v-card-title class="headline">-->
+    <!--          Organize {{ options.title }} Attributes-->
+    <!--        </v-card-title>-->
+    <!--        <v-card-text>Adjust the attributes of the general item tables.-->
+    <!--        </v-card-text>-->
+    <!--        <v-divider></v-divider>-->
+    <!--        <template v-if="options.type.length>0">-->
+    <!--          <v-tabs v-model="optionTab">-->
+    <!--            <v-tabs-slider color="blue"></v-tabs-slider>-->
+    <!--            <v-tab v-for="name in Object.keys(options.attributes)" :key="name">-->
+    <!--              {{options.type}}-->
+    <!--            </v-tab>-->
+    <!--          </v-tabs>-->
+    <!--          <v-tabs-items>-->
+    <!--            <v-list>-->
+    <!--              <v-list-item v-for="attr in options.attributes[optionTab]" :key="attr.name">-->
+    <!--                <v-switch v-model="attr.selected" :label="attr.name" :disabled="(attr.name === 'id')">-->
+    <!--                </v-switch>-->
+    <!--              </v-list-item>-->
+    <!--            </v-list>-->
+    <!--          </v-tabs-items>-->
+    <!--        </template>-->
 
-<!--        <v-divider></v-divider>-->
+    <!--        <v-divider></v-divider>-->
 
-<!--        <v-card-actions>-->
-<!--          <v-spacer></v-spacer>-->
-<!--          <v-btn-->
-<!--            color="green darken-1"-->
-<!--            text-->
-<!--            @click="dialogResolve(false)"-->
-<!--          >-->
-<!--            Cancel-->
-<!--          </v-btn>-->
-<!--          <v-btn-->
-<!--            color="green darken-1"-->
-<!--            text-->
-<!--            @click="dialogResolve(true)"-->
-<!--          >-->
-<!--            Apply-->
-<!--          </v-btn>-->
-<!--        </v-card-actions>-->
-<!--      </v-card>-->
-<!--    </v-dialog>-->
+    <!--        <v-card-actions>-->
+    <!--          <v-spacer></v-spacer>-->
+    <!--          <v-btn-->
+    <!--            color="green darken-1"-->
+    <!--            text-->
+    <!--            @click="dialogResolve(false)"-->
+    <!--          >-->
+    <!--            Cancel-->
+    <!--          </v-btn>-->
+    <!--          <v-btn-->
+    <!--            color="green darken-1"-->
+    <!--            text-->
+    <!--            @click="dialogResolve(true)"-->
+    <!--          >-->
+    <!--            Apply-->
+    <!--          </v-btn>-->
+    <!--        </v-card-actions>-->
+    <!--      </v-card>-->
+    <!--    </v-dialog>-->
     <v-dialog
       v-model="optionDialog"
       persistent
@@ -911,6 +943,7 @@ export default {
     return {
       edges: {},
       nodes: {},
+      marks: {},
       attributes: {},
       countMap: undefined,
       nodeTab: undefined,
@@ -1021,6 +1054,7 @@ export default {
       this.nodes = {}
       this.attributes = {}
       this.edges = {}
+      this.marks = {}
       this.backup = {nodes: {}, edges: {}}
       this.gid = this.$route.params["gid"]
       if (this.gid !== undefined)
@@ -1071,6 +1105,7 @@ export default {
       this.attributes = {};
       this.edges = {};
       this.nodes = {};
+      this.marks = {};
       this.nodeTab = 0
       this.edgeTab = 0
       this.resetFilters('nodes')
@@ -1086,6 +1121,7 @@ export default {
         }
         this.edges = data.edges;
         this.nodes = data.nodes;
+        this.marks = data.marks;
         Object.keys(this.nodes).forEach(node => {
           for (let idx in this.nodes[node]) {
             this.nodes[node][idx]["selected"] = false;
@@ -1894,7 +1930,7 @@ export default {
       payload.experimentalOnly = params.experimentalOnly
       if (params.selection)
         payload["nodes"] = this.nodes[params.type].filter(n => n.selected).map(n => n.id)
-      if (algorithm === "diamond" || algorithm === "trustrank" || algorithm==="centrality") {
+      if (algorithm === "diamond" || algorithm === "trustrank" || algorithm === "centrality") {
         if (this.configuration.countMap.nodes[params.type] === undefined || (params.selection && this.configuration.countMap.nodes[params.type].selected === 0)) {
           this.$emit("printNotificationEvent", "Cannot execute " + algorithm + " without seed nodes!", 1)
           return;

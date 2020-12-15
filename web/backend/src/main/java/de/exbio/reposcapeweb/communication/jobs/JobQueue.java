@@ -73,6 +73,7 @@ public class JobQueue {
     public void executeJob(Job j) {
         j.setStatus(Job.JobState.EXECUTING);
         socketController.setJobUpdate(j);
+        System.out.println("executing:\n"+j.getCommand());
         Process p = toolService.executeJob(j.getCommand());
         if (p != null)
             j.setProcess(p);

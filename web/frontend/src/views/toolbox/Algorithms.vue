@@ -537,19 +537,22 @@ export default {
     submitAlgorithm: function () {
       let params = {}
       params.experimentalOnly = this.expSwitch
+
+      if (this.categoryModel === 0) {
+        params["addInteractions"] = this.models.advanced.addInteractions
+        params["nodesOnly"] = this.models.advanced.keepNodesOnly
+      }
       if (this.methodModel === 'bicon') {
         params['lg_min'] = this.models.bicon.lg[0];
         params['lg_max'] = this.models.bicon.lg[1];
+        params['type'] = "gene"
         Utils.readFile(this.models.bicon.exprFile).then(content => {
           params['exprData'] = content
           this.$emit('executeAlgorithmEvent', this.methodModel, params)
         })
         return
       }
-      if (this.categoryModel === 0) {
-        params["addInteractions"] = this.models.advanced.addInteractions
-        params["nodesOnly"] = this.models.advanced.keepNodesOnly
-      }
+
       if (this.methodModel === 'diamond') {
         params['n'] = this.models.diamond.nModel;
         params['alpha'] = this.models.diamond.alphaModel;
@@ -568,9 +571,8 @@ export default {
         params["maxit"] = this.models.must.maxit
       }
       // if (this.methodModel === 'diamond' || this.methodModel === 'bicon'|| this.methodModel='trustran')
-      params['type'] = this.nodeModel
       params.selection = this.selectionSwitch
-
+      params['type'] = this.nodeModel
       this.$emit('executeAlgorithmEvent', this.methodModel, params)
     },
 

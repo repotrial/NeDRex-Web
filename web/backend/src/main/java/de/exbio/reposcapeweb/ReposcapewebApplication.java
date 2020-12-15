@@ -94,10 +94,6 @@ public class ReposcapewebApplication {
 //        updateService.renewDBDumps();
         log.debug("Current RAM usage: " + (int) ((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024)
                 + "MB");
-//        toolService.createInteractionFiles();
-
-        log.info("Current RAM usage: " + (int) ((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024)
-                + "MB");
 
         log.info("Service can be used!");
 

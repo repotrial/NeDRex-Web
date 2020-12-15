@@ -1,5 +1,6 @@
 package de.exbio.reposcapeweb.db.services.controller;
 
+import de.exbio.reposcapeweb.communication.cache.Graph;
 import de.exbio.reposcapeweb.communication.cache.Graphs;
 import de.exbio.reposcapeweb.db.entities.edges.ProteinAssociatedWithDisorder;
 import de.exbio.reposcapeweb.db.entities.nodes.*;
@@ -130,7 +131,7 @@ public class NodeController {
         return null;
     }
 
-    public LinkedList<HashMap<String, Object>> nodesToAttributeList(Integer typeId, Set<Integer> ids, HashSet<String> attributes) {
+    public LinkedList<HashMap<String, Object>> nodesToAttributeList(Integer typeId, Set<Integer> ids, HashSet<String> attributes, HashMap<String, HashMap<Integer, Object>> custom) {
         LinkedList<HashMap<String, Object>> out = new LinkedList<>();
         switch (Graphs.getNode(typeId)) {
             case "disorder":
@@ -149,6 +150,14 @@ public class NodeController {
                 findProteins(ids).forEach(d -> out.add(d.getAsMap(attributes)));
                 break;
         }
+        if (custom != null)
+            out.forEach(node -> {
+                int id = (int) node.get("id");
+                custom.forEach((attr, values) -> {
+                    if (values.containsKey(id))
+                        node.put(attr, values.get(id));
+                });
+            });
         return out;
     }
 
