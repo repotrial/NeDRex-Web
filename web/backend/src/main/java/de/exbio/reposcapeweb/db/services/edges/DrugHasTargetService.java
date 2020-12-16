@@ -132,6 +132,8 @@ public class DrugHasTargetService {
         geneEdgesTo.get(edge.getId2()).add(edge.getId1());
     }
 
+
+
     public boolean isGeneEdgeFrom(PairId edge) {
         return isGeneEdgeFrom(edge.getId1(), edge.getId2());
     }
@@ -154,6 +156,22 @@ public class DrugHasTargetService {
         } catch (NullPointerException e) {
             return false;
         }
+    }
+
+    public HashMap<Integer, HashSet<Integer>> getProteinEdgesTo() {
+        return proteinEdgesTo;
+    }
+
+    public HashMap<Integer, HashSet<Integer>> getProteinEdgesFrom() {
+        return proteinEdgesFrom;
+    }
+
+    public HashMap<Integer, HashSet<Integer>> getGeneEdgesTo() {
+        return geneEdgesTo;
+    }
+
+    public HashMap<Integer, HashSet<Integer>> getGeneEdgesFrom() {
+        return geneEdgesFrom;
     }
 
     public HashSet<Integer> getGeneEdgesFrom(int id) {

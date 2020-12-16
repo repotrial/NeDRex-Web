@@ -219,7 +219,7 @@ public class WebGraphService {
 
                     LinkedList<HashMap<String, Object>> attrMaps = edgeController.edgesToAttributeList(type, edges, attrs);
                     finalList.addEdges(stringType, attrMaps);
-                    finalList.setTypes("edges", stringType, attributeArray, edgeController.getAttributeTypes(type), edgeController.getIdAttributes(type), g.getCustomNodeAttributeTypes().get(type));
+                    finalList.setTypes("edges", stringType, attributeArray, edgeController.isExperimental(type), edgeController.getIdAttributes(type), g.getCustomNodeAttributeTypes().get(type));
                     try {
                         HashMap<String, HashSet<String>> distinctValues = new HashMap<>();
                         HashSet<String> distinctAttrs = DBConfig.getDistinctAttributes("edge", stringType);
@@ -362,24 +362,23 @@ public class WebGraphService {
                     continue;
                 }
                 edgeIds.forEach(edgeId -> {
-                    //TODO edge id mapping in frontend
+                    boolean experimental = (request.interactions.containsKey(Graphs.getEdge(edgeId)) && !request.interactions.get(Graphs.getEdge(edgeId)));
                     if (request.edges.containsKey(Graphs.getEdge(edgeId))) {
-                        //TODO add edgeFilters
                         LinkedList<Edge> edges = new LinkedList<>();
 
-                        nodeIds.get(nodeI[0]).forEach((k1, v1) -> {
+                        boolean expOnly = experimental;
+                        nodeIds.get(nodeI[0]).forEach((id1, v1) -> {
                             try {
                                 if (request.connectedOnly & connectedNodes.contains(nodeI[0]) & !v1.hasEdge()) {
                                     return;
                                 }
-
-                                edgeController.getEdges(edgeId, nodeI[0], k1).forEach(t -> {
+                                edgeController.getEdges(edgeId, nodeI[0], id1).forEach(id2 -> {
                                     try {
-                                        if (request.connectedOnly & connectedNodes.contains(nodeJ[0]) & !nodeIds.get(nodeJ[0]).get(t).hasEdge())
+                                        if ((request.connectedOnly & connectedNodes.contains(nodeJ[0]) & !nodeIds.get(nodeJ[0]).get(id2).hasEdge()) | (expOnly && !edgeController.isExperimental(edgeId,id1,id2)))
                                             return;
-                                        nodeIds.get(nodeJ[0]).get(t).setHasEdge(true);
+                                        nodeIds.get(nodeJ[0]).get(id2).setHasEdge(true);
                                         v1.setHasEdge(true);
-                                        edges.add(new Edge(k1, t));
+                                        edges.add(new Edge(id1, id2));
                                     } catch (NullPointerException ignore) {
                                     }
                                 });

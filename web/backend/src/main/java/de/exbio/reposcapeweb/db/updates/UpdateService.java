@@ -124,48 +124,76 @@ public class UpdateService {
         File dir = new File(env.getProperty("path.external.cache"));
         File ppiFile = new File(dir, "proteinInteractsWithProtein.tsv");
         try (BufferedWriter bw = WriterUtils.getBasicWriter(ppiFile)) {
-            proteinInteractsWithProteinService.findAllProteins().forEach(ppi -> {
+            proteinInteractsWithProteinService.getProteins().forEach((id1, map) -> map.forEach((id2, vals) -> {
                 try {
-                    bw.write(proteinService.map(ppi.getPrimaryIds().getId1()) + "\t" + proteinService.map(ppi.getPrimaryIds().getId2()) + "\t" + ppi.getEvidenceTypes().contains("exp") + "\n");
+                    bw.write(proteinService.map(id1) + "\t" + proteinService.map(id2) + "\t" + vals.second + "\n");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-            });
+            }));
+
+//            proteinInteractsWithProteinService.findAllProteins().forEach(ppi -> {
+//                try {
+//                    bw.write(proteinService.map(ppi.getPrimaryIds().getId1()) + "\t" + proteinService.map(ppi.getPrimaryIds().getId2()) + "\t" + ppi.getEvidenceTypes().contains("exp") + "\n");
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            });
         } catch (IOException e) {
         }
 
         File ggiFile = new File(dir, "geneInteractsWithGene.tsv");
         try (BufferedWriter bw = WriterUtils.getBasicWriter(ggiFile)) {
-            proteinInteractsWithProteinService.findAllGenes().forEach(ggi -> {
+            proteinInteractsWithProteinService.getGenes().forEach((id1, map) -> map.forEach((id2, vals) -> {
                 try {
-                    bw.write(geneService.map(ggi.getPrimaryIds().getId1()) + "\t" + geneService.map(ggi.getPrimaryIds().getId2()) + "\t" + ggi.getEvidenceTypes().contains("exp") + "\n");
+                    bw.write(geneService.map(id1) + "\t" + geneService.map(id2) + "\t" + vals.second + "\n");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-            });
+            }));
+//            proteinInteractsWithProteinService.findAllGenes().forEach(ggi -> {
+//                try {
+//                    bw.write(geneService.map(ggi.getPrimaryIds().getId1()) + "\t" + geneService.map(ggi.getPrimaryIds().getId2()) + "\t" + ggi.getEvidenceTypes().contains("exp") + "\n");
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            });
         } catch (IOException e) {
         }
         File gdFile = new File(dir, "drugHasTargetGene.tsv");
         try (BufferedWriter bw = WriterUtils.getBasicWriter(gdFile)) {
-            drugHasTargetService.findAllGenes().forEach(gd -> {
+            drugHasTargetService.getGeneEdgesFrom().forEach((id1, set) -> set.forEach(id2 -> {
                 try {
-                    bw.write(drugService.map(gd.getPrimaryIds().getId1()) + "\t" + geneService.map(gd.getPrimaryIds().getId2()) + "\n");
+                    bw.write(drugService.map(id1) + "\t" + geneService.map(id2) + "\n");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-            });
+            }));
+//            drugHasTargetService.findAllGenes().forEach(gd -> {
+//                try {
+//                    bw.write(drugService.map(gd.getPrimaryIds().getId1()) + "\t" + geneService.map(gd.getPrimaryIds().getId2()) + "\n");
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            });
         } catch (IOException e) {
         }
 
         File pdFile = new File(dir, "drugHasTargetProtein.tsv");
         try (BufferedWriter bw = WriterUtils.getBasicWriter(pdFile)) {
-            drugHasTargetService.findAllProteins().forEach(pd -> {
+            drugHasTargetService.getProteinEdgesFrom().forEach((id1, set) -> set.forEach(id2 -> {
                 try {
-                    bw.write(drugService.map(pd.getPrimaryIds().getId1()) + "\t" + proteinService.map(pd.getPrimaryIds().getId2()) + "\n");
+                    bw.write(drugService.map(id1) + "\t" + proteinService.map(id2) + "\n");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-            });
+//            drugHasTargetService.findAllProteins().forEach(pd -> {
+//                try {
+//                    bw.write(drugService.map(pd.getPrimaryIds().getId1()) + "\t" + proteinService.map(pd.getPrimaryIds().getId2()) + "\n");
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+            }));
         } catch (IOException e) {
         }
 

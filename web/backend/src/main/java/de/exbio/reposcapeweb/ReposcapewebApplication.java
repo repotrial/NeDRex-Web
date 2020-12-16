@@ -72,9 +72,6 @@ public class ReposcapewebApplication {
     }
 
 
-    @Autowired
-    DrugHasTargetProteinRepository drugHasTargetProteinRepository;
-
     @EventListener(ApplicationReadyEvent.class)
     public void postConstruct() {
         Graphs.setUp();

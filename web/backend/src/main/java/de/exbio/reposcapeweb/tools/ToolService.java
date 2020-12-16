@@ -168,19 +168,34 @@ public class ToolService {
         File ggi_all_must = new File(dataDir, "gene_gene_interaction_all_must.pairs");
         File ggi_exp_must = new File(dataDir, "gene_gene_interaction_exp_must.pairs");
         try (BufferedWriter bw_all = WriterUtils.getBasicWriter(ggi_all); BufferedWriter bw_exp = WriterUtils.getBasicWriter(ggi_exp);BufferedWriter bw_all_must = WriterUtils.getBasicWriter(ggi_all_must); BufferedWriter bw_exp_must = WriterUtils.getBasicWriter(ggi_exp_must)) {
-            interactionService.findAllGenes().forEach(gg -> {
+            interactionService.getGenes().forEach((id1,map)-> map.forEach((id2,vals)->{
                 try {
-                    bw_all.write(geneService.map(gg.getPrimaryIds().getId1()) + "," + geneService.map(gg.getPrimaryIds().getId2()) + "\n");
-                    bw_all_must.write(geneService.map(gg.getPrimaryIds().getId1()) + "\t" + geneService.map(gg.getPrimaryIds().getId2()) + "\n");
-                    if (gg.getEvidenceTypes().contains("exp")) {
-                        bw_exp.write(geneService.map(gg.getPrimaryIds().getId1()) + "," + geneService.map(gg.getPrimaryIds().getId2()) + "\n");
-                        bw_exp_must.write(geneService.map(gg.getPrimaryIds().getId1()) + "\t" + geneService.map(gg.getPrimaryIds().getId2()) + "\n");
+                    bw_all.write(geneService.map(id1) + "," + geneService.map(id2) + "\n");
+                    bw_all_must.write(geneService.map(id1) + "\t" + geneService.map(id2) + "\n");
+                    if (vals.second) {
+                        bw_exp.write(geneService.map(id1) + "," + geneService.map(id2) + "\n");
+                        bw_exp_must.write(geneService.map(id1) + "\t" + geneService.map(id2) + "\n");
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+            })
 //                }
-            });
+            );
+
+            //            interactionService.findAllGenes().forEach(gg -> {
+//                try {
+//                    bw_all.write(geneService.map(gg.getPrimaryIds().getId1()) + "," + geneService.map(gg.getPrimaryIds().getId2()) + "\n");
+//                    bw_all_must.write(geneService.map(gg.getPrimaryIds().getId1()) + "\t" + geneService.map(gg.getPrimaryIds().getId2()) + "\n");
+//                    if (gg.getEvidenceTypes().contains("exp")) {
+//                        bw_exp.write(geneService.map(gg.getPrimaryIds().getId1()) + "," + geneService.map(gg.getPrimaryIds().getId2()) + "\n");
+//                        bw_exp_must.write(geneService.map(gg.getPrimaryIds().getId1()) + "\t" + geneService.map(gg.getPrimaryIds().getId2()) + "\n");
+//                    }
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+////                }
+//            });
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -191,18 +206,32 @@ public class ToolService {
         File ppi_all_must = new File(dataDir, "protein_protein_interaction_all_must.pairs");
         File ppi_exp_must = new File(dataDir, "protein_protein_interaction_exp_must.pairs");
         try (BufferedWriter bw_all = WriterUtils.getBasicWriter(ppi_all); BufferedWriter bw_exp = WriterUtils.getBasicWriter(ppi_exp);BufferedWriter bw_all_must = WriterUtils.getBasicWriter(ppi_all_must); BufferedWriter bw_exp_must = WriterUtils.getBasicWriter(ppi_exp_must)) {
-            interactionService.findAllProteins().forEach(pp -> {
+            interactionService.getProteins().forEach((id1,map) -> map.forEach((id2,vals)-> {
                 try {
-                    bw_all.write(proteinService.map(pp.getPrimaryIds().getId1()) + "," + proteinService.map(pp.getPrimaryIds().getId2()) + "\n");
-                    bw_all_must.write(proteinService.map(pp.getPrimaryIds().getId1()) + "\t" + proteinService.map(pp.getPrimaryIds().getId2()) + "\n");
-                    if (pp.getEvidenceTypes().contains("exp")){
-                        bw_exp.write(proteinService.map(pp.getPrimaryIds().getId1()) + "," + proteinService.map(pp.getPrimaryIds().getId2()) + "\n");
-                        bw_exp_must.write(proteinService.map(pp.getPrimaryIds().getId1()) + "\t" + proteinService.map(pp.getPrimaryIds().getId2()) + "\n");
+                    bw_all.write(proteinService.map(id1) + "," + proteinService.map(id2) + "\n");
+                    bw_all_must.write(proteinService.map(id1) + "\t" + proteinService.map(id2) + "\n");
+                    if (vals.second){
+                        bw_exp.write(proteinService.map(id1) + "," + proteinService.map(id2) + "\n");
+                        bw_exp_must.write(proteinService.map(id1) + "\t" + proteinService.map(id2) + "\n");
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-            });
+            }));
+
+
+            //            interactionService.findAllProteins().forEach(pp -> {
+//                try {
+//                    bw_all.write(proteinService.map(pp.getPrimaryIds().getId1()) + "," + proteinService.map(pp.getPrimaryIds().getId2()) + "\n");
+//                    bw_all_must.write(proteinService.map(pp.getPrimaryIds().getId1()) + "\t" + proteinService.map(pp.getPrimaryIds().getId2()) + "\n");
+//                    if (pp.getEvidenceTypes().contains("exp")){
+//                        bw_exp.write(proteinService.map(pp.getPrimaryIds().getId1()) + "," + proteinService.map(pp.getPrimaryIds().getId2()) + "\n");
+//                        bw_exp_must.write(proteinService.map(pp.getPrimaryIds().getId1()) + "\t" + proteinService.map(pp.getPrimaryIds().getId2()) + "\n");
+//                    }
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            });
         } catch (IOException e) {
             e.printStackTrace();
         }

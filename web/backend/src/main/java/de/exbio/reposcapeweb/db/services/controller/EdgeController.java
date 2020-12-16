@@ -590,7 +590,7 @@ public class EdgeController {
         return null;
     }
 
-    public String[] getAttributeTypes(Integer type) {
+    public String[] isExperimental(Integer type) {
         switch (Graphs.getEdge(type)) {
             case "GeneAssociatedWithDisorder":
                 return GeneAssociatedWithDisorder.allAttributeTypes;
@@ -616,6 +616,34 @@ public class EdgeController {
                 return GeneInteractsWithGene.allAttributeTypes;
         }
         return null;
+    }
+
+    public boolean isExperimental(Integer type, int id1, int id2) {
+        switch (Graphs.getEdge(type)) {
+            case "GeneAssociatedWithDisorder":
+                return false;
+            case "DrugHasTargetGene":
+                return false;
+            case "ProteinEncodedBy":
+                return false;
+            case "DrugHasIndication":
+                return false;
+            case "DrugHasTargetProtein":
+                return false;
+            case "ProteinInteractsWithProtein":
+                return proteinInteractsWithProteinService.isExperimentalProtein(id1,id2);
+            case "ProteinInPathway":
+                return false;
+            case "ProteinAssociatedWithDisorder":
+                return false;
+            case "DisorderIsSubtypeOfDisorder":
+                return false;
+            case "DisorderComorbidWithDisorder":
+                return false;
+            case "GeneInteractsWithGene":
+                return proteinInteractsWithProteinService.isExperimentalGene(id1,id2);
+        }
+        return false;
     }
 
     public Boolean[] getIdAttributes(Integer type) {

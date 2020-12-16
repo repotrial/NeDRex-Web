@@ -9,4 +9,5 @@ public class GraphRequest {
     public HashMap<String,FilterGroup> nodes;
     public HashMap<String,FilterGroup> edges;
     public boolean connectedOnly = true;
+    public HashMap<String,Boolean> interactions;
 }

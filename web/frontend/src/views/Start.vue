@@ -119,7 +119,8 @@
             <v-col cols="4">
               <v-list v-model="edgeModel">
                 <v-card-title>Edges</v-card-title>
-                <v-list-item v-for="item in edges" :key="item.index">
+                <template v-for="item in edges" >
+                <v-list-item :key="item.index">
                   <v-chip outlined v-on:click="toggleEdge(item.index)"
                           :color="edgeModel.indexOf(item.index)===-1?'gray':'primary'"
                           :text-color="edgeModel.indexOf(item.index)===-1?'black':'gray'"
@@ -139,6 +140,20 @@
                           v-show="edgeModel.indexOf(item.index)>-1">({{ metagraph.weights.edges[item.label] }})</span>
                   </v-chip>
                 </v-list-item>
+                  <v-list-item v-show="edgeModel.indexOf(item.index)>-1 && (item.label==='ProteinInteractsWithProtein' ||item.label==='GeneInteractsWithGene' )">
+                    <v-chip outlined v-on:click="interactions[item.label]=false"
+                            :color="interactions[item.label]?'gray':'primary'"
+                    >
+                      experimental
+                    </v-chip>
+                    <v-chip outlined v-on:click="interactions[item.label]=true"
+                            :color="!interactions[item.label]?'gray':'primary'"
+                    >
+                      all
+                    </v-chip>
+
+                  </v-list-item>
+                </template>
               </v-list>
             </v-col>
           </v-row>
@@ -172,6 +187,7 @@ export default {
   },
   data() {
     return {
+      interactions:{ProteinInteractsWithProtein:false, GeneInteractsWithGene:false},
       graphButtons: this.graphButtons,
       nodes: this.nodes,
       edges: this.edges,
@@ -245,6 +261,7 @@ export default {
           }
         })
         this.graphLoad.post.connectedOnly = this.options.onlyConnected
+        this.graphLoad.post.interactions ={...this.interactions}
       } else {
         for (let index in this.graphButtons) {
           if (this.graphButtons[index].id === id) {
@@ -254,27 +271,27 @@ export default {
           } else
             this.graphButtons[index].active = false
         }
-        if (id === 0) {
-          this.graphLoad = {name: "default"}
-        } else if (id === 1) {
-          this.graphLoad = {get: "/getExampleGraph1"}
-          this.graphLoad = {
-            post: {
-              nodes: {
-                disorder: {
-                  filters: [
-                    {
-                      type: "match",
-                      expression: ".*((neur)|(prion)|(brain)|(enceph)|(cogni)).*"
-                    }
-                  ]
-                }, drug: {}
-              },
-              edges: {"DrugHasIndication": {}},
-              connectedOnly: true
-            }
-          }
-        }
+      //   if (id === 0) {
+      //     this.graphLoad = {name: "default"}
+      //   } else if (id === 1) {
+      //     this.graphLoad = {get: "/getExampleGraph1"}
+      //     this.graphLoad = {
+      //       post: {
+      //         nodes: {
+      //           disorder: {
+      //             filters: [
+      //               {
+      //                 type: "match",
+      //                 expression: ".*((neur)|(prion)|(brain)|(enceph)|(cogni)).*"
+      //               }
+      //             ]
+      //           }, drug: {}
+      //         },
+      //         edges: {"DrugHasIndication": {}},
+      //         connectedOnly: true
+      //       }
+      //     }
+      //   }
       }
       if (Object.keys(this.graphLoad.post.nodes).length === 0) {
         this.$emit("printNotificationEvent", "Please select some nodes/edges first!", 1)
