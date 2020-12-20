@@ -67,7 +67,7 @@ public class DbCommunicationService {
     }
 
     public void scheduleRead() {
-        while (isDbLocked()) {
+        while (isImportInProgress()||isDbLocked()) {
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {

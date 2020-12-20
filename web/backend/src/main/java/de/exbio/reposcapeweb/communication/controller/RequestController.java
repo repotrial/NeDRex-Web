@@ -11,6 +11,7 @@ import de.exbio.reposcapeweb.communication.reponses.SelectionResponse;
 import de.exbio.reposcapeweb.communication.reponses.WebGraph;
 import de.exbio.reposcapeweb.communication.reponses.WebGraphList;
 import de.exbio.reposcapeweb.communication.requests.*;
+import de.exbio.reposcapeweb.db.DbCommunicationService;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
 import de.exbio.reposcapeweb.db.history.GraphHistory;
 import de.exbio.reposcapeweb.db.history.HistoryController;
@@ -18,6 +19,7 @@ import de.exbio.reposcapeweb.db.services.controller.EdgeController;
 import de.exbio.reposcapeweb.db.services.controller.NodeController;
 import de.exbio.reposcapeweb.db.services.nodes.DrugService;
 import de.exbio.reposcapeweb.communication.reponses.WebGraphService;
+import org.apache.tomcat.util.digester.DocumentProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,9 +58,10 @@ public class RequestController {
     private final HistoryController historyController;
     private final JobController jobController;
     private final SimpMessagingTemplate socketTemplate;
+    private final DbCommunicationService dbCommunicationService;
 
     @Autowired
-    public RequestController(SimpMessagingTemplate simpMessagingTemplate, DrugService drugService, ObjectMapper objectMapper, WebGraphService webGraphService, EdgeController edgeController, NodeController nodeController, HistoryController historyController, JobController jobController) {
+    public RequestController(DbCommunicationService dbCommunicationService,SimpMessagingTemplate simpMessagingTemplate, DrugService drugService, ObjectMapper objectMapper, WebGraphService webGraphService, EdgeController edgeController, NodeController nodeController, HistoryController historyController, JobController jobController) {
         this.drugService = drugService;
         this.objectMapper = objectMapper;
         this.webGraphService = webGraphService;
@@ -67,6 +70,7 @@ public class RequestController {
         this.historyController = historyController;
         this.jobController = jobController;
         this.socketTemplate = simpMessagingTemplate;
+        this.dbCommunicationService=dbCommunicationService;
     }
 
 
@@ -187,12 +191,7 @@ public class RequestController {
     @RequestMapping(value = "/getConnectionGraph", method = RequestMethod.GET)
     @ResponseBody
     public String getConnectionGraph(@RequestParam("gid") String gid) {
-        try {
-            return objectMapper.writeValueAsString(webGraphService.getConnectionGraph(gid));
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-        return null;
+            return toJson(webGraphService.getConnectionGraph(gid));
     }
 
 
@@ -237,9 +236,8 @@ public class RequestController {
         webGraphService.addGraphToHistory(uid, gid);
     }
 
-    @RequestMapping(value = "/downloadJobResult", method = RequestMethod.GET)
-    @ResponseBody
-    public ResponseEntity<Resource> downloadJobResult(@RequestParam("jid") String jid, HttpServletRequest request){
+    @RequestMapping(value = "/downloadJobResult", method = RequestMethod.GET, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public @ResponseBody ResponseEntity<Resource> downloadJobResult(@RequestParam("jid") String jid, HttpServletRequest request){
         File f = jobController.getDownload(jid);
         Resource resource = new FileSystemResource(jobController.getDownload(jid));
         String contentType = request.getServletContext().getMimeType(jobController.getDownload(jid).getAbsolutePath());
@@ -342,6 +340,12 @@ public class RequestController {
             e.printStackTrace();
         }
         return null;
+    }
+
+    @RequestMapping(value="/isReady", method=RequestMethod.GET)
+    @ResponseBody
+    public boolean isReady(){
+        return !dbCommunicationService.isDbLocked() & !dbCommunicationService.isImportInProgress() & !dbCommunicationService.isUpdateInProgress();
     }
 
 //    @RequestMapping(value="/testSocket", method=RequestMethod.GET)

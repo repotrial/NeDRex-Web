@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.exbio.reposcapeweb.communication.cache.Graphs;
 import de.exbio.reposcapeweb.communication.jobs.JobController;
 import de.exbio.reposcapeweb.communication.reponses.WebGraphService;
+import de.exbio.reposcapeweb.db.DbCommunicationService;
 import de.exbio.reposcapeweb.db.entities.edges.DrugHasTargetGene;
 import de.exbio.reposcapeweb.db.entities.edges.DrugHasTargetProtein;
 import de.exbio.reposcapeweb.db.entities.edges.GeneInteractsWithGene;
@@ -57,9 +58,10 @@ public class ReposcapewebApplication {
     private final EdgeController edgeController;
     private final NodeController nodeController;
     private final ProteinInteractsWithProteinService proteinInteractsWithProteinService;
+    private final DbCommunicationService dbService;
 
     @Autowired
-    public ReposcapewebApplication(ProteinInteractsWithProteinService proteinInteractsWithProteinService,JobController jobController, NodeController nodeController, ObjectMapper objectMapper, EdgeController edgeController, DisorderService disorderService, UpdateService updateService, Environment environment, ImportService importService, FilterService filterService, ToolService toolService, WebGraphService graphService) {
+    public ReposcapewebApplication( DbCommunicationService dbService,ProteinInteractsWithProteinService proteinInteractsWithProteinService,JobController jobController, NodeController nodeController, ObjectMapper objectMapper, EdgeController edgeController, DisorderService disorderService, UpdateService updateService, Environment environment, ImportService importService, FilterService filterService, ToolService toolService, WebGraphService graphService) {
         this.updateService = updateService;
         this.importService = importService;
         this.env = environment;
@@ -68,12 +70,14 @@ public class ReposcapewebApplication {
         this.edgeController = edgeController;
         this.nodeController = nodeController;
         this.proteinInteractsWithProteinService = proteinInteractsWithProteinService;
+        this.dbService=dbService;
 
     }
 
 
     @EventListener(ApplicationReadyEvent.class)
     public void postConstruct() {
+        dbService.setImportInProgress(true);
         Graphs.setUp();
 
         jobController.importJobsHistory();
@@ -81,6 +85,7 @@ public class ReposcapewebApplication {
         importService.importNodeData();
 
         toolService.validateTools();
+        dbService.setImportInProgress(false);
         if (Boolean.parseBoolean(env.getProperty("update.onstartup"))) {
             updateService.scheduleDataUpdate();
         } else {

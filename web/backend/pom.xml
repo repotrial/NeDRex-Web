@@ -3,20 +3,21 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <parent>
+        <groupId>de.exbio</groupId>
+        <artifactId>reposcapeweb</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+
     <version>0.0.1-SNAPSHOT</version>
     <artifactId>reposcapeweb-backend</artifactId>
     <name>reposcapeweb-backend</name>
     <description>Backend for the RepoScape-Web Application</description>
     <packaging>jar</packaging>
 
-    <parent>
-      <groupId>de.exbio</groupId>
-      <artifactId>reposcapeweb</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
-    </parent>
 
     <properties>
-        <java.version>11</java.version>
+        <java.version>14</java.version>
         <springboot.version>2.3.3.RELEASE</springboot.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
@@ -79,11 +80,17 @@
                 </exclusion>
             </exclusions>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>com.github.sonus21</groupId>-->
-<!--            <artifactId>rqueue-spring-boot-starter</artifactId>-->
-<!--            <version>2.1.0-RELEASE</version>-->
-<!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>com.github.sonus21</groupId>-->
+        <!--            <artifactId>rqueue-spring-boot-starter</artifactId>-->
+        <!--            <version>2.1.0-RELEASE</version>-->
+        <!--        </dependency>-->
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>mysql</artifactId>
+            <version>1.15.1</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
 
@@ -114,14 +121,14 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>14</source>
-                    <target>14</target>
-                </configuration>
-            </plugin>
+            <!--            <plugin>-->
+            <!--                <groupId>org.apache.maven.plugins</groupId>-->
+            <!--                <artifactId>maven-compiler-plugin</artifactId>-->
+            <!--&lt;!&ndash;                <configuration>&ndash;&gt;-->
+            <!--&lt;!&ndash;                    <source>14</source>&ndash;&gt;-->
+            <!--&lt;!&ndash;                    <target>14</target>&ndash;&gt;-->
+            <!--&lt;!&ndash;                </configuration>&ndash;&gt;-->
+            <!--            </plugin>-->
         </plugins>
     </build>
 

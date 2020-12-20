@@ -69,8 +69,11 @@
                        :options="options.history"
               ></History>
             </v-container>
-            <v-snackbar v-model="notifications.style1.show" :multi-line="true" :timeout="notifications.style1.timeout">
+            <v-snackbar v-model="notifications.style1.show" :multi-line="true" :timeout="notifications.style1.timeout" color="green" dark>
               {{ notifications.style1.message }}
+            </v-snackbar>
+            <v-snackbar v-model="notifications.style2.show" :multi-line="true" :timeout="notifications.style2.timeout" color="red">
+              {{ notifications.style2.message }}
             </v-snackbar>
             <v-dialog
               v-model="listDialog"
@@ -214,7 +217,7 @@ export default {
       metagraph: undefined,
       listWarnObject: undefined,
       listDialog: false,
-      notifications: {style1: {show: false, message: "", timeout: 2000}, style2: {}},
+      notifications: {style1: {show: false, message: "", timeout: 2000}, style2:{show: false, message: "", timeout: 4000}},
       options: {},
       cookiesPopup: false,
       startFilters: {},
@@ -321,14 +324,19 @@ export default {
         this.options.graph.physics = false;
         this.updatePhysics()
       }
-
-      this.$http.post("/getGraphInfo", graph.post).then(response => {
-        return response.data
-      }).then(info => {
-        this.evalPostInfo(info, graph.post.tab)
-      }).catch(err => {
-        console.log(err)
-      })
+      this.$http.get("/isReady").then(response => {
+        if (response.data)
+          this.printNotification("Request successfully sent!", 1)
+        else
+        this.printNotification("Request scheduled: Server is currently busy! please wait.", 2)
+          this.$http.post("/getGraphInfo", graph.post).then(response => {
+            return response.data
+          }).then(info => {
+            this.evalPostInfo(info, graph.post.tab)
+          }).catch(err => {
+            console.log(err)
+          })
+      }).catch(console.log)
     },
     listSelectionEvent: function (type, operation) {
       if (operation === "all")
@@ -464,6 +472,9 @@ export default {
     printNotification: function (message, style) {
       if (style === 1) {
         this.setNotification(this.notifications.style1, message)
+      }
+      if(style ===2){
+        this.setNotification(this.notifications.style2,message)
       }
     },
     setNotification: function (to, message) {

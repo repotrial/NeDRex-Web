@@ -1876,7 +1876,7 @@ export default {
     },
     getCounts: function (entity) {
       let objects = Object.values(this[entity]);
-      return objects === undefined || objects.length === 0 ? 0 : objects.map(e => e.length).reduce((i, j) => i + j)
+      return objects === undefined || objects.length === 0 ? 0 : objects.map(e => e !== undefined ? e.length : 0).reduce((i, j) => i + j)
     },
     reloadCountMap: function () {
       this.configuration.countMap.nodes = this.getCountMap("nodes")

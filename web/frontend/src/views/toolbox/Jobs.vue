@@ -63,11 +63,13 @@
                 <v-tooltip left>
                   <template v-slot:activator="{ on, attrs }">
                     <v-icon v-if="job.download" v-bind="attrs" v-on="on" right
-                    @click="downloadJob(job)"
+                            @click="downloadJob(job)"
                     >
                       fas fa-download
                     </v-icon>
-                    <v-icon v-else v-bind="attrs" v-on="on" right @click="$emit('printNotificationEvent', 'No Download Available', 1)">fas fa-dna</v-icon>
+                    <v-icon v-else v-bind="attrs" v-on="on" right
+                            @click="$emit('printNotificationEvent', 'No Download Available', 1)">fas fa-dna
+                    </v-icon>
                   </template>
                   <span> added {{ job.update }} {{ job.target }} nodes</span>
                 </v-tooltip>
@@ -156,9 +158,11 @@ export default {
       this.show = true
       // this.$refs.jobs.$forceUpdate()
     },
-    downloadJob: function(job){
-        window.open('http://localhost:8090/backend/api/downloadJobResult?jid='+job.jid, '_blank');
+    downloadJob: function (job) {
+      window.open('/backend/api/downloadJobResult?jid=' + job.jid)
     },
+
+
     updateJob: function (response) {
       let params = JSON.parse(response)
       this.jobs.forEach(j => {
@@ -174,10 +178,12 @@ export default {
       if (params.state === 'DONE') {
         this.$socket.unsubscribeJob(params.jid)
       }
-    },
+    }
+    ,
     formatTime: function (timestamp) {
       return Utils.formatTime(timestamp)
-    },
+    }
+    ,
 
   }
 }

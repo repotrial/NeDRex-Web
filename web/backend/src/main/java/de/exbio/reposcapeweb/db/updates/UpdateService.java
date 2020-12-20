@@ -122,6 +122,7 @@ public class UpdateService {
 
     public void renewDBDumps() {
         File dir = new File(env.getProperty("path.external.cache"));
+        dir.mkdirs();
         File ppiFile = new File(dir, "proteinInteractsWithProtein.tsv");
         try (BufferedWriter bw = WriterUtils.getBasicWriter(ppiFile)) {
             proteinInteractsWithProteinService.getProteins().forEach((id1, map) -> map.forEach((id2, vals) -> {
@@ -303,16 +304,16 @@ public class UpdateService {
 
         importRepoTrialEdges(collections);
 
-        regenerateTransitiveEdges(collections);
+//        regenerateTransitiveEdges(collections);
 
         dbCommunication.setDbLocked(false);
 
     }
 
-    private void regenerateTransitiveEdges(HashMap<String, Collection> collections) {
-
-
-    }
+//    private void regenerateTransitiveEdges(HashMap<String, Collection> collections) {
+//
+//
+//    }
 
     private void importRepoTrialEdges(HashMap<String, de.exbio.reposcapeweb.db.io.Collection> collections) {
 

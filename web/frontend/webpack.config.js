@@ -1,5 +1,18 @@
 var path = require('path')
 var webpack = require('webpack')
+// const HtmlWebpackPlugin = require("html-webpack-plugin");
+
+let host_dev = "localhost";
+let host_prod = "nedrex-server";
+
+let host_backend_dev = "http://"+host_dev + ":8090";
+let host_backend_prod = "http://"+host_prod + ":8090";
+
+// let host_assets_dev = host_dev+":8080";
+// let host_assets_prod = host_prod+":8080";
+
+let isProduction = (process.env.NODE_ENV === "production");
+console.log("production: " + isProduction)
 
 module.exports = {
 
@@ -8,13 +21,24 @@ module.exports = {
   // publicPath: "/backend",
 
 
-
   entry: './src/main.js',
   output: {
     path: path.resolve(__dirname, './dist'),
     publicPath: '/dist/',
     filename: 'build.js'
   },
+  plugins: [
+    // new HtmlWebpackPlugin({
+    //   title: "NeDREx",
+    //   filename: "index.html",
+    //   path: "./dist",
+    //   template: "./src/index.html"
+    // }),
+    new webpack.DefinePlugin({
+      HOST_BACKEND: JSON.stringify(isProduction ? host_backend_prod : host_backend_dev),
+      // HOST_ASSETS: JSON.stringify(isProduction ? host_assets_prod : host_assets_dev)
+    })
+  ],
   module: {
     rules: [
       {
@@ -108,12 +132,25 @@ module.exports = {
     noInfo: true,
     overlay: true,
     proxy: {
-          "/backend/api": {
-            target: "http://localhost:8090",
-            ws: true,
-            changeOrigin: true
-          }
-        }
+      "/backend/api": {
+        target: {
+          host: isProduction ? host_prod : host_dev,
+          protocol: 'http',
+          port:8090,
+        },
+        changeOrigin: true,
+        // port: 8090
+      },
+      "/backend/jobs": {
+        target:{
+          host: isProduction ? host_prod : host_dev,
+          protocol: 'ws',
+          port:8090
+        },
+        ws: true,
+        changeOrigin: true
+      }
+    },
   },
   performance: {
     hints: false
@@ -121,23 +158,23 @@ module.exports = {
   devtool: '#eval-source-map'
 }
 
-if (process.env.NODE_ENV === 'production') {
-  module.exports.devtool = '#source-map'
-  // http://vue-loader.vuejs.org/en/workflow/production.html
-  module.exports.plugins = (module.exports.plugins || []).concat([
-    new webpack.DefinePlugin({
-      'process.env': {
-        NODE_ENV: '"production"'
-      }
-    }),
-    new webpack.optimize.UglifyJsPlugin({
-      sourceMap: true,
-      compress: {
-        warnings: false
-      }
-    }),
-    new webpack.LoaderOptionsPlugin({
-      minimize: true
-    })
-  ])
-}
+// if (process.env.NODE_ENV === 'production') {
+//   module.exports.devtool = '#source-map'
+//   // http://vue-loader.vuejs.org/en/workflow/production.html
+//   module.exports.plugins = (module.exports.plugins || []).concat([
+//     new webpack.DefinePlugin({
+//       'process.env': {
+//         NODE_ENV: '"production"'
+//       }
+//     }),
+//     new webpack.optimize.UglifyJsPlugin({
+//       sourceMap: true,
+//       compress: {
+//         warnings: false
+//       }
+//     }),
+//     new webpack.LoaderOptionsPlugin({
+//       minimize: true
+//     })
+//   ])
+// }

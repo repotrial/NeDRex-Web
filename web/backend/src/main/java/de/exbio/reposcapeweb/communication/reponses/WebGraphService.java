@@ -283,7 +283,6 @@ public class WebGraphService {
                 return;
             int typeId = basis.getEdge(type);
             HashSet<String> edgeIds = new HashSet<>(Arrays.asList(ids));
-            System.out.println(basis.getCustomEdgeAttributeTypes().keySet());
             if (typeId < 0) {
                 Pair<Integer, Integer> nodeIds = basis.getNodesfromEdge(typeId);
                 g.addCollapsedEdges(nodeIds.getFirst(), nodeIds.getSecond(), type, basis.getEdges().get(typeId).stream().filter(e -> edgeIds.contains(e.getId1() + "-" + e.getId2())).collect(Collectors.toCollection(LinkedList::new)));

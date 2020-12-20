@@ -10,3 +10,6 @@ mv DIAMOnD-master/* ./
 rm -rf DIAMOnD-master
 rm -rf Example
 rm README.md
+cd ..
+mv diamond/* ./
+rm -rf diamond

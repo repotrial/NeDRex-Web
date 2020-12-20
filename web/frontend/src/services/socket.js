@@ -10,7 +10,7 @@ const emitter = new Vue({
     this.client.configure({
       /* uses SockJS as websocket */
       webSocketFactory: function () {
-        return new SockJS("http://localhost:8090/backend/jobs");
+        return new SockJS("/backend/jobs");
       },
       onConnect: function (frame) {
         console.log("connected!");
