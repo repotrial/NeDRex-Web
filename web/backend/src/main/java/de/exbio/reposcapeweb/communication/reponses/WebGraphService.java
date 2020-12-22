@@ -59,25 +59,12 @@ public class WebGraphService {
     public WebGraph getMetaGraph() {
         WebGraph graph = new WebGraph("Metagraph", true, historyController.getGraphId());
 
-        graph.addNode(new WebNode(1, "Drug", "drug", "Drug"));
-        graph.addNode(new WebNode(2, "Protein", "protein", "Protein"));
-        graph.addNode(new WebNode(3, "Pathway", "pathway", "Pathway"));
-        graph.addNode(new WebNode(4, "Gene", "gene", "Gene"));
-        graph.addNode(new WebNode(5, "Disorder", "disorder", "Disorder"));
+        DBConfig.getConfig().nodes.forEach(node->{
+            graph.addNode(new WebNode(node.id,node.label,node.name,node.label));
+        });
         graph.getNodes().forEach(n -> graph.setWeight("nodes", n.group, nodeController.getNodeCount(n.group)));
 
-        graph.addEdge(new WebEdge(1, 2, "DrugHasTargetProtein").setTitle("DrugHasTargetProtein"));
-        graph.addEdge(new WebEdge(1, 4, "DrugHasTargetGene").setDashes(true).setTitle("DrugHasTargetGene"));
-        graph.addEdge(new WebEdge(2, 2, "ProteinInteractsWithProtein").setTitle("ProteinInteractsWithProtein"));
-        graph.addEdge(new WebEdge(2, 3, "ProteinInPathway").setTitle("ProteinInPathway"));
-        graph.addEdge(new WebEdge(2, 4, "ProteinEncodedBy").setTitle("ProteinEncodedBy"));
-        graph.addEdge(new WebEdge(2, 5, "ProteinAssociatedWithDisorder").setDashes(true).setTitle("ProteinAssociatedWithDisorder"));
-        graph.addEdge(new WebEdge(4, 4, "GeneInteractsWithGene").setDashes(true).setTitle("GeneInteractsWithGene"));
-        graph.addEdge(new WebEdge(4, 5, "GeneAssociatedWithDisorder").setTitle("GeneAssociatedWithDisorder"));
-//        graph.addEdge(new WebEdge(5, 5, "DisorderComorbidWithDisorder").setTitle("DisorderComorbidWithDisorder"));
-        graph.addEdge(new WebEdge(5, 5, "DisorderIsSubtypeOfDisorder").setTitle("DisorderIsSubtypeOfDisorder"));
-        graph.addEdge(new WebEdge(1, 5, "DrugHasIndication").setTitle("DrugHasIndication"));
-        graph.addEdge(new WebEdge(1, 5, "DrugHasContraindication").setTitle("DrugHasContraindication"));
+        DBConfig.getConfig().edges.forEach(edge->graph.addEdge(new WebEdge(Graphs.getNode(edge.source), Graphs.getNode(edge.target), edge.label).setTitle(edge.label)));
         graph.getEdges().forEach(e -> graph.setWeight("edges", e.label, edgeController.getEdgeCount(e.label)));
 
 
@@ -89,20 +76,12 @@ public class WebGraphService {
 
     public HashMap<String, Object> getColorMap(Collection<String> nodetypes) {
         if (nodetypes == null || colorMap == null) {
-            //TODO read from config json
-
             colorMap = new HashMap<>();
-            ArrayList<String[]> colors = new ArrayList<>(Arrays.asList(
-                    new String[]{"drug", "#00CC96", "#b4cdcc"},
-                    new String[]{"disorder", "#EF553B", "#ecd0cb"},
-                    new String[]{"gene", "#636EFA", "#d6d9f8"},
-                    new String[]{"protein", "#19d3f3", "#bcdfe5"},
-                    new String[]{"pathway", "#fecb52", "#fae6c1"}));
-            colors.forEach(c -> {
-                HashMap<String, String> node = new HashMap<>();
-                colorMap.put(c[0], node);
-                node.put("main", c[1]);
-                node.put("light", c[2]);
+            DBConfig.getConfig().nodes.forEach(node->{
+                HashMap<String,String> n = new HashMap<>();
+                colorMap.put(node.name,n);
+                n.put("main",node.colors.main);
+                n.put("light",node.colors.light);
             });
         }
         if (nodetypes == null)
@@ -148,7 +127,6 @@ public class WebGraphService {
             list = new WebGraphList(id);
             WebGraphList finalList = list;
             CustomListRequest finalReq1 = req;
-
             g.getNodes().forEach((type, nodeMap) -> {
 
                 String stringType = Graphs.getNode(type);
@@ -176,7 +154,7 @@ public class WebGraphService {
 
                 try {
                     HashMap<String, HashSet<String>> distinctValues = new HashMap<>();
-                    HashSet<String> distinctAttrs = DBConfig.getDistinctAttributes("node", stringType);
+                    HashSet<String> distinctAttrs = DBConfig.getDistinctAttributes("node", type);
                     distinctAttrs.forEach(a -> distinctValues.put(a, new HashSet<>()));
                     finalList.getNodes().get(stringType).forEach(attrs -> {
                         distinctAttrs.forEach(attr -> {
@@ -224,7 +202,7 @@ public class WebGraphService {
                     finalList.setTypes("edges", stringType, attributeArray, edgeController.isExperimental(type), edgeController.getIdAttributes(type), g.getCustomNodeAttributeTypes().get(type));
                     try {
                         HashMap<String, HashSet<String>> distinctValues = new HashMap<>();
-                        HashSet<String> distinctAttrs = DBConfig.getDistinctAttributes("edge", stringType);
+                        HashSet<String> distinctAttrs = DBConfig.getDistinctAttributes("edge", type);
                         distinctAttrs.forEach(a -> distinctValues.put(a, new HashSet<>()));
                         finalList.getEdges().get(stringType).forEach(edgeAttrs -> {
                             distinctAttrs.forEach(attr -> {
@@ -354,8 +332,6 @@ public class WebGraphService {
         HashSet<Integer> connectedNodes = new HashSet<>();
         for (int i = 0; i < nodes.length; i++) {
             for (int j = 0; j < nodes.length; j++) {
-                if (i > j)
-                    continue;
                 final int[] nodeI = {nodes[i]};
                 final int[] nodeJ = {nodes[j]};
 
@@ -365,6 +341,9 @@ public class WebGraphService {
                     continue;
                 }
                 edgeIds.forEach(edgeId -> {
+                    Pair<Integer,Integer> ids = Graphs.getNodesfromEdge(edgeId);
+                    if(ids.first!=nodeI[0] & ids.second!=nodeJ[0])
+                        return;
                     boolean experimental = (request.interactions.containsKey(Graphs.getEdge(edgeId)) && !request.interactions.get(Graphs.getEdge(edgeId)));
                     if (request.edges.containsKey(Graphs.getEdge(edgeId))) {
                         LinkedList<Edge> edges = new LinkedList<>();

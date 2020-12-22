@@ -101,7 +101,7 @@ public class DrugService extends NodeService {
     public Optional<Drug> findById(Integer id){return drugRepository.findById(id);}
 
     public String[] getAttributes() {
-        return Drug.attributes.toArray(String[]::new);
+        return Drug.sourceAttributes.toArray(String[]::new);
     }
 
     public Iterable<Drug> findAll(){

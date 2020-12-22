@@ -1,5 +1,7 @@
 package de.exbio.reposcapeweb.communication.cache;
 
+import de.exbio.reposcapeweb.configs.DBConfig;
+import de.exbio.reposcapeweb.configs.schema.Config;
 import de.exbio.reposcapeweb.utils.Pair;
 
 import java.util.Collections;
@@ -18,23 +20,41 @@ public class Graphs {
     private static HashMap<Integer, Pair<Integer, Integer>> edge2node;
 
 
-    public static void setUp(HashMap<Integer, String> nodes, HashMap<Integer,String> edges) {
+    public static void setUp() {
+        Config config = DBConfig.getConfig();
+
+
         nodeToIdMap = new HashMap<>();
         idToNodeMap = new HashMap<>();
         idToNodePrefixMap = new HashMap<>();
-        nodes.forEach((i, name) -> {
-            nodeToIdMap.put(name, i);
-            idToNodeMap.put(i, name);
-            idToNodePrefixMap.put(i, name.substring(0, 3) + "_");
+
+
+        config.nodes.forEach(node -> {
+            int id = node.id;
+            String name = node.name;
+            nodeToIdMap.put(name, id);
+            idToNodeMap.put(id, name);
+            idToNodePrefixMap.put(id, name.substring(0, 3) + "_");
         });
 
         edgeToIdMap = new HashMap<>();
         idToEdgeMap = new HashMap<>();
 
-        edges.forEach((i,name)->{
-            edgeToIdMap.put(name, i);
-            idToEdgeMap.put(i, name);
+        config.edges.forEach(edge -> {
+            int id = edge.id;
+            String name = edge.label;
+            edgeToIdMap.put(name, id);
+            idToEdgeMap.put(id, name);
         });
+
+
+        HashMap<Integer, Pair<Integer, Integer>> edge2node = new HashMap<>();
+
+        config.edges.forEach(edge -> edge2node.put(edge.id, new Pair<>(Graphs.getNode(edge.source), Graphs.getNode(edge.target))));
+
+        Graphs.mapSetUp(edge2node);
+
+
     }
 
     public static void mapSetUp(HashMap<Integer, Pair<Integer, Integer>> edge2node){

@@ -29,20 +29,27 @@ public class Protein extends RepoTrialNode {
 
     @Transient
     @JsonIgnore
-    public static final HashSet<String> attributes = new HashSet<>(Arrays.asList("displayName", "type", "domainIds", "taxid", "primaryDomainId", "sequence", "synonyms", "geneName", "comments"));
+    public static HashSet<String> sourceAttributes;
 
     @Transient
     @JsonIgnore
-    public final static String[] allAttributes = new String[]{"id", "primaryDomainId", "domainIds", "displayName", "geneName", "taxid", "sequence", "synonyms", "comments", "type"};
+    public static String[] allAttributes;
 
     @Transient
     @JsonIgnore
-    public final static String[] allAttributeTypes = new String[]{"numeric", "", "array", "", "", "numeric", "", "array", "array", ""};
+    public static String[] allAttributeTypes;
 
     @Transient
     @JsonIgnore
-    public final static Boolean[] idAttributes = new Boolean[]{true, true, true, false, false, false, false, false, false, false};
+    public static Boolean[] idAttributes;
 
+    @Transient
+    @JsonIgnore
+    public static String[] listAttributes;
+
+    public static String[] getListAttributes() {
+        return listAttributes;
+    }
 
     public Protein() {
     }
@@ -60,10 +67,6 @@ public class Protein extends RepoTrialNode {
     public String comments;
     public String geneName;
     public Integer taxid;
-
-    public static String[] getListAttributes() {
-        return new String[]{"id", "displayName", "geneName", "taxid"};
-    }
 
     @Override
     public HashMap<String, Object> getAsMap() {

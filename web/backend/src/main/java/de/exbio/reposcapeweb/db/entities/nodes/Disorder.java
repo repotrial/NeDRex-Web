@@ -28,21 +28,27 @@ public class Disorder extends RepoTrialNode {
     private int id;
     @Transient
     @JsonIgnore
-    public static final HashSet<String> attributes = new HashSet<>(Arrays.asList("displayName", "synonyms", "type", "domainIds", "primaryDomainId", "description", "icd10"));
+    public static HashSet<String> sourceAttributes;
 
     @Transient
     @JsonIgnore
-    public final static String[] allAttributes = new String[]{"id","primaryDomainId","displayName","domainIds","icd10", "synonyms",  "description","type"};
+    public static String[] allAttributes;
 
     @Transient
     @JsonIgnore
-    public final static String[] allAttributeTypes = new String[]{"numeric","","","array","","array", "",  ""};
+    public static String[] allAttributeTypes;
 
     @Transient
     @JsonIgnore
-    public final static Boolean[] idAttributes=new Boolean[]{true,true,false,true,false,false,false,false};
+    public static Boolean[] idAttributes;
 
+    @Transient
+    @JsonIgnore
+    public static String[] listAttributes;
 
+    public static String[] getListAttributes() {
+        return listAttributes;
+    }
     @Column(nullable = false)
     private String primaryDomainId;
     @Column(columnDefinition = "TEXT")
@@ -58,9 +64,6 @@ public class Disorder extends RepoTrialNode {
     public Disorder() {
     }
 
-    public static String[] getListAttributes() {
-        return new String[]{"id","displayName","icd10"};
-    }
 
 
     public String getPrimaryDomainId() {

@@ -27,21 +27,27 @@ public class Pathway extends RepoTrialNode {
     private int id;
     @Transient
     @JsonIgnore
-    public static final HashSet<String> attributes = new HashSet<>(Arrays.asList("displayName", "type", "domainIds", "primaryDomainId", "species"));
-
-
-    @Transient
-    @JsonIgnore
-    public final static String[] allAttributes = new String[]{"id", "primaryDomainId", "displayName", "domainIds", "species", "type"};
+    public static HashSet<String> sourceAttributes;
 
     @Transient
     @JsonIgnore
-    public final static String[] allAttributeTypes = new String[]{"numeric", "", "", "array", "array", ""};
+    public static String[] allAttributes;
 
     @Transient
     @JsonIgnore
-    public final static Boolean[] idAttributes = new Boolean[]{true, true, false, true, false, false};
+    public static String[] allAttributeTypes;
 
+    @Transient
+    @JsonIgnore
+    public static Boolean[] idAttributes;
+
+    @Transient
+    @JsonIgnore
+    public static String[] listAttributes;
+
+    public static String[] getListAttributes() {
+        return listAttributes;
+    }
 
     @Column(nullable = false)
     private String primaryDomainId;
@@ -51,10 +57,6 @@ public class Pathway extends RepoTrialNode {
 
     public Pathway() {
 
-    }
-
-    public static String[] getListAttributes() {
-        return new String[]{"id", "displayName", "primaryDomainId"};
     }
 
     @Override

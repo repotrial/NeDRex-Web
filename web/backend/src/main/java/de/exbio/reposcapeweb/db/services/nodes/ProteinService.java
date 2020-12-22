@@ -103,7 +103,7 @@ public class ProteinService extends NodeService {
     }
 
     public String[] getAttributes() {
-        return Protein.attributes.toArray(String[]::new);
+        return Protein.sourceAttributes.toArray(String[]::new);
     }
 
     public Iterable<Protein> findAll(){

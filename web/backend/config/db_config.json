@@ -5,8 +5,8 @@
       "name": "disorder",
       "label": "Disorder",
       "colors": {
-        "main": "#00CC96",
-        "light": "#b4cdcc"
+        "main": "#EF553B",
+        "light": "#ecd0cb"
       },
       "attributes": {
         "id": {
@@ -76,8 +76,8 @@
       "name": "drug",
       "label": "Drug",
       "colors": {
-        "main": "#EF553B",
-        "light": "#ecd0cb"
+        "main": "#00CC96",
+        "light": "#b4cdcc"
       },
       "attributes": {
         "id": {
@@ -472,12 +472,13 @@
   "edges":[
     {
       "id": 0,
-      "name": "DrugHasTargetProtein",
+      "name": "drug_has_target_protein",
       "label": "DrugHasTargetProtein",
+      "mapsTo":"DrugTargetProtein",
       "original":true,
       "directed":true,
       "source":"drug",
-      "target":"disorder",
+      "target":"protein",
       "attributes": {
         "id": {
           "source": false,
@@ -568,12 +569,13 @@
     },
     {
       "id": 1,
-      "name": "DrugHasTargetGene",
+      "name": "drug_has_target_gene",
       "label": "DrugHasTargetGene",
       "original":false,
       "directed":true,
       "source":"drug",
       "target":"gene",
+      "mapsTo":"DrugTargetGene",
       "attributes": {
         "id": {
           "list": true,
@@ -638,12 +640,13 @@
     },
     {
       "id": 2,
-      "name": "ProteinInteractsWithProtein",
+      "name": "protein_interacts_with_protein",
       "label": "ProteinInteractsWithProtein",
       "original":true,
       "directed":false,
       "source":"protein",
       "target":"protein",
+      "mapsTo":"ProteinProteinInteraction",
       "attributes": {
         "id": {
           "source": false,
@@ -725,12 +728,13 @@
     },
     {
     "id": 3,
-    "name": "ProteinInPathway",
+    "name": "protein_in_pathway",
     "label": "ProteinInPathway",
     "original":true,
     "directed":true,
     "source":"protein",
     "target":"pathway",
+    "mapsTo":"ProteinPathway",
     "attributes": {
       "id": {
         "source": false,
@@ -803,12 +807,13 @@
   },
     {
     "id": 4,
-    "name": "ProteinEncodedBy",
+    "name": "protein_encoded_by",
     "label": "ProteinEncodedBy",
     "original":true,
     "directed":true,
     "source":"protein",
     "target":"gene",
+    "mapsTo":"ProteinEncodedBy",
     "attributes": {
       "id": {
         "source": false,
@@ -899,12 +904,13 @@
   },
     {
       "id": 5,
-      "name": "ProteinAssociatedWithDisorder",
+      "name": "protein_associated_with_disorder",
       "label": "ProteinAssociatedWithDisorder",
       "original": false,
       "directed": true,
       "source": "protein",
       "target": "disorder",
+      "mapsTo":"ProteinAssociatedWithDisorder",
       "attributes": {
         "id": {
           "list": true,
@@ -985,12 +991,13 @@
     },
     {
     "id": 6,
-    "name": "GeneInteractsWithGene",
+    "name": "gene_interacts_with_Gene",
     "label": "GeneInteractsWithGene",
     "original":false,
     "directed":false,
     "source":"gene",
     "target":"gene",
+    "mapsTo":"GeneGeneInteraction",
     "attributes": {
       "id": {
         "list": true,
@@ -1063,12 +1070,13 @@
   },
     {
     "id": 7,
-    "name": "GeneAssociatedWithDisorder",
+    "name": "gene_assiciated_with_disorder",
     "label": "GeneAssociatedWithDisorder",
     "original":true,
     "directed":true,
     "source":"gene",
     "target":"disorder",
+    "mapsTo":"GeneAssociatedWithDisorder",
     "attributes": {
       "id": {
         "source": false,
@@ -1159,12 +1167,14 @@
   },
     {
     "id": 8,
-    "name": "DisorderComorbidWithDisorder",
+    "name": "disorder_comorbid_with_disorder",
     "label": "DisorderComorbidWithDisorder",
     "original":true,
     "directed":false,
+    "disabled":true,
     "source":"disorder",
     "target":"disorder",
+    "mapsTo":"DisorderComorbidity",
     "attributes": {
       "id": {
         "source": false,
@@ -1273,12 +1283,13 @@
   },
     {
     "id": 9,
-    "name": "DisorderIsSubtypeOfDisorder",
+    "name": "disorder_is_subtype_of_disorder",
     "label": "DisorderIsSubtypeOfDisorder",
     "original":true,
     "directed":true,
     "source":"disorder",
     "target":"disorder",
+    "mapsTo":"DisorderHirarchy",
     "attributes": {
       "id": {
         "source": false,
@@ -1289,22 +1300,22 @@
         "label": "ID",
         "distinct": false
       },
-      "idOne": {
+      "sourceId": {
         "source": false,
         "list": false,
         "detail": true,
         "id": true,
         "type": "numeric",
-        "label": "IDOne",
+        "label": "SourceID",
         "distinct": false
       },
-      "idTwo": {
+      "targetId": {
         "source": false,
         "list": false,
         "detail": true,
         "id": true,
         "type": "numeric",
-        "label": "IDTwo",
+        "label": "TargetID",
         "distinct": false
       },
       "node1": {
@@ -1323,20 +1334,20 @@
         "label": "Node2",
         "distinct": false
       },
-      "memberOne": {
+      "sourceDomainId": {
         "source": true,
         "list": false,
         "detail": true,
         "id": true,
-        "label": "MemberOne",
+        "label": "SourceID",
         "distinct": false
       },
-      "memberOne": {
+      "targetDomainId": {
         "source": true,
         "list": false,
         "detail": true,
         "id": true,
-        "label": "memberOne",
+        "label": "TargetDomainId",
         "distinct": false
       },
       "type": {
@@ -1352,12 +1363,13 @@
   },
     {
     "id": 10,
-    "name": "DrugHasIndication",
+    "name": "drug_has_indication",
     "label": "DrugHasIndication",
     "original":true,
     "directed":true,
     "source":"drug",
     "target":"disorder",
+    "mapsTo":"DrugIndication",
     "attributes": {
       "id": {
         "source": false,
@@ -1368,22 +1380,22 @@
         "label": "ID",
         "distinct": false
       },
-      "idOne": {
+      "sourceId": {
         "source": false,
         "list": false,
         "detail": true,
         "id": true,
         "type": "numeric",
-        "label": "IDOne",
+        "label": "SourceID",
         "distinct": false
       },
-      "idTwo": {
+      "targetId": {
         "source": false,
         "list": false,
         "detail": true,
         "id": true,
         "type": "numeric",
-        "label": "IDTwo",
+        "label": "TargetID",
         "distinct": false
       },
       "node1": {
@@ -1402,20 +1414,20 @@
         "label": "Node2",
         "distinct": false
       },
-      "memberOne": {
+      "sourceDomainId": {
         "source": true,
         "list": false,
         "detail": true,
         "id": true,
-        "label": "MemberOne",
+        "label": "SourceDomainId",
         "distinct": false
       },
-      "memberOne": {
+      "targetDomainId": {
         "source": true,
         "list": false,
         "detail": true,
         "id": true,
-        "label": "memberOne",
+        "label": "TargetDomainId",
         "distinct": false
       },
       "type": {
@@ -1427,6 +1439,85 @@
         "distinct": false
       }
     }
+  },
+  {
+  "id": 11,
+  "name": "drug_has_contraindication",
+  "label": "DrugHasContraindication",
+  "original":true,
+  "directed":true,
+  "source":"drug",
+  "target":"disorder",
+  "mapsTo":"DrugContraindication",
+  "attributes": {
+    "id": {
+      "source": false,
+      "list": true,
+      "detail": true,
+      "id": false,
+      "type": "numeric",
+      "label": "ID",
+      "distinct": false
+    },
+    "sourceId": {
+      "source": false,
+      "list": false,
+      "detail": true,
+      "id": true,
+      "type": "numeric",
+      "label": "SourceID",
+      "distinct": false
+    },
+    "targetId": {
+      "source": false,
+      "list": false,
+      "detail": true,
+      "id": true,
+      "type": "numeric",
+      "label": "TargetID",
+      "distinct": false
+    },
+    "node1": {
+      "source": false,
+      "list": true,
+      "detail": true,
+      "id": false,
+      "label": "Node1",
+      "distinct": false
+    },
+    "node2": {
+      "source": false,
+      "list": true,
+      "detail": true,
+      "id": false,
+      "label": "Node2",
+      "distinct": false
+    },
+    "sourceDomainId": {
+      "source": true,
+      "list": false,
+      "detail": true,
+      "id": true,
+      "label": "SourceDomainId",
+      "distinct": false
+    },
+    "targetDomainId": {
+      "source": true,
+      "list": false,
+      "detail": true,
+      "id": true,
+      "label": "TargetDomainId",
+      "distinct": false
+    },
+    "type": {
+      "source": true,
+      "list": false,
+      "detail": true,
+      "id": false,
+      "label": "Type",
+      "distinct": false
+    }
   }
+}
   ]
 }

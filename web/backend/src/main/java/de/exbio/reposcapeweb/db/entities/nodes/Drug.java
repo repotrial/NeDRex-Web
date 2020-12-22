@@ -27,21 +27,27 @@ public class Drug extends RepoTrialNode {
     private int id;
     @Transient
     @JsonIgnore
-    public final static HashSet<String> attributes = new HashSet<>(Arrays.asList("molecularFormula", "displayName", "inchi", "type", "domainIds", "primaryDomainId", "smiles", "casNumber", "drugCategories", "drugGroups", "_cls", "sequences", "iupacName", "synonyms", "primaryDataset", "indication", "allDatasets", "description"));
-
-
-    @Transient
-    @JsonIgnore
-    public final static String[] allAttributes = new String[]{"id", "primaryDomainId", "domainIds", "displayName", "indication", "drugGroups", "drugCategories", "iupacName", "molecularFormula", "casNumber", "primaryDataset", "allDatasets", "inchi", "smiles", "_cls", "sequences", "synonyms", "description", "type"};
+    public static HashSet<String> sourceAttributes;
 
     @Transient
     @JsonIgnore
-    public final static String[] allAttributeTypes = new String[]{"numeric", "", "array", "", "", "array", "array", "", "", "", "", "array", "", "", "", "array", "array", "", ""};
+    public static String[] allAttributes;
 
     @Transient
     @JsonIgnore
-    public final static Boolean[] idAttributes = new Boolean[]{true, true, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,false};
+    public static String[] allAttributeTypes;
 
+    @Transient
+    @JsonIgnore
+    public static Boolean[] idAttributes;
+
+    @Transient
+    @JsonIgnore
+    public static String[] listAttributes;
+
+    public static String[] getListAttributes() {
+        return listAttributes;
+    }
     @Column(nullable = false)
     private String primaryDomainId;
     private String domainIds;
@@ -76,15 +82,12 @@ public class Drug extends RepoTrialNode {
     }
 
     public static boolean validateFormat(HashSet<String> attributes) {
-        for (String a : Drug.attributes)
+        for (String a : Drug.sourceAttributes)
             if (!attributes.remove(a))
                 return false;
         return attributes.isEmpty();
     }
 
-    public static String[] getListAttributes() {
-        return new String[]{"id", "displayName", "type", "drugGroups", "iupacName", "molecularFormula", "casNumber"};
-    }
 
     @Override
     public HashMap<String, Object> getAsMap() {

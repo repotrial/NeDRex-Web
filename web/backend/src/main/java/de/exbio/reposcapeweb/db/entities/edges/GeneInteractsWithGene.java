@@ -61,22 +61,26 @@ public class GeneInteractsWithGene extends RepoTrialEdge implements Serializable
     }
 
 
+    @Transient
+    @JsonIgnore
+    public static String[] allAttributes;
+
+    @Transient
+    @JsonIgnore
+    public static String[] allAttributeTypes;
+
+    @Transient
+    @JsonIgnore
+    public static Boolean[] idAttributes;
+
+    @Transient
+    @JsonIgnore
+    public static String[] listAttributes;
+
     public static String[] getListAttributes() {
-        return new String[]{"id", "node1", "node2", "evidenceTypes"};
+        return listAttributes;
     }
 
-
-    @Transient
-    @JsonIgnore
-    public final static String[] allAttributes = new String[]{"id", "idOne", "idTwo", "node1", "node2", "memberOne", "memberTwo", "evidenceTypes", "type"};
-
-    @Transient
-    @JsonIgnore
-    public final static String[] allAttributeTypes = new String[]{"numeric", "numeric", "numeric", "", "", "", "", "array", ""};
-
-    @Transient
-    @JsonIgnore
-    public final static Boolean[] idAttributes = new Boolean[]{true, true, true, false, false, true, true, false, false};
 
     @Override
     public HashMap<String, Object> getAsMap() {

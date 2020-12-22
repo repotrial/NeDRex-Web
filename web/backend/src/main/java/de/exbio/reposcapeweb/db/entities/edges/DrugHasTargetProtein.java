@@ -45,21 +45,27 @@ public class DrugHasTargetProtein extends RepoTrialEdge implements Serializable 
 
     @Transient
     @JsonIgnore
-    public final static HashSet<String> attributes = new HashSet<>(Arrays.asList("targetDomainId", "type", "sourceDomainId", "actions", "databases"));
+    public static HashSet<String> sourceAttributes;
 
     @Transient
     @JsonIgnore
-    public final static String[] allAttributes = new String[]{"id","sourceId","targetId","node1","node2","sourceDomainId", "targetDomainId", "actions", "databases","type"};
+    public static String[] allAttributes;
 
     @Transient
     @JsonIgnore
-    public final static String[] allAttributeTypes = new String[]{"numeric","numeric","numeric","","","", "", "array", "array",""};
+    public static String[] allAttributeTypes;
 
     @Transient
     @JsonIgnore
-    public final static Boolean[] idAttributes = new Boolean[]{true, true, true, false,false,true, true, false, false, false};
+    public static Boolean[] idAttributes;
 
+    @Transient
+    @JsonIgnore
+    public static String[] listAttributes;
 
+    public static String[] getListAttributes() {
+        return listAttributes;
+    }
 
     @Transient
     private String targetDomainId;
@@ -79,10 +85,6 @@ public class DrugHasTargetProtein extends RepoTrialEdge implements Serializable 
     }
 
 
-
-    public static String[] getListAttributes() {
-        return new String[]{"id","node1","node2", "actions"};
-    }
 
     @Override
     public HashMap<String, Object> getAsMap() {

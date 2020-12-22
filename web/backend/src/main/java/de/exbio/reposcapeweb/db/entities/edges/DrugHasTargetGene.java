@@ -63,18 +63,23 @@ public class DrugHasTargetGene extends RepoTrialEdge implements Serializable {
 
     @Transient
     @JsonIgnore
-    public final static String[] allAttributes = new String[]{"id","sourceId", "targetId","node1","node2","sourceDomainId","targetDomainId", "type"};
-
-
-    @Transient
-    @JsonIgnore
-    public final static String[] allAttributeTypes = new String[]{"numeric","numeric", "numeric","","","","", ""};
+    public static String[] allAttributes;
 
     @Transient
     @JsonIgnore
-    public final static Boolean[] idAttributes = new Boolean[]{true, true, true, false,false,true, true, false};
+    public static String[] allAttributeTypes;
 
+    @Transient
+    @JsonIgnore
+    public static Boolean[] idAttributes;
 
+    @Transient
+    @JsonIgnore
+    public static String[] listAttributes;
+
+    public static String[] getListAttributes() {
+        return listAttributes;
+    }
 
     @JsonGetter
     public String getType() {
@@ -85,10 +90,6 @@ public class DrugHasTargetGene extends RepoTrialEdge implements Serializable {
     public void setType(String type) {
     }
 
-    @JsonIgnore
-    public static String[] getListAttributes() {
-        return new String[]{"id","node1","node2",};
-    }
 
     @Override
     public HashMap<String, Object> getAsMap() {

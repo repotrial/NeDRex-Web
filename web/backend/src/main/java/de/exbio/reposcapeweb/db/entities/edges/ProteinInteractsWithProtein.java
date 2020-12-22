@@ -42,21 +42,27 @@ public class ProteinInteractsWithProtein extends RepoTrialEdge implements Serial
 
     @Transient
     @JsonIgnore
-    public final static HashSet<String> attributes = new HashSet<>(Arrays.asList("type", "methods", "databases", "memberTwo", "evidenceTypes", "memberOne"));
+    public static HashSet<String> sourceAttributes;
 
     @Transient
     @JsonIgnore
-    public final static String[] allAttributes = new String[]{"id", "idOne", "idTwo", "node1","node2","memberOne", "memberTwo", "evidenceTypes", "methods", "databases", "type"};
+    public static String[] allAttributes;
 
     @Transient
     @JsonIgnore
-    public final static String[] allAttributeTypes = new String[]{"numeric", "numeric", "numeric", "","","", "", "array", "array", "array", ""};
+    public static String[] allAttributeTypes;
 
     @Transient
     @JsonIgnore
-    public final static Boolean[] idAttributes = new Boolean[]{true, true, true, false,false,true, true, false, false, false, false};
+    public static Boolean[] idAttributes;
 
+    @Transient
+    @JsonIgnore
+    public static String[] listAttributes;
 
+    public static String[] getListAttributes() {
+        return listAttributes;
+    }
     @Transient
     private String memberOne;
     @Transient
@@ -73,10 +79,6 @@ public class ProteinInteractsWithProtein extends RepoTrialEdge implements Serial
     private String evidenceTypes;
 
     public ProteinInteractsWithProtein() {
-    }
-
-    public static String[] getListAttributes() {
-        return new String[]{"id", "node1","node2", "evidenceTypes"};
     }
 
     @Override

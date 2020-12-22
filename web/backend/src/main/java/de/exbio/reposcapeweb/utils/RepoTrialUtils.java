@@ -25,8 +25,8 @@ public class RepoTrialUtils {
         return new File(cacheDir, c.getName() + ending);
     }
 
-    public static File getCachedFile(Collection c, String cacheDir) {
-        return new File(cacheDir, c.getFile().getName());
+    public static File getCachedFile(File c, String cacheDir) {
+        return new File(cacheDir, c.getName());
     }
 
     public static boolean validateFormat(HashSet<String> urlAttributes, HashSet<String> classAttributes) {

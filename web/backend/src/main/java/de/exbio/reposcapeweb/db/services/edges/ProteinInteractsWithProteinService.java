@@ -153,9 +153,9 @@ public class ProteinInteractsWithProteinService {
             proteins.put(edge.getId1(), new HashMap<>());
         proteins.get(edge.getId1()).put(edge.getId2(), new Pair<>(true,experimental));
 
-        if (!proteins.containsKey(edge.getId2()))
-            proteins.put(edge.getId2(), new HashMap<>());
-        proteins.get(edge.getId2()).put(edge.getId1(), new Pair<>(!directed,experimental));
+//        if (!proteins.containsKey(edge.getId2()))
+//            proteins.put(edge.getId2(), new HashMap<>());
+//        proteins.get(edge.getId2()).put(edge.getId1(), new Pair<>(!directed,experimental));
     }
 
 
@@ -164,9 +164,9 @@ public class ProteinInteractsWithProteinService {
             genes.put(edge.getId1(), new HashMap<>());
         genes.get(edge.getId1()).put(edge.getId2(), new Pair<>(true,experimental));
 
-        if (!genes.containsKey(edge.getId2()))
-            genes.put(edge.getId2(), new HashMap<>());
-        genes.get(edge.getId2()).put(edge.getId1(), new Pair<>(!directed,experimental));
+//        if (!genes.containsKey(edge.getId2()))
+//            genes.put(edge.getId2(), new HashMap<>());
+//        genes.get(edge.getId2()).put(edge.getId1(), new Pair<>(!directed,experimental));
     }
 
     public boolean isProteinEdge(PairId edge) {
@@ -286,10 +286,10 @@ public class ProteinInteractsWithProteinService {
     }
 
     public Long getGeneCount() {
-        return proteinInteractsWithProteinRepository.count();
+        return geneInteractsWithGeneRepository.count();
     }
 
     public Long getProteinCount() {
-        return geneInteractsWithGeneRepository.count();
+        return proteinInteractsWithProteinRepository.count();
     }
 }

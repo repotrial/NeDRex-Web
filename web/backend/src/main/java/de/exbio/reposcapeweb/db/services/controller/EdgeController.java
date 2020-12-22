@@ -1,6 +1,5 @@
 package de.exbio.reposcapeweb.db.services.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.exbio.reposcapeweb.communication.cache.Graphs;
 import de.exbio.reposcapeweb.db.entities.edges.*;
@@ -24,6 +23,7 @@ public class EdgeController {
     private final ProteinEncodedByService proteinEncodedByService;
     private final ProteinInPathwayService proteinInPathwayService;
     private final ProteinInteractsWithProteinService proteinInteractsWithProteinService;
+    private final DrugHasContraindicationService drugHasContraindicationService;
     private final ObjectMapper objectMapper;
 
 
@@ -37,6 +37,7 @@ public class EdgeController {
             ProteinEncodedByService proteinEncodedByService,
             ProteinInPathwayService proteinInPathwayService,
             ProteinInteractsWithProteinService proteinInteractsWithProteinService,
+            DrugHasContraindicationService drugHasContraindicationService,
             ObjectMapper objectMapper
 
     ) {
@@ -49,6 +50,7 @@ public class EdgeController {
         this.proteinInPathwayService = proteinInPathwayService;
         this.proteinInteractsWithProteinService = proteinInteractsWithProteinService;
         this.objectMapper = objectMapper;
+        this.drugHasContraindicationService=drugHasContraindicationService;
     }
 
 
@@ -121,6 +123,22 @@ public class EdgeController {
         return drugHasIndicationService.isEdgeTo(id1, id2);
     }
 
+
+    public HashSet<Integer> getDrugHasContraindicationFrom(int id) {
+        return drugHasContraindicationService.getEdgesFrom(id);
+    }
+
+    public boolean isDrugHasContraindicationFrom(int id1, int id2) {
+        return drugHasContraindicationService.isEdgeFrom(id1, id2);
+    }
+
+    public HashSet<Integer> getDrugHasContraindicationTo(int id) {
+        return drugHasContraindicationService.getEdgesTo(id);
+    }
+
+    public boolean isDrugHasContraindicationTo(int id1, int id2) {
+        return drugHasContraindicationService.isEdgeTo(id1, id2);
+    }
 
     public HashSet<Integer> getDrugHasTargetGeneFrom(int id) {
         return drugHasTargetService.getGeneEdgesFrom(id);
@@ -229,6 +247,16 @@ public class EdgeController {
         return drugHasIndicationService.setDomainIds(drugHasIndicationService.find(id).orElseGet(null));
     }
 
+
+    public List<DrugHasContraindication> findAllDrugHasContraindication(List<PairId> ids) {
+        return drugHasContraindicationService.getEntries(ids);
+    }
+
+    public DrugHasContraindication findDrugHasContraindication(PairId id) {
+        return drugHasContraindicationService.setDomainIds(drugHasContraindicationService.find(id).orElseGet(null));
+    }
+
+
     public List<DrugHasTargetGene> findAllDrugHasTargetGene(Collection<PairId> ids) {
         return drugHasTargetService.getGenes(ids);
     }
@@ -314,6 +342,8 @@ public class EdgeController {
                 return proteinEncodedByService.findAll();
             case "DrugHasIndication":
                 return drugHasIndicationService.findAll();
+            case "DrugHasContraindication":
+                return drugHasContraindicationService.findAll();
             case "DrugHasTargetProtein":
                 return drugHasTargetService.findAllProteins();
             case "ProteinInteractsWithProtein":
@@ -342,6 +372,8 @@ public class EdgeController {
                 return isProteinEncodedByFrom(k1, k2);
             case "DrugHasIndication":
                 return isDrugHasIndicationFrom(k1, k2);
+            case "DrugHasContraindication":
+                return isDrugHasContraindicationFrom(k1, k2);
             case "DrugHasTargetProtein":
                 return isDrugHasTargetProteinFrom(k1, k2);
             case "ProteinInteractsWithProtein":
@@ -376,6 +408,8 @@ public class EdgeController {
                 return getProteinEncodedByFrom(node);
             case "DrugHasIndication":
                 return getDrugHasIndicationFrom(node);
+            case "DrugHasContraindication":
+                return getDrugHasContraindicationFrom(node);
             case "DrugHasTargetProtein":
                 return getDrugHasTargetProteinFrom(node);
             case "ProteinInteractsWithProtein":
@@ -404,6 +438,8 @@ public class EdgeController {
                 return getProteinEncodedByTo(node);
             case "DrugHasIndication":
                 return getDrugHasIndicationTo(node);
+            case "DrugHasContraindication":
+                return getDrugHasContraindicationTo(node);
             case "DrugHasTargetProtein":
                 return getDrugHasTargetProteinTo(node);
             case "ProteinInteractsWithProtein":
@@ -433,6 +469,8 @@ public class EdgeController {
                 return ProteinEncodedBy.getListAttributes();
             case "DrugHasIndication":
                 return DrugHasIndication.getListAttributes();
+            case "DrugHasContraindication":
+                return DrugHasContraindication.getListAttributes();
             case "DrugHasTargetProtein":
                 return DrugHasTargetProtein.getListAttributes();
             case "ProteinInteractsWithProtein":
@@ -486,6 +524,12 @@ public class EdgeController {
             case "DrugHasIndication":
                 chunks.stream().map(this::findAllDrugHasIndication).flatMap(Collection::stream).collect(Collectors.toList()).forEach(e -> {
                     drugHasIndicationService.setDomainIds(e);
+                    values.add(e.getAsMap(attributes));
+                });
+                break;
+            case "DrugHasContraIndication":
+                chunks.stream().map(this::findAllDrugHasContraindication).flatMap(Collection::stream).collect(Collectors.toList()).forEach(e -> {
+                    drugHasContraindicationService.setDomainIds(e);
                     values.add(e.getAsMap(attributes));
                 });
                 break;
@@ -544,6 +588,8 @@ public class EdgeController {
                 return findProteinEncodedBy(id).getAsMap();
             case "DrugHasIndication":
                 return findDrugHasIndication(id).getAsMap();
+            case "DrugHasContraindication":
+                return findDrugHasContraindication(id).getAsMap();
             case "DrugHasTargetProtein":
                 return findDrugHasTargetProtein(id).getAsMap();
             case "ProteinInteractsWithProtein":
@@ -572,6 +618,8 @@ public class EdgeController {
                 return ProteinEncodedBy.allAttributes;
             case "DrugHasIndication":
                 return DrugHasIndication.allAttributes;
+            case "DrugHasContraindication":
+                return DrugHasContraindication.allAttributes;
             case "DrugHasTargetProtein":
                 return DrugHasTargetProtein.allAttributes;
             case "ProteinInteractsWithProtein":
@@ -600,6 +648,8 @@ public class EdgeController {
                 return ProteinEncodedBy.allAttributeTypes;
             case "DrugHasIndication":
                 return DrugHasIndication.allAttributeTypes;
+            case "DrugHasContraindication":
+                return DrugHasContraindication.allAttributeTypes;
             case "DrugHasTargetProtein":
                 return DrugHasTargetProtein.allAttributeTypes;
             case "ProteinInteractsWithProtein":
@@ -627,6 +677,8 @@ public class EdgeController {
             case "ProteinEncodedBy":
                 return true;
             case "DrugHasIndication":
+                return true;
+            case "DrugHasContraindication":
                 return true;
             case "DrugHasTargetProtein":
                 return true;
@@ -656,6 +708,8 @@ public class EdgeController {
                 return ProteinEncodedBy.idAttributes;
             case "DrugHasIndication":
                 return DrugHasIndication.idAttributes;
+            case "DrugHasContraindication":
+                return DrugHasContraindication.idAttributes;
             case "DrugHasTargetProtein":
                 return DrugHasTargetProtein.idAttributes;
             case "ProteinInteractsWithProtein":
@@ -684,6 +738,8 @@ public class EdgeController {
                 return proteinEncodedByService.isDirected();
             case "DrugHasIndication":
                 return drugHasIndicationService.isDirected();
+            case "DrugHasContraindication":
+                return drugHasContraindicationService.isDirected();
             case "DrugHasTargetProtein":
                 return drugHasTargetService.isDirected();
             case "ProteinInteractsWithProtein":
@@ -712,6 +768,8 @@ public class EdgeController {
                 return proteinEncodedByService.getCount();
             case "DrugHasIndication":
                 return drugHasIndicationService.getCount();
+            case "DrugHasContraindication":
+                return drugHasContraindicationService.getCount();
             case "DrugHasTargetProtein":
                 return drugHasTargetService.getProteinCount();
             case "ProteinInteractsWithProtein":

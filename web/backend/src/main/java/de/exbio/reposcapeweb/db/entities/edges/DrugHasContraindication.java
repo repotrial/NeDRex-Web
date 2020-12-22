@@ -42,21 +42,27 @@ public class DrugHasContraindication extends RepoTrialEdge implements Serializab
 
     @Transient
     @JsonIgnore
-    public final static HashSet<String> attributes = new HashSet<>(Arrays.asList( "sourceDomainId","targetDomainId","type"));
+    public static HashSet<String> sourceAttributes;
 
     @Transient
     @JsonIgnore
-    public final static String[] allAttributes = new String[]{"id","sourceId","targetId","node1","node2","sourceDomainId","targetDomainId","type"};
+    public static String[] allAttributes;
 
     @Transient
     @JsonIgnore
-    public final static String[] allAttributeTypes = new String[]{"numeric","numeric","numeric","","","","",""};
+    public static String[] allAttributeTypes;
 
     @Transient
     @JsonIgnore
-    public final static boolean[] idAttributes = new boolean[]{true, true, true, false,false,true, true, false};
+    public static Boolean[] idAttributes;
 
+    @Transient
+    @JsonIgnore
+    public static String[] listAttributes;
 
+    public static String[] getListAttributes() {
+        return listAttributes;
+    }
 
     @Transient
     private String targetDomainId;
@@ -88,9 +94,6 @@ public class DrugHasContraindication extends RepoTrialEdge implements Serializab
     public void setType(String type) {
     }
 
-    public static String[] getListAttributes() {
-        return new String[]{ "id","node1","node2"};
-    }
 
     @Override
     public HashMap<String, Object> getAsMap() {

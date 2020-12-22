@@ -39,20 +39,27 @@ public class DisorderComorbidWithDisorder extends RepoTrialEdge implements Seria
 
     @Transient
     @JsonIgnore
-    public final static HashSet<String> attributes = new HashSet<>(Arrays.asList("rr21", "type", "rr12", "memberTwo", "rrGeoMean", "memberOne", "phiCor"));
+    public static HashSet<String> sourceAttributes;
 
     @Transient
     @JsonIgnore
-    public final static String[] allAttributes = new String[]{"id", "idOne", "idTwo", "node1", "node2", "memberOne", "memberTwo", "phiCor", "rrGeoMean", "rr12", "rr21", "type"};
+    public static String[] allAttributes;
 
     @Transient
     @JsonIgnore
-    public final static String[] allAttributeTypes = new String[]{"numeric", "numeric", "numeric", "", "", "", "", "numeric", "numeric", "numeric", "numeric", ""};
+    public static String[] allAttributeTypes;
 
     @Transient
     @JsonIgnore
-    public final static Boolean[] idAttributes = new Boolean[]{true, true, true, false, false, true, true, false, false, false, false, false};
+    public static Boolean[] idAttributes;
 
+    @Transient
+    @JsonIgnore
+    public static String[] listAttributes;
+
+    public static String[] getListAttributes() {
+        return listAttributes;
+    }
 
     @Transient
     private String memberOne;
@@ -111,10 +118,6 @@ public class DisorderComorbidWithDisorder extends RepoTrialEdge implements Seria
         this.rr12 = other.rr12;
         this.rr21 = other.rr21;
         this.rrGeoMean = other.rrGeoMean;
-    }
-
-    public static String[] getListAttributes() {
-        return new String[]{"id", "node1", "node2", "phiCor", "rrGeoMean", "rr12", "rr21"};
     }
 
     @Override

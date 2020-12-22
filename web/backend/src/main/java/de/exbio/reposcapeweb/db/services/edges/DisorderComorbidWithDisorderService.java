@@ -22,6 +22,7 @@ public class DisorderComorbidWithDisorderService {
     private final DisorderComorbidWithDisorderRepository disorderComorbidWithDisorderRepository;
 
     private final DisorderService disorderService;
+    //TODO set to directed value of config
     private final boolean directed = false;
     private final HashMap<Integer, HashMap<Integer, Boolean>> edges = new HashMap<>();
 

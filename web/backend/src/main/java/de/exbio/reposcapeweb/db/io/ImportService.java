@@ -50,6 +50,7 @@ public class ImportService {
     private final ProteinEncodedByService proteinEncodedByService;
     private final ProteinInPathwayService proteinInPathwayService;
     private final ProteinInteractsWithProteinService proteinInteractsWithProteinService;
+    private final DrugHasContraindicationService drugHasContraindicationService;
 
     private final ObjectMapper objectMapper;
 
@@ -74,7 +75,8 @@ public class ImportService {
                          ProteinInPathwayService proteinInPathwayService,
                          ProteinInteractsWithProteinService proteinInteractsWithProteinService,
                          HistoryController historyController,
-                         ObjectMapper objectMapper
+                         ObjectMapper objectMapper,
+                         DrugHasContraindicationService drugHasContraindicationService
                          ) {
         this.env = env;
         this.dbCommunication = dbCommunication;
@@ -93,7 +95,7 @@ public class ImportService {
         this.proteinEncodedByService = proteinEncodedByService;
         this.proteinInPathwayService = proteinInPathwayService;
         this.proteinInteractsWithProteinService = proteinInteractsWithProteinService;
-
+        this.drugHasContraindicationService=drugHasContraindicationService;
         this.historyController = historyController;
         this.objectMapper=objectMapper;
     }
@@ -106,42 +108,17 @@ public class ImportService {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        HashMap<String, Collection> collections = new HashMap<>();
-        getCollections(collections);
+//        HashMap<String, Collection> collections = new HashMap<>();
+//        getCollections(collections);
         log.info("Importing nodeIDs");
         File cacheDir = new File(env.getProperty("path.db.cache"));
-        importIdMaps(collections, cacheDir, false);
+        importIdMaps(cacheDir, false);
         log.info("NodeIdMap import: Done!");
-        importNodeFilters(collections, new File(cacheDir, "filters"));
+        importNodeFilters(new File(cacheDir, "filters"));
     }
 
     public void importHistory(){
         historyController.importHistory();
-    }
-
-    private void prepareCollections(String file, HashMap<String, de.exbio.reposcapeweb.db.io.Collection> collections, boolean typeNode) {
-        try {
-            BufferedReader br = ReaderUtils.getBasicReader(file);
-            String line = "";
-            try {
-                while ((line = br.readLine()) != null) {
-                    if (line.charAt(0) == '#')
-                        continue;
-                    Collection c = typeNode ? new Node(line) : new Edge(line);
-                    collections.put(c.getName(), c);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-    }
-
-
-    public void getCollections(HashMap<String, Collection> collections) {
-        prepareCollections(env.getProperty("file.collections.nodes"), collections, true);
-        prepareCollections(env.getProperty("file.collections.edges"), collections, false);
     }
 
 
@@ -173,39 +150,20 @@ public class ImportService {
 
     public void importEdges(boolean allowOnUpdate) {
         log.info("Edge-Data import: Start!");
-        HashMap<String, Collection> collections = new HashMap<>();
-        getCollections(collections);
         log.info("Importing edgeIds");
         File cacheDir = new File(env.getProperty("path.db.cache"));
         dbCommunication.scheduleImport(allowOnUpdate);
-        collections.forEach((k, c) -> {
-            if (!(c instanceof Edge))
-                return;
-            switch (k) {
-                case "disorder_comorbid_with_disorder":
-                    disorderComorbidWithDisorderService.importEdges();
-                    break;
-                case "disorder_is_subtype_of_disorder":
-                    disorderIsADisorderService.importEdges();
-                    break;
-                case "drug_has_indication":
-                    drugHasIndicationService.importEdges();
-                    break;
-                case "drug_has_target":
-                    drugHasTargetService.importEdges();
-                    break;
-                case "gene_associated_with_disorder":
-                    associatedWithDisorderService.importEdges();
-                    break;
-                case "protein_in_pathway":
-                    proteinInPathwayService.importEdges();
-                    break;
-                case "protein_interacts_with_protein":
-                    proteinInteractsWithProteinService.importEdges();
-                    break;
-                case "protein_encoded_by":
-                    proteinEncodedByService.importEdges();
-                    break;
+        DBConfig.getConfig().edges.forEach(edge -> {
+            switch (edge.mapsTo) {
+                case "DisorderComorbidity" -> disorderComorbidWithDisorderService.importEdges();
+                case "DisorderHirarchy" -> disorderIsADisorderService.importEdges();
+                case "DrugIndication" -> drugHasIndicationService.importEdges();
+                case "DrugTargetProtein" -> drugHasTargetService.importEdges();
+                case "GeneAssociatedWithDisorder" -> associatedWithDisorderService.importEdges();
+                case "ProteinPathway" -> proteinInPathwayService.importEdges();
+                case "ProteinProteinInteraction" -> proteinInteractsWithProteinService.importEdges();
+                case "ProteinEncodedBy" -> proteinEncodedByService.importEdges();
+                case "DrugContraindication" -> drugHasContraindicationService.importEdges();
             }
         });
         dbCommunication.setImportInProgress(false);
@@ -213,31 +171,28 @@ public class ImportService {
     }
 
 
-    public void importIdMaps(HashMap<String, de.exbio.reposcapeweb.db.io.Collection> collections, File cacheDir, boolean allowOnUpdate) {
+    public void importIdMaps(File cacheDir, boolean allowOnUpdate) {
         dbCommunication.scheduleImport(allowOnUpdate);
-        collections.forEach((k, c) -> {
-            if (!(c instanceof Node))
-                return;
-
-            switch (k) {
+        DBConfig.getConfig().nodes.forEach(node -> {
+            switch (node.name) {
                 case "drug": {
-                    importNodeIdMaps(cacheDir, k, drugService.getIdToDomainMap(), drugService.getDomainToIdMap());
+                    importNodeIdMaps(cacheDir, node.name, drugService.getIdToDomainMap(), drugService.getDomainToIdMap());
                     break;
                 }
                 case "pathway": {
-                    importNodeIdMaps(cacheDir, k, pathwayService.getIdToDomainMap(), pathwayService.getDomainToIdMap());
+                    importNodeIdMaps(cacheDir, node.name, pathwayService.getIdToDomainMap(), pathwayService.getDomainToIdMap());
                     break;
                 }
                 case "disorder": {
-                    importNodeIdMaps(cacheDir, k, disorderService.getIdToDomainMap(), disorderService.getDomainToIdMap());
+                    importNodeIdMaps(cacheDir, node.name, disorderService.getIdToDomainMap(), disorderService.getDomainToIdMap());
                     break;
                 }
                 case "gene": {
-                    importNodeIdMaps(cacheDir, k, geneService.getIdToDomainMap(), geneService.getDomainToIdMap());
+                    importNodeIdMaps(cacheDir, node.name, geneService.getIdToDomainMap(), geneService.getDomainToIdMap());
                     break;
                 }
                 case "protein": {
-                    importNodeIdMaps(cacheDir, k, proteinService.getIdToDomainMap(), proteinService.getDomainToIdMap());
+                    importNodeIdMaps(cacheDir, node.name, proteinService.getIdToDomainMap(), proteinService.getDomainToIdMap());
                     break;
                 }
             }
@@ -246,30 +201,28 @@ public class ImportService {
 
     }
 
-    public void importNodeFilters(HashMap<String, Collection> collections, File cacheDir) {
-        collections.forEach((k, c) -> {
-            if (!(c instanceof Node))
-                return;
+    public void importNodeFilters( File cacheDir) {
+        DBConfig.getConfig().nodes.forEach(node -> {
 
-            switch (k) {
+            switch (node.name) {
                 case "drug": {
-                    drugService.setFilter(filterService.readFromFiles(new File(cacheDir, k)));
+                    drugService.setFilter(filterService.readFromFiles(new File(cacheDir, node.name)));
                     break;
                 }
                 case "pathway": {
-                    pathwayService.setFilter(filterService.readFromFiles(new File(cacheDir, k)));
+                    pathwayService.setFilter(filterService.readFromFiles(new File(cacheDir, node.name)));
                     break;
                 }
                 case "disorder": {
-                    disorderService.setFilter(filterService.readFromFiles(new File(cacheDir, k)));
+                    disorderService.setFilter(filterService.readFromFiles(new File(cacheDir, node.name)));
                     break;
                 }
                 case "gene": {
-                    geneService.setFilter(filterService.readFromFiles(new File(cacheDir, k)));
+                    geneService.setFilter(filterService.readFromFiles(new File(cacheDir, node.name)));
                     break;
                 }
                 case "protein": {
-                    proteinService.setFilter(filterService.readFromFiles(new File(cacheDir, k)));
+                    proteinService.setFilter(filterService.readFromFiles(new File(cacheDir, node.name)));
                     break;
                 }
             }

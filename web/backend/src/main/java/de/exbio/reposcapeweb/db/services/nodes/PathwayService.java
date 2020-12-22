@@ -102,7 +102,7 @@ public class PathwayService extends NodeService {
     }
 
     public String[] getAttributes() {
-        return Pathway.attributes.toArray(String[]::new);
+        return Pathway.sourceAttributes.toArray(String[]::new);
     }
 
     public Iterable<Pathway> findAll(){

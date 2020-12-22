@@ -41,23 +41,29 @@ public class GeneAssociatedWithDisorder extends RepoTrialEdge implements Seriali
     @JsonIgnore
     @EmbeddedId
     private PairId id;
+    @Transient
+    @JsonIgnore
+    public static HashSet<String> sourceAttributes;
 
     @Transient
     @JsonIgnore
-    public final static HashSet<String> attributes = new HashSet<>(Arrays.asList("targetDomainId", "type", "sourceDomainId", "score", "assertedBy"));
+    public static String[] allAttributes;
 
     @Transient
     @JsonIgnore
-    public final static String[] allAttributes = new String[]{"id","sourceId","targetId","node1","node2","sourceDomainId","targetDomainId", "score", "assertedBy","type"};
+    public static String[] allAttributeTypes;
 
     @Transient
     @JsonIgnore
-    public final static String[] allAttributeTypes = new String[]{"numeric","numeric","numeric","","","","", "numeric", "array",""};
+    public static Boolean[] idAttributes;
 
     @Transient
     @JsonIgnore
-    public final static Boolean[] idAttributes = new Boolean[]{true, true, true, false,false,true, true, false, false, false};
+    public static String[] listAttributes;
 
+    public static String[] getListAttributes() {
+        return listAttributes;
+    }
     @Transient
     private String targetDomainId;
     @Transient
@@ -72,10 +78,6 @@ public class GeneAssociatedWithDisorder extends RepoTrialEdge implements Seriali
 
     private String assertedBy;
 
-
-    public static String[] getListAttributes() {
-        return new String[]{"id","node1","node2","score", "assertedBy"};
-    }
 
     @Override
     public HashMap<String, Object> getAsMap() {

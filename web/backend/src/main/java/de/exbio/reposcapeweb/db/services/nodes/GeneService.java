@@ -100,7 +100,7 @@ public class GeneService extends NodeService {
     public Optional<Gene> findById(Integer id){return geneRepository.findById(id);}
 
     public String[] getAttributes() {
-        return Gene.attributes.toArray(String[]::new);
+        return Gene.sourceAttributes.toArray(String[]::new);
     }
 
     public Iterable<Gene> findAll(){

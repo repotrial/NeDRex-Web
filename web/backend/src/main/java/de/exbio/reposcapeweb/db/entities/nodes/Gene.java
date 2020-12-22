@@ -30,21 +30,27 @@ public class Gene extends RepoTrialNode {
     private int id;
     @Transient
     @JsonIgnore
-    public static final HashSet<String> attributes = new HashSet<>(Arrays.asList("displayName", "type", "domainIds", "primaryDomainId", "geneType", "symbols", "approvedSymbol", "synonyms", "description", "chromosome", "mapLocation"));
-
-
-    @Transient
-    @JsonIgnore
-    public final static String[] allAttributes = new String[]{"id", "primaryDomainId", "domainIds", "displayName", "approvedSymbol", "geneType", "chromosome", "mapLocation", "symbols", "synonyms", "description", "type"};
-
+    public static HashSet<String> sourceAttributes;
 
     @Transient
     @JsonIgnore
-    public final static String[] allAttributeTypes = new String[]{"numeric", "", "array", "", "", "", "", "", "array", "array", "", ""};
+    public static String[] allAttributes;
 
     @Transient
     @JsonIgnore
-    public final static Boolean[] idAttributes = new Boolean[]{true, true, true, false, false, false, false, false, false, false, false, false};
+    public static String[] allAttributeTypes;
+
+    @Transient
+    @JsonIgnore
+    public static Boolean[] idAttributes;
+
+    @Transient
+    @JsonIgnore
+    public static String[] listAttributes;
+
+    public static String[] getListAttributes() {
+        return listAttributes;
+    }
 
     @Column(nullable = false)
     private String primaryDomainId;
@@ -60,9 +66,6 @@ public class Gene extends RepoTrialNode {
     private String mapLocation;
     private String geneType;
 
-    public static String[] getListAttributes() {
-        return new String[]{"id", "displayName", "approvedSymbol", "geneType", "chromosome", "mapLocation"};
-    }
 
 
     @Override
