@@ -197,7 +197,7 @@ public class ToolService {
             rankCache.delete();
         rankCache.mkdir();
         try {
-            ProcessUtils.executeProcessWait(new ProcessBuilder("python3", env.getProperty("jobs.scripts.ranking_preparation"), rankCache.getAbsolutePath()));
+            ProcessUtils.executeProcessWait(new ProcessBuilder("python3", env.getProperty("jobs.scripts.ranking_preparation"),dataDir.getAbsolutePath(), rankCache.getAbsolutePath()));
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }

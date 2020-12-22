@@ -1,10 +1,11 @@
 version: "3.9"
 services:
+
   db:
     container_name: nedrex-db
     image: mysql
     command: --default-authentication-plugin=mysql_native_password
-    restart: on-failure
+#    restart: on-failure
     environment:
       MYSQL_DATABASE: reposcape
       MYSQL_ROOT_PASSWORD: example
@@ -12,12 +13,12 @@ services:
       MYSQL_PASSWORD: repotrial
     volumes:
       - nedrex-db-volume:/var/lib/mysql
+
   server:
     container_name: nedrex-server
     image: andimajore/nedrex_repo:server
     depends_on:
       - "db"
-
     volumes:
       - nedrex-cache-volume:/etc/data
     expose:
@@ -26,6 +27,7 @@ services:
       - "8090:8090"
 #    restart: on-failure
     entrypoint: ["./wait-for-it.sh","nedrex-db:3306","-t","30", "--","java", "-Dspring.profiles.active=prod","-Xmx4g","-jar", "app.jar"]
+
   web:
     container_name: nedrex-web
     image: andimajore/nedrex_repo:web

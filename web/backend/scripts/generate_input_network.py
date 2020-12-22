@@ -9,8 +9,8 @@ import \
 
 # Autor: Sepideh Sadegh
 
-apiNetwork_path = sys.argv[1]
-inputFiles = "/home/andimajore/projects/RepoScapeWeb/web/resources/externalTools"
+apiNetwork_path = sys.argv[2]
+inputFiles = sys.argv[1]
 os.chdir(apiNetwork_path)
 
 drug_groups_map = dict()
