@@ -18,49 +18,31 @@ public class Graphs {
     private static HashMap<Integer, Pair<Integer, Integer>> edge2node;
 
 
-    public static void setUp() {
-        String[] nodes = new String[]{"drug", "protein", "pathway", "gene", "disorder"};
+    public static void setUp(HashMap<Integer, String> nodes, HashMap<Integer,String> edges) {
         nodeToIdMap = new HashMap<>();
         idToNodeMap = new HashMap<>();
         idToNodePrefixMap = new HashMap<>();
-        for (int i = 0; i < nodes.length; i++) {
-            String name = nodes[i];
+        nodes.forEach((i, name) -> {
             nodeToIdMap.put(name, i);
             idToNodeMap.put(i, name);
             idToNodePrefixMap.put(i, name.substring(0, 3) + "_");
-        }
+        });
 
-        String[] edges = new String[]{"DrugHasTargetProtein", "DrugHasTargetGene", "ProteinInteractsWithProtein", "ProteinInPathway", "ProteinEncodedBy", "ProteinAssociatedWithDisorder", "GeneInteractsWithGene", "GeneAssociatedWithDisorder", "DisorderComorbidWithDisorder", "DisorderIsSubtypeOfDisorder", "DrugHasIndication"};
         edgeToIdMap = new HashMap<>();
         idToEdgeMap = new HashMap<>();
 
-        for (int i = 0; i < edges.length; i++) {
-            String name = edges[i];
+        edges.forEach((i,name)->{
             edgeToIdMap.put(name, i);
             idToEdgeMap.put(i, name);
-        }
+        });
+    }
 
-
-        edge2node = new HashMap<>();
-
-        edge2node.put(Graphs.getEdge("GeneAssociatedWithDisorder"), new Pair<>(Graphs.getNode("gene"), Graphs.getNode("disorder")));
-        edge2node.put(Graphs.getEdge("DrugHasTargetGene"), new Pair<>(Graphs.getNode("drug"), Graphs.getNode("gene")));
-        edge2node.put(Graphs.getEdge("ProteinEncodedBy"), new Pair<>(Graphs.getNode("protein"), Graphs.getNode("gene")));
-
-        edge2node.put(Graphs.getEdge("DrugHasIndication"), new Pair<>(Graphs.getNode("drug"), Graphs.getNode("disorder")));
-        edge2node.put(Graphs.getEdge("DrugHasTargetProtein"), new Pair<>(Graphs.getNode("drug"), Graphs.getNode("protein")));
-
-        edge2node.put(Graphs.getEdge("ProteinInteractsWithProtein"), new Pair<>(Graphs.getNode("protein"), Graphs.getNode("protein")));
-        edge2node.put(Graphs.getEdge("ProteinInPathway"), new Pair<>(Graphs.getNode("protein"), Graphs.getNode("pathway")));
-        edge2node.put(Graphs.getEdge("ProteinAssociatedWithDisorder"), new Pair<>(Graphs.getNode("protein"), Graphs.getNode("disorder")));
-
-        edge2node.put(Graphs.getEdge("DisorderIsSubtypeOfDisorder"), new Pair<>(Graphs.getNode("disorder"), Graphs.getNode("disorder")));
-        edge2node.put(Graphs.getEdge("DisorderComorbidWithDisorder"), new Pair<>(Graphs.getNode("disorder"), Graphs.getNode("disorder")));
-
-        edge2node.put(Graphs.getEdge("GeneInteractsWithGene"),new Pair<>(Graphs.getNode("gene"),Graphs.getNode("gene")));
-
+    public static void mapSetUp(HashMap<Integer, Pair<Integer, Integer>> edge2node){
+        Graphs.edge2node=edge2node;
         nodes2edge = new HashMap<>();
-        edge2node.forEach((k, v) -> {
+        edge2node.forEach((k, v) ->
+
+        {
             if (!nodes2edge.containsKey(v.first))
                 nodes2edge.put(v.first, new HashMap<>());
             if (!nodes2edge.get(v.first).containsKey(v.second))
@@ -75,28 +57,27 @@ public class Graphs {
             else if (!v.first.equals(v.second))
                 nodes2edge.get(v.second).get(v.first).add(k);
         });
+    };
 
-    }
 
-
-    public static String getNode(int id){
+    public static String getNode(int id) {
         return idToNodeMap.get(id);
     }
 
-    public static int getNode(String name){
+    public static int getNode(String name) {
         return nodeToIdMap.get(name);
     }
 
-    public static String getPrefix(int id){
+    public static String getPrefix(int id) {
         return idToNodePrefixMap.get(id);
     }
 
 
-    public static Integer getEdge(String name){
+    public static Integer getEdge(String name) {
         return edgeToIdMap.get(name);
     }
 
-    public static String getEdge(int id){
+    public static String getEdge(int id) {
         return idToEdgeMap.get(id);
     }
 
@@ -108,7 +89,7 @@ public class Graphs {
         }
     }
 
-    public static boolean checkEdgeDirection(int edgeId, int node1, int node2){
+    public static boolean checkEdgeDirection(int edgeId, int node1, int node2) {
         return edge2node.get(edgeId).getFirst().equals(node1) & edge2node.get(edgeId).getSecond().equals(node2);
     }
 

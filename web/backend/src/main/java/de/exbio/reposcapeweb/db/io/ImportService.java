@@ -1,5 +1,8 @@
 package de.exbio.reposcapeweb.db.io;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import de.exbio.reposcapeweb.configs.DBConfig;
+import de.exbio.reposcapeweb.configs.schema.Config;
 import de.exbio.reposcapeweb.db.DbCommunicationService;
 import de.exbio.reposcapeweb.db.entities.edges.*;
 import de.exbio.reposcapeweb.db.history.HistoryController;
@@ -48,6 +51,8 @@ public class ImportService {
     private final ProteinInPathwayService proteinInPathwayService;
     private final ProteinInteractsWithProteinService proteinInteractsWithProteinService;
 
+    private final ObjectMapper objectMapper;
+
 
     private final HistoryController historyController;
 
@@ -68,7 +73,9 @@ public class ImportService {
                          ProteinEncodedByService proteinEncodedByService,
                          ProteinInPathwayService proteinInPathwayService,
                          ProteinInteractsWithProteinService proteinInteractsWithProteinService,
-                         HistoryController historyController) {
+                         HistoryController historyController,
+                         ObjectMapper objectMapper
+                         ) {
         this.env = env;
         this.dbCommunication = dbCommunication;
         this.drugService = drugService;
@@ -88,10 +95,17 @@ public class ImportService {
         this.proteinInteractsWithProteinService = proteinInteractsWithProteinService;
 
         this.historyController = historyController;
+        this.objectMapper=objectMapper;
     }
 
     public void importNodeData() {
         log.info("NodeDataMap import: Start!");
+        File conf = new File(env.getProperty("file.db.config"));
+        try {
+            DBConfig.importConfig(conf,objectMapper.readValue(conf, Config.class));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         HashMap<String, Collection> collections = new HashMap<>();
         getCollections(collections);
         log.info("Importing nodeIDs");

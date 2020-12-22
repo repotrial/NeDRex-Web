@@ -1453,12 +1453,19 @@ export default {
 
     },
     collapseDialogResolve: function (apply) {
-      this.collapse.show = false;
+
       if (!apply) {
+        this.collapse.show = false;
         this.resetCollapseDialog()
         this.$nextTick()
         return
       }
+      if(this.metagraph.edges.map(e=>e.label).indexOf(this.collapse.edgeName)>-1){
+        this.printNotification("Edge-Name is already Taken. Please choose another one",2)
+        return
+      }
+      this.collapse.show = false;
+
       this.loading = true;
       let payload = {
         gid: this.gid,
@@ -1479,6 +1486,9 @@ export default {
     },
     setLoading: function (boolean) {
       this.loading = boolean
+    },
+    printNotification: function(message, type){
+      this.$emit("printNotificationEvent",message,type)
     },
     selectionDialogResolve: function (apply) {
       this.selectionDialog.show = false
@@ -1550,7 +1560,7 @@ export default {
       //TODO check if correct (nodes connected by edge)
       let update = {id: this.gid, nodes: {}, edges: {}}
       if (Object.values(this.configuration.countMap.nodes).map(n => n.selected).reduce((i, v) => i + v) === 0) {
-        this.$emit("printNotificationEvent", "Please select some nodes first!", 1)
+       this.printNotification( "Please select some nodes first!", 1)
         return;
       }
       for (let type in this.nodes) {
@@ -1864,7 +1874,7 @@ export default {
       this.clearLists()
       this.$http.get("/getGraphList?id=" + gid + "&cached=true").then(response => {
         if (response.data === null) {
-          this.$emit("printNotificationEvent",  "The chosen graph does not exist!",2)
+          this.printNotification("The chosen graph does not exist!",2)
           this.$router.push("/")
         } else
           this.loadList(response.data)
@@ -1936,7 +1946,7 @@ export default {
         payload["nodes"] = this.nodes[params.type].filter(n => n.selected).map(n => n.id)
       if (algorithm === "diamond" || algorithm === "trustrank" || algorithm === "centrality") {
         if (this.configuration.countMap.nodes[params.type] === undefined || (params.selection && this.configuration.countMap.nodes[params.type].selected === 0)) {
-          this.$emit("printNotificationEvent", "Cannot execute " + algorithm + " without seed nodes!", 1)
+          this.printNotification( "Cannot execute " + algorithm + " without seed nodes!", 1)
           return;
         }
       }

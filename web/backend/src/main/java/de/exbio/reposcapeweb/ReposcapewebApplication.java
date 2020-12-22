@@ -20,6 +20,7 @@ import de.exbio.reposcapeweb.db.services.nodes.DisorderService;
 import de.exbio.reposcapeweb.db.updates.UpdateService;
 import de.exbio.reposcapeweb.filter.FilterService;
 import de.exbio.reposcapeweb.tools.ToolService;
+import de.exbio.reposcapeweb.utils.Pair;
 import de.exbio.reposcapeweb.utils.StringUtils;
 import de.exbio.reposcapeweb.utils.WriterUtils;
 import org.slf4j.Logger;
@@ -78,11 +79,10 @@ public class ReposcapewebApplication {
     @EventListener(ApplicationReadyEvent.class)
     public void postConstruct() {
         dbService.setImportInProgress(true);
-        Graphs.setUp();
 
+        importService.importNodeData();
         jobController.importJobsHistory();
         importService.importHistory();
-        importService.importNodeData();
 
         toolService.validateTools();
         dbService.setImportInProgress(false);
