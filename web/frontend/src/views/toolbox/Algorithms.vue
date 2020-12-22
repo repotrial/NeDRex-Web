@@ -90,7 +90,7 @@
         </v-col>
       </v-row>
       <template v-if="advanced">
-        <template v-if="categoryModel===0 &&! (methodModel !==undefined && methodModel==='must')">
+        <template v-if="methodModel !==undefined && methodModel!=='must'">
           <v-row>
             <v-col>
               <v-switch v-model="models.advanced.keepNodesOnly"  label="Keep only derived Graph"></v-switch>
@@ -389,7 +389,7 @@
                 class="align-center"
                 v-model="models.must.trees"
                 min="2"
-                max="100"
+                max="50"
               >
                 <template v-slot:prepend>
                   <v-text-field
@@ -489,8 +489,8 @@ export default {
       advanced: false,
       models: {
         advanced: {
-          keepNodesOnly: false,
-          addInteractions: false
+          keepNodesOnly: true,
+          addInteractions: true
         },
         diamond: {
           nModel: 200,
@@ -538,10 +538,10 @@ export default {
       let params = {}
       params.experimentalOnly = this.expSwitch
 
-      if (this.categoryModel === 0) {
+      // if (this.categoryModel === 0) {
         params["addInteractions"] = this.models.advanced.addInteractions
         params["nodesOnly"] = this.models.advanced.keepNodesOnly
-      }
+      // }
       if (this.methodModel === 'bicon') {
         params['lg_min'] = this.models.bicon.lg[0];
         params['lg_max'] = this.models.bicon.lg[1];

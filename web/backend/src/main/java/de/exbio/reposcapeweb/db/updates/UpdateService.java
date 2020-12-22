@@ -121,7 +121,10 @@ public class UpdateService {
     }
 
     public void renewDBDumps() {
+        log.info("Creating database dump filed for external Tool");
         File dir = new File(env.getProperty("path.external.cache"));
+        if (dir.exists())
+            dir.delete();
         dir.mkdirs();
         File ppiFile = new File(dir, "proteinInteractsWithProtein.tsv");
         try (BufferedWriter bw = WriterUtils.getBasicWriter(ppiFile)) {
@@ -132,15 +135,9 @@ public class UpdateService {
                     e.printStackTrace();
                 }
             }));
-
-//            proteinInteractsWithProteinService.findAllProteins().forEach(ppi -> {
-//                try {
-//                    bw.write(proteinService.map(ppi.getPrimaryIds().getId1()) + "\t" + proteinService.map(ppi.getPrimaryIds().getId2()) + "\t" + ppi.getEvidenceTypes().contains("exp") + "\n");
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-//            });
         } catch (IOException e) {
+            log.error("Error on writing some data-file: " + ppiFile.getAbsolutePath());
+            e.printStackTrace();
         }
 
         File ggiFile = new File(dir, "geneInteractsWithGene.tsv");
@@ -152,14 +149,9 @@ public class UpdateService {
                     e.printStackTrace();
                 }
             }));
-//            proteinInteractsWithProteinService.findAllGenes().forEach(ggi -> {
-//                try {
-//                    bw.write(geneService.map(ggi.getPrimaryIds().getId1()) + "\t" + geneService.map(ggi.getPrimaryIds().getId2()) + "\t" + ggi.getEvidenceTypes().contains("exp") + "\n");
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-//            });
         } catch (IOException e) {
+            log.error("Error on writing some data-file: " + ggiFile.getAbsolutePath());
+            e.printStackTrace();
         }
         File gdFile = new File(dir, "drugHasTargetGene.tsv");
         try (BufferedWriter bw = WriterUtils.getBasicWriter(gdFile)) {
@@ -170,14 +162,8 @@ public class UpdateService {
                     e.printStackTrace();
                 }
             }));
-//            drugHasTargetService.findAllGenes().forEach(gd -> {
-//                try {
-//                    bw.write(drugService.map(gd.getPrimaryIds().getId1()) + "\t" + geneService.map(gd.getPrimaryIds().getId2()) + "\n");
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-//            });
         } catch (IOException e) {
+            log.error("Error on writing some data-file: " + gdFile.getAbsolutePath());
         }
 
         File pdFile = new File(dir, "drugHasTargetProtein.tsv");
@@ -188,14 +174,10 @@ public class UpdateService {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-//            drugHasTargetService.findAllProteins().forEach(pd -> {
-//                try {
-//                    bw.write(drugService.map(pd.getPrimaryIds().getId1()) + "\t" + proteinService.map(pd.getPrimaryIds().getId2()) + "\n");
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
             }));
         } catch (IOException e) {
+            log.error("Error on writing some data-file: " + pdFile.getAbsolutePath());
+            e.printStackTrace();
         }
 
         File dFile = new File(dir, "drugs.tsv");
@@ -212,9 +194,12 @@ public class UpdateService {
                 }
             });
         } catch (IOException e) {
+            log.error("Error on writing some data-file: " + dFile.getAbsolutePath());
+            e.printStackTrace();
         }
 
         toolService.createInteractionFiles();
+        log.info("Done");
     }
 
     @Async
@@ -268,8 +253,7 @@ public class UpdateService {
         log.info("Downloading database files!");
         downloadUpdates(url, updateDir, fileType, collections);
 
-        if (!Boolean.parseBoolean(env.getProperty("dev.skip.dl")))
-            restructureUpdates(collections);
+        restructureUpdates(collections);
 
 
         executingUpdates(collections, cacheDir);
@@ -689,10 +673,7 @@ public class UpdateService {
 
         importService.getCollections(collections);
 
-        if (Boolean.parseBoolean(env.getProperty("dev.skip.dl")))
-            collections.forEach((k, v) -> v.setFile(createFile(destDir.getParentFile(), k, fileType)));
-        else
-            collections.forEach((k, v) -> v.setFile(FileUtils.download(createUrl(api, k), createFile(destDir, k, fileType))));
+        collections.forEach((k, v) -> v.setFile(FileUtils.download(createUrl(api, k), createFile(destDir, k, fileType))));
     }
 
 

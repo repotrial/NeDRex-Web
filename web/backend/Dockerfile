@@ -20,9 +20,10 @@ RUN pip3 install networkx==2.3
 WORKDIR /usr/app
 COPY scripts/wait-for-it.sh wait-for-it.sh
 
-COPY config/nodes.tsv config/nodes.tsv
-COPY config/edges.tsv config/edges.tsv
+COPY config/nodes.tsv config/db/nodes.tsv
+COPY config/edges.tsv config/db/edges.tsv
 COPY target/reposcapeweb-backend-0.0.1-SNAPSHOT-spring-boot.jar app.jar
+COPY src/main/resources/application-prod.properties config/server/
 RUN mkdir cache
 
 

@@ -72,12 +72,16 @@ public class JobController {
 
     public Job registerJob(JobRequest req) {
         Job j = createJob(req);
-        if (j.getMethod().equals(ToolService.Tool.DIAMOND))
+
+        j.addParam("experimentalOnly",req.experimentalOnly);
+
+        String[] params = new String[]{"nodesOnly", "addInteractions"};
+        for (String param : params)
+            if (req.getParams().containsKey(param))
+                j.addParam(param, req.getParams().get(param));
+
+        if (req.getParams().containsKey("pcutoff"))
             j.addParam("pcutoff", req.getParams().containsKey("pcutoff") ? Math.pow(10, Double.parseDouble(req.getParams().get("pcutoff"))) : 1);
-        if (j.getMethod().equals(ToolService.Tool.DIAMOND) | j.getMethod().equals(ToolService.Tool.BICON)) {
-            j.addParam("nodesOnly", req.getParams().get("nodesOnly"));
-            j.addParam("addInteractions", req.getParams().get("addInteractions"));
-        }
         Graph g = graphService.getCachedGraph(req.graphId);
         try {
             prepareJob(j, req, g);
@@ -148,8 +152,8 @@ public class JobController {
         if (req.getParams().get("type").equals("gene")) {
             domainMap = geneService.getIdToDomainMap();
 //                ids.forEach(n -> domainIds.add(geneService.map(n)));
-        }else {
-            domainMap= proteinService.getIdToDomainMap();
+        } else {
+            domainMap = proteinService.getIdToDomainMap();
 //                ids.forEach(n -> domainIds.add(proteinService.map(n)));
         }
 //        if (j.getMethod().equals(ToolService.Tool.TRUSTRANK) || j.getMethod().equals(ToolService.Tool.CENTRALITY)) {
@@ -164,7 +168,7 @@ public class JobController {
 //            req.ids = domainIds;
 //            req.ids = domainIds;
 //        }
-        toolService.prepareJobFiles(j, req, g,domainMap);
+        toolService.prepareJobFiles(j, req, g, domainMap);
     }
 
     private String createCommand(Job j, JobRequest req) {
@@ -175,12 +179,12 @@ public class JobController {
     public void finishJob(String id) {
         Job j = jobs.get(id);
         try {
-            HashMap<Integer, HashMap<String,Integer>> domainIds = new HashMap<>();
-            domainIds.put(Graphs.getNode("gene"),geneService.getDomainToIdMap());
-            domainIds.put(Graphs.getNode("protein"),proteinService.getDomainToIdMap());
-            domainIds.put(Graphs.getNode("drug"),drugService.getDomainToIdMap());
+            HashMap<Integer, HashMap<String, Integer>> domainIds = new HashMap<>();
+            domainIds.put(Graphs.getNode("gene"), geneService.getDomainToIdMap());
+            domainIds.put(Graphs.getNode("protein"), proteinService.getDomainToIdMap());
+            domainIds.put(Graphs.getNode("drug"), drugService.getDomainToIdMap());
             jobQueue.finishJob(j);
-            toolService.getJobResults(j,domainIds);
+            toolService.getJobResults(j, domainIds);
             if ((j.getResult().getNodes().isEmpty()) & (!j.getParams().containsKey("nodesOnly") || !j.getParams().get("nodesOnly").equals("true"))) {
                 j.setDerivedGraph(j.getBasisGraph());
             } else
@@ -192,7 +196,7 @@ public class JobController {
         }
         try {
             toolService.clearDirectories(j, historyController.getJobPath(j));
-        }catch (Exception e){
+        } catch (Exception e) {
             log.error("Error on finishing job: " + id);
             e.printStackTrace();
             j.setStatus(Job.JobState.ERROR);

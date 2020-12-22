@@ -373,7 +373,7 @@ public class WebGraphService {
                                 }
                                 edgeController.getEdges(edgeId, nodeI[0], id1).forEach(id2 -> {
                                     try {
-                                        if ((request.connectedOnly & connectedNodes.contains(nodeJ[0]) & !nodeIds.get(nodeJ[0]).get(id2).hasEdge()) | (expOnly && !edgeController.isExperimental(edgeId,id1,id2)))
+                                        if ((request.connectedOnly & connectedNodes.contains(nodeJ[0]) & !nodeIds.get(nodeJ[0]).get(id2).hasEdge()) | (expOnly && !edgeController.isExperimental(edgeId, id1, id2)))
                                             return;
                                         nodeIds.get(nodeJ[0]).get(id2).setHasEdge(true);
                                         v1.setHasEdge(true);
@@ -811,57 +811,48 @@ public class WebGraphService {
     }
 
     public void applyModuleJob(Job j) {
+        int nodeTypeId = Graphs.getNode((j.getMethod().equals(ToolService.Tool.CENTRALITY) | j.getMethod().equals(ToolService.Tool.TRUSTRANK) ? "drug" : j.getMethod().equals(ToolService.Tool.BICON) ? "gene" : j.getTarget()));
+
+        boolean onlyKeepResult = j.getParams().containsKey("nodesOnly") && j.getParams().get("nodesOnly").equals("true");
+
         Graph g = getCachedGraph(j.getBasisGraph());
-
-        Graph derived = g.clone(historyController.getGraphId());
-        Integer nodeTypeId = null;
-        if (j.getMethod() != ToolService.Tool.MUST) {
-            if (j.getMethod().equals(ToolService.Tool.DIAMOND) | j.getMethod().equals(ToolService.Tool.BICON)) {
-                if (j.getMethod().equals(ToolService.Tool.DIAMOND)) {
-                    nodeTypeId = Graphs.getNode(j.getTarget());
-                } else {
-                    nodeTypeId = Graphs.getNode("gene");
-                }
-                if (j.getParams().containsKey("nodesOnly") && j.getParams().get("nodesOnly").equals("true"))
-                    derived.getNodes().put(nodeTypeId, new HashMap<>());
-                HashSet<Integer> allNodes = new HashSet<>(derived.getNodes().get(nodeTypeId).keySet());
-                int beforeCount = allNodes.size();
-                allNodes.addAll(j.getResult().getNodes().keySet());
-                derived.addNodeMarks(nodeTypeId, j.getResult().getNodes().keySet());
-                j.setUpdate("" + (allNodes.size() - beforeCount));
-                NodeFilter nf = new NodeFilter(nodeController.getFilter(Graphs.getNode(nodeTypeId)), allNodes);
-                derived.saveNodeFilter(Graphs.getNode(nodeTypeId), nf);
-                derived.addNodes(nodeTypeId, nf.toList(-1).stream().map(e -> new Node(e.getNodeId(), e.getName())).collect(Collectors.toList()));
-                if (j.getMethod().equals(ToolService.Tool.DIAMOND)) {
-                    //TODO set origin (method)
-                    derived.addCustomNodeAttributeType(nodeTypeId, "rank", "numeric");
-                    derived.addCustomNodeAttributeType(nodeTypeId, "p_hyper", "numeric");
-                    derived.addCustomNodeAttribute(nodeTypeId, j.getResult().getNodes());
-                }
-
-                updateEdges(derived, j, nodeTypeId);
-            }
-            if (j.getMethod().equals(ToolService.Tool.TRUSTRANK) || j.getMethod().equals(ToolService.Tool.CENTRALITY)) {
-                int drugId = Graphs.getNode("drug");
-                if (!derived.getEdges().containsKey(drugId) | (j.getParams().containsKey("nodesOnly") && j.getParams().get("nodesOnly").equals("true")))
-                    derived.getNodes().put(drugId, new HashMap<>());
-                HashSet<Integer> allNodes = new HashSet<>(derived.getNodes().get(drugId).keySet());
-                int beforeCount = allNodes.size();
-                allNodes.addAll(j.getResult().getNodes().keySet());
-                derived.addNodeMarks(nodeTypeId, j.getResult().getNodes().keySet());
-                j.setUpdate("" + (allNodes.size() - beforeCount));
-                NodeFilter nf = new NodeFilter(nodeController.getFilter(Graphs.getNode(drugId)), allNodes);
-                derived.saveNodeFilter(Graphs.getNode(drugId), nf);
-                derived.addNodes(drugId, nf.toList(-1).stream().map(e -> new Node(e.getNodeId(), e.getName())).collect(Collectors.toList()));
-                //TODO set origin (method)
-                derived.addCustomNodeAttributeType(drugId, "score", "numeric");
-                derived.addCustomNodeAttribute(drugId, j.getResult().getNodes());
-                updateEdges(derived, j, drugId);
-            }
-        } else {
+        Graph derived;
+        if (j.getMethod().equals(ToolService.Tool.MUST) | onlyKeepResult) {
             derived = new Graph(historyController.getGraphId());
             derived.setParent(g.getId());
-            nodeTypeId = Graphs.getNode(j.getTarget());
+        } else
+            derived = g.clone(historyController.getGraphId());
+
+        if (j.getMethod() != ToolService.Tool.MUST) {
+            HashSet<Integer> allNodes = new HashSet<>();
+            if (g.getNodes().containsKey(nodeTypeId))
+                allNodes.addAll(g.getNodes().get(nodeTypeId).keySet());
+            int beforeCount = allNodes.size();
+            allNodes.addAll(j.getResult().getNodes().keySet());
+            derived.addNodeMarks(nodeTypeId, j.getResult().getNodes().keySet());
+            j.setUpdate("" + (allNodes.size() - beforeCount));
+            NodeFilter nf = new NodeFilter(nodeController.getFilter(Graphs.getNode(nodeTypeId)), allNodes);
+            derived.saveNodeFilter(Graphs.getNode(nodeTypeId), nf);
+            derived.addNodes(nodeTypeId, nf.toList(-1).stream().map(e -> new Node(e.getNodeId(), e.getName())).collect(Collectors.toList()));
+
+            if (j.getMethod().equals(ToolService.Tool.DIAMOND)) {
+                derived.addCustomNodeAttributeType(nodeTypeId, "rank", "numeric");
+                derived.addCustomNodeAttributeType(nodeTypeId, "p_hyper", "numeric");
+                derived.addCustomNodeAttribute(nodeTypeId, j.getResult().getNodes());
+            }
+
+            if (j.getMethod().equals(ToolService.Tool.TRUSTRANK) || j.getMethod().equals(ToolService.Tool.CENTRALITY)) {
+                derived.addCustomNodeAttributeType(nodeTypeId, "score", "numeric");
+                derived.addCustomNodeAttribute(nodeTypeId, j.getResult().getNodes());
+                nodeTypeId = Graphs.getNode(j.getTarget());
+
+                //TODO mark used genes/proteins in result
+                derived.saveNodeFilter(j.getTarget(),g.getNodeFilter(j.getTarget()));
+                derived.addNodes(nodeTypeId,g.getNodes().get(nodeTypeId));
+
+            }
+            updateEdges(derived, j, nodeTypeId);
+        } else {
             j.setUpdate("" + (j.getResult().getNodes().size()));
             NodeFilter nf = new NodeFilter(nodeController.getFilter(Graphs.getNode(nodeTypeId)), j.getResult().getNodes().keySet());
             derived.saveNodeFilter(Graphs.getNode(nodeTypeId), nf);
@@ -905,31 +896,41 @@ public class WebGraphService {
         });
 
         if (j.getParams().containsKey("addInteractions") && j.getParams().get("addInteractions").equals("true")) {
-            int edgeId = j.getMethod().equals(ToolService.Tool.TRUSTRANK) ? Graphs.getEdgesfromNodes(nodeTypeId, Graphs.getNode(j.getParams().get("type"))).get(0) : Graphs.getEdgesfromNodes(nodeTypeId, nodeTypeId).get(0);
-            if (!g.getEdges().containsKey(edgeId))
-                g.getEdges().put(edgeId, new LinkedList<>());
-            HashMap<Integer, HashSet<Integer>> edges = new HashMap<>();
-            g.getNodes().get(nodeTypeId).keySet().forEach(n -> {
-                try {
-                    edgeController.getEdges(edgeId, nodeTypeId, n).stream().filter(e -> g.getNodes().get(nodeTypeId).containsKey(e)).forEach(e -> {
-                        if (n < e) {
-                            if (!edges.containsKey(n))
-                                edges.put(n, new HashSet<>());
-                            edges.get(n).add(e);
-                        } else {
-                            if (!edges.containsKey(e))
-                                edges.put(e, new HashSet<>());
-                            edges.get(e).add(n);
-                        }
-                    });
-                } catch (NullPointerException ignore) {
-                }
-            });
-            g.getEdges().get(edgeId).forEach(e -> {
-                if (edges.containsKey(e.getId1()) && edges.get(e.getId2()).contains(e.getId2()))
-                    edges.get(e.getId1()).remove(e.getId2());
-            });
-            edges.forEach((id1, l) -> l.forEach(id2 -> g.getEdges().get(edgeId).add(new Edge(id1, id2))));
+            boolean expOnly = j.getParams().containsKey("experimentalOnly") && j.getParams().get("experimentalOnly").equals("true");
+            int typeId1 = Graphs.getNode(j.getMethod().equals(ToolService.Tool.TRUSTRANK) | j.getMethod().equals(ToolService.Tool.CENTRALITY) ? "drug" : j.getTarget());
+            int typeId2 = Graphs.getNode(j.getTarget());
+            List<Integer> edgeIds = Graphs.getEdgesfromNodes(typeId1, typeId2);
+            for (int edgeId : edgeIds) {
+                if (!g.getEdges().containsKey(edgeId))
+                    g.getEdges().put(edgeId, new LinkedList<>());
+                HashMap<Integer, HashSet<Integer>> edges = new HashMap<>();
+                g.getNodes().get(typeId1).keySet().forEach(n -> {
+                    try {
+                        edgeController.getEdges(edgeId, typeId1, n).stream().filter(e -> g.getNodes().get(typeId2).containsKey(e)).forEach(e -> {
+
+                            if (n < e) {
+                                if (!expOnly | (expOnly & edgeController.isExperimental(edgeId, n, e))) {
+                                    if (!edges.containsKey(n))
+                                        edges.put(n, new HashSet<>());
+                                    edges.get(n).add(e);
+                                }
+                            } else {
+                                if (!expOnly | (expOnly & edgeController.isExperimental(edgeId, e, n))) {
+                                    if (!edges.containsKey(e))
+                                        edges.put(e, new HashSet<>());
+                                    edges.get(e).add(n);
+                                }
+                            }
+                        });
+                    } catch (NullPointerException ignore) {
+                    }
+                });
+                g.getEdges().get(edgeId).forEach(e -> {
+                    if (edges.containsKey(e.getId1()) && edges.get(e.getId2()).contains(e.getId2()))
+                        edges.get(e.getId1()).remove(e.getId2());
+                });
+                edges.forEach((id1, l) -> l.forEach(id2 -> g.getEdges().get(edgeId).add(new Edge(id1, id2))));
+            }
         }
 
 

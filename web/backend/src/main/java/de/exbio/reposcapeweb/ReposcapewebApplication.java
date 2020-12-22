@@ -61,7 +61,7 @@ public class ReposcapewebApplication {
     private final DbCommunicationService dbService;
 
     @Autowired
-    public ReposcapewebApplication( DbCommunicationService dbService,ProteinInteractsWithProteinService proteinInteractsWithProteinService,JobController jobController, NodeController nodeController, ObjectMapper objectMapper, EdgeController edgeController, DisorderService disorderService, UpdateService updateService, Environment environment, ImportService importService, FilterService filterService, ToolService toolService, WebGraphService graphService) {
+    public ReposcapewebApplication(DbCommunicationService dbService, ProteinInteractsWithProteinService proteinInteractsWithProteinService, JobController jobController, NodeController nodeController, ObjectMapper objectMapper, EdgeController edgeController, DisorderService disorderService, UpdateService updateService, Environment environment, ImportService importService, FilterService filterService, ToolService toolService, WebGraphService graphService) {
         this.updateService = updateService;
         this.importService = importService;
         this.env = environment;
@@ -70,7 +70,7 @@ public class ReposcapewebApplication {
         this.edgeController = edgeController;
         this.nodeController = nodeController;
         this.proteinInteractsWithProteinService = proteinInteractsWithProteinService;
-        this.dbService=dbService;
+        this.dbService = dbService;
 
     }
 
@@ -92,8 +92,8 @@ public class ReposcapewebApplication {
             importService.importEdges(false);
             log.warn("Startup Database update is deactivated! Activate it by setting 'update.onstartup=true' in the application.properties.");
         }
-
-//        updateService.renewDBDumps();
+        if (env.getProperty("update.db-dump").equals("true"))
+            updateService.renewDBDumps();
         log.debug("Current RAM usage: " + (int) ((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024)
                 + "MB");
 

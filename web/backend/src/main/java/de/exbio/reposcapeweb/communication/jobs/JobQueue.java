@@ -2,6 +2,8 @@ package de.exbio.reposcapeweb.communication.jobs;
 
 import de.exbio.reposcapeweb.communication.controller.SocketController;
 import de.exbio.reposcapeweb.tools.ToolService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.scheduling.annotation.Async;
@@ -15,10 +17,12 @@ import java.util.LinkedList;
 
 @Service
 public class JobQueue {
+    private Logger log = LoggerFactory.getLogger(JobQueue.class);
 
     private final Environment env;
     private final ToolService toolService;
     private final SocketController socketController;
+    private final JobRepository jobRepository;
 
     private LinkedList<Job> queue = new LinkedList<>();
     private HashMap<String, Job> running = new HashMap<>();
@@ -27,13 +31,14 @@ public class JobQueue {
     private final long timeoutSeconds;
 
     @Autowired
-    public JobQueue(Environment env, ToolService toolService, SocketController socketController) {
+    public JobQueue(Environment env, ToolService toolService, SocketController socketController, JobRepository jobRepository) {
         this.env = env;
         this.toolService = toolService;
         this.socketController = socketController;
         simultaniousExecutes = Integer.parseInt(env.getProperty("jobs.parallel.number"));
         maxThreadsPerJob = Integer.parseInt(env.getProperty("jobs.parallel.task-max"));
         this.timeoutSeconds = Integer.parseInt(env.getProperty("jobs.timeout.mins")) * 60;
+        this.jobRepository = jobRepository;
     }
 
 
@@ -60,9 +65,7 @@ public class JobQueue {
     }
 
     private void startNext() {
-        //TODO try queue.pop()
-        Job j = queue.getFirst();
-        queue.removeFirst();
+        Job j = queue.pop();
         j.setThreads(Math.max(1, Math.min(maxThreadsPerJob, (simultaniousExecutes - running.size()) / 2)));
         running.put(j.getJobId(), j);
         executeJob(j);
@@ -71,19 +74,23 @@ public class JobQueue {
 
     @Async
     public void executeJob(Job j) {
+        log.info("Starting "+j.getMethod().name()+" job "+j.getJobId()+" of user "+j.getUserId()+" (Queued: "+queue.size()+")");
         j.setStatus(Job.JobState.EXECUTING);
         socketController.setJobUpdate(j);
-        System.out.println("executing:\n"+j.getCommand());
+
         Process p = toolService.executeJob(j.getCommand());
         if (p != null)
             j.setProcess(p);
         else {
             finishJob(j);
+            log.warn(j.getMethod().name()+" job "+j.getJobId()+" of user "+j.getUserId()+" appears to have crashed!");
             j.setStatus(Job.JobState.ERROR);
         }
+        jobRepository.save(j);
     }
 
     public void finishJob(Job j) {
+        log.info("Finished "+j.getMethod().name()+" job "+j.getJobId()+j.getUserId()+"!");
         finishJob(j, Job.JobState.DONE);
     }
 

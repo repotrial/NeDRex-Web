@@ -89,7 +89,6 @@ public class ToolService {
 
         prepareDiamond();
         prepareBicon();
-        validateDiamond();
         prepareTrustRank();
         prepareCentrality();
         prepareMust();
@@ -155,47 +154,21 @@ public class ToolService {
         }
     }
 
-//    private void prepareFiles(String jobId, String algorithm, HashMap<String, String> params, Graph g) {
-//        if (!dataDir.exists()) {
-//            dataDir.mkdirs();
-//            createInteractionFiles();
-//        }
-//    }
-
     public void createInteractionFiles() {
         File ggi_all = new File(dataDir, "gene_gene_interaction_all.pairs");
         File ggi_exp = new File(dataDir, "gene_gene_interaction_exp.pairs");
-        File ggi_all_must = new File(dataDir, "gene_gene_interaction_all_must.pairs");
-        File ggi_exp_must = new File(dataDir, "gene_gene_interaction_exp_must.pairs");
-        try (BufferedWriter bw_all = WriterUtils.getBasicWriter(ggi_all); BufferedWriter bw_exp = WriterUtils.getBasicWriter(ggi_exp);BufferedWriter bw_all_must = WriterUtils.getBasicWriter(ggi_all_must); BufferedWriter bw_exp_must = WriterUtils.getBasicWriter(ggi_exp_must)) {
-            interactionService.getGenes().forEach((id1,map)-> map.forEach((id2,vals)->{
-                try {
-                    bw_all.write(geneService.map(id1) + "," + geneService.map(id2) + "\n");
-                    bw_all_must.write(geneService.map(id1) + "\t" + geneService.map(id2) + "\n");
-                    if (vals.second) {
-                        bw_exp.write(geneService.map(id1) + "," + geneService.map(id2) + "\n");
-                        bw_exp_must.write(geneService.map(id1) + "\t" + geneService.map(id2) + "\n");
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            })
-//                }
+        try (BufferedWriter bw_all = WriterUtils.getBasicWriter(ggi_all); BufferedWriter bw_exp = WriterUtils.getBasicWriter(ggi_exp)) {
+            interactionService.getGenes().forEach((id1, map) -> map.forEach((id2, vals) -> {
+                        try {
+                            bw_all.write(geneService.map(id1) + "\t" + geneService.map(id2) + "\n");
+                            if (vals.second) {
+                                bw_exp.write(geneService.map(id1) + "\t" + geneService.map(id2) + "\n");
+                            }
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    })
             );
-
-            //            interactionService.findAllGenes().forEach(gg -> {
-//                try {
-//                    bw_all.write(geneService.map(gg.getPrimaryIds().getId1()) + "," + geneService.map(gg.getPrimaryIds().getId2()) + "\n");
-//                    bw_all_must.write(geneService.map(gg.getPrimaryIds().getId1()) + "\t" + geneService.map(gg.getPrimaryIds().getId2()) + "\n");
-//                    if (gg.getEvidenceTypes().contains("exp")) {
-//                        bw_exp.write(geneService.map(gg.getPrimaryIds().getId1()) + "," + geneService.map(gg.getPrimaryIds().getId2()) + "\n");
-//                        bw_exp_must.write(geneService.map(gg.getPrimaryIds().getId1()) + "\t" + geneService.map(gg.getPrimaryIds().getId2()) + "\n");
-//                    }
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-////                }
-//            });
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -203,73 +176,33 @@ public class ToolService {
 
         File ppi_all = new File(dataDir, "protein_protein_interaction_all.pairs");
         File ppi_exp = new File(dataDir, "protein_protein_interaction_exp.pairs");
-        File ppi_all_must = new File(dataDir, "protein_protein_interaction_all_must.pairs");
-        File ppi_exp_must = new File(dataDir, "protein_protein_interaction_exp_must.pairs");
-        try (BufferedWriter bw_all = WriterUtils.getBasicWriter(ppi_all); BufferedWriter bw_exp = WriterUtils.getBasicWriter(ppi_exp);BufferedWriter bw_all_must = WriterUtils.getBasicWriter(ppi_all_must); BufferedWriter bw_exp_must = WriterUtils.getBasicWriter(ppi_exp_must)) {
-            interactionService.getProteins().forEach((id1,map) -> map.forEach((id2,vals)-> {
+        try (BufferedWriter bw_all = WriterUtils.getBasicWriter(ppi_all); BufferedWriter bw_exp = WriterUtils.getBasicWriter(ppi_exp)) {
+            interactionService.getProteins().forEach((id1, map) -> map.forEach((id2, vals) -> {
                 try {
-                    bw_all.write(proteinService.map(id1) + "," + proteinService.map(id2) + "\n");
-                    bw_all_must.write(proteinService.map(id1) + "\t" + proteinService.map(id2) + "\n");
-                    if (vals.second){
-                        bw_exp.write(proteinService.map(id1) + "," + proteinService.map(id2) + "\n");
-                        bw_exp_must.write(proteinService.map(id1) + "\t" + proteinService.map(id2) + "\n");
+                    bw_all.write(proteinService.map(id1) + "\t" + proteinService.map(id2) + "\n");
+                    if (vals.second) {
+                        bw_exp.write(proteinService.map(id1) + "\t" + proteinService.map(id2) + "\n");
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }));
 
-
-            //            interactionService.findAllProteins().forEach(pp -> {
-//                try {
-//                    bw_all.write(proteinService.map(pp.getPrimaryIds().getId1()) + "," + proteinService.map(pp.getPrimaryIds().getId2()) + "\n");
-//                    bw_all_must.write(proteinService.map(pp.getPrimaryIds().getId1()) + "\t" + proteinService.map(pp.getPrimaryIds().getId2()) + "\n");
-//                    if (pp.getEvidenceTypes().contains("exp")){
-//                        bw_exp.write(proteinService.map(pp.getPrimaryIds().getId1()) + "," + proteinService.map(pp.getPrimaryIds().getId2()) + "\n");
-//                        bw_exp_must.write(proteinService.map(pp.getPrimaryIds().getId1()) + "\t" + proteinService.map(pp.getPrimaryIds().getId2()) + "\n");
-//                    }
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-//            });
         } catch (IOException e) {
             e.printStackTrace();
         }
-//        ppi = new File(dataDir, "protein_protein_interaction_domain.pairs");
-//        try (BufferedWriter bw2 = WriterUtils.getBasicWriter(ppi)) {
-//            bw2.write("domainId1\tdomainId2");
-//            interactionService.getProteins().forEach((id1, list) -> list.forEach((id2, bool) -> {
-//                if (id1 < id2) {
-//                    try {
-//                        bw2.write(proteinService.map(id1) + "\t" + proteinService.map(id2) + "\n");
-//                    } catch (IOException e) {
-//                        e.printStackTrace();
-//                    }
-//                }
-//            }));
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-
 
         File rankCache = new File(dataDir, "ranking_files");
-        if (rankCache.exists()) {
+        if (rankCache.exists())
             rankCache.delete();
-        }
         rankCache.mkdir();
         try {
             ProcessUtils.executeProcessWait(new ProcessBuilder("python3", env.getProperty("jobs.scripts.ranking_preparation"), rankCache.getAbsolutePath()));
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
-
-
     }
 
-
-    private void validateDiamond() {
-        //TODO get version info of diamond
-    }
 
     public File getTempDir(String jobId) {
         if (!tempDirs.containsKey(jobId))
@@ -290,19 +223,19 @@ public class ToolService {
             case DIAMOND: {
                 command += "diamond " +
                         diamond.getAbsolutePath() + " " +
-                        (request.getParams().get("type").equals("gene") ? new File(dataDir, "gene_gene_interaction_"+(request.experimentalOnly ? "exp" : "all")+".pairs") : new File(dataDir, "protein_protein_interaction_"+(request.experimentalOnly ? "exp" : "all")+".pairs")).getAbsolutePath() + " " +
+                        (request.getParams().get("type").equals("gene") ? new File(dataDir, "gene_gene_interaction_" + (request.experimentalOnly ? "exp" : "all") + ".pairs") : new File(dataDir, "protein_protein_interaction_" + (request.experimentalOnly ? "exp" : "all") + ".pairs")).getAbsolutePath() + " " +
                         "seeds.list " +
                         request.getParams().get("n") + " " + request.getParams().get("alpha");
                 break;
             }
             case BICON: {
-                command += "bicon " + bicon.getAbsolutePath() + " exprFile " + new File(dataDir, "gene_gene_interaction_"+(request.experimentalOnly ? "exp" : "all")+".pairs").getAbsolutePath() + " genes.txt " + request.getParams().get("lg_min") + " " + request.getParams().get("lg_max");
+                command += "bicon " + bicon.getAbsolutePath() + " exprFile " + new File(dataDir, "gene_gene_interaction_" + (request.experimentalOnly ? "exp" : "all") + ".pairs").getAbsolutePath() + " genes.txt " + request.getParams().get("lg_min") + " " + request.getParams().get("lg_max");
                 break;
             }
             case MUST: {
                 command += "must " +
                         must.getAbsolutePath() + " " +
-                        (request.getParams().get("type").equals("gene") ? new File(dataDir, "gene_gene_interaction_"+(request.experimentalOnly ? "exp" : "all")+"_must.pairs") : new File(dataDir, "protein_protein_interaction_"+(request.experimentalOnly ? "exp" : "all")+"_must.pairs")).getAbsolutePath() + " " +
+                        (request.getParams().get("type").equals("gene") ? new File(dataDir, "gene_gene_interaction_" + (request.experimentalOnly ? "exp" : "all") + ".pairs") : new File(dataDir, "protein_protein_interaction_" + (request.experimentalOnly ? "exp" : "all") + ".pairs")).getAbsolutePath() + " " +
                         "seeds.list edges.list nodes.list " +
                         request.getParams().get("penalty") + " " +
                         request.getParams().get("maxit") + (request.getParams().get("multiple").equals("true") ? " " + request.getParams().get("trees") : "");
@@ -331,9 +264,8 @@ public class ToolService {
     }
 
     public void prepareJobFiles(Job job, JobRequest req, Graph g, HashMap<Integer, Pair<String, String>> domainMap) {
-        System.out.println("preparing job");
         switch (job.getMethod()) {
-            case DIAMOND, MUST,TRUSTRANK, CENTRALITY: {
+            case DIAMOND, MUST, TRUSTRANK, CENTRALITY: {
                 File seed = new File(getTempDir(job.getJobId()), "seeds.list");
                 if (req.selection)
                     writeSeedFile(req.params.get("type"), seed, req.nodes, domainMap);
