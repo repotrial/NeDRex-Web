@@ -24,7 +24,7 @@ services:
     ports:
       - "8090:8090"
     restart: on-failure
-    entrypoint: ["./wait-for-it.sh","nedrex-db:3306","-t","30", "--","java","-Xmx4g","-jar", "app.jar","--spring.profiles.active=prod","--spring.config.location=./config/server/"]
+#    entrypoint: ["./wait-for-it.sh","nedrex-db:3306","-t","30", "--","java","-Xmx4g","-jar", "app.jar","--spring.profiles.active=prod","--spring.config.location=./config/server/"]
   web:
     container_name: nedrex-web
     build: frontend

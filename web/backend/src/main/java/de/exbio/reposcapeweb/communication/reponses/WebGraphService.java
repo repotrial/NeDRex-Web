@@ -123,6 +123,8 @@ public class WebGraphService {
 
     public WebGraphList getList(String id, CustomListRequest req) {
         Graph g = getCachedGraph(id);
+        if(g==null)
+            return null;
         WebGraphList list = g.toWebList();
 
         boolean custom = req != null;
@@ -315,6 +317,8 @@ public class WebGraphService {
 
     public WebGraph getWebGraph(String id) {
         Graph g = getCachedGraph(id);
+        if(g==null)
+            return null;
         return g.toWebGraph(getColorMap(g.getNodes().keySet().stream().map(Graphs::getNode).collect(Collectors.toSet())));
     }
 
@@ -740,6 +744,8 @@ public class WebGraphService {
 
     public ConnectionGraph getConnectionGraph(String gid) {
         Graph g = getCachedGraph(gid);
+        if(g==null)
+            return null;
         ConnectionGraph cg = new ConnectionGraph();
         g.getEdges().keySet().forEach(eid -> {
             //TODO get real direction
@@ -795,7 +801,10 @@ public class WebGraphService {
     public void importGraph(String gid) {
         try {
             log.debug("Importing Graph with id=" + gid);
-            Graph g = objectMapper.readValue(historyController.getGraphPath(gid), Graph.class);
+            File o = historyController.getGraphPath(gid);
+            if (o == null)
+                return;
+            Graph g = objectMapper.readValue(o, Graph.class);
             restoreNodeFilters(g);
             this.cache.put(gid, g);
         } catch (IOException e) {
@@ -828,8 +837,9 @@ public class WebGraphService {
             if (g.getNodes().containsKey(nodeTypeId))
                 allNodes.addAll(g.getNodes().get(nodeTypeId).keySet());
             int beforeCount = allNodes.size();
-            allNodes.addAll(j.getResult().getNodes().keySet());
-            derived.addNodeMarks(nodeTypeId, j.getResult().getNodes().keySet());
+            Set<Integer> newNodeIDs = j.getResult().getNodes().entrySet().stream().filter(e -> e.getValue() != null).map(Map.Entry::getKey).collect(Collectors.toSet());
+            allNodes.addAll(newNodeIDs);
+            derived.addNodeMarks(nodeTypeId, newNodeIDs);
             j.setUpdate("" + (allNodes.size() - beforeCount));
             NodeFilter nf = new NodeFilter(nodeController.getFilter(Graphs.getNode(nodeTypeId)), allNodes);
             derived.saveNodeFilter(Graphs.getNode(nodeTypeId), nf);
@@ -843,13 +853,19 @@ public class WebGraphService {
 
             if (j.getMethod().equals(ToolService.Tool.TRUSTRANK) || j.getMethod().equals(ToolService.Tool.CENTRALITY)) {
                 derived.addCustomNodeAttributeType(nodeTypeId, "score", "numeric");
-                derived.addCustomNodeAttribute(nodeTypeId, j.getResult().getNodes());
+                HashMap<Integer, HashMap<String, Object>> idMap = new HashMap<>();
+                j.getResult().getNodes().forEach((k, v) -> {
+                    if (newNodeIDs.contains(k))
+                        idMap.put(k, v);
+                });
+                derived.addCustomNodeAttribute(nodeTypeId, idMap);
                 nodeTypeId = Graphs.getNode(j.getTarget());
+                derived.saveNodeFilter(j.getTarget(), g.getNodeFilter(j.getTarget()));
+                derived.addNodes(nodeTypeId, g.getNodes().get(nodeTypeId));
 
-                //TODO mark used genes/proteins in result
-                derived.saveNodeFilter(j.getTarget(),g.getNodeFilter(j.getTarget()));
-                derived.addNodes(nodeTypeId,g.getNodes().get(nodeTypeId));
 
+                Set<Integer> seedIds = j.getResult().getNodes().entrySet().stream().filter(e -> e.getValue() != null).map(Map.Entry::getKey).collect(Collectors.toSet());
+                derived.addNodeMarks(nodeTypeId, seedIds);
             }
             updateEdges(derived, j, nodeTypeId);
         } else {

@@ -90,7 +90,7 @@ public class JobQueue {
     }
 
     public void finishJob(Job j) {
-        log.info("Finished "+j.getMethod().name()+" job "+j.getJobId()+j.getUserId()+"!");
+        log.info("Finished "+j.getMethod().name()+" job "+j.getJobId()+"of user "+j.getUserId()+"!");
         finishJob(j, Job.JobState.DONE);
     }
 

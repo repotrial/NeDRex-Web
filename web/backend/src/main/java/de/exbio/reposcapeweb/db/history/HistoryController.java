@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.exbio.reposcapeweb.communication.jobs.Job;
 import de.exbio.reposcapeweb.communication.jobs.JobController;
 import de.exbio.reposcapeweb.tools.ToolService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
@@ -17,6 +19,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class HistoryController {
+
+    private Logger log = LoggerFactory.getLogger(HistoryController.class);
 
     private final HistoryRepository historyRepository;
     private final ObjectMapper objectMapper;
@@ -141,7 +145,12 @@ public class HistoryController {
     public File getGraphPath(String id) {
         String cachedir = env.getProperty("path.db.cache");
         GraphHistory history = getHistory(id);
-        return new File(cachedir, "users/" + history.getUserId() + "/graphs/" + id + ".json");
+        try {
+            return new File(cachedir, "users/" + history.getUserId() + "/graphs/" + id + ".json");
+        }catch (NullPointerException e){
+            log.warn("Broken history request!");
+        }
+        return null;
     }
 
     public File getJobPath(Job j) {

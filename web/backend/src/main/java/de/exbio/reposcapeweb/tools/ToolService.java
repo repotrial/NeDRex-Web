@@ -384,7 +384,7 @@ public class ToolService {
             case TRUSTRANK, CENTRALITY: {
                 for (File f : getTempDir(j.getJobId()).listFiles()) {
                     if (!f.getName().equals("seeds.list")) {
-                        nodes = readTrustRankResults(f, domainMaps.get(Graphs.getNode("drug")));
+                        nodes = readTrustRankResults(f, domainMaps, j.getTarget());
                     }
                 }
                 break;
@@ -394,18 +394,20 @@ public class ToolService {
         result.setEdges(edges);
     }
 
-    private HashMap<Integer, HashMap<String, Object>> readTrustRankResults(File f, HashMap<String, Integer> domainMap) {
+    private HashMap<Integer, HashMap<String, Object>> readTrustRankResults(File f, HashMap<Integer, HashMap<String, Integer>> domainMap, String target) {
         HashMap<Integer, HashMap<String, Object>> out = new HashMap<>();
+        HashMap<String,Integer> drugMap = domainMap.get(Graphs.getNode("drug"));
+        HashMap<String,Integer> seedMap = domainMap.get(Graphs.getNode(target));
         try (BufferedReader br = ReaderUtils.getBasicReader(f)) {
             String line = br.readLine();
             while ((line = br.readLine()) != null) {
                 LinkedList<String> split = StringUtils.split(line, "\t");
                 if (split.size() == 2) {
-                    //TODO check correct input files-> create new edges from output? or customized nodes somehow
-                    //TODO why having seeds on bottom of list
-                    int id = domainMap.get(split.getFirst());
+                    int id = drugMap.get(split.getFirst());
                     out.put(id, new HashMap<>());
                     out.get(id).put("score", Double.parseDouble(split.get(1)));
+                }else{
+                    out.put(seedMap.get(line),null);
                 }
             }
         } catch (IOException e) {

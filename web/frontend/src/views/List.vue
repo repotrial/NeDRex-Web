@@ -1863,7 +1863,11 @@ export default {
       this.setMetagraph(metagraph)
       this.clearLists()
       this.$http.get("/getGraphList?id=" + gid + "&cached=true").then(response => {
-        this.loadList(response.data)
+        if (response.data === null) {
+          this.$emit("printNotificationEvent",  "The chosen graph does not exist!",2)
+          this.$router.push("/")
+        } else
+          this.loadList(response.data)
       }).then(() => {
         this.gid = gid;
       }).then(() => {

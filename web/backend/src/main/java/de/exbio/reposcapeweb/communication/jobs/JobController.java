@@ -209,16 +209,6 @@ public class JobController {
         return historyController.getJobPath(jobs.get(id));
     }
 
-//    private HashSet<Integer> toIds(Job j, HashSet jobResults) {
-//        if (j.getMethod().equals(ToolService.Tool.DIAMOND) | j.getMethod().equals(ToolService.Tool.BICON))
-//            return jobResults;
-//        if (j.getMethod().equals(ToolService.Tool.TRUSTRANK)) {
-//            HashSet<Integer> out = new HashSet<>();
-//            jobResults.forEach(s -> out.add(drugService.map((String) s)));
-//            return out;
-//        }
-//        return null;
-//    }
 
     public HashMap<String, Job.JobState> getJobGraphStates(String user) {
         HashMap<String, Job.JobState> stateMap = new HashMap<>();

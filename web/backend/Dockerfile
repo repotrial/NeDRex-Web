@@ -30,5 +30,5 @@ RUN mkdir cache
 EXPOSE 8090
 
 #ENTRYPOINT tail -f /dev/null
-
+ENTRYPOINT ["./wait-for-it.sh","nedrex-db:3306","-t","30", "--","java","-Xmx4g","-jar", "app.jar","--spring.profiles.active=prod","--spring.config.location=./config/server/"]
 #ENTRYPOINT ["./wait-for-it.sh","nedrex-db:3307","-t","30", "--","java", "-Dspring.profiles.active=prod","-jar", "app.jar"]
