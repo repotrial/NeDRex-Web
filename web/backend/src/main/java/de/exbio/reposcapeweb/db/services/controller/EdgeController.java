@@ -527,7 +527,7 @@ public class EdgeController {
                     values.add(e.getAsMap(attributes));
                 });
                 break;
-            case "DrugHasContraIndication":
+            case "DrugHasContraindication":
                 chunks.stream().map(this::findAllDrugHasContraindication).flatMap(Collection::stream).collect(Collectors.toList()).forEach(e -> {
                     drugHasContraindicationService.setDomainIds(e);
                     values.add(e.getAsMap(attributes));

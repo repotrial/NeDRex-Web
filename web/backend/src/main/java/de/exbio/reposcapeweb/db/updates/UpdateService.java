@@ -339,8 +339,8 @@ public class UpdateService {
                         break;
                     case "DrugContraindication":
                         if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, DrugHasContraindication.sourceAttributes))
-                            updateSuccessful = drugHasContraindicationService.submitUpdates(runEdgeUpdates(DrugHasContraindication.class,  edge.file, drugHasIndicationService::mapIds));
-                        drugHasIndicationService.importEdges();
+                            updateSuccessful = drugHasContraindicationService.submitUpdates(runEdgeUpdates(DrugHasContraindication.class,  edge.file, drugHasContraindicationService::mapIds));
+                        drugHasContraindicationService.importEdges();
                         break;
                     case "DrugTargetProtein":
                         if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, DrugHasTargetProtein.sourceAttributes))

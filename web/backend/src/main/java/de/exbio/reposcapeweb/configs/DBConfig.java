@@ -46,11 +46,11 @@ public class DBConfig {
         }
         rem.forEach(i -> config.nodes.remove(i));
         rem.clear();
-        for (int i = 0; i < config.edges.size(); i++) {
+        for (int i = 0; i < config.edges.size(); i++)
             if (config.edges.get(i).disabled)
                 rem.add(i);
-        }
-        rem.forEach(i -> config.nodes.remove(i));
+
+        rem.forEach(i -> config.edges.remove(i.intValue()));
 
         setDistinctAttributes();
 

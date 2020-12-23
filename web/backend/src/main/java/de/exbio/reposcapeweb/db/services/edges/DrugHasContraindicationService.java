@@ -44,14 +44,14 @@ public class DrugHasContraindicationService {
             return false;
 
         if (updates.containsKey(UpdateOperation.Deletion))
-            drugHasContraindicationRepository.deleteAll(drugHasContraindicationRepository.findDrugHasIndicationsByIdIn(updates.get(UpdateOperation.Deletion).keySet().stream().map(o -> (PairId) o).collect(Collectors.toSet())));
+            drugHasContraindicationRepository.deleteAll(drugHasContraindicationRepository.findDrugHasContraindicationsByIdIn(updates.get(UpdateOperation.Deletion).keySet().stream().map(o -> (PairId) o).collect(Collectors.toSet())));
 
         LinkedList<DrugHasContraindication> toSave = new LinkedList(updates.get(UpdateOperation.Insertion).values());
         int insertCount = toSave.size();
         if (updates.containsKey(UpdateOperation.Alteration)) {
             HashMap<PairId, DrugHasContraindication> toUpdate = updates.get(UpdateOperation.Alteration);
 
-            drugHasContraindicationRepository.findDrugHasIndicationsByIdIn(new HashSet<>(toUpdate.keySet().stream().map(o -> (PairId) o).collect(Collectors.toSet()))).forEach(d -> {
+            drugHasContraindicationRepository.findDrugHasContraindicationsByIdIn(new HashSet<>(toUpdate.keySet().stream().map(o -> (PairId) o).collect(Collectors.toSet()))).forEach(d -> {
                 d.setValues(toUpdate.get(d.getPrimaryIds()));
                 toSave.add(d);
             });
@@ -120,7 +120,7 @@ public class DrugHasContraindicationService {
     }
 
     public List<DrugHasContraindication> getEntries(List<PairId> ids) {
-        return drugHasContraindicationRepository.findDrugHasIndicationsByIdIn(ids);
+        return drugHasContraindicationRepository.findDrugHasContraindicationsByIdIn(ids);
     }
 
     public Optional<DrugHasContraindication> find(PairId id) {

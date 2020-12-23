@@ -67,9 +67,7 @@ public class WebGraphService {
         DBConfig.getConfig().edges.forEach(edge->graph.addEdge(new WebEdge(Graphs.getNode(edge.source), Graphs.getNode(edge.target), edge.label).setTitle(edge.label)));
         graph.getEdges().forEach(e -> graph.setWeight("edges", e.label, edgeController.getEdgeCount(e.label)));
 
-
         graph.setColorMap(this.getColorMap(null));
-
 
         return graph;
     }
@@ -190,13 +188,13 @@ public class WebGraphService {
                     Pair<Integer, Integer> nodeIds = g.getNodesfromEdge(type);
                     String[] attributeArray = g.getCustomListAttributes(type);
                     finalList.addAttributes("edges", stringType, attributeArray);
+
                     LinkedList<HashMap<String, Object>> attrMaps = edges.stream().map(p -> getCustomEdgeAttributeList(g, type, p)).collect(Collectors.toCollection(LinkedList::new));
                     finalList.addEdges(stringType, attrMaps);
                     finalList.setTypes("edges", stringType, attributeArray, g.getCustomListAttributeTypes(type), g.areCustomListAttributeIds(type), g.getCustomNodeAttributeTypes().get(type));
                 } else {
                     String[] attributeArray = edgeController.getAttributes(type);
                     finalList.addAttributes("edges", stringType, attributeArray);
-
                     LinkedList<HashMap<String, Object>> attrMaps = edgeController.edgesToAttributeList(type, edges, attrs);
                     finalList.addEdges(stringType, attrMaps);
                     finalList.setTypes("edges", stringType, attributeArray, edgeController.isExperimental(type), edgeController.getIdAttributes(type), g.getCustomNodeAttributeTypes().get(type));
@@ -331,7 +329,7 @@ public class WebGraphService {
         Integer[] nodes = nodeIds.keySet().toArray(new Integer[nodeIds.size()]);
         HashSet<Integer> connectedNodes = new HashSet<>();
         for (int i = 0; i < nodes.length; i++) {
-            for (int j = 0; j < nodes.length; j++) {
+            for (int j =i; j < nodes.length; j++) {
                 final int[] nodeI = {nodes[i]};
                 final int[] nodeJ = {nodes[j]};
 
@@ -341,14 +339,15 @@ public class WebGraphService {
                     continue;
                 }
                 edgeIds.forEach(edgeId -> {
-                    Pair<Integer,Integer> ids = Graphs.getNodesfromEdge(edgeId);
-                    if(ids.first!=nodeI[0] & ids.second!=nodeJ[0])
-                        return;
+                    if(!Graphs.checkEdgeDirection(edgeId,nodeI[0], nodeJ[0])){
+                        int tmp = nodeI[0];
+                        nodeI[0]=nodeJ[0];
+                        nodeJ[0]=tmp;
+                    }
                     boolean experimental = (request.interactions.containsKey(Graphs.getEdge(edgeId)) && !request.interactions.get(Graphs.getEdge(edgeId)));
                     if (request.edges.containsKey(Graphs.getEdge(edgeId))) {
                         LinkedList<Edge> edges = new LinkedList<>();
 
-                        boolean expOnly = experimental;
                         nodeIds.get(nodeI[0]).forEach((id1, v1) -> {
                             try {
                                 if (request.connectedOnly & connectedNodes.contains(nodeI[0]) & !v1.hasEdge()) {
@@ -356,7 +355,7 @@ public class WebGraphService {
                                 }
                                 edgeController.getEdges(edgeId, nodeI[0], id1).forEach(id2 -> {
                                     try {
-                                        if ((request.connectedOnly & connectedNodes.contains(nodeJ[0]) & !nodeIds.get(nodeJ[0]).get(id2).hasEdge()) | (expOnly && !edgeController.isExperimental(edgeId, id1, id2)))
+                                        if ((request.connectedOnly & connectedNodes.contains(nodeJ[0]) & !nodeIds.get(nodeJ[0]).get(id2).hasEdge()) | (experimental && !edgeController.isExperimental(edgeId, id1, id2)))
                                             return;
                                         nodeIds.get(nodeJ[0]).get(id2).setHasEdge(true);
                                         v1.setHasEdge(true);

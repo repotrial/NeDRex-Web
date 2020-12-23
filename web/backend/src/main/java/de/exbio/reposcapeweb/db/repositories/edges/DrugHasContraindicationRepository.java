@@ -10,5 +10,5 @@ import java.util.List;
 
 @Repository
 public interface DrugHasContraindicationRepository extends CrudRepository<DrugHasContraindication, PairId> {
-    List<DrugHasContraindication> findDrugHasIndicationsByIdIn(Collection<PairId> list);
+    List<DrugHasContraindication> findDrugHasContraindicationsByIdIn(Collection<PairId> list);
 }
