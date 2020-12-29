@@ -50,6 +50,18 @@ public class ProteinInPathway extends RepoTrialEdge implements Serializable {
 
     @Transient
     @JsonIgnore
+    public static String[] attributeLabels;
+
+    @Transient
+    @JsonIgnore
+    public static HashMap<String,String> name2labelMap;
+
+    @Transient
+    @JsonIgnore
+    public static HashMap<String,String> label2NameMap;
+
+    @Transient
+    @JsonIgnore
     public static Boolean[] idAttributes;
 
     @Transient
@@ -112,11 +124,20 @@ public class ProteinInPathway extends RepoTrialEdge implements Serializable {
 
     @JsonGetter
     public String getType() {
-        return "ProteinEncodedBy";
+        return "ProteinInPathway";
     }
 
     @JsonSetter
     public void setType(String type) {
+    }
+
+    public static void setUpNameMaps() {
+        label2NameMap=new HashMap<>();
+        name2labelMap = new HashMap<>();
+        for (int i = 0; i < allAttributes.length; i++) {
+            label2NameMap.put(allAttributes[i],attributeLabels[i]);
+            name2labelMap.put(attributeLabels[i], allAttributes[i]);
+        }
     }
 
 

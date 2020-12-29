@@ -50,11 +50,23 @@ public class DrugHasIndication extends RepoTrialEdge implements Serializable {
 
     @Transient
     @JsonIgnore
+    public static String[] attributeLabels;
+
+    @Transient
+    @JsonIgnore
     public static String[] allAttributeTypes;
 
     @Transient
     @JsonIgnore
     public static Boolean[] idAttributes;
+
+    @Transient
+    @JsonIgnore
+    public static HashMap<String,String> name2labelMap;
+
+    @Transient
+    @JsonIgnore
+    public static HashMap<String,String> label2NameMap;
 
     @Transient
     @JsonIgnore
@@ -100,14 +112,35 @@ public class DrugHasIndication extends RepoTrialEdge implements Serializable {
     public HashMap<String, Object> getAsMap() {
         HashMap<String,Object> values = new HashMap<>();
         values.put("targetDomainId",getTargetDomainId());
-        values.put("sourceDomainId",getSourceDomainId());
-        values.put("sourceId",id.getId1());
-        values.put("targetId",id.getId2());
-        values.put("node1",nodeOne);
-        values.put("node2",nodeTwo);
-        values.put("type",getType());
-        values.put("id",id.getId1()+"-"+id.getId2());
+        values.put(("sourceDomainId"),getSourceDomainId());
+        values.put(("sourceId"),id.getId1());
+        values.put(("targetId"),id.getId2());
+        values.put(("node1"),nodeOne);
+        values.put(("node2"),nodeTwo);
+        values.put(("type"),getType());
+        values.put(("id"),id.getId1()+"-"+id.getId2());
         return values;
+    }
+
+    public String name2Label(String name){
+        if(label2NameMap==null)
+            setUpNameMaps();
+        return label2NameMap.get(name);
+    }
+
+    public String label2name(String label){
+        if(name2labelMap==null)
+            setUpNameMaps();
+        return name2labelMap.get(label);
+    }
+
+    public static void setUpNameMaps() {
+        label2NameMap=new HashMap<>();
+        name2labelMap = new HashMap<>();
+        for (int i = 0; i < allAttributes.length; i++) {
+            label2NameMap.put(allAttributes[i],attributeLabels[i]);
+            name2labelMap.put(attributeLabels[i], allAttributes[i]);
+        }
     }
 
     public void setNodeNames(String node1, String node2){

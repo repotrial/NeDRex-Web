@@ -373,7 +373,7 @@
                     <template v-slot:activator="{ on, attrs }">
                       <v-icon
                         left
-                        :color="getColoring('nodes',detailedObject.type)"
+                        :color="getColoring('nodes',detailedObject['Type'])"
                         v-bind="attrs"
                         v-on="on"
                         :size="hover.node1?'45px':'35px'"
@@ -383,9 +383,9 @@
                         > fas fa-genderless
                       </v-icon>
                     </template>
-                    <span>{{ detailedObject.type }}</span>
+                    <span>{{ detailedObject['Type'] }}</span>
                   </v-tooltip>
-                  {{ detailedObject.displayName }}
+                  {{ detailedObject['Name'] }}
                 </div>
 
               </template>
@@ -394,20 +394,20 @@
                   <v-tooltip left>
                     <template v-slot:activator="{ on, attrs }">
                       <v-icon
-                        :color="getExtendedColoring('edges',detailedObject.type)[0]"
+                        :color="getExtendedColoring('edges',detailedObject['Type'])[0]"
                         v-bind="attrs"
                         v-on="on"
                         :size="hover.node1?'45px':'35px'"
                         @mouseleave.native="hover.node1=false"
                         @mouseover.native="hover.node1=true"
-                        @click="loadDetails( {type:'node',name:getExtendedNodeNames(detailedObject.type)[0],id:detailedObject.id.split('-')[0]},{type: 'edge', name:detailedObject.type,id1:detailedObject.id.split('-')[0],id2:detailedObject.id.split('-')[1]})"
+                        @click="loadDetails( {type:'node',name:getExtendedNodeNames(detailedObject['Type'])[0],id:detailedObject['ID'].split('-')[0]},{type: 'edge', name:detailedObject['Type'],id1:detailedObject['ID'].split('-')[0],id2:detailedObject['ID'].split('-')[1]})"
                       >
                         > fas fa-genderless
                       </v-icon>
                     </template>
-                    <span>{{ getExtendedNodeNames(detailedObject.type)[0] }}</span>
+                    <span>{{ getExtendedNodeNames(detailedObject['Type'])[0] }}</span>
                   </v-tooltip>
-                  {{ detailedObject.node1 }}
+                  {{ detailedObject['Node1'] }}
                 </div>
                 <div>
                   <v-tooltip left>
@@ -421,27 +421,27 @@
                         {{ detailedObject.directed ? 'fas fa-long-arrow-alt-down' : 'fas fa-arrows-alt-v' }}
                       </v-icon>
                     </template>
-                    <span>{{ detailedObject.type }}</span>
+                    <span>{{ detailedObject['Type'] }}</span>
                   </v-tooltip>
                 </div>
                 <div class="text-h5">
                   <v-tooltip left>
                     <template v-slot:activator="{ on, attrs }">
                       <v-icon
-                        :color="getExtendedColoring('edges',detailedObject.type)[1]"
+                        :color="getExtendedColoring('edges',detailedObject['Type'])[1]"
                         v-bind="attrs"
                         v-on="on"
                         :size="hover.node2?'45px':'35px'"
                         @mouseleave.native="hover.node2=false"
                         @mouseover.native="hover.node2=true"
-                        @click="loadDetails({type:'node',name:getExtendedNodeNames(detailedObject.type)[1],id:detailedObject.id.split('-')[1]},{type: 'edge', name:detailedObject.type,id1:detailedObject.id.split('-')[0],id2:detailedObject.id.split('-')[1]})"
+                        @click="loadDetails({type:'node',name:getExtendedNodeNames(detailedObject['Type'])[1],id:detailedObject['ID'].split('-')[1]},{type: 'edge', name:detailedObject['Type'],id1:detailedObject['ID'].split('-')[0],id2:detailedObject['ID'].split('-')[1]})"
                       >
                         > fas fa-genderless
                       </v-icon>
                     </template>
-                    <span>{{ getExtendedNodeNames(detailedObject.type)[1] }}</span>
+                    <span>{{ getExtendedNodeNames(detailedObject['Type'])[1] }}</span>
                   </v-tooltip>
-                  {{ detailedObject.node2 }}
+                  {{ detailedObject['Node2'] }}
                 </div>
               </template>
             </v-card-text>
@@ -588,7 +588,7 @@ export default {
 
 
     format: function (item, value) {
-      if (item === "primaryDomainId" || item === "primaryDomainIds" || item === "domainIds" || item === "sourceDomainId" || item === "targetDomainId" || item === "memberOne" || item === "memberTwo") {
+      if ( item === "SourceIDs"  || item === "SourceID" ||  item === "TargetID" || item ==="TargetIDs" || item === "MemberOne" || item === "MemberTwo") {
         let split = value.split(".")
         switch (split[0]) {
           case "entrez":
@@ -630,7 +630,7 @@ export default {
       return value
     },
     getExternalSource: function (item, value) {
-      if (item === "primaryDomainId" || item === "primaryDomainIds" || item === "domainIds" || item === "sourceDomainId" || item === "targetDomainId" || item === "memberOne" || item === "memberTwo") {
+      if ( item === "SourceIDs"  || item === "SourceID" ||  item === "TargetID" || item ==="TargetIDs" || item === "MemberOne" || item === "MemberTwo") {
         let split = value.split(".")
         switch (split[0]) {
           case "entrez":
@@ -663,15 +663,15 @@ export default {
             return "NCBI"
         }
       }
-      if (item === "icd10")
+      if (item === "ICD-10")
         return "ICD"
-      if (item === "approvedSymbol")
+      if (item === "Symbol")
         return "GeneCards"
-      if (item === "mapLocation")
+      if (item === "Genomic Location")
         return "UCSC"
-      if (item === "casNumber")
+      if (item === "CAS-Number")
         return "Molbase"
-      if (item === "molecularFormula")
+      if (item === "Formula")
         return "ChemCalc"
       return value
     },
@@ -679,7 +679,7 @@ export default {
       let url = '';
       if (value===undefined || value.length === 0)
         return ""
-      if (item === "primaryDomainId" || item === "primaryDomainIds" || item === "domainIds" || item === "sourceDomainId" || item === "targetDomainId" || item === "memberOne" || item === "memberTwo") {
+      if ( item === "SourceIDs"  || item === "SourceID" ||  item === "TargetID" || item ==="TargetIDs" || item === "MemberOne" || item === "MemberTwo") {
         let split = value.split(".")
         switch (split[0]) {
           case "entrez":
@@ -713,15 +713,18 @@ export default {
 
         }
       }
-      if (item === "icd10")
+
+      if (item === "ICD-10")
         return "https://icd.who.int/browse10/2016/en#/" + value
-      if (item === "approvedSymbol")
+      if (item === "Symbol")
         return "https://www.genecards.org/cgi-bin/carddisp.pl?gene=" + value
-      if (item === "mapLocation")
+      if (item === "Genomic Location")
         return "http://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&position=" + value
-      if (item === "casNumber")
+      if (item === "CAS-Number")
         return "http://www.molbase.com/en/cas-" + value + ".html"
-      if (item === "databases" || item === "allDatasets" || item === "primaryDataset")
+      if (item === "Formula")
+        return "https://www.chemcalc.org/?mf=" + value
+      if (item === "Databases" || item === "Datasets" || item === "Primary Dataset")
         switch (value) {
           case "biogrid":
             return "https://thebiogrid.org/"
@@ -750,18 +753,16 @@ export default {
           case "innatedb":
             return "https://www.innatedb.com/"
         }
-      if (item === "assertedBy") {
+      if (item === "AssertedBy") {
         if (value === "omim")
           return "https://www.omim.org/"
         if (value === "disgenet")
           return "https://www.disgenet.org/"
       }
-      if (item === "molecularFormula")
-        return "https://www.chemcalc.org/?mf=" + value
       return url;
     },
     getExternalColor: function (item, value) {
-      if (item === "primaryDomainId" || item === "primaryDomainIds" || item === "domainIds" || item === "sourceDomainId" || item === "targetDomainId" || item === "memberOne" || item === "memberTwo") {
+      if ( item === "SourceIDs"  || item === "SourceID" ||  item === "TargetID" || item ==="TargetIDs" || item === "MemberOne" || item === "MemberTwo") {
         let split = value.split(".")
         switch (split[0]) {
           case "entrez":
@@ -794,15 +795,19 @@ export default {
             return "#369"
         }
       }
-      if (item === "icd10")
-        return "#006000"
-      if (item === "approvedSymbol")
+
+      if (item === "ICD-10")
+        return  "#006000"
+      if (item === "Symbol")
         return "#f07b05"
-      if (item === "mapLocation")
+      if (item === "Genomic Location")
         return "#00457c"
-      if (item === "casNumber")
+      if (item === "CAS-Number")
         return "#749bc4"
-      if (item === "databases" || item === "allDatasets" || item === "primaryDataset")
+      if (item === "Formula")
+        return "#33484d"
+
+      if (item === "Databases" || item === "Datasets" || item === "Primary Dataset")
         switch (value) {
           case "biogrid":
             return "773a3a"
@@ -837,8 +842,6 @@ export default {
         if (value === "disgenet")
           return "#ff00de"
       }
-      if (item === "molecularFormula")
-        return "#33484d"
       return "black"
     }
     ,
@@ -861,6 +864,9 @@ export default {
       return Utils.getNodes(this.metagraph, type)
     },
     getExtendedNodeNames: function(type){
+      console.log(this.detailedObject)
+      console.log(this.options.list.entityGraph)
+      console.log(type)
       return Utils.getNodesExtended(this.options.list.entityGraph, type)
     },
 
@@ -904,7 +910,7 @@ export default {
           if (response.data !== undefined) {
             this.detailedObject = response.data
             this.detailedObject.node = true;
-            this.description = "for " + data.name + " " + this.detailedObject.displayName + " (id:" + this.detailedObject.id + ")"
+            this.description = "for " + data["Type"] + " " + this.detailedObject["Name"] + " (id:" + this.detailedObject["ID"] + ")"
           }
         }).catch(err => {
           console.log(err)
@@ -915,10 +921,10 @@ export default {
             this.detailedObject = response.data
             this.detailedObject.edge = true;
             this.detailedObject.directed = Utils.directionExtended(this.options.list.entityGraph, data.name)
-            if (this.detailedObject.sourceId !== undefined)
-              this.description = "for " + data.name + " " + this.detailedObject.displayName + " (id:" + this.detailedObject.sourceId + "->" + this.detailedObject.targetId + ")"
-            if (this.detailedObject.idOne !== undefined)
-              this.description = "for " + data.name + " id:" + this.detailedObject.idOne + "<->" + this.detailedObject.idTwo
+            if (this.detailedObject['Source'] !== undefined)
+              this.description = "for " + data.name + " " + this.detailedObject['Name'] + " (id:" + this.detailedObject['Source'] + "->" + this.detailedObject['Target'] + ")"
+            if (this.detailedObject['IDOne'] !== undefined)
+              this.description = "for " + data.name + " id:" + this.detailedObject['IDOne'] + "<->" + this.detailedObject['IDTwo']
           }
         }).catch(err => {
           console.log(err)
@@ -952,23 +958,13 @@ export default {
     ,
     getDetailDotColor: function (attribute) {
       if (this.detailedObject.node)
-        return this.getColoring('nodes', this.detailedObject.type);
+        return this.getColoring('nodes', this.detailedObject["Type"]);
       let basic = "#464e53";
-      let colors = this.getExtendedColoring('edges', this.detailedObject.type);
-      switch (attribute) {
-        case "sourceId":
-          return colors[0]
-        case "targetId":
-          return colors[1]
-        case "node1":
-          return colors[0]
-        case "node2":
-          return colors[1]
-        case "sourceDomainId":
-          return colors[0]
-        case "targetDomainId":
-          return colors[1]
-      }
+      let colors = this.getExtendedColoring('edges', this.detailedObject["Type"]);
+      if(["Source","Node1","SourceDomainID","SourceID","SourceDomainIDs","IDOne","MemberOne"].indexOf(attribute)>-1)
+        return colors[0]
+      if(["Target","Node2","TargetDomainID","TargetID","TargetDomainIDs","IDTwo","MemberTwo"].indexOf(attribute)>-1)
+        return colors[1]
       return basic;
     },
     submitAlgorithm: function (algorithm, params) {

@@ -6,6 +6,8 @@ import de.exbio.reposcapeweb.configs.schema.Config;
 import de.exbio.reposcapeweb.db.DbCommunicationService;
 import de.exbio.reposcapeweb.db.entities.edges.*;
 import de.exbio.reposcapeweb.db.history.HistoryController;
+import de.exbio.reposcapeweb.db.services.controller.EdgeController;
+import de.exbio.reposcapeweb.db.services.controller.NodeController;
 import de.exbio.reposcapeweb.db.services.edges.*;
 import de.exbio.reposcapeweb.db.services.nodes.*;
 import de.exbio.reposcapeweb.filter.FilterService;
@@ -51,6 +53,8 @@ public class ImportService {
     private final ProteinInPathwayService proteinInPathwayService;
     private final ProteinInteractsWithProteinService proteinInteractsWithProteinService;
     private final DrugHasContraindicationService drugHasContraindicationService;
+    private final EdgeController edgeController;
+    private final NodeController nodeController;
 
     private final ObjectMapper objectMapper;
 
@@ -76,7 +80,9 @@ public class ImportService {
                          ProteinInteractsWithProteinService proteinInteractsWithProteinService,
                          HistoryController historyController,
                          ObjectMapper objectMapper,
-                         DrugHasContraindicationService drugHasContraindicationService
+                         DrugHasContraindicationService drugHasContraindicationService,
+                         EdgeController edgeController,
+                         NodeController nodeController
                          ) {
         this.env = env;
         this.dbCommunication = dbCommunication;
@@ -98,6 +104,8 @@ public class ImportService {
         this.drugHasContraindicationService=drugHasContraindicationService;
         this.historyController = historyController;
         this.objectMapper=objectMapper;
+        this.edgeController = edgeController;
+        this.nodeController=nodeController;
     }
 
     public void importNodeData() {
@@ -108,6 +116,8 @@ public class ImportService {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        nodeController.setUp();
+        edgeController.setUp();
 //        HashMap<String, Collection> collections = new HashMap<>();
 //        getCollections(collections);
         log.info("Importing nodeIDs");
@@ -116,6 +126,7 @@ public class ImportService {
         log.info("NodeIdMap import: Done!");
         importNodeFilters(new File(cacheDir, "filters"));
     }
+
 
     public void importHistory(){
         historyController.importHistory();
@@ -156,7 +167,7 @@ public class ImportService {
         DBConfig.getConfig().edges.forEach(edge -> {
             switch (edge.mapsTo) {
                 case "DisorderComorbidity" -> disorderComorbidWithDisorderService.importEdges();
-                case "DisorderHirarchy" -> disorderIsADisorderService.importEdges();
+                case "DisorderHierarchy" -> disorderIsADisorderService.importEdges();
                 case "DrugIndication" -> drugHasIndicationService.importEdges();
                 case "DrugTargetProtein" -> drugHasTargetService.importEdges();
                 case "GeneAssociatedWithDisorder" -> associatedWithDisorderService.importEdges();

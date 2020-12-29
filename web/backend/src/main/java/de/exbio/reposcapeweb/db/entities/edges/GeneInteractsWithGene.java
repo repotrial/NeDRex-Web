@@ -75,6 +75,18 @@ public class GeneInteractsWithGene extends RepoTrialEdge implements Serializable
 
     @Transient
     @JsonIgnore
+    public static String[] attributeLabels;
+
+    @Transient
+    @JsonIgnore
+    public static HashMap<String,String> name2labelMap;
+
+    @Transient
+    @JsonIgnore
+    public static HashMap<String,String> label2NameMap;
+
+    @Transient
+    @JsonIgnore
     public static String[] listAttributes;
 
     public static String[] getListAttributes() {
@@ -128,6 +140,15 @@ public class GeneInteractsWithGene extends RepoTrialEdge implements Serializable
 //        this.conservativeEvidences = StringUtils.listToString(conservativeEvidences);
 //    }
 
+
+    public static void setUpNameMaps() {
+        label2NameMap=new HashMap<>();
+        name2labelMap = new HashMap<>();
+        for (int i = 0; i < allAttributes.length; i++) {
+            label2NameMap.put(allAttributes[i],attributeLabels[i]);
+            name2labelMap.put(attributeLabels[i], allAttributes[i]);
+        }
+    }
 
     public String getMemberOne() {
         return memberOne;

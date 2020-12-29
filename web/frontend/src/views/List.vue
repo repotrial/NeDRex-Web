@@ -37,7 +37,6 @@
               </v-list>
             </v-col>
             <v-col>
-              <v-list>
                 <v-list-item>
                   <b>Edges ({{ getCounts('edges') }})</b>
                 </v-list-item>
@@ -57,8 +56,7 @@
                   </v-chip>
 
                 </v-list-item>
-
-              </v-list>
+<!--              </v-list>-->
             </v-col>
           </v-row>
 
@@ -130,7 +128,7 @@
                 fixed-header
                 class="elevation-1"
                 :headers="headers('nodes',Object.keys(nodes)[nodeTab])"
-                :items="configuration.showAll ? (filters.nodes.attribute.dist ? distinctFilter('nodes',nodes[Object.keys(nodes)[nodeTab]]): nodes[Object.keys(nodes)[nodeTab]]) : filterSelected(nodes[Object.keys(nodes)[nodeTab]])"
+                :items="configuration.showAll ? (filters.nodes.attribute.dist ? distinctFilter('nodes',nodes[Object.keys(nodes)[nodeTab]],nodeTab): nodes[Object.keys(nodes)[nodeTab]]) : filterSelected(nodes[Object.keys(nodes)[nodeTab]])"
                 item-key="id"
                 :loading="nodeTabLoading"
                 loading-text="Loading... Please wait"
@@ -182,7 +180,7 @@
                           v-else
                           v-model="filters.nodes.attribute.operator"
                           @change="filters.nodes.attribute.dist=true"
-                          :items="attributes.nodes[Object.keys(nodes)[nodeTab]].filter(a=>a.name===filters.nodes.attribute.name)[0].values"
+                          :items="attributes.nodes[Object.keys(nodes)[nodeTab]].filter(a=>a.label===filters.nodes.attribute.name)[0].values"
                           label="Value"
                           outlined
                         >
@@ -354,7 +352,7 @@
                 fixed-header
                 class="elevation-1"
                 :headers="headers('edges',Object.keys(edges)[edgeTab])"
-                :items="configuration.showAll ? (filters.edges.attribute.dist ? distinctFilter('edges',edges[Object.keys(edges)[edgeTab]]): edges[Object.keys(edges)[edgeTab]]) : filterSelected(edges[Object.keys(edges)[edgeTab]])"
+                :items="configuration.showAll ? (filters.edges.attribute.dist ? distinctFilter('edges',edges[Object.keys(edges)[edgeTab]],edgeTab): edges[Object.keys(edges)[edgeTab]]) : filterSelected(edges[Object.keys(edges)[edgeTab]])"
                 :search="filters.edges.query"
                 :custom-filter="filterEdge"
                 loading-text="Loading... Please wait"
@@ -391,7 +389,7 @@
                           v-else
                           v-model="filters.edges.attribute.operator"
                           @change="filters.edges.attribute.dist=true"
-                          :items="attributes.edges[Object.keys(edges)[edgeTab]].filter(a=>a.name===filters.edges.attribute.name)[0].values"
+                          :items="attributes.edges[Object.keys(edges)[edgeTab]].filter(a=>a.label===filters.edges.attribute.name)[0].values"
                           label="Value"
                           outlined
                         >
@@ -436,7 +434,7 @@
                             dark
                             v-bind="attrs"
                             v-on="on"
-                            v-on:click="edgeDetails(item.id)"
+                            v-on:click="edgeDetails(item)"
                           >
                             fas fa-info-circle
                           </v-icon>
@@ -788,7 +786,7 @@
           <v-tabs-items>
             <v-list>
               <v-list-item v-for="attr in options.attributes[optionTab]" :key="attr.name">
-                <v-switch v-model="attr.selected" :label="attr.name" :disabled="(attr.name === 'id')">
+                <v-switch v-model="attr.selected" :label="attr.label" :disabled="(attr.name === 'id')">
                 </v-switch>
               </v-list-item>
             </v-list>
@@ -1178,6 +1176,7 @@ export default {
     filterNode: function (value, search, item) {
       if (!this.filters.nodes.suggestions) {
         let attribute = this.filters.nodes.attribute.name
+        attribute = Object.values(this.attributes.nodes)[this.nodeTab].filter(a=>a.label===attribute).map(a=>a.name)[0]
         return this.filter(item[attribute], search, item, attribute, this.filters.nodes.attribute.operator)
       } else {
         return true;
@@ -1186,6 +1185,7 @@ export default {
     ,
     filterEdge: function (value, search, item) {
       let attribute = this.filters.edges.attribute.name
+      attribute = Object.values(this.attributes.edges)[this.edgeTab].filter(a=>a.label===attribute).map(a=>a.name)[0]
       return this.filter(item[attribute], search, item, attribute, this.filters.edges.attribute.operator)
     },
     filter: function (value, search, item, attribute, operator) {
@@ -1204,10 +1204,7 @@ export default {
       }
       switch (operator) {
 
-        //TODO between case????
         case "empty":
-          return value === undefined || value == null || value === ""
-        case  "null":
           return value === undefined || value == null || value === ""
         case "=":
           return value == search
@@ -1244,7 +1241,7 @@ export default {
           if (attr.numeric) {
             out = ["=", "!="]
             if (!attr.id)
-              ["<", "<=", ">", ">=", "<>", "null"].forEach(o => out.push(o))
+              ["<", "<=", ">", ">=", "<>"].forEach(o => out.push(o))
           } else {
             out = ["equals"]
             if (!attr.id)
@@ -1263,7 +1260,7 @@ export default {
       this.collapse.edgeName = this.collapse.edge1 + "_and_" + this.collapse.edge2
     },
     isDistinctAttribute: function (type, attribute) {
-      let object = this.attributes[type][Object.keys(this[type])[type === "nodes" ? this.nodeTab : this.edgeTab]].filter(a => a.name === attribute)[0]
+      let object = this.attributes[type][Object.keys(this[type])[type === "nodes" ? this.nodeTab : this.edgeTab]].filter(a => a.label === attribute)[0]
       return object !== undefined && object.values !== undefined && object.values != null && object.values.length > 0
     },
 
@@ -1331,7 +1328,7 @@ export default {
       for (let node in Object.keys(this.attributes.nodes)) {
         let models = []
         this.attributes.nodes[Object.keys(this.attributes.nodes)[node]].forEach(attr => {
-          models.push({name: attr.name, selected: attr.list})
+          models.push({name: attr.name,label:attr.label, selected: attr.list})
         })
         this.options.attributes[node] = models;
       }
@@ -1346,7 +1343,7 @@ export default {
       for (let edge in Object.keys(this.attributes.edges)) {
         let models = []
         this.attributes.edges[Object.keys(this.attributes.edges)[edge]].forEach(attr => {
-          models.push({name: attr.name, selected: attr.list})
+          models.push({name: attr.name, label:attr.label,selected: attr.list})
         })
         this.options.attributes[edge] = models;
       }
@@ -1440,9 +1437,10 @@ export default {
       this.collapse.edge1 = ""
       this.collapse.edge2 = ""
     },
-    distinctFilter: function (type, nodes) {
+    distinctFilter: function (type, nodes,tab) {
       let value = this.filters[type].attribute.operator
       let attr = this.filters[type].attribute.name
+      attr = Object.values(this.attributes[type])[tab].filter(a=>a.label===attr)[0].name
       return nodes.filter(n => {
         let data = n[attr]
         if (typeof data === "object")
@@ -1453,14 +1451,13 @@ export default {
 
     },
     collapseDialogResolve: function (apply) {
-
       if (!apply) {
         this.collapse.show = false;
         this.resetCollapseDialog()
         this.$nextTick()
         return
       }
-      if(this.metagraph.edges.map(e=>e.label).indexOf(this.collapse.edgeName)>-1){
+      if(this.metagraph.edges.flatMap(e=>[e.label,e.title]).indexOf(this.collapse.edgeName)>-1){
         this.printNotification("Edge-Name is already Taken. Please choose another one",2)
         return
       }
@@ -1571,10 +1568,8 @@ export default {
       for (let type in this.edges) {
         update.edges[type] = []
         this.edges[type] = this.filterSelected(this.edges[type])
-        this.edges[type].forEach(edge => update.edges[type].push(edge.id))
+        this.edges[type].forEach(edge => update.edges[type].push(edge.id === undefined? edge.ID:edge.id))
       }
-
-
       this.filters.nodes.suggestions = false;
       this.filterNodeModel = null
       this.$http.post("/updateGraph", update).then(response => {
@@ -1613,11 +1608,7 @@ export default {
       })
     },
     selectDependentNodes: function (type, edges) {
-      // console.log(this.configuration.entityGraph)
       let nodes = Utils.getNodesExtended(this.configuration.entityGraph, type)
-      // let meta = this.metagraph.edges.filter(e => e.label === type)[0]
-      // let nodeName1 = this.metagraph.nodes.filter(n => n.id === meta.from).map(n => n.group)[0];
-      // let nodeName2 = this.metagraph.nodes.filter(n => n.id === meta.to).map(n => n.group)[0];
       let nodeName1 = nodes[0];
       let nodeName2 = nodes[1];
       let nodeTab1 = Object.keys(this.attributes.nodes).indexOf(nodeName1)
@@ -1625,7 +1616,7 @@ export default {
       let nodeIds1 = []
       let nodeIds2 = []
       edges.forEach(edge => {
-        let ids = edge.id.split("-");
+        let ids = (edge.id !== undefined ? edge.id : edge.ID).split("-");
         nodeIds1.push(parseInt(ids[0]))
         nodeIds2.push(parseInt(ids[1]))
       })
@@ -1645,10 +1636,6 @@ export default {
     },
 
     selectAll: function (type) {
-      // this.$nextTick().then(() => {
-      //   this.nodeTabLoading = true;
-      //   this.edgeTabLoading = true;
-      // })
       let tab = (type === "nodes") ? this.nodeTab : this.edgeTab
       let name = Object.keys(this[type])[tab]
       let items = this[type][name]
@@ -1685,7 +1672,7 @@ export default {
       let items = data[type][Object.keys(data[type])[tab]]
       let isDistinct = this.isDistinctAttribute(type, this.filters[type].attribute.name)
       if (isDistinct) {
-        this.distinctFilter(type, items).forEach(item => {
+        this.distinctFilter(type, items,tab).forEach(item => {
           item.selected = false
         })
       } else {
@@ -1715,15 +1702,15 @@ export default {
     resetFilters: function (type) {
       this.filters[type].suggestions = false;
       this.filters[type].query = "";
-      this.filters[type].attribute = {operator: undefined, dist: false, name: undefined,}
+      this.filters[type].attribute = {operator: undefined, dist: false, name:undefined}
     },
     resetFilter: function (type) {
       this.filters[type].query = "";
       this.filters[type].attribute.dist = false;
       this.filters[type].operator = undefined;
     },
-    edgeDetails: function (id) {
-      let ids = id.split("-")
+    edgeDetails: function (item) {
+      let ids = (item.id ===undefined ? item.ID:item.id).split("-")
       this.$emit("selectionEvent", {
         type: "edge",
         name: Object.keys(this.edges)[this.edgeTab],
@@ -1752,7 +1739,7 @@ export default {
           })
         }
         out.push({
-          text: name,
+          text: attr.label,
           align: 'start',
           sortable: attr.numeric,
           list: attr.array,
@@ -1774,7 +1761,8 @@ export default {
         out.splice(idx, 1)
       return out;
     }
-    , selectEdges: function () {
+    ,
+    selectEdges: function () {
       this.selectionDialog.type = "nodes"
       this.selectionDialog.title = "Edges"
 
@@ -1802,13 +1790,11 @@ export default {
         this.collapse.self.selected = true
         this.collapse.self.disabled = true
         this.collapse.edges.forEach(e => {
-          // e.disabled = true
           e.selected = true
           this.collapse.edge1 = e.name
         })
       } else if (this.collapse.edges.length === 2 && !this.collapse.self.selected) {
         this.collapse.edges.forEach(e => {
-          // e.disabled = true
           e.selected = true
           if (this.collapse.edge1.length === 0)
             this.collapse.edge1 = e.name
@@ -1822,7 +1808,6 @@ export default {
       }
       if (this.collapse.nodes.length === 1) {
         this.collapse.nodes.forEach(n => {
-          // n.disabled = true
           n.selected = true
         })
       }
@@ -1964,7 +1949,7 @@ export default {
       return e.directed ? 1 : 2
     },
     direction: function (edge) {
-      let e = Object.values(this.metagraph.edges).filter(e => e.title === edge)[0];
+      let e = Object.values(this.metagraph.edges).filter(e => e.label === edge)[0];
       if (e.from === e.to)
         return 0
       return e.directed ? 1 : 2

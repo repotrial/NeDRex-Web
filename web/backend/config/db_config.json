@@ -8,8 +8,9 @@
         "main": "#EF553B",
         "light": "#ecd0cb"
       },
-      "attributes": {
-        "id": {
+      "attributes": [
+        {
+          "name": "id",
           "source": false,
           "list": true,
           "detail": true,
@@ -17,21 +18,24 @@
           "type": "numeric",
           "label": "ID"
         },
-        "displayName": {
+        {
+          "name": "displayName",
           "source": true,
           "list": true,
           "detail": true,
           "id": false,
           "label": "Name"
         },
-        "primaryDomainId": {
+        {
+          "name": "primaryDomainId",
           "source": true,
           "list": false,
           "detail": true,
           "id": true,
           "label": "SourceID"
         },
-        "domainIds": {
+        {
+          "name": "domainIds",
           "source": true,
           "list": false,
           "detail": true,
@@ -39,14 +43,16 @@
           "type": "array",
           "label": "SourceIDs"
         },
-        "icd10": {
+        {
+          "name": "icd10",
           "source": true,
           "list": true,
           "detail": true,
           "id": false,
           "label": "ICD-10"
         },
-        "synonyms": {
+        {
+          "name": "synonyms",
           "source": true,
           "list": false,
           "detail": true,
@@ -54,7 +60,8 @@
           "type": "array",
           "label": "Synonyms"
         },
-        "description": {
+        {
+          "name": "description",
           "source": true,
           "list": false,
           "detail": true,
@@ -62,14 +69,15 @@
           "type": "text",
           "label": "Description"
         },
-        "type": {
+        {
+          "name": "type",
           "source": true,
           "list": false,
           "detail": true,
           "id": false,
           "label": "Type"
         }
-      }
+      ]
     },
     {
       "id": 1,
@@ -79,8 +87,9 @@
         "main": "#00CC96",
         "light": "#b4cdcc"
       },
-      "attributes": {
-        "id": {
+      "attributes": [
+        {
+          "name": "id",
           "source": false,
           "list": true,
           "detail": true,
@@ -88,21 +97,24 @@
           "type": "numeric",
           "label": "ID"
         },
-        "displayName": {
+        {
+          "name": "displayName",
           "source": true,
           "list": true,
           "detail": true,
           "id": false,
           "label": "Name"
         },
-        "primaryDomainId": {
+        {
+          "name": "primaryDomainId",
           "source": true,
           "list": false,
           "detail": true,
           "id": true,
           "label": "SourceID"
         },
-        "domainIds": {
+        {
+          "name": "domainIds",
           "source": true,
           "list": false,
           "detail": true,
@@ -110,14 +122,16 @@
           "type": "array",
           "label": "SourceIDs"
         },
-        "indication": {
+        {
+          "name": "indication",
           "source": true,
           "list": true,
           "detail": true,
           "id": false,
           "label": "Indication"
         },
-        "drugGroups": {
+        {
+          "name": "drugGroups",
           "source": true,
           "list": true,
           "detail": true,
@@ -126,35 +140,40 @@
           "label": "Groups",
           "distinct": true
         },
-        "iupacName": {
+        {
+          "name": "iupacName",
           "source": true,
           "list": true,
           "detail": true,
           "id": false,
           "label": "IUPAC-Name"
         },
-        "molecularFormula": {
+        {
+          "name": "molecularFormula",
           "source": true,
           "list": true,
           "detail": true,
           "id": false,
           "label": "Formula"
         },
-        "casNumber": {
+        {
+          "name": "casNumber",
           "source": true,
           "list": true,
           "detail": true,
           "id": true,
           "label": "CAS-Number"
         },
-        "primaryDataset": {
+        {
+          "name": "primaryDataset",
           "source": true,
           "list": false,
           "detail": true,
           "id": false,
           "label": "Primary Dataset"
         },
-        "allDatasets": {
+        {
+          "name": "allDatasets",
           "source": true,
           "list": false,
           "detail": true,
@@ -162,21 +181,24 @@
           "type": "array",
           "label": "Datasets"
         },
-        "inchi": {
+        {
+          "name": "inchi",
           "source": true,
           "list": false,
           "detail": true,
           "id": false,
           "label": "InChI"
         },
-        "smiles": {
+        {
+          "name": "smiles",
           "source": true,
           "list": false,
           "detail": true,
           "id": false,
           "label": "SMILES"
         },
-        "drugCategories": {
+        {
+          "name": "drugCategories",
           "source": true,
           "list": false,
           "detail": true,
@@ -185,7 +207,8 @@
           "label": "Categories",
           "distinct": true
         },
-        "_cls": {
+        {
+          "name": "_cls",
           "source": true,
           "list": false,
           "detail": true,
@@ -193,7 +216,8 @@
           "label": "Drug-CLS",
           "disctinct": true
         },
-        "sequences": {
+        {
+          "name": "sequences",
           "source": true,
           "list": false,
           "detail": true,
@@ -201,7 +225,8 @@
           "type": "array",
           "label": "Sequences"
         },
-        "synonyms": {
+        {
+          "name": "synonyms",
           "source": true,
           "list": false,
           "detail": true,
@@ -209,7 +234,8 @@
           "type": "array",
           "label": "Synonyms"
         },
-        "description": {
+        {
+          "name": "description",
           "source": true,
           "list": false,
           "detail": true,
@@ -217,14 +243,15 @@
           "type": "text",
           "label": "Description"
         },
-        "type": {
+        {
+          "name": "type",
           "source": true,
           "list": false,
           "detail": true,
           "id": false,
           "label": "Type"
         }
-      }
+      ]
     },
     {
       "id": 2,
@@ -234,8 +261,9 @@
         "main": "#636EFA",
         "light": "#d6d9f8"
       },
-      "attributes": {
-        "id": {
+      "attributes": [
+        {
+          "name": "id",
           "source": false,
           "list": true,
           "detail": true,
@@ -243,21 +271,24 @@
           "type": "numeric",
           "label": "ID"
         },
-        "displayName": {
+        {
+          "name": "displayName",
           "source": true,
           "list": true,
           "detail": true,
           "id": false,
           "label": "Name"
         },
-        "primaryDomainId": {
+        {
+          "name": "primaryDomainId",
           "source": true,
           "list": false,
           "detail": true,
           "id": true,
           "label": "SourceID"
         },
-        "domainIds": {
+        {
+          "name": "domainIds",
           "source": true,
           "list": false,
           "detail": true,
@@ -265,14 +296,16 @@
           "type": "array",
           "label": "SourceIDs"
         },
-        "approvedSymbol": {
+        {
+          "name": "approvedSymbol",
           "source": true,
           "list": true,
           "detail": true,
           "id": false,
           "label": "Symbol"
         },
-        "symbols": {
+        {
+          "name": "symbols",
           "source": true,
           "list": false,
           "detail": true,
@@ -280,7 +313,8 @@
           "type": "array",
           "label": "Symbols"
         },
-        "geneType": {
+        {
+          "name": "geneType",
           "source": true,
           "list": true,
           "detail": true,
@@ -288,21 +322,24 @@
           "type": "numeric",
           "label": "Gene-Type"
         },
-        "chromosome": {
+        {
+          "name": "chromosome",
           "source": true,
           "list": true,
           "detail": true,
           "id": false,
           "label": "Chromosome"
         },
-        "mapLocation": {
+        {
+          "name": "mapLocation",
           "source": true,
           "list": true,
           "detail": true,
           "id": false,
           "label": "Genomic Location"
         },
-        "synonyms": {
+        {
+          "name": "synonyms",
           "source": true,
           "list": false,
           "detail": true,
@@ -310,7 +347,8 @@
           "type": "array",
           "label": "Synonyms"
         },
-        "description": {
+        {
+          "name": "description",
           "source": true,
           "list": false,
           "detail": true,
@@ -318,14 +356,15 @@
           "type": "text",
           "label": "Description"
         },
-        "type": {
+        {
+          "name": "type",
           "source": true,
           "list": false,
           "detail": true,
           "id": false,
           "label": "Type"
         }
-      }
+      ]
     },
     {
       "id": 3,
@@ -335,8 +374,9 @@
         "main": "#fecb52",
         "light": "#fae6c1"
       },
-      "attributes": {
-        "id": {
+      "attributes": [
+        {
+          "name": "id",
           "source": false,
           "list": true,
           "detail": true,
@@ -344,21 +384,24 @@
           "type": "numeric",
           "label": "ID"
         },
-        "displayName": {
+        {
+          "name": "displayName",
           "source": true,
           "list": true,
           "detail": true,
           "id": false,
           "label": "Name"
         },
-        "primaryDomainId": {
+        {
+          "name": "primaryDomainId",
           "source": true,
           "list": true,
           "detail": true,
           "id": true,
           "label": "SourceID"
         },
-        "domainIds": {
+        {
+          "name": "domainIds",
           "source": true,
           "list": false,
           "detail": true,
@@ -366,21 +409,23 @@
           "type": "array",
           "label": "SourceIDs"
         },
-        "species": {
+        {
+          "name": "species",
           "source": true,
           "list": false,
           "id": false,
           "detail": true,
           "label": "Species"
         },
-        "type": {
+        {
+          "name": "type",
           "source": true,
           "list": false,
           "detail": true,
           "id": false,
           "label": "Type"
         }
-      }
+      ]
     },
     {
       "id": 4,
@@ -390,8 +435,9 @@
         "main": "#19d3f3",
         "light": "#bcdfe5"
       },
-      "attributes": {
-        "id": {
+      "attributes": [
+        {
+          "name": "id",
           "source": false,
           "list": true,
           "detail": true,
@@ -399,21 +445,24 @@
           "type": "numeric",
           "label": "ID"
         },
-        "displayName": {
+        {
+          "name": "displayName",
           "source": true,
           "list": true,
           "detail": true,
           "id": false,
           "label": "Name"
         },
-        "primaryDomainId": {
+        {
+          "name": "primaryDomainId",
           "source": true,
           "list": true,
           "detail": true,
           "id": true,
           "label": "SourceID"
         },
-        "domainIds": {
+        {
+          "name": "domainIds",
           "source": true,
           "list": false,
           "detail": true,
@@ -421,14 +470,16 @@
           "type": "array",
           "label": "SourceIDs"
         },
-        "geneName": {
+        {
+          "name": "geneName",
           "source": true,
           "list": true,
           "detail": true,
           "id": false,
           "label": "Gene"
         },
-        "taxid": {
+        {
+          "name": "taxid",
           "source": true,
           "list": true,
           "detail": true,
@@ -436,14 +487,16 @@
           "type": "numeric",
           "label": "TaxonomyID"
         },
-        "sequence": {
+        {
+          "name": "sequence",
           "source": true,
           "list": false,
           "detail": true,
           "id": false,
           "label": "AA-Sequence"
         },
-        "synonyms": {
+        {
+          "name": "synonyms",
           "source": true,
           "list": false,
           "detail": true,
@@ -451,7 +504,8 @@
           "type": "array",
           "label": "Synonyms"
         },
-        "comments": {
+        {
+          "name": "comments",
           "source": true,
           "list": false,
           "detail": true,
@@ -459,28 +513,30 @@
           "type": "array",
           "label": "Comments"
         },
-        "type": {
+        {
+          "name": "type",
           "source": true,
           "list": false,
           "detail": true,
           "id": false,
           "label": "Type"
         }
-      }
+      ]
     }
   ],
-  "edges":[
+  "edges": [
     {
       "id": 0,
-      "name": "drug_has_target_protein",
+      "name": "drug_has_target",
       "label": "DrugHasTargetProtein",
-      "mapsTo":"DrugTargetProtein",
-      "original":true,
-      "directed":true,
-      "source":"drug",
-      "target":"protein",
-      "attributes": {
-        "id": {
+      "mapsTo": "DrugTargetProtein",
+      "original": true,
+      "directed": true,
+      "source": "drug",
+      "target": "protein",
+      "attributes": [
+        {
+          "name": "id",
           "source": false,
           "list": true,
           "detail": true,
@@ -489,25 +545,28 @@
           "label": "ID",
           "distinct": false
         },
-        "sourceId": {
+        {
+          "name": "sourceId",
           "source": false,
           "list": false,
           "detail": true,
           "id": true,
           "type": "numeric",
-          "label": "SourceID",
+          "label": "Source",
           "distinct": false
         },
-        "targetId": {
+        {
+          "name": "targetId",
           "source": false,
           "list": false,
           "detail": true,
           "id": true,
           "type": "numeric",
-          "label": "TargetID",
+          "label": "Target",
           "distinct": false
         },
-        "node1": {
+        {
+          "name": "node1",
           "source": false,
           "list": true,
           "detail": true,
@@ -515,7 +574,8 @@
           "label": "Node1",
           "distinct": false
         },
-        "node2": {
+        {
+          "name": "node2",
           "source": false,
           "list": true,
           "detail": true,
@@ -523,23 +583,26 @@
           "label": "Node2",
           "distinct": false
         },
-        "sourceDomainId": {
+        {
+          "name": "sourceDomainId",
           "source": true,
           "list": false,
           "detail": true,
           "id": true,
-          "label": "sourceDomainId",
+          "label": "SourceID",
           "distinct": false
         },
-        "targetDomainId": {
+        {
+          "name": "targetDomainId",
           "source": true,
           "list": false,
           "detail": true,
           "id": true,
-          "label": "targetDomainId",
+          "label": "TargetID",
           "distinct": false
         },
-        "actions": {
+        {
+          "name": "actions",
           "source": true,
           "list": true,
           "detail": true,
@@ -548,7 +611,8 @@
           "label": "Actions",
           "distinct": false
         },
-        "databases": {
+        {
+          "name": "databases",
           "source": true,
           "list": false,
           "detail": true,
@@ -557,7 +621,8 @@
           "label": "Databases",
           "distinct": false
         },
-        "type": {
+        {
+          "name": "type",
           "source": true,
           "list": false,
           "detail": true,
@@ -565,19 +630,19 @@
           "label": "Type",
           "distinct": false
         }
-      }
+      ]
     },
     {
       "id": 1,
-      "name": "drug_has_target_gene",
       "label": "DrugHasTargetGene",
-      "original":false,
-      "directed":true,
-      "source":"drug",
-      "target":"gene",
-      "mapsTo":"DrugTargetGene",
-      "attributes": {
-        "id": {
+      "original": false,
+      "directed": true,
+      "source": "drug",
+      "target": "gene",
+      "mapsTo": "DrugTargetGene",
+      "attributes": [
+        {
+          "name": "id",
           "list": true,
           "detail": true,
           "id": false,
@@ -585,70 +650,78 @@
           "label": "ID",
           "distinct": false
         },
-        "sourceId": {
+        {
+          "name": "sourceId",
           "list": false,
           "detail": true,
           "id": true,
           "type": "numeric",
-          "label": "SourceID",
+          "label": "Source",
           "distinct": false
         },
-        "targetId": {
+        {
+          "name": "targetId",
           "list": false,
           "detail": true,
           "id": true,
           "type": "numeric",
-          "label": "TargetID",
+          "label": "Target",
           "distinct": false
         },
-        "node1": {
+        {
+          "name": "node1",
           "list": true,
           "detail": true,
           "id": false,
           "label": "Node1",
           "distinct": false
         },
-        "node2": {
+        {
+          "name": "node2",
           "list": true,
           "detail": true,
           "id": false,
           "label": "Node2",
           "distinct": false
         },
-        "sourceDomainId": {
+        {
+          "name": "sourceDomainId",
           "list": false,
           "detail": true,
           "id": true,
-          "label": "sourceDomainId",
+          "label": "SourceID",
           "distinct": false
         },
-        "targetDomainId": {
+        {
+          "name": "targetDomainId",
           "list": false,
           "detail": true,
           "id": true,
-          "label": "targetDomainId",
+          "label": "TargetID",
           "distinct": false
         },
-        "type": {
+        {
+          "name": "type",
           "list": false,
           "detail": true,
           "id": false,
           "label": "Type",
           "distinct": false
         }
-      }
+      ]
     },
     {
       "id": 2,
       "name": "protein_interacts_with_protein",
       "label": "ProteinInteractsWithProtein",
-      "original":true,
-      "directed":false,
-      "source":"protein",
-      "target":"protein",
-      "mapsTo":"ProteinProteinInteraction",
-      "attributes": {
-        "id": {
+      "original": true,
+      "directed": false,
+      "source": "protein",
+      "target": "protein",
+      "mapsTo": "ProteinProteinInteraction",
+      "attributes": [
+        {
+          "name": "id",
           "source": false,
           "list": true,
           "detail": true,
@@ -657,7 +730,8 @@
           "label": "ID",
           "distinct": false
         },
-        "idOne": {
+        {
+          "name": "idOne",
           "source": false,
           "list": false,
           "detail": true,
@@ -666,7 +740,8 @@
           "label": "IDOne",
           "distinct": false
         },
-        "idTwo": {
+        {
+          "name": "idTwo",
           "source": false,
           "list": false,
           "detail": true,
@@ -675,7 +750,8 @@
           "label": "IDTwo",
           "distinct": false
         },
-        "node1": {
+        {
+          "name": "node1",
           "source": false,
           "list": true,
           "detail": true,
@@ -683,7 +759,8 @@
           "label": "Node1",
           "distinct": false
         },
-        "node2": {
+        {
+          "name": "node2",
           "source": false,
           "list": true,
           "detail": true,
@@ -691,7 +768,8 @@
           "label": "Node2",
           "distinct": false
         },
-        "memberOne": {
+        {
+          "name": "memberOne",
           "source": true,
           "list": false,
           "detail": true,
@@ -699,7 +777,8 @@
           "label": "MemberOne",
           "distinct": false
         },
-        "memberTwo": {
+        {
+          "name": "memberTwo",
           "source": true,
           "list": false,
           "detail": true,
@@ -707,7 +786,8 @@
           "label": "MemberTwo",
           "distinct": false
         },
-        "type": {
+        {
+          "name": "type",
           "source": true,
           "list": false,
           "detail": true,
@@ -715,7 +795,8 @@
           "label": "Type",
           "distinct": false
         },
-        "evidenceTypes": {
+        {
+          "name": "evidenceTypes",
           "source": true,
           "list": true,
           "detail": true,
@@ -723,196 +804,42 @@
           "type": "array",
           "label": "EvidenceTypes",
           "distinct": true
+        },
+        {
+          "name": "databases",
+          "source": true,
+          "list": false,
+          "detail": true,
+          "id": false,
+          "type": "array",
+          "label": "Databases",
+          "distinct": true
+        },
+        {
+          "name": "methods",
+          "source": true,
+          "list": false,
+          "detail": true,
+          "id": false,
+          "type": "array",
+          "label": "Methods",
+          "distinct": false
         }
-      }
+      ]
     },
     {
-    "id": 3,
-    "name": "protein_in_pathway",
-    "label": "ProteinInPathway",
-    "original":true,
-    "directed":true,
-    "source":"protein",
-    "target":"pathway",
-    "mapsTo":"ProteinPathway",
-    "attributes": {
-      "id": {
-        "source": false,
-        "list": true,
-        "detail": true,
-        "id": false,
-        "type": "numeric",
-        "label": "ID",
-        "distinct": false
-      },
-      "sourceId": {
-        "source": false,
-        "list": false,
-        "detail": true,
-        "id": true,
-        "type": "numeric",
-        "label": "SourceID",
-        "distinct": false
-      },
-      "targetId": {
-        "source": false,
-        "list": false,
-        "detail": true,
-        "id": true,
-        "type": "numeric",
-        "label": "TargetID",
-        "distinct": false
-      },
-      "node1": {
-        "source": false,
-        "list": true,
-        "detail": true,
-        "id": false,
-        "label": "Node1",
-        "distinct": false
-      },
-      "node2": {
-        "source": false,
-        "list": true,
-        "detail": true,
-        "id": false,
-        "label": "Node2",
-        "distinct": false
-      },
-      "sourceDomainId": {
-        "source": true,
-        "list": false,
-        "detail": true,
-        "id": true,
-        "label": "sourceDomainId",
-        "distinct": false
-      },
-      "targetDomainId": {
-        "source": true,
-        "list": false,
-        "detail": true,
-        "id": true,
-        "label": "targetDomainId",
-        "distinct": false
-      },
-      "type": {
-        "source": true,
-        "list": false,
-        "detail": true,
-        "id": false,
-        "label": "Type",
-        "distinct": false
-      }
-    }
-  },
-    {
-    "id": 4,
-    "name": "protein_encoded_by",
-    "label": "ProteinEncodedBy",
-    "original":true,
-    "directed":true,
-    "source":"protein",
-    "target":"gene",
-    "mapsTo":"ProteinEncodedBy",
-    "attributes": {
-      "id": {
-        "source": false,
-        "list": true,
-        "detail": true,
-        "id": false,
-        "type": "numeric",
-        "label": "ID",
-        "distinct": false
-      },
-      "sourceId": {
-        "source": false,
-        "list": false,
-        "detail": true,
-        "id": true,
-        "type": "numeric",
-        "label": "SourceID",
-        "distinct": false
-      },
-      "targetId": {
-        "source": false,
-        "list": false,
-        "detail": true,
-        "id": true,
-        "type": "numeric",
-        "label": "TargetID",
-        "distinct": false
-      },
-      "node1": {
-        "source": false,
-        "list": true,
-        "detail": true,
-        "id": false,
-        "label": "Node1",
-        "distinct": false
-      },
-      "node2": {
-        "source": false,
-        "list": true,
-        "detail": true,
-        "id": false,
-        "label": "Node2",
-        "distinct": false
-      },
-      "sourceDomainId": {
-        "source": true,
-        "list": false,
-        "detail": true,
-        "id": true,
-        "label": "sourceDomainId",
-        "distinct": false
-      },
-      "targetDomainId": {
-        "source": true,
-        "list": false,
-        "detail": true,
-        "id": true,
-        "label": "targetDomainId",
-        "distinct": false
-      },
-      "type": {
-        "source": true,
-        "list": false,
-        "detail": true,
-        "id": false,
-        "label": "Type",
-        "distinct": false
-      },
-      "score": {
-        "source": true,
-        "list": true,
-        "detail": true,
-        "id": false,
-        "type": "numeric",
-        "label": "Score",
-        "distinct": false
-      },
-      "assertedBy": {
-        "source": true,
-        "list": true,
-        "detail": true,
-        "id": false,
-        "type": "array",
-        "label": "assertedBy",
-        "distinct": false
-      }
-    }
-  },
-    {
-      "id": 5,
-      "name": "protein_associated_with_disorder",
-      "label": "ProteinAssociatedWithDisorder",
-      "original": false,
+      "id": 3,
+      "name": "protein_in_pathway",
+      "label": "ProteinInPathway",
+      "original": true,
       "directed": true,
       "source": "protein",
-      "target": "disorder",
-      "mapsTo":"ProteinAssociatedWithDisorder",
-      "attributes": {
-        "id": {
+      "target": "pathway",
+      "mapsTo": "ProteinPathway",
+      "attributes": [
+        {
+          "name": "id",
+          "source": false,
           "list": true,
           "detail": true,
           "id": false,
@@ -920,58 +847,238 @@
           "label": "ID",
           "distinct": false
         },
-        "sourceId": {
+        {
+          "name": "sourceId",
+          "source": false,
           "list": false,
           "detail": true,
           "id": true,
           "type": "numeric",
-          "label": "SourceID",
+          "label": "Source",
           "distinct": false
         },
-        "targetId": {
+        {
+          "name": "targetId",
+          "source": false,
           "list": false,
           "detail": true,
           "id": true,
           "type": "numeric",
-          "label": "TargetID",
+          "label": "Target",
           "distinct": false
         },
-        "node1": {
+        {
+          "name": "node1",
+          "source": false,
           "list": true,
           "detail": true,
           "id": false,
           "label": "Node1",
           "distinct": false
         },
-        "node2": {
+        {
+          "name": "node2",
+          "source": false,
           "list": true,
           "detail": true,
           "id": false,
           "label": "Node2",
           "distinct": false
         },
-        "sourceDomainId": {
+        {
+          "name": "sourceDomainId",
+          "source": true,
           "list": false,
           "detail": true,
           "id": true,
-          "label": "sourceDomainId",
+          "label": "SourceID",
           "distinct": false
         },
-        "targetDomainId": {
+        {
+          "name": "targetDomainId",
+          "source": true,
           "list": false,
           "detail": true,
           "id": true,
-          "label": "targetDomainId",
+          "label": "TargetID",
           "distinct": false
         },
-        "type": {
+        {
+          "name": "type",
+          "source": true,
+          "list": false,
+          "detail": true,
+          "id": false,
+          "label": "Type",
+          "distinct": false
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "protein_encoded_by",
+      "label": "ProteinEncodedBy",
+      "original": true,
+      "directed": true,
+      "source": "protein",
+      "target": "gene",
+      "mapsTo": "ProteinEncodedBy",
+      "attributes": [
+        {
+          "name": "id",
+          "source": false,
+          "list": true,
+          "detail": true,
+          "id": false,
+          "type": "numeric",
+          "label": "ID",
+          "distinct": false
+        },
+        {
+          "name": "sourceId",
+          "source": false,
+          "list": false,
+          "detail": true,
+          "id": true,
+          "type": "numeric",
+          "label": "Source",
+          "distinct": false
+        },
+        {
+          "name": "targetId",
+          "source": false,
+          "list": false,
+          "detail": true,
+          "id": true,
+          "type": "numeric",
+          "label": "Target",
+          "distinct": false
+        },
+        {
+          "name": "node1",
+          "source": false,
+          "list": true,
+          "detail": true,
+          "id": false,
+          "label": "Node1",
+          "distinct": false
+        },
+        {
+          "name": "node2",
+          "source": false,
+          "list": true,
+          "detail": true,
+          "id": false,
+          "label": "Node2",
+          "distinct": false
+        },
+        {
+          "name": "sourceDomainId",
+          "source": true,
+          "list": false,
+          "detail": true,
+          "id": true,
+          "label": "SourceID",
+          "distinct": false
+        },
+        {
+          "name": "targetDomainId",
+          "source": true,
+          "list": false,
+          "detail": true,
+          "id": true,
+          "label": "TargetID",
+          "distinct": false
+        },
+        {
+          "name": "type",
+          "source": true,
+          "list": false,
+          "detail": true,
+          "id": false,
+          "label": "Type",
+          "distinct": false
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "label": "ProteinAssociatedWithDisorder",
+      "original": false,
+      "directed": true,
+      "source": "protein",
+      "target": "disorder",
+      "mapsTo": "ProteinAssociatedWithDisorder",
+      "attributes": [
+        {
+          "name": "id",
+          "list": true,
+          "detail": true,
+          "id": false,
+          "type": "numeric",
+          "label": "ID",
+          "distinct": false
+        },
+        {
+          "name": "sourceId",
+          "list": false,
+          "detail": true,
+          "id": true,
+          "type": "numeric",
+          "label": "Source",
+          "distinct": false
+        },
+        {
+          "name": "targetId",
+          "list": false,
+          "detail": true,
+          "id": true,
+          "type": "numeric",
+          "label": "Target",
+          "distinct": false
+        },
+        {
+          "name": "node1",
+          "list": true,
+          "detail": true,
+          "id": false,
+          "label": "Node1",
+          "distinct": false
+        },
+        {
+          "name": "node2",
+          "list": true,
+          "detail": true,
+          "id": false,
+          "label": "Node2",
+          "distinct": false
+        },
+        {
+          "name": "sourceDomainId",
+          "list": false,
+          "detail": true,
+          "id": true,
+          "label": "SourceID",
+          "distinct": false
+        },
+        {
+          "name": "targetDomainId",
+          "list": false,
+          "detail": true,
+          "id": true,
+          "label": "TargetID",
+          "distinct": false
+        },
+        {
+          "name": "type",
           "list": false,
           "detail": true,
           "id": false,
           "label": "Type",
           "distinct": false
         },
-        "score": {
+        {
+          "name": "score",
           "list": true,
           "detail": true,
           "id": false,
@@ -979,545 +1086,599 @@
           "label": "Score",
           "distinct": false
         },
-        "assertedBy": {
+        {
+          "name": "assertedBy",
           "list": true,
           "detail": true,
           "id": false,
           "type": "array",
           "label": "AssertedBy",
-          "disctinct": false
+          "distinct": true
         }
-      }
+      ]
     },
     {
-    "id": 6,
-    "name": "gene_interacts_with_Gene",
-    "label": "GeneInteractsWithGene",
-    "original":false,
-    "directed":false,
-    "source":"gene",
-    "target":"gene",
-    "mapsTo":"GeneGeneInteraction",
-    "attributes": {
-      "id": {
-        "list": true,
-        "detail": true,
-        "id": false,
-        "type": "numeric",
-        "label": "ID",
-        "distinct": false
-      },
-      "idOne": {
-        "list": false,
-        "detail": true,
-        "id": true,
-        "type": "numeric",
-        "label": "IDOne",
-        "distinct": false
-      },
-      "idTwo": {
-        "list": false,
-        "detail": true,
-        "id": true,
-        "type": "numeric",
-        "label": "IDTwo",
-        "distinct": false
-      },
-      "node1": {
-        "list": true,
-        "detail": true,
-        "id": false,
-        "label": "Node1",
-        "distinct": false
-      },
-      "node2": {
-        "list": true,
-        "detail": true,
-        "id": false,
-        "label": "Node2",
-        "distinct": false
-      },
-      "memberOne": {
-        "list": false,
-        "detail": true,
-        "id": true,
-        "label": "MemberOne",
-        "distinct": false
-      },
-      "memberTwo": {
-        "list": false,
-        "detail": true,
-        "id": true,
-        "label": "MemberTwo",
-        "distinct": false
-      },
-      "type": {
-        "list": false,
-        "detail": true,
-        "id": false,
-        "label": "Type",
-        "distinct": false
-      },
-      "evidenceTypes":{
-        "list":true,
-        "detail":true,
-        "id":false,
-        "type":"array",
-        "label":"EvidenceTypes",
-        "distinct":true
-      }
-    }
-  },
+      "id": 6,
+      "label": "GeneInteractsWithGene",
+      "original": false,
+      "directed": false,
+      "source": "gene",
+      "target": "gene",
+      "mapsTo": "GeneGeneInteraction",
+      "attributes": [
+        {
+          "name": "id",
+          "list": true,
+          "detail": true,
+          "id": false,
+          "type": "numeric",
+          "label": "ID",
+          "distinct": false
+        },
+        {
+          "name": "idOne",
+          "list": false,
+          "detail": true,
+          "id": true,
+          "type": "numeric",
+          "label": "IDOne",
+          "distinct": false
+        },
+        {
+          "name": "idTwo",
+          "list": false,
+          "detail": true,
+          "id": true,
+          "type": "numeric",
+          "label": "IDTwo",
+          "distinct": false
+        },
+        {
+          "name": "node1",
+          "list": true,
+          "detail": true,
+          "id": false,
+          "label": "Node1",
+          "distinct": false
+        },
+        {
+          "name": "node2",
+          "list": true,
+          "detail": true,
+          "id": false,
+          "label": "Node2",
+          "distinct": false
+        },
+        {
+          "name": "memberOne",
+          "list": false,
+          "detail": true,
+          "id": true,
+          "label": "MemberOne",
+          "distinct": false
+        },
+        {
+          "name": "memberTwo",
+          "list": false,
+          "detail": true,
+          "id": true,
+          "label": "MemberTwo",
+          "distinct": false
+        },
+        {
+          "name": "type",
+          "list": false,
+          "detail": true,
+          "id": false,
+          "label": "Type",
+          "distinct": false
+        },
+        {
+          "name": "evidenceTypes",
+          "list": true,
+          "detail": true,
+          "id": false,
+          "type": "array",
+          "label": "EvidenceTypes",
+          "distinct": true
+        }
+      ]
+    },
     {
-    "id": 7,
-    "name": "gene_assiciated_with_disorder",
-    "label": "GeneAssociatedWithDisorder",
-    "original":true,
-    "directed":true,
-    "source":"gene",
-    "target":"disorder",
-    "mapsTo":"GeneAssociatedWithDisorder",
-    "attributes": {
-      "id": {
-        "source": false,
-        "list": true,
-        "detail": true,
-        "id": false,
-        "type": "numeric",
-        "label": "ID",
-        "distinct": false
-      },
-      "sourceId": {
-        "source": false,
-        "list": false,
-        "detail": true,
-        "id": true,
-        "type": "numeric",
-        "label": "SourceID",
-        "distinct": false
-      },
-      "targetId": {
-        "source": false,
-        "list": false,
-        "detail": true,
-        "id": true,
-        "type": "numeric",
-        "label": "TargetID",
-        "distinct": false
-      },
-      "node1": {
-        "source": false,
-        "list": true,
-        "detail": true,
-        "id": false,
-        "label": "Node1",
-        "distinct": false
-      },
-      "node2": {
-        "source": false,
-        "list": true,
-        "detail": true,
-        "id": false,
-        "label": "Node2",
-        "distinct": false
-      },
-      "sourceDomainId": {
-        "source": true,
-        "list": false,
-        "detail": true,
-        "id": true,
-        "label": "sourceDomainId",
-        "distinct": false
-      },
-      "targetDomainId": {
-        "source": true,
-        "list": false,
-        "detail": true,
-        "id": true,
-        "label": "targetDomainId",
-        "distinct": false
-      },
-      "type": {
-        "source": true,
-        "list": false,
-        "detail": true,
-        "id": false,
-        "label": "Type",
-        "distinct": false
-      },
-      "score": {
-        "source": true,
-        "list": true,
-        "detail": true,
-        "id": false,
-        "type": "numeric",
-        "label": "Score",
-        "distinct": false
-      },
-      "assertedBy": {
-        "source": true,
-        "list": true,
-        "detail": true,
-        "id": false,
-        "type": "array",
-        "label": "assertedBy",
-        "distinct": false
-      }
-    }
-  },
+      "id": 7,
+      "name": "gene_associated_with_disorder",
+      "label": "GeneAssociatedWithDisorder",
+      "original": true,
+      "directed": true,
+      "source": "gene",
+      "target": "disorder",
+      "mapsTo": "GeneAssociatedWithDisorder",
+      "attributes": [
+        {
+          "name": "id",
+          "source": false,
+          "list": true,
+          "detail": true,
+          "id": false,
+          "type": "numeric",
+          "label": "ID",
+          "distinct": false
+        },
+        {
+          "name": "sourceId",
+          "source": false,
+          "list": false,
+          "detail": true,
+          "id": true,
+          "type": "numeric",
+          "label": "Source",
+          "distinct": false
+        },
+        {
+          "name": "targetId",
+          "source": false,
+          "list": false,
+          "detail": true,
+          "id": true,
+          "type": "numeric",
+          "label": "Target",
+          "distinct": false
+        },
+        {
+          "name": "node1",
+          "source": false,
+          "list": true,
+          "detail": true,
+          "id": false,
+          "label": "Node1",
+          "distinct": false
+        },
+        {
+          "name": "node2",
+          "source": false,
+          "list": true,
+          "detail": true,
+          "id": false,
+          "label": "Node2",
+          "distinct": false
+        },
+        {
+          "name": "sourceDomainId",
+          "source": true,
+          "list": false,
+          "detail": true,
+          "id": true,
+          "label": "SourceID",
+          "distinct": false
+        },
+        {
+          "name": "targetDomainId",
+          "source": true,
+          "list": false,
+          "detail": true,
+          "id": true,
+          "label": "TargetID",
+          "distinct": false
+        },
+        {
+          "name": "type",
+          "source": true,
+          "list": false,
+          "detail": true,
+          "id": false,
+          "label": "Type",
+          "distinct": false
+        },
+        {
+          "name": "score",
+          "source": true,
+          "list": true,
+          "detail": true,
+          "id": false,
+          "type": "numeric",
+          "label": "Score",
+          "distinct": false
+        },
+        {
+          "name": "assertedBy",
+          "source": true,
+          "list": true,
+          "detail": true,
+          "id": false,
+          "type": "array",
+          "label": "assertedBy",
+          "distinct": true
+        }
+      ]
+    },
     {
-    "id": 8,
-    "name": "disorder_comorbid_with_disorder",
-    "label": "DisorderComorbidWithDisorder",
-    "original":true,
-    "directed":false,
-    "disabled":true,
-    "source":"disorder",
-    "target":"disorder",
-    "mapsTo":"DisorderComorbidity",
-    "attributes": {
-      "id": {
-        "source": false,
-        "list": true,
-        "detail": true,
-        "id": false,
-        "type": "numeric",
-        "label": "ID",
-        "distinct": false
-      },
-      "idOne": {
-        "source": false,
-        "list": false,
-        "detail": true,
-        "id": true,
-        "type": "numeric",
-        "label": "IDOne",
-        "distinct": false
-      },
-      "idTwo": {
-        "source": false,
-        "list": false,
-        "detail": true,
-        "id": true,
-        "type": "numeric",
-        "label": "IDTwo",
-        "distinct": false
-      },
-      "node1": {
-        "source": false,
-        "list": true,
-        "detail": true,
-        "id": false,
-        "label": "Node1",
-        "distinct": false
-      },
-      "node2": {
-        "source": false,
-        "list": true,
-        "detail": true,
-        "id": false,
-        "label": "Node2",
-        "distinct": false
-      },
-      "memberOne": {
-        "source": true,
-        "list": false,
-        "detail": true,
-        "id": true,
-        "label": "MemberOne",
-        "distinct": false
-      },
-      "memberOne": {
-        "source": true,
-        "list": false,
-        "detail": true,
-        "id": true,
-        "label": "memberOne",
-        "distinct": false
-      },
-      "type": {
-        "source": true,
-        "list": false,
-        "detail": true,
-        "id": false,
-        "label": "Type",
-        "distinct": false
-      },
-      "phiCor": {
-        "source": false,
-        "list": true,
-        "detail": true,
-        "id": false,
-        "type": "numeric",
-        "label": "Phi-Correlation",
-        "distinct": false
-      },
-      "rrGeoMean": {
-        "source": false,
-        "list": true,
-        "detail": true,
-        "id": false,
-        "type": "numeric",
-        "label": "RR-Geometric-Mean",
-        "distinct": false
-      },
-      "rr12": {
-        "source": false,
-        "list": true,
-        "detail": true,
-        "id": false,
-        "type": "numeric",
-        "label": "RR-12",
-        "distinct": false
-      },
-      "rr21": {
-        "source": false,
-        "list": true,
-        "detail": true,
-        "id": false,
-        "type": "numeric",
-        "label": "RR-21",
-        "distinct": false
-      }
-    }
-  },
+      "id": 8,
+      "name": "disorder_comorbid_with_disorder",
+      "label": "DisorderComorbidWithDisorder",
+      "original": true,
+      "directed": false,
+      "disabled": true,
+      "source": "disorder",
+      "target": "disorder",
+      "mapsTo": "DisorderComorbidity",
+      "attributes": [
+        {
+          "name": "id",
+          "source": false,
+          "list": true,
+          "detail": true,
+          "id": false,
+          "type": "numeric",
+          "label": "ID",
+          "distinct": false
+        },
+        {
+          "name": "idOne",
+          "source": false,
+          "list": false,
+          "detail": true,
+          "id": true,
+          "type": "numeric",
+          "label": "IDOne",
+          "distinct": false
+        },
+        {
+          "name": "idTwo",
+          "source": false,
+          "list": false,
+          "detail": true,
+          "id": true,
+          "type": "numeric",
+          "label": "IDTwo",
+          "distinct": false
+        },
+        {
+          "name": "node1",
+          "source": false,
+          "list": true,
+          "detail": true,
+          "id": false,
+          "label": "Node1",
+          "distinct": false
+        },
+        {
+          "name": "node2",
+          "source": false,
+          "list": true,
+          "detail": true,
+          "id": false,
+          "label": "Node2",
+          "distinct": false
+        },
+        {
+          "name": "memberOne",
+          "source": true,
+          "list": false,
+          "detail": true,
+          "id": true,
+          "label": "MemberOne",
+          "distinct": false
+        },
+        {
+          "name": "memberTwo",
+          "source": true,
+          "list": false,
+          "detail": true,
+          "id": true,
+          "label": "memberTwo",
+          "distinct": false
+        },
+        {
+          "name": "type",
+          "source": true,
+          "list": false,
+          "detail": true,
+          "id": false,
+          "label": "Type",
+          "distinct": false
+        },
+        {
+          "name": "phiCor",
+          "source": false,
+          "list": true,
+          "detail": true,
+          "id": false,
+          "type": "numeric",
+          "label": "Phi-Correlation",
+          "distinct": false
+        },
+        {
+          "name": "rrGeoMean",
+          "source": false,
+          "list": true,
+          "detail": true,
+          "id": false,
+          "type": "numeric",
+          "label": "RR-Geometric-Mean",
+          "distinct": false
+        },
+        {
+          "name": "rr12",
+          "source": false,
+          "list": true,
+          "detail": true,
+          "id": false,
+          "type": "numeric",
+          "label": "RR-12",
+          "distinct": false
+        },
+        {
+          "name": "rr21",
+          "source": false,
+          "list": true,
+          "detail": true,
+          "id": false,
+          "type": "numeric",
+          "label": "RR-21",
+          "distinct": false
+        }
+      ]
+    },
     {
-    "id": 9,
-    "name": "disorder_is_subtype_of_disorder",
-    "label": "DisorderIsSubtypeOfDisorder",
-    "original":true,
-    "directed":true,
-    "source":"disorder",
-    "target":"disorder",
-    "mapsTo":"DisorderHirarchy",
-    "attributes": {
-      "id": {
-        "source": false,
-        "list": true,
-        "detail": true,
-        "id": false,
-        "type": "numeric",
-        "label": "ID",
-        "distinct": false
-      },
-      "sourceId": {
-        "source": false,
-        "list": false,
-        "detail": true,
-        "id": true,
-        "type": "numeric",
-        "label": "SourceID",
-        "distinct": false
-      },
-      "targetId": {
-        "source": false,
-        "list": false,
-        "detail": true,
-        "id": true,
-        "type": "numeric",
-        "label": "TargetID",
-        "distinct": false
-      },
-      "node1": {
-        "source": false,
-        "list": true,
-        "detail": true,
-        "id": false,
-        "label": "Node1",
-        "distinct": false
-      },
-      "node2": {
-        "source": false,
-        "list": true,
-        "detail": true,
-        "id": false,
-        "label": "Node2",
-        "distinct": false
-      },
-      "sourceDomainId": {
-        "source": true,
-        "list": false,
-        "detail": true,
-        "id": true,
-        "label": "SourceID",
-        "distinct": false
-      },
-      "targetDomainId": {
-        "source": true,
-        "list": false,
-        "detail": true,
-        "id": true,
-        "label": "TargetDomainId",
-        "distinct": false
-      },
-      "type": {
-        "source": true,
-        "list": false,
-        "detail": true,
-        "id": false,
-        "label": "Type",
-        "distinct": false
-      }
-
-    }
-  },
+      "id": 9,
+      "name": "disorder_is_subtype_of_disorder",
+      "label": "DisorderIsSubtypeOfDisorder",
+      "original": true,
+      "directed": true,
+      "source": "disorder",
+      "target": "disorder",
+      "mapsTo": "DisorderHierarchy",
+      "attributes": [
+        {
+          "name": "id",
+          "source": false,
+          "list": true,
+          "detail": true,
+          "id": false,
+          "type": "numeric",
+          "label": "ID",
+          "distinct": false
+        },
+        {
+          "name": "sourceId",
+          "source": false,
+          "list": false,
+          "detail": true,
+          "id": true,
+          "type": "numeric",
+          "label": "Source",
+          "distinct": false
+        },
+        {
+          "name": "targetId",
+          "source": false,
+          "list": false,
+          "detail": true,
+          "id": true,
+          "type": "numeric",
+          "label": "Target",
+          "distinct": false
+        },
+        {
+          "name": "node1",
+          "source": false,
+          "list": true,
+          "detail": true,
+          "id": false,
+          "label": "Node1",
+          "distinct": false
+        },
+        {
+          "name": "node2",
+          "source": false,
+          "list": true,
+          "detail": true,
+          "id": false,
+          "label": "Node2",
+          "distinct": false
+        },
+        {
+          "name": "sourceDomainId",
+          "source": true,
+          "list": false,
+          "detail": true,
+          "id": true,
+          "label": "SourceID",
+          "distinct": false
+        },
+        {
+          "name": "targetDomainId",
+          "source": true,
+          "list": false,
+          "detail": true,
+          "id": true,
+          "label": "TargetID",
+          "distinct": false
+        },
+        {
+          "name": "type",
+          "source": true,
+          "list": false,
+          "detail": true,
+          "id": false,
+          "label": "Type",
+          "distinct": false
+        }
+      ]
+    },
     {
-    "id": 10,
-    "name": "drug_has_indication",
-    "label": "DrugHasIndication",
-    "original":true,
-    "directed":true,
-    "source":"drug",
-    "target":"disorder",
-    "mapsTo":"DrugIndication",
-    "attributes": {
-      "id": {
-        "source": false,
-        "list": true,
-        "detail": true,
-        "id": false,
-        "type": "numeric",
-        "label": "ID",
-        "distinct": false
-      },
-      "sourceId": {
-        "source": false,
-        "list": false,
-        "detail": true,
-        "id": true,
-        "type": "numeric",
-        "label": "SourceID",
-        "distinct": false
-      },
-      "targetId": {
-        "source": false,
-        "list": false,
-        "detail": true,
-        "id": true,
-        "type": "numeric",
-        "label": "TargetID",
-        "distinct": false
-      },
-      "node1": {
-        "source": false,
-        "list": true,
-        "detail": true,
-        "id": false,
-        "label": "Node1",
-        "distinct": false
-      },
-      "node2": {
-        "source": false,
-        "list": true,
-        "detail": true,
-        "id": false,
-        "label": "Node2",
-        "distinct": false
-      },
-      "sourceDomainId": {
-        "source": true,
-        "list": false,
-        "detail": true,
-        "id": true,
-        "label": "SourceDomainId",
-        "distinct": false
-      },
-      "targetDomainId": {
-        "source": true,
-        "list": false,
-        "detail": true,
-        "id": true,
-        "label": "TargetDomainId",
-        "distinct": false
-      },
-      "type": {
-        "source": true,
-        "list": false,
-        "detail": true,
-        "id": false,
-        "label": "Type",
-        "distinct": false
-      }
+      "id": 10,
+      "name": "drug_has_indication",
+      "label": "DrugHasIndication",
+      "original": true,
+      "directed": true,
+      "source": "drug",
+      "target": "disorder",
+      "mapsTo": "DrugIndication",
+      "attributes": [
+        {
+          "name": "id",
+          "source": false,
+          "list": true,
+          "detail": true,
+          "id": false,
+          "type": "numeric",
+          "label": "ID",
+          "distinct": false
+        },
+        {
+          "name": "sourceId",
+          "source": false,
+          "list": false,
+          "detail": true,
+          "id": true,
+          "type": "numeric",
+          "label": "Source",
+          "distinct": false
+        },
+        {
+          "name": "targetId",
+          "source": false,
+          "list": false,
+          "detail": true,
+          "id": true,
+          "type": "numeric",
+          "label": "Target",
+          "distinct": false
+        },
+        {
+          "name": "node1",
+          "source": false,
+          "list": true,
+          "detail": true,
+          "id": false,
+          "label": "Node1",
+          "distinct": false
+        },
+        {
+          "name": "node2",
+          "source": false,
+          "list": true,
+          "detail": true,
+          "id": false,
+          "label": "Node2",
+          "distinct": false
+        },
+        {
+          "name": "sourceDomainId",
+          "source": true,
+          "list": false,
+          "detail": true,
+          "id": true,
+          "label": "SourceID",
+          "distinct": false
+        },
+        {
+          "name": "targetDomainId",
+          "source": true,
+          "list": false,
+          "detail": true,
+          "id": true,
+          "label": "TargetID",
+          "distinct": false
+        },
+        {
+          "name": "type",
+          "source": true,
+          "list": false,
+          "detail": true,
+          "id": false,
+          "label": "Type",
+          "distinct": false
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "name": "drug_has_contraindication",
+      "label": "DrugHasContraindication",
+      "original": true,
+      "directed": true,
+      "source": "drug",
+      "target": "disorder",
+      "mapsTo": "DrugContraindication",
+      "attributes": [
+        {
+          "name": "id",
+          "source": false,
+          "list": true,
+          "detail": true,
+          "id": false,
+          "type": "numeric",
+          "label": "ID",
+          "distinct": false
+        },
+        {
+          "name": "sourceId",
+          "source": false,
+          "list": false,
+          "detail": true,
+          "id": true,
+          "type": "numeric",
+          "label": "Source",
+          "distinct": false
+        },
+        {
+          "name": "targetId",
+          "source": false,
+          "list": false,
+          "detail": true,
+          "id": true,
+          "type": "numeric",
+          "label": "Target",
+          "distinct": false
+        },
+        {
+          "name": "node1",
+          "source": false,
+          "list": true,
+          "detail": true,
+          "id": false,
+          "label": "Node1",
+          "distinct": false
+        },
+        {
+          "name": "node2",
+          "source": false,
+          "list": true,
+          "detail": true,
+          "id": false,
+          "label": "Node2",
+          "distinct": false
+        },
+        {
+          "name": "sourceDomainId",
+          "source": true,
+          "list": false,
+          "detail": true,
+          "id": true,
+          "label": "SourceID",
+          "distinct": false
+        },
+        {
+          "name": "targetDomainId",
+          "source": true,
+          "list": false,
+          "detail": true,
+          "id": true,
+          "label": "TargetID",
+          "distinct": false
+        },
+        {
+          "name": "type",
+          "source": true,
+          "list": false,
+          "detail": true,
+          "id": false,
+          "label": "Type",
+          "distinct": false
+        }
+      ]
     }
-  },
-  {
-  "id": 11,
-  "name": "drug_has_contraindication",
-  "label": "DrugHasContraindication",
-  "original":true,
-  "directed":true,
-  "source":"drug",
-  "target":"disorder",
-  "mapsTo":"DrugContraindication",
-  "attributes": {
-    "id": {
-      "source": false,
-      "list": true,
-      "detail": true,
-      "id": false,
-      "type": "numeric",
-      "label": "ID",
-      "distinct": false
-    },
-    "sourceId": {
-      "source": false,
-      "list": false,
-      "detail": true,
-      "id": true,
-      "type": "numeric",
-      "label": "SourceID",
-      "distinct": false
-    },
-    "targetId": {
-      "source": false,
-      "list": false,
-      "detail": true,
-      "id": true,
-      "type": "numeric",
-      "label": "TargetID",
-      "distinct": false
-    },
-    "node1": {
-      "source": false,
-      "list": true,
-      "detail": true,
-      "id": false,
-      "label": "Node1",
-      "distinct": false
-    },
-    "node2": {
-      "source": false,
-      "list": true,
-      "detail": true,
-      "id": false,
-      "label": "Node2",
-      "distinct": false
-    },
-    "sourceDomainId": {
-      "source": true,
-      "list": false,
-      "detail": true,
-      "id": true,
-      "label": "SourceDomainId",
-      "distinct": false
-    },
-    "targetDomainId": {
-      "source": true,
-      "list": false,
-      "detail": true,
-      "id": true,
-      "label": "TargetDomainId",
-      "distinct": false
-    },
-    "type": {
-      "source": true,
-      "list": false,
-      "detail": true,
-      "id": false,
-      "label": "Type",
-      "distinct": false
-    }
-  }
-}
   ]
 }

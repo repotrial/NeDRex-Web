@@ -271,27 +271,6 @@ export default {
           } else
             this.graphButtons[index].active = false
         }
-      //   if (id === 0) {
-      //     this.graphLoad = {name: "default"}
-      //   } else if (id === 1) {
-      //     this.graphLoad = {get: "/getExampleGraph1"}
-      //     this.graphLoad = {
-      //       post: {
-      //         nodes: {
-      //           disorder: {
-      //             filters: [
-      //               {
-      //                 type: "match",
-      //                 expression: ".*((neur)|(prion)|(brain)|(enceph)|(cogni)).*"
-      //               }
-      //             ]
-      //           }, drug: {}
-      //         },
-      //         edges: {"DrugHasIndication": {}},
-      //         connectedOnly: true
-      //       }
-      //     }
-      //   }
       }
       if (Object.keys(this.graphLoad.post.nodes).length === 0) {
         this.$emit("printNotificationEvent", "Please select some nodes/edges first!", 1)
@@ -332,6 +311,7 @@ export default {
     },
     toggleEdge: function (edgeIndex) {
       let index = this.edgeModel.indexOf(edgeIndex)
+      console.log(this.edges[edgeIndex].label)
       this.$refs.startgraph.toggleEdgeVisible(this.edges[edgeIndex].label)
       if (index >= 0) {
         let remove = -1;

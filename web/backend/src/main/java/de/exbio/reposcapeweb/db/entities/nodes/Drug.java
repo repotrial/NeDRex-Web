@@ -39,6 +39,18 @@ public class Drug extends RepoTrialNode {
 
     @Transient
     @JsonIgnore
+    public static String[] attributeLabels;
+
+    @Transient
+    @JsonIgnore
+    public static HashMap<String,String> name2labelMap;
+
+    @Transient
+    @JsonIgnore
+    public static HashMap<String,String> label2NameMap;
+
+    @Transient
+    @JsonIgnore
     public static Boolean[] idAttributes;
 
     @Transient
@@ -86,6 +98,15 @@ public class Drug extends RepoTrialNode {
             if (!attributes.remove(a))
                 return false;
         return attributes.isEmpty();
+    }
+
+    public static void setUpNameMaps() {
+        label2NameMap=new HashMap<>();
+        name2labelMap = new HashMap<>();
+        for (int i = 0; i < allAttributes.length; i++) {
+            label2NameMap.put(allAttributes[i],attributeLabels[i]);
+            name2labelMap.put(attributeLabels[i], allAttributes[i]);
+        }
     }
 
 

@@ -26,6 +26,9 @@ public class EdgeController {
     private final DrugHasContraindicationService drugHasContraindicationService;
     private final ObjectMapper objectMapper;
 
+    public static HashMap<String,String> edgeName2LabelMap =new HashMap<>();
+    public static HashMap<String,String> edgeLabel2NameMap = new HashMap<>();
+
 
     @Autowired
     public EdgeController(
@@ -333,63 +336,39 @@ public class EdgeController {
     }
 
     public Iterable findAll(int edgeId) {
-        switch (Graphs.getEdge(edgeId)) {
-            case "GeneAssociatedWithDisorder":
-                return associatedWithDisorderService.findAllGenes();
-            case "DrugHasTargetGene":
-                return drugHasTargetService.findAllGenes();
-            case "ProteinEncodedBy":
-                return proteinEncodedByService.findAll();
-            case "DrugHasIndication":
-                return drugHasIndicationService.findAll();
-            case "DrugHasContraindication":
-                return drugHasContraindicationService.findAll();
-            case "DrugHasTargetProtein":
-                return drugHasTargetService.findAllProteins();
-            case "ProteinInteractsWithProtein":
-                return proteinInteractsWithProteinService.findAllProteins();
-            case "ProteinInPathway":
-                return proteinInPathwayService.findAll();
-            case "ProteinAssociatedWithDisorder":
-                return associatedWithDisorderService.findAllProteins();
-            case "DisorderIsSubtypeOfDisorder":
-                return disorderIsADisorderService.findAll();
-            case "DisorderComorbidWithDisorder":
-                return disorderComorbidWithDisorderService.findAll();
-            case "GeneInteractsWithGene":
-                return proteinInteractsWithProteinService.findAllGenes();
-        }
-        return null;
+        return switch (Graphs.getEdge(edgeId)) {
+            case "GeneAssociatedWithDisorder" -> associatedWithDisorderService.findAllGenes();
+            case "DrugTargetGene" -> drugHasTargetService.findAllGenes();
+            case "ProteinEncodedBy" -> proteinEncodedByService.findAll();
+            case "DrugIndication" -> drugHasIndicationService.findAll();
+            case "DrugContraindication" -> drugHasContraindicationService.findAll();
+            case "DrugTargetProtein" -> drugHasTargetService.findAllProteins();
+            case "ProteinProteinInteraction" -> proteinInteractsWithProteinService.findAllProteins();
+            case "ProteinPathway" -> proteinInPathwayService.findAll();
+            case "ProteinAssociatedWithDisorder" -> associatedWithDisorderService.findAllProteins();
+            case "DisorderHierarchy" -> disorderIsADisorderService.findAll();
+            case "DisorderComorbidity" -> disorderComorbidWithDisorderService.findAll();
+            case "GeneGeneInteraction" -> proteinInteractsWithProteinService.findAllGenes();
+            default -> null;
+        };
     }
 
     public boolean isEdgeFrom(int edgeId, int node1, int node2, Integer k1, Integer k2) {
-        switch (Graphs.getEdge(edgeId)) {
-            case "GeneAssociatedWithDisorder":
-                return isGenesAssociatedWithDisorderFrom(k1, k2);
-            case "DrugHasTargetGene":
-                return isDrugHasTargetGeneFrom(k1, k2);
-            case "ProteinEncodedBy":
-                return isProteinEncodedByFrom(k1, k2);
-            case "DrugHasIndication":
-                return isDrugHasIndicationFrom(k1, k2);
-            case "DrugHasContraindication":
-                return isDrugHasContraindicationFrom(k1, k2);
-            case "DrugHasTargetProtein":
-                return isDrugHasTargetProteinFrom(k1, k2);
-            case "ProteinInteractsWithProtein":
-                return isProteinInteractsWithProtein(k1, k2);
-            case "ProteinInPathway":
-                return isProteinInPathwayFrom(k1, k2);
-            case "ProteinAssociatedWithDisorder":
-                return isProteinAssociatedWithDisorderFrom(k1, k2);
-            case "DisorderIsSubtypeOfDisorder":
-                return isDisorderIsADisorder(k1, k2);
-            case "DisorderComorbidWithDisorder":
-                return isDisorderComorbidWithDisorder(k1, k2);
-            case "GeneInteractsWithGene":
-                return isGeneInteractsWithGene(k1, k2);
-        }
-        return false;
+        return switch (Graphs.getEdge(edgeId)) {
+            case "GeneAssociatedWithDisorder" -> isGenesAssociatedWithDisorderFrom(k1, k2);
+            case "DrugTargetGene" -> isDrugHasTargetGeneFrom(k1, k2);
+            case "ProteinEncodedBy" -> isProteinEncodedByFrom(k1, k2);
+            case "DrugIndication" -> isDrugHasIndicationFrom(k1, k2);
+            case "DrugContraindication" -> isDrugHasContraindicationFrom(k1, k2);
+            case "DrugTargetProtein" -> isDrugHasTargetProteinFrom(k1, k2);
+            case "ProteinProteinInteraction" -> isProteinInteractsWithProtein(k1, k2);
+            case "ProteinPathway" -> isProteinInPathwayFrom(k1, k2);
+            case "ProteinAssociatedWithDisorder" -> isProteinAssociatedWithDisorderFrom(k1, k2);
+            case "DisorderHierarchy" -> isDisorderIsADisorder(k1, k2);
+            case "DisorderComorbidity" -> isDisorderComorbidWithDisorder(k1, k2);
+            case "GeneGeneInteraction" -> isGeneInteractsWithGene(k1, k2);
+            default -> false;
+        };
     }
 
     public HashSet<Integer> getEdges(int edgeId, int firstType, Integer node) {
@@ -399,94 +378,58 @@ public class EdgeController {
     }
 
     private HashSet<Integer> getEdgesFrom(int edgeId, Integer node) {
-        switch (Graphs.getEdge(edgeId)) {
-            case "GeneAssociatedWithDisorder":
-                return getGenesAssociatedWithDisorderFrom(node);
-            case "DrugHasTargetGene":
-                return getDrugHasTargetGeneFrom(node);
-            case "ProteinEncodedBy":
-                return getProteinEncodedByFrom(node);
-            case "DrugHasIndication":
-                return getDrugHasIndicationFrom(node);
-            case "DrugHasContraindication":
-                return getDrugHasContraindicationFrom(node);
-            case "DrugHasTargetProtein":
-                return getDrugHasTargetProteinFrom(node);
-            case "ProteinInteractsWithProtein":
-                return getProteinInteractsWithProtein(node);
-            case "ProteinInPathway":
-                return getProteinInPathwayFrom(node);
-            case "ProteinAssociatedWithDisorder":
-                return getProteinAssociatedWithDisorderFrom(node);
-            case "DisorderIsSubtypeOfDisorder":
-                return getDisorderIsADisorder(node);
-            case "DisorderComorbidWithDisorder":
-                return getDisorderComorbidWithDisorder(node);
-            case "GeneInteractsWithGene":
-                return getGeneInteractsWithGene(node);
-        }
-        return null;
+        return switch (Graphs.getEdge(edgeId)) {
+            case "GeneAssociatedWithDisorder" -> getGenesAssociatedWithDisorderFrom(node);
+            case "DrugTargetGene" -> getDrugHasTargetGeneFrom(node);
+            case "ProteinEncodedBy" -> getProteinEncodedByFrom(node);
+            case "DrugIndication" -> getDrugHasIndicationFrom(node);
+            case "DrugContraindication" -> getDrugHasContraindicationFrom(node);
+            case "DrugTargetProtein" -> getDrugHasTargetProteinFrom(node);
+            case "ProteinProteinInteraction" -> getProteinInteractsWithProtein(node);
+            case "ProteinPathway" -> getProteinInPathwayFrom(node);
+            case "ProteinAssociatedWithDisorder" -> getProteinAssociatedWithDisorderFrom(node);
+            case "DisorderHierarchy" -> getDisorderIsADisorder(node);
+            case "DisorderComorbidity" -> getDisorderComorbidWithDisorder(node);
+            case "GeneGeneInteraction" -> getGeneInteractsWithGene(node);
+            default -> null;
+        };
     }
 
     private HashSet<Integer> getEdgesTo(int edgeId, Integer node) {
-        switch (Graphs.getEdge(edgeId)) {
-            case "GeneAssociatedWithDisorder":
-                return getGenesAssociatedWithDisorderTo(node);
-            case "DrugHasTargetGene":
-                return getDrugHasTargetGeneTo(node);
-            case "ProteinEncodedBy":
-                return getProteinEncodedByTo(node);
-            case "DrugHasIndication":
-                return getDrugHasIndicationTo(node);
-            case "DrugHasContraindication":
-                return getDrugHasContraindicationTo(node);
-            case "DrugHasTargetProtein":
-                return getDrugHasTargetProteinTo(node);
-            case "ProteinInteractsWithProtein":
-                return getProteinInteractsWithProtein(node);
-            case "ProteinInPathway":
-                return getProteinInPathwayTo(node);
-            case "ProteinAssociatedWithDisorder":
-                return getProteinAssociatedWithDisorderTo(node);
-            case "DisorderIsSubtypeOfDisorder":
-                return getDisorderIsADisorder(node);
-            case "DisorderComorbidWithDisorder":
-                return getDisorderComorbidWithDisorder(node);
-            case "GeneInteractsWithGene":
-                return getGeneInteractsWithGene(node);
-        }
-        return null;
+        return switch (Graphs.getEdge(edgeId)) {
+            case "GeneAssociatedWithDisorder" -> getGenesAssociatedWithDisorderTo(node);
+            case "DrugTargetGene" -> getDrugHasTargetGeneTo(node);
+            case "ProteinEncodedBy" -> getProteinEncodedByTo(node);
+            case "DrugIndication" -> getDrugHasIndicationTo(node);
+            case "DrugContraindication" -> getDrugHasContraindicationTo(node);
+            case "DrugTargetProtein" -> getDrugHasTargetProteinTo(node);
+            case "ProteinProteinInteraction" -> getProteinInteractsWithProtein(node);
+            case "ProteinPathway" -> getProteinInPathwayTo(node);
+            case "ProteinAssociatedWithDisorder" -> getProteinAssociatedWithDisorderTo(node);
+            case "DisorderHierarchy" -> getDisorderIsADisorder(node);
+            case "DisorderComorbidity" -> getDisorderComorbidWithDisorder(node);
+            case "GeneGeneInteraction" -> getGeneInteractsWithGene(node);
+            default -> null;
+        };
     }
 
 
     public String[] getListAttributes(Integer type) {
-        switch (Graphs.getEdge(type)) {
-            case "GeneAssociatedWithDisorder":
-                return GeneAssociatedWithDisorder.getListAttributes();
-            case "DrugHasTargetGene":
-                return DrugHasTargetGene.getListAttributes();
-            case "ProteinEncodedBy":
-                return ProteinEncodedBy.getListAttributes();
-            case "DrugHasIndication":
-                return DrugHasIndication.getListAttributes();
-            case "DrugHasContraindication":
-                return DrugHasContraindication.getListAttributes();
-            case "DrugHasTargetProtein":
-                return DrugHasTargetProtein.getListAttributes();
-            case "ProteinInteractsWithProtein":
-                return ProteinInteractsWithProtein.getListAttributes();
-            case "ProteinInPathway":
-                return ProteinInPathway.getListAttributes();
-            case "ProteinAssociatedWithDisorder":
-                return ProteinAssociatedWithDisorder.getListAttributes();
-            case "DisorderIsSubtypeOfDisorder":
-                return DisorderIsADisorder.getListAttributes();
-            case "DisorderComorbidWithDisorder":
-                return DisorderComorbidWithDisorder.getListAttributes();
-            case "GeneInteractsWithGene":
-                return GeneInteractsWithGene.getListAttributes();
-        }
-        return null;
+        return switch (Graphs.getEdge(type)) {
+            case "GeneAssociatedWithDisorder" -> GeneAssociatedWithDisorder.getListAttributes();
+            case "DrugTargetGene" -> DrugHasTargetGene.getListAttributes();
+            case "ProteinEncodedBy" -> ProteinEncodedBy.getListAttributes();
+            case "DrugIndication" -> DrugHasIndication.getListAttributes();
+            case "DrugContraindication" -> DrugHasContraindication.getListAttributes();
+            case "DrugTargetProtein" -> DrugHasTargetProtein.getListAttributes();
+            case "ProteinProteinInteraction" -> ProteinInteractsWithProtein.getListAttributes();
+            case "ProteinPathway" -> ProteinInPathway.getListAttributes();
+            case "ProteinAssociatedWithDisorder" -> ProteinAssociatedWithDisorder.getListAttributes();
+            case "DisorderHierarchy" -> DisorderIsADisorder.getListAttributes();
+            case "DisorderComorbidity" -> DisorderComorbidWithDisorder.getListAttributes();
+            case "GeneGeneInteraction" -> GeneInteractsWithGene.getListAttributes();
+            default -> null;
+        };
     }
 
     public LinkedList<HashMap<String,Object>> edgesToAttributeList(Integer type, List<PairId> ids, HashSet<String> attributes) {
@@ -503,288 +446,211 @@ public class EdgeController {
         }
         LinkedList<HashMap<String, Object>> values = new LinkedList<>();
         switch (Graphs.getEdge(type)) {
-            case "GeneAssociatedWithDisorder":
-                chunks.stream().map(this::findAllGeneAssociatedWithDisorder).flatMap(Collection::stream).collect(Collectors.toList()).forEach(e -> {
-                    associatedWithDisorderService.setDomainIds(e);
-                    values.add(e.getAsMap(attributes));
-                });
-                break;
-            case "DrugHasTargetGene":
-                chunks.stream().map(this::findAllDrugHasTargetGene).flatMap(Collection::stream).collect(Collectors.toList()).forEach(e -> {
-                    drugHasTargetService.setDomainIds(e);
-                    values.add(e.getAsMap(attributes));
-                });
-                break;
-            case "ProteinEncodedBy":
-                chunks.stream().map(this::findAllProteinEncodedBy).flatMap(Collection::stream).collect(Collectors.toList()).forEach(e -> {
-                    proteinEncodedByService.setDomainIds(e);
-                    values.add(e.getAsMap(attributes));
-                });
-                break;
-            case "DrugHasIndication":
-                chunks.stream().map(this::findAllDrugHasIndication).flatMap(Collection::stream).collect(Collectors.toList()).forEach(e -> {
-                    drugHasIndicationService.setDomainIds(e);
-                    values.add(e.getAsMap(attributes));
-                });
-                break;
-            case "DrugHasContraindication":
-                chunks.stream().map(this::findAllDrugHasContraindication).flatMap(Collection::stream).collect(Collectors.toList()).forEach(e -> {
-                    drugHasContraindicationService.setDomainIds(e);
-                    values.add(e.getAsMap(attributes));
-                });
-                break;
-            case "DrugHasTargetProtein":
-                chunks.stream().map(this::findAllDrugHasTargetProtein).flatMap(Collection::stream).collect(Collectors.toList()).forEach(e -> {
-                    drugHasTargetService.setDomainIds(e);
-                    values.add(e.getAsMap(attributes));
-                });
-                break;
-            case "ProteinInteractsWithProtein":
-                chunks.stream().map(this::findAllProteinInteractsWithProtein).flatMap(Collection::stream).collect(Collectors.toList()).forEach(e -> {
-                    proteinInteractsWithProteinService.setDomainIds(e);
-                        values.add(e.getAsMap(attributes));
-                });
-                break;
-            case "GeneInteractsWithGene":
-                chunks.stream().map(this::findAllGeneInteractsWithGene).flatMap(Collection::stream).collect(Collectors.toList()).forEach(e -> {
-                    proteinInteractsWithProteinService.setDomainIds(e);
-                        values.add(e.getAsMap(attributes));
-                });
-                break;
-            case "ProteinInPathway":
-                chunks.stream().map(this::findAllProteinInPathway).flatMap(Collection::stream).collect(Collectors.toList()).forEach(e -> {
-                    proteinInPathwayService.setDomainIds(e);
-                        values.add(e.getAsMap(attributes));
-                });
-                break;
-            case "ProteinAssociatedWithDisorder":
-                chunks.stream().map(this::findAllProteinAssociatedWithDisorder).flatMap(Collection::stream).collect(Collectors.toList()).forEach(e -> {
-                    associatedWithDisorderService.setDomainIds(e);
-                        values.add(e.getAsMap(attributes));
-                });
-                break;
-            case "DisorderIsSubtypeOfDisorder":
-                chunks.stream().map(this::findAllDisorderIsADisorder).flatMap(Collection::stream).collect(Collectors.toList()).forEach(e -> {
-                    disorderIsADisorderService.setDomainIds(e);
-                        values.add(e.getAsMap(attributes));
-                });
-                break;
-            case "DisorderComorbidWithDisorder":
-                chunks.stream().map(this::findAllDisorderComorbidWithDisorder).flatMap(Collection::stream).collect(Collectors.toList()).forEach(e -> {
-                    disorderComorbidWithDisorderService.setDomainIds(e);
-                        values.add(e.getAsMap(attributes));
-                });
+            case "GeneAssociatedWithDisorder" -> chunks.stream().map(this::findAllGeneAssociatedWithDisorder).flatMap(Collection::stream).collect(Collectors.toList()).forEach(e -> {
+                associatedWithDisorderService.setDomainIds(e);
+                values.add(e.getAsMap(attributes));
+            });
+            case "DrugTargetGene" -> chunks.stream().map(this::findAllDrugHasTargetGene).flatMap(Collection::stream).collect(Collectors.toList()).forEach(e -> {
+                drugHasTargetService.setDomainIds(e);
+                values.add(e.getAsMap(attributes));
+            });
+            case "ProteinEncodedBy" -> chunks.stream().map(this::findAllProteinEncodedBy).flatMap(Collection::stream).collect(Collectors.toList()).forEach(e -> {
+                proteinEncodedByService.setDomainIds(e);
+                values.add(e.getAsMap(attributes));
+            });
+            case "DrugIndication" -> chunks.stream().map(this::findAllDrugHasIndication).flatMap(Collection::stream).collect(Collectors.toList()).forEach(e -> {
+                drugHasIndicationService.setDomainIds(e);
+                values.add(e.getAsMap(attributes));
+            });
+            case "DrugContraindication" -> chunks.stream().map(this::findAllDrugHasContraindication).flatMap(Collection::stream).collect(Collectors.toList()).forEach(e -> {
+                drugHasContraindicationService.setDomainIds(e);
+                values.add(e.getAsMap(attributes));
+            });
+            case "DrugTargetProtein" -> chunks.stream().map(this::findAllDrugHasTargetProtein).flatMap(Collection::stream).collect(Collectors.toList()).forEach(e -> {
+                drugHasTargetService.setDomainIds(e);
+                values.add(e.getAsMap(attributes));
+            });
+            case "ProteinProteinInteraction" -> chunks.stream().map(this::findAllProteinInteractsWithProtein).flatMap(Collection::stream).collect(Collectors.toList()).forEach(e -> {
+                proteinInteractsWithProteinService.setDomainIds(e);
+                values.add(e.getAsMap(attributes));
+            });
+            case "GeneGeneInteraction" -> chunks.stream().map(this::findAllGeneInteractsWithGene).flatMap(Collection::stream).collect(Collectors.toList()).forEach(e -> {
+                proteinInteractsWithProteinService.setDomainIds(e);
+                values.add(e.getAsMap(attributes));
+            });
+            case "ProteinPathway" -> chunks.stream().map(this::findAllProteinInPathway).flatMap(Collection::stream).collect(Collectors.toList()).forEach(e -> {
+                proteinInPathwayService.setDomainIds(e);
+                values.add(e.getAsMap(attributes));
+            });
+            case "ProteinAssociatedWithDisorder" -> chunks.stream().map(this::findAllProteinAssociatedWithDisorder).flatMap(Collection::stream).collect(Collectors.toList()).forEach(e -> {
+                associatedWithDisorderService.setDomainIds(e);
+                values.add(e.getAsMap(attributes));
+            });
+            case "DisorderHierarchy" -> chunks.stream().map(this::findAllDisorderIsADisorder).flatMap(Collection::stream).collect(Collectors.toList()).forEach(e -> {
+                disorderIsADisorderService.setDomainIds(e);
+                values.add(e.getAsMap(attributes));
+            });
+            case "DisorderComorbidity" -> chunks.stream().map(this::findAllDisorderComorbidWithDisorder).flatMap(Collection::stream).collect(Collectors.toList()).forEach(e -> {
+                disorderComorbidWithDisorderService.setDomainIds(e);
+                values.add(e.getAsMap(attributes));
+            });
         }
         return values;
     }
 
     public HashMap<String, Object> edgeToAttributeList(Integer type, PairId id) {
-        switch (Graphs.getEdge(type)) {
-            case "GeneAssociatedWithDisorder":
-                return findGeneAssociatedWithDisorder(id).getAsMap();
-            case "DrugHasTargetGene":
-                return findDrugHasTargetGene(id).getAsMap();
-            case "ProteinEncodedBy":
-                return findProteinEncodedBy(id).getAsMap();
-            case "DrugHasIndication":
-                return findDrugHasIndication(id).getAsMap();
-            case "DrugHasContraindication":
-                return findDrugHasContraindication(id).getAsMap();
-            case "DrugHasTargetProtein":
-                return findDrugHasTargetProtein(id).getAsMap();
-            case "ProteinInteractsWithProtein":
-                return findProteinInteractsWithProtein(id).getAsMap();
-            case "GeneInteractsWithGene":
-                return findGeneInteractsWithGene(id).getAsMap();
-            case "ProteinInPathway":
-                return findProteinInPathway(id).getAsMap();
-            case "ProteinAssociatedWithDisorder":
-                return findProteinAssociatedWithDisorder(id).getAsMap();
-            case "DisorderIsSubtypeOfDisorder":
-                return findDisorderIsADisorder(id).getAsMap();
-            case "DisorderComorbidWithDisorder":
-                return findDisorderComorbidWithDisorder(id).getAsMap();
-        }
-        return null;
+        return switch (Graphs.getEdge(type)) {
+            case "GeneAssociatedWithDisorder" -> findGeneAssociatedWithDisorder(id).getAsMap();
+            case "DrugTargetGene" -> findDrugHasTargetGene(id).getAsMap();
+            case "ProteinEncodedBy" -> findProteinEncodedBy(id).getAsMap();
+            case "DrugIndication" -> findDrugHasIndication(id).getAsMap();
+            case "DrugContraindication" -> findDrugHasContraindication(id).getAsMap();
+            case "DrugTargetProtein" -> findDrugHasTargetProtein(id).getAsMap();
+            case "ProteinProteinInteraction" -> findProteinInteractsWithProtein(id).getAsMap();
+            case "GeneGeneInteraction" -> findGeneInteractsWithGene(id).getAsMap();
+            case "ProteinPathway" -> findProteinInPathway(id).getAsMap();
+            case "ProteinAssociatedWithDisorder" -> findProteinAssociatedWithDisorder(id).getAsMap();
+            case "DisorderHierarchy" -> findDisorderIsADisorder(id).getAsMap();
+            case "DisorderComorbidity" -> findDisorderComorbidWithDisorder(id).getAsMap();
+            default -> null;
+        };
     }
 
     public String[] getAttributes(Integer type) {
-        switch (Graphs.getEdge(type)) {
-            case "GeneAssociatedWithDisorder":
-                return GeneAssociatedWithDisorder.allAttributes;
-            case "DrugHasTargetGene":
-                return DrugHasTargetGene.allAttributes;
-            case "ProteinEncodedBy":
-                return ProteinEncodedBy.allAttributes;
-            case "DrugHasIndication":
-                return DrugHasIndication.allAttributes;
-            case "DrugHasContraindication":
-                return DrugHasContraindication.allAttributes;
-            case "DrugHasTargetProtein":
-                return DrugHasTargetProtein.allAttributes;
-            case "ProteinInteractsWithProtein":
-                return ProteinInteractsWithProtein.allAttributes;
-            case "ProteinInPathway":
-                return ProteinInPathway.allAttributes;
-            case "ProteinAssociatedWithDisorder":
-                return ProteinAssociatedWithDisorder.allAttributes;
-            case "DisorderIsSubtypeOfDisorder":
-                return DisorderIsADisorder.allAttributes;
-            case "DisorderComorbidWithDisorder":
-                return DisorderComorbidWithDisorder.allAttributes;
-            case "GeneInteractsWithGene":
-                return GeneInteractsWithGene.allAttributes;
-        }
-        return null;
+        return switch (Graphs.getEdge(type)) {
+            case "GeneAssociatedWithDisorder" -> GeneAssociatedWithDisorder.allAttributes;
+            case "DrugTargetGene" -> DrugHasTargetGene.allAttributes;
+            case "ProteinEncodedBy" -> ProteinEncodedBy.allAttributes;
+            case "DrugIndication" -> DrugHasIndication.allAttributes;
+            case "DrugContraindication" -> DrugHasContraindication.allAttributes;
+            case "DrugTargetProtein" -> DrugHasTargetProtein.allAttributes;
+            case "ProteinProteinInteraction" -> ProteinInteractsWithProtein.allAttributes;
+            case "ProteinPathway" -> ProteinInPathway.allAttributes;
+            case "ProteinAssociatedWithDisorder" -> ProteinAssociatedWithDisorder.allAttributes;
+            case "DisorderHierarchy" -> DisorderIsADisorder.allAttributes;
+            case "DisorderComorbidity" -> DisorderComorbidWithDisorder.allAttributes;
+            case "GeneGeneInteraction" -> GeneInteractsWithGene.allAttributes;
+            default -> null;
+        };
     }
 
     public String[] isExperimental(Integer type) {
-        switch (Graphs.getEdge(type)) {
-            case "GeneAssociatedWithDisorder":
-                return GeneAssociatedWithDisorder.allAttributeTypes;
-            case "DrugHasTargetGene":
-                return DrugHasTargetGene.allAttributeTypes;
-            case "ProteinEncodedBy":
-                return ProteinEncodedBy.allAttributeTypes;
-            case "DrugHasIndication":
-                return DrugHasIndication.allAttributeTypes;
-            case "DrugHasContraindication":
-                return DrugHasContraindication.allAttributeTypes;
-            case "DrugHasTargetProtein":
-                return DrugHasTargetProtein.allAttributeTypes;
-            case "ProteinInteractsWithProtein":
-                return ProteinInteractsWithProtein.allAttributeTypes;
-            case "ProteinInPathway":
-                return ProteinInPathway.allAttributeTypes;
-            case "ProteinAssociatedWithDisorder":
-                return ProteinAssociatedWithDisorder.allAttributeTypes;
-            case "DisorderIsSubtypeOfDisorder":
-                return DisorderIsADisorder.allAttributeTypes;
-            case "DisorderComorbidWithDisorder":
-                return DisorderComorbidWithDisorder.allAttributeTypes;
-            case "GeneInteractsWithGene":
-                return GeneInteractsWithGene.allAttributeTypes;
-        }
-        return null;
+        return switch (Graphs.getEdge(type)) {
+            case "GeneAssociatedWithDisorder" -> GeneAssociatedWithDisorder.allAttributeTypes;
+            case "DrugTargetGene" -> DrugHasTargetGene.allAttributeTypes;
+            case "ProteinEncodedBy" -> ProteinEncodedBy.allAttributeTypes;
+            case "DrugIndication" -> DrugHasIndication.allAttributeTypes;
+            case "DrugContraindication" -> DrugHasContraindication.allAttributeTypes;
+            case "DrugTargetProtein" -> DrugHasTargetProtein.allAttributeTypes;
+            case "ProteinProteinInteraction" -> ProteinInteractsWithProtein.allAttributeTypes;
+            case "ProteinPathway" -> ProteinInPathway.allAttributeTypes;
+            case "ProteinAssociatedWithDisorder" -> ProteinAssociatedWithDisorder.allAttributeTypes;
+            case "DisorderHierarchy" -> DisorderIsADisorder.allAttributeTypes;
+            case "DisorderComorbidity" -> DisorderComorbidWithDisorder.allAttributeTypes;
+            case "GeneGeneInteraction" -> GeneInteractsWithGene.allAttributeTypes;
+            default -> null;
+        };
     }
 
     public boolean isExperimental(Integer type, int id1, int id2) {
-        switch (Graphs.getEdge(type)) {
-            case "GeneAssociatedWithDisorder":
-                return true;
-            case "DrugHasTargetGene":
-                return true;
-            case "ProteinEncodedBy":
-                return true;
-            case "DrugHasIndication":
-                return true;
-            case "DrugHasContraindication":
-                return true;
-            case "DrugHasTargetProtein":
-                return true;
-            case "ProteinInteractsWithProtein":
-                return proteinInteractsWithProteinService.isExperimentalProtein(id1,id2);
-            case "ProteinInPathway":
-                return true;
-            case "ProteinAssociatedWithDisorder":
-                return true;
-            case "DisorderIsSubtypeOfDisorder":
-                return true;
-            case "DisorderComorbidWithDisorder":
-                return true;
-            case "GeneInteractsWithGene":
-                return proteinInteractsWithProteinService.isExperimentalGene(id1,id2);
-        }
-        return true;
+        return switch (Graphs.getEdge(type)) {
+            case "GeneAssociatedWithDisorder" -> true;
+            case "DrugTargetGene" -> true;
+            case "ProteinEncodedBy" -> true;
+            case "DrugIndication" -> true;
+            case "DrugContraindication" -> true;
+            case "DrugTargetProtein" -> true;
+            case "ProteinProteinInteraction" -> proteinInteractsWithProteinService.isExperimentalProtein(id1, id2);
+            case "ProteinPathway" -> true;
+            case "ProteinAssociatedWithDisorder" -> true;
+            case "DisorderHierarchy" -> true;
+            case "DisorderComorbidity" -> true;
+            case "GeneGeneInteraction" -> proteinInteractsWithProteinService.isExperimentalGene(id1, id2);
+            default -> true;
+        };
     }
 
     public Boolean[] getIdAttributes(Integer type) {
-        switch (Graphs.getEdge(type)) {
-            case "GeneAssociatedWithDisorder":
-                return GeneAssociatedWithDisorder.idAttributes;
-            case "DrugHasTargetGene":
-                return DrugHasTargetGene.idAttributes;
-            case "ProteinEncodedBy":
-                return ProteinEncodedBy.idAttributes;
-            case "DrugHasIndication":
-                return DrugHasIndication.idAttributes;
-            case "DrugHasContraindication":
-                return DrugHasContraindication.idAttributes;
-            case "DrugHasTargetProtein":
-                return DrugHasTargetProtein.idAttributes;
-            case "ProteinInteractsWithProtein":
-                return ProteinInteractsWithProtein.idAttributes;
-            case "ProteinInPathway":
-                return ProteinInPathway.idAttributes;
-            case "ProteinAssociatedWithDisorder":
-                return ProteinAssociatedWithDisorder.idAttributes;
-            case "DisorderIsSubtypeOfDisorder":
-                return DisorderIsADisorder.idAttributes;
-            case "DisorderComorbidWithDisorder":
-                return DisorderComorbidWithDisorder.idAttributes;
-            case "GeneInteractsWithGene":
-                return GeneInteractsWithGene.idAttributes;
-        }
-        return null;
+        return switch (Graphs.getEdge(type)) {
+            case "GeneAssociatedWithDisorder" -> GeneAssociatedWithDisorder.idAttributes;
+            case "DrugTargetGene" -> DrugHasTargetGene.idAttributes;
+            case "ProteinEncodedBy" -> ProteinEncodedBy.idAttributes;
+            case "DrugIndication" -> DrugHasIndication.idAttributes;
+            case "DrugContraindication" -> DrugHasContraindication.idAttributes;
+            case "DrugTargetProtein" -> DrugHasTargetProtein.idAttributes;
+            case "ProteinProteinInteraction" -> ProteinInteractsWithProtein.idAttributes;
+            case "ProteinPathway" -> ProteinInPathway.idAttributes;
+            case "ProteinAssociatedWithDisorder" -> ProteinAssociatedWithDisorder.idAttributes;
+            case "DisorderHierarchy" -> DisorderIsADisorder.idAttributes;
+            case "DisorderComorbidity" -> DisorderComorbidWithDisorder.idAttributes;
+            case "GeneGeneInteraction" -> GeneInteractsWithGene.idAttributes;
+            default -> null;
+        };
     }
 
     public boolean getDirection(Integer type) {
-        switch (Graphs.getEdge(type)) {
-            case "GeneAssociatedWithDisorder":
-                return associatedWithDisorderService.isDirected();
-            case "DrugHasTargetGene":
-                return drugHasTargetService.isDirected();
-            case "ProteinEncodedBy":
-                return proteinEncodedByService.isDirected();
-            case "DrugHasIndication":
-                return drugHasIndicationService.isDirected();
-            case "DrugHasContraindication":
-                return drugHasContraindicationService.isDirected();
-            case "DrugHasTargetProtein":
-                return drugHasTargetService.isDirected();
-            case "ProteinInteractsWithProtein":
-                return proteinInteractsWithProteinService.isDirected();
-            case "ProteinInPathway":
-                return proteinInPathwayService.isDirected();
-            case "ProteinAssociatedWithDisorder":
-                return associatedWithDisorderService.isDirected();
-            case "DisorderIsSubtypeOfDisorder":
-                return disorderIsADisorderService.isDirected();
-            case "DisorderComorbidWithDisorder":
-                return disorderComorbidWithDisorderService.isDirected();
-            case "GeneInteractsWithGene":
-                return proteinInteractsWithProteinService.isDirected();
-        }
-        return false;
+        return switch (Graphs.getEdge(type)) {
+            case "GeneAssociatedWithDisorder", "ProteinAssociatedWithDisorder" -> associatedWithDisorderService.isDirected();
+            case "DrugTargetGene", "DrugTargetProtein" -> drugHasTargetService.isDirected();
+            case "ProteinEncodedBy" -> proteinEncodedByService.isDirected();
+            case "DrugIndication" -> drugHasIndicationService.isDirected();
+            case "DrugContraindication" -> drugHasContraindicationService.isDirected();
+            case "ProteinProteinInteraction", "GeneGeneInteraction" -> proteinInteractsWithProteinService.isDirected();
+            case "ProteinPathway" -> proteinInPathwayService.isDirected();
+            case "DisorderHierarchy" -> disorderIsADisorderService.isDirected();
+            case "DisorderComorbidity" -> disorderComorbidWithDisorderService.isDirected();
+            default -> false;
+        };
     }
 
     public Long getEdgeCount(String type) {
-        switch (type) {
-            case "GeneAssociatedWithDisorder":
-                return associatedWithDisorderService.getGeneCount();
-            case "DrugHasTargetGene":
-                return drugHasTargetService.getGeneCount();
-            case "ProteinEncodedBy":
-                return proteinEncodedByService.getCount();
-            case "DrugHasIndication":
-                return drugHasIndicationService.getCount();
-            case "DrugHasContraindication":
-                return drugHasContraindicationService.getCount();
-            case "DrugHasTargetProtein":
-                return drugHasTargetService.getProteinCount();
-            case "ProteinInteractsWithProtein":
-                return proteinInteractsWithProteinService.getProteinCount();
-            case "ProteinInPathway":
-                return proteinInPathwayService.getCount();
-            case "ProteinAssociatedWithDisorder":
-                return associatedWithDisorderService.getProteinCount();
-            case "DisorderIsSubtypeOfDisorder":
-                return disorderIsADisorderService.getCount();
-            case "DisorderComorbidWithDisorder":
-                return disorderComorbidWithDisorderService.getCount();
-            case "GeneInteractsWithGene":
-                return proteinInteractsWithProteinService.getGeneCount();
-        }
-        return null;
+        return switch (type) {
+            case "GeneAssociatedWithDisorder" -> associatedWithDisorderService.getGeneCount();
+            case "DrugTargetGene" -> drugHasTargetService.getGeneCount();
+            case "ProteinEncodedBy" -> proteinEncodedByService.getCount();
+            case "DrugIndication" -> drugHasIndicationService.getCount();
+            case "DrugContraindication" -> drugHasContraindicationService.getCount();
+            case "DrugTargetProtein" -> drugHasTargetService.getProteinCount();
+            case "ProteinProteinInteraction" -> proteinInteractsWithProteinService.getProteinCount();
+            case "ProteinPathway" -> proteinInPathwayService.getCount();
+            case "ProteinAssociatedWithDisorder" -> associatedWithDisorderService.getProteinCount();
+            case "DisorderHierarchy" -> disorderIsADisorderService.getCount();
+            case "DisorderComorbidity" -> disorderComorbidWithDisorderService.getCount();
+            case "GeneGeneInteraction" -> proteinInteractsWithProteinService.getGeneCount();
+            default -> null;
+        };
+    }
+
+    public HashMap<String, String> getAttributeLabelMap(String type) {
+        return switch (type) {
+            case "GeneAssociatedWithDisorder" -> GeneAssociatedWithDisorder.label2NameMap;
+            case "DrugTargetGene" -> DrugHasTargetGene.label2NameMap;
+            case "ProteinEncodedBy" -> ProteinEncodedBy.label2NameMap;
+            case "DrugIndication" -> DrugHasIndication.label2NameMap;
+            case "DrugContraindication" -> DrugHasContraindication.label2NameMap;
+            case "DrugTargetProtein" -> DrugHasTargetProtein.label2NameMap;
+            case "ProteinProteinInteraction" -> ProteinInteractsWithProtein.label2NameMap;
+            case "ProteinPathway" -> ProteinInPathway.label2NameMap;
+            case "ProteinAssociatedWithDisorder" -> ProteinAssociatedWithDisorder.label2NameMap;
+            case "DisorderHierarchy" -> DisorderIsADisorder.label2NameMap;
+            case "DisorderComorbidity" -> DisorderComorbidWithDisorder.label2NameMap;
+            case "GeneGeneInteraction" -> GeneInteractsWithGene.label2NameMap;
+            default -> null;
+        };
+
+    }
+
+    public void setUp() {
+        GeneAssociatedWithDisorder.setUpNameMaps();
+        DrugHasTargetGene.setUpNameMaps();
+        ProteinEncodedBy.setUpNameMaps();
+        DrugHasIndication.setUpNameMaps();
+        DrugHasContraindication.setUpNameMaps();
+        DrugHasTargetProtein.setUpNameMaps();
+        ProteinInteractsWithProtein.setUpNameMaps();
+        ProteinInPathway.setUpNameMaps();
+        ProteinAssociatedWithDisorder.setUpNameMaps();
+        DisorderIsADisorder.setUpNameMaps();
+        GeneInteractsWithGene.setUpNameMaps();
     }
 }

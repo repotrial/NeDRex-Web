@@ -100,55 +100,35 @@ public class NodeController {
 
 
     public NodeFilter getFilter(String type) {
-        switch (type) {
-            case "disorder":
-                return filterDisorder();
-            case "drug":
-                return filterDrugs();
-            case "gene":
-                return filterGenes();
-            case "pathway":
-                return filterPathways();
-            case "protein":
-                return filterProteins();
-        }
-        return null;
+        return switch (type) {
+            case "disorder" -> filterDisorder();
+            case "drug" -> filterDrugs();
+            case "gene" -> filterGenes();
+            case "pathway" -> filterPathways();
+            case "protein" -> filterProteins();
+            default -> null;
+        };
     }
 
     public String[] getListAttributes(Integer typeId) {
-        switch (Graphs.getNode(typeId)) {
-            case "disorder":
-                return disorderService.getListAttributes();
-            case "drug":
-                return drugService.getListAttributes();
-            case "gene":
-                return geneService.getListAttributes();
-            case "pathway":
-                return pathwayService.getListAttributes();
-            case "protein":
-                return proteinService.getListAttributes();
-        }
-        return null;
+        return switch (Graphs.getNode(typeId)) {
+            case "disorder" -> disorderService.getListAttributes();
+            case "drug" -> drugService.getListAttributes();
+            case "gene" -> geneService.getListAttributes();
+            case "pathway" -> pathwayService.getListAttributes();
+            case "protein" -> proteinService.getListAttributes();
+            default -> null;
+        };
     }
 
     public LinkedList<HashMap<String, Object>> nodesToAttributeList(Integer typeId, Set<Integer> ids, HashSet<String> attributes, HashMap<String, HashMap<Integer, Object>> custom) {
         LinkedList<HashMap<String, Object>> out = new LinkedList<>();
         switch (Graphs.getNode(typeId)) {
-            case "disorder":
-                findDisorders(ids).forEach(d -> out.add(d.getAsMap(attributes)));
-                break;
-            case "drug":
-                findDrugs(ids).forEach(d -> out.add(d.getAsMap(attributes)));
-                break;
-            case "gene":
-                findGenes(ids).forEach(d -> out.add(d.getAsMap(attributes)));
-                break;
-            case "pathway":
-                findPathways(ids).forEach(d -> out.add(d.getAsMap(attributes)));
-                break;
-            case "protein":
-                findProteins(ids).forEach(d -> out.add(d.getAsMap(attributes)));
-                break;
+            case "disorder" -> findDisorders(ids).forEach(d -> out.add(d.getAsMap(attributes)));
+            case "drug" -> findDrugs(ids).forEach(d -> out.add(d.getAsMap(attributes)));
+            case "gene" -> findGenes(ids).forEach(d -> out.add(d.getAsMap(attributes)));
+            case "pathway" -> findPathways(ids).forEach(d -> out.add(d.getAsMap(attributes)));
+            case "protein" -> findProteins(ids).forEach(d -> out.add(d.getAsMap(attributes)));
         }
         if (custom != null)
             out.forEach(node -> {
@@ -162,130 +142,120 @@ public class NodeController {
     }
 
     public HashMap<String, Object> nodeToAttributeList(Integer typeId, Integer id) {
-        switch (Graphs.getNode(typeId)) {
-            case "disorder":
-                return findDisorder(id).getAsMap();
-            case "drug":
-                return findDrug(id).getAsMap();
-            case "gene":
-                return findGene(id).getAsMap();
-            case "pathway":
-                return findPathway(id).getAsMap();
-            case "protein":
-                return findProtein(id).getAsMap();
-        }
-        return null;
+        return switch (Graphs.getNode(typeId)) {
+            case "disorder" -> findDisorder(id).getAsMap();
+            case "drug" -> findDrug(id).getAsMap();
+            case "gene" -> findGene(id).getAsMap();
+            case "pathway" -> findPathway(id).getAsMap();
+            case "protein" -> findProtein(id).getAsMap();
+            default -> null;
+        };
     }
 
     public String[] getAttributes(Integer typeId) {
-        switch (Graphs.getNode(typeId)) {
-            case "disorder":
-                return Disorder.allAttributes;
-            case "drug":
-                return Drug.allAttributes;
-            case "gene":
-                return Gene.allAttributes;
-            case "pathway":
-                return Pathway.allAttributes;
-            case "protein":
-                return Protein.allAttributes;
-        }
-        return null;
+        return switch (Graphs.getNode(typeId)) {
+            case "disorder" -> Disorder.allAttributes;
+            case "drug" -> Drug.allAttributes;
+            case "gene" -> Gene.allAttributes;
+            case "pathway" -> Pathway.allAttributes;
+            case "protein" -> Protein.allAttributes;
+            default -> null;
+        };
+    }
+
+    public String[] getAttributeLabels(Integer typeId) {
+        return switch (Graphs.getNode(typeId)) {
+            case "disorder" -> Disorder.attributeLabels;
+            case "drug" -> Drug.attributeLabels;
+            case "gene" -> Gene.attributeLabels;
+            case "pathway" -> Pathway.attributeLabels;
+            case "protein" -> Protein.attributeLabels;
+            default -> null;
+        };
     }
 
     public String[] getAttributeTypes(Integer typeId) {
-        switch (Graphs.getNode(typeId)) {
-            case "disorder":
-                return Disorder.allAttributeTypes;
-            case "drug":
-                return Drug.allAttributeTypes;
-            case "gene":
-                return Gene.allAttributeTypes;
-            case "pathway":
-                return Pathway.allAttributeTypes;
-            case "protein":
-                return Protein.allAttributeTypes;
-        }
-        return null;
+        return switch (Graphs.getNode(typeId)) {
+            case "disorder" -> Disorder.allAttributeTypes;
+            case "drug" -> Drug.allAttributeTypes;
+            case "gene" -> Gene.allAttributeTypes;
+            case "pathway" -> Pathway.allAttributeTypes;
+            case "protein" -> Protein.allAttributeTypes;
+            default -> null;
+        };
     }
 
     public String getDomainId(Integer typeId, Integer id) {
-        switch (Graphs.getNode(typeId)) {
-            case "disorder":
-                return disorderService.map(id);
-            case "drug":
-                return drugService.map(id);
-            case "gene":
-                return geneService.map(id);
-            case "pathway":
-                return pathwayService.map(id);
-            case "protein":
-                return proteinService.map(id);
-        }
-        return null;
+        return switch (Graphs.getNode(typeId)) {
+            case "disorder" -> disorderService.map(id);
+            case "drug" -> drugService.map(id);
+            case "gene" -> geneService.map(id);
+            case "pathway" -> pathwayService.map(id);
+            case "protein" -> proteinService.map(id);
+            default -> null;
+        };
     }
 
     public String getName(Integer typeId, Integer id) {
-        switch (Graphs.getNode(typeId)) {
-            case "disorder":
-                return disorderService.getName(id);
-            case "drug":
-                return drugService.getName(id);
-            case "gene":
-                return geneService.getName(id);
-            case "pathway":
-                return pathwayService.getName(id);
-            case "protein":
-                return proteinService.getName(id);
-        }
-        return null;
+        return switch (Graphs.getNode(typeId)) {
+            case "disorder" -> disorderService.getName(id);
+            case "drug" -> drugService.getName(id);
+            case "gene" -> geneService.getName(id);
+            case "pathway" -> pathwayService.getName(id);
+            case "protein" -> proteinService.getName(id);
+            default -> null;
+        };
     }
 
     public Boolean[] getIdAttributes(Integer typeId) {
-        switch (Graphs.getNode(typeId)) {
-            case "disorder":
-                return Disorder.idAttributes;
-            case "drug":
-                return Drug.idAttributes;
-            case "gene":
-                return Gene.idAttributes;
-            case "pathway":
-                return Pathway.idAttributes;
-            case "protein":
-                return Protein.idAttributes;
-        }
-        return null;
+        return switch (Graphs.getNode(typeId)) {
+            case "disorder" -> Disorder.idAttributes;
+            case "drug" -> Drug.idAttributes;
+            case "gene" -> Gene.idAttributes;
+            case "pathway" -> Pathway.idAttributes;
+            case "protein" -> Protein.idAttributes;
+            default -> null;
+        };
     }
 
     public Iterable findAll(Integer typeId) {
-        switch (Graphs.getNode(typeId)) {
-            case "disorder":
-                return disorderService.findAll();
-            case "drug":
-                return drugService.findAll();
-            case "gene":
-                return geneService.findAll();
-            case "pathway":
-                return pathwayService.findAll();
-            case "protein":
-                return proteinService.findAll();
-        }
-        return null;
+        return switch (Graphs.getNode(typeId)) {
+            case "disorder" -> disorderService.findAll();
+            case "drug" -> drugService.findAll();
+            case "gene" -> geneService.findAll();
+            case "pathway" -> pathwayService.findAll();
+            case "protein" -> proteinService.findAll();
+            default -> null;
+        };
     }
 
     public Long getNodeCount(String type) {
-        switch (type) {
-            case "disorder":
-                return disorderService.getCount();
-            case "drug":
-                return drugService.getCount();
-            case "gene":
-                return geneService.getCount();
-            case "pathway":
-                return pathwayService.getCount();
-            case "protein":
-                return proteinService.getCount();
-        }
-        return null;
+        return switch (type) {
+            case "disorder" -> disorderService.getCount();
+            case "drug" -> drugService.getCount();
+            case "gene" -> geneService.getCount();
+            case "pathway" -> pathwayService.getCount();
+            case "protein" -> proteinService.getCount();
+            default -> null;
+        };
+    }
+
+    public HashMap<String, String> getAttributeLabelMap(String type) {
+        return switch (type) {
+            case "disorder" -> Disorder.label2NameMap;
+            case "drug" -> Drug.label2NameMap;
+            case "gene" -> Gene.label2NameMap;
+            case "pathway" -> Pathway.label2NameMap;
+            case "protein" -> Protein.label2NameMap;
+            default -> null;
+        };
+    }
+
+    public void setUp() {
+        Disorder.setUpNameMaps();
+        Drug.setUpNameMaps();
+        Gene.setUpNameMaps();
+        Pathway.setUpNameMaps();
+        Protein.setUpNameMaps();
     }
 }

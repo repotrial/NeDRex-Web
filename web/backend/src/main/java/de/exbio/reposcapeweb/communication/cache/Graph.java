@@ -304,7 +304,7 @@ public class Graph {
     }
 
     public String[] getCustomListAttributes(int eid) {
-        ArrayList<String> list = new ArrayList<>(Arrays.asList("id", "node1", "node2"));
+        ArrayList<String> list = new ArrayList<>(Arrays.asList("id", "Node1", "Node2"));
         list.addAll(getCustomAttributeTypes(eid).keySet());
         return list.toArray(new String[list.size()]);
     }

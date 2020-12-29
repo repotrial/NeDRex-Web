@@ -1,6 +1,7 @@
 package de.exbio.reposcapeweb.configs.schema;
 
 public class AttributeConfig {
+    public String name;
     public String label;
     public boolean source=false;
     public boolean list=false;

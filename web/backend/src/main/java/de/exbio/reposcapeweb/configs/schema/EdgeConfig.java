@@ -3,7 +3,7 @@ package de.exbio.reposcapeweb.configs.schema;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.io.File;
-import java.util.HashMap;
+import java.util.LinkedList;
 
 public class EdgeConfig {
     public int id;
@@ -17,5 +17,5 @@ public class EdgeConfig {
     public String mapsTo;
     @JsonIgnore
     public File file;
-    public HashMap<String,AttributeConfig> attributes;
+    public LinkedList<AttributeConfig> attributes;
 }

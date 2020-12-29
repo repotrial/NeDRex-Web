@@ -42,7 +42,7 @@ public class Graphs {
 
         config.edges.forEach(edge -> {
             int id = edge.id;
-            String name = edge.label;
+            String name = edge.mapsTo;
             edgeToIdMap.put(name, id);
             idToEdgeMap.put(id, name);
         });

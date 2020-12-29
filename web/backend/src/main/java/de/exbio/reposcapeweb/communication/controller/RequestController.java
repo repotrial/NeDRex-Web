@@ -112,9 +112,10 @@ public class RequestController {
     public String getDetails(@RequestParam("name") String name, @RequestParam("id") int id) {
         log.info("requested details for node " + name + " with id " + id);
         String out = "";
+        HashMap<String, Object> details = new HashMap<>();
+        nodeController.nodeToAttributeList(Graphs.getNode(name), id).forEach((k,v)->details.put(nodeController.getAttributeLabelMap(name).get(k),v));
         try {
-            HashMap<String, Object> details = nodeController.nodeToAttributeList(Graphs.getNode(name), id);
-            details.put("order", nodeController.getAttributes(Graphs.getNode(name)));
+            details.put("order", nodeController.getAttributeLabels(Graphs.getNode(name)));
             out = objectMapper.writeValueAsString(details);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
@@ -129,19 +130,6 @@ public class RequestController {
         return toJson(webGraphService.getEdgeDetails(gid, name, new PairId(id1, id2)));
     }
 
-//    @RequestMapping(value = "/getExampleGraph2", method = RequestMethod.GET)
-//    @ResponseBody
-//    public String getExampleGraph2() {
-//        log.info("got request on neuro-drug-graph");
-//        try {
-//            String out = objectMapper.writeValueAsString(webGraphService.getNeuroDrugs());
-//            log.info("Answered request!");
-//            return out;
-//        } catch (JsonProcessingException e) {
-//            e.printStackTrace();
-//        }
-//        return null;
-//    }
 
     @RequestMapping(value = "/getSuggestions", method = RequestMethod.POST)
     @ResponseBody

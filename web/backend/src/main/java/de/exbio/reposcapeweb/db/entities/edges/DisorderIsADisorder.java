@@ -55,6 +55,18 @@ public class DisorderIsADisorder extends RepoTrialEdge implements Serializable {
 
     @Transient
     @JsonIgnore
+    public static String[] attributeLabels;
+
+    @Transient
+    @JsonIgnore
+    public static HashMap<String,String> name2labelMap;
+
+    @Transient
+    @JsonIgnore
+    public static HashMap<String,String> label2NameMap;
+
+    @Transient
+    @JsonIgnore
     public static Boolean[] idAttributes;
 
     @Transient
@@ -103,6 +115,15 @@ public class DisorderIsADisorder extends RepoTrialEdge implements Serializable {
     public void setNodeNames(String node1, String node2){
         nodeOne=node1;
         nodeTwo=node2;
+    }
+
+    public static void setUpNameMaps() {
+        label2NameMap=new HashMap<>();
+        name2labelMap = new HashMap<>();
+        for (int i = 0; i < allAttributes.length; i++) {
+            label2NameMap.put(allAttributes[i],attributeLabels[i]);
+            name2labelMap.put(attributeLabels[i], allAttributes[i]);
+        }
     }
 
     public DisorderIsADisorder() {

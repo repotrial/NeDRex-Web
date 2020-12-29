@@ -423,13 +423,12 @@ export default {
         this.edges.update(updates)
     },
     setEdgesHidden: function () {
-      this.options.edges.hidden = true;
       this.updateOptions()
     },
     toggleEdgeVisible: function (name) {
       let updates = Object.values(this.edges.get({
           filter: function (item) {
-            return item.title === name
+            return item.label === name
           }
         }
       )).map(item => {

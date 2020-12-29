@@ -66,13 +66,19 @@ public class WebGraphList {
         edges.get(type).add(entry);
     }
 
-    public void addAttributes(String entity, String type, String[] attributes) {
+    public void addAttributes(String entity, String type, String[] attributes, HashMap<String, String> labelMap) {
         if (!this.attributes.get(entity).containsKey(type))
             this.attributes.get(entity).put(type, new LinkedList<>());
         Set<String> names = this.attributes.get(entity).get(type).stream().map(a -> a.name).collect(Collectors.toSet());
         Arrays.stream(attributes).forEach(a -> {
-            if (!names.contains(a))
-                this.attributes.get(entity).get(type).add(new WebAttribute(a));
+
+            if (!names.contains(a)) {
+                if (labelMap == null)
+                    this.attributes.get(entity).get(type).add(new WebAttribute(a));
+                else
+                    this.attributes.get(entity).get(type).add(new WebAttribute(a, labelMap.get(a)));
+            }
+
         });
     }
 
@@ -82,8 +88,8 @@ public class WebGraphList {
         this.marks.get(entity).put(type, marks);
     }
 
-    public void addListAttributes(String entity, String type, String[] attributes) {
-        this.addAttributes(entity, type, attributes);
+    public void addListAttributes(String entity, String type, String[] attributes, HashMap<String, String> labelMap) {
+        this.addAttributes(entity, type, attributes, labelMap);
         this.setListAttributes(entity, type, attributes);
     }
 
@@ -138,6 +144,7 @@ public class WebGraphList {
 
     private class WebAttribute {
         public String name;
+        public String label;
         public boolean list;
         public boolean sent;
         public boolean numeric;
@@ -145,8 +152,14 @@ public class WebGraphList {
         public boolean id;
         public String[] values;
 
+        public WebAttribute(String name, String label) {
+            this.name = name;
+            this.label = label;
+        }
+
         public WebAttribute(String name) {
             this.name = name;
+            this.label = name;
         }
 
         public void isListAttribute() {

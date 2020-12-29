@@ -72,6 +72,18 @@ public class ProteinAssociatedWithDisorder extends RepoTrialEdge implements Seri
 
     @Transient
     @JsonIgnore
+    public static String[] attributeLabels;
+
+    @Transient
+    @JsonIgnore
+    public static HashMap<String,String> name2labelMap;
+
+    @Transient
+    @JsonIgnore
+    public static HashMap<String,String> label2NameMap;
+
+    @Transient
+    @JsonIgnore
     public static String[] listAttributes;
 
     public static String[] getListAttributes() {
@@ -110,6 +122,16 @@ public class ProteinAssociatedWithDisorder extends RepoTrialEdge implements Seri
         return values;
     }
 
+
+    public static void setUpNameMaps() {
+        label2NameMap=new HashMap<>();
+        name2labelMap = new HashMap<>();
+        for (int i = 0; i < allAttributes.length; i++) {
+            label2NameMap.put(allAttributes[i],attributeLabels[i]);
+            name2labelMap.put(attributeLabels[i], allAttributes[i]);
+        }
+    }
+
     public ProteinAssociatedWithDisorder() {
     }
 
@@ -123,7 +145,7 @@ public class ProteinAssociatedWithDisorder extends RepoTrialEdge implements Seri
 
     @JsonGetter
     public String getType() {
-        return "GeneAssociatedWithDisorder";
+        return "ProteinAssociatedWithDisorder";
     }
 
     public String getScore() {
