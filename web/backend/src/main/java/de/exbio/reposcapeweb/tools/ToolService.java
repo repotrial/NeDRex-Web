@@ -36,7 +36,7 @@ public class ToolService {
     private final ProteinService proteinService;
     private final GeneService geneService;
 
-    private File scriptDir = new File("/home/andimajore/projects/RepoScapeWeb/web/resources/scripts");
+    private File scriptDir;
     private File dataDir;
     private File executor;
     private File bicon;
@@ -56,6 +56,7 @@ public class ToolService {
         this.proteinService = proteinService;
         this.geneService = geneService;
         dataDir = new File(env.getProperty("path.external.cache"));
+        scriptDir=new File(env.getProperty("path.scripts.dir"));
         validateEnvironment();
     }
 
@@ -109,7 +110,7 @@ public class ToolService {
         diamond = new File(env.getProperty("path.tool.diamond"));
         log.info("Diamond path=" + diamond.getAbsolutePath());
         if (!diamond.exists()) {
-            log.error("DIAMOnD executable was not found in config. Please make sure it is referenced correctly! For installation you can use " + diamondSetUpScript.getAbsolutePath());
+            log.error("DIAMOnD executable was not found in config. Please make sure it is referenced correctly!");
             new RuntimeException("Missing reference.");
         }
     }
@@ -487,6 +488,14 @@ public class ToolService {
             e.printStackTrace();
         }
         return results;
+    }
+
+    public void createGraphmlFromFS(File wd, File graphml) {
+        try {
+            ProcessUtils.executeProcessWait(new ProcessBuilder("python3",new File(scriptDir,"tablesToGraphml.py").getAbsolutePath(),wd.getAbsolutePath(),graphml.getAbsolutePath()));
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     public enum Tool {

@@ -3,6 +3,22 @@
 
     <v-card elevation="3" style="padding-top: 15px; overflow-y: auto; max-height: 75vh">
       <v-card-title>Toolbox</v-card-title>
+
+      <v-card-title>
+        <v-chip
+          outlined
+          :disabled="gid===undefined"
+          @click="requestGraphDownload"
+        >
+          <v-icon
+            left
+          >
+            far fa-arrow-alt-circle-down
+          </v-icon>
+          Download
+        </v-chip>
+      </v-card-title>
+
       <v-card ref="options" elevation="3" style="margin:15px">
         <v-list-item @click="show.options=!show.options">
           <v-list-item-title>
@@ -291,7 +307,8 @@
       </v-card>
 
 
-      <Legend :metagraph="metagraph" :countMap="options.list.countMap" :entity-graph="options.list.entityGraph" :options="options.graph.legend"
+      <Legend :metagraph="metagraph" :countMap="options.list.countMap" :entity-graph="options.list.entityGraph"
+              :options="options.graph.legend"
               v-if="(selectedTab===1 && options.graph.visualized)"
               @graphViewEvent="graphViewEvent"
       ></Legend>
@@ -548,7 +565,7 @@ export default {
       detailedObject: this.detailedObject,
       filterEntity: "",
       hover: {arrow: false,},
-      details: {redirected: false}
+      details: {redirected: false},
     }
   },
   created() {
@@ -563,7 +580,7 @@ export default {
         this.$refs.algorithms.resetAlgorithms()
       if (this.$refs.jobs !== undefined)
         this.$refs.jobs.reload()
-      this.detailedObject=undefined
+      this.detailedObject = undefined
     },
     setAllSelected: function () {
       this.$emit("nodeSelectionEvent")
@@ -588,7 +605,7 @@ export default {
 
 
     format: function (item, value) {
-      if ( item === "SourceIDs"  || item === "SourceID" ||  item === "TargetID" || item ==="TargetIDs" || item === "MemberOne" || item === "MemberTwo") {
+      if (item === "SourceIDs" || item === "SourceID" || item === "TargetID" || item === "TargetIDs" || item === "MemberOne" || item === "MemberTwo") {
         let split = value.split(".")
         switch (split[0]) {
           case "entrez":
@@ -630,7 +647,7 @@ export default {
       return value
     },
     getExternalSource: function (item, value) {
-      if ( item === "SourceIDs"  || item === "SourceID" ||  item === "TargetID" || item ==="TargetIDs" || item === "MemberOne" || item === "MemberTwo") {
+      if (item === "SourceIDs" || item === "SourceID" || item === "TargetID" || item === "TargetIDs" || item === "MemberOne" || item === "MemberTwo") {
         let split = value.split(".")
         switch (split[0]) {
           case "entrez":
@@ -677,9 +694,9 @@ export default {
     },
     getUrl: function (item, value) {
       let url = '';
-      if (value===undefined || value.length === 0)
+      if (value === undefined || value.length === 0)
         return ""
-      if ( item === "SourceIDs"  || item === "SourceID" ||  item === "TargetID" || item ==="TargetIDs" || item === "MemberOne" || item === "MemberTwo") {
+      if (item === "SourceIDs" || item === "SourceID" || item === "TargetID" || item === "TargetIDs" || item === "MemberOne" || item === "MemberTwo") {
         let split = value.split(".")
         switch (split[0]) {
           case "entrez":
@@ -762,7 +779,7 @@ export default {
       return url;
     },
     getExternalColor: function (item, value) {
-      if ( item === "SourceIDs"  || item === "SourceID" ||  item === "TargetID" || item ==="TargetIDs" || item === "MemberOne" || item === "MemberTwo") {
+      if (item === "SourceIDs" || item === "SourceID" || item === "TargetID" || item === "TargetIDs" || item === "MemberOne" || item === "MemberTwo") {
         let split = value.split(".")
         switch (split[0]) {
           case "entrez":
@@ -797,7 +814,7 @@ export default {
       }
 
       if (item === "ICD-10")
-        return  "#006000"
+        return "#006000"
       if (item === "Symbol")
         return "#f07b05"
       if (item === "Genomic Location")
@@ -855,18 +872,15 @@ export default {
       return Utils.getColoring(this.metagraph, type, name)
     },
 
-    getExtendedColoring: function(type,name){
+    getExtendedColoring: function (type, name) {
       if (name.endsWith("Drug"))
         name = "drug"
-      return Utils.getColoringExtended(this.metagraph,this.options.list.entityGraph, type, name)
+      return Utils.getColoringExtended(this.metagraph, this.options.list.entityGraph, type, name)
     },
     getNodeNames: function (type) {
       return Utils.getNodes(this.metagraph, type)
     },
-    getExtendedNodeNames: function(type){
-      console.log(this.detailedObject)
-      console.log(this.options.list.entityGraph)
-      console.log(type)
+    getExtendedNodeNames: function (type) {
       return Utils.getNodesExtended(this.options.list.entityGraph, type)
     },
 
@@ -897,8 +911,8 @@ export default {
       let str = id.split("_")
       this.$emit("nodeDetailsEvent", {prefix: str[0], id: str[1]})
     },
-    printNotification: function(message,type){
-      this.$emit("printNotificationEvent",message,type)
+    printNotification: function (message, type) {
+      this.$emit("printNotificationEvent", message, type)
     }
     ,
     loadDetails: function (data, redirect) {
@@ -961,9 +975,9 @@ export default {
         return this.getColoring('nodes', this.detailedObject["Type"]);
       let basic = "#464e53";
       let colors = this.getExtendedColoring('edges', this.detailedObject["Type"]);
-      if(["Source","Node1","SourceDomainID","SourceID","SourceDomainIDs","IDOne","MemberOne"].indexOf(attribute)>-1)
+      if (["Source", "Node1", "SourceDomainID", "SourceID", "SourceDomainIDs", "IDOne", "MemberOne"].indexOf(attribute) > -1)
         return colors[0]
-      if(["Target","Node2","TargetDomainID","TargetID","TargetDomainIDs","IDTwo","MemberTwo"].indexOf(attribute)>-1)
+      if (["Target", "Node2", "TargetDomainID", "TargetID", "TargetDomainIDs", "IDTwo", "MemberTwo"].indexOf(attribute) > -1)
         return colors[1]
       return basic;
     },
@@ -983,6 +997,9 @@ export default {
     formatTime: function (timestamp) {
       Utils.formatTime(timestamp)
     },
+    requestGraphDownload: function () {
+      window.open('/backend/api/downloadGraph?gid=' + this.gid)
+    }
   }
   ,
   components: {

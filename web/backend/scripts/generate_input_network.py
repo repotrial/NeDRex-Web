@@ -1,11 +1,7 @@
-import time
-from urllib.request import urlretrieve
-import requests
 import os
 import sys
 import graph_tool as gt
-import \
-    networkx as nx  # read_graphml from repotrial networks works with networkx 2.2 and not 2.5 which is the lastest one!!!
+import networkx as nx  # read_graphml from repotrial networks works with networkx 2.2 and not 2.5 which is the lastest one!!!
 
 # Autor: Sepideh Sadegh
 

@@ -19,13 +19,18 @@ import de.exbio.reposcapeweb.filter.NodeFilter;
 import de.exbio.reposcapeweb.tools.ToolService;
 import de.exbio.reposcapeweb.utils.Pair;
 import de.exbio.reposcapeweb.utils.StatUtils;
+import de.exbio.reposcapeweb.utils.StringUtils;
 import de.exbio.reposcapeweb.utils.WriterUtils;
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -38,6 +43,7 @@ public class WebGraphService {
     private final HistoryController historyController;
     private final ObjectMapper objectMapper;
     private final DbCommunicationService dbCommunicationService;
+    private final ToolService toolService;
     private HashMap<String, Graph> cache = new HashMap<>();
     private HashMap<String, Object> colorMap;
 
@@ -48,23 +54,25 @@ public class WebGraphService {
             EdgeController edgeController,
             DbCommunicationService dbCommunicationService,
             ObjectMapper objectMapper,
-            HistoryController historyController) {
+            HistoryController historyController,
+            ToolService toolService) {
         this.edgeController = edgeController;
         this.nodeController = nodeController;
         this.dbCommunicationService = dbCommunicationService;
         this.objectMapper = objectMapper;
         this.historyController = historyController;
+        this.toolService = toolService;
     }
 
     public WebGraph getMetaGraph() {
         WebGraph graph = new WebGraph("Metagraph", true, historyController.getGraphId());
 
-        DBConfig.getConfig().nodes.forEach(node->{
-            graph.addNode(new WebNode(node.id,node.label,node.name,node.label));
+        DBConfig.getConfig().nodes.forEach(node -> {
+            graph.addNode(new WebNode(node.id, node.label, node.name, node.label));
         });
         graph.getNodes().forEach(n -> graph.setWeight("nodes", n.group, nodeController.getNodeCount(n.group)));
 
-        DBConfig.getConfig().edges.forEach(edge->graph.addEdge(new WebEdge(Graphs.getNode(edge.source), Graphs.getNode(edge.target), edge.mapsTo).setTitle(edge.label)));
+        DBConfig.getConfig().edges.forEach(edge -> graph.addEdge(new WebEdge(Graphs.getNode(edge.source), Graphs.getNode(edge.target), edge.mapsTo).setTitle(edge.label)));
         graph.getEdges().forEach(e -> graph.setWeight("edges", e.label, edgeController.getEdgeCount(e.label)));
 
         graph.setColorMap(this.getColorMap(null));
@@ -75,11 +83,11 @@ public class WebGraphService {
     public HashMap<String, Object> getColorMap(Collection<String> nodetypes) {
         if (nodetypes == null || colorMap == null) {
             colorMap = new HashMap<>();
-            DBConfig.getConfig().nodes.forEach(node->{
-                HashMap<String,String> n = new HashMap<>();
-                colorMap.put(node.name,n);
-                n.put("main",node.colors.main);
-                n.put("light",node.colors.light);
+            DBConfig.getConfig().nodes.forEach(node -> {
+                HashMap<String, String> n = new HashMap<>();
+                colorMap.put(node.name, n);
+                n.put("main", node.colors.main);
+                n.put("light", node.colors.light);
             });
         }
         if (nodetypes == null)
@@ -100,7 +108,7 @@ public class WebGraphService {
 
     public WebGraphList getList(String id, CustomListRequest req) {
         Graph g = getCachedGraph(id);
-        if(g==null)
+        if (g == null)
             return null;
         WebGraphList list = g.toWebList();
 
@@ -145,7 +153,7 @@ public class WebGraphService {
                     });
                 } catch (NullPointerException ignore) {
                 }
-                finalList.addListAttributes("nodes", stringType, attributes.toArray(new String[]{}),nodeController.getAttributeLabelMap(stringType));
+                finalList.addListAttributes("nodes", stringType, attributes.toArray(new String[]{}), nodeController.getAttributeLabelMap(stringType));
                 finalList.addAttributes("nodes", stringType, allAttributes.toArray(new String[]{}), nodeController.getAttributeLabelMap(stringType));
                 finalList.addNodes(stringType, nodeController.nodesToAttributeList(type, nodeMap.keySet(), new HashSet<>(attributes), g.getCustomNodeAttributes().get(type)));
                 finalList.setTypes("nodes", stringType, nodeController.getAttributes(type), nodeController.getAttributeTypes(type), nodeController.getIdAttributes(type), g.getCustomNodeAttributeTypes().get(type));
@@ -293,7 +301,7 @@ public class WebGraphService {
 
     public WebGraph getWebGraph(String id) {
         Graph g = getCachedGraph(id);
-        if(g==null)
+        if (g == null)
             return null;
         return g.toWebGraph(getColorMap(g.getNodes().keySet().stream().map(Graphs::getNode).collect(Collectors.toSet())));
     }
@@ -329,7 +337,7 @@ public class WebGraphService {
         Integer[] nodes = nodeIds.keySet().toArray(new Integer[nodeIds.size()]);
         HashSet<Integer> connectedNodes = new HashSet<>();
         for (int i = 0; i < nodes.length; i++) {
-            for (int j =i; j < nodes.length; j++) {
+            for (int j = i; j < nodes.length; j++) {
                 final int[] nodeI = {nodes[i]};
                 final int[] nodeJ = {nodes[j]};
 
@@ -339,10 +347,10 @@ public class WebGraphService {
                     continue;
                 }
                 edgeIds.forEach(edgeId -> {
-                    if(!Graphs.checkEdgeDirection(edgeId,nodeI[0], nodeJ[0])){
+                    if (!Graphs.checkEdgeDirection(edgeId, nodeI[0], nodeJ[0])) {
                         int tmp = nodeI[0];
-                        nodeI[0]=nodeJ[0];
-                        nodeJ[0]=tmp;
+                        nodeI[0] = nodeJ[0];
+                        nodeJ[0] = tmp;
                     }
                     boolean experimental = (request.interactions.containsKey(Graphs.getEdge(edgeId)) && !request.interactions.get(Graphs.getEdge(edgeId)));
                     if (request.edges.containsKey(Graphs.getEdge(edgeId))) {
@@ -700,6 +708,13 @@ public class WebGraphService {
         return g.toInfo();
     }
 
+    public String[] getCustomEdgeAttributes(Graph g, int edgeId) {
+        LinkedList<String> list = new LinkedList<>(Arrays.asList("ID", "IDOne", "IDTwo", "Node1", "Node2", "MemberOne", "MemberTwo"));
+        list.addAll(g.getCustomAttributeTypes(edgeId).keySet());
+        list.add("Type");
+        return list.toArray(new String[]{});
+    }
+
     public HashMap<String, Object> getCustomEdgeAttributeList(Graph graph, int edgeId, PairId p) {
         Pair<Integer, Integer> nodeIds = graph.getNodesfromEdge(edgeId);
         HashMap<String, Object> as = new HashMap<>();
@@ -723,7 +738,7 @@ public class WebGraphService {
 
     public ConnectionGraph getConnectionGraph(String gid) {
         Graph g = getCachedGraph(gid);
-        if(g==null)
+        if (g == null)
             return null;
         ConnectionGraph cg = new ConnectionGraph();
         g.getEdges().keySet().forEach(eid -> {
@@ -747,9 +762,9 @@ public class WebGraphService {
             return getCustomEdgeAttributeList(graph, edgeId, p);
         else {
             HashMap<String, Object> details = new HashMap<>();
-            edgeController.edgeToAttributeList(edgeId, p).forEach((k,v)->details.put(edgeController.getAttributeLabelMap(name).get(k),v));
-            details.put("order", Arrays.stream(edgeController.getAttributes(edgeId)).map(a->edgeController.getAttributeLabelMap(name).get(a)).collect(Collectors.toList()));
-            details.put("Type",EdgeController.edgeLabel2NameMap.get(details.get("Type").toString()));
+            edgeController.edgeToAttributeList(edgeId, p).forEach((k, v) -> details.put(edgeController.getAttributeLabelMap(name).get(k), v));
+            details.put("order", Arrays.stream(edgeController.getAttributes(edgeId)).map(a -> edgeController.getAttributeLabelMap(name).get(a)).collect(Collectors.toList()));
+            details.put("Type", EdgeController.edgeLabel2NameMap.get(details.get("Type").toString()));
             return details;
         }
     }
@@ -764,6 +779,11 @@ public class WebGraphService {
             history = new GraphHistory(uid, g.getId(), g.toInfo(), historyController.getHistory(g.getParent()));
             historyController.saveDerivedHistory(g.getParent(), history);
             cache.remove(gid);
+//            try {
+//                FileUtils.deleteDirectory(getGraphWD(gid));
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
         }
 
         exportGraph(g);
@@ -929,8 +949,91 @@ public class WebGraphService {
                 edges.forEach((id1, l) -> l.forEach(id2 -> g.getEdges().get(edgeId).add(new Edge(id1, id2))));
             }
         }
+    }
 
+    public File getDownload(String gid) {
+        File wd = getGraphWD(gid);
+        File graphml = new File(wd, gid + ".graphml");
+
+        if (!wd.exists()) {
+            wd.mkdir();
+            CustomListRequest req = new CustomListRequest();
+            req.id = gid;
+            req.attributes = new HashMap<>();
+            Graph g = getCachedGraph(gid);
+
+            g.getNodes().keySet().forEach(type -> {
+                if (!req.attributes.containsKey("nodes"))
+                    req.attributes.put("nodes", new HashMap<>());
+                req.attributes.get("nodes").put(Graphs.getNode(type), nodeController.getAttributes(type));
+            });
+
+            g.getEdges().keySet().forEach(type -> {
+                if (!req.attributes.containsKey("edges"))
+                    req.attributes.put("edges", new HashMap<>());
+                req.attributes.get("edges").put(g.getEdge(type), type < 0 ? getCustomEdgeAttributes(g, type) : edgeController.getAttributes(type));
+            });
+
+            WebGraphList list = getList(gid, req);
+
+            writeGraphListToFS(list, wd, req);
+
+
+            toolService.createGraphmlFromFS(wd, graphml);
+
+        }
+        return graphml;
 
     }
 
+    private void writeGraphListToFS(WebGraphList list, File wd, CustomListRequest req) {
+        File nodes = new File(wd, "nodes");
+        nodes.mkdir();
+        list.getNodes().forEach((type, values) -> {
+            try (BufferedWriter bw = WriterUtils.getBasicWriter(new File(nodes, type + ".tsv"))) {
+                String[] order = req.attributes.get("nodes").get(type);
+                StringBuilder header = new StringBuilder("#");
+                Arrays.stream(order).forEach(attr -> header.append(attr).append("\t"));
+                bw.write(header.substring(0, header.length() - 1) + "\n");
+                StringBuilder line = new StringBuilder("");
+                for (HashMap<String, Object> map : values) {
+                    line.setLength(0);
+                    Arrays.stream(order).forEach(key -> line.append(escapeStrings(map.get(key).toString())).append("\t"));
+                    bw.write(line.substring(0, line.length() - 1) + "\n");
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+        File edges = new File(wd, "edges");
+        edges.mkdir();
+        list.getEdges().forEach((type, values) -> {
+            try (BufferedWriter bw = WriterUtils.getBasicWriter(new File(edges, type + ".tsv"))) {
+                String[] order = req.attributes.get("edges").get(type);
+                StringBuilder header = new StringBuilder("#");
+                Arrays.stream(order).forEach(attr -> header.append(attr).append("\t"));
+                bw.write(header.substring(0, header.length() - 1) + "\n");
+                StringBuilder line = new StringBuilder("");
+                for (HashMap<String, Object> map : values) {
+                    line.setLength(0);
+                    Arrays.stream(order).forEach(key -> {
+                        line.append(map.get(key)).append("\t");
+                    });
+                    bw.write(line.substring(0, line.length() - 1) + "\n");
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    private File getGraphWD(String gid) {
+        return new File("/tmp/" + gid);
+    }
+
+    private String escapeStrings(String in) {
+        String out = StringUtils.replaceAll(in, '\t', "\\t");
+        out = StringUtils.replaceAll(out, '\n', "\\n");
+        return out;
+    }
 }

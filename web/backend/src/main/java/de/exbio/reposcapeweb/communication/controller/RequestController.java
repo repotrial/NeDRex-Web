@@ -19,7 +19,9 @@ import de.exbio.reposcapeweb.db.services.controller.EdgeController;
 import de.exbio.reposcapeweb.db.services.controller.NodeController;
 import de.exbio.reposcapeweb.db.services.nodes.DrugService;
 import de.exbio.reposcapeweb.communication.reponses.WebGraphService;
+import org.apache.commons.io.FileUtils;
 import org.apache.tomcat.util.digester.DocumentProperties;
+import org.aspectj.lang.annotation.AfterReturning;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +37,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -61,7 +65,7 @@ public class RequestController {
     private final DbCommunicationService dbCommunicationService;
 
     @Autowired
-    public RequestController(DbCommunicationService dbCommunicationService,SimpMessagingTemplate simpMessagingTemplate, DrugService drugService, ObjectMapper objectMapper, WebGraphService webGraphService, EdgeController edgeController, NodeController nodeController, HistoryController historyController, JobController jobController) {
+    public RequestController(DbCommunicationService dbCommunicationService, SimpMessagingTemplate simpMessagingTemplate, DrugService drugService, ObjectMapper objectMapper, WebGraphService webGraphService, EdgeController edgeController, NodeController nodeController, HistoryController historyController, JobController jobController) {
         this.drugService = drugService;
         this.objectMapper = objectMapper;
         this.webGraphService = webGraphService;
@@ -70,7 +74,7 @@ public class RequestController {
         this.historyController = historyController;
         this.jobController = jobController;
         this.socketTemplate = simpMessagingTemplate;
-        this.dbCommunicationService=dbCommunicationService;
+        this.dbCommunicationService = dbCommunicationService;
     }
 
 
@@ -113,7 +117,7 @@ public class RequestController {
         log.info("requested details for node " + name + " with id " + id);
         String out = "";
         HashMap<String, Object> details = new HashMap<>();
-        nodeController.nodeToAttributeList(Graphs.getNode(name), id).forEach((k,v)->details.put(nodeController.getAttributeLabelMap(name).get(k),v));
+        nodeController.nodeToAttributeList(Graphs.getNode(name), id).forEach((k, v) -> details.put(nodeController.getAttributeLabelMap(name).get(k), v));
         try {
             details.put("order", nodeController.getAttributeLabels(Graphs.getNode(name)));
             out = objectMapper.writeValueAsString(details);
@@ -126,7 +130,7 @@ public class RequestController {
     @RequestMapping(value = "/getEdgeDetails", method = RequestMethod.GET)
     @ResponseBody
     public String getDetails(@RequestParam("gid") String gid, @RequestParam("name") String name, @RequestParam("id1") int id1, @RequestParam("id2") int id2) {
-        log.info("requested details for edge " + name + " with id (" + id1 + " -> " + id2 + ") ["+gid+"]");
+        log.info("requested details for edge " + name + " with id (" + id1 + " -> " + id2 + ") [" + gid + "]");
         return toJson(webGraphService.getEdgeDetails(gid, name, new PairId(id1, id2)));
     }
 
@@ -179,7 +183,7 @@ public class RequestController {
     @RequestMapping(value = "/getConnectionGraph", method = RequestMethod.GET)
     @ResponseBody
     public String getConnectionGraph(@RequestParam("gid") String gid) {
-            return toJson(webGraphService.getConnectionGraph(gid));
+        return toJson(webGraphService.getConnectionGraph(gid));
     }
 
 
@@ -225,15 +229,28 @@ public class RequestController {
     }
 
     @RequestMapping(value = "/downloadJobResult", method = RequestMethod.GET, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public @ResponseBody ResponseEntity<Resource> downloadJobResult(@RequestParam("jid") String jid, HttpServletRequest request){
+    public @ResponseBody
+    ResponseEntity<Resource> downloadJobResult(@RequestParam("jid") String jid, HttpServletRequest request) {
         File f = jobController.getDownload(jid);
         Resource resource = new FileSystemResource(jobController.getDownload(jid));
         String contentType = request.getServletContext().getMimeType(jobController.getDownload(jid).getAbsolutePath());
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(contentType))
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" +f.getName())
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + f.getName())
                 .body(resource);
     }
+
+    @RequestMapping(value = "/downloadGraph", method = RequestMethod.GET, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public @ResponseBody
+    ResponseEntity<Resource> downloadGraph(@RequestParam("gid") String gid, HttpServletRequest request) {
+        File f = webGraphService.getDownload(gid);
+        Resource resource = new FileSystemResource(f);
+        return ResponseEntity.ok()
+                .contentType(MediaType.TEXT_XML)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + f.getName())
+                .body(resource);
+    }
+
 
     @RequestMapping(value = "/getGraph", method = RequestMethod.POST)
     @ResponseBody
@@ -330,11 +347,12 @@ public class RequestController {
         return null;
     }
 
-    @RequestMapping(value="/isReady", method=RequestMethod.GET)
+    @RequestMapping(value = "/isReady", method = RequestMethod.GET)
     @ResponseBody
-    public boolean isReady(){
+    public boolean isReady() {
         return !dbCommunicationService.isDbLocked() & !dbCommunicationService.isImportInProgress() & !dbCommunicationService.isUpdateInProgress();
     }
+
 
 //    @RequestMapping(value="/testSocket", method=RequestMethod.GET)
 //    @ResponseBody
