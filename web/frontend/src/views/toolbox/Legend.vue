@@ -96,7 +96,6 @@ export default {
       this.graphChangeVisEvent('edges', edgeName)
     },
     getColoring: function (entity, name) {
-      console.log(this.options.toggled)
       if (this.options.toggled[entity] === undefined)
         this.options.toggled[entity] = {}
       if (this.options.toggled[entity][name] === undefined)

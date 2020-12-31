@@ -231,7 +231,6 @@ export default {
       this.options = options;
     },
     loadGraph: function (id, bool) {
-      console.log("load graph")
       if (id === -1) {
         if (!bool) {
           this.options.selectedElements.forEach(e => {

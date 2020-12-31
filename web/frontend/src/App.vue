@@ -178,7 +178,7 @@
             <v-btn
               color="green darken-1"
               text
-              @click="cookiesPopup=false"
+              @click="closeCookiePopup"
             >
               Accept
             </v-btn>
@@ -260,18 +260,20 @@ export default {
     }
   },
   methods: {
+    closeCookiePopup : function(){
+      this.cookiesPopup = false
+      this.$http.get("/initUser").then(response => {
+        if (response.data !== undefined) {
+          return response.data;
+        }
+      }).then(userId => {
+        this.$cookies.set("uid", userId);
+        this.$router.go()
+      }).catch(err => console.log)
+    },
     loadUser: function () {
       if (this.$cookies.get("uid") === null) {
         this.cookiesPopup = true
-        this.$http.get("/initUser").then(response => {
-          if (response.data !== undefined) {
-            return response.data;
-          }
-        }).then(userId => {
-          console.log(userId)
-          this.$cookies.set("uid", userId);
-          this.$router.go()
-        }).catch(err => console.log)
       } else {
         this.$http.get("/getUser?user=" + this.$cookies.get("uid")).then(response => {
           if (response.data !== undefined)

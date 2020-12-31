@@ -500,7 +500,6 @@ export default {
       console.log(this.progress)
       // this.width = Math.max(this.minWidth, this.maxWidth * widthFactor);
       this.text = "Graph generation " + Math.round(this.progress) + "%";
-      console.log(this.text)
       //
       // console.log(Math.round(widthFactor * 100) + "%")
     }
