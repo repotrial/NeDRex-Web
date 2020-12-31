@@ -11,19 +11,22 @@ services:
       MYSQL_USER: reposcaper
       MYSQL_PASSWORD: repotrial
     volumes:
-      - nedrex-db-volume:/var/lib/mysql
+      - nedrex-dev-db-volume:/var/lib/mysql
+    cap_add:
+      - SYS_NICE
   server:
     container_name: nedrex-server
     depends_on:
       - "db"
     build: backend
     volumes:
-      - nedrex-cache-volume:/etc/data
+      - nedrex-dev-cache-volume:/etc/data
     expose:
       - 8090
     ports:
       - "8090:8090"
     restart: on-failure
+    entrypoint: "tail -f /dev/null"
 #    entrypoint: ["./wait-for-it.sh","nedrex-db:3306","-t","30", "--","java","-Xmx4g","-jar", "app.jar","--spring.profiles.active=prod","--spring.config.location=./config/server/"]
   web:
     container_name: nedrex-web
@@ -34,5 +37,5 @@ services:
       - "8080:8080"
     restart: on-failure
 volumes:
-  nedrex-db-volume:
-  nedrex-cache-volume:
+  nedrex-dev-db-volume:
+  nedrex-dev-cache-volume:
