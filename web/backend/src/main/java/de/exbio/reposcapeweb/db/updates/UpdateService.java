@@ -457,11 +457,6 @@ public class UpdateService {
             while ((line = br.readLine()) != null) {
                 char startC = line.charAt(0);
                 if (startC == '>' | startC == '<') {
-                    if (line.contains("\\r"))
-                        System.out.println("contains windows line endings");
-                    line = StringUtils.replaceAll(line, "\\r", "");
-                    if (line.contains("\\rr"))
-                        System.out.println("still does");
                     int start = line.charAt(2) == '[' ? 3 : 2;
                     T d = objectMapper.readValue(line.substring(start), valueType);
                     if (startC == '<') {
