@@ -779,11 +779,6 @@ public class WebGraphService {
             history = new GraphHistory(uid, g.getId(), g.toInfo(), historyController.getHistory(g.getParent()));
             historyController.saveDerivedHistory(g.getParent(), history);
             cache.remove(gid);
-//            try {
-//                FileUtils.deleteDirectory(getGraphWD(gid));
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
         }
 
         exportGraph(g);
@@ -847,13 +842,13 @@ public class WebGraphService {
             derived.addNodes(nodeTypeId, nf.toList(-1).stream().map(e -> new Node(e.getNodeId(), e.getName())).collect(Collectors.toList()));
 
             if (j.getMethod().equals(ToolService.Tool.DIAMOND)) {
-                derived.addCustomNodeAttributeType(nodeTypeId, "Rank", "numeric");
-                derived.addCustomNodeAttributeType(nodeTypeId, "P-Hyper", "numeric");
+                derived.addCustomNodeAttributeType(nodeTypeId, "rank", "numeric");
+                derived.addCustomNodeAttributeType(nodeTypeId, "p_hyper", "numeric");
                 derived.addCustomNodeAttribute(nodeTypeId, j.getResult().getNodes());
             }
 
             if (j.getMethod().equals(ToolService.Tool.TRUSTRANK) || j.getMethod().equals(ToolService.Tool.CENTRALITY)) {
-                derived.addCustomNodeAttributeType(nodeTypeId, "Score", "numeric");
+                derived.addCustomNodeAttributeType(nodeTypeId, "score", "numeric");
                 HashMap<Integer, HashMap<String, Object>> idMap = new HashMap<>();
                 j.getResult().getNodes().forEach((k, v) -> {
                     if (newNodeIDs.contains(k))
