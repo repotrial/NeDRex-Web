@@ -77,7 +77,7 @@ public class JobQueue {
         log.info("Starting "+j.getMethod().name()+" job "+j.getJobId()+" of user "+j.getUserId()+" (Queued: "+queue.size()+")");
         j.setStatus(Job.JobState.EXECUTING);
         socketController.setJobUpdate(j);
-
+        log.debug("Asynchronically run: "+j.getCommand());
         Process p = toolService.executeJob(j.getCommand());
         if (p != null)
             j.setProcess(p);

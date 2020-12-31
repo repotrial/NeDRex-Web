@@ -56,15 +56,12 @@ public class ToolService {
         this.proteinService = proteinService;
         this.geneService = geneService;
         dataDir = new File(env.getProperty("path.external.cache"));
-        scriptDir=new File(env.getProperty("path.scripts.dir"));
+        scriptDir = new File(env.getProperty("path.scripts.dir"));
         validateEnvironment();
     }
 
     private void validateEnvironment() {
         envValidate("python3", "--version");
-//        envValidate("pip3", "--version");
-//        pythonValidate("pipreqs", true);
-
     }
 
     private void envValidate(String component, String versionCommand) {
@@ -198,7 +195,7 @@ public class ToolService {
             rankCache.delete();
         rankCache.mkdir();
         try {
-            ProcessUtils.executeProcessWait(new ProcessBuilder("python3", env.getProperty("jobs.scripts.ranking_preparation"),dataDir.getAbsolutePath(), rankCache.getAbsolutePath()));
+            ProcessUtils.executeProcessWait(new ProcessBuilder("python3", env.getProperty("jobs.scripts.ranking_preparation"), dataDir.getAbsolutePath(), rankCache.getAbsolutePath()));
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
@@ -209,7 +206,6 @@ public class ToolService {
         if (!tempDirs.containsKey(jobId))
             try {
                 File f = Files.createTempDirectory(new File("/tmp").toPath(), "reposcape_web_job_" + jobId).toFile();
-                f.deleteOnExit();
                 tempDirs.put(jobId, f);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -220,31 +216,40 @@ public class ToolService {
 
     public String createCommand(Job job, JobRequest request) {
         String command = "localhost:8090/backend/api/finishedJob?id=" + job.getJobId() + " " + getTempDir(job.getJobId()).getAbsolutePath() + " ";
+        LinkedList<File> neededFiles = new LinkedList<>();
         switch (job.getMethod()) {
             case DIAMOND: {
+                File interactions = (request.getParams().get("type").equals("gene") ? new File(dataDir, "gene_gene_interaction_" + (request.experimentalOnly ? "exp" : "all") + ".pairs") : new File(dataDir, "protein_protein_interaction_" + (request.experimentalOnly ? "exp" : "all") + ".pairs"));
+                neededFiles.add(interactions);
                 command += "diamond " +
                         diamond.getAbsolutePath() + " " +
-                        (request.getParams().get("type").equals("gene") ? new File(dataDir, "gene_gene_interaction_" + (request.experimentalOnly ? "exp" : "all") + ".pairs") : new File(dataDir, "protein_protein_interaction_" + (request.experimentalOnly ? "exp" : "all") + ".pairs")).getAbsolutePath() + " " +
+                        interactions.getName() + " " +
                         "seeds.list " +
                         request.getParams().get("n") + " " + request.getParams().get("alpha");
                 break;
             }
             case BICON: {
-                command += "bicon " + bicon.getAbsolutePath() + " exprFile " + new File(dataDir, "gene_gene_interaction_" + (request.experimentalOnly ? "exp" : "all") + ".pairs").getAbsolutePath() + " genes.txt " + request.getParams().get("lg_min") + " " + request.getParams().get("lg_max");
+                File interactions = new File(dataDir, "gene_gene_interaction_" + (request.experimentalOnly ? "exp" : "all") + ".pairs");
+                neededFiles.add(interactions);
+                command += "bicon " + bicon.getAbsolutePath() + " exprFile " + interactions.getName() + " genes.txt " + request.getParams().get("lg_min") + " " + request.getParams().get("lg_max");
                 break;
             }
             case MUST: {
+                File interactions = (request.getParams().get("type").equals("gene") ? new File(dataDir, "gene_gene_interaction_" + (request.experimentalOnly ? "exp" : "all") + ".pairs") : new File(dataDir, "protein_protein_interaction_" + (request.experimentalOnly ? "exp" : "all") + ".pairs"));
+                neededFiles.add(interactions);
                 command += "must " +
                         must.getAbsolutePath() + " " +
-                        (request.getParams().get("type").equals("gene") ? new File(dataDir, "gene_gene_interaction_" + (request.experimentalOnly ? "exp" : "all") + ".pairs") : new File(dataDir, "protein_protein_interaction_" + (request.experimentalOnly ? "exp" : "all") + ".pairs")).getAbsolutePath() + " " +
+                        interactions.getName() + " " +
                         "seeds.list edges.list nodes.list " +
                         request.getParams().get("penalty") + " " +
                         request.getParams().get("maxit") + (request.getParams().get("multiple").equals("true") ? " " + request.getParams().get("trees") : "");
                 break;
             }
             case TRUSTRANK: {
+                File interactions = request.getParams().get("type").equals("gene") ? new File(dataDir, "ranking_files/GGDr_" + (request.experimentalOnly ? "exp" : "all") + ".gt") : new File(dataDir, "ranking_files/PPDr_all.gt");
+                neededFiles.add(interactions);
                 command += "trustrank " + trustrank.getAbsolutePath() + " " +
-                        (request.getParams().get("type").equals("gene") ? new File(dataDir, "ranking_files/GGDr_" + (request.experimentalOnly ? "exp" : "all") + ".gt").getAbsolutePath() : new File(dataDir, "ranking_files/PPDr_all.gt").getAbsolutePath()) +
+                        interactions.getName() +
                         " seeds.list " +
                         request.getParams().get("damping") +
                         (request.getParams().get("direct").charAt(0) == 't' ? " Y" : " N") +
@@ -252,8 +257,10 @@ public class ToolService {
                 break;
             }
             case CENTRALITY: {
+                File interactions = request.getParams().get("type").equals("gene") ? new File(dataDir, "ranking_files/GGDr_" + (request.experimentalOnly ? "exp" : "all") + ".gt") : new File(dataDir, "ranking_files/PPDr_all.gt");
+                neededFiles.add(interactions);
                 command += "centrality " + centrality.getAbsolutePath() + " " +
-                        (request.getParams().get("type").equals("gene") ? new File(dataDir, "ranking_files/GGDr_" + (request.experimentalOnly ? "exp" : "all") + ".gt").getAbsolutePath() : new File(dataDir, "ranking_files/PPDr_all.gt").getAbsolutePath()) +
+                        interactions.getName() +
                         " seeds.list " +
                         request.getParams().get("damping") +
                         (request.getParams().get("direct").charAt(0) == 't' ? " Y" : " N") +
@@ -261,7 +268,20 @@ public class ToolService {
                 break;
             }
         }
+        prepareTempDir(job, neededFiles);
         return command;
+    }
+
+    private void prepareTempDir(Job job, LinkedList<File> neededFiles) {
+        File dir = getTempDir(job.getJobId());
+        neededFiles.forEach(f -> {
+            try {
+                Files.copy(f.toPath(), new File(dir, f.getName()).toPath());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+
     }
 
     public void prepareJobFiles(Job job, JobRequest req, Graph g, HashMap<Integer, Pair<String, String>> domainMap) {
@@ -334,7 +354,7 @@ public class ToolService {
         switch (j.getMethod()) {
             case DIAMOND: {
                 for (File f : getTempDir(j.getJobId()).listFiles()) {
-                    if (j.getMethod().equals(Tool.DIAMOND) && f.getName().endsWith(".txt")) {
+                    if (f.getName().endsWith(".txt")) {
                         nodes = readDiamondResults(f, Double.parseDouble(j.getParams().get("pcutoff")), domainMaps.get(Graphs.getNode(j.getTarget())));
                     }
                 }
@@ -374,8 +394,9 @@ public class ToolService {
             case BICON: {
                 try (BufferedReader br = ReaderUtils.getBasicReader(new File(getTempDir(j.getJobId()), "genes.txt"))) {
                     String line = "";
-                    while ((line = br.readLine()) != null)
+                    while ((line = br.readLine()) != null) {
                         nodes.put(domainMaps.get(Graphs.getNode("gene")).get(line), null);
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                     throw e;
@@ -384,7 +405,7 @@ public class ToolService {
             }
             case TRUSTRANK, CENTRALITY: {
                 for (File f : getTempDir(j.getJobId()).listFiles()) {
-                    if (!f.getName().equals("seeds.list")) {
+                    if (!f.getName().equals("seeds.list")&& !f.getName().endsWith(".gt")) {
                         nodes = readTrustRankResults(f, domainMaps, j.getTarget());
                     }
                 }
@@ -397,8 +418,8 @@ public class ToolService {
 
     private HashMap<Integer, HashMap<String, Object>> readTrustRankResults(File f, HashMap<Integer, HashMap<String, Integer>> domainMap, String target) {
         HashMap<Integer, HashMap<String, Object>> out = new HashMap<>();
-        HashMap<String,Integer> drugMap = domainMap.get(Graphs.getNode("drug"));
-        HashMap<String,Integer> seedMap = domainMap.get(Graphs.getNode(target));
+        HashMap<String, Integer> drugMap = domainMap.get(Graphs.getNode("drug"));
+        HashMap<String, Integer> seedMap = domainMap.get(Graphs.getNode(target));
         try (BufferedReader br = ReaderUtils.getBasicReader(f)) {
             String line = br.readLine();
             while ((line = br.readLine()) != null) {
@@ -407,8 +428,8 @@ public class ToolService {
                     int id = drugMap.get(split.getFirst());
                     out.put(id, new HashMap<>());
                     out.get(id).put("score", Double.parseDouble(split.get(1)));
-                }else{
-                    out.put(seedMap.get(line),null);
+                } else {
+                    out.put(seedMap.get(line), null);
                 }
             }
         } catch (IOException e) {
@@ -492,7 +513,7 @@ public class ToolService {
 
     public void createGraphmlFromFS(File wd, File graphml) {
         try {
-            ProcessUtils.executeProcessWait(new ProcessBuilder("python3",new File(scriptDir,"tablesToGraphml.py").getAbsolutePath(),wd.getAbsolutePath(),graphml.getAbsolutePath()));
+            ProcessUtils.executeProcessWait(new ProcessBuilder("python3", new File(scriptDir, "tablesToGraphml.py").getAbsolutePath(), wd.getAbsolutePath(), graphml.getAbsolutePath()));
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }

@@ -76,7 +76,7 @@ public class WebGraphList {
                 if (labelMap == null)
                     this.attributes.get(entity).get(type).add(new WebAttribute(a));
                 else
-                    this.attributes.get(entity).get(type).add(new WebAttribute(a, labelMap.get(a)));
+                    this.attributes.get(entity).get(type).add(new WebAttribute(a, labelMap.get(a) !=null ? labelMap.get(a):a));
             }
 
         });

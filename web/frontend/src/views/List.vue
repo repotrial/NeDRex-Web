@@ -1100,6 +1100,7 @@ export default {
       }
     },
     loadList: function (data) {
+      console.log(data)
       this.attributes = {};
       this.edges = {};
       this.nodes = {};
@@ -1929,7 +1930,7 @@ export default {
       payload.experimentalOnly = params.experimentalOnly
       if (params.selection)
         payload["nodes"] = this.nodes[params.type].filter(n => n.selected).map(n => n.id)
-      if (algorithm === "diamond" || algorithm === "trustrank" || algorithm === "centrality") {
+      if (algorithm === "diamond" || algorithm === "trustrank" || algorithm === "centrality" || algorithm === "must") {
         if (this.configuration.countMap.nodes[params.type] === undefined || (params.selection && this.configuration.countMap.nodes[params.type].selected === 0)) {
           this.printNotification( "Cannot execute " + algorithm + " without seed nodes!", 1)
           return;

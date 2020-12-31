@@ -123,14 +123,6 @@
           "label": "SourceIDs"
         },
         {
-          "name": "indication",
-          "source": true,
-          "list": true,
-          "detail": true,
-          "id": false,
-          "label": "Indication"
-        },
-        {
           "name": "drugGroups",
           "source": true,
           "list": true,
@@ -141,9 +133,19 @@
           "distinct": true
         },
         {
+          "name": "drugCategories",
+          "source": true,
+          "list": false,
+          "detail": true,
+          "id": false,
+          "type": "array",
+          "label": "Categories",
+          "distinct": true
+        },
+        {
           "name": "iupacName",
           "source": true,
-          "list": true,
+          "list": false,
           "detail": true,
           "id": false,
           "label": "IUPAC-Name"
@@ -198,14 +200,12 @@
           "label": "SMILES"
         },
         {
-          "name": "drugCategories",
+          "name": "indication",
           "source": true,
           "list": false,
           "detail": true,
           "id": false,
-          "type": "array",
-          "label": "Categories",
-          "distinct": true
+          "label": "Indication"
         },
         {
           "name": "_cls",

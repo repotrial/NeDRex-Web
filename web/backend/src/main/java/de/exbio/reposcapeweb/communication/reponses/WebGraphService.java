@@ -838,7 +838,7 @@ public class WebGraphService {
             if (g.getNodes().containsKey(nodeTypeId))
                 allNodes.addAll(g.getNodes().get(nodeTypeId).keySet());
             int beforeCount = allNodes.size();
-            Set<Integer> newNodeIDs = j.getResult().getNodes().entrySet().stream().filter(e -> e.getValue() != null).map(Map.Entry::getKey).collect(Collectors.toSet());
+            Set<Integer> newNodeIDs = (j.getMethod().equals(ToolService.Tool.BICON)? j.getResult().getNodes().entrySet().stream() :j.getResult().getNodes().entrySet().stream().filter(e -> e.getValue() != null)).map(Map.Entry::getKey).collect(Collectors.toSet());
             allNodes.addAll(newNodeIDs);
             derived.addNodeMarks(nodeTypeId, newNodeIDs);
             j.setUpdate("" + (allNodes.size() - beforeCount));
@@ -847,13 +847,13 @@ public class WebGraphService {
             derived.addNodes(nodeTypeId, nf.toList(-1).stream().map(e -> new Node(e.getNodeId(), e.getName())).collect(Collectors.toList()));
 
             if (j.getMethod().equals(ToolService.Tool.DIAMOND)) {
-                derived.addCustomNodeAttributeType(nodeTypeId, "rank", "numeric");
-                derived.addCustomNodeAttributeType(nodeTypeId, "p_hyper", "numeric");
+                derived.addCustomNodeAttributeType(nodeTypeId, "Rank", "numeric");
+                derived.addCustomNodeAttributeType(nodeTypeId, "P-Hyper", "numeric");
                 derived.addCustomNodeAttribute(nodeTypeId, j.getResult().getNodes());
             }
 
             if (j.getMethod().equals(ToolService.Tool.TRUSTRANK) || j.getMethod().equals(ToolService.Tool.CENTRALITY)) {
-                derived.addCustomNodeAttributeType(nodeTypeId, "score", "numeric");
+                derived.addCustomNodeAttributeType(nodeTypeId, "Score", "numeric");
                 HashMap<Integer, HashMap<String, Object>> idMap = new HashMap<>();
                 j.getResult().getNodes().forEach((k, v) -> {
                     if (newNodeIDs.contains(k))
@@ -923,19 +923,19 @@ public class WebGraphService {
                 HashMap<Integer, HashSet<Integer>> edges = new HashMap<>();
                 g.getNodes().get(typeId1).keySet().forEach(n -> {
                     try {
-                        edgeController.getEdges(edgeId, typeId1, n).stream().filter(e -> g.getNodes().get(typeId2).containsKey(e)).forEach(e -> {
+                        edgeController.getEdges(edgeId, typeId1, n).stream().filter(n2 -> g.getNodes().get(typeId2).containsKey(n2)).forEach(n2 -> {
 
-                            if (n < e) {
-                                if (!expOnly | (expOnly & edgeController.isExperimental(edgeId, n, e))) {
+                            if (n < n2) {
+                                if (!expOnly | edgeController.isExperimental(edgeId, n, n2)) {
                                     if (!edges.containsKey(n))
                                         edges.put(n, new HashSet<>());
-                                    edges.get(n).add(e);
+                                    edges.get(n).add(n2);
                                 }
                             } else {
-                                if (!expOnly | (expOnly & edgeController.isExperimental(edgeId, e, n))) {
-                                    if (!edges.containsKey(e))
-                                        edges.put(e, new HashSet<>());
-                                    edges.get(e).add(n);
+                                if (!expOnly | edgeController.isExperimental(edgeId, n2, n)) {
+                                    if (!edges.containsKey(n2))
+                                        edges.put(n2, new HashSet<>());
+                                    edges.get(n2).add(n);
                                 }
                             }
                         });
@@ -975,10 +975,7 @@ public class WebGraphService {
             });
 
             WebGraphList list = getList(gid, req);
-
             writeGraphListToFS(list, wd, req);
-
-
             toolService.createGraphmlFromFS(wd, graphml);
 
         }
