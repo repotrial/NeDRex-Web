@@ -6,6 +6,7 @@ import de.exbio.reposcapeweb.configs.schema.Config;
 import de.exbio.reposcapeweb.db.DbCommunicationService;
 import de.exbio.reposcapeweb.db.entities.edges.*;
 import de.exbio.reposcapeweb.db.history.HistoryController;
+import de.exbio.reposcapeweb.db.services.NodeService;
 import de.exbio.reposcapeweb.db.services.controller.EdgeController;
 import de.exbio.reposcapeweb.db.services.controller.NodeController;
 import de.exbio.reposcapeweb.db.services.edges.*;
@@ -28,6 +29,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 
 @Service
 public class ImportService {
@@ -70,7 +72,7 @@ public class ImportService {
                          GeneService geneService,
                          FilterService filterService,
                          ProteinService proteinService,
-     DisorderComorbidWithDisorderService disorderComorbidWithDisorderService,
+                         DisorderComorbidWithDisorderService disorderComorbidWithDisorderService,
                          DisorderIsADisorderService disorderIsADisorderService,
                          DrugHasIndicationService drugHasIndicationService,
                          DrugHasTargetService drugHasTargetService,
@@ -83,7 +85,7 @@ public class ImportService {
                          DrugHasContraindicationService drugHasContraindicationService,
                          EdgeController edgeController,
                          NodeController nodeController
-                         ) {
+    ) {
         this.env = env;
         this.dbCommunication = dbCommunication;
         this.drugService = drugService;
@@ -101,25 +103,23 @@ public class ImportService {
         this.proteinEncodedByService = proteinEncodedByService;
         this.proteinInPathwayService = proteinInPathwayService;
         this.proteinInteractsWithProteinService = proteinInteractsWithProteinService;
-        this.drugHasContraindicationService=drugHasContraindicationService;
+        this.drugHasContraindicationService = drugHasContraindicationService;
         this.historyController = historyController;
-        this.objectMapper=objectMapper;
+        this.objectMapper = objectMapper;
         this.edgeController = edgeController;
-        this.nodeController=nodeController;
+        this.nodeController = nodeController;
     }
 
     public void importNodeData() {
         log.info("NodeDataMap import: Start!");
         File conf = new File(env.getProperty("file.db.config"));
         try {
-            DBConfig.importConfig(conf,objectMapper.readValue(conf, Config.class));
+            DBConfig.importConfig(conf, objectMapper.readValue(conf, Config.class));
         } catch (IOException e) {
             e.printStackTrace();
         }
         nodeController.setUp();
         edgeController.setUp();
-//        HashMap<String, Collection> collections = new HashMap<>();
-//        getCollections(collections);
         log.info("Importing nodeIDs");
         File cacheDir = new File(env.getProperty("path.db.cache"));
         importIdMaps(cacheDir, false);
@@ -128,12 +128,12 @@ public class ImportService {
     }
 
 
-    public void importHistory(){
+    public void importHistory() {
         historyController.importHistory();
     }
 
 
-    private void importNodeIdMaps(File cacheDir, String table, HashMap<Integer, Pair<String,String>> idToDomain, HashMap<String, Integer> domainToString) {
+    private boolean importNodeIdMaps(File cacheDir, String table, HashMap<Integer, Pair<String, String>> idToDomain, HashMap<String, Integer> domainToString) {
         File nodeDir = new File(cacheDir, "nodes");
 
         File f = new File(nodeDir, table + ".map");
@@ -149,12 +149,14 @@ public class ImportService {
                     continue;
                 ArrayList<String> entry = StringUtils.split(line, '\t', 2);
                 int id = Integer.parseInt(entry.get(0));
-                idToDomain.put(id, new Pair<>(entry.get(1),entry.get(2)));
+                idToDomain.put(id, new Pair<>(entry.get(1), entry.get(2)));
                 domainToString.put(entry.get(1), id);
             }
             log.debug("NodeIdMap import: Updated " + table);
+            return true;
         } catch (IOException | NullPointerException e) {
             log.warn("Error on importing nodeidmaps for " + table);
+            return false;
         }
     }
 
@@ -184,56 +186,65 @@ public class ImportService {
 
     public void importIdMaps(File cacheDir, boolean allowOnUpdate) {
         dbCommunication.scheduleImport(allowOnUpdate);
+        File nodeCacheDir = new File(env.getProperty("path.db.cache") + "nodes");
         DBConfig.getConfig().nodes.forEach(node -> {
+            NodeService s = null;
             switch (node.name) {
-                case "drug": {
-                    importNodeIdMaps(cacheDir, node.name, drugService.getIdToDomainMap(), drugService.getDomainToIdMap());
+                case "drug" -> {
+                    s = drugService;
                     break;
                 }
-                case "pathway": {
-                    importNodeIdMaps(cacheDir, node.name, pathwayService.getIdToDomainMap(), pathwayService.getDomainToIdMap());
+                case "pathway" -> {
+                    s = pathwayService;
                     break;
                 }
-                case "disorder": {
-                    importNodeIdMaps(cacheDir, node.name, disorderService.getIdToDomainMap(), disorderService.getDomainToIdMap());
+                case "disorder" -> {
+                    s = disorderService;
                     break;
                 }
-                case "gene": {
-                    importNodeIdMaps(cacheDir, node.name, geneService.getIdToDomainMap(), geneService.getDomainToIdMap());
+                case "gene" -> {
+                    s = geneService;
                     break;
                 }
-                case "protein": {
-                    importNodeIdMaps(cacheDir, node.name, proteinService.getIdToDomainMap(), proteinService.getDomainToIdMap());
+                case "protein" -> {
+                    s = proteinService;
                     break;
+                }
+            }
+            if (s != null) {
+                if (!importNodeIdMaps(cacheDir, node.label, s.getIdToDomainMap(), s.getDomainToIdMap())) {
+                    log.info("Fixing nodeidmaps for "+node.label);
+                    s.readIdDomainMapsFromDb();
+                    RepoTrialUtils.writeNodeMap(new File(nodeCacheDir, node.label + ".map"), s.getIdToDomainMap());
+                    log.info("Done fixing nodeidmaps for "+node.label);
                 }
             }
         });
         dbCommunication.setImportInProgress(false);
-
     }
 
-    public void importNodeFilters( File cacheDir) {
+    public void importNodeFilters(File cacheDir) {
         DBConfig.getConfig().nodes.forEach(node -> {
 
             switch (node.name) {
                 case "drug": {
-                    drugService.setFilter(filterService.readFromFiles(new File(cacheDir, node.name)));
+                    drugService.setFilter(filterService.readFromFiles(new File(cacheDir, node.label)));
                     break;
                 }
                 case "pathway": {
-                    pathwayService.setFilter(filterService.readFromFiles(new File(cacheDir, node.name)));
+                    pathwayService.setFilter(filterService.readFromFiles(new File(cacheDir, node.label)));
                     break;
                 }
                 case "disorder": {
-                    disorderService.setFilter(filterService.readFromFiles(new File(cacheDir, node.name)));
+                    disorderService.setFilter(filterService.readFromFiles(new File(cacheDir, node.label)));
                     break;
                 }
                 case "gene": {
-                    geneService.setFilter(filterService.readFromFiles(new File(cacheDir, node.name)));
+                    geneService.setFilter(filterService.readFromFiles(new File(cacheDir, node.label)));
                     break;
                 }
                 case "protein": {
-                    proteinService.setFilter(filterService.readFromFiles(new File(cacheDir, node.name)));
+                    proteinService.setFilter(filterService.readFromFiles(new File(cacheDir, node.label)));
                     break;
                 }
             }

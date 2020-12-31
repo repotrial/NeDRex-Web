@@ -21,7 +21,7 @@ import de.exbio.reposcapeweb.utils.Pair;
 import de.exbio.reposcapeweb.utils.StatUtils;
 import de.exbio.reposcapeweb.utils.StringUtils;
 import de.exbio.reposcapeweb.utils.WriterUtils;
-import org.apache.commons.io.FileUtils;
+import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +30,6 @@ import org.springframework.stereotype.Service;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -45,6 +44,7 @@ public class WebGraphService {
     private final DbCommunicationService dbCommunicationService;
     private final ToolService toolService;
     private HashMap<String, Graph> cache = new HashMap<>();
+    private HashMap<String, String> userGraph = new HashMap<>();
     private HashMap<String, Object> colorMap;
 
 
@@ -780,6 +780,19 @@ public class WebGraphService {
             historyController.saveDerivedHistory(g.getParent(), history);
             cache.remove(gid);
         }
+        if (userGraph.containsKey(uid)) {
+            String oldId = userGraph.get(uid);
+            cache.remove(oldId);
+            File wd = getGraphWD(oldId);
+            if (wd.exists()) {
+                try {
+                    FileUtils.deleteDirectory(wd);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        userGraph.put(uid, gid);
 
         exportGraph(g);
     }
@@ -833,7 +846,7 @@ public class WebGraphService {
             if (g.getNodes().containsKey(nodeTypeId))
                 allNodes.addAll(g.getNodes().get(nodeTypeId).keySet());
             int beforeCount = allNodes.size();
-            Set<Integer> newNodeIDs = (j.getMethod().equals(ToolService.Tool.BICON)? j.getResult().getNodes().entrySet().stream() :j.getResult().getNodes().entrySet().stream().filter(e -> e.getValue() != null)).map(Map.Entry::getKey).collect(Collectors.toSet());
+            Set<Integer> newNodeIDs = (j.getMethod().equals(ToolService.Tool.BICON) ? j.getResult().getNodes().entrySet().stream() : j.getResult().getNodes().entrySet().stream().filter(e -> e.getValue() != null)).map(Map.Entry::getKey).collect(Collectors.toSet());
             allNodes.addAll(newNodeIDs);
             derived.addNodeMarks(nodeTypeId, newNodeIDs);
             j.setUpdate("" + (allNodes.size() - beforeCount));
@@ -990,7 +1003,7 @@ public class WebGraphService {
                 StringBuilder line = new StringBuilder("");
                 for (HashMap<String, Object> map : values) {
                     line.setLength(0);
-                    Arrays.stream(order).forEach(key -> line.append(escapeStrings(map.get(key).toString())).append("\t"));
+                    Arrays.stream(order).forEach(key -> line.append(escapeStrings(map.get(key)==null?"NA":map.get(key).toString())).append("\t"));
                     bw.write(line.substring(0, line.length() - 1) + "\n");
                 }
             } catch (IOException e) {
@@ -1024,8 +1037,10 @@ public class WebGraphService {
     }
 
     private String escapeStrings(String in) {
+        if(in.contains("\r"))
+            log.warn("Detected windows line endings: "+in);
         String out = StringUtils.replaceAll(in, '\t', "\\t");
-        out = StringUtils.replaceAll(out, '\n', "\\n");
+        out = StringUtils.replaceAll(out,'\n', "\\n");
         return out;
     }
 }

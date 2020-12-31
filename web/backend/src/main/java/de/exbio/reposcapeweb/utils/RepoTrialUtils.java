@@ -37,6 +37,7 @@ public class RepoTrialUtils {
     }
 
     public static void writeNodeMap(File f, HashMap<Integer, Pair<String,String>> idToDomainMap) {
+        f.getParentFile().mkdirs();
         try {
             BufferedWriter bw = new BufferedWriter(new FileWriter(f));
             bw.write("#id\tprimaryDomainId\n");

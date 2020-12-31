@@ -22,7 +22,9 @@ for file in os.listdir("./"):
             else:
                 data = {}
                 line = line.strip().split("\t")
+                print(line)
                 for attr, idx in attrMap.items():
+                    print("\t"+attr+": "+str(idx))
                     if attr != "id":
                         if attr == "type":
                             data[attr] = nodeType

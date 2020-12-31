@@ -12,4 +12,8 @@ public abstract class NodeService {
     public abstract String getName(int id);
 
     public abstract Long getCount();
+
+    public abstract void readIdDomainMapsFromDb();
+
+    public abstract HashMap<String, Integer> getDomainToIdMap();
 }

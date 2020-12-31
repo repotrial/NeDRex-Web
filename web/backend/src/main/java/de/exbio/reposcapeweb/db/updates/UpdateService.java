@@ -10,9 +10,7 @@ import de.exbio.reposcapeweb.db.entities.RepoTrialNode;
 import de.exbio.reposcapeweb.db.entities.edges.*;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
 import de.exbio.reposcapeweb.db.entities.nodes.*;
-import de.exbio.reposcapeweb.db.io.Collection;
 import de.exbio.reposcapeweb.db.io.ImportService;
-import de.exbio.reposcapeweb.db.io.Node;
 import de.exbio.reposcapeweb.db.services.edges.*;
 import de.exbio.reposcapeweb.db.services.nodes.*;
 import de.exbio.reposcapeweb.filter.FilterService;
@@ -64,6 +62,8 @@ public class UpdateService {
     private final DrugHasContraindicationService drugHasContraindicationService;
     private final ToolService toolService;
 
+    private final File jsonReformatter;
+
     @Autowired
     public UpdateService(Environment environment,
                          ObjectMapper objectMapper,
@@ -108,6 +108,8 @@ public class UpdateService {
         this.proteinInteractsWithProteinService = proteinInteractsWithProteinService;
         this.drugHasContraindicationService = drugHasContraindicationService;
         this.toolService = toolService;
+
+        jsonReformatter = new File(new File(env.getProperty("path.scripts.dir")),"reformatJson.sh");
 
     }
 
@@ -246,8 +248,6 @@ public class UpdateService {
     private void update(String url, File cacheDir) {
         log.debug("Loading Database update from " + url + " to cache-directory " + cacheDir.getAbsolutePath());
 
-//        HashMap<String, de.exbio.reposcapeweb.db.io.Collection> collections = new HashMap<>();
-
         File updateDir = new File(cacheDir, env.getProperty("update.dir.prefix") + System.currentTimeMillis());
         updateDir.deleteOnExit();
         String fileType = env.getProperty("file.collections.filetype");
@@ -258,7 +258,7 @@ public class UpdateService {
         log.info("Validation of entity count in cached files!");
 
         DBConfig.getConfig().nodes.forEach(node -> restructureUpdates(node.file, node.name));
-        DBConfig.getConfig().edges.stream().filter(e -> e.original).forEach(edge -> restructureUpdates(edge.file, edge.mapsTo));
+        DBConfig.getConfig().edges.stream().filter(e -> e.original).forEach(edge -> restructureUpdates(edge.file, edge.name));
 
         executingUpdates(cacheDir);
 
@@ -266,10 +266,10 @@ public class UpdateService {
         overrideOldData(cacheDir);
 
 
-        updateDir.delete();
+        FileUtils.deleteDirectory(updateDir);
     }
 
-    private <T extends RepoTrialNode> EnumMap<UpdateOperation, HashMap<String, T>> runNodeUpdates(Class<T> valueType, File c) {
+    private <T extends RepoTrialNode> EnumMap<UpdateOperation, HashMap<String, T>> startNodeUpdate(Class<T> valueType, File c) {
         EnumMap<UpdateOperation, HashMap<String, T>> updates = new EnumMap<>(UpdateOperation.class);
         if (!readNodeUpdates(c, updates, valueType))
             importNodeInsertions(c, updates, valueType);
@@ -288,9 +288,7 @@ public class UpdateService {
 
         importRepoTrialNodes();
 
-
         importRepoTrialEdges();
-
 
         dbCommunication.setDbLocked(false);
 
@@ -391,35 +389,35 @@ public class UpdateService {
                 switch (node.name) {
                     case "drug": {
                         if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, Drug.sourceAttributes))
-                            updateSuccessful = drugService.submitUpdates(runNodeUpdates(Drug.class, node.file));
+                            updateSuccessful = drugService.submitUpdates(startNodeUpdate(Drug.class, node.file));
                         RepoTrialUtils.writeNodeMap(new File(nodeCacheDir, node.label + ".map"), drugService.getIdToDomainMap());
                         filterService.writeToFile(drugService.getFilter(), new File(filterCacheDir, node.label));
                         break;
                     }
                     case "pathway": {
                         if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, Pathway.sourceAttributes))
-                            updateSuccessful = pathwayService.submitUpdates(runNodeUpdates(Pathway.class, node.file));
+                            updateSuccessful = pathwayService.submitUpdates(startNodeUpdate(Pathway.class, node.file));
                         RepoTrialUtils.writeNodeMap(new File(nodeCacheDir, node.label + ".map"), pathwayService.getIdToDomainMap());
                         filterService.writeToFile(pathwayService.getFilter(), new File(filterCacheDir, node.label));
                         break;
                     }
                     case "disorder": {
                         if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, Disorder.sourceAttributes))
-                            updateSuccessful = disorderService.submitUpdates(runNodeUpdates(Disorder.class, node.file));
+                            updateSuccessful = disorderService.submitUpdates(startNodeUpdate(Disorder.class, node.file));
                         RepoTrialUtils.writeNodeMap(new File(nodeCacheDir, node.label + ".map"), disorderService.getIdToDomainMap());
                         filterService.writeToFile(disorderService.getFilter(), new File(filterCacheDir, node.label));
                         break;
                     }
                     case "gene": {
                         if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, Gene.sourceAttributes))
-                            updateSuccessful = geneService.submitUpdates(runNodeUpdates(Gene.class, node.file));
+                            updateSuccessful = geneService.submitUpdates(startNodeUpdate(Gene.class, node.file));
                         RepoTrialUtils.writeNodeMap(new File(nodeCacheDir, node.label + ".map"), geneService.getIdToDomainMap());
                         filterService.writeToFile(geneService.getFilter(), new File(filterCacheDir, node.label));
                         break;
                     }
                     case "protein": {
                         if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, Protein.sourceAttributes))
-                            updateSuccessful = proteinService.submitUpdates(runNodeUpdates(Protein.class, node.file));
+                            updateSuccessful = proteinService.submitUpdates(startNodeUpdate(Protein.class, node.file));
                         RepoTrialUtils.writeNodeMap(new File(nodeCacheDir, node.label + ".map"), proteinService.getIdToDomainMap());
                         filterService.writeToFile(proteinService.getFilter(), new File(filterCacheDir, node.label));
                         break;
@@ -459,6 +457,11 @@ public class UpdateService {
             while ((line = br.readLine()) != null) {
                 char startC = line.charAt(0);
                 if (startC == '>' | startC == '<') {
+                    if (line.contains("\\r"))
+                        System.out.println("contains windows line endings");
+                    line = StringUtils.replaceAll(line, "\\r", "");
+                    if (line.contains("\\rr"))
+                        System.out.println("still does");
                     int start = line.charAt(2) == '[' ? 3 : 2;
                     T d = objectMapper.readValue(line.substring(start), valueType);
                     if (startC == '<') {
@@ -609,7 +612,7 @@ public class UpdateService {
     }
 
     private void restructureUpdates(File f, String name) {
-        FileUtils.formatJson(f);
+        FileUtils.formatJson(jsonReformatter,f);
         int count = 0;
         try {
             BufferedReader br = ReaderUtils.getBasicReader(f);
@@ -653,7 +656,7 @@ public class UpdateService {
                 e.printStackTrace();
             }
         });
-        DBConfig.getConfig().edges.stream().filter(e->e.original).forEach(edge -> {
+        DBConfig.getConfig().edges.stream().filter(e -> e.original).forEach(edge -> {
             try {
                 log.debug("Moving " + edge.file.toPath() + " to " + new File(cacheDir, edge.file.getName()).toPath());
                 edge.file = Files.move(edge.file.toPath(), new File(cacheDir, edge.file.getName()).toPath(), REPLACE_EXISTING).toFile();

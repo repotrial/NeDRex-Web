@@ -1100,7 +1100,6 @@ export default {
       }
     },
     loadList: function (data) {
-      console.log(data)
       this.attributes = {};
       this.edges = {};
       this.nodes = {};

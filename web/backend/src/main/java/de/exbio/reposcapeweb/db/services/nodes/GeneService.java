@@ -117,4 +117,12 @@ public class GeneService extends NodeService {
         return geneRepository.count();
     }
 
+    @Override
+    public void readIdDomainMapsFromDb() {
+        findAll().forEach(n->{
+            domainToIdMap.put(n.getPrimaryDomainId(),n.getId());
+            idToDomainMap.put(n.getId(),new Pair<>(n.getPrimaryDomainId(),n.getDisplayName()));
+        });
+    }
+
 }

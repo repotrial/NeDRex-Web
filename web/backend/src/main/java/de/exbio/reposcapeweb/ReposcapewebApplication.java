@@ -22,9 +22,7 @@ import de.exbio.reposcapeweb.db.services.nodes.DisorderService;
 import de.exbio.reposcapeweb.db.updates.UpdateService;
 import de.exbio.reposcapeweb.filter.FilterService;
 import de.exbio.reposcapeweb.tools.ToolService;
-import de.exbio.reposcapeweb.utils.Pair;
-import de.exbio.reposcapeweb.utils.StringUtils;
-import de.exbio.reposcapeweb.utils.WriterUtils;
+import de.exbio.reposcapeweb.utils.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +34,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.jdbc.support.incrementer.HanaSequenceMaxValueIncrementer;
 import org.zeroturnaround.zip.ZipUtil;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
@@ -76,6 +75,7 @@ public class ReposcapewebApplication {
 
     @EventListener(ApplicationReadyEvent.class)
     public void postConstruct() {
+
         dbService.setImportInProgress(true);
 
         importService.importNodeData();
@@ -84,6 +84,7 @@ public class ReposcapewebApplication {
 
         toolService.validateTools();
         dbService.setImportInProgress(false);
+
         if (Boolean.parseBoolean(env.getProperty("update.onstartup"))) {
             updateService.scheduleDataUpdate();
         } else {

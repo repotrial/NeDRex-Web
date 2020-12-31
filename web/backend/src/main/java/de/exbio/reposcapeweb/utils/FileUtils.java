@@ -40,30 +40,22 @@ public class FileUtils {
         return file;
     }
 
-    public static void formatJson(File file) {
-        ProcessBuilder pb = new ProcessBuilder("sed","-i","s/},{\"/},\\n{\"/g", file.getAbsolutePath());
+    public static void formatJson(File jsonReformatter, File file) {
+        ProcessBuilder pb = new ProcessBuilder(jsonReformatter.getAbsolutePath(), file.getAbsolutePath());
         try {
             ProcessUtils.executeProcessWait(pb);
         } catch (IOException | InterruptedException e) {
             log.error("Error converting json file!");
             e.printStackTrace();
         }
-//        pb = new ProcessBuilder("sed","-i","s/},{\"sourceDomainId/},\\n{\"sourceDomainId/g", file.getAbsolutePath());
-//        try {
-//            ProcessUtils.executeProcess(pb);
-//        } catch (IOException | InterruptedException e) {
-//            log.error("Error converting json file!");
-//            e.printStackTrace();
-//        }
-//
-//        pb = new ProcessBuilder("sed","-i","s/},{\"memberOne/},\\n{\"memberOne/g", file.getAbsolutePath());
-//        try {
-//            ProcessUtils.executeProcess(pb);
-//        } catch (IOException | InterruptedException e) {
-//            log.error("Error converting json file!");
-//            e.printStackTrace();
-//        }
     }
 
 
+    public static void deleteDirectory(File updateDir) {
+        try {
+            org.apache.tomcat.util.http.fileupload.FileUtils.deleteDirectory(updateDir);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }
