@@ -1,5 +1,6 @@
 package de.exbio.reposcapeweb.db.services;
 
+import de.exbio.reposcapeweb.filter.NodeFilter;
 import de.exbio.reposcapeweb.utils.Pair;
 
 import java.util.HashMap;
@@ -16,4 +17,10 @@ public abstract class NodeService {
     public abstract void readIdDomainMapsFromDb();
 
     public abstract HashMap<String, Integer> getDomainToIdMap();
+
+    public abstract void setFilter(NodeFilter readFromFiles);
+
+    public abstract void readFilterFromDB();
+
+    public abstract NodeFilter getFilter();
 }

@@ -867,14 +867,14 @@ export default {
     }
     ,
     getColoring: function (type, name) {
-      if (name.endsWith("Drug"))
-        name = "drug"
+      // if (name.endsWith("Drug"))
+      //   name = "drug"
       return Utils.getColoring(this.metagraph, type, name)
     },
 
     getExtendedColoring: function (type, name) {
-      if (name.endsWith("Drug"))
-        name = "drug"
+      // if (name.endsWith("Drug"))
+      //   name = "drug"
       return Utils.getColoringExtended(this.metagraph, this.options.list.entityGraph, type, name)
     },
     getNodeNames: function (type) {

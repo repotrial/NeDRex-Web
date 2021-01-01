@@ -68,7 +68,7 @@ public class Drug extends RepoTrialNode {
     @Column(columnDefinition = "TEXT")
     private String synonyms;
     @Column(nullable = false)
-    private DrugType type;
+    private DrugType drugType;
     @Column(columnDefinition = "TEXT")
     private String drugCategories;
     private String drugGroups;
@@ -117,7 +117,7 @@ public class Drug extends RepoTrialNode {
         values.put("molecularFormula", getMolecularFormula());
         values.put("displayName", getDisplayName());
         values.put("inchi", getInchi());
-        values.put("type", getType().name());
+        values.put("type", getType());
         values.put("domainIds", getDomainIds());
         values.put("smiles", getSmiles());
         values.put("synonyms", getSynonyms());
@@ -125,7 +125,7 @@ public class Drug extends RepoTrialNode {
         values.put("casNumber", getCasNumber());
         values.put("drugCategories", getDrugCategories());
         values.put("drugGroups", getDrugGroups());
-        values.put("_cls", get_cls());
+        values.put("_cls", drugType.name());
         values.put("sequences", getSequences());
         values.put("iupacName", getIupacName());
         values.put("primaryDataset", getPrimaryDataset());
@@ -164,11 +164,12 @@ public class Drug extends RepoTrialNode {
 
     @JsonGetter
     public String get_cls() {
-        return "Drug." + type.name();
+        return "Drug." + drugType.name();
     }
 
     @JsonSetter
     public void set_cls(String _cls) {
+        this.drugType = DrugType.valueOf(StringUtils.split(_cls,'.').get(1));
     }
 
     public List<String> getSynonyms() {
@@ -209,18 +210,14 @@ public class Drug extends RepoTrialNode {
         return casNumber;
     }
 
-    @JsonSetter
+
+//    @JsonSetter
     public void setType(String type) {
-        this.type = DrugType.valueOf(type);
+//        this.drugType = DrugType.valueOf(type);
     }
 
-
-    public void setType(DrugType type) {
-        this.type = type;
-    }
-
-    public DrugType getType() {
-        return type;
+    public String getType() {
+        return "Drug";
     }
 
     public String getIndication() {
@@ -284,7 +281,7 @@ public class Drug extends RepoTrialNode {
         this.domainIds = other.domainIds;
         this.displayName = other.displayName;
         this.synonyms = other.synonyms;
-        this.type = other.type;
+        this.drugType = other.drugType;
         this.drugCategories = other.drugCategories;
         this.drugGroups = other.drugGroups;
         this.description = other.description;
@@ -362,7 +359,7 @@ public class Drug extends RepoTrialNode {
         }
 
         map.put(FilterType.TYPE, new TreeMap<>());
-        map.get(FilterType.TYPE).put(new FilterKey(type.name()), new FilterEntry(displayName, FilterType.TYPE, id));
+        map.get(FilterType.TYPE).put(new FilterKey(drugType.name()), new FilterEntry(displayName, FilterType.TYPE, id));
         return map;
     }
 

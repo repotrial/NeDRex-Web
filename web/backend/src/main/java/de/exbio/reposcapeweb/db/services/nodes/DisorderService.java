@@ -31,7 +31,6 @@ public class DisorderService extends NodeService {
     public DisorderService(DisorderRepository disorderRepository, FilterService filterService) {
         this.disorderRepository = disorderRepository;
         this.filterService = filterService;
-        allFilter = new NodeFilter();
     }
 
     public boolean submitUpdates(EnumMap<UpdateOperation, HashMap<String, Disorder>> updates) {
@@ -89,6 +88,7 @@ public class DisorderService extends NodeService {
         return allFilter;
     }
 
+    @Override
     public void setFilter(NodeFilter nf){
         this.allFilter = nf;
     }
@@ -122,6 +122,14 @@ public class DisorderService extends NodeService {
         findAll().forEach(n->{
             domainToIdMap.put(n.getPrimaryDomainId(),n.getId());
             idToDomainMap.put(n.getId(),new Pair<>(n.getPrimaryDomainId(),n.getDisplayName()));
+        });
+    }
+
+    @Override
+    public void readFilterFromDB(){
+        allFilter = new NodeFilter();
+        findAll().forEach(n->{
+            allFilter.add(n.toDistinctFilter(),n.toUniqueFilter());
         });
     }
 }

@@ -16,11 +16,6 @@ public class FilterService {
 
     private final Logger log = LoggerFactory.getLogger(FilterService.class);
 
-    @Autowired
-    public FilterService() {
-
-    }
-
 
     public void writeToFile(NodeFilter nf, File f) {
         try {
@@ -67,6 +62,7 @@ public class FilterService {
             br.close();
         } catch (IOException e) {
             log.debug("Read error on filter import for " + f.getName());
+            return null;
         }
 
         try {
@@ -78,6 +74,7 @@ public class FilterService {
             br.close();
         } catch (IOException e) {
             log.debug("Read error on filter import for " + f.getName());
+            return null;
         }
 
         return nf;

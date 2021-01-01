@@ -315,7 +315,6 @@ public class WebGraphService {
 
         dbCommunicationService.scheduleRead();
 
-
         cache.put(g.getId(), g);
 
         TreeMap<Integer, HashMap<Integer, Node>> nodeIds = new TreeMap<>();

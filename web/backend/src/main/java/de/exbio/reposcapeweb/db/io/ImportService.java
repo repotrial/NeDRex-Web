@@ -12,6 +12,7 @@ import de.exbio.reposcapeweb.db.services.controller.NodeController;
 import de.exbio.reposcapeweb.db.services.edges.*;
 import de.exbio.reposcapeweb.db.services.nodes.*;
 import de.exbio.reposcapeweb.filter.FilterService;
+import de.exbio.reposcapeweb.filter.NodeFilter;
 import de.exbio.reposcapeweb.tools.ToolService;
 import de.exbio.reposcapeweb.utils.Pair;
 import de.exbio.reposcapeweb.utils.ReaderUtils;
@@ -213,10 +214,10 @@ public class ImportService {
             }
             if (s != null) {
                 if (!importNodeIdMaps(cacheDir, node.label, s.getIdToDomainMap(), s.getDomainToIdMap())) {
-                    log.info("Fixing nodeidmaps for "+node.label);
+                    log.info("Fixing nodeidmaps for " + node.label);
                     s.readIdDomainMapsFromDb();
                     RepoTrialUtils.writeNodeMap(new File(nodeCacheDir, node.label + ".map"), s.getIdToDomainMap());
-                    log.info("Done fixing nodeidmaps for "+node.label);
+                    log.info("Done fixing nodeidmaps for " + node.label);
                 }
             }
         });
@@ -224,30 +225,25 @@ public class ImportService {
     }
 
     public void importNodeFilters(File cacheDir) {
+        cacheDir.mkdirs();
         DBConfig.getConfig().nodes.forEach(node -> {
-
+            NodeService s = null;
             switch (node.name) {
-                case "drug": {
-                    drugService.setFilter(filterService.readFromFiles(new File(cacheDir, node.label)));
-                    break;
-                }
-                case "pathway": {
-                    pathwayService.setFilter(filterService.readFromFiles(new File(cacheDir, node.label)));
-                    break;
-                }
-                case "disorder": {
-                    disorderService.setFilter(filterService.readFromFiles(new File(cacheDir, node.label)));
-                    break;
-                }
-                case "gene": {
-                    geneService.setFilter(filterService.readFromFiles(new File(cacheDir, node.label)));
-                    break;
-                }
-                case "protein": {
-                    proteinService.setFilter(filterService.readFromFiles(new File(cacheDir, node.label)));
-                    break;
-                }
+                case "drug" -> s = drugService;
+                case "pathway" -> s = pathwayService;
+                case "disorder" -> s = disorderService;
+                case "gene" -> s = geneService;
+                case "protein" -> s = proteinService;
             }
+            File cached = new File(cacheDir, node.label);
+            NodeFilter nf = filterService.readFromFiles(cached);
+            if (nf == null || nf.size() == 0) {
+                log.info("Fixing filter cache for "+node.label);
+                s.readFilterFromDB();
+                filterService.writeToFile(s.getFilter(), cached);
+                log.info("Done fixing.");
+            } else
+                s.setFilter(nf);
         });
 
     }

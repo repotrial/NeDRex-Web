@@ -329,7 +329,6 @@ public class UpdateService {
                     case "DisorderHierarchy":
                         if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, DisorderIsADisorder.sourceAttributes))
                             updateSuccessful = disorderIsADisorderService.submitUpdates(runEdgeUpdates(DisorderIsADisorder.class, edge.file, disorderIsADisorderService::mapIds));
-                        //TODO change name to maps2
                         filterService.writeToFile(disorderService.getFilter(), new File(filterCacheDir, edge.name));
                         disorderIsADisorderService.importEdges();
                         break;

@@ -125,4 +125,12 @@ public class GeneService extends NodeService {
         });
     }
 
+    @Override
+    public void readFilterFromDB(){
+        allFilter = new NodeFilter();
+        findAll().forEach(n->{
+            allFilter.add(n.toDistinctFilter(),n.toUniqueFilter());
+        });
+    }
+
 }

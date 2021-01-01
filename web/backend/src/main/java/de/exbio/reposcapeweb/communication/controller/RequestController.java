@@ -7,9 +7,7 @@ import de.exbio.reposcapeweb.communication.cache.Graphs;
 import de.exbio.reposcapeweb.communication.jobs.Job;
 import de.exbio.reposcapeweb.communication.jobs.JobController;
 import de.exbio.reposcapeweb.communication.jobs.JobRequest;
-import de.exbio.reposcapeweb.communication.reponses.SelectionResponse;
-import de.exbio.reposcapeweb.communication.reponses.WebGraph;
-import de.exbio.reposcapeweb.communication.reponses.WebGraphList;
+import de.exbio.reposcapeweb.communication.reponses.*;
 import de.exbio.reposcapeweb.communication.requests.*;
 import de.exbio.reposcapeweb.db.DbCommunicationService;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
@@ -18,7 +16,6 @@ import de.exbio.reposcapeweb.db.history.HistoryController;
 import de.exbio.reposcapeweb.db.services.controller.EdgeController;
 import de.exbio.reposcapeweb.db.services.controller.NodeController;
 import de.exbio.reposcapeweb.db.services.nodes.DrugService;
-import de.exbio.reposcapeweb.communication.reponses.WebGraphService;
 import org.apache.commons.io.FileUtils;
 import org.apache.tomcat.util.digester.DocumentProperties;
 import org.aspectj.lang.annotation.AfterReturning;
@@ -303,13 +300,9 @@ public class RequestController {
     @RequestMapping(value = "/getGraphInfo", method = RequestMethod.POST)
     @ResponseBody
     public String getGraphInfo(@RequestBody GraphRequest request) {
-        try {
-            log.info("Requested a graph " + objectMapper.writeValueAsString(request));
-            return objectMapper.writeValueAsString(webGraphService.getGraph(request).toInfo());
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-        return null;
+        log.info("Requested a graph " + toJson(request));
+        WebGraphInfo info = webGraphService.getGraph(request).toInfo();
+        return toJson(info);
     }
 
     @RequestMapping(value = "/finishedJob", method = RequestMethod.GET)

@@ -127,4 +127,12 @@ public class ProteinService extends NodeService {
             idToDomainMap.put(n.getId(),new Pair<>(n.getPrimaryDomainId(),n.getDisplayName()));
         });
     }
+
+    @Override
+    public void readFilterFromDB(){
+        allFilter = new NodeFilter();
+        findAll().forEach(n->{
+            allFilter.add(n.toDistinctFilter(),n.toUniqueFilter());
+        });
+    }
 }
