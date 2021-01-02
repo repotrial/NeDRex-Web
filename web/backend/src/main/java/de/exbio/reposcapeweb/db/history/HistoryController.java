@@ -2,9 +2,12 @@ package de.exbio.reposcapeweb.db.history;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.exbio.reposcapeweb.communication.cache.Graph;
 import de.exbio.reposcapeweb.communication.jobs.Job;
 import de.exbio.reposcapeweb.communication.jobs.JobController;
 import de.exbio.reposcapeweb.tools.ToolService;
+import de.exbio.reposcapeweb.utils.FileUtils;
+import de.exbio.reposcapeweb.utils.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +18,7 @@ import javax.print.attribute.standard.JobState;
 import java.io.File;
 import java.time.ZoneOffset;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 @Service
@@ -42,6 +46,11 @@ public class HistoryController {
         graphMap = new HashMap<>();
         userMap = new HashMap<>();
         historyRepository.findAll().forEach(this::addHistory);
+//        graphMap.values().forEach(h->{
+//            GraphHistory parent = h.getParent();
+//            if(parent!=null)
+//                parent.addDerivate(h);
+//        });
     }
 
     public GraphHistory save(GraphHistory history) {
@@ -83,7 +92,7 @@ public class HistoryController {
         return uid;
     }
 
-    public HashMap<String, Object> getUserHistory(String uid, HashMap<String, Job.JobState> jobs) {
+    public HashMap<String, Object> getUserHistory(String uid, HashMap<String, Pair<Job.JobState, ToolService.Tool>> jobs) {
         HashMap<String, Object> out = new HashMap<>();
         out.put("uid", uid);
         if (!userMap.containsKey(uid))
@@ -98,8 +107,10 @@ public class HistoryController {
 
         });
         map.forEach((gid, history) -> {
-            if (jobs.containsKey(gid))
-                history.setJobState(jobs.get(gid));
+            if (jobs.containsKey(gid)) {
+                history.setJobState(jobs.get(gid).first);
+                history.setMethod(jobs.get(gid).second);
+            }
         });
 
         out.put("history", getHistoryTree(map.values()));
@@ -147,7 +158,7 @@ public class HistoryController {
         GraphHistory history = getHistory(id);
         try {
             return new File(cachedir, "users/" + history.getUserId() + "/graphs/" + id + ".json");
-        }catch (NullPointerException e){
+        } catch (NullPointerException e) {
             log.warn("Broken history request!");
         }
         return null;
@@ -166,5 +177,73 @@ public class HistoryController {
             userId = getNewUser();
         }
         return userId;
+    }
+
+    public GraphHistoryDetail getDetailedHistory(String uid, Graph g, HashMap<String, Pair<Job.JobState, ToolService.Tool>> jobs) {
+        GraphHistoryDetail details = new GraphHistoryDetail();
+        GraphHistory history = getHistory(g.getId());
+        details.name = history.getName();
+        details.starred = history.isStarred(uid);
+        details.owner = history.getUserId();
+        if (jobs.containsKey(g.getId()))
+            details.method = jobs.get(g.getId()).getSecond().name();
+
+        GraphHistory parent = history.getParent();
+        details.root = parent == null;
+        if (!details.root) {
+            details.parentId = parent.getGraphId();
+            details.parentName = parent.getName();
+            if (jobs.containsKey(details.parentId))
+                details.parentMethod = jobs.get(details.parentId).second.name();
+        }
+
+
+        details.children = new HashMap<>();
+
+        history.getDerived().forEach(h -> {
+            String id = h.getGraphId();
+            details.children.put(id, new HashMap<>());
+            details.children.get(id).put("name", getHistory(id).getName());
+            if (jobs.containsKey(id)) {
+                details.children.get(id).put("method", jobs.get(id).second.name());
+            }
+        });
+        return details;
+    }
+
+    public void setName(String gid, String name) {
+        GraphHistory history = getHistory(gid);
+        history.setName(name);
+        save(history);
+    }
+
+    public void toggleStarring(String gid, String uid) {
+        GraphHistory history = getHistory(gid);
+        history.toggleStarred(uid);
+        historyRepository.save(history);
+    }
+
+    public void remove(String gid) {
+        GraphHistory g = graphMap.get(gid);
+        int idx = -1;
+        for (int i = 0; i < g.getParent().getDerived().size(); i++) {
+            if (g.getParent().getDerived().get(i).getGraphId().equals(gid))
+                idx = i;
+        }
+        g.getParent().getDerived().remove(idx);
+        g.getDerived().forEach(child -> {
+            g.getParent().addDerivate(child);
+            child.setParent(g.getParent());
+        });
+        historyRepository.saveAll(g.getDerived());
+
+        File cached = getGraphPath(gid);
+        cached.delete();
+        if (Arrays.asList(cached.getParentFile().list()).isEmpty())
+            FileUtils.deleteDirectory(cached.getParentFile());
+
+        userMap.forEach((u, m) -> m.remove(gid));
+        historyRepository.delete(g);
+        graphMap.remove(gid);
     }
 }

@@ -176,7 +176,9 @@ export default {
         }
       })
       if (params.state === 'DONE') {
+        console.log("job finished")
         this.$socket.unsubscribeJob(params.jid)
+        this.$emit("reloadHistoryEvent")
       }
     }
     ,

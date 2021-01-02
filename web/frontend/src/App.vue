@@ -27,9 +27,9 @@
       </v-toolbar>
     </v-card>
 
-    <v-container>
+    <v-container align-self="start">
       <v-row>
-        <v-col cols="9">
+        <v-col cols="9" >
 
           <v-main app style="padding-top: 0">
 
@@ -66,6 +66,7 @@
               <History ref="history"
                        v-on:graphLoadEvent="loadGraph"
                        v-on:printNotificationEvent="printNotification"
+                       v-on:reloadEvent=""
                        :options="options.history"
               ></History>
             </v-container>
@@ -153,6 +154,7 @@
                     v-on:selectionEvent="listSelectionEvent"
                     v-on:executeAlgorithmEvent="executeAlgorithm"
                     v-on:graphLoadEvent="loadGraph"
+                    v-on:reloadHistoryEvent="reloadHistory"
                     @graphViewEvent="graphViewEvent"
                     :options="options"
                     :selected-tab="selectedTabId"
@@ -382,6 +384,9 @@ export default {
     },
     registerJob: function (data) {
       this.$refs.side.addJob(data)
+    },
+    reloadHistory: function (){
+      this.$refs.history.reload()
     },
     executeAlgorithm: function (algorithm, params) {
       this.$refs.list.executeAlgorithm(algorithm, params)

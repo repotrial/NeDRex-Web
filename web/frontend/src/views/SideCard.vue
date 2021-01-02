@@ -356,7 +356,9 @@
 
       <template v-if="selectedTab===2">
         <Algorithms ref="algorithms" @executeAlgorithmEvent="submitAlgorithm"></Algorithms>
-        <Jobs ref="jobs" @graphLoadEvent="graphLoadEvent" @printNotificationEvent="printNotification"></Jobs>
+        <Jobs ref="jobs" @graphLoadEvent="graphLoadEvent" @printNotificationEvent="printNotification"
+          @reloadHistoryEvent="reloadHistory"
+        ></Jobs>
 
 
         <v-card ref="detail" elevation="3" style="margin:15px" v-if="detailedObject !== undefined"
@@ -601,6 +603,10 @@ export default {
         this.selectedNode = undefined;
         this.neighborNodes = [];
       }
+    },
+
+    reloadHistory: function (){
+      this.$emit("reloadHistoryEvent")
     },
 
 

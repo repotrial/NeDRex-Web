@@ -5,14 +5,13 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import de.exbio.reposcapeweb.communication.jobs.Job;
 import de.exbio.reposcapeweb.communication.reponses.WebGraphInfo;
+import de.exbio.reposcapeweb.tools.ToolService;
+import de.exbio.reposcapeweb.utils.StringUtils;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Entity
@@ -22,7 +21,12 @@ public class GraphHistory {
     @Id
     @Column(name = "graph_id")
     private String graphId;
+    private String name;
     private String userId;
+    //    @ElementCollection(fetch = FetchType.EAGER)
+    @Transient
+    private List<String> starredList;
+    private String starred;
     private LocalDateTime created;
     @ManyToOne
     private GraphHistory parent;
@@ -42,6 +46,9 @@ public class GraphHistory {
     @Transient
     private Job.JobState jobState = null;
 
+    @Transient
+    private String method = null;
+
     public GraphHistory() {
         derived = new LinkedList<>();
     }
@@ -49,10 +56,26 @@ public class GraphHistory {
     public GraphHistory(String userId, String graphId, WebGraphInfo graphInfo) {
         created = LocalDateTime.now();
         this.graphId = graphId;
+        this.name = graphId;
         this.userId = userId;
         derived = new LinkedList<>();
         edgeMap = graphInfo.getEdges();
         nodeMap = graphInfo.getNodes();
+        starredList = new LinkedList<>();
+    }
+
+    @JsonIgnore
+    private void setStarred(){
+        starred = StringUtils.listToString(starredList);
+    }
+
+    @JsonIgnore
+    private LinkedList<String> getStarred(){
+        return StringUtils.stringToList(starred);
+    }
+
+    public void setParent(GraphHistory parent){
+        this.parent=parent;
     }
 
     public GraphHistory(String userId, String graphId, WebGraphInfo graphInfo, GraphHistory parent) {
@@ -128,8 +151,11 @@ public class GraphHistory {
         out.put("nodes", nodeMap);
         out.put("created", created.toEpochSecond(ZoneOffset.ofTotalSeconds(0)));
         out.put("comment", comment);
-        if(jobState!=null)
-            out.put("state",jobState.name());
+        out.put("name",name);
+        if (jobState != null) {
+            out.put("state", jobState.name());
+            out.put("method", method);
+        }
         if (cascade) {
             ArrayList<Object> children = derived.stream().map(g -> g.toMap(true)).collect(Collectors.toCollection(ArrayList::new));
             out.put("children", children);
@@ -144,4 +170,34 @@ public class GraphHistory {
     public void setJobState(Job.JobState jobState) {
         this.jobState = jobState;
     }
+
+    public void setMethod(ToolService.Tool tool) {
+        this.method = tool.name();
+    }
+
+    public String getName() {
+        return name;
+    }
+
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public boolean isStarred(String uid) {
+        if(starredList==null)
+            starredList= new LinkedList<>();
+        return starredList.contains(uid);
+    }
+
+    public void toggleStarred(String uid) {
+        if(starredList==null)
+            starredList=new LinkedList<>();
+        if (isStarred(uid))
+            starredList.remove(uid);
+        else
+            starredList.add(uid);
+        setStarred();
+    }
+
 }

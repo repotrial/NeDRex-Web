@@ -31,6 +31,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 @Service
@@ -1002,7 +1003,7 @@ public class WebGraphService {
                 StringBuilder line = new StringBuilder("");
                 for (HashMap<String, Object> map : values) {
                     line.setLength(0);
-                    Arrays.stream(order).forEach(key -> line.append(escapeStrings(map.get(key)==null?"NA":map.get(key).toString())).append("\t"));
+                    Arrays.stream(order).forEach(key -> line.append(escapeStrings(map.get(key) == null ? "NA" : map.get(key).toString())).append("\t"));
                     bw.write(line.substring(0, line.length() - 1) + "\n");
                 }
             } catch (IOException e) {
@@ -1036,10 +1037,22 @@ public class WebGraphService {
     }
 
     private String escapeStrings(String in) {
-        if(in.contains("\r"))
-            log.warn("Detected windows line endings: "+in);
+        if (in.contains("\r"))
+            log.warn("Detected windows line endings: " + in);
         String out = StringUtils.replaceAll(in, '\t', "\\t");
-        out = StringUtils.replaceAll(out,'\n', "\\n");
+        out = StringUtils.replaceAll(out, '\n', "\\n");
         return out;
+    }
+
+    public void remove(String gid) {
+        cache.remove(gid);
+        AtomicReference<String> user = new AtomicReference<>(null);
+        userGraph.forEach((u, g) -> {
+            if (gid.equals(g))
+                user.set(u);
+        });
+        if (user.get()!=null)
+            userGraph.remove(user.get());
+        historyController.remove(gid);
     }
 }

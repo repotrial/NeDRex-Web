@@ -2,7 +2,6 @@ package de.exbio.reposcapeweb.communication.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.exbio.reposcapeweb.communication.cache.Graph;
 import de.exbio.reposcapeweb.communication.cache.Graphs;
 import de.exbio.reposcapeweb.communication.jobs.Job;
 import de.exbio.reposcapeweb.communication.jobs.JobController;
@@ -11,14 +10,12 @@ import de.exbio.reposcapeweb.communication.reponses.*;
 import de.exbio.reposcapeweb.communication.requests.*;
 import de.exbio.reposcapeweb.db.DbCommunicationService;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
-import de.exbio.reposcapeweb.db.history.GraphHistory;
 import de.exbio.reposcapeweb.db.history.HistoryController;
 import de.exbio.reposcapeweb.db.services.controller.EdgeController;
 import de.exbio.reposcapeweb.db.services.controller.NodeController;
 import de.exbio.reposcapeweb.db.services.nodes.DrugService;
-import org.apache.commons.io.FileUtils;
-import org.apache.tomcat.util.digester.DocumentProperties;
-import org.aspectj.lang.annotation.AfterReturning;
+import de.exbio.reposcapeweb.tools.ToolService;
+import de.exbio.reposcapeweb.utils.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,17 +24,12 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.time.ZoneOffset;
-import java.util.Arrays;
 import java.util.HashMap;
 
 /**
@@ -269,7 +261,7 @@ public class RequestController {
         if (userId == null)
             return "";
         userId = historyController.validateUser(userId);
-        HashMap<String, Job.JobState> jobs = jobController.getJobGraphStates(userId);
+        HashMap<String, Pair<Job.JobState, ToolService.Tool>> jobs = jobController.getJobGraphStatesAndTypes(userId);
         HashMap<String, Object> out = historyController.getUserHistory(userId, jobs);
 
         try {
@@ -278,6 +270,13 @@ public class RequestController {
             e.printStackTrace();
         }
         return null;
+    }
+
+    @RequestMapping(value="/removeGraph", method = RequestMethod.GET)
+    @ResponseBody
+    public void removeGraph(@RequestParam("gid") String gid){
+        webGraphService.remove(gid);
+
     }
 
     @RequestMapping(value = "/initUser", method = RequestMethod.GET)
@@ -305,6 +304,19 @@ public class RequestController {
         return toJson(info);
     }
 
+    @RequestMapping(value="/getGraphHistory", method = RequestMethod.GET)
+    @ResponseBody
+    public String getGraphHistory(@RequestParam("gid") String gid, @RequestParam("uid") String uid){
+        log.info("GraphHistory detail request: "+gid);
+        return toJson(historyController.getDetailedHistory(uid,webGraphService.getCachedGraph(gid),jobController.getJobGraphStatesAndTypes(uid)));
+    }
+
+    @RequestMapping(value="/toggleStarred", method = RequestMethod.GET)
+    @ResponseBody
+    public void toggleStarred(@RequestParam("gid") String gid, @RequestParam("uid") String uid){
+        historyController.toggleStarring(gid,uid);
+    }
+
     @RequestMapping(value = "/finishedJob", method = RequestMethod.GET)
     @ResponseBody
     public void finishedJob(@RequestParam("id") String id) {
@@ -322,13 +334,13 @@ public class RequestController {
     @RequestMapping(value = "/getJobs", method = RequestMethod.GET)
     @ResponseBody
     public String getJobs(@RequestParam("uid") String uid, @RequestParam("gid") String gid) {
-        return toJson(jobController.getJobGraphStates(uid, gid));
+        return toJson(jobController.getJobGraphStatesAndTypes(uid, gid));
     }
 
     @RequestMapping(value = "/getUserJobs", method = RequestMethod.GET)
     @ResponseBody
     public String getJobs(@RequestParam("uid") String uid) {
-        return toJson(jobController.getJobGraphStates(uid, null));
+        return toJson(jobController.getJobGraphStatesAndTypes(uid, null));
     }
 
     private String toJson(Object o) {
@@ -344,6 +356,12 @@ public class RequestController {
     @ResponseBody
     public boolean isReady() {
         return !dbCommunicationService.isDbLocked() & !dbCommunicationService.isImportInProgress() & !dbCommunicationService.isUpdateInProgress();
+    }
+
+    @RequestMapping(value="/setGraphName", method= RequestMethod.POST)
+    @ResponseBody
+    public void setGraphName(@RequestBody HashMap<String,String> data){
+        historyController.setName(data.get("gid"),data.get("name"));
     }
 
 

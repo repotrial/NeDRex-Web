@@ -1,29 +1,22 @@
 package de.exbio.reposcapeweb.communication.jobs;
 
-import de.exbio.reposcapeweb.ReposcapewebApplication;
 import de.exbio.reposcapeweb.communication.cache.Graph;
 import de.exbio.reposcapeweb.communication.cache.Graphs;
 import de.exbio.reposcapeweb.communication.controller.SocketController;
 import de.exbio.reposcapeweb.communication.reponses.WebGraphService;
 import de.exbio.reposcapeweb.db.history.HistoryController;
-import de.exbio.reposcapeweb.db.services.controller.NodeController;
-import de.exbio.reposcapeweb.db.services.nodes.DisorderService;
 import de.exbio.reposcapeweb.db.services.nodes.DrugService;
 import de.exbio.reposcapeweb.db.services.nodes.GeneService;
 import de.exbio.reposcapeweb.db.services.nodes.ProteinService;
 import de.exbio.reposcapeweb.tools.ToolService;
 import de.exbio.reposcapeweb.utils.Pair;
-import de.exbio.reposcapeweb.utils.ReaderUtils;
 import de.exbio.reposcapeweb.utils.StringUtils;
-import de.exbio.reposcapeweb.utils.WriterUtils;
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
-import java.time.ZoneOffset;
 import java.util.*;
 
 @Service
@@ -196,13 +189,13 @@ public class JobController {
     }
 
 
-    public HashMap<String, Job.JobState> getJobGraphStates(String user) {
-        HashMap<String, Job.JobState> stateMap = new HashMap<>();
-        jobs.values().stream().filter(j -> j.getUserId().equals(user)).forEach(j -> stateMap.put(j.getDerivedGraph(), j.getState()));
+    public HashMap<String, Pair<Job.JobState, ToolService.Tool>> getJobGraphStatesAndTypes(String user) {
+        HashMap<String, Pair<Job.JobState, ToolService.Tool>> stateMap = new HashMap<>();
+        jobs.values().stream().filter(j -> j.getUserId().equals(user)).forEach(j -> stateMap.put(j.getDerivedGraph(), new Pair<>(j.getState(),j.getMethod())));
         return stateMap;
     }
 
-    public LinkedList<HashMap<String, Object>> getJobGraphStates(String user, String gid) {
+    public LinkedList<HashMap<String, Object>> getJobGraphStatesAndTypes(String user, String gid) {
         LinkedList<HashMap<String, Object>> stateMap = new LinkedList<>();
         jobs.values().stream().filter(j -> j.getUserId().equals(user)).forEach(j -> {
             if ((gid == null || j.getBasisGraph().equals(gid)) | !j.getState().equals(Job.JobState.DONE)) {
