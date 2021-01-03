@@ -1,7 +1,6 @@
 var path = require('path')
 var webpack = require('webpack')
-const HtmlWebpackPlugin = require("html-webpack-plugin");
-// const CopyWebpackPlugin = require("copy-webpack-plugin")
+// const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 let host_dev = "localhost";
 let host_prod = "nedrex-server";
@@ -29,12 +28,12 @@ module.exports = {
     filename: 'build.js'
   },
   plugins: [
-    new HtmlWebpackPlugin({
-      title: "NeDREx",
-      filename: "index.html",
-      path: "./dist",
-      template: "./index.html"
-    }),
+    // new HtmlWebpackPlugin({
+    //   title: "NeDREx",
+    //   filename: "index.html",
+    //   path: "./dist",
+    //   template: "./index.html"
+    // }),
     // new CopyWebpackPlugin([
     //   { from: './index/html', to: './dist/' }
     // ]),
@@ -59,13 +58,13 @@ module.exports = {
               indentedSyntax: true // optional
             },
             // Requires sass-loader@^8.0.0
-            options: {
-              implementation: require('sass'),
-              sassOptions: {
-                fiber: require('fibers'),
-                indentedSyntax: true // optional
-              },
-            },
+            // options: {
+            //   implementation: require('sass'),
+            //   sassOptions: {
+            //     fiber: require('fibers'),
+            //     indentedSyntax: true // optional
+            //   },
+            // },
           },
         ],
       },

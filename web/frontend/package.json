@@ -19,6 +19,7 @@
     "axios": "^0.20.0",
     "babel-polyfill": "^6.26.0",
     "file-saver": "^2.0.5",
+    "material-design-icons-iconfont": "^6.1.0",
     "sockjs-client": "^1.5.0",
     "vis-data": "^7.0.0",
     "vis-network": "^8.3.2",
@@ -28,8 +29,7 @@
     "vue-router": "^3.4.3",
     "vue-vis-network": "^1.0.2",
     "vuetify": "^2.3.10",
-    "vuex": "^3.5.1",
-    "js-yaml": "3.13.1"
+    "vuex": "^3.5.1"
   },
   "browserslist": [
     "> 1%",
@@ -43,21 +43,20 @@
     "babel-loader": "^7.1.2",
     "babel-preset-env": "^1.6.0",
     "babel-preset-stage-3": "^6.24.1",
-    "copy-webpack-plugin": "^7.0.0",
     "cross-env": "^5.0.5",
-    "css-loader": "^5.0.1",
+    "css-loader": "^1.0.1",
     "deepmerge": "^4.2.2",
     "fibers": "^5.0.0",
     "file-loader": "^1.1.11",
-    "html-webpack-plugin": "^4.5.0",
     "node-sass": "^4.5.3",
     "sass": "^1.26.10",
-    "sass-loader": "^6.0.7",
     "vue-cli-plugin-vuetify": "~2.0.7",
-    "vue-loader": "^14.2.2",
     "vue-template-compiler": "^2.4.4",
+    "sass-loader": "^7.1.0",
+    "vue-loader": "^14.2.2",
     "webpack": "^4.20.2",
-    "webpack-cli": "^3.1.1",
-    "webpack-dev-server": "^3.1.4"
+    "webpack-dev-server": "^3.1.4",
+    "html-webpack-plugin": "^4.5.0",
+    "webpack-cli": "^3.1.1"
   }
 }

@@ -28,22 +28,22 @@ services:
     restart: on-failure
     entrypoint: "tail -f /dev/null"
 #    entrypoint: ["./wait-for-it.sh","nedrex-db:3306","-t","30", "--","java","-Xmx4g","-jar", "app.jar","--spring.profiles.active=prod","--spring.config.location=./config/server/"]
-#  web:
-#    container_name: nedrex-web
-#    build: frontend
-#    depends_on:
-#      - "server"
-#    ports:
-#      - "8080:8080"
-#    restart: on-failure
-    web-server:
-      container_name: nedrex-web-server
-      build: frontend
-      depends_on:
-        - "server"
-      ports:
-        - "8080:8080"
-      restart: on-failure
+  web:
+    container_name: nedrex-web
+    build: frontend
+    depends_on:
+      - "server"
+    ports:
+      - "8080:8080"
+    restart: on-failure
+#    web-server:
+#      container_name: nedrex-web-server
+#      build: frontend
+#      depends_on:
+#        - "server"
+#      ports:
+#        - "8080:8080"
+#      restart: on-failure
 volumes:
   nedrex-dev-db-volume:
   nedrex-dev-cache-volume:
