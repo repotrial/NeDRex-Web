@@ -1,6 +1,7 @@
 var path = require('path')
 var webpack = require('webpack')
-// const HtmlWebpackPlugin = require("html-webpack-plugin");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
+// const CopyWebpackPlugin = require("copy-webpack-plugin")
 
 let host_dev = "localhost";
 let host_prod = "nedrex-server";
@@ -28,12 +29,15 @@ module.exports = {
     filename: 'build.js'
   },
   plugins: [
-    // new HtmlWebpackPlugin({
-    //   title: "NeDREx",
-    //   filename: "index.html",
-    //   path: "./dist",
-    //   template: "./src/index.html"
-    // }),
+    new HtmlWebpackPlugin({
+      title: "NeDREx",
+      filename: "index.html",
+      path: "./dist",
+      template: "./index.html"
+    }),
+    // new CopyWebpackPlugin([
+    //   { from: './index/html', to: './dist/' }
+    // ]),
     new webpack.DefinePlugin({
       HOST_BACKEND: JSON.stringify(isProduction ? host_backend_prod : host_backend_dev),
       // HOST_ASSETS: JSON.stringify(isProduction ? host_assets_prod : host_assets_dev)
