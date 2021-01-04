@@ -42,14 +42,14 @@
             v-for="job in (jobsTabModel===0? graphjobs:jobs)" :key="job.jid"
           >
             <td>
-              <v-chip :color="job.state==='DONE'?(job.gid===gid?'blue':'green'):(job.state ==='ERROR'?'red':'orange')"
+              <v-chip :color="job.state==='DONE'?(job.gid===gid?'blue':'green'):(job.state ==='ERROR' || job.state==='TIMEOUT' || job.state==='LIMITED' ?'red':'orange')"
                       :disabled="job.state!=='DONE'||job.gid===gid"
                       @click="$emit('graphLoadEvent', {post: {id: job.gid}})">
 
                 <v-icon left v-if="job.state==='DONE'">
                   fas fa-check
                 </v-icon>
-                <v-icon letf v-else-if="job.state==='ERROR'">
+                <v-icon letf v-else-if="job.state ==='ERROR' || job.state==='TIMEOUT' || job.state==='LIMITED'">
                   fas fa-exclamation-triangle
                 </v-icon>
                 <v-icon left v-else>
@@ -175,7 +175,7 @@ export default {
           j.download = params.download
         }
       })
-      if (params.state === 'DONE') {
+      if (params.state === 'DONE' || params.state==='TIMEOUT'||params.state==='LIMITED'||params.state==='ERROR') {
         console.log("job finished")
         this.$socket.unsubscribeJob(params.jid)
         this.$emit("reloadHistoryEvent")

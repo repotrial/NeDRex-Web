@@ -80,6 +80,22 @@
                   >
                   </v-switch>
                 </v-list-item>
+                <v-list-item>
+                  <v-switch
+                    v-model="options.graph.loops"
+                    @click="$emit('showLoopsEvent',options.graph.loops)"
+                    label="Show loops"
+                  >
+                  </v-switch>
+                </v-list-item>
+                <v-list-item>
+                  <v-switch
+                    v-model="options.graph.single"
+                    @click="$emit('showUnconnectedEvent',options.graph.single)"
+                    label="Show Unconnected"
+                  >
+                  </v-switch>
+                </v-list-item>
               </template>
               <template v-else>
                 <v-chip outlined @click="visualizeGraph">
@@ -357,7 +373,7 @@
       <template v-if="selectedTab===2">
         <Algorithms ref="algorithms" @executeAlgorithmEvent="submitAlgorithm"></Algorithms>
         <Jobs ref="jobs" @graphLoadEvent="graphLoadEvent" @printNotificationEvent="printNotification"
-          @reloadHistoryEvent="reloadHistory"
+              @reloadHistoryEvent="reloadHistory"
         ></Jobs>
 
 
@@ -605,7 +621,7 @@ export default {
       }
     },
 
-    reloadHistory: function (){
+    reloadHistory: function () {
       this.$emit("reloadHistoryEvent")
     },
 

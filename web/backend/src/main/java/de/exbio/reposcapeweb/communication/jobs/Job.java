@@ -13,6 +13,13 @@ import java.util.LinkedList;
 @Entity
 @Table(name = "jobs")
 public class Job {
+
+    public enum JobState {
+        INITIALIZED, QUEUED, EXECUTING, DONE, NOCHANGE, ERROR, TIMEOUT,LIMITED
+    }
+
+
+
     @Id
     private String jobId;
 
@@ -148,10 +155,6 @@ public class Job {
     public void setThreads(int threads) {
         if (this.method.equals(ToolService.Tool.MUST))
             this.command += " " + threads;
-    }
-
-    public enum JobState {
-        INITIALIZED, QUEUED, EXECUTING, DONE, NOCHANGE, ERROR, TIMEOUT
     }
 
     public void setUserId(String userId) {

@@ -31,6 +31,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -894,9 +895,15 @@ public class WebGraphService {
             derived.addCustomAttributeType(eid, "participation_number", "numeric");
 
         }
-        cache.put(derived.getId(), derived);
-        j.setDerivedGraph(derived.getId());
-        addGraphToHistory(j.getUserId(), derived.getId());
+        AtomicInteger size = new AtomicInteger();
+        derived.getNodes().forEach((k,v)-> size.addAndGet(v.size()));
+        derived.getEdges().forEach((k,v)->size.addAndGet(v.size()));
+        if(size.get()<100_000) {
+            cache.put(derived.getId(), derived);
+            j.setDerivedGraph(derived.getId());
+            addGraphToHistory(j.getUserId(), derived.getId());
+        }else
+            j.setStatus(Job.JobState.LIMITED);
     }
 
     private void updateEdges(Graph g, Job j, Integer nodeTypeId) {

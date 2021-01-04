@@ -100,7 +100,6 @@
                         </template>
                       </v-timeline-item>
                     </v-timeline>
-
                   </v-row>
                   <v-row dense>
                     <v-col cols="9">

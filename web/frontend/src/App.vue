@@ -155,6 +155,8 @@
                     v-on:executeAlgorithmEvent="executeAlgorithm"
                     v-on:graphLoadEvent="loadGraph"
                     v-on:reloadHistoryEvent="reloadHistory"
+                    @showLoopsEvent="showLoops"
+                    @showUnconnectedEvent="showUnconnected"
                     @graphViewEvent="graphViewEvent"
                     :options="options"
                     :selected-tab="selectedTabId"
@@ -316,7 +318,7 @@ export default {
     },
     initComponents: function () {
       this.options.start = {skipVis: true, onlyConnected: true, selectedElements: []}
-      this.options.graph = {physics: false, visualized: false, sizeWarning: false, legend: {}}
+      this.options.graph = {physics: false, loops:true,single:true,visualized: false, sizeWarning: false, legend: {}}
       this.options.list = {showAll: true, selected: 0, total: 0, countMap: {nodes: {}, edges: {}}, entityGraph: {}}
       this.options.history = {chronological: false, otherUsers: false, entityGraph:{}}
     },
@@ -429,6 +431,12 @@ export default {
     ,
     updatePhysics: function () {
       this.$refs.graph.setPhysics(this.options.graph.physics)
+    },
+    showLoops : function(state){
+      this.$refs.graph.showLoops(state)
+    },
+    showUnconnected: function(state){
+      this.$refs.graph.showUnconnected(state)
     },
     loadSelection: function (params) {
       if (params !== undefined)

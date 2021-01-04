@@ -5,7 +5,7 @@
     <network v-if="nodeSet !== undefined && isVisualized()" v-show="!loading" class="wrapper" ref="network"
              :key="key"
              :nodes="nodeSet"
-             :edges="edges"
+             :edges="edgeSet"
              :options="options"
              :layout="layout"
              :physics="physics"
@@ -24,8 +24,8 @@
           <v-card-title class="headline">
             Load Visualization?
           </v-card-title>
-          <v-card-text>The selected graph consists of {{ this.nodeSet.getIds().length }} nodes and
-            {{ this.edges.getIds().length }} edges. Visualization and especially physics simulation could take a long
+          <v-card-text>The selected graph consists of {{ nodeSet.getIds().length }} nodes and
+            {{ edgeSet.getIds().length }} edges. Visualization and especially physics simulation could take a long
             time
             and cause freezes. Do you want to visualize the graph or skip it for now?
           </v-card-text>
@@ -64,7 +64,6 @@ export default {
     startGraph: false,
   },
   nodes: Object,
-  edges: Object,
   highlight: false,
   colors: {},
   directed: false,
@@ -73,10 +72,11 @@ export default {
   hideEdges: false,
   metagraph: undefined,
   gid: undefined,
+  unconnected: [],
 
   data() {
     return {
-      edges: this.edges,
+      edgeSet: Object,
       nodeSet: undefined,
       options: Object,
       layout: Object,
@@ -119,6 +119,23 @@ export default {
       if (this.gid !== undefined)
         this.init()
     },
+    prepare: function () {
+      if (this.startGraph || this.nodeSet === undefined)
+        return
+      this.prepareUnconnectedList()
+    },
+
+    prepareUnconnectedList: function () {
+      this.unconnected = this.nodeSet.getIds()
+      this.edgeSet.get().forEach(item => {
+        let idx = this.unconnected.indexOf(item.from)
+        if (idx > -1)
+          this.unconnected.splice(idx, 1)
+        idx = this.unconnected.indexOf(item.to)
+        if (idx > -1)
+          this.unconnected.splice(idx, 1)
+      })
+    },
     getData: function (url) {
       this.loading = true;
       this.directed = false;
@@ -154,7 +171,7 @@ export default {
         if (graph.directed !== undefined)
           this.directed = graph.directed
         if (graph.edges !== undefined)
-          this.edges = new DataSet(graph.edges);
+          this.edgeSet = new DataSet(graph.edges);
 
         if (graph.nodes !== undefined)
           this.nodeSet = new DataSet(graph.nodes)
@@ -175,7 +192,7 @@ export default {
     dialogResolve: function (vis) {
       this.dialog = false;
       this.configuration.visualized = vis;
-      if(vis) {
+      if (vis) {
         this.$forceUpdate()
         this.$emit("visualisationEvent")
       }
@@ -183,17 +200,17 @@ export default {
     isVisualized: function () {
       return this.configuration.visualized
     },
-    showDialogCheck: function () {
-      this.checkSizeWarning()
-      if (!this.configuration.sizeWarning) {
-        this.dialogResolve(true)
-      }
-    },
-    isLoading: function () {
-      return this.loading
-    },
+    // showDialogCheck: function () {
+    //   this.checkSizeWarning()
+    //   if (!this.configuration.sizeWarning) {
+    //     this.dialogResolve(true)
+    //   }
+    // },
+    // isLoading: function () {
+    //   return this.loading
+    // },
     drawGraph: function () {
-      if (this.nodeSet === undefined || this.edges === undefined)
+      if (this.nodeSet === undefined || this.edgeSet === undefined)
         return
       if (this.directed) {
         this.options.edges["arrows"] = {to: {enabled: true}}
@@ -203,6 +220,7 @@ export default {
       this.nodes = this.nodeSet.get({returnType: "Object"})
       // this.setNodeColors()
       this.loading = false;
+      this.prepare()
       this.$emit('finishedEvent')
     },
     loadData: function (payload) {
@@ -215,7 +233,7 @@ export default {
         this.metagraph = payload.graph;
       }
       if (this.metagraph !== undefined) {
-        this.edges = new DataSet(this.metagraph.edges);
+        this.edgeSet = new DataSet(this.metagraph.edges);
         this.nodeSet = new DataSet(this.metagraph.nodes);
         this.directed = this.metagraph.directed;
       }
@@ -237,28 +255,29 @@ export default {
         this.drawGraph()
     },
     checkSizeWarning: function () {
-      this.configuration.sizeWarning = (this.nodeSet !== undefined && this.nodeSet.getIds().length > 1000) || (this.edges !== undefined && this.edges.getIds().length > 1000)
+      this.configuration.sizeWarning = (this.nodeSet !== undefined && this.nodeSet.getIds().length > 1000) || (this.edgeSet !== undefined && this.edgeSet.getIds().length > 1000)
     },
 
-    postData: function (post) {
-      this.visualized = false
-      this.loading = true;
-      this.directed = false;
-      this.loadingColor = this.colors.bar.backend;
-      this.$http.post("/getGraphInfo", post).then(response => {
-        return response.data
-      }).then(info => {
-        this.evalPostInfo(info)
-      }).catch(err => {
-        console.log(err)
-      })
-    }
-    ,
+
+    // postData: function (post) {
+    //   this.visualized = false
+    //   this.loading = true;
+    //   this.directed = false;
+    //   this.loadingColor = this.colors.bar.backend;
+    //   this.$http.post("/getGraphInfo", post).then(response => {
+    //     return response.data
+    //   }).then(info => {
+    //     this.evalPostInfo(info)
+    //   }).catch(err => {
+    //     console.log(err)
+    //   })
+    // }
+    // ,
     getCurrentGraph: function () {
       if (this.nodeSet === undefined) {
         setTimeout(this.getCurrentGraph, 100)
       } else {
-        return {nodes: this.nodeSet, edges: this.edges, options: this.options}
+        return {nodes: this.nodeSet, edges: this.edgeSet, options: this.options}
       }
     }
     ,
@@ -354,14 +373,14 @@ export default {
           },
           physics: {
             // solver: 'repulsion',
-            barnesHut:{
+            barnesHut: {
               // theta: 0.7,
-              gravitationalConstant:  -15000,
-              centralGravity:0.25,
-              springLength:100,
-              springConstant:0.02,
-              damping:0.25,
-              avoidOverlap:0.5
+              gravitationalConstant: -15000,
+              centralGravity: 0.25,
+              springLength: 100,
+              springConstant: 0.02,
+              damping: 0.25,
+              avoidOverlap: 0.5
             },
             enabled: false,
             // stabilization: {enabled: true, updateInterval: 10, iterations: 1000, fit: true},
@@ -377,18 +396,18 @@ export default {
       // })
     }
     ,
-    togglePhysics: function () {
-      if (this.physicsOn) {
-        this.physicsOn = false;
-        this.hideEdges = false;
-      } else {
-        this.hideEdges = true;
-        this.physicsOn = true;
-      }
-      this.options.physics.enabled = this.physicsOn
-      // this.options.edges.hidden = this.hideEdges
-      this.updateOptions();
-    },
+    // togglePhysics: function () {
+    //   if (this.physicsOn) {
+    //     this.physicsOn = false;
+    //     this.hideEdges = false;
+    //   } else {
+    //     this.hideEdges = true;
+    //     this.physicsOn = true;
+    //   }
+    //   this.options.physics.enabled = this.physicsOn
+    //   // this.options.edges.hidden = this.hideEdges
+    //   this.updateOptions();
+    // },
     setPhysics: function (boolean) {
       this.physicsOn = boolean;
       this.options.physics.enabled = this.physicsOn
@@ -404,29 +423,29 @@ export default {
       this.options = options;
     },
 
-    setEdgeVisible: function (name, boolean) {
-      let updates = Object.values(this.edges.get({
-          filter: function (item) {
-            return item.label === name
-          }
-        }
-      )).map(item => {
-        return {id: item.id, hidden: !boolean, physics: !boolean}
-      })
-      this.edges.update(updates)
-    },
+    // setEdgeVisible: function (name, boolean) {
+    //   let updates = Object.values(this.edgeSet.get({
+    //       filter: function (item) {
+    //         return item.label === name
+    //       }
+    //     }
+    //   )).map(item => {
+    //     return {id: item.id, hidden: !boolean, physics: !boolean}
+    //   })
+    //   this.edgeSet.update(updates)
+    // },
     hideAllEdges: function (boolean) {
-      let updates = Object.values(this.edges.get()).map(item => {
+      let updates = Object.values(this.edgeSet.get()).map(item => {
         return {id: item.id, hidden: boolean, physics: boolean}
       })
       if (updates)
-        this.edges.update(updates)
+        this.edgeSet.update(updates)
     },
-    setEdgesHidden: function () {
-      this.updateOptions()
-    },
+    // setEdgesHidden: function () {
+    //   this.updateOptions()
+    // },
     toggleEdgeVisible: function (name) {
-      let updates = Object.values(this.edges.get({
+      let updates = Object.values(this.edgeSet.get({
           filter: function (item) {
             return item.label === name
           }
@@ -434,19 +453,32 @@ export default {
       )).map(item => {
         return {id: item.id, hidden: !item.hidden, physics: item.hidden}
       })
-      this.edges.update(updates)
+      this.edgeSet.update(updates)
     },
-    // toggleEdgeVisibleByLabel: function (name) {
-    //   let updates = Object.values(this.edges.get({
-    //       filter: function (item) {
-    //         return item.title === name
-    //       }
-    //     }
-    //   )).map(item => {
-    //     return {id: item.id, hidden: !item.hidden, physics: item.hidden}
-    //   })
-    //   this.edges.update(updates)
-    // },
+
+    showLoops: function (state) {
+      let updates = Object.values(this.edgeSet.get({
+        filter: function (item) {
+          return item.from === item.to
+        }
+      })).map(item => {
+        return {id: item.id, hidden: !state, physics: state}
+      })
+      this.edgeSet.update(updates)
+    },
+
+    showUnconnected: function (state) {
+      let list = this.unconnected
+      let update = this.nodeSet.get({
+          filter: function (item) {
+            return list.indexOf(item.id) > -1
+          }
+        }).map(item => {
+        return {id: item.id, hidden: !state, physics: state}
+      })
+      this.nodeSet.update(update)
+      this.$refs.network.setData(this.nodeSet,this.edgeSet)
+    },
 
     hideAllGroups: function (boolean, update) {
       Object.keys(this.options.groups).forEach(n => {
@@ -471,65 +503,17 @@ export default {
     },
     toggleGroupVisibility: function (name, update) {
       this.hideGroupVisibility(name, !this.options.groups[name].hidden, update)
-      // this.nodeSet.update([])
 
-      // let updateList =
-      //   this.nodeSet.get({
-      //     filter: function (item) {
-      //       return item.group === name
-      //     }
-      //   }).map(item => {
-      //       return {id: item.id, hidden: newState}
-      //     }
-      //   )
-      // console.log(updateList)
-      // this.nodeSet.update(updateList)
-
-    }
-    ,
-    onStabilizationStart: function () {
-      this.loading = true;
-      this.loadingColor = this.colors.bar.primary
-      console.log("stabilization has started")
-    }
-    ,
-    onStabilizationProgress: function (params) {
-
-
-      this.progress = 100 * params.iterations / params.total;
-      console.log(this.progress)
-      // this.width = Math.max(this.minWidth, this.maxWidth * widthFactor);
-      this.text = "Graph generation " + Math.round(this.progress) + "%";
-      //
-      // console.log(Math.round(widthFactor * 100) + "%")
-    }
-    ,
-    onStabilizationDone: function () {
-      this.text = "100%";
-      this.width = this.maxWidth
-      this.loading = false;
     }
     ,
     onClick: function (params) {
       if (params.nodes.length > 0 || params.edges.length > 0) {
-        // let selected = params.nodes[0];
-        // this.identifyNeighbors(selected)
         this.$emit('selectionEvent', params)
       } else {
-        // for (let nodeId in this.nodes) {
-        //   this.nodes[nodeId].color = undefined
-        //   if (this.nodes[nodeId].hiddenLabel !== undefined) {
-        //     this.nodes[nodeId].label = this.nodes[nodeId].hiddenLabel;
-        //     this.nodes[nodeId].hiddenLabel = undefined;
-        //   }
         this.$emit('selectionEvent')
-        // }
         this.highlight = false;
       }
-
-
       this.updateNodes()
-
     }
     ,
     onRelease: function (params) {
@@ -538,32 +522,10 @@ export default {
       this.$emit('releaseEvent', params)
     }
     ,
-    mapEdgeObject: function (edgeId) {
-      return this.edges._data[edgeId]
-    }
-// deselectNode: function(nodeId){
-//   this.$refs.network.
-// }
-    ,
     focusNode: function (nodeId) {
       this.$refs.network.focus(nodeId)
       if (nodeId === undefined)
         this.viewAll()
-    }
-    ,
-    setSelectionMultiple: function (items) {
-      // for(let idx in selection) {
-      this.$refs.network.selectNodes(items.nodes)
-      this.$refs.network.selectEdges(items.edges)
-      // }
-    }
-    ,
-    mapEdgeObjects: function (edgeIds) {
-      let edges = []
-      for (let idx in edgeIds)
-        edges.push(this.mapEdgeObject(edgeIds[idx]))
-
-      return edges;
     }
     ,
     viewAll: function () {
@@ -577,30 +539,12 @@ export default {
     }
     ,
     identifyNeighbors: function (selected) {
-      //   this.highlight = true;
-      //   this.uncolorNodes()
-      //
-      //   let toColor = []
-      //   toColor.push(selected)
       let neighbors = []
       this.getConnectedNodes(selected).forEach(n => {
-        // toColor.push(n)
         if (n !== selected)
           neighbors.push(this.nodeSet.get(n))
       })
-      //   this.recolorPrimary(toColor)
       return {primary: this.nodeSet.get(selected), neighbors: neighbors}
-      // this.$emit('selectionEvent', {primary: this.nodeSet.get(selected), neighbors: neighbors})
-    }
-    ,
-    uncolorNodes: function () {
-      for (let nodeId in this.nodes) {
-        this.nodes[nodeId].color = "rgba(200,200,200,0.5)";
-        if (this.nodes[nodeId].hiddenLabel === undefined) {
-          this.nodes[nodeId].hiddenLabel = this.nodes[nodeId].label;
-          this.nodes[nodeId].label = undefined;
-        }
-      }
     }
     ,
     updateNodes: function () {
@@ -611,33 +555,18 @@ export default {
           updates.push(this.nodes[nodeId])
       }
       this.nodeSet.update(updates)
-      // this.key++;
-    }
-    ,
-    recolorPrimary: function (nodes) {
-      nodes.forEach(nodeId => {
-        this.nodes[nodeId].color = undefined;
-        if (this.nodes[nodeId].hiddenLabel !== undefined) {
-          this.nodes[nodeId].label = this.nodes[nodeId].hiddenLabel;
-          this.nodes[nodeId].hiddenLabel = undefined;
-        }
-      })
     }
     ,
     getConnectedNodes: function (node) {
       return this.$refs.network.getConnectedNodes(node)
     }
     ,
-    getNetwork: function () {
-      return this.$refs.network;
-    },
-
-    graphViewEvent: function (data){
-      if(data.event === "toggle"){
+    graphViewEvent: function (data) {
+      if (data.event === "toggle") {
         let params = data.params;
-        if(params.type==="nodes")
-          this.toggleGroupVisibility(params.name,true)
-        else if(params.type==="edges")
+        if (params.type === "nodes")
+          this.toggleGroupVisibility(params.name, true)
+        else if (params.type === "edges")
           this.toggleEdgeVisible(params.name)
       }
     },
