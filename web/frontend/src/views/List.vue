@@ -37,6 +37,7 @@
               </v-list>
             </v-col>
             <v-col>
+              <v-list>
                 <v-list-item>
                   <b>Edges ({{ getCounts('edges') }})</b>
                 </v-list-item>
@@ -56,7 +57,7 @@
                   </v-chip>
 
                 </v-list-item>
-<!--              </v-list>-->
+              </v-list>
             </v-col>
           </v-row>
 
@@ -1176,7 +1177,7 @@ export default {
     filterNode: function (value, search, item) {
       if (!this.filters.nodes.suggestions) {
         let attribute = this.filters.nodes.attribute.name
-        attribute = Object.values(this.attributes.nodes)[this.nodeTab].filter(a=>a.label===attribute).map(a=>a.name)[0]
+        attribute = Object.values(this.attributes.nodes)[this.nodeTab].filter(a => a.label === attribute).map(a => a.name)[0]
         return this.filter(item[attribute], search, item, attribute, this.filters.nodes.attribute.operator)
       } else {
         return true;
@@ -1185,7 +1186,7 @@ export default {
     ,
     filterEdge: function (value, search, item) {
       let attribute = this.filters.edges.attribute.name
-      attribute = Object.values(this.attributes.edges)[this.edgeTab].filter(a=>a.label===attribute).map(a=>a.name)[0]
+      attribute = Object.values(this.attributes.edges)[this.edgeTab].filter(a => a.label === attribute).map(a => a.name)[0]
       return this.filter(item[attribute], search, item, attribute, this.filters.edges.attribute.operator)
     },
     filter: function (value, search, item, attribute, operator) {
@@ -1328,7 +1329,7 @@ export default {
       for (let node in Object.keys(this.attributes.nodes)) {
         let models = []
         this.attributes.nodes[Object.keys(this.attributes.nodes)[node]].forEach(attr => {
-          models.push({name: attr.name,label:attr.label, selected: attr.list})
+          models.push({name: attr.name, label: attr.label, selected: attr.list})
         })
         this.options.attributes[node] = models;
       }
@@ -1343,7 +1344,7 @@ export default {
       for (let edge in Object.keys(this.attributes.edges)) {
         let models = []
         this.attributes.edges[Object.keys(this.attributes.edges)[edge]].forEach(attr => {
-          models.push({name: attr.name, label:attr.label,selected: attr.list})
+          models.push({name: attr.name, label: attr.label, selected: attr.list})
         })
         this.options.attributes[edge] = models;
       }
@@ -1437,10 +1438,10 @@ export default {
       this.collapse.edge1 = ""
       this.collapse.edge2 = ""
     },
-    distinctFilter: function (type, nodes,tab) {
+    distinctFilter: function (type, nodes, tab) {
       let value = this.filters[type].attribute.operator
       let attr = this.filters[type].attribute.name
-      attr = Object.values(this.attributes[type])[tab].filter(a=>a.label===attr)[0].name
+      attr = Object.values(this.attributes[type])[tab].filter(a => a.label === attr)[0].name
       return nodes.filter(n => {
         let data = n[attr]
         if (typeof data === "object")
@@ -1457,8 +1458,8 @@ export default {
         this.$nextTick()
         return
       }
-      if(this.metagraph.edges.flatMap(e=>[e.label,e.title]).indexOf(this.collapse.edgeName)>-1){
-        this.printNotification("Edge-Name is already Taken. Please choose another one",2)
+      if (this.metagraph.edges.flatMap(e => [e.label, e.title]).indexOf(this.collapse.edgeName) > -1) {
+        this.printNotification("Edge-Name is already Taken. Please choose another one", 2)
         return
       }
       this.collapse.show = false;
@@ -1484,8 +1485,8 @@ export default {
     setLoading: function (boolean) {
       this.loading = boolean
     },
-    printNotification: function(message, type){
-      this.$emit("printNotificationEvent",message,type)
+    printNotification: function (message, type) {
+      this.$emit("printNotificationEvent", message, type)
     },
     selectionDialogResolve: function (apply) {
       this.selectionDialog.show = false
@@ -1557,7 +1558,7 @@ export default {
       //TODO check if correct (nodes connected by edge)
       let update = {id: this.gid, nodes: {}, edges: {}}
       if (Object.values(this.configuration.countMap.nodes).map(n => n.selected).reduce((i, v) => i + v) === 0) {
-       this.printNotification( "Please select some nodes first!", 1)
+        this.printNotification("Please select some nodes first!", 1)
         return;
       }
       for (let type in this.nodes) {
@@ -1568,7 +1569,7 @@ export default {
       for (let type in this.edges) {
         update.edges[type] = []
         this.edges[type] = this.filterSelected(this.edges[type])
-        this.edges[type].forEach(edge => update.edges[type].push(edge.id === undefined? edge.ID:edge.id))
+        this.edges[type].forEach(edge => update.edges[type].push(edge.id === undefined ? edge.ID : edge.id))
       }
       this.filters.nodes.suggestions = false;
       this.filterNodeModel = null
@@ -1672,7 +1673,7 @@ export default {
       let items = data[type][Object.keys(data[type])[tab]]
       let isDistinct = this.isDistinctAttribute(type, this.filters[type].attribute.name)
       if (isDistinct) {
-        this.distinctFilter(type, items,tab).forEach(item => {
+        this.distinctFilter(type, items, tab).forEach(item => {
           item.selected = false
         })
       } else {
@@ -1702,7 +1703,7 @@ export default {
     resetFilters: function (type) {
       this.filters[type].suggestions = false;
       this.filters[type].query = "";
-      this.filters[type].attribute = {operator: undefined, dist: false, name:undefined}
+      this.filters[type].attribute = {operator: undefined, dist: false, name: undefined}
     },
     resetFilter: function (type) {
       this.filters[type].query = "";
@@ -1710,7 +1711,7 @@ export default {
       this.filters[type].operator = undefined;
     },
     edgeDetails: function (item) {
-      let ids = (item.id ===undefined ? item.ID:item.id).split("-")
+      let ids = (item.id === undefined ? item.ID : item.id).split("-")
       this.$emit("selectionEvent", {
         type: "edge",
         name: Object.keys(this.edges)[this.edgeTab],
@@ -1859,7 +1860,7 @@ export default {
       this.clearLists()
       this.$http.get("/getGraphList?id=" + gid + "&cached=true").then(response => {
         if (response.data === null) {
-          this.printNotification("The chosen graph does not exist!",2)
+          this.printNotification("The chosen graph does not exist!", 2)
           this.$router.push("/")
         } else
           this.loadList(response.data)
@@ -1931,7 +1932,7 @@ export default {
         payload["nodes"] = this.nodes[params.type].filter(n => n.selected).map(n => n.id)
       if (algorithm === "diamond" || algorithm === "trustrank" || algorithm === "centrality" || algorithm === "must") {
         if (this.configuration.countMap.nodes[params.type] === undefined || (params.selection && this.configuration.countMap.nodes[params.type].selected === 0)) {
-          this.printNotification( "Cannot execute " + algorithm + " without seed nodes!", 1)
+          this.printNotification("Cannot execute " + algorithm + " without seed nodes!", 1)
           return;
         }
       }

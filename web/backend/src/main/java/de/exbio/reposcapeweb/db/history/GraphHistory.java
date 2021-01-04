@@ -200,4 +200,7 @@ public class GraphHistory {
         setStarred();
     }
 
+    public void setComment(String desc) {
+        this.comment=desc;
+    }
 }

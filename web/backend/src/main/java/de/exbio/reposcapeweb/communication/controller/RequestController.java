@@ -272,6 +272,7 @@ public class RequestController {
         return null;
     }
 
+
     @RequestMapping(value="/removeGraph", method = RequestMethod.GET)
     @ResponseBody
     public void removeGraph(@RequestParam("gid") String gid){
@@ -308,7 +309,7 @@ public class RequestController {
     @ResponseBody
     public String getGraphHistory(@RequestParam("gid") String gid, @RequestParam("uid") String uid){
         log.info("GraphHistory detail request: "+gid);
-        return toJson(historyController.getDetailedHistory(uid,webGraphService.getCachedGraph(gid),jobController.getJobGraphStatesAndTypes(uid)));
+        return toJson(historyController.getDetailedHistory(uid,webGraphService.getCachedGraph(gid),webGraphService.getConnectionGraph(gid),jobController.getJobGraphStatesAndTypes(uid)));
     }
 
     @RequestMapping(value="/toggleStarred", method = RequestMethod.GET)
@@ -361,8 +362,15 @@ public class RequestController {
     @RequestMapping(value="/setGraphName", method= RequestMethod.POST)
     @ResponseBody
     public void setGraphName(@RequestBody HashMap<String,String> data){
-        historyController.setName(data.get("gid"),data.get("name"));
+        historyController.saveName(data.get("gid"),data.get("name"));
     }
+
+    @RequestMapping(value="/saveGraphDescription", method= RequestMethod.POST)
+    @ResponseBody
+    public void saveGraphDescription(@RequestBody HashMap<String,String> data){
+        historyController.saveDescription(data.get("gid"),data.get("desc"));
+    }
+
 
 
 //    @RequestMapping(value="/testSocket", method=RequestMethod.GET)

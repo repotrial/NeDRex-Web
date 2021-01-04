@@ -301,6 +301,7 @@ export default {
       this.$http.get("/getMetagraph").then(response => {
         this.metagraph = response.data;
         this.$refs.list.setMetagraph(this.metagraph)
+        this.$refs.history.setMetagraph(this.metagraph)
       }).then(() => {
         this.applyUrlTab(true)
       }).catch(err => {
@@ -317,7 +318,7 @@ export default {
       this.options.start = {skipVis: true, onlyConnected: true, selectedElements: []}
       this.options.graph = {physics: false, visualized: false, sizeWarning: false, legend: {}}
       this.options.list = {showAll: true, selected: 0, total: 0, countMap: {nodes: {}, edges: {}}, entityGraph: {}}
-      this.options.history = {chronological: false, otherUsers: false}
+      this.options.history = {chronological: false, otherUsers: false, entityGraph:{}}
     },
     loadSubSelection: function (selection) {
       this.loadGraph({data: selection})

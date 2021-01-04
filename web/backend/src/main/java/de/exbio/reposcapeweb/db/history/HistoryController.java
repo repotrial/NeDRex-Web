@@ -3,8 +3,10 @@ package de.exbio.reposcapeweb.db.history;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.exbio.reposcapeweb.communication.cache.Graph;
+import de.exbio.reposcapeweb.communication.cache.Graphs;
 import de.exbio.reposcapeweb.communication.jobs.Job;
 import de.exbio.reposcapeweb.communication.jobs.JobController;
+import de.exbio.reposcapeweb.communication.reponses.ConnectionGraph;
 import de.exbio.reposcapeweb.tools.ToolService;
 import de.exbio.reposcapeweb.utils.FileUtils;
 import de.exbio.reposcapeweb.utils.Pair;
@@ -179,12 +181,19 @@ public class HistoryController {
         return userId;
     }
 
-    public GraphHistoryDetail getDetailedHistory(String uid, Graph g, HashMap<String, Pair<Job.JobState, ToolService.Tool>> jobs) {
+    public GraphHistoryDetail getDetailedHistory(String uid, Graph g, ConnectionGraph connectionGraph, HashMap<String, Pair<Job.JobState, ToolService.Tool>> jobs) {
         GraphHistoryDetail details = new GraphHistoryDetail();
         GraphHistory history = getHistory(g.getId());
         details.name = history.getName();
         details.starred = history.isStarred(uid);
         details.owner = history.getUserId();
+        details.comment = history.getComment() != null ? history.getComment() : "";
+
+        g.getNodes().forEach((key, ns) -> details.counts.get("nodes").put(Graphs.getNode(key), ns.size()));
+        g.getEdges().forEach((key, es) -> details.counts.get("edges").put(g.getEdge(key), es.size()));
+
+        details.entityGraph=connectionGraph;
+
         if (jobs.containsKey(g.getId()))
             details.method = jobs.get(g.getId()).getSecond().name();
 
@@ -211,9 +220,15 @@ public class HistoryController {
         return details;
     }
 
-    public void setName(String gid, String name) {
+    public void saveName(String gid, String name) {
         GraphHistory history = getHistory(gid);
         history.setName(name);
+        save(history);
+    }
+
+    public void saveDescription(String gid, String desc) {
+        GraphHistory history = getHistory(gid);
+        history.setComment(desc);
         save(history);
     }
 

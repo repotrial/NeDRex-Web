@@ -84,13 +84,13 @@
                 <v-container>
                   <v-row v-if="selected.parentId !=null">
                     <v-timeline align-top dense
-                                style="margin-top: 10px; padding-top: 7px; padding-bottom: 0px; margin-left: -5px">
+                                style="margin-top: 10px; padding-top: 7px; margin-bottom: -50px; margin-left: -25px">
                       <v-timeline-item
                         right
                         :small="!hoveringTimeline('parent')"
                         :color="selected.parentMethod !=null? 'green':'primary'"
                       >
-                        <div style="color: gray; margin-left: -15px">{{ selected.parentName }}</div>
+                        <div style="color: gray; margin-left: -15px">{{ selected.parentName }}<br><br></div>
                         <template v-slot:icon>
                           <v-btn icon @click="loadGraph(selected.parentId)">
                             <v-icon x-small color="white">
@@ -108,17 +108,17 @@
                       <v-text-field v-else :placeholder="selected.name" :value="selected.name" label="Name"
                                     @change="setName"></v-text-field>
                     </v-col>
-                    <v-col cols="3">
-                      <v-btn v-show="selected.owner = $cookies.get('uid')" icon style="margin-top:10px"
+                    <v-col cols="3" style="padding-top: 15px">
+                      <v-btn v-show="selected.owner = $cookies.get('uid')" icon style="margin-top:10px" x-small
                              @click="toggleEdit()">
                         <v-icon>{{ edit ? "fas fa-check" : "fas fa-edit" }}</v-icon>
                       </v-btn>
-                      <v-btn icon style="margin-top:10px" @mouseover="hover.star=true" @mouseleave="hover.star=false"
+                      <v-btn icon style="margin-top:10px" @mouseover="hover.star=true" @mouseleave="hover.star=false" x-small
                              @click="toggleStar">
                         <v-icon v-if="showStar(false)">far fa-star</v-icon>
                         <v-icon v-if="showStar(true)">fas fa-star</v-icon>
                       </v-btn>
-                      <v-btn v-show="selected.owner = $cookies.get('uid')" icon style="margin-top:10px"
+                      <v-btn v-show="selected.owner = $cookies.get('uid')" icon style="margin-top:10px" x-small
                              @click="deletePopup=true">
                         <v-icon>
                           fas fa-trash
@@ -126,29 +126,95 @@
                       </v-btn>
                     </v-col>
                   </v-row>
-                  <v-divider style="margin-left:15px; margin-right:15px; margin-top: -10px; margin-bottom:-10px"></v-divider>
+                  <v-divider
+                    style="margin-left:10px; margin-right:15px; margin-top: -10px; margin-bottom:-10px"></v-divider>
                   <v-row dense v-if="Object.keys(selected.children).length>0">
-<!--                    <v-col cols="2" class="d-flex align-center justify-end">-->
-<!--                      <div>-->
-<!--                        <i>Children</i>-->
-<!--                      </div>-->
-<!--                    </v-col>-->
-<!--                    <v-col>-->
-                      <v-timeline align-top dense style="margin-top: 10px; padding-top: 7px; padding-bottom: 0px; margin-left: 5px">
-                        <v-timeline-item small right v-for="child in Object.keys(selected.children)" :key="child"
-                                         :color="selected.children[child].method !==undefined ? 'green':'primary'"
-                        >
-                          <div style="color: gray; margin-left: -15px">{{ selected.children[child].name }}</div>
-                          <template v-slot:icon>
-                            <v-btn icon @click="loadGraph(child)">
-                              <v-icon x-small color="white">
-                                fas fa-play
-                              </v-icon>
-                            </v-btn>
-                          </template>
-                        </v-timeline-item>
-                      </v-timeline>
-<!--                    </v-col>-->
+                    <v-timeline align-top dense
+                                style="margin-top: 10px; padding-top: 7px; padding-bottom: 0px; margin-left: 5px">
+                      <v-timeline-item small right v-for="child in Object.keys(selected.children)" :key="child"
+                                       :color="selected.children[child].method !==undefined ? 'green':'primary'"
+                      >
+                        <div style="color: gray; margin-left: -15px">{{ selected.children[child].name }}</div>
+                        <template v-slot:icon>
+                          <v-btn icon @click="loadGraph(child)">
+                            <v-icon x-small color="white">
+                              fas fa-play
+                            </v-icon>
+                          </v-btn>
+                        </template>
+                      </v-timeline-item>
+                    </v-timeline>
+                  </v-row>
+                  <v-row style="margin: 25px"></v-row>
+                  <v-row v-if="metagraph!==undefined &&selected!==undefined">
+                    <v-container>
+                      <!--                      <v-card-title>General Information</v-card-title>-->
+                      <v-row>
+                        <v-col>
+                          <v-list>
+                            <v-list-item>
+                              <b>Nodes ({{ getCounts('nodes') }})</b>
+                            </v-list-item>
+                            <v-list-item v-for="node in Object.keys(selected.counts.nodes)"
+                                         :key="node">
+                              <v-chip outlined>
+                                <v-icon left :color="getExtendedColoring('nodes',node)">fas fa-genderless</v-icon>
+                                {{ node }} ({{ selected.counts.nodes[node] }})
+                              </v-chip>
+                            </v-list-item>
+
+                          </v-list>
+                        </v-col>
+                        <v-col>
+                          <v-list>
+                            <v-list-item>
+                              <b>Edges ({{ getCounts('edges') }})</b>
+                            </v-list-item>
+                            <v-list-item v-for="edge in Object.keys(selected.counts.edges)" :key="edge">
+                              <v-chip outlined>
+                                <v-icon left :color="getExtendedColoring('edges',edge)[0]">fas fa-genderless</v-icon>
+                                <template v-if="directionExtended(edge)===0">
+                                  <v-icon left>fas fa-undo-alt</v-icon>
+                                </template>
+                                <template v-else>
+                                  <v-icon v-if="directionExtended(edge)===1" left>fas fa-long-arrow-alt-right</v-icon>
+                                  <v-icon v-else left>fas fa-arrows-alt-h</v-icon>
+                                  <v-icon left :color="getExtendedColoring('edges',edge)[1]">fas fa-genderless</v-icon>
+                                </template>
+                                {{ edge }} ({{ selected.counts.edges[edge] }})
+
+                              </v-chip>
+
+                            </v-list-item>
+                          </v-list>
+                        </v-col>
+                      </v-row>
+
+
+                    </v-container>
+                  </v-row>
+
+                  <v-row>
+                    <v-col>
+                      <v-textarea outlined label="Description" @change="updateDesc" :value="description" rows="5"
+                                  no-resize>
+                        <template v-slot:append>
+                          <v-container style="margin-right: -5px">
+                            <v-row>
+                              <v-btn icon @click="saveDescription(true)" :disabled="!showSaveDescription()">
+                                <v-icon color="green">fas fa-check</v-icon>
+                              </v-btn>
+                            </v-row>
+                            <v-row>
+                              <v-btn icon @click="saveDescription(false)" :disabled="!showSaveDescription()">
+                                <v-icon color="red">far fa-times-circle</v-icon>
+                              </v-btn>
+                            </v-row>
+                          </v-container>
+                        </template>
+                      </v-textarea>
+                    </v-col>
+
                   </v-row>
                 </v-container>
               </v-card>
@@ -191,6 +257,8 @@
 </template>
 
 <script>
+import Utils from "../scripts/Utils";
+
 export default {
   name: "History.vue",
   props: {
@@ -206,11 +274,13 @@ export default {
       list: [],
       reverseSorting: false,
       selection: [],
+      description: "",
       selectedId: undefined,
       selected: undefined,
       hover: {star: false, timeline: {parent: false, children: {}}},
       edit: false,
       deletePopup: false,
+      metagraph: undefined,
     }
   },
 
@@ -230,7 +300,6 @@ export default {
 
     loadHistory: function () {
       this.current = this.$route.params["gid"];
-      // this.selectedId = this.current;
       if (this.user !== undefined)
         this.$http.get("/getUser?user=" + this.$cookies.get("uid")).then(response => {
           if (response.data !== undefined)
@@ -260,7 +329,21 @@ export default {
       }
       return item.name
     },
-
+    directionExtended: function (edge) {
+      let e = Object.values(this.selected.entityGraph.edges).filter(e => e.name === edge)[0];
+      if (e.node1 === e.node2)
+        return 0
+      return e.directed ? 1 : 2
+    },
+    getExtendedColoring: function (entity, name) {
+      if (this.metagraph === undefined) {
+        let context = this
+        return this.reloadMetagraph().then(function () {
+          return context.getExtendedColoring(entity, name)
+        }).catch(console.log)
+      }
+      return Utils.getColoringExtended(this.metagraph, this.selected.entityGraph, entity, name)
+    },
     handleSelection: function (selected) {
       if (selected[0] === undefined || this.selectedId === selected[0])
         return
@@ -272,8 +355,21 @@ export default {
           return response.data
       }).then(data => {
         this.selected = data
+        console.log(data)
+        this.description = data.comment
+        console.log(this.description)
       }).catch(console.log)
-
+    },
+    setMetagraph: function (metagraph) {
+      this.metagraph = metagraph;
+    },
+    reloadMetagraph: function () {
+      this.$http.get("/getMetagraph").then(response => {
+        if (response.data !== undefined)
+          return response.data
+      }).then(response => {
+        this.setMetagraph(response)
+      }).catch(err => console.log(err))
     },
     closeDeletePop: function (apply) {
       this.deletePopup = false
@@ -286,6 +382,26 @@ export default {
           this.reload()
       })
     },
+
+    updateDesc: function (event) {
+      this.description = event
+    },
+    showSaveDescription: function () {
+      return this.description !== this.selected.comment
+    },
+    saveDescription: function (apply) {
+      if (apply) {
+        this.$http.post("saveGraphDescription", {"gid": this.selectedId, "desc": this.description}).then(() => {
+          this.selected.comment = this.description
+        })
+      } else
+        this.description = this.selected.comment
+    },
+    getCounts: function (entity) {
+      let objects = Object.values(this.selected.counts[entity]);
+      return objects === undefined || objects.length === 0 ? 0 : objects.reduce((i, j) => i + j)
+    },
+
     formatTime: function (timestamp) {
       timestamp *= 1000
       let d = new Date();
