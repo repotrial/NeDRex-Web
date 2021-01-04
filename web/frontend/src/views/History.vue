@@ -81,84 +81,64 @@
                 ></v-progress-circular>
               </v-card>
               <v-card v-else style="padding-bottom: 15px">
-                <v-row dense>
-                  <v-col cols="9">
-                    <v-card-title v-if="!edit">{{ selected.name }}</v-card-title>
-                    <v-text-field v-else :placeholder="selected.name" :value="selected.name" label="Name"
-                                  @change="setName"></v-text-field>
-                  </v-col>
-                  <v-col cols="3">
-                    <v-btn v-show="selected.owner = $cookies.get('uid')" icon style="margin-top:10px"
-                           @click="toggleEdit()">
-                      <v-icon>{{ edit ? "fas fa-check" : "fas fa-edit" }}</v-icon>
-                    </v-btn>
-                    <v-btn icon style="margin-top:10px" @mouseover="hover.star=true" @mouseleave="hover.star=false"
-                           @click="toggleStar">
-                      <v-icon v-if="showStar(false)">far fa-star</v-icon>
-                      <v-icon v-if="showStar(true)">fas fa-star</v-icon>
-                    </v-btn>
-                    <v-btn v-show="selected.owner = $cookies.get('uid')" icon style="margin-top:10px"
-                           @click="deletePopup=true">
-                      <v-icon>
-                        fas fa-trash
-                      </v-icon>
-                    </v-btn>
-                  </v-col>
-                </v-row>
-                <v-divider
-                  style="margin-left:15px; margin-right:15px; margin-top: -10px; margin-bottom:-10px"></v-divider>
-                <v-card-subtitle>({{ selectedId }})</v-card-subtitle>
                 <v-container>
-                  <v-row dense v-if="selected.parentId !=null">
-                    <v-col cols="2" class="d-flex align-center justify-end">
-                      <i>Parent</i>
-                    </v-col>
-                    <v-col>
-                      <v-timeline align-top dense>
-                        <v-timeline-item
-                          right
-                          :small="!hoveringTimeline('parent')"
-                          :color="selected.parentMethod !=null? 'green':'primary'"
-                        >
-                          <div>{{ selected.parentName }}</div>
-                          <template v-slot:icon>
-                            <v-btn icon @click="loadGraph(selected.parentId)">
-                              <v-icon x-small color="white">
-                                fas fa-play
-                              </v-icon>
-                            </v-btn>
-                          </template>
-                        </v-timeline-item>
-                      </v-timeline>
-                    </v-col>
+                  <v-row v-if="selected.parentId !=null">
+                    <v-timeline align-top dense
+                                style="margin-top: 10px; padding-top: 7px; padding-bottom: 0px; margin-left: -5px">
+                      <v-timeline-item
+                        right
+                        :small="!hoveringTimeline('parent')"
+                        :color="selected.parentMethod !=null? 'green':'primary'"
+                      >
+                        <div style="color: gray; margin-left: -15px">{{ selected.parentName }}</div>
+                        <template v-slot:icon>
+                          <v-btn icon @click="loadGraph(selected.parentId)">
+                            <v-icon x-small color="white">
+                              fas fa-play
+                            </v-icon>
+                          </v-btn>
+                        </template>
+                      </v-timeline-item>
+                    </v-timeline>
+
                   </v-row>
                   <v-row dense>
-                    <v-col cols="2" class="d-flex align-center justify-end">
-                      <i>Current</i>
+                    <v-col cols="9">
+                      <v-card-title v-if="!edit">{{ selected.name }}</v-card-title>
+                      <v-text-field v-else :placeholder="selected.name" :value="selected.name" label="Name"
+                                    @change="setName"></v-text-field>
                     </v-col>
-                    <v-col>
-                      <v-timeline align-top dense style="margin-left: 10px">
-                        <v-timeline-item
-                          :color="selected.method !=null? 'green':'primary'"
-                        >
-                          <i>Current</i>
-                        </v-timeline-item>
-
-                      </v-timeline>
+                    <v-col cols="3">
+                      <v-btn v-show="selected.owner = $cookies.get('uid')" icon style="margin-top:10px"
+                             @click="toggleEdit()">
+                        <v-icon>{{ edit ? "fas fa-check" : "fas fa-edit" }}</v-icon>
+                      </v-btn>
+                      <v-btn icon style="margin-top:10px" @mouseover="hover.star=true" @mouseleave="hover.star=false"
+                             @click="toggleStar">
+                        <v-icon v-if="showStar(false)">far fa-star</v-icon>
+                        <v-icon v-if="showStar(true)">fas fa-star</v-icon>
+                      </v-btn>
+                      <v-btn v-show="selected.owner = $cookies.get('uid')" icon style="margin-top:10px"
+                             @click="deletePopup=true">
+                        <v-icon>
+                          fas fa-trash
+                        </v-icon>
+                      </v-btn>
                     </v-col>
                   </v-row>
+                  <v-divider style="margin-left:15px; margin-right:15px; margin-top: -10px; margin-bottom:-10px"></v-divider>
                   <v-row dense v-if="Object.keys(selected.children).length>0">
-                    <v-col cols="2" class="d-flex align-center justify-end">
-                      <div>
-                        <i>Children</i>
-                      </div>
-                    </v-col>
-                    <v-col>
-                      <v-timeline align-top dense style="margin-left: 20px">
-                        <v-timeline-item small v-for="child in Object.keys(selected.children)" :key="child"
+<!--                    <v-col cols="2" class="d-flex align-center justify-end">-->
+<!--                      <div>-->
+<!--                        <i>Children</i>-->
+<!--                      </div>-->
+<!--                    </v-col>-->
+<!--                    <v-col>-->
+                      <v-timeline align-top dense style="margin-top: 10px; padding-top: 7px; padding-bottom: 0px; margin-left: 5px">
+                        <v-timeline-item small right v-for="child in Object.keys(selected.children)" :key="child"
                                          :color="selected.children[child].method !==undefined ? 'green':'primary'"
                         >
-                          {{ selected.children[child].name }}
+                          <div style="color: gray; margin-left: -15px">{{ selected.children[child].name }}</div>
                           <template v-slot:icon>
                             <v-btn icon @click="loadGraph(child)">
                               <v-icon x-small color="white">
@@ -168,7 +148,7 @@
                           </template>
                         </v-timeline-item>
                       </v-timeline>
-                    </v-col>
+<!--                    </v-col>-->
                   </v-row>
                 </v-container>
               </v-card>
@@ -287,7 +267,6 @@ export default {
       this.selection = selected
       this.selected = undefined;
       this.selectedId = selected[0]
-
       this.$http.get("getGraphHistory?gid=" + this.selectedId + "&uid=" + this.$cookies.get("uid")).then(response => {
         if (response.data !== undefined)
           return response.data
