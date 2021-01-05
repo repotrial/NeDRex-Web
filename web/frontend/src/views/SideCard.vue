@@ -77,6 +77,7 @@
                     v-model="options.graph.physics"
                     @click="$emit('updatePhysicsEvent')"
                     label="Enable physics"
+                    :disabled="options.graph.noPhysics"
                   >
                   </v-switch>
                 </v-list-item>

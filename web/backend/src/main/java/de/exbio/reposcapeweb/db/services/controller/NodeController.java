@@ -196,6 +196,17 @@ public class NodeController {
         };
     }
 
+    public int getId(String type, String id) {
+        return switch (type) {
+            case "disorder" -> disorderService.map(id);
+            case "drug" -> drugService.map(id);
+            case "gene" -> geneService.map(id);
+            case "pathway" -> pathwayService.map(id);
+            case "protein" -> proteinService.map(id);
+            default -> -1;
+        };
+    }
+
     public String getName(Integer typeId, Integer id) {
         return switch (Graphs.getNode(typeId)) {
             case "disorder" -> disorderService.getName(id);

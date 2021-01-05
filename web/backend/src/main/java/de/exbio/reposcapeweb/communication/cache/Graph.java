@@ -9,7 +9,10 @@ import de.exbio.reposcapeweb.utils.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.*;
+import java.awt.geom.Point2D;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -66,16 +69,17 @@ public class Graph {
         return parent;
     }
 
-    public WebGraph toWebGraph(HashMap<String, Object> colors) {
+    public WebGraph toWebGraph(HashMap<String, Object> colors, HashMap<Integer,HashMap<Integer, Point2D>> layout) {
         if (webgraph == null) {
             int nodeCount = nodes.values().stream().mapToInt(HashMap::size).sum();
             int edgeCount = edges.values().stream().mapToInt(LinkedList::size).sum();
             log.info("Converting Graph " + id + " (nodes:" + nodeCount + ", edges:" + edgeCount + ") to webgraph: ");
             webgraph = new WebGraph(id);
             nodes.forEach((typeId, nodeMap) -> {
+                HashMap<Integer, Point2D> coords = layout.get(typeId);
                 String prefix = Graphs.getPrefix(typeId);
                 String group = Graphs.getNode(typeId);
-                webgraph.addNodes(nodeMap.values().stream().map(node -> node.toWebNode().setPrefix(prefix).setGroup(group)).collect(Collectors.toSet()));
+                webgraph.addNodes(nodeMap.values().stream().map(node -> node.toWebNode().setPrefix(prefix).setGroup(group).setPosition(coords.get(node.getId()))).collect(Collectors.toSet()));
             });
             edges.forEach((typeId, edges) -> {
                 String name = getEdge(typeId);
@@ -90,6 +94,9 @@ public class Graph {
         return webgraph;
     }
 
+    public WebGraph getWebgraph() {
+        return webgraph;
+    }
 
     public Graph clone(String id) {
         //TODO clone weblist and graph?

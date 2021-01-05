@@ -18,10 +18,7 @@ import de.exbio.reposcapeweb.db.services.controller.EdgeController;
 import de.exbio.reposcapeweb.db.services.controller.NodeController;
 import de.exbio.reposcapeweb.filter.NodeFilter;
 import de.exbio.reposcapeweb.tools.ToolService;
-import de.exbio.reposcapeweb.utils.Pair;
-import de.exbio.reposcapeweb.utils.StatUtils;
-import de.exbio.reposcapeweb.utils.StringUtils;
-import de.exbio.reposcapeweb.utils.WriterUtils;
+import de.exbio.reposcapeweb.utils.*;
 import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,10 +26,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.awt.*;
+import java.awt.geom.Point2D;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -52,6 +53,7 @@ public class WebGraphService {
     private HashMap<String, String> userGraph = new HashMap<>();
     private HashMap<String, Object> colorMap;
     private HashSet<String> thumbnailGenerating = new HashSet<>();
+    private HashSet<String> layoutGenerating = new HashSet<>();
 
 
     @Autowired
@@ -247,8 +249,7 @@ public class WebGraphService {
 
     public WebGraph getWebGraph(GraphRequest request) {
         Graph g = getGraph(request);
-        return g.toWebGraph(getColorMap(g.getNodes().keySet().stream().map(Graphs::getNode).collect(Collectors.toSet())));
-
+        return getWebGraph(g.getId());
     }
 
     public WebGraphInfo updateGraph(UpdateRequest request) {
@@ -311,7 +312,10 @@ public class WebGraphService {
         Graph g = getCachedGraph(id);
         if (g == null)
             return null;
-        return g.toWebGraph(getColorMap(g.getNodes().keySet().stream().map(Graphs::getNode).collect(Collectors.toSet())));
+        WebGraph wg = g.getWebgraph();
+        if (wg == null)
+            return g.toWebGraph(getColorMap(g.getNodes().keySet().stream().map(Graphs::getNode).collect(Collectors.toSet())), getLayout(g, historyController.getLayoutPath(id)));
+        return wg;
     }
 
     public Graph getGraph(GraphRequest request) {
@@ -1084,5 +1088,34 @@ public class WebGraphService {
         toolService.createThumbnail(getDownload(gid), thumb);
         socketController.setThumbnailReady(gid);
         thumbnailGenerating.remove(gid);
+    }
+
+    public HashMap<Integer, HashMap<Integer, Point2D>> getLayout(Graph g, File lay) {
+        if (!lay.exists()) {
+            lay.getParentFile().mkdirs();
+            if (layoutGenerating.contains(g.getId())) {
+                while (layoutGenerating.contains(g.getId())) {
+                }
+            } else {
+                layoutGenerating.add(g.getId());
+                toolService.createLayout(getDownload(g.getId()), lay);
+                layoutGenerating.remove(g.getId());
+            }
+        }
+        HashMap<Integer, HashMap<Integer, Point2D>> coords = new HashMap<>();
+        try (BufferedReader br = ReaderUtils.getBasicReader(lay)) {
+            String line = "";
+            while ((line = br.readLine()) != null) {
+                LinkedList<String> l = StringUtils.split(line, "\t");
+                int typeId = Graphs.getNode(l.getFirst());
+                int nodeid = nodeController.getId(l.getFirst(), l.get(1));
+                if (!coords.containsKey(typeId))
+                    coords.put(typeId, new HashMap<>());
+                coords.get(typeId).put(nodeid, new Point2D.Double(Double.parseDouble(l.get(2)), Double.parseDouble(l.get(3))));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return coords;
     }
 }

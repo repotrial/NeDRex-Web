@@ -529,6 +529,14 @@ public class ToolService {
         }
     }
 
+    public void createLayout(File graphml, File layout) {
+        try {
+            ProcessUtils.executeProcessWait(new ProcessBuilder("python3", new File(scriptDir, "computeLayouting.py").getAbsolutePath(), graphml.getAbsolutePath(),"0",layout.getAbsolutePath()));
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
     public enum Tool {
         DIAMOND, BICON, TRUSTRANK, CENTRALITY, MUST
     }

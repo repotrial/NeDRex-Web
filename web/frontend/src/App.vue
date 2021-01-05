@@ -318,7 +318,7 @@ export default {
     },
     initComponents: function () {
       this.options.start = {skipVis: true, onlyConnected: true, selectedElements: []}
-      this.options.graph = {physics: false, loops:true,single:true,visualized: false, sizeWarning: false, legend: {}}
+      this.options.graph = {physics: false,noPhysics:false, loops:true,single:true,visualized: false, sizeWarning: false, legend: {}}
       this.options.list = {showAll: true, selected: 0, total: 0, countMap: {nodes: {}, edges: {}}, entityGraph: {}}
       this.options.history = {chronological: false, otherUsers: false, entityGraph:{}}
     },
@@ -332,6 +332,8 @@ export default {
     loadGraph: function (graph) {
       this.tabslist[1].icon = "fas fa-circle-notch fa-spin"
       this.tabslist[2].icon = "fas fa-circle-notch fa-spin"
+      this.options.graph.visualized=false
+      this.$refs.side.reload()
       if (this.options.graph.physics) {
         this.options.graph.physics = false;
         this.updatePhysics()
@@ -373,6 +375,7 @@ export default {
         this.tabslist[2].icon = "fas fa-list-ul"
         this.$refs.list.setLoading(false)
       } else {
+        this.options.graph.noPhysics=sum>50000
         this.gid = info.id
         let tab = tab !== undefined ? tab : "list"
         this.$http.get("/archiveHistory?uid=" + this.$cookies.get("uid") + "&gid=" + info.id).then(() => {

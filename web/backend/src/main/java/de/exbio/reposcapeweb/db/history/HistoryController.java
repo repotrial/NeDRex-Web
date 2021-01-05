@@ -177,6 +177,17 @@ public class HistoryController {
         return null;
     }
 
+    public File getLayoutPath(String id) {
+        String cachedir = env.getProperty("path.db.cache");
+        GraphHistory history = getHistory(id);
+        try {
+            return new File(cachedir, "users/" + history.getUserId() + "/layouts/" + id + ".tsv");
+        } catch (NullPointerException e) {
+            log.warn("Broken history request!");
+        }
+        return null;
+    }
+
     public File getJobPath(Job j) {
         String cachedir = env.getProperty("path.db.cache");
         if (j.getMethod().equals(ToolService.Tool.MUST))

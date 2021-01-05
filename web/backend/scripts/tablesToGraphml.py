@@ -4,7 +4,6 @@ import networkx as nx
 
 wd = sys.argv[1]
 target = sys.argv[2]
-dense = len(sys.argv) > 3
 
 g = nx.Graph()
 
@@ -19,17 +18,11 @@ for file in os.listdir("./"):
             if line.startswith("#"):
                 for attr in line.strip()[1:].split("\t"):
                     attrMap[attr] = len(attrMap)
-                idIndex = attrMap["id"]
+                idIndex = attrMap["primaryDomainId"]
             else:
                 data = {}
                 line = line.strip().split("\t")
                 for attr, idx in attrMap.items():
-                    if dense:
-                        if attr == "type":
-                            data[attr] = nodeType
-                        if attr == "primaryDomainId":
-                            data[attr] = line[idx]
-
                     if attr != "id":
                         if attr == "type":
                             data[attr] = nodeType
@@ -57,7 +50,6 @@ for file in os.listdir("./"):
                             data[attr] = edgeType
                         else:
                             data[attr] = line[idx]
-                ids = line[idIndex].split("-")
-                g.add_edge(ids[0], ids[1], **data)
+                g.add_edge(line[attrMap["sourceDomainId"]], line[attrMap["targetDomainId"]], **data)
 
 nx.write_graphml(g, target)

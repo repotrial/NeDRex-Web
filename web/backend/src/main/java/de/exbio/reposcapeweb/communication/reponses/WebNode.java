@@ -1,45 +1,49 @@
 package de.exbio.reposcapeweb.communication.reponses;
 
+import java.awt.geom.Point2D;
+
 public class WebNode {
     String id;
     String label;
     String title;
     String group;
+    double x;
+    double y;
     boolean hasEdge = false;
 
-    public WebNode(int id, String label,String group){
-        this.id = id+"";
+    public WebNode(int id, String label, String group) {
+        this.id = id + "";
         this.label = label;
-        this.group=group;
+        this.group = group;
     }
 
-    public WebNode(int id, String label, boolean hasEdge){
-        this.id = id+"";
-        this.label=label;
-        this.hasEdge=hasEdge;
-    }
-
-    public WebNode(int id, String label, String group, String title){
-        this(id,label,group);
-        this.title=title;
-    }
-
-
-    public WebNode(String prefix,int id, String label,String group){
-        this.id = prefix+id;
+    public WebNode(int id, String label, boolean hasEdge) {
+        this.id = id + "";
         this.label = label;
-        this.group=group;
+        this.hasEdge = hasEdge;
     }
 
-    public WebNode(String prefix,int id, String label,String title, String group){
-        this.title=title;
-        this.id = prefix+id;
+    public WebNode(int id, String label, String group, String title) {
+        this(id, label, group);
+        this.title = title;
+    }
+
+
+    public WebNode(String prefix, int id, String label, String group) {
+        this.id = prefix + id;
         this.label = label;
-        this.group=group;
+        this.group = group;
+    }
+
+    public WebNode(String prefix, int id, String label, String title, String group) {
+        this.title = title;
+        this.id = prefix + id;
+        this.label = label;
+        this.group = group;
     }
 
     public String getId() {
-        return id+"";
+        return id + "";
     }
 
     public void setId(String id) {
@@ -54,21 +58,21 @@ public class WebNode {
         this.label = label;
     }
 
-//    public double getX() {
-//        return x;
-//    }
-//
-//    public void setX(double x) {
-//        this.x = x;
-//    }
-//
-//    public double getY() {
-//        return y;
-//    }
-//
-//    public void setY(double y) {
-//        this.y = y;
-//    }
+    public double getX() {
+        return x;
+    }
+
+    public void setX(double x) {
+        this.x = x;
+    }
+
+    public double getY() {
+        return y;
+    }
+
+    public void setY(double y) {
+        this.y = y;
+    }
 
     public String getTitle() {
         return title;
@@ -86,14 +90,21 @@ public class WebNode {
         return hasEdge;
     }
 
-    public WebNode setPrefix(String prefix){
-        this.id = prefix+this.id;
+    public WebNode setPrefix(String prefix) {
+        this.id = prefix + this.id;
         return this;
     }
 
-    public WebNode setGroup(String group){
+    public WebNode setGroup(String group) {
         this.group = group;
         return this;
     }
 
+    public WebNode setPosition(Point2D point) {
+        if (point != null) {
+            setX(point.getX());
+            setY(point.getY());
+        }
+        return this;
+    }
 }

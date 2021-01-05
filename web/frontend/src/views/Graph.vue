@@ -152,6 +152,7 @@ export default {
     init: function () {
       if (!this.skipVis)
         this.configuration.visualized = true;
+      //TODO getgraphinfo to handle displaying of sidebar and disabling of enable-physics and disable visualize graph when graph not loaded
       this.$http.get("/getGraph?id=" + this.gid).then(response => {
 
         if (response !== undefined)
@@ -375,16 +376,16 @@ export default {
             // solver: 'repulsion',
             barnesHut: {
               // theta: 0.7,
-              gravitationalConstant: -15000,
-              centralGravity: 0.25,
-              springLength: 100,
+              gravitationalConstant: -25000,
+              centralGravity: 0.15,
+              springLength: 200,
               springConstant: 0.02,
-              damping: 0.25,
-              avoidOverlap: 0.5
+              damping: 0.3,
+              avoidOverlap: 0.8
             },
             enabled: false,
             // stabilization: {enabled: true, updateInterval: 10, iterations: 1000, fit: true},
-            timestep: 0.3,
+            // timestep: 0.3,
             // wind: {x: 20, y: 20}
           }
         },
@@ -411,7 +412,17 @@ export default {
     setPhysics: function (boolean) {
       this.physicsOn = boolean;
       this.options.physics.enabled = this.physicsOn
+      if (!this.physicsOn) {
+       this.saveLayout()
+      }
       this.updateOptions()
+    },
+
+    saveLayout: function(){
+      let updates = Object.entries(this.$refs.network.getPositions()).map(e => {
+        return {id: e[0], x: e[1].x, y: e[1].y}
+      })
+      this.nodeSet.update(updates)
     },
 
     updateOptions: function () {
@@ -470,14 +481,14 @@ export default {
     showUnconnected: function (state) {
       let list = this.unconnected
       let update = this.nodeSet.get({
-          filter: function (item) {
-            return list.indexOf(item.id) > -1
-          }
-        }).map(item => {
+        filter: function (item) {
+          return list.indexOf(item.id) > -1
+        }
+      }).map(item => {
         return {id: item.id, hidden: !state, physics: state}
       })
       this.nodeSet.update(update)
-      this.$refs.network.setData(this.nodeSet,this.edgeSet)
+      this.$refs.network.setData(this.nodeSet, this.edgeSet)
     },
 
     hideAllGroups: function (boolean, update) {
@@ -513,6 +524,7 @@ export default {
         this.$emit('selectionEvent')
         this.highlight = false;
       }
+      this.saveLayout()
       this.updateNodes()
     }
     ,
@@ -550,10 +562,15 @@ export default {
     updateNodes: function () {
       let updates = []
 
-      for (let nodeId in this.nodes) {
-        if (this.nodes.hasOwnProperty(nodeId))
-          updates.push(this.nodes[nodeId])
-      }
+      this.nodeSet.get().forEach(node=>{
+        if(this.nodes.hasOwnProperty(node.id))
+          updates.push(node)
+      })
+
+      // for (let nodeId in this.nodes) {
+      //   if (this.nodes.hasOwnProperty(nodeId))
+      //     updates.push(this.nodes[nodeId])
+      // }
       this.nodeSet.update(updates)
     }
     ,

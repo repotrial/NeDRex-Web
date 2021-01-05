@@ -37,22 +37,23 @@ if makeImage:
     g.vertex_properties['plot_color'] = plot_color
     nodeCount = 0
 
-if makeLayout:
-    fh = open(out, 'w')
+nodeCount = 0
+
 for x in g.vertices():
-    if makeLayout:
-        fh.write(str(g.properties[('v', "primaryDomainId")][x]) + "\t" + str(pos[x][0]) + "\t" + str(pos[x][1]) + "\n")
+    nodeCount += 1
     if makeImage:
         plot_color[x] = colorMap[g.properties[('v', "type")][x]]
-        nodeCount += 1
+
+scale = abs(math.log10(nodeCount / 100))
+imageHeight = int(math.sqrt(nodeCount) * 10 + min(500, int(500 / scale)))
 
 if makeLayout:
-    fh.close()
+    with open(out, 'w') as fh:
+        for x in g.vertices():
+            fh.write(
+                g.properties[('v', "type")][x] + "\t" + str(g.properties[('v', "primaryDomainId")][x]) + "\t" + str(
+                    pos[x][0] * 200 * scale) + "\t" + str(pos[x][1] * 200 * scale) + "\n")
 
 if makeImage:
-
-    scale = abs(math.log10(nodeCount / 100))
-    imageHeight = int(math.sqrt(nodeCount) * 10 + min(500,int(500 / scale)))
-
     graph_draw(g, pos=pos, output=thumb, vertex_fill_color=g.vertex_properties['plot_color'],
-               output_size=(imageHeight, imageHeight), vertex_size=int(10-(scale)), fit_view=scale, fit_view_ink=True)
+               output_size=(imageHeight, imageHeight), vertex_size=int(10 - scale), fit_view=scale, fit_view_ink=True)
