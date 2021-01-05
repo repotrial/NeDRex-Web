@@ -194,18 +194,18 @@
                     </v-container>
                   </v-row>
                   <v-divider></v-divider>
-                  <v-row v-if="selected.thumbnailReady">
+                  <v-row v-if="selected.thumbnailReady" style="padding:15px">
                     <v-img max-height="600" max-width="600" :src="getThumbnail(selectedId)">
                     </v-img>
                   </v-row>
-                  <v-row v-else>
-                    <v-progress-circular
+                  <v-row v-else style="padding:15px">
+                    <i style="color:gray">creating preview...</i>
+                    <v-progress-linear
                       indeterminate
                       color="primary"
-                    ></v-progress-circular>
+                    ></v-progress-linear>
                   </v-row>
-                  <v-divider></v-divider>
-                  <v-row>
+                  <v-row style="margin-top:10px">
                     <v-col>
                       <v-textarea outlined label="Description" @change="updateDesc" :value="description" rows="5"
                                   no-resize>

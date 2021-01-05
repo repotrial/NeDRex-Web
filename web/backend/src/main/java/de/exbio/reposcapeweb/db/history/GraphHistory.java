@@ -65,17 +65,17 @@ public class GraphHistory {
     }
 
     @JsonIgnore
-    private void setStarred(){
+    private void setStarred() {
         starred = StringUtils.listToString(starredList);
     }
 
     @JsonIgnore
-    private LinkedList<String> getStarred(){
+    private LinkedList<String> getStarred() {
         return StringUtils.stringToList(starred);
     }
 
-    public void setParent(GraphHistory parent){
-        this.parent=parent;
+    public void setParent(GraphHistory parent) {
+        this.parent = parent;
     }
 
     public GraphHistory(String userId, String graphId, WebGraphInfo graphInfo, GraphHistory parent) {
@@ -151,7 +151,7 @@ public class GraphHistory {
         out.put("nodes", nodeMap);
         out.put("created", created.toEpochSecond(ZoneOffset.ofTotalSeconds(0)));
         out.put("comment", comment);
-        out.put("name",name);
+        out.put("name", name);
         if (jobState != null) {
             out.put("state", jobState.name());
             out.put("method", method);
@@ -185,14 +185,16 @@ public class GraphHistory {
     }
 
     public boolean isStarred(String uid) {
-        if(starredList==null)
-            starredList= new LinkedList<>();
+        if (starred == null)
+            starredList = new LinkedList<>();
+        else
+            starredList = StringUtils.stringToList(starred);
         return starredList.contains(uid);
     }
 
     public void toggleStarred(String uid) {
-        if(starredList==null)
-            starredList=new LinkedList<>();
+        if (starredList == null)
+            starredList = new LinkedList<>();
         if (isStarred(uid))
             starredList.remove(uid);
         else
@@ -201,6 +203,6 @@ public class GraphHistory {
     }
 
     public void setComment(String desc) {
-        this.comment=desc;
+        this.comment = desc;
     }
 }
