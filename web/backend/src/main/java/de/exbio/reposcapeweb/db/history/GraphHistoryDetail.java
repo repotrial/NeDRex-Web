@@ -10,6 +10,7 @@ public class GraphHistoryDetail {
     public String owner;
     public String method;
     public String comment;
+    public boolean thumbnailReady = false;
     public HashMap<String,HashMap<String,Integer>> counts;
     public ConnectionGraph entityGraph;
 

@@ -49,7 +49,6 @@ const emitter = new Vue({
       context.init().then(() => {
         context.subscriptions[route] = context.client.subscribe(route, message => {
           this.$emit(event, message.body)
-          // callback(message.body);
         })
       })
     },
@@ -64,6 +63,15 @@ const emitter = new Vue({
     },
     unsubscribeJob: function (id) {
       this.unsubscribe("/graph/status-job" + id)
+    },
+
+    subscribeThumbnail: function(id,event){
+      let route = "/graph/status-thumbnail_"+id
+      this.subscribe(route,event)
+    },
+
+    unsubscribeThumbnail: function(id){
+      this.unsubscribe("/graph/status-thumbnail_"+id)
     }
   }
 })

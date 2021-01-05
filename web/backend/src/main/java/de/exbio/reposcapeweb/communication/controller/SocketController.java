@@ -43,4 +43,10 @@ public class SocketController {
     }
 
 
+    @MessageMapping("/jobs")
+    public void setThumbnailReady(String gid) {
+        HashMap<String,String> params = new HashMap<>();
+        params.put("gid",gid);
+        socketTemplate.convertAndSend("/graph/status-thumbnail_"+gid, toJson(params));
+    }
 }

@@ -5,13 +5,25 @@ import math
 from matplotlib.colors import colorConverter as Colors
 
 file = sys.argv[1]
-out = sys.argv[2]
-thumb = sys.argv[3]
+
+mode = sys.argv[2]
+
+makeImage = False
+makeLayout = False
+if mode == "0":
+    out = sys.argv[3]
+    makeLayout = True
+if mode == "1":
+    thumb = sys.argv[3]
+    makeImage = True
+if mode == "2":
+    out = sys.argv[3]
+    thumb = sys.argv[4]
+    makeLayout = True
+    makeImage = True
 
 g = load_graph(file)
 pos = sfdp_layout(g)
-# for x in pos:
-#     print(x)
 
 colorMap = {
     'disorder': Colors.to_rgba("#EF553B"),
@@ -20,20 +32,27 @@ colorMap = {
     'pathway': Colors.to_rgba("#fecb52"),
     'protein': Colors.to_rgba('#19d3f3')}
 
-plot_color = g.new_vertex_property('vector<double>')
-g.vertex_properties['plot_color'] = plot_color
+if makeImage:
+    plot_color = g.new_vertex_property('vector<double>')
+    g.vertex_properties['plot_color'] = plot_color
+    nodeCount = 0
 
-nodeCount=0
-with open(out, 'w') as fh:
-    for x in g.vertices():
+if makeLayout:
+    fh = open(out, 'w')
+for x in g.vertices():
+    if makeLayout:
         fh.write(str(g.properties[('v', "primaryDomainId")][x]) + "\t" + str(pos[x][0]) + "\t" + str(pos[x][1]) + "\n")
-        plot_color[x]=colorMap[g.properties[('v',"type")][x]]
-        nodeCount+=1
+    if makeImage:
+        plot_color[x] = colorMap[g.properties[('v', "type")][x]]
+        nodeCount += 1
 
+if makeLayout:
+    fh.close()
 
-imageHeight=int(math.sqrt(nodeCount)*10)
-imageSize=nodeCount*100
+if makeImage:
 
-scale = math.log10(nodeCount/100)
+    scale = abs(math.log10(nodeCount / 100))
+    imageHeight = int(math.sqrt(nodeCount) * 10 + min(500,int(500 / scale)))
 
-graph_draw(g, pos=pos, output=thumb, vertex_fill_color=g.vertex_properties['plot_color'], output_size=(imageHeight,imageHeight), vertex_size=4,fit_view=scale, fit_view_ink=True)
+    graph_draw(g, pos=pos, output=thumb, vertex_fill_color=g.vertex_properties['plot_color'],
+               output_size=(imageHeight, imageHeight), vertex_size=int(10-(scale)), fit_view=scale, fit_view_ink=True)

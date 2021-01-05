@@ -6,6 +6,7 @@ import de.exbio.reposcapeweb.communication.cache.Edge;
 import de.exbio.reposcapeweb.communication.cache.Graph;
 import de.exbio.reposcapeweb.communication.cache.Graphs;
 import de.exbio.reposcapeweb.communication.cache.Node;
+import de.exbio.reposcapeweb.communication.controller.SocketController;
 import de.exbio.reposcapeweb.communication.jobs.Job;
 import de.exbio.reposcapeweb.communication.requests.*;
 import de.exbio.reposcapeweb.configs.DBConfig;
@@ -25,6 +26,7 @@ import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedWriter;
@@ -45,9 +47,11 @@ public class WebGraphService {
     private final ObjectMapper objectMapper;
     private final DbCommunicationService dbCommunicationService;
     private final ToolService toolService;
+    private final SocketController socketController;
     private HashMap<String, Graph> cache = new HashMap<>();
     private HashMap<String, String> userGraph = new HashMap<>();
     private HashMap<String, Object> colorMap;
+    private HashSet<String> thumbnailGenerating = new HashSet<>();
 
 
     @Autowired
@@ -57,13 +61,15 @@ public class WebGraphService {
             DbCommunicationService dbCommunicationService,
             ObjectMapper objectMapper,
             HistoryController historyController,
-            ToolService toolService) {
+            ToolService toolService,
+            SocketController socketController) {
         this.edgeController = edgeController;
         this.nodeController = nodeController;
         this.dbCommunicationService = dbCommunicationService;
         this.objectMapper = objectMapper;
         this.historyController = historyController;
         this.toolService = toolService;
+        this.socketController = socketController;
     }
 
     public WebGraph getMetaGraph() {
@@ -896,13 +902,13 @@ public class WebGraphService {
 
         }
         AtomicInteger size = new AtomicInteger();
-        derived.getNodes().forEach((k,v)-> size.addAndGet(v.size()));
-        derived.getEdges().forEach((k,v)->size.addAndGet(v.size()));
-        if(size.get()<100_000) {
+        derived.getNodes().forEach((k, v) -> size.addAndGet(v.size()));
+        derived.getEdges().forEach((k, v) -> size.addAndGet(v.size()));
+        if (size.get() < 100_000) {
             cache.put(derived.getId(), derived);
             j.setDerivedGraph(derived.getId());
             addGraphToHistory(j.getUserId(), derived.getId());
-        }else
+        } else
             j.setStatus(Job.JobState.LIMITED);
     }
 
@@ -1058,8 +1064,25 @@ public class WebGraphService {
             if (gid.equals(g))
                 user.set(u);
         });
-        if (user.get()!=null)
+        if (user.get() != null)
             userGraph.remove(user.get());
+        File thumb = historyController.getThumbnailPath(gid);
+        if (thumb.exists())
+            thumb.delete();
         historyController.remove(gid);
+    }
+
+    public File getThumbnail(String gid) {
+        return historyController.getThumbnailPath(gid);
+    }
+
+    @Async
+    public void createThumbnail(String gid, File thumb) {
+        if (thumb.exists() || thumbnailGenerating.contains(gid))
+            return;
+        thumbnailGenerating.add(gid);
+        toolService.createThumbnail(getDownload(gid), thumb);
+        socketController.setThumbnailReady(gid);
+        thumbnailGenerating.remove(gid);
     }
 }

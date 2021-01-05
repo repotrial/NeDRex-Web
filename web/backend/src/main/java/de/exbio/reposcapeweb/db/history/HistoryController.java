@@ -166,6 +166,17 @@ public class HistoryController {
         return null;
     }
 
+    public File getThumbnailPath(String id) {
+        String cachedir = env.getProperty("path.db.cache");
+        GraphHistory history = getHistory(id);
+        try {
+            return new File(cachedir, "users/" + history.getUserId() + "/thumbnails/" + id + ".png");
+        } catch (NullPointerException e) {
+            log.warn("Broken history request!");
+        }
+        return null;
+    }
+
     public File getJobPath(Job j) {
         String cachedir = env.getProperty("path.db.cache");
         if (j.getMethod().equals(ToolService.Tool.MUST))
@@ -181,7 +192,7 @@ public class HistoryController {
         return userId;
     }
 
-    public GraphHistoryDetail getDetailedHistory(String uid, Graph g, ConnectionGraph connectionGraph, HashMap<String, Pair<Job.JobState, ToolService.Tool>> jobs) {
+    public GraphHistoryDetail getDetailedHistory(String uid, Graph g, ConnectionGraph connectionGraph, HashMap<String, Pair<Job.JobState, ToolService.Tool>> jobs, File thumbnail) {
         GraphHistoryDetail details = new GraphHistoryDetail();
         GraphHistory history = getHistory(g.getId());
         details.name = history.getName();
@@ -192,7 +203,7 @@ public class HistoryController {
         g.getNodes().forEach((key, ns) -> details.counts.get("nodes").put(Graphs.getNode(key), ns.size()));
         g.getEdges().forEach((key, es) -> details.counts.get("edges").put(g.getEdge(key), es.size()));
 
-        details.entityGraph=connectionGraph;
+        details.entityGraph = connectionGraph;
 
         if (jobs.containsKey(g.getId()))
             details.method = jobs.get(g.getId()).getSecond().name();
@@ -217,6 +228,7 @@ public class HistoryController {
                 details.children.get(id).put("method", jobs.get(id).second.name());
             }
         });
+        details.thumbnailReady = thumbnail.exists();
         return details;
     }
 

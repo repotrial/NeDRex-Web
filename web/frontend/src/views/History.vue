@@ -112,7 +112,8 @@
                              @click="toggleEdit()">
                         <v-icon>{{ edit ? "fas fa-check" : "fas fa-edit" }}</v-icon>
                       </v-btn>
-                      <v-btn icon style="margin-top:10px" @mouseover="hover.star=true" @mouseleave="hover.star=false" x-small
+                      <v-btn icon style="margin-top:10px" @mouseover="hover.star=true" @mouseleave="hover.star=false"
+                             x-small
                              @click="toggleStar">
                         <v-icon v-if="showStar(false)">far fa-star</v-icon>
                         <v-icon v-if="showStar(true)">fas fa-star</v-icon>
@@ -192,7 +193,18 @@
 
                     </v-container>
                   </v-row>
-
+                  <v-divider></v-divider>
+                  <v-row v-if="selected.thumbnailReady">
+                    <v-img max-height="600" max-width="600" :src="getThumbnail(selectedId)">
+                    </v-img>
+                  </v-row>
+                  <v-row v-else>
+                    <v-progress-circular
+                      indeterminate
+                      color="primary"
+                    ></v-progress-circular>
+                  </v-row>
+                  <v-divider></v-divider>
                   <v-row>
                     <v-col>
                       <v-textarea outlined label="Description" @change="updateDesc" :value="description" rows="5"
@@ -284,6 +296,7 @@ export default {
   },
 
   created() {
+    this.$socket.$on("thumbnailReady", this.thumbnailReady)
     this.init()
   },
 
@@ -334,6 +347,14 @@ export default {
         return 0
       return e.directed ? 1 : 2
     },
+
+    thumbnailReady: function (response) {
+      let params = JSON.parse(response)
+      if (params.gid === this.selectedId) {
+        this.selected.thumbnailReady = true
+      }
+      this.$socket.unsubscribeThumbnail(params.gid)
+    },
     getExtendedColoring: function (entity, name) {
       if (this.metagraph === undefined) {
         let context = this
@@ -354,9 +375,11 @@ export default {
           return response.data
       }).then(data => {
         this.selected = data
-        console.log(data)
         this.description = data.comment
-        console.log(this.description)
+      }).then(() => {
+        if (!this.selected.thumbnailReady) {
+          this.$socket.subscribeThumbnail(this.selectedId,"thumbnailReady")
+        }
       }).catch(console.log)
     },
     setMetagraph: function (metagraph) {
@@ -449,6 +472,26 @@ export default {
         }
       })
       return out;
+    },
+
+
+    getThumbnail: function (graph_id) {
+      let url = "/backend/api/getThumbnailPath?gid=" + graph_id
+
+      return url
+    },
+
+    thumbnailExists: function (graph_id) {
+      let http = new XMLHttpRequest()
+      http.open("HEAD", this.getThumbnail(graph_id), false)
+      let status = 2
+      return http.onloadend = function () {
+        if (http.status === 404) {
+          status = 2
+          return false
+        } else
+          return true
+      }
     },
 
     reverseList: function () {

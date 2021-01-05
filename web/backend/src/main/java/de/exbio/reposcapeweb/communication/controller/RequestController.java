@@ -16,20 +16,22 @@ import de.exbio.reposcapeweb.db.services.controller.NodeController;
 import de.exbio.reposcapeweb.db.services.nodes.DrugService;
 import de.exbio.reposcapeweb.tools.ToolService;
 import de.exbio.reposcapeweb.utils.Pair;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 
 /**
@@ -309,7 +311,24 @@ public class RequestController {
     @ResponseBody
     public String getGraphHistory(@RequestParam("gid") String gid, @RequestParam("uid") String uid){
         log.info("GraphHistory detail request: "+gid);
-        return toJson(historyController.getDetailedHistory(uid,webGraphService.getCachedGraph(gid),webGraphService.getConnectionGraph(gid),jobController.getJobGraphStatesAndTypes(uid)));
+        File thumbnail = webGraphService.getThumbnail(gid);
+        webGraphService.createThumbnail(gid,thumbnail);
+        return toJson(historyController.getDetailedHistory(uid,webGraphService.getCachedGraph(gid),webGraphService.getConnectionGraph(gid),jobController.getJobGraphStatesAndTypes(uid),thumbnail));
+    }
+
+    @RequestMapping(value="/getThumbnailPath", method=RequestMethod.GET)
+    @ResponseBody
+    public ResponseEntity<byte[]> isThumbnailReady(@RequestParam("gid") String gid) throws IOException {
+        File thumb = webGraphService.getThumbnail(gid);
+        HttpHeaders headers = new HttpHeaders();
+        if(!thumb.exists())
+            return new ResponseEntity<>(headers,HttpStatus.NOT_FOUND);
+
+        InputStream in = new FileSystemResource(thumb.getAbsolutePath()).getInputStream();
+        byte[] media = IOUtils.toByteArray(in);
+        headers.setCacheControl(CacheControl.noCache().getHeaderValue());
+
+        return new ResponseEntity<>(media, headers, HttpStatus.OK);
     }
 
     @RequestMapping(value="/toggleStarred", method = RequestMethod.GET)

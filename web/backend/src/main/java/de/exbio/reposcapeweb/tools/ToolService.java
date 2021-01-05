@@ -15,11 +15,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.objenesis.SpringObjenesis;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.zeroturnaround.zip.ZipEntrySource;
 import org.zeroturnaround.zip.ZipUtil;
 import org.zeroturnaround.zip.transform.ZipEntryTransformer;
 
+import javax.persistence.AssociationOverrides;
 import java.io.*;
 import java.nio.file.CopyOption;
 import java.nio.file.Files;
@@ -514,6 +516,14 @@ public class ToolService {
     public void createGraphmlFromFS(File wd, File graphml) {
         try {
             ProcessUtils.executeProcessWait(new ProcessBuilder("python3", new File(scriptDir, "tablesToGraphml.py").getAbsolutePath(), wd.getAbsolutePath(), graphml.getAbsolutePath()));
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void createThumbnail(File graphml, File thumb) {
+        try {
+            ProcessUtils.executeProcessWait(new ProcessBuilder("python3", new File(scriptDir, "computeLayouting.py").getAbsolutePath(), graphml.getAbsolutePath(),"1",thumb.getAbsolutePath()));
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
