@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <headerBar/>
+    <headerBar @showVersionEvent="showVersionInfo=true"/>
     <v-card>
       <v-toolbar flat>
         <template v-slot:extension>
@@ -29,7 +29,7 @@
 
     <v-container align-self="start">
       <v-row>
-        <v-col cols="9" >
+        <v-col cols="9">
 
           <v-main app style="padding-top: 0">
 
@@ -191,8 +191,72 @@
 
       </v-dialog>
     </v-container>
-    <v-footer app>
-    </v-footer>
+    <v-bottom-sheet inset v-model="showVersionInfo" width="60vw">
+      <v-sheet dark>
+        <v-list>
+          <v-list-item>
+            <v-card-title>DATA SOURCE INFORMATION</v-card-title>
+          </v-list-item>
+          <v-list-item>
+            <v-row>
+              <v-col cols="5">
+                <v-list>
+                  <v-list-item>
+                    <v-list-item-icon>
+                      <v-icon left>fas fa-server</v-icon>
+                    </v-list-item-icon>
+                    <v-list-item-title>RepoTrialDB-version:</v-list-item-title>
+                    <span>{{
+                        metadata.repotrial && metadata.repotrial.version ? metadata.repotrial.version : "?"
+                      }}</span>
+                  </v-list-item>
+                  <v-list-item>
+                    <v-list-item-icon>
+                      <v-icon left>fas fa-sync</v-icon>
+                    </v-list-item-icon>
+                    <v-list-item-title>Last Check:</v-list-item-title>
+                    <span>{{
+                        metadata.lastCheck !== undefined ? formatTimestamp(metadata.lastCheck)[1] + " ago" : "?"
+                      }}</span>
+                  </v-list-item>
+                  <v-list-item>
+                    <v-list-item-icon>
+                      <v-icon left>fas fa-cloud-download-alt</v-icon>
+                    </v-list-item-icon>
+                    <v-list-item-title>Last Update:</v-list-item-title>
+                    <span>{{
+                        metadata.lastUpdate !== undefined ? formatTimestamp(metadata.lastUpdate)[1] + " ago" : "?"
+                      }}</span>
+                  </v-list-item>
+                </v-list>
+              </v-col>
+              <v-divider vertical></v-divider>
+              <v-col cols="6">
+                <v-list v-if="metadata.repotrial &&metadata.repotrial.source_databases">
+                  <v-list-item v-for="source in Object.keys(metadata.repotrial.source_databases)" :key="source">
+                    <v-list-item-icon>
+                      <v-icon left>fas fa-database</v-icon>
+                      {{ source }}
+                    </v-list-item-icon>
+                    <v-list-item-title>
+                      <span>{{ metadata.repotrial.source_databases[source].date }}</span>
+                    </v-list-item-title>
+                    <v-list-item-subtitle v-if="metadata.repotrial.source_databases[source].version!=null">
+                      <span>(Version: {{ metadata.repotrial.source_databases[source].version }})</span>
+                    </v-list-item-subtitle>
+                    <v-list-item-subtitle v-else></v-list-item-subtitle>
+                  </v-list-item>
+                </v-list>
+              </v-col>
+            </v-row>
+
+          </v-list-item>
+        </v-list>
+        <v-divider style="margin-left:25px; margin-right: 25px"></v-divider>
+      </v-sheet>
+    </v-bottom-sheet>
+    <!--    <v-footer app>-->
+    <!--    </v-footer>-->
   </v-app>
 </template>
 
@@ -203,6 +267,7 @@ import History from "./views/History";
 import List from './views/List.vue'
 import SideCard from './views/SideCard.vue'
 import headerBar from './components/header.vue'
+import Utils from "./scripts/Utils"
 
 
 export default {
@@ -230,6 +295,8 @@ export default {
       options: {},
       cookiesPopup: false,
       startFilters: {},
+      showVersionInfo: false,
+      metadata: {}
     }
   },
   created() {
@@ -244,6 +311,7 @@ export default {
       {id: 2, label: "List", icon: "fas fa-list-ul", color: this.colors.tabs.inactive, note: false},
       {id: 3, label: "History", icon: "fas fa-history", color: this.colors.tabs.inactive, note: false},
     ]
+    this.loadMetadata()
     this.initGraphs()
   },
   watch: {
@@ -264,7 +332,7 @@ export default {
     }
   },
   methods: {
-    closeCookiePopup : function(){
+    closeCookiePopup: function () {
       this.cookiesPopup = false
       this.$http.get("/initUser").then(response => {
         if (response.data !== undefined) {
@@ -318,9 +386,17 @@ export default {
     },
     initComponents: function () {
       this.options.start = {skipVis: true, onlyConnected: true, selectedElements: []}
-      this.options.graph = {physics: false,noPhysics:false, loops:true,single:true,visualized: false, sizeWarning: false, legend: {}}
+      this.options.graph = {
+        physics: false,
+        noPhysics: false,
+        loops: true,
+        single: true,
+        visualized: false,
+        sizeWarning: false,
+        legend: {}
+      }
       this.options.list = {showAll: true, selected: 0, total: 0, countMap: {nodes: {}, edges: {}}, entityGraph: {}}
-      this.options.history = {chronological: false, otherUsers: false, entityGraph:{}}
+      this.options.history = {chronological: false, otherUsers: false, entityGraph: {}}
     },
     loadSubSelection: function (selection) {
       this.loadGraph({data: selection})
@@ -332,7 +408,7 @@ export default {
     loadGraph: function (graph) {
       this.tabslist[1].icon = "fas fa-circle-notch fa-spin"
       this.tabslist[2].icon = "fas fa-circle-notch fa-spin"
-      this.options.graph.visualized=false
+      this.options.graph.visualized = false
       this.$refs.side.reload()
       if (this.options.graph.physics) {
         this.options.graph.physics = false;
@@ -375,7 +451,7 @@ export default {
         this.tabslist[2].icon = "fas fa-list-ul"
         this.$refs.list.setLoading(false)
       } else {
-        this.options.graph.noPhysics=sum>50000
+        this.options.graph.noPhysics = sum > 50000
         this.gid = info.id
         let tab = tab !== undefined ? tab : "list"
         this.$http.get("/archiveHistory?uid=" + this.$cookies.get("uid") + "&gid=" + info.id).then(() => {
@@ -391,7 +467,7 @@ export default {
     registerJob: function (data) {
       this.$refs.side.addJob(data)
     },
-    reloadHistory: function (){
+    reloadHistory: function () {
       this.$refs.history.reload()
     },
     executeAlgorithm: function (algorithm, params) {
@@ -435,10 +511,10 @@ export default {
     updatePhysics: function () {
       this.$refs.graph.setPhysics(this.options.graph.physics)
     },
-    showLoops : function(state){
+    showLoops: function (state) {
       this.$refs.graph.showLoops(state)
     },
-    showUnconnected: function(state){
+    showUnconnected: function (state) {
       this.$refs.graph.showUnconnected(state)
     },
     loadSelection: function (params) {
@@ -508,6 +584,17 @@ export default {
     graphViewEvent: function (data) {
       this.$refs.graph.graphViewEvent(data)
     },
+    loadMetadata() {
+      this.$http.get("getMetadata").then(response => {
+        if (response.data !== undefined)
+          return response.data
+      }).then(meta => {
+        this.metadata = meta
+      }).catch(console.log)
+    },
+    formatTimestamp(ts) {
+      return Utils.formatTime(ts)
+    }
   }
   ,
   components: {
@@ -519,7 +606,6 @@ export default {
     History
   }
   ,
-
 
 }
 

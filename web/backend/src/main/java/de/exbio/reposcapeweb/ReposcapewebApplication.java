@@ -75,9 +75,8 @@ public class ReposcapewebApplication {
 
     @EventListener(ApplicationReadyEvent.class)
     public void postConstruct() {
-
+        updateService.readMetadata();
         dbService.setImportInProgress(true);
-
         importService.importNodeData();
         jobController.importJobsHistory();
         importService.importHistory();

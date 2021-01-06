@@ -14,6 +14,7 @@ import de.exbio.reposcapeweb.db.history.HistoryController;
 import de.exbio.reposcapeweb.db.services.controller.EdgeController;
 import de.exbio.reposcapeweb.db.services.controller.NodeController;
 import de.exbio.reposcapeweb.db.services.nodes.DrugService;
+import de.exbio.reposcapeweb.db.updates.UpdateService;
 import de.exbio.reposcapeweb.tools.ToolService;
 import de.exbio.reposcapeweb.utils.Pair;
 import org.apache.commons.io.IOUtils;
@@ -54,9 +55,10 @@ public class RequestController {
     private final JobController jobController;
     private final SimpMessagingTemplate socketTemplate;
     private final DbCommunicationService dbCommunicationService;
+    private final UpdateService updateService;
 
     @Autowired
-    public RequestController(DbCommunicationService dbCommunicationService, SimpMessagingTemplate simpMessagingTemplate, DrugService drugService, ObjectMapper objectMapper, WebGraphService webGraphService, EdgeController edgeController, NodeController nodeController, HistoryController historyController, JobController jobController) {
+    public RequestController(UpdateService updateService, DbCommunicationService dbCommunicationService, SimpMessagingTemplate simpMessagingTemplate, DrugService drugService, ObjectMapper objectMapper, WebGraphService webGraphService, EdgeController edgeController, NodeController nodeController, HistoryController historyController, JobController jobController) {
         this.drugService = drugService;
         this.objectMapper = objectMapper;
         this.webGraphService = webGraphService;
@@ -66,6 +68,7 @@ public class RequestController {
         this.jobController = jobController;
         this.socketTemplate = simpMessagingTemplate;
         this.dbCommunicationService = dbCommunicationService;
+        this.updateService=updateService;
     }
 
 
@@ -388,6 +391,13 @@ public class RequestController {
     @ResponseBody
     public void saveGraphDescription(@RequestBody HashMap<String,String> data){
         historyController.saveDescription(data.get("gid"),data.get("desc"));
+    }
+
+
+    @RequestMapping(value="/getMetadata", method = RequestMethod.GET)
+    @ResponseBody
+    public String getMetadata(){
+        return toJson(updateService.getMetadata());
     }
 
 

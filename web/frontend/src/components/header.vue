@@ -2,10 +2,19 @@
   <v-app-bar app prominent elevation="0" hide-on-scroll color="white">
     <div id="particles-js"></div>
     <div id="title-div" style="position:fixed">
-      <h1 id="title" >NeDRex</h1>
+      <h1 id="title">NeDRex</h1>
     </div>
+    <v-row>
+      <v-col cols="11"></v-col>
+      <v-col cols="1">
+        <v-btn icon @click="$emit('showVersionEvent')" style="background-color: white">
+          <v-icon color="primary">
+            far fa-question-circle
+          </v-icon>
+        </v-btn>
+      </v-col>
+    </v-row>
   </v-app-bar>
-
 </template>
 
 <script>

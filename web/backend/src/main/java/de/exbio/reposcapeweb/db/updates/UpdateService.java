@@ -1,10 +1,13 @@
 package de.exbio.reposcapeweb.db.updates;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import de.exbio.reposcapeweb.configs.DBConfig;
 import de.exbio.reposcapeweb.configs.schema.EdgeConfig;
 import de.exbio.reposcapeweb.db.DbCommunicationService;
+import de.exbio.reposcapeweb.db.Metadata;
 import de.exbio.reposcapeweb.db.entities.RepoTrialEdge;
 import de.exbio.reposcapeweb.db.entities.RepoTrialNode;
 import de.exbio.reposcapeweb.db.entities.edges.*;
@@ -62,6 +65,10 @@ public class UpdateService {
     private final DrugHasContraindicationService drugHasContraindicationService;
     private final ToolService toolService;
 
+    private Metadata metadata;
+    private long lastUpdate;
+    private long lastCheck;
+
     private final File jsonReformatter;
 
     @Autowired
@@ -109,7 +116,7 @@ public class UpdateService {
         this.drugHasContraindicationService = drugHasContraindicationService;
         this.toolService = toolService;
 
-        jsonReformatter = new File(new File(env.getProperty("path.scripts.dir")),"reformatJson.sh");
+        jsonReformatter = new File(new File(env.getProperty("path.scripts.dir")), "reformatJson.sh");
 
     }
 
@@ -260,7 +267,16 @@ public class UpdateService {
         DBConfig.getConfig().nodes.forEach(node -> restructureUpdates(node.file, node.name));
         DBConfig.getConfig().edges.stream().filter(e -> e.original).forEach(edge -> restructureUpdates(edge.file, edge.name));
 
-        executingUpdates(cacheDir);
+        executingUpdates();
+
+        if (this.metadata == null || this.lastUpdate != this.metadata.getLastUpdate()) {
+            buildMetadata();
+            this.lastCheck = this.lastUpdate;
+            updateMetadata(this.lastCheck, this.lastUpdate);
+        } else {
+            this.lastCheck = System.currentTimeMillis();
+            updateMetadata(this.lastCheck);
+        }
 
 
         overrideOldData(cacheDir);
@@ -273,6 +289,10 @@ public class UpdateService {
         EnumMap<UpdateOperation, HashMap<String, T>> updates = new EnumMap<>(UpdateOperation.class);
         if (!readNodeUpdates(c, updates, valueType))
             importNodeInsertions(c, updates, valueType);
+        if (updates.values().stream().map(HashMap::size).reduce((a,b)->a+b).orElse(0) > 0)
+            this.lastUpdate = System.currentTimeMillis();
+        else
+            this.lastCheck = System.currentTimeMillis();
         return updates;
     }
 
@@ -283,7 +303,7 @@ public class UpdateService {
         return updates;
     }
 
-    private void executingUpdates(File cacheDir) {
+    private void executingUpdates() {
         dbCommunication.scheduleLock();
 
         importRepoTrialNodes();
@@ -606,7 +626,7 @@ public class UpdateService {
     }
 
     private void restructureUpdates(File f, String name) {
-        FileUtils.formatJson(jsonReformatter,f);
+        FileUtils.formatJson(jsonReformatter, f);
         int count = 0;
         try {
             BufferedReader br = ReaderUtils.getBasicReader(f);
@@ -679,4 +699,49 @@ public class UpdateService {
         return new File(destDir, k + fileType);
     }
 
+    public void readMetadata() {
+        try {
+            metadata = objectMapper.readValue(new File(env.getProperty("path.db.cache"), "metadata.json"), Metadata.class);
+            this.lastUpdate = metadata.getLastUpdate();
+            this.lastCheck = metadata.getLastCheck();
+        } catch (IOException e) {
+            log.warn("No metadata-file found.");
+            buildMetadata();
+            saveMetadata();
+        }
+    }
+
+    public void buildMetadata() {
+        try {
+            String meta = ReaderUtils.getUrlContent(new URL(env.getProperty("url.api.db") + "static/metadata"));
+            this.metadata = new Metadata(objectMapper.readValue(meta, HashMap.class));
+            metadata.setLastCheck(this.lastCheck);
+            metadata.setLastUpdate(this.lastUpdate);
+        } catch (MalformedURLException | JsonProcessingException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void updateMetadata(long checked) {
+        this.metadata.setLastCheck(checked);
+        saveMetadata();
+    }
+
+    public void updateMetadata(long checked, long updated) {
+        this.metadata.setLastCheck(checked);
+        this.metadata.setLastUpdate(updated);
+        saveMetadata();
+    }
+
+    public void saveMetadata() {
+        try (BufferedWriter bw = WriterUtils.getBasicWriter(new File(env.getProperty("path.db.cache"), "metadata.json"))) {
+            bw.write(objectMapper.writeValueAsString(metadata));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public Metadata getMetadata() {
+        return metadata;
+    }
 }
