@@ -12,8 +12,8 @@ public class WebGraph {
     boolean directed =false;
     String id;
     String title;
-    LinkedList<WebNode> nodes = new LinkedList<>();
-    LinkedList<WebEdge> edges = new LinkedList<>();
+    HashSet<WebNode> nodes = new HashSet<>();
+    HashSet<WebEdge> edges = new HashSet<>();
     HashMap<String,Object> colorMap;
     HashMap<String,HashMap<String,Long>> weights = new HashMap<>();
 
@@ -35,11 +35,11 @@ public class WebGraph {
         nodes.add(node);
     }
 
-    public LinkedList<WebNode> getNodes() {
+    public HashSet<WebNode> getNodes() {
         return nodes;
     }
 
-    public void setNodes(LinkedList<WebNode> nodes) {
+    public void setNodes(HashSet<WebNode> nodes) {
         this.nodes = nodes;
     }
 
@@ -51,11 +51,11 @@ public class WebGraph {
         this.edges.addAll(edges);
     }
 
-    public LinkedList<WebEdge> getEdges() {
+    public HashSet<WebEdge> getEdges() {
         return edges;
     }
 
-    public void setEdges(LinkedList<WebEdge> edges) {
+    public void setEdges(HashSet<WebEdge> edges) {
         this.edges = edges;
     }
 

@@ -278,7 +278,7 @@ export default {
 
   data() {
     return {
-      graphLoad: {},
+      // graphLoad: {},
       graphKey: 0,
       neighborNodes: [],
       selectedNode: undefined,
@@ -393,6 +393,7 @@ export default {
         single: true,
         visualized: false,
         sizeWarning: false,
+        component: false,
         legend: {}
       }
       this.options.list = {showAll: true, selected: 0, total: 0, countMap: {nodes: {}, edges: {}}, entityGraph: {}}
@@ -406,6 +407,7 @@ export default {
       this.listDialog = true;
     },
     loadGraph: function (graph) {
+      console.log(graph)
       this.tabslist[1].icon = "fas fa-circle-notch fa-spin"
       this.tabslist[2].icon = "fas fa-circle-notch fa-spin"
       this.options.graph.visualized = false
@@ -475,7 +477,7 @@ export default {
     },
     applyEvent: function (bool) {
       if (this.selectedTabId === 0)
-        this.$refs.start.loadGraph(-1, bool)
+        this.$refs.start.executeGraphLoad( bool)
       if (this.selectedTabId === 1)
         this.$refs.graph.visualizeNow()
     },
@@ -584,6 +586,7 @@ export default {
     graphViewEvent: function (data) {
       this.$refs.graph.graphViewEvent(data)
     },
+
     loadMetadata() {
       this.$http.get("getMetadata").then(response => {
         if (response.data !== undefined)

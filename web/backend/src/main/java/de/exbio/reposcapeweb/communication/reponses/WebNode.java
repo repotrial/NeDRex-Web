@@ -1,6 +1,7 @@
 package de.exbio.reposcapeweb.communication.reponses;
 
 import java.awt.geom.Point2D;
+import java.util.Objects;
 
 public class WebNode {
     String id;
@@ -106,5 +107,18 @@ public class WebNode {
             setY(point.getY());
         }
         return this;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        WebNode webNode = (WebNode) o;
+        return id.equals(webNode.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }

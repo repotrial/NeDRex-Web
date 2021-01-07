@@ -64,7 +64,6 @@ export default {
   data() {
     return {
       show: true,
-      // toggled: {},
       tabModel:0,
     }
   },
@@ -76,23 +75,15 @@ export default {
   methods: {
 
     toggleNode: function (nodeName) {
-      // if (this.toggled.nodes === undefined)
-      //   this.toggled['nodes'] = {}
-      // if (this.toggled.nodes[nodeName] === undefined)
-      //   this.toggled.nodes[nodeName] = true;
       this.graphChangeVisEvent('nodes', nodeName)
 
     },
     graphChangeVisEvent(type, name) {
       this.options.toggled[type][name]=!this.options.toggled[type][name]
       this.$forceUpdate()
-      this.$emit("graphViewEvent", {event: "toggle", params: {type: type, name: name}})
+      this.$emit("graphViewEvent", {event: "toggle",params: {type: type, name: name, state: !this.options.toggled[type][name]}})
     },
     toggleEdge: function (edgeName) {
-      // if (this.toggled.edges === undefined)
-      //   this.toggled['edges'] = {}
-      // if (this.toggled.edges[edgeName] === undefined)
-      //   this.toggled.edges[edgeName] = true;
       this.graphChangeVisEvent('edges', edgeName)
     },
     getColoring: function (entity, name) {

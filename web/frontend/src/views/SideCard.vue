@@ -92,8 +92,18 @@
                 <v-list-item>
                   <v-switch
                     v-model="options.graph.single"
+                    :disabled="options.graph.physics"
                     @click="$emit('showUnconnectedEvent',options.graph.single)"
                     label="Show Unconnected"
+                  >
+                  </v-switch>
+                </v-list-item>
+                <v-list-item>
+                  <v-switch
+                    v-model="options.graph.component"
+                    :disabled="selectedNode===undefined && !options.graph.component"
+                    @click="$emit('graphViewEvent',{event:'isolate',selected:selectedNode.id, state:options.graph.component})"
+                    label="Isolate Component"
                   >
                   </v-switch>
                 </v-list-item>

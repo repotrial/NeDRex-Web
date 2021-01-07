@@ -26,14 +26,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import java.awt.*;
 import java.awt.geom.Point2D;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -54,6 +52,7 @@ public class WebGraphService {
     private HashMap<String, Object> colorMap;
     private HashSet<String> thumbnailGenerating = new HashSet<>();
     private HashSet<String> layoutGenerating = new HashSet<>();
+    private HashSet<String> graphmlGenerating = new HashSet<>();
 
 
     @Autowired
@@ -980,37 +979,44 @@ public class WebGraphService {
         File wd = getGraphWD(gid);
         File graphml = new File(wd, gid + ".graphml");
 
-        if (!wd.exists()) {
-            wd.mkdir();
-            CustomListRequest req = new CustomListRequest();
-            req.id = gid;
-            req.attributes = new HashMap<>();
-            Graph g = getCachedGraph(gid);
+        if (!graphml.exists()) {
+            if (!graphmlGenerating.contains(gid)) {
+                graphmlGenerating.add(gid);
+                wd.getParentFile().mkdirs();
+                CustomListRequest req = new CustomListRequest();
+                req.id = gid;
+                req.attributes = new HashMap<>();
+                Graph g = getCachedGraph(gid);
 
-            g.getNodes().keySet().forEach(type -> {
-                if (!req.attributes.containsKey("nodes"))
-                    req.attributes.put("nodes", new HashMap<>());
-                req.attributes.get("nodes").put(Graphs.getNode(type), nodeController.getAttributes(type));
-            });
+                g.getNodes().keySet().forEach(type -> {
+                    if (!req.attributes.containsKey("nodes"))
+                        req.attributes.put("nodes", new HashMap<>());
+                    req.attributes.get("nodes").put(Graphs.getNode(type), nodeController.getAttributes(type));
+                });
 
-            g.getEdges().keySet().forEach(type -> {
-                if (!req.attributes.containsKey("edges"))
-                    req.attributes.put("edges", new HashMap<>());
-                req.attributes.get("edges").put(g.getEdge(type), type < 0 ? getCustomEdgeAttributes(g, type) : edgeController.getAttributes(type));
-            });
+                g.getEdges().keySet().forEach(type -> {
+                    if (!req.attributes.containsKey("edges"))
+                        req.attributes.put("edges", new HashMap<>());
+                    req.attributes.get("edges").put(g.getEdge(type), type < 0 ? getCustomEdgeAttributes(g, type) : edgeController.getAttributes(type));
+                });
 
-            WebGraphList list = getList(gid, req);
-            writeGraphListToFS(list, wd, req);
-            toolService.createGraphmlFromFS(wd, graphml);
+                WebGraphList list = getList(gid, req);
+                writeGraphListToFS(list, wd, req);
+                toolService.createGraphmlFromFS(wd, graphml);
+
+                graphmlGenerating.remove(gid);
+            } else {
+                while (graphmlGenerating.contains(gid)) {
+                }
+            }
 
         }
         return graphml;
-
     }
 
     private void writeGraphListToFS(WebGraphList list, File wd, CustomListRequest req) {
         File nodes = new File(wd, "nodes");
-        nodes.mkdir();
+        nodes.mkdirs();
         list.getNodes().forEach((type, values) -> {
             try (BufferedWriter bw = WriterUtils.getBasicWriter(new File(nodes, type + ".tsv"))) {
                 String[] order = req.attributes.get("nodes").get(type);
@@ -1028,7 +1034,7 @@ public class WebGraphService {
             }
         });
         File edges = new File(wd, "edges");
-        edges.mkdir();
+        edges.mkdirs();
         list.getEdges().forEach((type, values) -> {
             try (BufferedWriter bw = WriterUtils.getBasicWriter(new File(edges, type + ".tsv"))) {
                 String[] order = req.attributes.get("edges").get(type);

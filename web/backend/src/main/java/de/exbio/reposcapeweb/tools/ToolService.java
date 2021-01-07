@@ -519,6 +519,9 @@ public class ToolService {
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
+        if(!graphml.exists()){
+           log.error(graphml.getAbsolutePath()+" should hav been created but wasn't!");
+        }
     }
 
     public void createThumbnail(File graphml, File thumb) {

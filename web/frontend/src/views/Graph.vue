@@ -128,6 +128,8 @@ export default {
     prepareUnconnectedList: function () {
       this.unconnected = this.nodeSet.getIds()
       this.edgeSet.get().forEach(item => {
+        if(item.from===item.to)
+          return
         let idx = this.unconnected.indexOf(item.from)
         if (idx > -1)
           this.unconnected.splice(idx, 1)
@@ -260,20 +262,6 @@ export default {
     },
 
 
-    // postData: function (post) {
-    //   this.visualized = false
-    //   this.loading = true;
-    //   this.directed = false;
-    //   this.loadingColor = this.colors.bar.backend;
-    //   this.$http.post("/getGraphInfo", post).then(response => {
-    //     return response.data
-    //   }).then(info => {
-    //     this.evalPostInfo(info)
-    //   }).catch(err => {
-    //     console.log(err)
-    //   })
-    // }
-    // ,
     getCurrentGraph: function () {
       if (this.nodeSet === undefined) {
         setTimeout(this.getCurrentGraph, 100)
@@ -310,7 +298,7 @@ export default {
         options: {
           groups: {
             drug: {
-              hidden: false,
+              // hidden: false,
               color: {
                 border: '#00CC96',
                 background: '#b4cdcc',
@@ -318,7 +306,7 @@ export default {
               }
             },
             disorder: {
-              hidden: false,
+              // hidden: false,
               color: {
                 border: '#EF553B',
                 background: '#ecd0cb',
@@ -326,7 +314,7 @@ export default {
               }
             },
             gene: {
-              hidden: false,
+              // hidden: false,
               color: {
                 border: '#636EFA',
 
@@ -335,7 +323,7 @@ export default {
               }
             },
             protein: {
-              hidden: false,
+              // hidden: false,
               color: {
                 border: '#19d3f3',
                 background: '#bcdfe5',
@@ -343,7 +331,7 @@ export default {
               }
             },
             pathway: {
-              hidden: false,
+              // hidden: false,
               color: {
                 border: '#fecb52',
 
@@ -397,32 +385,20 @@ export default {
       // })
     }
     ,
-    // togglePhysics: function () {
-    //   if (this.physicsOn) {
-    //     this.physicsOn = false;
-    //     this.hideEdges = false;
-    //   } else {
-    //     this.hideEdges = true;
-    //     this.physicsOn = true;
-    //   }
-    //   this.options.physics.enabled = this.physicsOn
-    //   // this.options.edges.hidden = this.hideEdges
-    //   this.updateOptions();
-    // },
     setPhysics: function (boolean) {
       this.physicsOn = boolean;
       this.options.physics.enabled = this.physicsOn
       if (!this.physicsOn) {
-       this.saveLayout()
+        this.saveLayout()
       }
       this.updateOptions()
     },
 
-    saveLayout: function(){
+    saveLayout: function () {
       let updates = Object.entries(this.$refs.network.getPositions()).map(e => {
         return {id: e[0], x: e[1].x, y: e[1].y}
       })
-      this.nodeSet.update(updates)
+      this.updateNodes(updates)
     },
 
     updateOptions: function () {
@@ -458,7 +434,7 @@ export default {
     toggleEdgeVisible: function (name) {
       let updates = Object.values(this.edgeSet.get({
           filter: function (item) {
-            return item.label === name
+            return item.title === name
           }
         }
       )).map(item => {
@@ -479,17 +455,51 @@ export default {
     },
 
     showUnconnected: function (state) {
-      let list = this.unconnected
-      let update = this.nodeSet.get({
+      this.toggleNodesVisible(this.unconnected, state)
+    },
+
+    showOnlyComponent: function (selectedId, state) {
+      this.toggleNodesVisible(this.nodeSet.get({
+        filter: function (item) {
+          return item.id !== selectedId
+        }
+      }).map(item => item.id), !state)
+
+      if (state) {
+        let isolated = [selectedId]
+        let neighbors = [selectedId]
+        let change = 1
+        while (change > 0) {
+          let newneighbors = []
+          neighbors.forEach(n => {
+            this.getNeighbors(n).filter(newN => isolated.indexOf(newN) === -1).forEach(newN => {
+              newneighbors.push(newN)
+              isolated.push(newN)
+            })
+          })
+          neighbors = newneighbors;
+          change = neighbors.length;
+        }
+        this.toggleNodesVisible(isolated, true);
+      }
+
+    },
+    toggleNodesVisible: function (list, state) {
+      let updates = this.nodeSet.get({
         filter: function (item) {
           return list.indexOf(item.id) > -1
         }
       }).map(item => {
         return {id: item.id, hidden: !state, physics: state}
       })
-      this.nodeSet.update(update)
-      this.$refs.network.setData(this.nodeSet, this.edgeSet)
+      this.saveLayout()
+      this.updateNodes(updates)
     },
+
+    updateNodes: function (updates) {
+      this.nodeSet.update(updates)
+    },
+
 
     hideAllGroups: function (boolean, update) {
       Object.keys(this.options.groups).forEach(n => {
@@ -500,10 +510,15 @@ export default {
         this.updateOptions()
     },
     hideGroupVisibility: function (name, boolean, update) {
-      this.options.groups[name].hidden = !this.options.groups[name].hidden;
-
+      let updates = this.nodeSet.get({
+        filter: function (item) {
+          return item.group === name
+        }
+      }).map(item => {
+        return {id: item.id, hidden: boolean}
+      })
       if (update)
-        this.updateOptions()
+        this.updateNodes(updates)
     },
     visualizeNow: function () {
       if (this.configuration.sizeWarning)
@@ -512,8 +527,8 @@ export default {
         this.dialogResolve(true)
       }
     },
-    toggleGroupVisibility: function (name, update) {
-      this.hideGroupVisibility(name, !this.options.groups[name].hidden, update)
+    toggleGroupVisibility: function (name, bool,update) {
+      this.hideGroupVisibility(name, bool, update)
 
     }
     ,
@@ -525,7 +540,7 @@ export default {
         this.highlight = false;
       }
       this.saveLayout()
-      this.updateNodes()
+      // this.updateNodes()
     }
     ,
     onRelease: function (params) {
@@ -550,6 +565,14 @@ export default {
       return {neighbors: nodes}
     }
     ,
+    getNeighbors: function (selected) {
+      let neighbors = []
+      this.getConnectedNodes(selected).forEach(n => {
+        if (n !== selected)
+          neighbors.push(n)
+      })
+      return neighbors
+    },
     identifyNeighbors: function (selected) {
       let neighbors = []
       this.getConnectedNodes(selected).forEach(n => {
@@ -558,21 +581,21 @@ export default {
       })
       return {primary: this.nodeSet.get(selected), neighbors: neighbors}
     }
-    ,
-    updateNodes: function () {
-      let updates = []
-
-      this.nodeSet.get().forEach(node=>{
-        if(this.nodes.hasOwnProperty(node.id))
-          updates.push(node)
-      })
-
-      // for (let nodeId in this.nodes) {
-      //   if (this.nodes.hasOwnProperty(nodeId))
-      //     updates.push(this.nodes[nodeId])
-      // }
-      this.nodeSet.update(updates)
-    }
+    // ,
+    // // updateNodes: function () {
+    //   let updates = []
+    //
+    //   this.nodeSet.get().forEach(node => {
+    //     if (this.nodes.hasOwnProperty(node.id))
+    //       updates.push(node)
+    //   })
+    //
+    //   // for (let nodeId in this.nodes) {
+    //   //   if (this.nodes.hasOwnProperty(nodeId))
+    //   //     updates.push(this.nodes[nodeId])
+    //   // }
+    //   this.nodeSet.update(updates)
+    // }
     ,
     getConnectedNodes: function (node) {
       return this.$refs.network.getConnectedNodes(node)
@@ -582,9 +605,12 @@ export default {
       if (data.event === "toggle") {
         let params = data.params;
         if (params.type === "nodes")
-          this.toggleGroupVisibility(params.name, true)
+          this.toggleGroupVisibility(params.name,params.state, true)
         else if (params.type === "edges")
           this.toggleEdgeVisible(params.name)
+      }
+      if (data.event === "isolate") {
+        this.showOnlyComponent(data.selected, data.state)
       }
     },
 
