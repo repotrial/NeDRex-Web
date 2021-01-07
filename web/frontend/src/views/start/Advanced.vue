@@ -1,4 +1,19 @@
 <template>
+  <v-container>
+  <v-card class="mx-auto">
+    <v-list>
+      <v-list-item>
+        <v-list-item-title class="title">
+          Customized Exploration
+        </v-list-item-title>
+      </v-list-item>
+      <v-list-item>
+        <v-list-item-subtitle>
+          Query a specified starting graph.
+        </v-list-item-subtitle>
+      </v-list-item>
+    </v-list>
+    <v-divider></v-divider>
   <v-container v-if="metagraph !== undefined">
     <v-row>
       <v-col cols="6">
@@ -68,6 +83,8 @@
       </v-col>
     </v-row>
   </v-container>
+  </v-card>
+  </v-container>
 </template>
 
 <script>
@@ -101,7 +118,7 @@ export default {
     this.edges = []
   },
   mounted() {
-    this.$refs.startgraph.hideAllGroups(true, true)
+    this.$refs.startgraph.showAllNodes(false)
     this.$refs.startgraph.hideAllEdges(true)
     this.$refs.startgraph.setPhysics(true)
     this.initLists(this.metagraph)
@@ -127,7 +144,7 @@ export default {
       if (!bool) {
         this.options.selectedElements.forEach(e => {
           if (e.type === "node") {
-            this.$refs.startgraph.toggleGroupVisibility(this.nodes[e.index].label.toLowerCase(), true)
+            this.$refs.startgraph.hideGroupVisibility(this.nodes[e.index].label.toLowerCase(), true)
           } else
             this.$refs.startgraph.toggleEdgeVisible(this.edges[e.index].label)
         })
@@ -164,7 +181,7 @@ export default {
     },
     toggleNode: function (nodeIndex) {
       let index = this.nodeModel.indexOf(nodeIndex)
-      this.$refs.startgraph.toggleGroupVisibility(this.nodes[nodeIndex].label.toLowerCase(), true)
+      this.$refs.startgraph.hideGroupVisibility(this.nodes[nodeIndex].label.toLowerCase(), index>-1,true)
       if (index >= 0) {
         let remove = -1;
         for (let idx in this.options.selectedElements) {

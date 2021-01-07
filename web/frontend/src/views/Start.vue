@@ -40,74 +40,26 @@
       </v-card>
     </v-container>
 
-    <v-container v-show="selectionTab===1">
-      <v-card class="mx-auto">
-        <v-list>
-          <v-list-item>
-            <v-list-item-title class="title">
-              Disease Modules
-            </v-list-item-title>
-          </v-list-item>
-          <v-list-item>
-            <v-list-item-subtitle>
-              Selection of seed Genes/Proteins (manual or BiCon) for algorithmic disease module identification
-            </v-list-item-subtitle>
-          </v-list-item>
-          <v-list-item>
-            <v-list-item-title class="title">
-              Drug Repurposing
-            </v-list-item-title>
-          </v-list-item>
-          <v-list-item>
-            <v-list-item-subtitle>
-              Starting e.g. with a disorder to derive Genes/Proteins for module identification and subsequent drug
-              ranking (e.g. trustrank)
-            </v-list-item-subtitle>
-          </v-list-item>
-        </v-list>
-      </v-card>
-    </v-container>
+    <Quick v-show="selectionTab===1">
+    </Quick>
 
 
-    <v-container v-show="selectionTab===2">
-      <v-card class="mx-auto">
-        <v-list>
-          <v-list-item>
-            <v-list-item-title class="title">
-              Customized Exploration
-            </v-list-item-title>
-          </v-list-item>
-          <v-list-item>
-            <v-list-item-subtitle>
-              Query a specified starting graph.
-            </v-list-item-subtitle>
-          </v-list-item>
-        </v-list>
-        <v-divider></v-divider>
-        <Advanced ref="advanced"
-          :metagraph="metagraph" :options="options" :colors="colors" :filters="filters"
-          @printNotificationEvent="printNotification"
-          @graphLoadEvent="loadGraph"
-        />
+    <Advanced ref="advanced" v-show="selectionTab===2"
+              :metagraph="metagraph" :options="options" :colors="colors" :filters="filters"
+              @printNotificationEvent="printNotification"
+              @graphLoadEvent="loadGraph"
+    />
 
-      </v-card>
-    </v-container>
   </div>
 </template>
 
 <script>
 import Utils from "../scripts/Utils"
 import Advanced from "./start/Advanced";
+import Quick from "./start/Quick"
 
 export default {
   name: "Start",
-  // graphButtons: [],
-  // nodes: [],
-  // edges: [],
-  // nodeModel: [],
-  // edgeModel: [],
-  // filterId: -1,
-  // startFilters: {},
   props: {
     options: Object,
     metagraph: Object,
@@ -118,162 +70,20 @@ export default {
   },
   data() {
     return {
-      // interactions:{ProteinInteractsWithProtein:false, GeneInteractsWithGene:false},
-      // graphButtons: this.graphButtons,
-      // nodes: this.nodes,
-      // edges: this.edges,
-      // nodeModel: this.nodeModel,
-      // edgeModel: this.edgeModel,
-      // filterId: this.filterId,
       selectionTab: 2,
     }
   },
   created() {
-    // this.nodeModel = []
-    // this.edgeModel = []
-    // this.nodes = []
-    // this.edges = []
   },
   mounted() {
-    // this.$refs.startgraph.hideAllGroups(true, true)
-    // this.$refs.startgraph.hideAllEdges(true)
-    // this.$refs.startgraph.setPhysics(true)
-    // this.initLists(this.metagraph)
   },
   methods: {
-    // initLists: function (selectionGraph) {
-    //   selectionGraph.nodes.forEach(n => {
-    //     this.nodes.push({index: this.nodes.length, id: parseInt(n.id), label: n.label})
-    //   })
-    //   selectionGraph.edges.forEach(e => {
-    //     let depends = [parseInt(e.from)]
-    //     if (e.from !== e.to)
-    //       depends.push(parseInt(e.to))
-    //     this.edges.push({index: this.edges.length, id: e.id, label: e.label, depends: depends})
-    //   })
-    // },
-    // setOptions: function (options) {
-    //   this.options = options;
-    // },
-    // loadGraph: function (id, bool) {
-    //   if (id === -1) {
-    //     if (!bool) {
-    //       this.options.selectedElements.forEach(e => {
-    //         if (e.type === "node") {
-    //           this.$refs.startgraph.toggleGroupVisibility(this.nodes[e.index].label.toLowerCase(), true)
-    //         } else
-    //           this.$refs.startgraph.toggleEdgeVisible(this.edges[e.index].label)
-    //       })
-    //       this.nodeModel = []
-    //       this.edgeModel = []
-    //       this.options.selectedElements.length = 0
-    //       this.filters.length = 0
-    //       this.$nextTick(() => {
-    //         this.$refs.nodeSelector.$forceUpdate()
-    //       })
-    //       return
-    //     }
-    //     this.graphLoad = {post: {nodes: {}, edges: {}}}
-    //     this.options.selectedElements.forEach(element => {
-    //       let filter = this.filters[element.name]
-    //       if (filter === undefined)
-    //         filter = []
-    //       if (element.type === "node") {
-    //         this.graphLoad.post.nodes[element.name.toLowerCase()] = {filters: filter}
-    //       } else {
-    //         this.graphLoad.post.edges[element.name] = {filters: filter}
-    //       }
-    //     })
-    //     this.graphLoad.post.connectedOnly = this.options.onlyConnected
-    //     this.graphLoad.post.interactions ={...this.interactions}
-    //   } else {
-    //     for (let index in this.graphButtons) {
-    //       if (this.graphButtons[index].id === id) {
-    //         if (this.graphButtons[index].active)
-    //           return;
-    //         this.graphButtons[index].active = true
-    //       } else
-    //         this.graphButtons[index].active = false
-    //     }
-    //   }
-    //   if (Object.keys(this.graphLoad.post.nodes).length === 0) {
-    //     this.$emit("printNotificationEvent", "Please select some nodes/edges first!", 1)
-    //     return
-    //   }
-    //   this.graphLoad.post["uid"] = this.$cookies.get("uid")
-    //   this.graphLoad["skipVis"] = this.options.skipVis;
-    //   this.$emit("graphLoadEvent", this.graphLoad)
-    // },
-    // toggleNode: function (nodeIndex) {
-    //   let index = this.nodeModel.indexOf(nodeIndex)
-    //   this.$refs.startgraph.toggleGroupVisibility(this.nodes[nodeIndex].label.toLowerCase(), true)
-    //   if (index >= 0) {
-    //     let remove = -1;
-    //     for (let idx in this.options.selectedElements) {
-    //       if (this.options.selectedElements[idx].type === "node" && this.options.selectedElements[idx].index === nodeIndex) {
-    //         remove = idx;
-    //         break;
-    //       }
-    //     }
-    //     this.options.selectedElements.splice(remove, 1)
-    //     this.nodeModel.splice(index, 1)
-    //     Object.values(this.edges).filter(item => (item.depends.indexOf(this.nodes[nodeIndex].id) > -1 && this.edgeModel.indexOf(item.index) > -1)).map(item => item.index).forEach(this.toggleEdge)
-    //
-    //   } else {
-    //     this.nodeModel.push(nodeIndex)
-    //     this.options.selectedElements.push({
-    //       index: nodeIndex,
-    //       type: "node",
-    //       name: this.nodes[nodeIndex].label,
-    //       filter: []
-    //     })
-    //   }
-    //   this.$nextTick(() => {
-    //     this.$refs.startgraph.focusNode()
-    //     this.$refs.nodeSelector.$forceUpdate()
-    //   })
-    // },
-    // toggleEdge: function (edgeIndex) {
-    //   let index = this.edgeModel.indexOf(edgeIndex)
-    //   console.log(this.edges[edgeIndex].label)
-    //   this.$refs.startgraph.toggleEdgeVisible(this.edges[edgeIndex].label)
-    //   if (index >= 0) {
-    //     let remove = -1;
-    //     let restDepending = []
-    //     for (let idx in this.options.selectedElements) {
-    //       if (this.options.selectedElements[idx].type === "edge") {
-    //         if (this.options.selectedElements[idx].index === edgeIndex)
-    //           remove = idx;
-    //         else
-    //           this.edges[this.options.selectedElements[idx].index].depends.forEach(d => restDepending.push(d))
-    //       }
-    //     }
-    //     this.options.selectedElements.splice(remove, 1)
-    //     this.edgeModel.splice(index, 1)
-    //   } else {
-    //     this.edgeModel.push(edgeIndex)
-    //     let depending = []
-    //     for (let idx in this.edges[edgeIndex].depends) {
-    //       depending.push(this.edges[edgeIndex].depends[idx])
-    //     }
-    //     Object.values(this.nodes).filter(item => depending.indexOf(item.id) >= 0 && this.nodeModel.indexOf(item.index) === -1).forEach(item => this.toggleNode(item.index))
-    //     this.options.selectedElements.push({
-    //       index: edgeIndex,
-    //       type: "edge",
-    //       name: this.edges[edgeIndex].label,
-    //       filter: []
-    //     })
-    //   }
-    //   this.$nextTick(() => {
-    //     this.$refs.startgraph.focusNode()
-    //   })
-    // },
     printNotification: function (message, style) {
       this.$emit("printNotificationEvent", message, style)
     },
 
-    executeGraphLoad: function(bool){
-      if(this.selectionTab===2)
+    executeGraphLoad: function (bool) {
+      if (this.selectionTab === 2)
         this.$refs.advanced.loadGraph(bool)
     },
 
@@ -292,6 +102,7 @@ export default {
   },
   components: {
     Advanced,
+    Quick
   },
 
 }

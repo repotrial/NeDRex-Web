@@ -65,8 +65,9 @@ public class WebEdge {
         return label;
     }
 
-    public void setLabel(String label) {
+    public WebEdge setLabel(String label) {
         this.label = label;
+        return this;
     }
 
     public boolean isDashes() {

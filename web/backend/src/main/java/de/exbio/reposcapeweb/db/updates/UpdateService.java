@@ -32,6 +32,8 @@ import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -274,7 +276,7 @@ public class UpdateService {
             this.lastCheck = this.lastUpdate;
             updateMetadata(this.lastCheck, this.lastUpdate);
         } else {
-            this.lastCheck = System.currentTimeMillis();
+            this.lastCheck =  LocalDateTime.now().toEpochSecond(ZoneOffset.ofTotalSeconds(0));
             updateMetadata(this.lastCheck);
         }
 
@@ -290,9 +292,9 @@ public class UpdateService {
         if (!readNodeUpdates(c, updates, valueType))
             importNodeInsertions(c, updates, valueType);
         if (updates.values().stream().map(HashMap::size).reduce((a,b)->a+b).orElse(0) > 0)
-            this.lastUpdate = System.currentTimeMillis();
+            this.lastUpdate = LocalDateTime.now().toEpochSecond(ZoneOffset.ofTotalSeconds(0));
         else
-            this.lastCheck = System.currentTimeMillis();
+            this.lastCheck =  LocalDateTime.now().toEpochSecond(ZoneOffset.ofTotalSeconds(0));
         return updates;
     }
 

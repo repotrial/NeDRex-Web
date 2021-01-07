@@ -279,7 +279,7 @@ export default {
   data() {
     return {
       // graphLoad: {},
-      graphKey: 0,
+      // graphKey: 0,
       neighborNodes: [],
       selectedNode: undefined,
       tabslist: {},

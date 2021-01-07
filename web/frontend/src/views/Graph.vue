@@ -10,8 +10,7 @@
              :layout="layout"
              :physics="physics"
              :events="['click','release','startStabilizing','stabilizationProgress','stabilizationIterationsDone']"
-             @click="onClick"
-             @release="onRelease">
+             @click="onClick">
     </network>
     <template>
       <v-dialog
@@ -355,7 +354,6 @@ export default {
             // scaling:{label:{enabled: true}},
             smooth: {enabled: false},
             color: '#454545',
-            // hidden: true,
             width: 0.3,
             physics: true,
             // length:300
@@ -410,17 +408,6 @@ export default {
       this.options = options;
     },
 
-    // setEdgeVisible: function (name, boolean) {
-    //   let updates = Object.values(this.edgeSet.get({
-    //       filter: function (item) {
-    //         return item.label === name
-    //       }
-    //     }
-    //   )).map(item => {
-    //     return {id: item.id, hidden: !boolean, physics: !boolean}
-    //   })
-    //   this.edgeSet.update(updates)
-    // },
     hideAllEdges: function (boolean) {
       let updates = Object.values(this.edgeSet.get()).map(item => {
         return {id: item.id, hidden: boolean, physics: boolean}
@@ -428,9 +415,6 @@ export default {
       if (updates)
         this.edgeSet.update(updates)
     },
-    // setEdgesHidden: function () {
-    //   this.updateOptions()
-    // },
     toggleEdgeVisible: function (name) {
       let updates = Object.values(this.edgeSet.get({
           filter: function (item) {
@@ -501,23 +485,17 @@ export default {
     },
 
 
-    hideAllGroups: function (boolean, update) {
-      Object.keys(this.options.groups).forEach(n => {
-          this.options.groups[n].hidden = boolean
-        }
-      )
-      if (update)
-        this.updateOptions()
+    showAllNodes: function (boolean) {
+      this.toggleNodesVisible(this.nodeSet.get().map(item => item.id), boolean)
     },
-    hideGroupVisibility: function (name, boolean, update) {
+    hideGroupVisibility: function (name, boolean) {
       let updates = this.nodeSet.get({
         filter: function (item) {
           return item.group === name
         }
       }).map(item => {
-        return {id: item.id, hidden: boolean}
+        return {id: item.id, hidden: boolean, physics:!boolean}
       })
-      if (update)
         this.updateNodes(updates)
     },
     visualizeNow: function () {
@@ -527,11 +505,6 @@ export default {
         this.dialogResolve(true)
       }
     },
-    toggleGroupVisibility: function (name, bool,update) {
-      this.hideGroupVisibility(name, bool, update)
-
-    }
-    ,
     onClick: function (params) {
       if (params.nodes.length > 0 || params.edges.length > 0) {
         this.$emit('selectionEvent', params)
@@ -540,13 +513,6 @@ export default {
         this.highlight = false;
       }
       this.saveLayout()
-      // this.updateNodes()
-    }
-    ,
-    onRelease: function (params) {
-      if (new Date().getTime() - this.lastClick < 500)
-        return;
-      this.$emit('releaseEvent', params)
     }
     ,
     focusNode: function (nodeId) {
@@ -581,21 +547,6 @@ export default {
       })
       return {primary: this.nodeSet.get(selected), neighbors: neighbors}
     }
-    // ,
-    // // updateNodes: function () {
-    //   let updates = []
-    //
-    //   this.nodeSet.get().forEach(node => {
-    //     if (this.nodes.hasOwnProperty(node.id))
-    //       updates.push(node)
-    //   })
-    //
-    //   // for (let nodeId in this.nodes) {
-    //   //   if (this.nodes.hasOwnProperty(nodeId))
-    //   //     updates.push(this.nodes[nodeId])
-    //   // }
-    //   this.nodeSet.update(updates)
-    // }
     ,
     getConnectedNodes: function (node) {
       return this.$refs.network.getConnectedNodes(node)
