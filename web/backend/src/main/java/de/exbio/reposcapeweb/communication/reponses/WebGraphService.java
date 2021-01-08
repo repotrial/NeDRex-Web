@@ -11,7 +11,10 @@ import de.exbio.reposcapeweb.communication.jobs.Job;
 import de.exbio.reposcapeweb.communication.requests.*;
 import de.exbio.reposcapeweb.configs.DBConfig;
 import de.exbio.reposcapeweb.db.DbCommunicationService;
+import de.exbio.reposcapeweb.db.entities.RepoTrialNode;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
+import de.exbio.reposcapeweb.db.entities.nodes.Gene;
+import de.exbio.reposcapeweb.db.entities.nodes.Protein;
 import de.exbio.reposcapeweb.db.history.GraphHistory;
 import de.exbio.reposcapeweb.db.history.HistoryController;
 import de.exbio.reposcapeweb.db.services.controller.EdgeController;
@@ -1123,5 +1126,28 @@ public class WebGraphService {
             e.printStackTrace();
         }
         return coords;
+    }
+
+    public LinkedList<Object> mapIdsToItemList(String type, LinkedList<String> file) {
+        LinkedList<Object> out = new LinkedList<>();
+
+        List<Integer> ids = new LinkedList<>();
+        file.stream().forEach(id -> {
+            try {
+                if (!id.contains("."))
+                    id = type.equals("gene")?"entrez.":"uniprot."+id;
+                ids.add(nodeController.getId(type, id));
+            }catch (NullPointerException ignore){
+            }
+        });
+        nodeController.findByIds(type, ids).forEach(o -> {
+            RepoTrialNode n;
+            if (type.equals("gene"))
+                n = (Gene) o;
+            else n = (Protein) o;
+
+            out.add(n.getAsMap(new HashSet<>(Arrays.asList("id", "displayName", "primaryDomainId"))));
+        });
+        return out;
     }
 }

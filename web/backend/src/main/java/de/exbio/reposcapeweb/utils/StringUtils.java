@@ -173,4 +173,10 @@ public class StringUtils {
         return listToString(map.entrySet().stream().map(e->e.getKey()+":"+e.getValue()).collect(Collectors.toList()));
     }
 
+    public static LinkedList<String> convertBase64(String data){
+        if (data.indexOf(',') > -1)
+            data = StringUtils.split(data, ',').get(1);
+        return StringUtils.split(new String(Base64.getDecoder().decode(data)), '\n');
+    }
+
 }

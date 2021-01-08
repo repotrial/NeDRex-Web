@@ -4,10 +4,9 @@
     <v-card elevation="3" style="padding-top: 15px; overflow-y: auto; max-height: 75vh">
       <v-card-title>Toolbox</v-card-title>
 
-      <v-card-title>
+      <v-card-title  v-show="gid!==undefined">
         <v-chip
           outlined
-          :disabled="gid===undefined"
           @click="requestGraphDownload"
         >
           <v-icon

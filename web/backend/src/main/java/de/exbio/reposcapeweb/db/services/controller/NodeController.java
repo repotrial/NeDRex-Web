@@ -110,6 +110,17 @@ public class NodeController {
         };
     }
 
+    public Iterable findByIds(String type, Collection<Integer> ids) {
+        return switch (type) {
+            case "disorder" ->  findDisorders(ids);
+            case "drug" -> findDrugs(ids);
+            case "gene" -> findGenes(ids);
+            case "pathway" -> findPathways(ids);
+            case "protein" -> findProteins(ids);
+            default -> null;
+        };
+    }
+
     public String[] getListAttributes(Integer typeId) {
         return switch (Graphs.getNode(typeId)) {
             case "disorder" -> disorderService.getListAttributes();

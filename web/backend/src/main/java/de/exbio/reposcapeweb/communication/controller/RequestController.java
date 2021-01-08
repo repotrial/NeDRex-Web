@@ -17,6 +17,7 @@ import de.exbio.reposcapeweb.db.services.nodes.DrugService;
 import de.exbio.reposcapeweb.db.updates.UpdateService;
 import de.exbio.reposcapeweb.tools.ToolService;
 import de.exbio.reposcapeweb.utils.Pair;
+import de.exbio.reposcapeweb.utils.StringUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -275,6 +276,14 @@ public class RequestController {
             e.printStackTrace();
         }
         return null;
+    }
+
+    @RequestMapping(value = "/mapFileListToItems", method = RequestMethod.POST)
+    @ResponseBody
+    public String getFileListToItems(@RequestBody HashMap<String,String> request){
+        return toJson(webGraphService.mapIdsToItemList(request.get("type"), StringUtils.convertBase64(request.get("file"))));
+
+
     }
 
 
