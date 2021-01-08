@@ -61,7 +61,7 @@
                 <v-list>
                   <v-list-item v-for="(seed,index) in seeds" :key="seed.id">
                     <v-list-item-icon ><v-icon v-if="highlighted.indexOf(seed.id)!==-1">fas fa-star</v-icon></v-list-item-icon>
-                    <v-list-item-subtitle>{{seed.id}}</v-list-item-subtitle>
+                    <v-list-item-title>{{seed.displayName}}</v-list-item-title>
                     <v-list-item-action>
                       <v-btn icon @click="seeds.splice(index,1)">
                         <v-icon>far fa-minus-square</v-icon>
