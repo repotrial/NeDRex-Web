@@ -29,7 +29,7 @@
 
     <v-container align-self="start">
       <v-row>
-        <v-col cols="9">
+        <v-col :cols="sideHidden ? 12:9">
 
           <v-main app style="padding-top: 0">
 
@@ -37,6 +37,7 @@
               <Start v-if="metagraph !== undefined" ref="start"
                      v-on:graphLoadEvent="loadGraph"
                      v-on:printNotificationEvent="printNotification"
+                     @showSideEvent="setSideVisible"
                      :colors="colors" :metagraph="metagraph" :options="options.start" :filters="startFilters"></Start>
             </v-container>
             <v-container v-show="selectedTabId===1" fluid>
@@ -140,7 +141,7 @@
             </v-dialog>
           </v-main>
         </v-col>
-        <v-col cols="3">
+        <v-col cols="3" v-show="!sideHidden">
           <SideCard ref="side"
                     v-on:printNotificationEvent="printNotification"
                     v-on:nodeSelectionEvent="setSelectedNode"
@@ -296,7 +297,8 @@ export default {
       cookiesPopup: false,
       startFilters: {},
       showVersionInfo: false,
-      metadata: {}
+      metadata: {},
+      sideHidden: true,
     }
   },
   created() {
@@ -313,6 +315,7 @@ export default {
     ]
     this.loadMetadata()
     this.initGraphs()
+    this.sideHidden=false
   },
   watch: {
     '$route'(to, from) {
@@ -320,7 +323,6 @@ export default {
       this.applyUrlTab(true)
       if (new_gid !== this.gid) {
         this.gid = new_gid
-        // this.loadGraph({post: {id: new_gid}, tab: 'list'})
         this.tabslist[1].icon = "fas fa-project-diagram"
         this.tabslist[2].icon = "fas fa-list-ul"
         this.$refs.list.setLoading(true)
@@ -329,6 +331,15 @@ export default {
         this.$refs.history.reload()
         this.$refs.side.reload()
       }
+    },
+
+    selectedTabId: function(val){
+      if(val>0 && this.gid !==undefined)
+        this.sideHidden=false
+      console.log(val)
+      if(val===0 && this.$refs.start.getStartType()<2)
+        this.sideHidden=true
+
     }
   },
   methods: {
@@ -377,6 +388,9 @@ export default {
       }).catch(err => {
         console.log(err)
       })
+    },
+    setSideVisible: function(bool){
+      this.sideHidden=!bool
     },
     visualisationEvent: function () {
       this.reloadSide()

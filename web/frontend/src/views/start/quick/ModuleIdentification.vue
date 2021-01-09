@@ -145,9 +145,17 @@
       <v-stepper-content step="2">
         <v-card
           class="mb-12"
-          color="grey lighten-1"
-          height="500px"
-        ></v-card>
+          height="700px"
+        >
+          <v-card-subtitle class="title">2. Algorithm Selection</v-card-subtitle>
+          <v-card-subtitle style="margin-top: -25px">Select and adjust the algorithm you want to use on your seeds to identify the disease module.
+          </v-card-subtitle>
+          <v-container style="height: 80%">
+            <v-row style="height: 100%">
+            </v-row>
+          </v-container>
+
+        </v-card>
 
         <v-btn text @click="makeStep(2,'back')">
           Back
@@ -168,8 +176,7 @@
       <v-stepper-content step="3">
         <v-card
           class="mb-12"
-          color="grey lighten-1"
-          height="500px"
+          height="700px"
         ></v-card>
         <v-btn
           color="primary"
@@ -243,7 +250,6 @@ export default {
     },
     suggestionModel: function (val) {
       if (val !== undefined && val != null) {
-
         this.$http.post("getConnectedNodes", {
           sourceType: this.suggestionType,
           targetType: ["gene", "protein"][this.seedTypeId],
@@ -253,7 +259,7 @@ export default {
           if (response.data !== undefined)
             return response.data
         }).then(data => {
-          this.addToSelection(data)
+          this.addToSelection(data,val.text+ "["+val.type+"]")
         }).then(() => {
           this.suggestionModel = undefined
         }).catch(console.log)
@@ -264,12 +270,17 @@ export default {
 
   created() {
     this.init()
+
+    //TODO dev
+    this.seedTypeId=0
+    this.seeds=[{"primaryDomainId":"entrez.3757","displayName":"KCNH2","id":19888},{"primaryDomainId":"entrez.5005","displayName":"ORM2","id":54656},{"primaryDomainId":"entrez.4988","displayName":"OPRM1","id":13457},{"primaryDomainId":"entrez.4985","displayName":"OPRD1","id":13458},{"primaryDomainId":"entrez.4986","displayName":"OPRK1","id":13459},{"primaryDomainId":"entrez.23643","displayName":"LY96","id":1413},{"primaryDomainId":"entrez.3359","displayName":"HTR3A","id":29783},{"primaryDomainId":"entrez.57053","displayName":"CHRNA10","id":1177},{"primaryDomainId":"entrez.116443","displayName":"GRIN3A","id":50124}]
+
+
   },
 
   methods: {
 
     init: function () {
-      // this.sources = undefined;
       this.method = undefined;
       this.sourceType = undefined
       this.step = 1
@@ -316,7 +327,7 @@ export default {
           this.highlighted.push(e.id)
         }
       })
-      this.$emit("printNotificationEvent", "Added " + list.length + " (" + count + " new) seeds!", 1)
+      this.$emit("printNotificationEvent", "Added " + list.length + "from "+nameFrom+" (" + count + " new) seeds!", 1)
     },
 
     onFileSelected: function (file) {
@@ -331,7 +342,7 @@ export default {
           if (response.data)
             return response.data
         }).then(data => {
-          this.addToSelection(data)
+          this.addToSelection(data,file.name)
         }).then(() => {
           this.fileInputModel = undefined
         }).catch(console.log)

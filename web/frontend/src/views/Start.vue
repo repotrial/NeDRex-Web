@@ -73,7 +73,13 @@ export default {
       selectionTab: 1,
     }
   },
+  watch: {
+    selectionTab: function (val) {
+      this.$emit("showSideEvent", val === 2)
+    }
+  },
   created() {
+    this.$emit("showSideEvent", this.selectionTab === 2)
   },
   mounted() {
   },
@@ -99,6 +105,9 @@ export default {
     getColoring: function (entity, name) {
       return Utils.getColoring(this.metagraph, entity, name)
     },
+    getStartType: function () {
+      return this.selectionTab;
+    }
   },
   components: {
     Advanced,
