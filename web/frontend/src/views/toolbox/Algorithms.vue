@@ -376,7 +376,7 @@
                         left> far fa-question-circle
                       </v-icon>
                     </template>
-                    <span>Specify hub penality between 0.0 and 1.0. If none is specified, there will be no hub penalty.</span>
+                    <span>Specify hub penalty between 0.0 and 1.0. If none is specified, there will be no hub penalty.</span>
                   </v-tooltip>
                 </template>
               </v-switch>
