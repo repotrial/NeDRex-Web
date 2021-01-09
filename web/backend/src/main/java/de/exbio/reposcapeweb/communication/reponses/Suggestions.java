@@ -28,12 +28,26 @@ public class Suggestions {
         );
     }
 
+    public void setDistinct(EnumMap<FilterType, TreeMap<FilterKey, List<FilterEntry>>> distinctMap) {
+        distinctMap.forEach((type, filters) ->
+                filters.forEach((key, entries) ->
+                        suggestions.add(new Suggestion(type.name(), key.toString(), entries.stream().map(FilterEntry::getNodeId).collect(Collectors.toSet())))
+                )
+        );
+    }
+
     public void setUnique(EnumMap<FilterType, TreeMap<FilterKey, FilterEntry>> uniqueMap, HashSet<Integer> idsList) {
         uniqueMap.forEach((type, filters) ->
                 filters.forEach((key, entry) -> {
                     if (idsList.contains(entry.getNodeId()))
                         suggestions.add(new Suggestion(type.name(), key.toString(), entry.getNodeId()));
                 })
+        );
+    }
+
+    public void setUnique(EnumMap<FilterType, TreeMap<FilterKey, FilterEntry>> uniqueMap) {
+        uniqueMap.forEach((type, filters) ->
+                filters.forEach((key, entry) -> suggestions.add(new Suggestion(type.name(), key.toString(), entry.getNodeId())))
         );
     }
 

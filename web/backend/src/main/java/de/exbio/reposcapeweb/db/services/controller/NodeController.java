@@ -2,6 +2,7 @@ package de.exbio.reposcapeweb.db.services.controller;
 
 import de.exbio.reposcapeweb.communication.cache.Graph;
 import de.exbio.reposcapeweb.communication.cache.Graphs;
+import de.exbio.reposcapeweb.db.entities.RepoTrialEntity;
 import de.exbio.reposcapeweb.db.entities.edges.ProteinAssociatedWithDisorder;
 import de.exbio.reposcapeweb.db.entities.nodes.*;
 import de.exbio.reposcapeweb.db.services.nodes.*;
@@ -112,7 +113,7 @@ public class NodeController {
 
     public Iterable findByIds(String type, Collection<Integer> ids) {
         return switch (type) {
-            case "disorder" ->  findDisorders(ids);
+            case "disorder" -> findDisorders(ids);
             case "drug" -> findDrugs(ids);
             case "gene" -> findGenes(ids);
             case "pathway" -> findPathways(ids);
@@ -279,5 +280,16 @@ public class NodeController {
         Gene.setUpNameMaps();
         Pathway.setUpNameMaps();
         Protein.setUpNameMaps();
+    }
+
+    public RepoTrialEntity getNode(String type, Integer n) {
+        return switch (type) {
+            case "disorder" -> disorderService.findById(n).orElse(null);
+            case "drug" -> drugService.findById(n).orElse(null);
+            case "gene" -> geneService.findById(n).orElse(null);
+            case "pathway" -> pathwayService.findById(n).orElse(null);
+            case "protein" -> proteinService.findById(n).orElse(null);
+            default -> null;
+        };
     }
 }

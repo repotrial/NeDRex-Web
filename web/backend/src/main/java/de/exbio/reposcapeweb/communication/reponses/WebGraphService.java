@@ -405,19 +405,25 @@ public class WebGraphService {
     }
 
     public Suggestions getSuggestions(SuggestionRequest request) {
-        Graph graph = getCachedGraph(request.gid);
-        Suggestions suggestions = new Suggestions(request.gid, request.query);
-
-        if (request.type.equals("nodes")) {
-            NodeFilter nf = graph.getNodeFilter(request.name).contains(request.query);
-            HashSet<Integer> ids = new HashSet<>(graph.getNodes().get(Graphs.getNode(request.name)).keySet());
-            suggestions.setDistinct(nf.getDistinctMap(), ids);
-            suggestions.setUnique(nf.getUniqueMap(), ids);
+        NodeFilter nf;
+        Suggestions suggestions;
+        if (request.gid == null) {
+            suggestions = new Suggestions(null, request.query);
+            nf = nodeController.getFilter(request.name).contains(request.query);
+            suggestions.setDistinct(nf.getDistinctMap());
+            suggestions.setUnique(nf.getUniqueMap());
         } else {
 
+            Graph graph = getCachedGraph(request.gid);
+            suggestions = new Suggestions(request.gid, request.query);
+
+            if (request.type.equals("nodes")) {
+                nf = graph.getNodeFilter(request.name).contains(request.query);
+                HashSet<Integer> ids = new HashSet<>(graph.getNodes().get(Graphs.getNode(request.name)).keySet());
+                suggestions.setDistinct(nf.getDistinctMap(), ids);
+                suggestions.setUnique(nf.getUniqueMap(), ids);
+            }
         }
-
-
         return suggestions;
     }
 
@@ -1135,9 +1141,9 @@ public class WebGraphService {
         file.stream().forEach(id -> {
             try {
                 if (!id.contains("."))
-                    id = type.equals("gene")?"entrez.":"uniprot."+id;
+                    id = type.equals("gene") ? "entrez." : "uniprot." + id;
                 ids.add(nodeController.getId(type, id));
-            }catch (NullPointerException ignore){
+            } catch (NullPointerException ignore) {
             }
         });
         nodeController.findByIds(type, ids).forEach(o -> {
@@ -1149,5 +1155,26 @@ public class WebGraphService {
             out.add(n.getAsMap(new HashSet<>(Arrays.asList("id", "displayName", "primaryDomainId"))));
         });
         return out;
+    }
+
+    public LinkedList<Object> getConnectedNodes(String sourceType, String targetType, List<Integer> sourceIds) {
+        LinkedList<Integer> edgeIds = Graphs.getEdgesfromNodes(Graphs.getNode(sourceType), Graphs.getNode(targetType));
+        LinkedList<Object> out = new LinkedList<>();
+        HashSet<Integer> addedNodes = new HashSet<>();
+        int edgeId = edgeIds.getFirst();
+        sourceIds.forEach(sourceId -> {
+            try {
+                edgeController.getEdges(edgeId, Graphs.getNode(sourceType), sourceId).forEach(n -> {
+                    try {
+                        if (addedNodes.add(n))
+                            out.add(nodeController.getNode(targetType, n).getAsMap(new HashSet<>(Arrays.asList("id", "displayName", "primaryDomainId"))));
+                    } catch (NullPointerException ignore) {
+                    }
+                });
+            } catch (NullPointerException ignore) {
+            }
+        });
+        return out;
+
     }
 }

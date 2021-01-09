@@ -40,7 +40,7 @@
       </v-card>
     </v-container>
 
-    <Quick v-show="selectionTab===1">
+    <Quick v-show="selectionTab===1" :metagraph="metagraph" @printNotificationEvent="printNotification">
     </Quick>
 
 
@@ -70,7 +70,7 @@ export default {
   },
   data() {
     return {
-      selectionTab: 2,
+      selectionTab: 1,
     }
   },
   created() {

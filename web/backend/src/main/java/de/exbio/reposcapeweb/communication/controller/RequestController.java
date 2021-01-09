@@ -34,7 +34,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Controller for the incoming requests on the RepoScape-WEB application.
@@ -69,7 +70,7 @@ public class RequestController {
         this.jobController = jobController;
         this.socketTemplate = simpMessagingTemplate;
         this.dbCommunicationService = dbCommunicationService;
-        this.updateService=updateService;
+        this.updateService = updateService;
     }
 
 
@@ -133,13 +134,35 @@ public class RequestController {
     @RequestMapping(value = "/getSuggestions", method = RequestMethod.POST)
     @ResponseBody
     public String getSuggestions(@RequestBody SuggestionRequest request) {
-        log.info("got request for " + request.gid + " getting suggestions for query '" + request.query + "' in " + request.name + " (" + request.type + ")");
         try {
             return objectMapper.writeValueAsString(webGraphService.getSuggestions(request));
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
         return null;
+    }
+
+    @RequestMapping(value = "/getConnectedNodes", method = RequestMethod.POST)
+    @ResponseBody
+    public String getConnectedNodes(@RequestBody HashMap<String, Object> request) {
+        if ((boolean) request.get("noloop")) {
+            String type = request.get("sourceType").toString();
+            HashSet<Integer> addedIds = new HashSet<>();
+            LinkedList<Object> nodes = new LinkedList<>();
+            ((List<Integer>) request.get("sourceIds")).forEach(n -> {
+                if (addedIds.add(n))
+                    nodes.add(nodeController.getNode(type, n).getAsMap(new HashSet<>(Arrays.asList("id", "displayName", "primaryDomainId"))));
+            });
+            return toJson(nodes);
+        }
+        return toJson(webGraphService.getConnectedNodes(request.get("sourceType").toString(), request.get("targetType").toString(), (List<Integer>) request.get("sourceIds")));
+    }
+
+    @RequestMapping(value = "/mapToDomainIds", method = RequestMethod.POST)
+    @ResponseBody
+    public String mapToDomainIds(@RequestBody HashMap<String,Object> request){
+        int type = Graphs.getNode(request.get("type").toString());
+       return toJson(((List<Integer>) request.get("ids")).stream().map(id->nodeController.getDomainId(type,id)).collect(Collectors.toList()));
     }
 
     @RequestMapping(value = "/getConnectedSelection", method = RequestMethod.POST)
@@ -280,16 +303,16 @@ public class RequestController {
 
     @RequestMapping(value = "/mapFileListToItems", method = RequestMethod.POST)
     @ResponseBody
-    public String getFileListToItems(@RequestBody HashMap<String,String> request){
+    public String getFileListToItems(@RequestBody HashMap<String, String> request) {
         return toJson(webGraphService.mapIdsToItemList(request.get("type"), StringUtils.convertBase64(request.get("file"))));
 
 
     }
 
 
-    @RequestMapping(value="/removeGraph", method = RequestMethod.GET)
+    @RequestMapping(value = "/removeGraph", method = RequestMethod.GET)
     @ResponseBody
-    public void removeGraph(@RequestParam("gid") String gid){
+    public void removeGraph(@RequestParam("gid") String gid) {
         webGraphService.remove(gid);
 
     }
@@ -319,22 +342,22 @@ public class RequestController {
         return toJson(info);
     }
 
-    @RequestMapping(value="/getGraphHistory", method = RequestMethod.GET)
+    @RequestMapping(value = "/getGraphHistory", method = RequestMethod.GET)
     @ResponseBody
-    public String getGraphHistory(@RequestParam("gid") String gid, @RequestParam("uid") String uid){
-        log.info("GraphHistory detail request: "+gid);
+    public String getGraphHistory(@RequestParam("gid") String gid, @RequestParam("uid") String uid) {
+        log.info("GraphHistory detail request: " + gid);
         File thumbnail = webGraphService.getThumbnail(gid);
-        webGraphService.createThumbnail(gid,thumbnail);
-        return toJson(historyController.getDetailedHistory(uid,webGraphService.getCachedGraph(gid),webGraphService.getConnectionGraph(gid),jobController.getJobGraphStatesAndTypes(uid),thumbnail));
+        webGraphService.createThumbnail(gid, thumbnail);
+        return toJson(historyController.getDetailedHistory(uid, webGraphService.getCachedGraph(gid), webGraphService.getConnectionGraph(gid), jobController.getJobGraphStatesAndTypes(uid), thumbnail));
     }
 
-    @RequestMapping(value="/getThumbnailPath", method=RequestMethod.GET)
+    @RequestMapping(value = "/getThumbnailPath", method = RequestMethod.GET)
     @ResponseBody
     public ResponseEntity<byte[]> isThumbnailReady(@RequestParam("gid") String gid) throws IOException {
         File thumb = webGraphService.getThumbnail(gid);
         HttpHeaders headers = new HttpHeaders();
-        if(!thumb.exists())
-            return new ResponseEntity<>(headers,HttpStatus.NOT_FOUND);
+        if (!thumb.exists())
+            return new ResponseEntity<>(headers, HttpStatus.NOT_FOUND);
 
         InputStream in = new FileSystemResource(thumb.getAbsolutePath()).getInputStream();
         byte[] media = IOUtils.toByteArray(in);
@@ -343,10 +366,10 @@ public class RequestController {
         return new ResponseEntity<>(media, headers, HttpStatus.OK);
     }
 
-    @RequestMapping(value="/toggleStarred", method = RequestMethod.GET)
+    @RequestMapping(value = "/toggleStarred", method = RequestMethod.GET)
     @ResponseBody
-    public void toggleStarred(@RequestParam("gid") String gid, @RequestParam("uid") String uid){
-        historyController.toggleStarring(gid,uid);
+    public void toggleStarred(@RequestParam("gid") String gid, @RequestParam("uid") String uid) {
+        historyController.toggleStarring(gid, uid);
     }
 
     @RequestMapping(value = "/finishedJob", method = RequestMethod.GET)
@@ -390,25 +413,24 @@ public class RequestController {
         return !dbCommunicationService.isDbLocked() & !dbCommunicationService.isImportInProgress() & !dbCommunicationService.isUpdateInProgress();
     }
 
-    @RequestMapping(value="/setGraphName", method= RequestMethod.POST)
+    @RequestMapping(value = "/setGraphName", method = RequestMethod.POST)
     @ResponseBody
-    public void setGraphName(@RequestBody HashMap<String,String> data){
-        historyController.saveName(data.get("gid"),data.get("name"));
+    public void setGraphName(@RequestBody HashMap<String, String> data) {
+        historyController.saveName(data.get("gid"), data.get("name"));
     }
 
-    @RequestMapping(value="/saveGraphDescription", method= RequestMethod.POST)
+    @RequestMapping(value = "/saveGraphDescription", method = RequestMethod.POST)
     @ResponseBody
-    public void saveGraphDescription(@RequestBody HashMap<String,String> data){
-        historyController.saveDescription(data.get("gid"),data.get("desc"));
+    public void saveGraphDescription(@RequestBody HashMap<String, String> data) {
+        historyController.saveDescription(data.get("gid"), data.get("desc"));
     }
 
 
-    @RequestMapping(value="/getMetadata", method = RequestMethod.GET)
+    @RequestMapping(value = "/getMetadata", method = RequestMethod.GET)
     @ResponseBody
-    public String getMetadata(){
+    public String getMetadata() {
         return toJson(updateService.getMetadata());
     }
-
 
 
 //    @RequestMapping(value="/testSocket", method=RequestMethod.GET)

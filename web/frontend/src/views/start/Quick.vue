@@ -12,7 +12,7 @@
               </v-list-item>
               <v-list-item>
                 <v-list-item-content>
-                  Selection of seed Genes/Proteins (manual or BiCon) for algorithmic disease module identification
+                  Identify disease modules by selecting seed genes or protein by hand, suggestions using information about e.g. association to disorders or by uploading a list. Tune the parameters of the algorithms (Quick) or just use the default for even less necessary input work (Blitz).
                 </v-list-item-content>
               </v-list-item>
               <v-list-item>
@@ -77,7 +77,7 @@
           </v-col>
         </v-row>
       </v-container>
-      <ModuleIdentification v-if="modus===1" :blitz="blitz" @resetEvent="modus=0"></ModuleIdentification>
+      <ModuleIdentification v-if="modus===1" :blitz="blitz" @resetEvent="modus=0" :metagraph="metagraph" @printNotificationEvent="printNotification"></ModuleIdentification>
       <DrugRepurposing v-if="modus===2" :blitz="blitz"></DrugRepurposing>
     </v-card>
   </v-container>
@@ -89,7 +89,9 @@ import DrugRepurposing from "./quick/DrugRepurposing";
 
 export default {
   name: "Quick",
-
+  props:{
+    metagraph: Object,
+  },
   data() {
     return {
       modus: 0,
@@ -107,7 +109,12 @@ export default {
     start: function (modus, blitz) {
       this.modus = modus;
       this.blitz = blitz;
-    }
+    },
+
+
+    printNotification : function (message, type){
+      this.$emit("printNotificationEvent", message,type)
+    },
   },
 
 

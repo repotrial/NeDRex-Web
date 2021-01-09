@@ -23,17 +23,20 @@
       <v-stepper-content step="1">
         <v-card
           class="mb-12"
-          height="500px"
+          height="700px"
         >
 
           <v-card-subtitle class="title">1. Seed Configuration</v-card-subtitle>
+          <v-card-subtitle style="margin-top: -25px">Add seeds to your list or leave it empty if you plan to select
+            BiCon as your Algorithm.
+          </v-card-subtitle>
           <v-container style="height: 80%">
             <v-row style="height: 100%">
               <v-col cols="6">
                 <v-container>
                   <v-card-title class="subtitle-1">Select the seed type</v-card-title>
                   <v-card-text>
-                    <v-radio-group row v-model="seedTypeId">
+                    <v-radio-group row v-model="seedTypeId" :disabled="seeds!==undefined && seeds.length>0">
                       <v-radio label="Gene">
                       </v-radio>
                       <v-radio label="Protein">
@@ -41,15 +44,60 @@
                     </v-radio-group>
                   </v-card-text>
                 </v-container>
-                <v-container v-show="seedTypeId!==undefined">
+                <v-container v-if="seedTypeId!==undefined">
                   <v-card-title class="subtitle-1">Add seeds</v-card-title>
-
-                  <v-text-field label="by suggestions"></v-text-field>
+                  <v-row>
+                    <v-col cols="3">
+                      <v-select :items="getSuggestionSelection()" v-model="suggestionType"
+                                placeholder="connected to"></v-select>
+                    </v-col>
+                    <v-col>
+                      <v-autocomplete
+                        clearable
+                        :search-input.sync="nodeSuggestions"
+                        :disabled="suggestionType===undefined || suggestionType<0"
+                        :loading="suggestions.loading"
+                        :items="suggestions.data"
+                        v-model="suggestionModel"
+                        label="by suggestions"
+                        class="mx-4"
+                        return-object
+                      >
+                        <template v-slot:item="{ item }">
+                          <v-list-item-avatar
+                          >
+                            <v-icon v-if="item.type==='DOMAIN_ID'">fas fa-fingerprint</v-icon>
+                            <v-icon v-if="item.type==='DISPLAY_NAME' || item.type==='SYMBOLS'">fas fa-tv</v-icon>
+                            <v-icon v-if="item.type==='ICD10'">fas fa-disease</v-icon>
+                            <v-icon v-if="item.type==='SYNONYM'">fas fa-sync</v-icon>
+                            <v-icon v-if="item.type==='IUPAC'">mdi-molecule</v-icon>
+                            <v-icon v-if="item.type==='ORIGIN'">fas fa-dna</v-icon>
+                            <v-icon v-if="item.type==='DESCRIPTION' || item.type==='COMMENTS'">fas fa-info</v-icon>
+                            <v-icon v-if="item.type==='INDICATION'">fas fa-pills</v-icon>
+                            <v-icon v-if="item.type==='TYPE' || item.type==='GROUP' || item.type==='CATEGORY'">fas
+                              fa-layer-group
+                            </v-icon>
+                          </v-list-item-avatar>
+                          <v-list-item-content>
+                            <v-list-item-title v-text="item.text"></v-list-item-title>
+                            <v-list-item-subtitle
+                              v-text="item.type"></v-list-item-subtitle>
+                          </v-list-item-content>
+                          <v-list-item-action>
+                            <v-chip>
+                              {{ item.ids.length }}
+                            </v-chip>
+                          </v-list-item-action>
+                        </template>
+                      </v-autocomplete>
+                    </v-col>
+                  </v-row>
                   <v-card-subtitle>or</v-card-subtitle>
                   <v-file-input :label="'by '+['entrez','uniprot'][seedTypeId]+' ids'"
                                 v-on:change="onFileSelected"
                                 show-size
                                 prepend-icon="far fa-list-alt"
+                                v-model="fileInputModel"
                                 dense
                   ></v-file-input>
                 </v-container>
@@ -57,20 +105,25 @@
 
               <v-divider vertical></v-divider>
               <v-col cols="5">
-                <v-card-title class="subtitle-1">Selected Seeds</v-card-title>
-                <v-list>
+                <v-card-title class="subtitle-1">Selected Seeds ({{ seeds.length }})
+                </v-card-title>
+                <v-list max-height="45vh" height="45vh" class="overflow-y-auto">
                   <v-list-item v-for="(seed,index) in seeds" :key="seed.id">
-                    <v-list-item-icon ><v-icon v-if="highlighted.indexOf(seed.id)!==-1">fas fa-star</v-icon></v-list-item-icon>
-                    <v-list-item-title>{{seed.displayName}}</v-list-item-title>
+                    <v-list-item-icon>
+                      <v-icon v-if="highlighted.indexOf(seed.id)!==-1">fas fa-star</v-icon>
+                    </v-list-item-icon>
+                    <v-list-item-title>{{ seed.displayName }}</v-list-item-title>
                     <v-list-item-action>
-                      <v-btn icon @click="seeds.splice(index,1)">
+                      <v-btn icon @click="seeds.splice(index,1)" color="red">
                         <v-icon>far fa-minus-square</v-icon>
                       </v-btn>
-
                     </v-list-item-action>
                   </v-list-item>
-
                 </v-list>
+                <v-chip outlined v-show="seeds.length>0" style="margin-top:15px" @click="downloadList">
+                  <v-icon left>fas fa-download</v-icon>
+                  Save
+                </v-chip>
               </v-col>
             </v-row>
           </v-container>
@@ -143,6 +196,7 @@ export default {
 
   props: {
     blitz: Boolean,
+    metagraph: Object,
   },
 
 
@@ -153,8 +207,59 @@ export default {
       method: undefined,
       sourceType: undefined,
       step: 1,
-      highlighted: []
+      highlighted: [],
+      suggestionType: undefined,
+      suggestions: {loading: false, data: []},
+      nodeSuggestions: null,
+      suggestionModel: null,
+      fileInputModel: undefined,
     }
+  },
+  watch: {
+
+    nodeSuggestions: function (val) {
+      let name = this.suggestionType
+      if (this.suggestions.chosen !== undefined)
+        return
+      this.suggestions.loading = true;
+      this.suggestions.data = []
+      this.$http.post("getSuggestions", {
+        name: name,
+        query: val,
+      }).then(response => {
+        if (response.data !== undefined) {
+          return response.data
+        }
+      }).then(data => {
+        data.suggestions.sort((e1, e2) => {
+          return e2.ids.length - e1.ids.length
+        })
+        this.suggestions.data = data.suggestions;
+      }).catch(err =>
+        console.log(err)
+      ).finally(() =>
+        this.suggestions.loading = false
+      )
+    },
+    suggestionModel: function (val) {
+      if (val !== undefined && val != null) {
+
+        this.$http.post("getConnectedNodes", {
+          sourceType: this.suggestionType,
+          targetType: ["gene", "protein"][this.seedTypeId],
+          sourceIds: val.ids,
+          noloop: ["gene", "protein"][this.seedTypeId] === this.suggestionType
+        }).then(response => {
+          if (response.data !== undefined)
+            return response.data
+        }).then(data => {
+          this.addToSelection(data)
+        }).then(() => {
+          this.suggestionModel = undefined
+        }).catch(console.log)
+      }
+    },
+
   },
 
   created() {
@@ -164,15 +269,24 @@ export default {
   methods: {
 
     init: function () {
-      this.sources = undefined;
+      // this.sources = undefined;
       this.method = undefined;
       this.sourceType = undefined
       this.step = 1
       this.seedTypeId = undefined
       this.seeds = []
-      this.highlighted =[]
+      this.highlighted = []
     },
 
+    getSuggestionSelection: function () {
+      let type = ["gene", "protein"][this.seedTypeId]
+      let nodeId = this.metagraph.nodes.filter(n => n.group === type)[0].id
+      return this.metagraph.edges.filter(e => e.from !== e.to && e.from === nodeId || e.to === nodeId).map(e => e.to === nodeId ? e.from : e.to).map(nid => {
+        let node = this.metagraph.nodes.filter(n => n.id === nid)[0]
+        return {value: node.group, text: node.label}
+      })
+
+    },
     makeStep: function (s, button) {
       if (button === "continue") {
         this.step++
@@ -192,10 +306,23 @@ export default {
 
     },
 
+    addToSelection: function (list, nameFrom) {
+      let ids = this.seeds.map(seed => seed.id)
+      let count = 0
+      list.forEach(e => {
+        if (ids.indexOf(e.id) === -1) {
+          count++
+          this.seeds.push(e)
+          this.highlighted.push(e.id)
+        }
+      })
+      this.$emit("printNotificationEvent", "Added " + list.length + " (" + count + " new) seeds!", 1)
+    },
+
     onFileSelected: function (file) {
-      if(file==null)
+      if (file == null)
         return
-      this.highlighted=[]
+      this.highlighted = []
       Utils.readFile(file).then(content => {
         this.$http.post("mapFileListToItems", {
           type: ['gene', 'protein'][this.seedTypeId],
@@ -204,17 +331,34 @@ export default {
           if (response.data)
             return response.data
         }).then(data => {
-          let ids = this.seeds.map(seed=>seed.id)
-          data.forEach(e => {
-            if (ids.indexOf(e.id) === -1) {
-              this.seeds.push(e)
-              this.highlighted.push(e.id)
-            }
-          })
+          this.addToSelection(data)
+        }).then(() => {
+          this.fileInputModel = undefined
         }).catch(console.log)
-      }).then(()=>{
-        console.log(this.seeds)
       }).catch(console.log)
+    },
+
+    downloadList: function () {
+      this.$http.post("mapToDomainIds", {
+        type: ['gene', 'protein'][this.seedTypeId],
+        ids: this.seeds.map(s => s.id)
+      }).then(response => {
+        if (response.data !== undefined)
+          return response.data
+      }).then(data => {
+        let text = "";
+        data.forEach(id => text += id + "\n")
+        this.download(["gene", "protein"][this.seedTypeId] + "s.tsv", text)
+      }).catch(console.log)
+    },
+    download: function (name, content) {
+      let dl = document.createElement('a')
+      dl.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(content))
+      dl.setAttribute('download', name)
+      dl.style.direction = 'none'
+      document.body.appendChild(dl)
+      dl.click()
+      document.body.removeChild(dl)
     }
   }
 }
