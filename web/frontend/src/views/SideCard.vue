@@ -4,7 +4,7 @@
     <v-card elevation="3" style="padding-top: 15px; overflow-y: auto; max-height: 75vh">
       <v-card-title>Toolbox</v-card-title>
 
-      <v-card-title  v-show="gid!==undefined">
+      <v-card-title v-show="gid!==undefined">
         <v-chip
           outlined
           @click="requestGraphDownload"
@@ -232,6 +232,12 @@
               </template>
             </template>
             <template v-if="selectedTab===3">
+              <v-list-item>
+                <v-switch v-model="options.history.favos" label="Favourites Only"
+                          @click="$forceUpdate; $emit('historyReloadEvent')">
+                </v-switch>
+
+              </v-list-item>
               <v-list-item>
                 <v-switch v-model="options.history.chronological" label="Show Chronological"
                           @click="$forceUpdate(); $emit('historyReloadEvent')"></v-switch>

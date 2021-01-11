@@ -3,12 +3,14 @@
     <v-container>
       <v-card style="margin:5px">
         <v-card-title>History<span
-          style="color:gray; padding-left: 7px"> ({{ options.chronological ? "List" : "Tree" }})</span></v-card-title>
+          style="color:gray; padding-left: 7px"> ({{
+            options.favos ? "Favourites" : options.chronological ? "List" : "Tree"
+          }})</span></v-card-title>
         <v-container ref="history">
           <v-row>
             <v-col>
               <v-treeview
-                :items="options.chronological? (options.otherUsers ? list:list.filter((l)=>l.user === user)): history"
+                :items="getHistoryList()"
                 hoverable
                 activatable
                 dense
@@ -91,7 +93,7 @@
                         :color="selected.parentMethod !=null? 'green':'primary'"
                       >
                         <v-btn plain style="color: gray; margin-left: -15px; margin-bottom:-25px; margin-top:-25px"
-                               @click="handleSelection([selected.parentId])">{{  selected.parentName}}
+                               @click="handleSelection([selected.parentId])">{{ selected.parentName }}
                         </v-btn>
                         <br><br>
                         <template v-slot:icon>
@@ -106,7 +108,8 @@
                   </v-row>
                   <v-row dense>
                     <v-col cols="1">
-                      <v-btn icon :color="this.selected.method!=null ? 'green':'primary'" x-large style="background-color: white; margin-top: 5px;" @click="loadGraph(selectedId)">
+                      <v-btn icon :color="this.selected.method!=null ? 'green':'primary'" x-large
+                             style="background-color: white; margin-top: 5px;" @click="loadGraph(selectedId)">
                         <v-icon>far fa-play-circle</v-icon>
                       </v-btn>
                     </v-col>
@@ -160,7 +163,7 @@
                   <v-row style="margin: 25px"></v-row>
                   <v-row style="margin: 25px" v-if="selected.jobid!=null">
                     <v-chip outlined @click="downloadJob(selected.jobid)">
-                      {{selected.method}} Results
+                      {{ selected.method }} Results
                       <v-icon right>fas fa-download</v-icon>
                     </v-chip>
 
@@ -492,6 +495,26 @@ export default {
         }
       })
       return out;
+    },
+
+    getHistoryList: function () {
+      let out = this.history;
+      if (this.options.chronological) {
+        out = this.getChronologicalList()
+      }
+      if (this.options.favos) {
+        out = this.getChronologicalList().filter(l=>l.starred)
+      }
+      console.log(out)
+      return out
+
+    },
+
+    getChronologicalList: function () {
+      if (!this.otherUsers)
+        return this.list.filter(l => l.user === this.user)
+      else
+        return this.list
     },
 
 

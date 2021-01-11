@@ -115,9 +115,9 @@ public class HistoryController {
             }
         });
 
-        out.put("history", getHistoryTree(map.values()));
+        out.put("history", getHistoryTree(map.values(),uid));
 
-        LinkedList<HashMap<String, Object>> list = map.values().stream().map(h -> h.toMap(false)).sorted((history, t1) -> {
+        LinkedList<HashMap<String, Object>> list = map.values().stream().map(h -> h.toMap(false,uid)).sorted((history, t1) -> {
             long h1 = (long) history.get("created");
             long h2 = (long) t1.get("created");
             if (h1 == h2)
@@ -130,12 +130,12 @@ public class HistoryController {
         return out;
     }
 
-    public ArrayList<Object> getHistoryTree(Collection<GraphHistory> historyList) {
+    public ArrayList<Object> getHistoryTree(Collection<GraphHistory> historyList, String uid) {
         ArrayList<Object> history = new ArrayList<>();
 
         historyList.forEach(v -> {
             if (v.getParent() == null)
-                history.add(v.toMap(true));
+                history.add(v.toMap(true,uid));
         });
         return history;
     }

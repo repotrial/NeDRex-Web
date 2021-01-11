@@ -143,7 +143,7 @@ public class GraphHistory {
         return comment;
     }
 
-    public HashMap<String, Object> toMap(boolean cascade) {
+    public HashMap<String, Object> toMap(boolean cascade, String user) {
         HashMap<String, Object> out = new HashMap<>();
         out.put("id", getGraphId());
         out.put("edges", edgeMap);
@@ -156,8 +156,9 @@ public class GraphHistory {
             out.put("state", jobState.name());
             out.put("method", method);
         }
+        out.put("starred", isStarred(user));
         if (cascade) {
-            ArrayList<Object> children = derived.stream().map(g -> g.toMap(true)).collect(Collectors.toCollection(ArrayList::new));
+            ArrayList<Object> children = derived.stream().map(g -> g.toMap(true, user)).collect(Collectors.toCollection(ArrayList::new));
             out.put("children", children);
         }
         return out;
@@ -185,6 +186,8 @@ public class GraphHistory {
     }
 
     public boolean isStarred(String uid) {
+        if (uid == null)
+            return false;
         if (starred == null)
             starredList = new LinkedList<>();
         else

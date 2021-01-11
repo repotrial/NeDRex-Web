@@ -411,7 +411,7 @@ export default {
         legend: {}
       }
       this.options.list = {showAll: true, selected: 0, total: 0, countMap: {nodes: {}, edges: {}}, entityGraph: {}}
-      this.options.history = {chronological: false, otherUsers: false, entityGraph: {}}
+      this.options.history = {chronological: false, otherUsers: false, entityGraph: {}, favos:false}
     },
     loadSubSelection: function (selection) {
       this.loadGraph({data: selection})
