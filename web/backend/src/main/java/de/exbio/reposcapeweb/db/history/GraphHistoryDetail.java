@@ -11,6 +11,7 @@ public class GraphHistoryDetail {
     public String method;
     public String comment;
     public boolean thumbnailReady = false;
+    public String jobid;
     public HashMap<String,HashMap<String,Integer>> counts;
     public ConnectionGraph entityGraph;
 

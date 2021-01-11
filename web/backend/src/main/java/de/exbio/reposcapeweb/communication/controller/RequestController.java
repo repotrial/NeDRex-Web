@@ -290,7 +290,7 @@ public class RequestController {
         if (userId == null)
             return "";
         userId = historyController.validateUser(userId);
-        HashMap<String, Pair<Job.JobState, ToolService.Tool>> jobs = jobController.getJobGraphStatesAndTypes(userId);
+        HashMap<String, Pair<String,Pair<Job.JobState, ToolService.Tool>>> jobs = jobController.getJobGraphStatesAndTypes(userId);
         HashMap<String, Object> out = historyController.getUserHistory(userId, jobs);
 
         try {

@@ -84,13 +84,16 @@
                 <v-container>
                   <v-row v-if="selected.parentId !=null">
                     <v-timeline align-top dense
-                                style="margin-top: 10px; padding-top: 7px; margin-bottom: -50px; margin-left: -25px">
+                                style="margin-top: 10px; padding-top: 7px; margin-bottom: -29px; margin-left: -25px">
                       <v-timeline-item
                         right
                         :small="!hoveringTimeline('parent')"
                         :color="selected.parentMethod !=null? 'green':'primary'"
                       >
-                        <div style="color: gray; margin-left: -15px">{{ selected.parentName }}<br><br></div>
+                        <v-btn plain style="color: gray; margin-left: -15px; margin-bottom:-25px; margin-top:-25px"
+                               @click="handleSelection([selected.parentId])">{{  selected.parentName}}
+                        </v-btn>
+                        <br><br>
                         <template v-slot:icon>
                           <v-btn icon @click="loadGraph(selected.parentId)">
                             <v-icon x-small color="white">
@@ -102,17 +105,23 @@
                     </v-timeline>
                   </v-row>
                   <v-row dense>
+                    <v-col cols="1">
+                      <v-btn icon :color="this.selected.method!=null ? 'green':'primary'" x-large style="background-color: white; margin-top: 5px;" @click="loadGraph(selectedId)">
+                        <v-icon>far fa-play-circle</v-icon>
+                      </v-btn>
+                    </v-col>
                     <v-col cols="9">
                       <v-card-title v-if="!edit">{{ selected.name }}</v-card-title>
                       <v-text-field v-else :placeholder="selected.name" :value="selected.name" label="Name"
-                                    @change="setName"></v-text-field>
+                                    @change="setName" style="margin-left: 20px"></v-text-field>
                     </v-col>
-                    <v-col cols="3" style="padding-top: 15px">
+                    <v-col cols="2" style="padding-top: 15px">
                       <v-btn v-show="selected.owner = $cookies.get('uid')" icon style="margin-top:10px" x-small
                              @click="toggleEdit()">
                         <v-icon>{{ edit ? "fas fa-check" : "fas fa-edit" }}</v-icon>
                       </v-btn>
-                      <v-btn icon style="margin-top:10px" @mouseover="hover.star=true" @mouseleave="hover.star=false"
+                      <v-btn icon style="margin-top:10px" @mouseover="hover.star=true"
+                             @mouseleave="hover.star=false"
                              x-small
                              @click="toggleStar">
                         <v-icon v-if="showStar(false)">far fa-star</v-icon>
@@ -126,17 +135,20 @@
                       </v-btn>
                     </v-col>
                   </v-row>
+
                   <v-divider
-                    style="margin-left:10px; margin-right:15px; margin-top: -10px; margin-bottom:-10px"></v-divider>
+                    style="margin: -10px 15px -10px 10px;"></v-divider>
                   <v-row dense v-if="Object.keys(selected.children).length>0">
                     <v-timeline align-top dense
                                 style="margin-top: 10px; padding-top: 7px; padding-bottom: 0px; margin-left: 5px">
                       <v-timeline-item small right v-for="child in Object.keys(selected.children)" :key="child"
                                        :color="selected.children[child].method !==undefined ? 'green':'primary'"
                       >
-                        <div style="color: gray; margin-left: -15px">{{ selected.children[child].name }}</div>
+                        <v-btn plain style="color: gray; margin-left: -15px; margin-bottom:-25px; margin-top:-25px"
+                               @click="handleSelection([child])">{{ selected.children[child].name }}
+                        </v-btn>
                         <template v-slot:icon>
-                          <v-btn icon @click="loadGraph(child)">
+                          <v-btn icon @click="loadGraph(child)" style="margin-left:2px">
                             <v-icon x-small color="white">
                               fas fa-play
                             </v-icon>
@@ -146,6 +158,13 @@
                     </v-timeline>
                   </v-row>
                   <v-row style="margin: 25px"></v-row>
+                  <v-row style="margin: 25px" v-if="selected.jobid!=null">
+                    <v-chip outlined @click="downloadJob(selected.jobid)">
+                      {{selected.method}} Results
+                      <v-icon right>fas fa-download</v-icon>
+                    </v-chip>
+
+                  </v-row>
                   <v-row v-if="metagraph!==undefined &&selected!==undefined">
                     <v-container>
                       <!--                      <v-card-title>General Information</v-card-title>-->
@@ -370,6 +389,7 @@ export default {
       this.selection = selected
       this.selected = undefined;
       this.selectedId = selected[0]
+      console.log(this.selectedId)
       this.$http.get("getGraphHistory?gid=" + this.selectedId + "&uid=" + this.$cookies.get("uid")).then(response => {
         if (response.data !== undefined)
           return response.data
@@ -378,7 +398,7 @@ export default {
         this.description = data.comment
       }).then(() => {
         if (!this.selected.thumbnailReady) {
-          this.$socket.subscribeThumbnail(this.selectedId,"thumbnailReady")
+          this.$socket.subscribeThumbnail(this.selectedId, "thumbnailReady")
         }
       }).catch(console.log)
     },
@@ -481,17 +501,20 @@ export default {
       return url
     },
 
-    thumbnailExists: function (graph_id) {
-      let http = new XMLHttpRequest()
-      http.open("HEAD", this.getThumbnail(graph_id), false)
-      let status = 2
-      return http.onloadend = function () {
-        if (http.status === 404) {
-          status = 2
-          return false
-        } else
-          return true
-      }
+    // thumbnailExists: function (graph_id) {
+    //   let http = new XMLHttpRequest()
+    //   http.open("HEAD", this.getThumbnail(graph_id), false)
+    //   let status = 2
+    //   return http.onloadend = function () {
+    //     if (http.status === 404) {
+    //       status = 2
+    //       return false
+    //     } else
+    //       return true
+    //   }
+    // },
+    downloadJob: function (jobid) {
+      window.open('/backend/api/downloadJobResult?jid=' + jobid)
     },
 
     reverseList: function () {

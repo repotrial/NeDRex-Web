@@ -94,7 +94,7 @@ public class HistoryController {
         return uid;
     }
 
-    public HashMap<String, Object> getUserHistory(String uid, HashMap<String, Pair<Job.JobState, ToolService.Tool>> jobs) {
+    public HashMap<String, Object> getUserHistory(String uid, HashMap<String, Pair<String,Pair<Job.JobState, ToolService.Tool>>> jobs) {
         HashMap<String, Object> out = new HashMap<>();
         out.put("uid", uid);
         if (!userMap.containsKey(uid))
@@ -110,8 +110,8 @@ public class HistoryController {
         });
         map.forEach((gid, history) -> {
             if (jobs.containsKey(gid)) {
-                history.setJobState(jobs.get(gid).first);
-                history.setMethod(jobs.get(gid).second);
+                history.setJobState(jobs.get(gid).second.first);
+                history.setMethod(jobs.get(gid).second.second);
             }
         });
 
@@ -203,7 +203,7 @@ public class HistoryController {
         return userId;
     }
 
-    public GraphHistoryDetail getDetailedHistory(String uid, Graph g, ConnectionGraph connectionGraph, HashMap<String, Pair<Job.JobState, ToolService.Tool>> jobs, File thumbnail) {
+    public GraphHistoryDetail getDetailedHistory(String uid, Graph g, ConnectionGraph connectionGraph, HashMap<String, Pair<String,Pair<Job.JobState, ToolService.Tool>>> jobs, File thumbnail) {
         GraphHistoryDetail details = new GraphHistoryDetail();
         GraphHistory history = getHistory(g.getId());
         details.name = history.getName();
@@ -216,8 +216,10 @@ public class HistoryController {
 
         details.entityGraph = connectionGraph;
 
-        if (jobs.containsKey(g.getId()))
-            details.method = jobs.get(g.getId()).getSecond().name();
+        if (jobs.containsKey(g.getId())) {
+            details.method = jobs.get(g.getId()).getSecond().getSecond().name();
+            details.jobid=jobs.get(g.getId()).getFirst();
+        }
 
         GraphHistory parent = history.getParent();
         details.root = parent == null;
@@ -225,7 +227,7 @@ public class HistoryController {
             details.parentId = parent.getGraphId();
             details.parentName = parent.getName();
             if (jobs.containsKey(details.parentId))
-                details.parentMethod = jobs.get(details.parentId).second.name();
+                details.parentMethod = jobs.get(details.parentId).second.second.name();
         }
 
 
@@ -236,7 +238,7 @@ public class HistoryController {
             details.children.put(id, new HashMap<>());
             details.children.get(id).put("name", getHistory(id).getName());
             if (jobs.containsKey(id)) {
-                details.children.get(id).put("method", jobs.get(id).second.name());
+                details.children.get(id).put("method", jobs.get(id).second.second.name());
             }
         });
         details.thumbnailReady = thumbnail.exists();

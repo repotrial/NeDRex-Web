@@ -189,9 +189,9 @@ public class JobController {
     }
 
 
-    public HashMap<String, Pair<Job.JobState, ToolService.Tool>> getJobGraphStatesAndTypes(String user) {
-        HashMap<String, Pair<Job.JobState, ToolService.Tool>> stateMap = new HashMap<>();
-        jobs.values().stream().filter(j -> j.getUserId().equals(user)).forEach(j -> stateMap.put(j.getDerivedGraph(), new Pair<>(j.getState(),j.getMethod())));
+    public HashMap<String, Pair<String,Pair<Job.JobState, ToolService.Tool>>> getJobGraphStatesAndTypes(String user) {
+        HashMap<String, Pair<String,Pair<Job.JobState, ToolService.Tool>>> stateMap = new HashMap<>();
+        jobs.values().stream().filter(j -> j.getUserId().equals(user)).forEach(j -> stateMap.put(j.getDerivedGraph(), new Pair<>(j.getJobId(),new Pair<>(j.getState(),j.getMethod()))));
         return stateMap;
     }
 
