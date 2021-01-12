@@ -154,21 +154,21 @@
           <v-container style="height: 80%">
             <v-row style="height: 100%">
               <v-col>
-              <v-card-title style="margin-left: -25px">Select the Base-Algorithm</v-card-title>
-              <v-radio-group v-model="methodModel" row>
-                <v-radio v-for="method in methods"
-                         :label="method.label"
-                         :key="method.label"
-                >
-                </v-radio>
-              </v-radio-group>
+                <v-card-title style="margin-left: -25px">Select the Base-Algorithm</v-card-title>
+                <v-radio-group v-model="methodModel" row>
+                  <v-radio v-for="method in methods"
+                           :label="method.label"
+                           :key="method.label"
+                  >
+                  </v-radio>
+                </v-radio-group>
                 <template v-if="methodModel!==undefined">
-                <v-card-title  style="margin-left:-25px">Configure Parameters</v-card-title>
+                  <v-card-title style="margin-left:-25px">Configure Parameters</v-card-title>
                   <v-row>
                     <v-col>
                       <v-switch
-                      label="Only Experimental Validated Interactions"
-                      v-model="experimentalSwitch"
+                        label="Only Experimental Validated Interactions"
+                        v-model="experimentalSwitch"
                       >
                       </v-switch>
 
@@ -176,279 +176,287 @@
 
 
                   </v-row>
-                <template v-if="methods[methodModel].id==='bicon'">
-                  <v-row>
-                    <v-col>
-                      <v-range-slider
-                        hide-details
-                        class="align-center"
-                        v-model="models.bicon.lg"
-                        min="1"
-                        max="1000"
-                      >
-                        <template v-slot:prepend>
-                          <v-text-field
-                            v-model="models.bicon.lg[0]"
-                            class="mt-0 pt-0"
-                            type="number"
-                            style="width: 60px"
-                            label="min"
-                          ></v-text-field>
-                        </template>
-                        <template v-slot:append>
-                          <v-text-field
-                            v-model="models.bicon.lg[1]"
-                            class="mt-0 pt-0"
-                            type="number"
-                            style="width: 60px"
-                            label="max"
-                          ></v-text-field>
-                          <v-tooltip left>
-                            <template v-slot:activator="{ on, attrs }">
-                              <v-icon
-                                v-bind="attrs"
-                                v-on="on"
-                                left> far fa-question-circle
-                              </v-icon>
-                            </template>
-                            <span>Maximal solution subnetwork size.</span>
-                          </v-tooltip>
-                        </template>
-                      </v-range-slider>
-                    </v-col>
-                  </v-row>
+                  <template v-if="methods[methodModel].id==='bicon'">
+                    <v-file-input
+                      v-on:change="biconFile"
+                      show-size
+                      prepend-icon="fas fa-file-medical"
+                      label="Expression File"
+                      dense
+                    >
+                    </v-file-input>
+                    <v-row>
+                      <v-col>
+                        <v-range-slider
+                          hide-details
+                          class="align-center"
+                          v-model="models.bicon.lg"
+                          min="1"
+                          max="1000"
+                        >
+                          <template v-slot:prepend>
+                            <v-text-field
+                              v-model="models.bicon.lg[0]"
+                              class="mt-0 pt-0"
+                              type="number"
+                              style="width: 60px"
+                              label="min"
+                            ></v-text-field>
+                          </template>
+                          <template v-slot:append>
+                            <v-text-field
+                              v-model="models.bicon.lg[1]"
+                              class="mt-0 pt-0"
+                              type="number"
+                              style="width: 60px"
+                              label="max"
+                            ></v-text-field>
+                            <v-tooltip left>
+                              <template v-slot:activator="{ on, attrs }">
+                                <v-icon
+                                  v-bind="attrs"
+                                  v-on="on"
+                                  left> far fa-question-circle
+                                </v-icon>
+                              </template>
+                              <span>Maximal solution subnetwork size.</span>
+                            </v-tooltip>
+                          </template>
+                        </v-range-slider>
+                      </v-col>
+                    </v-row>
 
-                </template>
-                <template v-if="methods[methodModel].id==='diamond'">
-                  <v-row>
-                    <v-col>
-                      <v-slider
-                        hide-details
-                        class="align-center"
-                        v-model="models.diamond.nModel"
-                        min="1"
-                        max="1000"
-                      >
-                        <template v-slot:prepend>
-                          <v-text-field
-                            v-model="models.diamond.nModel"
-                            class="mt-0 pt-0"
-                            type="number"
-                            style="width: 60px"
-                            label="n"
-                          ></v-text-field>
-                        </template>
-                        <template v-slot:append>
-                          <v-tooltip left>
-                            <template v-slot:activator="{ on, attrs }">
-                              <v-icon
-                                v-bind="attrs"
-                                v-on="on"
-                                left> far fa-question-circle
-                              </v-icon>
-                            </template>
-                            <span>Desired number of DIAMOnD genes, 200 is a reasonable
+                  </template>
+                  <template v-if="methods[methodModel].id==='diamond'">
+                    <v-row>
+                      <v-col>
+                        <v-slider
+                          hide-details
+                          class="align-center"
+                          v-model="models.diamond.nModel"
+                          min="1"
+                          max="1000"
+                        >
+                          <template v-slot:prepend>
+                            <v-text-field
+                              v-model="models.diamond.nModel"
+                              class="mt-0 pt-0"
+                              type="number"
+                              style="width: 60px"
+                              label="n"
+                            ></v-text-field>
+                          </template>
+                          <template v-slot:append>
+                            <v-tooltip left>
+                              <template v-slot:activator="{ on, attrs }">
+                                <v-icon
+                                  v-bind="attrs"
+                                  v-on="on"
+                                  left> far fa-question-circle
+                                </v-icon>
+                              </template>
+                              <span>Desired number of DIAMOnD genes, 200 is a reasonable
                        starting point.</span>
-                          </v-tooltip>
-                        </template>
-                      </v-slider>
-                    </v-col>
-                  </v-row>
-                  <v-row>
-                    <v-col>
-                      <v-slider
-                        hide-details
-                        class="align-center"
-                        v-model="models.diamond.alphaModel"
-                        min="1"
-                        max="100"
-                      >
-                        <template v-slot:prepend>
-                          <v-text-field
-                            v-model="models.diamond.alphaModel"
-                            class="mt-0 pt-0"
-                            type="number"
-                            style="width: 60px"
-                            label="alpha"
-                          ></v-text-field>
-                        </template>
-                        <template v-slot:append>
-                          <v-tooltip left>
-                            <template v-slot:activator="{ on, attrs }">
-                              <v-icon
-                                v-bind="attrs"
-                                v-on="on"
-                                left> far fa-question-circle
-                              </v-icon>
-                            </template>
-                            <span>an integer representing weight of the seeds,default
+                            </v-tooltip>
+                          </template>
+                        </v-slider>
+                      </v-col>
+                    </v-row>
+                    <v-row>
+                      <v-col>
+                        <v-slider
+                          hide-details
+                          class="align-center"
+                          v-model="models.diamond.alphaModel"
+                          min="1"
+                          max="100"
+                        >
+                          <template v-slot:prepend>
+                            <v-text-field
+                              v-model="models.diamond.alphaModel"
+                              class="mt-0 pt-0"
+                              type="number"
+                              style="width: 60px"
+                              label="alpha"
+                            ></v-text-field>
+                          </template>
+                          <template v-slot:append>
+                            <v-tooltip left>
+                              <template v-slot:activator="{ on, attrs }">
+                                <v-icon
+                                  v-bind="attrs"
+                                  v-on="on"
+                                  left> far fa-question-circle
+                                </v-icon>
+                              </template>
+                              <span>an integer representing weight of the seeds,default
                        value is set to 1.</span>
-                          </v-tooltip>
-                        </template>
-                      </v-slider>
-                    </v-col>
-                  </v-row>
+                            </v-tooltip>
+                          </template>
+                        </v-slider>
+                      </v-col>
+                    </v-row>
+                    <v-row>
+                      <v-col>
+                        <v-slider
+                          hide-details
+                          class="align-center"
+                          v-model="models.diamond.pModel"
+                          min="-100"
+                          max="0"
+                        >
+                          <template v-slot:prepend>
+                            <v-text-field
+                              prefix="10^"
+                              v-model="models.diamond.pModel"
+                              class="mt-0 pt-0"
+                              type="number"
+                              style="width: 80px"
+                              label="p-cutoff"
+                            ></v-text-field>
+                          </template>
+                          <template v-slot:append>
+                            <v-tooltip left>
+                              <template v-slot:activator="{ on, attrs }">
+                                <v-icon
+                                  v-bind="attrs"
+                                  v-on="on"
+                                  left> far fa-question-circle
+                                </v-icon>
+                              </template>
+                              <span>Choose a cutoff for the resulting p_hyper scores.</span>
+                            </v-tooltip>
+                          </template>
+                        </v-slider>
+                      </v-col>
+                    </v-row>
+                  </template>
+                  <template v-if="methods[methodModel].id==='must'">
+                    <v-row>
+                      <v-col>
+                        <v-slider
+                          hide-details
+                          class="align-center"
+                          v-model="models.must.hubpenalty"
+                          min="0"
+                          max="1"
+                          step="0.01"
+                        >
+                          <template v-slot:prepend>
+                            <v-text-field
+                              v-model="models.must.hubpenalty"
+                              class="mt-0 pt-0"
+                              type="number"
+                              style="width: 70px"
+                              label="hub-penalty"
+                            ></v-text-field>
+                          </template>
+                          <template v-slot:append>
+                            <v-tooltip left>
+                              <template v-slot:activator="{ on, attrs }">
+                                <v-icon
+                                  v-bind="attrs"
+                                  v-on="on"
+                                  left> far fa-question-circle
+                                </v-icon>
+                              </template>
+                              <span>Choose this option if you want to return multiple results.</span>
+                            </v-tooltip>
+                          </template>
+                        </v-slider>
+                      </v-col>
+                    </v-row>
+                    <v-row>
+                      <v-col>
+                        <v-switch
+                          label="Multiple"
+                          v-model="models.must.multiple"
+                        >
+                          <template v-slot:append>
+                            <v-tooltip left>
+                              <template v-slot:activator="{ on, attrs }">
+                                <v-icon
+                                  v-bind="attrs"
+                                  v-on="on"
+                                  left> far fa-question-circle
+                                </v-icon>
+                              </template>
+                              <span>Specify hub penalty between 0.0 and 1.0. If none is specified, there will be no hub penalty.</span>
+                            </v-tooltip>
+                          </template>
+                        </v-switch>
+                      </v-col>
+                    </v-row>
+                    <v-row v-show="models.must.multiple">
+                      <v-col>
+                        <v-slider
+                          hide-details
+                          class="align-center"
+                          v-model="models.must.trees"
+                          min="2"
+                          max="50"
+                        >
+                          <template v-slot:prepend>
+                            <v-text-field
+                              v-model="models.must.trees"
+                              class="mt-0 pt-0"
+                              type="number"
+                              style="width: 70px"
+                              label="trees"
+                            ></v-text-field>
+                          </template>
+                          <template v-slot:append>
+                            <v-tooltip left>
+                              <template v-slot:activator="{ on, attrs }">
+                                <v-icon
+                                  v-bind="attrs"
+                                  v-on="on"
+                                  left> far fa-question-circle
+                                </v-icon>
+                              </template>
+                              <span>Number of Trees to be returned (Integer).</span>
+                            </v-tooltip>
+                          </template>
+                        </v-slider>
+                      </v-col>
+                    </v-row>
+                    <v-row>
+                      <v-col>
+                        <v-slider
+                          hide-details
+                          class="align-center"
+                          v-model="models.must.maxit"
+                          min="0"
+                          max="20"
+                        >
+                          <template v-slot:prepend>
+                            <v-text-field
+                              v-model="models.must.maxit"
+                              class="mt-0 pt-0"
+                              type="number"
+                              style="width: 70px"
+                              label="iterations"
+                            ></v-text-field>
+                          </template>
+                          <template v-slot:append>
+                            <v-tooltip left>
+                              <template v-slot:activator="{ on, attrs }">
+                                <v-icon
+                                  v-bind="attrs"
+                                  v-on="on"
+                                  left> far fa-question-circle
+                                </v-icon>
+                              </template>
+                              <span>The maximum number of iterations is defined as trees + iterations.</span>
+                            </v-tooltip>
+                          </template>
+                        </v-slider>
+                      </v-col>
+                    </v-row>
+                  </template>
                   <v-row>
-                    <v-col>
-                      <v-slider
-                        hide-details
-                        class="align-center"
-                        v-model="models.diamond.pModel"
-                        min="-100"
-                        max="0"
-                      >
-                        <template v-slot:prepend>
-                          <v-text-field
-                            prefix="10^"
-                            v-model="models.diamond.pModel"
-                            class="mt-0 pt-0"
-                            type="number"
-                            style="width: 80px"
-                            label="p-cutoff"
-                          ></v-text-field>
-                        </template>
-                        <template v-slot:append>
-                          <v-tooltip left>
-                            <template v-slot:activator="{ on, attrs }">
-                              <v-icon
-                                v-bind="attrs"
-                                v-on="on"
-                                left> far fa-question-circle
-                              </v-icon>
-                            </template>
-                            <span>Choose a cutoff for the resulting p_hyper scores.</span>
-                          </v-tooltip>
-                        </template>
-                      </v-slider>
-                    </v-col>
+                    <v-col></v-col>
                   </v-row>
-                </template>
-                <template v-if="methods[methodModel].id==='must'">
-                  <v-row>
-                    <v-col>
-                      <v-slider
-                        hide-details
-                        class="align-center"
-                        v-model="models.must.hubpenalty"
-                        min="0"
-                        max="1"
-                        step="0.01"
-                      >
-                        <template v-slot:prepend>
-                          <v-text-field
-                            v-model="models.must.hubpenalty"
-                            class="mt-0 pt-0"
-                            type="number"
-                            style="width: 70px"
-                            label="hub-penalty"
-                          ></v-text-field>
-                        </template>
-                        <template v-slot:append>
-                          <v-tooltip left>
-                            <template v-slot:activator="{ on, attrs }">
-                              <v-icon
-                                v-bind="attrs"
-                                v-on="on"
-                                left> far fa-question-circle
-                              </v-icon>
-                            </template>
-                            <span>Choose this option if you want to return multiple results.</span>
-                          </v-tooltip>
-                        </template>
-                      </v-slider>
-                    </v-col>
-                  </v-row>
-                  <v-row>
-                    <v-col>
-                      <v-switch
-                        label="Multiple"
-                        v-model="models.must.multiple"
-                      >
-                        <template v-slot:append>
-                          <v-tooltip left>
-                            <template v-slot:activator="{ on, attrs }">
-                              <v-icon
-                                v-bind="attrs"
-                                v-on="on"
-                                left> far fa-question-circle
-                              </v-icon>
-                            </template>
-                            <span>Specify hub penalty between 0.0 and 1.0. If none is specified, there will be no hub penalty.</span>
-                          </v-tooltip>
-                        </template>
-                      </v-switch>
-                    </v-col>
-                  </v-row>
-                  <v-row v-show="models.must.multiple">
-                    <v-col>
-                      <v-slider
-                        hide-details
-                        class="align-center"
-                        v-model="models.must.trees"
-                        min="2"
-                        max="50"
-                      >
-                        <template v-slot:prepend>
-                          <v-text-field
-                            v-model="models.must.trees"
-                            class="mt-0 pt-0"
-                            type="number"
-                            style="width: 70px"
-                            label="trees"
-                          ></v-text-field>
-                        </template>
-                        <template v-slot:append>
-                          <v-tooltip left>
-                            <template v-slot:activator="{ on, attrs }">
-                              <v-icon
-                                v-bind="attrs"
-                                v-on="on"
-                                left> far fa-question-circle
-                              </v-icon>
-                            </template>
-                            <span>Number of Trees to be returned (Integer).</span>
-                          </v-tooltip>
-                        </template>
-                      </v-slider>
-                    </v-col>
-                  </v-row>
-                  <v-row>
-                    <v-col>
-                      <v-slider
-                        hide-details
-                        class="align-center"
-                        v-model="models.must.maxit"
-                        min="0"
-                        max="20"
-                      >
-                        <template v-slot:prepend>
-                          <v-text-field
-                            v-model="models.must.maxit"
-                            class="mt-0 pt-0"
-                            type="number"
-                            style="width: 70px"
-                            label="iterations"
-                          ></v-text-field>
-                        </template>
-                        <template v-slot:append>
-                          <v-tooltip left>
-                            <template v-slot:activator="{ on, attrs }">
-                              <v-icon
-                                v-bind="attrs"
-                                v-on="on"
-                                left> far fa-question-circle
-                              </v-icon>
-                            </template>
-                            <span>The maximum number of iterations is defined as trees + iterations.</span>
-                          </v-tooltip>
-                        </template>
-                      </v-slider>
-                    </v-col>
-                  </v-row>
-                </template>
-                <v-row>
-                  <v-col></v-col>
-                </v-row>
                 </template>
               </v-col>
             </v-row>
@@ -460,10 +468,10 @@
         </v-btn>
 
         <v-btn
-          @click="makeStep(2,'continue')"
+          @click="makeStep(2,'continue'); submitAlgorithm()"
           color="primary"
         >
-          Continue
+          Run
         </v-btn>
 
         <v-btn text @click="makeStep(2,'cancel')">
@@ -475,7 +483,84 @@
         <v-card
           class="mb-12"
           height="700px"
-        ></v-card>
+        >
+          <v-container>
+            <v-row>
+              <v-col cols="6">
+                <v-card-title class="subtitle-1">Seeds ({{ results.seeds.length }})
+                </v-card-title>
+                <template v-if="results.seeds.length>0">
+                  <v-list max-height="45vh" height="45vh" class="overflow-y-auto">
+                    <v-list-item v-for="(seed,index) in  results.seeds" :key="seed.id">
+                      <v-list-item-icon>
+                        <v-icon v-if="highlighted.indexOf(seed.id)!==-1">fas fa-star</v-icon>
+                      </v-list-item-icon>
+                      <v-list-item-title>{{ seed.displayName }}</v-list-item-title>
+                      <v-list-item-action>
+                        <!--                      <v-btn icon @click="seeds.splice(index,1)" color="red">-->
+                        <!--                        <v-icon>far fa-minus-square</v-icon>-->
+                        <!--                      </v-btn>-->
+                      </v-list-item-action>
+                    </v-list-item>
+                  </v-list>
+                  <v-divider></v-divider>
+                  <v-chip outlined style="margin-top:15px" @click="downloadList">
+                    <v-icon left>fas fa-download</v-icon>
+                    Save Seeds
+                  </v-chip>
+                </template>
+                <v-progress-circular v-else indeterminate>
+                </v-progress-circular>
+              </v-col>
+              <v-divider vertical></v-divider>
+              <v-col cols="5">
+                <v-card-title class="subtitle-1">Results
+                  ({{ results.targets.length }})
+                </v-card-title>
+                <template v-if="results.targets.length>0">
+                  <v-list max-height="45vh" height="45vh" class="overflow-y-auto">
+                    <v-list-item v-for="(seed,index) in results.targets" :key="seed.id">
+                      <v-list-item-icon>
+                        <v-icon v-if="highlighted.indexOf(seed.id)!==-1">fas fa-star</v-icon>
+                      </v-list-item-icon>
+                      <v-list-item-title>{{ seed.displayName }}</v-list-item-title>
+                      <v-list-item-action>
+                        <!--                      <v-btn icon @click="seeds.splice(index,1)" color="red">-->
+                        <!--                        <v-icon>far fa-minus-square</v-icon>-->
+                        <!--                      </v-btn>-->
+                      </v-list-item-action>
+                    </v-list-item>
+                  </v-list>
+                  <v-divider></v-divider>
+                  <v-chip outlined style="margin-top:15px"
+                          @click="downloadResultList">
+                    <v-icon left>fas fa-download</v-icon>
+                    Save Module
+                  </v-chip>
+                </template>
+                <v-progress-circular v-else indeterminate>
+                </v-progress-circular>
+
+              </v-col>
+            </v-row>
+            <v-divider></v-divider>
+            <v-row>
+              <v-col>
+                <v-chip outlined v-if="jobs[currentJid]!==undefined && jobs[currentJid].result!==undefined" style="margin-top:15px"
+                        @click="$emit('graphLoadEvent',{post: {id: jobs[currentJid].result}})">
+                  <v-icon left>fas fa-download</v-icon>
+                  Load Result into Advanced View
+                </v-chip>
+              </v-col>
+              <v-col>
+                <v-chip outlined v-show="results.targets.length>0" style="margin-top:15px">
+                  <v-icon left>fas fa-download</v-icon>
+                  Continue to Drug-Target Identification
+                </v-chip>
+              </v-col>
+            </v-row>
+          </v-container>
+        </v-card>
         <v-btn
           color="primary"
           @click="makeStep(3,'back')"
@@ -483,7 +568,7 @@
           Back
         </v-btn>
 
-        <v-btn text @click="makeStep(3,'restart')">
+        <v-btn text @click="makeStep(3,'cancel')">
           Restart
         </v-btn>
       </v-stepper-content>
@@ -507,6 +592,7 @@ export default {
 
   data() {
     return {
+      uid: undefined,
       seedTypeId: undefined,
       seeds: [],
       method: undefined,
@@ -520,7 +606,10 @@ export default {
       fileInputModel: undefined,
       methods: [{id: "diamond", label: "DIAMOnD"}, {id: "bicon", label: "BiCoN"}, {id: "must", label: "MuST"}],
       methodModel: undefined,
-      experimentalSwitch:true,
+      experimentalSwitch: true,
+      results: {seeds: [], targets: []},
+      jobs: {},
+      currentJid: undefined,
       models: {
         // advanced: {
         //   keepNodesOnly: true,
@@ -591,6 +680,8 @@ export default {
   },
 
   created() {
+    this.$socket.$on("quickFinishedEvent", this.convertJobResult)
+    this.uid = this.$cookies.get("uid")
     this.init()
 
     //TODO dev
@@ -658,6 +749,83 @@ export default {
       }
 
     },
+    biconFile: function (file) {
+      this.models.bicon.exprFile = file
+    },
+    submitAlgorithm: function () {
+      let params = {}
+      let method = this.methods[this.methodModel].id
+      params.experimentalOnly = this.experimentalSwitch
+
+      // params["addInteractions"] = this.models.advanced.addInteractions
+      params["nodesOnly"] = true
+      if (method === 'bicon') {
+        params['lg_min'] = this.models.bicon.lg[0];
+        params['lg_max'] = this.models.bicon.lg[1];
+        params['type'] = "gene"
+        Utils.readFile(this.models.bicon.exprFile).then(content => {
+          params['exprData'] = content
+          this.executeJob(method, params)
+          // this.$emit('executeAlgorithmEvent', this.methodModel, params)
+        })
+        return
+      }
+
+      if (method === 'diamond') {
+        params['n'] = this.models.diamond.nModel;
+        params['alpha'] = this.models.diamond.alphaModel;
+        params['pcutoff'] = this.models.diamond.pModel;
+      }
+
+      if (method === 'must') {
+        params["penalty"] = this.models.must.hubpenalty;
+        params["multiple"] = this.models.must.multiple
+        params["trees"] = this.models.must.trees
+        params["maxit"] = this.models.must.maxit
+      }
+      params['type'] = ["gene", "protein"][this.seedTypeId]
+      this.executeJob(method, params)
+      // this.$emit('executeAlgorithmEvent', this.methodModel, params)
+    },
+
+    executeJob: function (algorithm, params) {
+      let payload = {userId: this.uid, algorithm: algorithm, params: params}
+      payload.selection = true
+      payload.experimentalOnly = params.experimentalOnly
+      payload["nodes"] = this.seeds.map(n => n.id)
+      if (algorithm === "diamond" || algorithm === "trustrank" || algorithm === "centrality" || algorithm === "must") {
+        if (this.seeds.length === 0) {
+          this.printNotification("Cannot execute " + algorithm + " without seed nodes!", 1)
+          return;
+        }
+      }
+      this.$http.post("/submitJob", payload).then(response => {
+        if (response.data !== undefined)
+          return response.data
+      }).then(data => {
+        this.$socket.subscribeJob(data.jid, "quickFinishedEvent");
+        this.readJob(data)
+      }).catch(console.log)
+    },
+    readJob: function (data) {
+      let jid = data.jid
+      this.currentJid = jid
+      let base = data.basis
+      let result = data.gid
+      if (this.jobs[jid] === undefined)
+        this.jobs[jid] = {}
+      if (base != null) {
+        if (this.jobs[jid].base === undefined) {
+          this.jobs[jid].base = base
+          this.loadSeedTable(base)
+        }
+      }
+      if (result != null && data.state === "DONE") {
+        this.$socket.unsubscribeJob(jid)
+        this.jobs[jid].result = result
+        this.loadTargetTable(result)
+      }
+    },
 
     addToSelection: function (list, nameFrom) {
       let ids = this.seeds.map(seed => seed.id)
@@ -701,7 +869,20 @@ export default {
       }).then(data => {
         let text = "";
         data.forEach(id => text += id + "\n")
-        this.download(["gene", "protein"][this.seedTypeId] + "s.tsv", text)
+        this.download(["gene", "protein"][this.seedTypeId] + "_seeds.tsv", text)
+      }).catch(console.log)
+    },
+    downloadResultList: function () {
+      this.$http.post("mapToDomainIds", {
+        type: ['gene', 'protein'][this.seedTypeId],
+        ids: this.results.targets.map(l => l.id)
+      }).then(response => {
+        if (response.data !== undefined)
+          return response.data
+      }).then(data => {
+        let text = "";
+        data.forEach(id => text += id + "\n")
+        this.download(["gene", "protein"][this.seedTypeId] + "_module.tsv", text)
       }).catch(console.log)
     },
     download: function (name, content) {
@@ -712,7 +893,27 @@ export default {
       document.body.appendChild(dl)
       dl.click()
       document.body.removeChild(dl)
-    }
+    },
+    loadSeedTable: function (gid) {
+      this.$http.get("/getGraphList?id=" + gid).then(response => {
+        if (response.data !== undefined)
+          return response.data
+      }).then(data => {
+        this.results.seeds = data.nodes[["gene", "protein"][this.seedTypeId]]
+      }).catch(console.log)
+    },
+    convertJobResult: function (res) {
+      let data = JSON.parse(res)
+      this.readJob(data)
+    },
+    loadTargetTable: function (gid) {
+      this.$http.get("/getGraphList?id=" + gid).then(response => {
+        if (response.data !== undefined)
+          return response.data
+      }).then(data => {
+        this.results.targets = data.nodes[["gene", "protein"][this.seedTypeId]]
+      }).catch(console.log)
+    },
   }
 }
 </script>

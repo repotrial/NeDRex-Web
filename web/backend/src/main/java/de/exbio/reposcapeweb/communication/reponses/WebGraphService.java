@@ -1177,4 +1177,14 @@ public class WebGraphService {
         return out;
 
     }
+
+    public Graph createGraphFromIds(String type, List<Integer> nodes, String uid) {
+        Graph g = new Graph(historyController.getGraphId());
+        NodeFilter nf = new NodeFilter(nodeController.getFilter(type),nodes);
+        g.saveNodeFilter(type, nf);
+        g.addNodes(Graphs.getNode(type), nf.toList(-1).stream().map(e -> new Node(e.getNodeId(), e.getName())).collect(Collectors.toList()));
+        cache.put(g.getId(),g);
+        addGraphToHistory(uid,g.getId());
+        return g;
+    }
 }

@@ -1940,7 +1940,7 @@ export default {
         if (response.data !== undefined)
           return response.data
       }).then(data => {
-        this.$emit("addJobEvent", data);
+        this.$socket.subscribeJob(data.jid, "jobUpdateEvent")
       }).catch(console.log)
     },
     directionExtended: function (edge) {

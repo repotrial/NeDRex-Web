@@ -12,7 +12,9 @@
               </v-list-item>
               <v-list-item>
                 <v-list-item-content>
-                  Identify disease modules by selecting seed genes or protein by hand, suggestions using information about e.g. association to disorders or by uploading a list. Tune the parameters of the algorithms (Quick) or just use the default for even less necessary input work (Blitz).
+                  Identify disease modules by selecting seed genes or protein by hand, suggestions using information
+                  about e.g. association to disorders or by uploading a list. Tune the parameters of the algorithms
+                  (Quick) or just use the default for even less necessary input work (Blitz).
                 </v-list-item-content>
               </v-list-item>
               <v-list-item>
@@ -77,7 +79,10 @@
           </v-col>
         </v-row>
       </v-container>
-      <ModuleIdentification v-if="modus===1" :blitz="blitz" @resetEvent="modus=0" :metagraph="metagraph" @printNotificationEvent="printNotification"></ModuleIdentification>
+      <ModuleIdentification v-if="modus===1" :blitz="blitz" @resetEvent="modus=0" :metagraph="metagraph"
+                            @printNotificationEvent="printNotification"
+                            @graphLoadEvent="loadGraph"
+      ></ModuleIdentification>
       <DrugRepurposing v-if="modus===2" :blitz="blitz"></DrugRepurposing>
     </v-card>
   </v-container>
@@ -89,7 +94,7 @@ import DrugRepurposing from "./quick/DrugRepurposing";
 
 export default {
   name: "Quick",
-  props:{
+  props: {
     metagraph: Object,
   },
   data() {
@@ -112,9 +117,13 @@ export default {
     },
 
 
-    printNotification : function (message, type){
-      this.$emit("printNotificationEvent", message,type)
+    printNotification: function (message, type) {
+      this.$emit("printNotificationEvent", message, type)
     },
+
+    loadGraph: function (gid) {
+      this.$emit("graphLoadEvent", gid)
+    }
   },
 
 

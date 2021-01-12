@@ -40,7 +40,9 @@
       </v-card>
     </v-container>
 
-    <Quick v-show="selectionTab===1" :metagraph="metagraph" @printNotificationEvent="printNotification">
+    <Quick v-show="selectionTab===1" :metagraph="metagraph" @printNotificationEvent="printNotification"
+        @graphLoadEvent="loadGraph"
+    >
     </Quick>
 
 
@@ -107,7 +109,7 @@ export default {
     },
     getStartType: function () {
       return this.selectionTab;
-    }
+    },
   },
   components: {
     Advanced,
