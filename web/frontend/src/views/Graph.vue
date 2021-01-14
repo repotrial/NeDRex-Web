@@ -362,11 +362,11 @@ export default {
             // solver: 'repulsion',
             barnesHut: {
               // theta: 0.7,
-              gravitationalConstant: -25000,
-              centralGravity: 0.15,
+              gravitationalConstant: -20000,
+              centralGravity: 0.20,
               springLength: 200,
-              springConstant: 0.02,
-              damping: 0.3,
+              springConstant: 0.04,
+              damping: 0.5,
               avoidOverlap: 0.8
             },
             enabled: false,
@@ -556,7 +556,7 @@ export default {
       if (data.event === "toggle") {
         let params = data.params;
         if (params.type === "nodes")
-          this.toggleGroupVisibility(params.name,params.state, true)
+          this.hideGroupVisibility(params.name,params.state, true)
         else if (params.type === "edges")
           this.toggleEdgeVisible(params.name)
       }

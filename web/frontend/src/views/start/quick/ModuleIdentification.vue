@@ -23,29 +23,44 @@
       <v-stepper-content step="1">
         <v-card
           class="mb-12"
-          height="700px"
+          height="75vh"
         >
 
           <v-card-subtitle class="headline">1. Seed Configuration</v-card-subtitle>
-          <v-card-subtitle style="margin-top: -25px">Add seeds to your list or leave it empty if you plan to select
-            BiCon as your Algorithm.
+          <v-card-subtitle style="margin-top: -25px">Add seeds to your
+            list{{ blitz ? "." : " or leave it empty if you plan to select BiCon as your Algorithm." }}
           </v-card-subtitle>
+          <v-row v-show="!blitz">
+            <v-col>
+              <v-list-item-action>
+                <v-chip
+                  color="primary"
+                  @click="seedTypeId=0; methodModel=1; makeStep(1,'continue')"
+                  style="margin-top:-25px"
+                >
+                  Skip to BiCon
+                </v-chip>
+              </v-list-item-action>
+            </v-col>
+          </v-row>
+          <v-row>
+            <v-col>
+              <v-list-item-subtitle class="title">Select the seed type</v-list-item-subtitle>
+              <v-list-item-action>
+                <v-radio-group row v-model="seedTypeId" :disabled="seeds!==undefined && seeds.length>0">
+                  <v-radio label="Gene">
+                  </v-radio>
+                  <v-radio label="Protein">
+                  </v-radio>
+                </v-radio-group>
+              </v-list-item-action>
+            </v-col>
+          </v-row>
           <v-container style="height: 80%">
-            <v-row style="height: 100%">
+            <v-row style="height: 50vh">
               <v-col cols="6">
-                <v-container>
-                  <v-card-title style="margin-left: -25px">Select the seed type</v-card-title>
-                  <v-card-text>
-                    <v-radio-group row v-model="seedTypeId" :disabled="seeds!==undefined && seeds.length>0">
-                      <v-radio label="Gene">
-                      </v-radio>
-                      <v-radio label="Protein">
-                      </v-radio>
-                    </v-radio-group>
-                  </v-card-text>
-                </v-container>
                 <v-container v-if="seedTypeId!==undefined">
-                  <v-card-title style="margin-left: -25px">Add seeds</v-card-title>
+                  <v-card-title style="margin-left: -25px">Add seeds associated to</v-card-title>
                   <v-row>
                     <v-col cols="3">
                       <v-select :items="getSuggestionSelection()" v-model="suggestionType"
@@ -107,15 +122,17 @@
               <v-col cols="5">
                 <v-card-title class="subtitle-1">Selected Seeds ({{ seeds.length }})
                 </v-card-title>
-                <v-list max-height="45vh" height="45vh" class="overflow-y-auto">
+                <v-list max-height="40vh" height="40vh" class="overflow-y-auto">
                   <v-list-item v-for="(seed,index) in seeds" :key="seed.id">
-                    <v-list-item-icon>
-                      <v-icon v-if="highlighted.indexOf(seed.id)!==-1">fas fa-star</v-icon>
-                    </v-list-item-icon>
                     <v-list-item-title>{{ seed.displayName }}</v-list-item-title>
+                    <v-list>
+                      <template v-for="o in getOrigins(seed.id)">
+                        <v-list-item-subtitle :key="seed.id+o">{{ o }}</v-list-item-subtitle>
+                      </template>
+                    </v-list>
                     <v-list-item-action>
                       <v-btn icon @click="seeds.splice(index,1)" color="red">
-                        <v-icon>far fa-minus-square</v-icon>
+                        <v-icon>far fa-trash-alt</v-icon>
                       </v-btn>
                     </v-list-item-action>
                   </v-list-item>
@@ -133,6 +150,7 @@
         <v-btn
           color="primary"
           @click="makeStep(1,'continue')"
+          :disabled="seedTypeId<0"
         >
           Continue
         </v-btn>
@@ -159,6 +177,7 @@
                   <v-radio v-for="method in methods"
                            :label="method.label"
                            :key="method.label"
+                           :disabled="method.id!=='bicon'&&seeds.length===0"
                   >
                   </v-radio>
                 </v-radio-group>
@@ -167,7 +186,7 @@
                   <v-row>
                     <v-col>
                       <v-switch
-                        label="Only Experimental Validated Interactions"
+                        label="Only use experimentally validated interaction networks"
                         v-model="experimentalSwitch"
                       >
                       </v-switch>
@@ -468,7 +487,7 @@
         </v-btn>
 
         <v-btn
-          @click="makeStep(2,'continue'); submitAlgorithm()"
+          @click="makeStep(2,'continue')"
           color="primary"
         >
           Run
@@ -486,75 +505,65 @@
         >
           <v-container>
             <v-row>
-              <v-col cols="6">
-                <v-card-title class="subtitle-1">Seeds ({{ results.seeds.length }})
+              <v-col cols="3">
+                <v-card-title class="subtitle-1">Seeds ({{ results.seeds.length }}) {{
+                    (results.targets.length !== undefined && results.targets.length > 0 ? ("& Results(" + (results.targets.length - results.seeds.length) + ")") : ": Processing")
+                  }}
+                  <v-progress-circular indeterminate v-if="this.results.targets.length===0">
+                  </v-progress-circular>
                 </v-card-title>
-                <template v-if="results.seeds.length>0">
-                  <v-list max-height="45vh" height="45vh" class="overflow-y-auto">
-                    <v-list-item v-for="(seed,index) in  results.seeds" :key="seed.id">
-                      <v-list-item-icon>
-                        <v-icon v-if="highlighted.indexOf(seed.id)!==-1">fas fa-star</v-icon>
-                      </v-list-item-icon>
-                      <v-list-item-title>{{ seed.displayName }}</v-list-item-title>
-                      <v-list-item-action>
-                        <!--                      <v-btn icon @click="seeds.splice(index,1)" color="red">-->
-                        <!--                        <v-icon>far fa-minus-square</v-icon>-->
-                        <!--                      </v-btn>-->
-                      </v-list-item-action>
-                    </v-list-item>
-                  </v-list>
-                  <v-divider></v-divider>
+                <template v-if="results.targets.length>=0">
+                  <v-simple-table max-height="45vh" height="45vh" class="overflow-y-auto" fixed-header>
+                    <template v-slot:default>
+                      <thead>
+                      <tr>
+                        <th class="text-left">
+                          Name
+                        </th>
+                        <th v-for="val in methodScores()" class="text-left">
+                          {{ val.name }}
+                        </th>
+                      </tr>
+                      </thead>
+                      <tbody>
+                      <tr v-if="results.seeds.map(s=>s.id).indexOf(seed.id)===-1"
+                          v-for="seed in results.targets" :key="seed.id" style="background-color: lightcyan"
+                      >
+                        <td>{{ seed.displayName }}</td>
+                        <td v-for="val in methodScores()">{{ seed[val.id] }}</td>
+                      </tr>
+                      <tr v-for="seed in results.seeds" :key="seed.id">
+                        <td>{{ seed.displayName }}</td>
+                        <td v-for="val in methodScores()"></td>
+                      </tr>
+                      </tbody>
+                    </template>
+                  </v-simple-table>
                   <v-chip outlined style="margin-top:15px" @click="downloadList">
                     <v-icon left>fas fa-download</v-icon>
                     Save Seeds
                   </v-chip>
-                </template>
-                <v-progress-circular v-else indeterminate>
-                </v-progress-circular>
-              </v-col>
-              <v-divider vertical></v-divider>
-              <v-col cols="5">
-                <v-card-title class="subtitle-1">Results
-                  ({{ results.targets.length }})
-                </v-card-title>
-                <template v-if="results.targets.length>0">
-                  <v-list max-height="45vh" height="45vh" class="overflow-y-auto">
-                    <v-list-item v-for="(seed,index) in results.targets" :key="seed.id">
-                      <v-list-item-icon>
-                        <v-icon v-if="highlighted.indexOf(seed.id)!==-1">fas fa-star</v-icon>
-                      </v-list-item-icon>
-                      <v-list-item-title>{{ seed.displayName }}</v-list-item-title>
-                      <v-list-item-action>
-                        <!--                      <v-btn icon @click="seeds.splice(index,1)" color="red">-->
-                        <!--                        <v-icon>far fa-minus-square</v-icon>-->
-                        <!--                      </v-btn>-->
-                      </v-list-item-action>
-                    </v-list-item>
-                  </v-list>
-                  <v-divider></v-divider>
                   <v-chip outlined style="margin-top:15px"
                           @click="downloadResultList">
                     <v-icon left>fas fa-download</v-icon>
                     Save Module
                   </v-chip>
                 </template>
-                <v-progress-circular v-else indeterminate>
-                </v-progress-circular>
-
               </v-col>
             </v-row>
             <v-divider></v-divider>
             <v-row>
               <v-col>
-                <v-chip outlined v-if="jobs[currentJid]!==undefined && jobs[currentJid].result!==undefined" style="margin-top:15px"
+                <v-chip outlined v-if="jobs[currentJid]!==undefined && jobs[currentJid].result!==undefined"
+                        style="margin-top:15px"
                         @click="$emit('graphLoadEvent',{post: {id: jobs[currentJid].result}})">
-                  <v-icon left>fas fa-download</v-icon>
+                  <v-icon left>fas fa-angle-double-right</v-icon>
                   Load Result into Advanced View
                 </v-chip>
               </v-col>
               <v-col>
                 <v-chip outlined v-show="results.targets.length>0" style="margin-top:15px">
-                  <v-icon left>fas fa-download</v-icon>
+                  <v-icon left>fas fa-angle-double-right</v-icon>
                   Continue to Drug-Target Identification
                 </v-chip>
               </v-col>
@@ -595,6 +604,7 @@ export default {
       uid: undefined,
       seedTypeId: undefined,
       seeds: [],
+      seedOrigin: {},
       method: undefined,
       sourceType: undefined,
       step: 1,
@@ -604,17 +614,17 @@ export default {
       nodeSuggestions: null,
       suggestionModel: null,
       fileInputModel: undefined,
-      methods: [{id: "diamond", label: "DIAMOnD"}, {id: "bicon", label: "BiCoN"}, {id: "must", label: "MuST"}],
+      methods: [{
+        id: "diamond",
+        label: "DIAMOnD",
+        scores: [{id: "rank", name: "Rank"}, {id: "p_hyper", name: "P-Value"}]
+      }, {id: "bicon", label: "BiCoN", scores: []}, {id: "must", label: "MuST", scores: []}],
       methodModel: undefined,
       experimentalSwitch: true,
       results: {seeds: [], targets: []},
       jobs: {},
       currentJid: undefined,
       models: {
-        // advanced: {
-        //   keepNodesOnly: true,
-        //   addInteractions: true
-        // },
         diamond: {
           nModel: 200,
           alphaModel: 1,
@@ -670,7 +680,7 @@ export default {
           if (response.data !== undefined)
             return response.data
         }).then(data => {
-          this.addToSelection(data, val.text + "[" + val.type + "]")
+          this.addToSelection(data, "SUG:" + val.text + "[" + this.suggestionType + "]")
         }).then(() => {
           this.suggestionModel = undefined
         }).catch(console.log)
@@ -720,6 +730,10 @@ export default {
       this.seedTypeId = undefined
       this.seeds = []
       this.highlighted = []
+      this.methodModel = undefined
+      if (this.blitz) {
+        this.methodModel = 0
+      }
     },
 
     getSuggestionSelection: function () {
@@ -747,7 +761,8 @@ export default {
         this.init()
         this.$emit("resetEvent")
       }
-
+      if (this.step === 3)
+        this.submitAlgorithm()
     },
     biconFile: function (file) {
       this.models.bicon.exprFile = file
@@ -757,7 +772,7 @@ export default {
       let method = this.methods[this.methodModel].id
       params.experimentalOnly = this.experimentalSwitch
 
-      // params["addInteractions"] = this.models.advanced.addInteractions
+      params["addInteractions"] = true
       params["nodesOnly"] = true
       if (method === 'bicon') {
         params['lg_min'] = this.models.bicon.lg[0];
@@ -834,16 +849,31 @@ export default {
         if (ids.indexOf(e.id) === -1) {
           count++
           this.seeds.push(e)
-          this.highlighted.push(e.id)
         }
+        if (this.seedOrigin[e.id] !== undefined)
+          this.seedOrigin[e.id].push(nameFrom)
+        else
+          this.seedOrigin[e.id] = [nameFrom]
       })
       this.$emit("printNotificationEvent", "Added " + list.length + "from " + nameFrom + " (" + count + " new) seeds!", 1)
+    },
+    methodScores: function () {
+      if (this.methodModel !== undefined && this.methodModel > -1)
+        return this.methods[this.methodModel].scores;
+      return []
+    },
+
+
+    getOrigins: function (id) {
+      if (this.seedOrigin[id] === undefined)
+        return ["?"]
+      else
+        return this.seedOrigin[id]
     },
 
     onFileSelected: function (file) {
       if (file == null)
         return
-      this.highlighted = []
       Utils.readFile(file).then(content => {
         this.$http.post("mapFileListToItems", {
           type: ['gene', 'protein'][this.seedTypeId],
@@ -852,7 +882,7 @@ export default {
           if (response.data)
             return response.data
         }).then(data => {
-          this.addToSelection(data, file.name)
+          this.addToSelection(data, "FILE:" + file.name)
         }).then(() => {
           this.fileInputModel = undefined
         }).catch(console.log)

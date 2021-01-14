@@ -1,90 +1,141 @@
 <template>
   <v-container>
-    <v-card class="mx-auto">
-      <v-container v-if="modus===0">
-        <v-row>
-          <v-col cols="5">
+    <template v-if="modus===0">
+      <v-row>
+        <v-col cols="3"></v-col>
+        <v-col cols="6">
+          <v-card>
             <v-list>
               <v-list-item>
                 <v-list-item-title class="title">
-                  Disease Modules
+                  Disease Modules + Drug Prioritization
                 </v-list-item-title>
               </v-list-item>
               <v-list-item>
                 <v-list-item-content>
-                  Identify disease modules by selecting seed genes or protein by hand, suggestions using information
-                  about e.g. association to disorders or by uploading a list. Tune the parameters of the algorithms
-                  (Quick) or just use the default for even less necessary input work (Blitz).
+                  Identify disease modules like in the standalone Quickstart module but with direct use in a subsequent
+                  drug prioritization analysis. Using the Blitz mode will use default values for the algorithmic
+                  choices,
+                  so only the starting genes will have to be defined.
                 </v-list-item-content>
               </v-list-item>
               <v-list-item>
                 <v-list-item-content>
-                  <v-btn plain @click="start(1,false)">
+                  <v-btn plain>
                     <v-icon left>
                       fas fa-angle-double-right
                     </v-icon>
-                    Quick Module Identification
+                    Quick Module Drug Identification
                   </v-btn>
                 </v-list-item-content>
               </v-list-item>
               <v-list-item>
                 <v-list-item-content>
-                  <v-btn plain @click="start(1,true)">
+                  <v-btn plain>
                     <v-icon left>
                       fas fa-bolt
                     </v-icon>
-                    Blitz Module Identification
+                    Blitz Module Drug Identification
                   </v-btn>
                 </v-list-item-content>
               </v-list-item>
             </v-list>
-          </v-col>
-          <v-col cols="2">
-            <v-divider vertical></v-divider>
-          </v-col>
-          <v-col cols="5">
-            <v-list>
-              <v-list-item>
-                <v-list-item-title class="title">
-                  Drug Repurposing
-                </v-list-item-title>
-              </v-list-item>
-              <v-list-item>
-                <v-list-item-content>
-                  Starting e.g. with a disorder to derive Genes/Proteins for module identification and subsequent drug
-                  ranking (e.g. trustrank)
-                </v-list-item-content>
-              </v-list-item>
-              <v-list-item>
-                <v-list-item-content>
-                  <v-btn plain @click="start(2,false)">
-                    <v-icon left>
-                      fas fa-angle-double-right
-                    </v-icon>
-                    Quick Drug Repurposing
-                  </v-btn>
-                </v-list-item-content>
-              </v-list-item>
-              <v-list-item>
-                <v-list-item-content>
-                  <v-btn plain @click="start(2,true)">
-                    <v-icon left>
-                      fas fa-bolt
-                    </v-icon>
-                    Blitz Drug Repurposing
-                  </v-btn>
-                </v-list-item-content>
-              </v-list-item>
-            </v-list>
-          </v-col>
-        </v-row>
-      </v-container>
-      <ModuleIdentification v-if="modus===1" :blitz="blitz" @resetEvent="modus=0" :metagraph="metagraph"
-                            @printNotificationEvent="printNotification"
-                            @graphLoadEvent="loadGraph"
-      ></ModuleIdentification>
-      <DrugRepurposing v-if="modus===2" :blitz="blitz"></DrugRepurposing>
-    </v-card>
+          </v-card>
+        </v-col>
+      </v-row>
+      <v-row>
+        <v-card class="mx-auto">
+          <v-container>
+            <v-row>
+              <v-col cols="5">
+                <v-list>
+                  <v-list-item>
+                    <v-list-item-title class="title">
+                      Disease Modules
+                    </v-list-item-title>
+                  </v-list-item>
+                  <v-list-item>
+                    <v-list-item-content>
+                      Identify disease modules by selecting seed genes or protein by hand, suggestions using information
+                      about e.g. association to disorders or by uploading a list. Tune the parameters of the algorithms
+                      (Quick) or just use the default for even less necessary input work (Blitz).
+                    </v-list-item-content>
+                  </v-list-item>
+                  <v-list-item>
+                    <v-list-item-content>
+                      <v-btn plain @click="start(1,false)">
+                        <v-icon left>
+                          fas fa-angle-double-right
+                        </v-icon>
+                        Quick Module Identification
+                      </v-btn>
+                    </v-list-item-content>
+                  </v-list-item>
+                  <v-list-item>
+                    <v-list-item-content>
+                      <v-btn plain @click="start(1,true)">
+                        <v-icon left>
+                          fas fa-bolt
+                        </v-icon>
+                        Blitz Module Identification
+                      </v-btn>
+                    </v-list-item-content>
+                  </v-list-item>
+                </v-list>
+              </v-col>
+              <v-col cols="2">
+                <v-divider vertical></v-divider>
+              </v-col>
+              <v-col cols="5">
+                <v-list>
+                  <v-list-item>
+                    <v-list-item-title class="title">
+                      Drug Prioritization
+                    </v-list-item-title>
+                  </v-list-item>
+                  <v-list-item>
+                    <v-list-item-content>
+                      Starting e.g. with a disorder to derive Genes/Proteins for module identification and subsequent
+                      drug
+                      ranking (e.g. trustrank)
+                    </v-list-item-content>
+                  </v-list-item>
+                  <v-list-item>
+                    <v-list-item-content>
+                      <v-btn plain @click="start(2,false)">
+                        <v-icon left>
+                          fas fa-angle-double-right
+                        </v-icon>
+                        Quick Drug Prioritization
+                      </v-btn>
+                    </v-list-item-content>
+                  </v-list-item>
+                  <v-list-item>
+                    <v-list-item-content>
+                      <v-btn plain @click="start(2,true)">
+                        <v-icon left>
+                          fas fa-bolt
+                        </v-icon>
+                        Blitz Drug Repurposing
+                      </v-btn>
+                    </v-list-item-content>
+                  </v-list-item>
+                </v-list>
+              </v-col>
+            </v-row>
+          </v-container>
+        </v-card>
+      </v-row>
+    </template>
+    <v-row>
+      <v-col>
+        <ModuleIdentification ref="moduleIdent" v-if="modus===1" :blitz="blitz" @resetEvent="modus=0" :metagraph="metagraph"
+                              @printNotificationEvent="printNotification"
+                              @graphLoadEvent="loadGraph"
+        ></ModuleIdentification>
+        <DrugRepurposing v-if="modus===2" :blitz="blitz"></DrugRepurposing>
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 
@@ -114,6 +165,8 @@ export default {
     start: function (modus, blitz) {
       this.modus = modus;
       this.blitz = blitz;
+      // if(modus===1)
+      //   this.$refs.modules.init()
     },
 
 
