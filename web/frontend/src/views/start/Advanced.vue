@@ -18,7 +18,7 @@
     <v-row>
       <v-col cols="6">
         <Graph ref="startgraph" :initgraph="{graph:metagraph,name:'metagraph'}" :startGraph="true"
-               :configuration="{visualized:true}"></Graph>
+               :configuration="{visualized:true}" :window-style="windowStyle"></Graph>
       </v-col>
       <v-col cols="2">
         <v-list v-model="nodeModel" ref="nodeSelector">
@@ -108,7 +108,11 @@ export default {
       edges: [],
       nodeModel: [],
       edgeModel: [],
-      filterId: -1
+      filterId: -1,
+      windowStyle:{
+        height: '75vh',
+        'min-height': '75vh',
+      }
     }
   },
   created() {
@@ -176,7 +180,6 @@ export default {
       }
       graphLoad.post["uid"] = this.$cookies.get("uid")
       graphLoad["skipVis"] = this.options.skipVis;
-      console.log(JSON.stringify(graphLoad.skipVis))
       this.$emit("graphLoadEvent", graphLoad)
     },
     toggleNode: function (nodeIndex) {
@@ -210,7 +213,6 @@ export default {
     },
     toggleEdge: function (edgeIndex) {
       let index = this.edgeModel.indexOf(edgeIndex)
-      console.log(this.edges[edgeIndex].label)
       this.$refs.startgraph.toggleEdgeVisible(this.edges[edgeIndex].label)
       if (index >= 0) {
         let remove = -1;

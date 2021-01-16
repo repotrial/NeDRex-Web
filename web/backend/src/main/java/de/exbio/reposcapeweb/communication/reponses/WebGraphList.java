@@ -129,6 +129,8 @@ public class WebGraphList {
         this.attributes.get(type).get(name).forEach(a -> {
             int idx = names.indexOf(a.name);
             String t = idx == -1 ? customAttributes.get(a.name) : types[idx];
+            if(t==null)
+                return;
             if (t.equals("numeric"))
                 a.isNumeric();
             if (t.equals("array"))

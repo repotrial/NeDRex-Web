@@ -30,7 +30,8 @@ colorMap = {
     'drug': Colors.to_rgba("#00CC96"),
     'gene': Colors.to_rgba("#636EFA"),
     'pathway': Colors.to_rgba("#fecb52"),
-    'protein': Colors.to_rgba('#19d3f3')}
+    'protein': Colors.to_rgba('#19d3f3'),
+    'default': Colors.to_rgba('#ffffff')}
 
 if makeImage:
     plot_color = g.new_vertex_property('vector<double>')
@@ -42,7 +43,12 @@ nodeCount = 0
 for x in g.vertices():
     nodeCount += 1
     if makeImage:
-        plot_color[x] = colorMap[g.properties[('v', "type")][x]]
+        print(x)
+        print(g.properties[('v', "type")][x])
+        try:
+            plot_color[x] = colorMap[g.properties[('v', "type")][x]]
+        except:
+            plot_color[x] = colorMap["default"]
 
 scale = abs(math.log10(nodeCount / 100))
 imageHeight = int(math.sqrt(nodeCount) * 10 + min(500, int(500 / scale)))

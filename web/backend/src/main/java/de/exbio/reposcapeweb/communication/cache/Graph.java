@@ -9,7 +9,6 @@ import de.exbio.reposcapeweb.utils.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.*;
 import java.awt.geom.Point2D;
 import java.util.*;
 import java.util.List;
@@ -104,7 +103,7 @@ public class Graph {
         getNodeFilters().forEach(g::saveNodeFilter);
         nodes.forEach((type, map) -> g.addNodes(type, map.values()));
         edges.forEach(g::addEdges);
-        customEdgeNodes.forEach((k, v) -> g.addCollapsedEdges(v.getFirst(), v.getSecond(), customEdges.get(k), new LinkedList<>()));
+        customEdgeNodes.forEach((k, v) -> g.addCustomEdge(v.getFirst(), v.getSecond(), customEdges.get(k), new LinkedList<>()));
         g.setParent(this.id);
         getCustomEdgeAttributeTypes().forEach(g::addCustomEdgeAttributeTypes);
         getCustomEdgeAttributes().forEach(g::addCustomEdgeAttribute);
@@ -286,7 +285,7 @@ public class Graph {
         customEdgeAttributeTypes.get(eid).putAll(v);
     }
 
-    public void addCollapsedEdges(int node1, int node2, String edgeName, LinkedList<Edge> edges) {
+    public void addCustomEdge(int node1, int node2, String edgeName, LinkedList<Edge> edges) {
         int edgeId = (customEdges.size() + 1) * -1;
         customEdgeNodes.put(edgeId, new Pair<>(node1, node2));
         customEdges.put(edgeId, edgeName);

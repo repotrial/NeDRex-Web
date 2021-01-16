@@ -392,7 +392,6 @@ export default {
       this.selection = selected
       this.selected = undefined;
       this.selectedId = selected[0]
-      console.log(this.selectedId)
       this.$http.get("getGraphHistory?gid=" + this.selectedId + "&uid=" + this.$cookies.get("uid")).then(response => {
         if (response.data !== undefined)
           return response.data
@@ -505,7 +504,6 @@ export default {
       if (this.options.favos) {
         out = this.getChronologicalList().filter(l=>l.starred)
       }
-      console.log(out)
       return out
 
     },

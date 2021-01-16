@@ -388,7 +388,12 @@ public class ToolService {
                             edges.put(id1, new HashMap<>());
                         if (!edges.get(id1).containsKey(id2))
                             edges.get(id1).put(id2, new HashMap<>());
-                        edges.get(id1).get(id2).put("participation_number", Integer.parseInt(split.get(2)));
+
+                        HashMap<String, Object> e = edges.get(id1).get(id2);
+
+                        e.put("memberOne", split.get(0));
+                        e.put("memberTwo", split.get(1));
+                        e.put("participation_number", Integer.parseInt(split.get(2)));
                     }
                 }
                 break;
@@ -407,7 +412,7 @@ public class ToolService {
             }
             case TRUSTRANK, CENTRALITY: {
                 for (File f : getTempDir(j.getJobId()).listFiles()) {
-                    if (!f.getName().equals("seeds.list")&& !f.getName().endsWith(".gt")) {
+                    if (!f.getName().equals("seeds.list") && !f.getName().endsWith(".gt")) {
                         nodes = readTrustRankResults(f, domainMaps, j.getTarget());
                     }
                 }
@@ -519,22 +524,24 @@ public class ToolService {
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
-        if(!graphml.exists()){
-           log.error(graphml.getAbsolutePath()+" should hav been created but wasn't!");
+        if (!graphml.exists()) {
+            log.error(graphml.getAbsolutePath() + " should hav been created but wasn't!");
         }
     }
 
     public void createThumbnail(File graphml, File thumb) {
+        thumb.getParentFile().mkdirs();
         try {
-            ProcessUtils.executeProcessWait(new ProcessBuilder("python3", new File(scriptDir, "computeLayouting.py").getAbsolutePath(), graphml.getAbsolutePath(),"1",thumb.getAbsolutePath()));
+            ProcessUtils.executeProcessWait(new ProcessBuilder("python3", new File(scriptDir, "computeLayouting.py").getAbsolutePath(), graphml.getAbsolutePath(), "1", thumb.getAbsolutePath()));
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
     }
 
     public void createLayout(File graphml, File layout) {
+        layout.getParentFile().mkdirs();
         try {
-            ProcessUtils.executeProcessWait(new ProcessBuilder("python3", new File(scriptDir, "computeLayouting.py").getAbsolutePath(), graphml.getAbsolutePath(),"0",layout.getAbsolutePath()));
+            ProcessUtils.executeProcessWait(new ProcessBuilder("python3", new File(scriptDir, "computeLayouting.py").getAbsolutePath(), graphml.getAbsolutePath(), "0", layout.getAbsolutePath()));
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }

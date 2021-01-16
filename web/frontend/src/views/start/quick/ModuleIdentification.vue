@@ -489,6 +489,7 @@
         <v-btn
           @click="makeStep(2,'continue')"
           color="primary"
+          :disabled="methodModel===undefined ||(methodModel===1 && models.bicon.exprFile ===undefined)"
         >
           Run
         </v-btn>
@@ -800,13 +801,13 @@ export default {
       params["addInteractions"] = true
       params["nodesOnly"] = true
       if (method === 'bicon') {
+        this.seeds = []
         params['lg_min'] = this.models.bicon.lg[0];
         params['lg_max'] = this.models.bicon.lg[1];
         params['type'] = "gene"
         Utils.readFile(this.models.bicon.exprFile).then(content => {
           params['exprData'] = content
           this.executeJob(method, params)
-          // this.$emit('executeAlgorithmEvent', this.methodModel, params)
         })
         return
       }

@@ -48,6 +48,7 @@
                      v-on:printNotificationEvent="printNotification"
                      v-on:graphLoadedEvent="loadList"
                      :configuration="options.graph"
+                     :window-style="graphWindowStyle"
               ></Graph>
 
             </v-container>
@@ -299,6 +300,10 @@ export default {
       showVersionInfo: false,
       metadata: {},
       sideHidden: true,
+      graphWindowStyle: {
+        height: '75vh',
+        'min-height': '75vh',
+      }
     }
   },
   created() {
@@ -315,7 +320,7 @@ export default {
     ]
     this.loadMetadata()
     this.initGraphs()
-    this.sideHidden=false
+    this.sideHidden = false
   },
   watch: {
     '$route'(to, from) {
@@ -333,12 +338,11 @@ export default {
       }
     },
 
-    selectedTabId: function(val){
-      if(val>0 && this.gid !==undefined)
-        this.sideHidden=false
-      console.log(val)
-      if(val===0 && this.$refs.start.getStartType()<2)
-        this.sideHidden=true
+    selectedTabId: function (val) {
+      if (val > 0 && this.gid !== undefined)
+        this.sideHidden = false
+      if (val === 0 && this.$refs.start.getStartType() < 2)
+        this.sideHidden = true
 
     }
   },
@@ -389,8 +393,8 @@ export default {
         console.log(err)
       })
     },
-    setSideVisible: function(bool){
-      this.sideHidden=!bool
+    setSideVisible: function (bool) {
+      this.sideHidden = !bool
     },
     visualisationEvent: function () {
       this.reloadSide()
@@ -411,7 +415,7 @@ export default {
         legend: {}
       }
       this.options.list = {showAll: true, selected: 0, total: 0, countMap: {nodes: {}, edges: {}}, entityGraph: {}}
-      this.options.history = {chronological: false, otherUsers: false, entityGraph: {}, favos:false}
+      this.options.history = {chronological: false, otherUsers: false, entityGraph: {}, favos: false}
     },
     loadSubSelection: function (selection) {
       this.loadGraph({data: selection})
@@ -421,7 +425,6 @@ export default {
       this.listDialog = true;
     },
     loadGraph: function (graph) {
-      console.log(graph)
       this.tabslist[1].icon = "fas fa-circle-notch fa-spin"
       this.tabslist[2].icon = "fas fa-circle-notch fa-spin"
       this.options.graph.visualized = false
@@ -491,7 +494,7 @@ export default {
     },
     applyEvent: function (bool) {
       if (this.selectedTabId === 0)
-        this.$refs.start.executeGraphLoad( bool)
+        this.$refs.start.executeGraphLoad(bool)
       if (this.selectedTabId === 1)
         this.$refs.graph.visualizeNow()
     },

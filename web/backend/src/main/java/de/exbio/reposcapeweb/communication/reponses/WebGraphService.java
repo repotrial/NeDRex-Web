@@ -211,13 +211,13 @@ public class WebGraphService {
 
                     LinkedList<HashMap<String, Object>> attrMaps = edges.stream().map(p -> getCustomEdgeAttributeList(g, type, p)).collect(Collectors.toCollection(LinkedList::new));
                     finalList.addEdges(stringType, attrMaps);
-                    finalList.setTypes("edges", stringType, attributeArray, g.getCustomListAttributeTypes(type), g.areCustomListAttributeIds(type), g.getCustomNodeAttributeTypes().get(type));
+                    finalList.setTypes("edges", stringType, attributeArray, g.getCustomListAttributeTypes(type), g.areCustomListAttributeIds(type), g.getCustomEdgeAttributeTypes().get(type));
                 } else {
                     String[] attributeArray = edgeController.getAttributes(type);
                     finalList.addAttributes("edges", stringType, attributeArray, edgeController.getAttributeLabelMap(stringType));
                     LinkedList<HashMap<String, Object>> attrMaps = edgeController.edgesToAttributeList(type, edges, attrs);
                     finalList.addEdges(stringType, attrMaps);
-                    finalList.setTypes("edges", stringType, attributeArray, edgeController.isExperimental(type), edgeController.getIdAttributes(type), g.getCustomNodeAttributeTypes().get(type));
+                    finalList.setTypes("edges", stringType, attributeArray, edgeController.isExperimental(type), edgeController.getIdAttributes(type), g.getCustomEdgeAttributeTypes().get(type));
                     try {
                         HashMap<String, HashSet<String>> distinctValues = new HashMap<>();
                         HashSet<String> distinctAttrs = DBConfig.getDistinctAttributes("edge", type);
@@ -282,7 +282,7 @@ public class WebGraphService {
             HashSet<String> edgeIds = new HashSet<>(Arrays.asList(ids));
             if (typeId < 0) {
                 Pair<Integer, Integer> nodeIds = basis.getNodesfromEdge(typeId);
-                g.addCollapsedEdges(nodeIds.getFirst(), nodeIds.getSecond(), type, basis.getEdges().get(typeId).stream().filter(e -> edgeIds.contains(e.getId1() + "-" + e.getId2())).collect(Collectors.toCollection(LinkedList::new)));
+                g.addCustomEdge(nodeIds.getFirst(), nodeIds.getSecond(), type, basis.getEdges().get(typeId).stream().filter(e -> edgeIds.contains(e.getId1() + "-" + e.getId2())).collect(Collectors.toCollection(LinkedList::new)));
                 int newId = g.getEdge(basis.getEdge(typeId));
                 g.addCustomEdgeAttributeTypes(newId, basis.getCustomAttributeTypes(typeId));
                 g.addCustomEdgeAttribute(newId, basis.getCustomAttributes(typeId));
@@ -706,7 +706,7 @@ public class WebGraphService {
             if (!request.keep)
                 g.getEdges().remove(edgeId2);
         }
-        g.addCollapsedEdges(startNodeId, targetNodeId, request.edgeName, edges);
+        g.addCustomEdge(startNodeId, targetNodeId, request.edgeName, edges);
         int eid = g.getEdge(request.edgeName);
         g.addCustomEdgeAttribute(eid, "Weight", edgeWeights);
         g.addCustomAttributeType(eid, "Weight", "numeric");
@@ -907,10 +907,12 @@ public class WebGraphService {
                     edges.add(new Edge(id1, id2));
                 });
             });
-            derived.addCollapsedEdges(nodeTypeId, nodeTypeId, "MuST_Interaction", edges);
+            derived.addCustomEdge(nodeTypeId, nodeTypeId, "MuST_Interaction", edges);
             int eid = derived.getEdge("MuST_Interaction");
             derived.addCustomEdgeAttribute(eid, j.getResult().getEdges());
             derived.addCustomAttributeType(eid, "participation_number", "numeric");
+            derived.addCustomAttributeType(eid, "memberOne", "id");
+            derived.addCustomAttributeType(eid, "memberTwo", "id");
 
         }
         AtomicInteger size = new AtomicInteger();
@@ -1122,6 +1124,8 @@ public class WebGraphService {
             String line = "";
             while ((line = br.readLine()) != null) {
                 LinkedList<String> l = StringUtils.split(line, "\t");
+                if(l.getFirst().length()==0)
+                    continue;
                 int typeId = Graphs.getNode(l.getFirst());
                 int nodeid = nodeController.getId(l.getFirst(), l.get(1));
                 if (!coords.containsKey(typeId))
