@@ -1,5 +1,5 @@
 <template>
-  <div class="graph-window">
+  <div class="graph-window" :style="windowStyle">
     <i>{{ text }}</i>
     <v-progress-linear v-show="loading" indeterminate :color=loadingColor></v-progress-linear>
     <network v-if="nodeSet !== undefined && isVisualized()" v-show="!loading" class="wrapper" ref="network"
@@ -61,6 +61,10 @@ export default {
     payload: Object,
     configuration: Object,
     startGraph: false,
+    windowStyle:{
+      height: '75vh',
+      'min-height': '75vh',
+    }
   },
   nodes: Object,
   highlight: false,
@@ -118,6 +122,11 @@ export default {
       if (this.gid !== undefined)
         this.init()
     },
+    show: function(gid){
+      this.gid = gid;
+      this.skipVis=false
+      return this.init()
+    },
     prepare: function () {
       if (this.startGraph || this.nodeSet === undefined)
         return
@@ -154,7 +163,7 @@ export default {
       if (!this.skipVis)
         this.configuration.visualized = true;
       //TODO getgraphinfo to handle displaying of sidebar and disabling of enable-physics and disable visualize graph when graph not loaded
-      this.$http.get("/getGraph?id=" + this.gid).then(response => {
+       return this.$http.get("/getGraph?id=" + this.gid).then(response => {
 
         if (response !== undefined)
           return response.data
@@ -201,6 +210,9 @@ export default {
     },
     isVisualized: function () {
       return this.configuration.visualized
+    },
+    setWindowStyle: function(style){
+      this.windowStyle=style
     },
     // showDialogCheck: function () {
     //   this.checkSizeWarning()
@@ -283,6 +295,7 @@ export default {
     }
     ,
 
+
     getDefaults: function () {
       return {
         // nodes: new DataSet(this.metagraph.nodes),
@@ -321,12 +334,29 @@ export default {
                 highlight: {border: '#636EFA', background: '#d6d9f8'}
               }
             },
+            geneModule: {
+              // hidden: false,
+              color: {
+                border: '#636EFA',
+
+                background: '#636EFA',
+                highlight: {border: '#636EFA', background: '#636EFA'}
+              }
+            },
             protein: {
               // hidden: false,
               color: {
                 border: '#19d3f3',
                 background: '#bcdfe5',
                 highlight: {border: '#19d3f3', background: '#bcdfe5'}
+              }
+            },
+            proteinModule: {
+              // hidden: false,
+              color: {
+                border: '#19d3f3',
+                background: '#19d3f3',
+                highlight: {border: '#19d3f3', background: '#19d3f3'}
               }
             },
             pathway: {
@@ -383,6 +413,19 @@ export default {
       // })
     }
     ,
+    getOptions: function(){
+      return this.options
+    },
+    setOptions: function(options){
+      this.options = options;
+      this.updateOptions()
+    },
+    modifyGroups: function(nodeIds, group){
+      let updates = this.nodeSet.get().filter(n=>nodeIds.indexOf(n.id)>-1).map(n=> {
+        return {id: n.id, group:group}
+      })
+      this.nodeSet.update(updates)
+    },
     setPhysics: function (boolean) {
       this.physicsOn = boolean;
       this.options.physics.enabled = this.physicsOn
@@ -573,8 +616,6 @@ export default {
 <style scoped lang="sass">
 .graph-window
   border: 1px solid gray
-  min-height: 75vh
-  height: 75vh
 
 .wrapper
   min-height: 100%

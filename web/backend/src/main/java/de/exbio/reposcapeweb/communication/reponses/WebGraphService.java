@@ -243,7 +243,7 @@ public class WebGraphService {
 
 
             if (!custom)
-                getCachedGraph(id).setWebList(list);
+                g.setWebList(list);
 
         }
         return list;

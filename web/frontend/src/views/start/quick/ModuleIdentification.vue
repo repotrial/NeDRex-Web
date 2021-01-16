@@ -506,8 +506,8 @@
           <v-container>
             <v-row>
               <v-col cols="3">
-                <v-card-title class="subtitle-1">Seeds ({{ results.seeds.length }}) {{
-                    (results.targets.length !== undefined && results.targets.length > 0 ? ("& Results(" + (results.targets.length - results.seeds.length) + ")") : ": Processing")
+                <v-card-title class="subtitle-1">Seeds ({{ seeds.length }}) {{
+                    (results.targets.length !== undefined && results.targets.length > 0 ? ("& Targets(" + (results.targets.length - seeds.length) + ")") : ": Processing")
                   }}
                   <v-progress-circular indeterminate v-if="this.results.targets.length===0">
                   </v-progress-circular>
@@ -526,13 +526,13 @@
                       </tr>
                       </thead>
                       <tbody>
-                      <tr v-if="results.seeds.map(s=>s.id).indexOf(seed.id)===-1"
-                          v-for="seed in results.targets" :key="seed.id" style="background-color: lightcyan"
+                      <tr v-if="seeds.map(s=>s.id).indexOf(seed.id)===-1"
+                          v-for="seed in results.targets" :key="seed.id" :style="targetColorStyle"
                       >
                         <td>{{ seed.displayName }}</td>
                         <td v-for="val in methodScores()">{{ seed[val.id] }}</td>
                       </tr>
-                      <tr v-for="seed in results.seeds" :key="seed.id">
+                      <tr v-for="seed in seeds" :key="seed.id">
                         <td>{{ seed.displayName }}</td>
                         <td v-for="val in methodScores()"></td>
                       </tr>
@@ -550,6 +550,9 @@
                   </v-chip>
                 </template>
               </v-col>
+              <v-col cols="8">
+                <Graph ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle"></Graph>
+              </v-col>
             </v-row>
             <v-divider></v-divider>
             <v-row>
@@ -560,6 +563,11 @@
                   <v-icon left>fas fa-angle-double-right</v-icon>
                   Load Result into Advanced View
                 </v-chip>
+              </v-col>
+              <v-col>
+                <v-switch label="Physics" v-model="graph.physics" @click="updateGraphPhysics()" v-if="results.targets.length>0">
+                </v-switch>
+
               </v-col>
               <v-col>
                 <v-chip outlined v-show="results.targets.length>0" style="margin-top:15px">
@@ -589,6 +597,7 @@
 
 <script>
 import Utils from "../../../scripts/Utils";
+import Graph from "../../Graph";
 
 export default {
   name: "ModuleIdentification",
@@ -601,6 +610,14 @@ export default {
 
   data() {
     return {
+      graphWindowStyle: {
+        height: '60vh',
+        'min-height': '60vh',
+      },
+      targetColorStyle:{
+
+      },
+      graphConfig: {visualized: false},
       uid: undefined,
       seedTypeId: undefined,
       seeds: [],
@@ -619,6 +636,7 @@ export default {
         label: "DIAMOnD",
         scores: [{id: "rank", name: "Rank"}, {id: "p_hyper", name: "P-Value"}]
       }, {id: "bicon", label: "BiCoN", scores: []}, {id: "must", label: "MuST", scores: []}],
+      graph:{physics:false},
       methodModel: undefined,
       experimentalSwitch: true,
       results: {seeds: [], targets: []},
@@ -752,6 +770,10 @@ export default {
           this.step++
       }
       if (button === "back") {
+        if(this.step===3){
+          this.results.targets=[]
+          this.$refs.graph.reload()
+        }
         this.step--
         if (this.step === 2 && this.blitz)
           this.step--
@@ -766,6 +788,9 @@ export default {
     },
     biconFile: function (file) {
       this.models.bicon.exprFile = file
+    },
+    updateGraphPhysics: function(){
+      this.$refs.graph.setPhysics(this.graph.physics)
     },
     submitAlgorithm: function () {
       let params = {}
@@ -832,13 +857,15 @@ export default {
       if (base != null) {
         if (this.jobs[jid].base === undefined) {
           this.jobs[jid].base = base
-          this.loadSeedTable(base)
         }
       }
       if (result != null && data.state === "DONE") {
         this.$socket.unsubscribeJob(jid)
         this.jobs[jid].result = result
-        this.loadTargetTable(result)
+        this.loadTargetTable(result).then(()=>{
+          this.loadGraph(result)
+        })
+
       }
     },
 
@@ -924,26 +951,29 @@ export default {
       dl.click()
       document.body.removeChild(dl)
     },
-    loadSeedTable: function (gid) {
-      this.$http.get("/getGraphList?id=" + gid).then(response => {
-        if (response.data !== undefined)
-          return response.data
-      }).then(data => {
-        this.results.seeds = data.nodes[["gene", "protein"][this.seedTypeId]]
-      }).catch(console.log)
-    },
     convertJobResult: function (res) {
       let data = JSON.parse(res)
       this.readJob(data)
     },
     loadTargetTable: function (gid) {
-      this.$http.get("/getGraphList?id=" + gid).then(response => {
+      this.targetColorStyle={'background-color': this.metagraph.colorMap[['gene', 'protein'][this.seedTypeId]].light}
+      return this.$http.get("/getGraphList?id=" + gid).then(response => {
         if (response.data !== undefined)
           return response.data
       }).then(data => {
         this.results.targets = data.nodes[["gene", "protein"][this.seedTypeId]]
       }).catch(console.log)
     },
+    loadGraph: function (graphId) {
+      this.$refs.graph.show(graphId).then(() => {
+        let seedIds = this.seeds.map(s => s.id)
+        this.$refs.graph.modifyGroups(this.results.targets.filter(n => seedIds.indexOf(n.id) === -1).map(n => ["gen_", "pro_"][this.seedTypeId] + n.id), ["geneModule", "proteinModule"][this.seedTypeId])
+      })
+    }
+  },
+
+  components: {
+    Graph
   }
 }
 </script>
