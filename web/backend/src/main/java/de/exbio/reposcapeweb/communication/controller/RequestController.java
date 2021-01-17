@@ -162,7 +162,9 @@ public class RequestController {
     @ResponseBody
     public String mapToDomainIds(@RequestBody HashMap<String,Object> request){
         int type = Graphs.getNode(request.get("type").toString());
-       return toJson(((List<Integer>) request.get("ids")).stream().map(id->nodeController.getDomainId(type,id)).collect(Collectors.toList()));
+        HashMap<Integer,String> map = new HashMap<>();
+        ((List<Integer>)request.get("ids")).forEach(id->map.put(id,nodeController.getDomainId(type,id)));
+       return toJson(map);
     }
 
     @RequestMapping(value = "/getConnectedSelection", method = RequestMethod.POST)

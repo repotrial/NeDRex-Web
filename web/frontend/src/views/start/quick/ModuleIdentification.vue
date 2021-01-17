@@ -510,7 +510,7 @@
                 <v-card-title class="subtitle-1">Seeds ({{ seeds.length }}) {{
                     (results.targets.length !== undefined && results.targets.length > 0 ? ("& Targets(" + (results.targets.length - seeds.length) + ")") : ": Processing")
                   }}
-                  <v-progress-circular indeterminate v-if="this.results.targets.length===0">
+                  <v-progress-circular indeterminate v-if="this.results.targets.length===0" style="margin-left:15px">
                   </v-progress-circular>
                 </v-card-title>
                 <template v-if="results.targets.length>=0">
@@ -748,7 +748,6 @@ export default {
       this.step = 1
       this.seedTypeId = undefined
       this.seeds = []
-      this.highlighted = []
       this.methodModel = undefined
       if (this.blitz) {
         this.methodModel = 0
@@ -774,6 +773,7 @@ export default {
         if(this.step===3){
           this.results.targets=[]
           this.$refs.graph.reload()
+          this.$socket.unsubscribeJob(this.currentJid)
         }
         this.step--
         if (this.step === 2 && this.blitz)
@@ -826,7 +826,6 @@ export default {
       }
       params['type'] = ["gene", "protein"][this.seedTypeId]
       this.executeJob(method, params)
-      // this.$emit('executeAlgorithmEvent', this.methodModel, params)
     },
 
     executeJob: function (algorithm, params) {
@@ -834,7 +833,7 @@ export default {
       payload.selection = true
       payload.experimentalOnly = params.experimentalOnly
       payload["nodes"] = this.seeds.map(n => n.id)
-      if (algorithm === "diamond" || algorithm === "trustrank" || algorithm === "centrality" || algorithm === "must") {
+      if (algorithm !== "bicon") {
         if (this.seeds.length === 0) {
           this.printNotification("Cannot execute " + algorithm + " without seed nodes!", 1)
           return;
@@ -938,8 +937,15 @@ export default {
         if (response.data !== undefined)
           return response.data
       }).then(data => {
-        let text = "";
-        data.forEach(id => text += id + "\n")
+        let text = "id";
+        this.methods[this.methodModel].scores.forEach(s=> text+="\t"+s.name)
+        text+="\n"
+        this.results.targets.forEach(t => {
+            text += data[t.id]
+            this.methods[this.methodModel].scores.forEach(s => text += "\t" + t[s.id])
+            text += "\n"
+          }
+        )
         this.download(["gene", "protein"][this.seedTypeId] + "_module.tsv", text)
       }).catch(console.log)
     },

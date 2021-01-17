@@ -61,7 +61,7 @@ export default {
     payload: Object,
     configuration: Object,
     startGraph: false,
-    windowStyle:{
+    windowStyle: {
       height: '75vh',
       'min-height': '75vh',
     }
@@ -90,6 +90,7 @@ export default {
       loadingColor: 'primary',
       dialog: false,
       skipVis: false,
+      skipDialog: false,
     }
   }
   ,
@@ -119,12 +120,14 @@ export default {
       this.loading = true;
       this.configuration.visualized = false
       this.gid = this.$route.params["gid"]
+      this.skipDialog = false
       if (this.gid !== undefined)
         this.init()
     },
-    show: function(gid){
+    show: function (gid) {
       this.gid = gid;
-      this.skipVis=false
+      this.skipVis = false
+      this.skipDialog = true
       return this.init()
     },
     prepare: function () {
@@ -136,7 +139,7 @@ export default {
     prepareUnconnectedList: function () {
       this.unconnected = this.nodeSet.getIds()
       this.edgeSet.get().forEach(item => {
-        if(item.from===item.to)
+        if (item.from === item.to)
           return
         let idx = this.unconnected.indexOf(item.from)
         if (idx > -1)
@@ -163,7 +166,7 @@ export default {
       if (!this.skipVis)
         this.configuration.visualized = true;
       //TODO getgraphinfo to handle displaying of sidebar and disabling of enable-physics and disable visualize graph when graph not loaded
-       return this.$http.get("/getGraph?id=" + this.gid).then(response => {
+      return this.$http.get("/getGraph?id=" + this.gid).then(response => {
 
         if (response !== undefined)
           return response.data
@@ -171,13 +174,14 @@ export default {
         .then(graph => {
           this.setGraph(graph)
         }).catch(err => {
-        this.loadingColor = this.colors.bar.error;
-        console.log(err)
-      })
+          this.loadingColor = this.colors.bar.error;
+          console.log(err)
+        })
     },
     setGraph: function (graph) {
       this.loadingColor = this.colors.bar.vis
-      this.dialog = true;
+      if (!this.skipDialog)
+        this.dialog = true;
       if (graph) {
         if (graph.directed !== undefined)
           this.directed = graph.directed
@@ -211,8 +215,8 @@ export default {
     isVisualized: function () {
       return this.configuration.visualized
     },
-    setWindowStyle: function(style){
-      this.windowStyle=style
+    setWindowStyle: function (style) {
+      this.windowStyle = style
     },
     // showDialogCheck: function () {
     //   this.checkSizeWarning()
@@ -413,16 +417,16 @@ export default {
       // })
     }
     ,
-    getOptions: function(){
+    getOptions: function () {
       return this.options
     },
-    setOptions: function(options){
+    setOptions: function (options) {
       this.options = options;
       this.updateOptions()
     },
-    modifyGroups: function(nodeIds, group){
-      let updates = this.nodeSet.get().filter(n=>nodeIds.indexOf(n.id)>-1).map(n=> {
-        return {id: n.id, group:group}
+    modifyGroups: function (nodeIds, group) {
+      let updates = this.nodeSet.get().filter(n => nodeIds.indexOf(n.id) > -1).map(n => {
+        return {id: n.id, group: group}
       })
       this.nodeSet.update(updates)
     },
@@ -537,9 +541,9 @@ export default {
           return item.group === name
         }
       }).map(item => {
-        return {id: item.id, hidden: boolean, physics:!boolean}
+        return {id: item.id, hidden: boolean, physics: !boolean}
       })
-        this.updateNodes(updates)
+      this.updateNodes(updates)
     },
     visualizeNow: function () {
       if (this.configuration.sizeWarning)
@@ -599,7 +603,7 @@ export default {
       if (data.event === "toggle") {
         let params = data.params;
         if (params.type === "nodes")
-          this.hideGroupVisibility(params.name,params.state, true)
+          this.hideGroupVisibility(params.name, params.state, true)
         else if (params.type === "edges")
           this.toggleEdgeVisible(params.name)
       }

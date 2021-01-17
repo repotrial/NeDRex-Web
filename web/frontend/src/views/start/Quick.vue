@@ -133,7 +133,10 @@
                               @printNotificationEvent="printNotification"
                               @graphLoadEvent="loadGraph"
         ></ModuleIdentification>
-        <DrugRepurposing v-if="modus===2" :blitz="blitz"></DrugRepurposing>
+        <DrugRepurposing v-if="modus===2" :blitz="blitz" @resetEvent="modus=0" :metagraph="metagraph"
+                         @printNotificationEvent="printNotification"
+                         @graphLoadEvent="loadGraph"
+        ></DrugRepurposing>
       </v-col>
     </v-row>
   </v-container>
