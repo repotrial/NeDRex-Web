@@ -122,7 +122,7 @@
               <v-col cols="5">
                 <v-card-title class="subtitle-1">Selected Seeds ({{ seeds.length }})
                 </v-card-title>
-                <v-list max-height="40vh" height="40vh" class="overflow-y-auto">
+                <v-list ref="seedlist" max-height="40vh" height="40vh" class="overflow-y-auto">
                   <v-list-item v-for="(seed,index) in seeds" :key="seed.id">
                     <v-list-item-title>{{ seed.displayName }}</v-list-item-title>
                     <v-list>
@@ -131,7 +131,7 @@
                       </template>
                     </v-list>
                     <v-list-item-action>
-                      <v-btn icon @click="seeds.splice(index,1)" color="red">
+                      <v-btn icon @click="removeSeed(index,seed.id)" color="red">
                         <v-icon>far fa-trash-alt</v-icon>
                       </v-btn>
                     </v-list-item-action>
@@ -897,6 +897,10 @@ export default {
       else
         return this.seedOrigin[id]
     },
+    removeSeed: function(index, id){
+      this.seeds.splice(index,1)
+      this.seedOrigin[id]=undefined
+    },
 
     onFileSelected: function (file) {
       if (file == null)
@@ -921,6 +925,7 @@ export default {
         type: ['gene', 'protein'][this.seedTypeId],
         ids: this.seeds.map(s => s.id)
       }).then(response => {
+        console.log(response)
         if (response.data !== undefined)
           return response.data
       }).then(data => {
@@ -973,6 +978,7 @@ export default {
     },
     loadGraph: function (graphId) {
       this.$refs.graph.show(graphId).then(() => {
+        this.$refs.graph.showLoops(false)
         let seedIds = this.seeds.map(s => s.id)
         this.$refs.graph.modifyGroups(this.results.targets.filter(n => seedIds.indexOf(n.id) === -1).map(n => ["gen_", "pro_"][this.seedTypeId] + n.id), ["geneModule", "proteinModule"][this.seedTypeId])
       })

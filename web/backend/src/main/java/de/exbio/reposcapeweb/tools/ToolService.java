@@ -259,6 +259,7 @@ public class ToolService {
                 break;
             }
             case CENTRALITY: {
+                System.out.println(request.getParams());
                 File interactions = request.getParams().get("type").equals("gene") ? new File(dataDir, "ranking_files/GGDr_" + (request.experimentalOnly ? "exp" : "all") + ".gt") : new File(dataDir, "ranking_files/PPDr_all.gt");
                 neededFiles.add(interactions);
                 command += "centrality " + centrality.getAbsolutePath() + " " +

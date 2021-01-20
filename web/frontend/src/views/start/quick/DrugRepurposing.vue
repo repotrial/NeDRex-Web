@@ -183,7 +183,7 @@
                     <v-col>
                       <v-switch
                         label="Only direct Drugs"
-                        v-model="models.trustrank.onlyDirect"
+                        v-model="models.onlyDirect"
                       >
                         <template v-slot:append>
                           <v-tooltip left>
@@ -203,7 +203,7 @@
                     <v-col>
                       <v-switch
                         label="Only approved Drugs"
-                        v-model="models.trustrank.onlyApproved"
+                        v-model="models.onlyApproved"
                       >
                         <template v-slot:append>
                           <v-tooltip left>
@@ -226,14 +226,14 @@
                       <v-slider
                         hide-details
                         class="align-center"
-                        v-model="models.trustrank.damping"
+                        v-model="models.damping"
                         step="0.01"
                         min="0"
                         max="1"
                       >
                         <template v-slot:prepend>
                           <v-text-field
-                            v-model="models.trustrank.damping"
+                            v-model="models.damping"
                             class="mt-0 pt-0"
                             type="float"
                             style="width: 60px"
@@ -438,16 +438,9 @@ export default {
       jobs: {},
       currentJid: undefined,
       models: {
-        trustrank: {
           onlyApproved: true,
           onlyDirect: true,
           damping: 0.85
-        },
-        centrality: {
-          onlyApproved: true,
-          onlyDirect: true,
-          damping: 0.85
-        },
       }
     }
   },
@@ -587,9 +580,9 @@ export default {
       params["addInteractions"] = true
       params["nodesOnly"] = true
 
-      params['direct'] = this.models[method].onlyDirect;
-      params['approved'] = this.models[method].onlyApproved;
-      params['damping'] = this.models[method].damping;
+      params['direct'] = this.models.onlyDirect;
+      params['approved'] = this.models.onlyApproved;
+      params['damping'] = this.models.damping;
 
       params['type'] = ["gene", "protein"][this.seedTypeId]
       this.executeJob(method, params)
@@ -597,6 +590,7 @@ export default {
 
     executeJob: function (algorithm, params) {
       let payload = {userId: this.uid, algorithm: algorithm, params: params}
+      console.log(params)
       payload.selection = true
       payload.experimentalOnly = params.experimentalOnly
       payload["nodes"] = this.seeds.map(n => n.id)
@@ -737,7 +731,9 @@ export default {
       }).catch(console.log)
     },
     loadGraph: function (graphId) {
-      this.$refs.graph.show(graphId)
+      this.$refs.graph.show(graphId).then(()=>{
+        this.$refs.graph.showLoops(false)
+      })
     }
   },
 

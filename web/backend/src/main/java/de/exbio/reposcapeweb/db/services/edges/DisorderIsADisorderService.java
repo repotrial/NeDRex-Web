@@ -156,8 +156,10 @@ public class DisorderIsADisorderService {
 
         entryMap.keySet().forEach(d -> {
             FilterKey key = new FilterKey(entryMap.get(d).getName());
-            disorderService.getFilter().addDistinct(FilterType.GROUP, key, entryMap.get(d));
-            getChildren(d).forEach(c -> {
+            HashSet<Integer> children = getChildren(d);
+            if (!children.isEmpty())
+                disorderService.getFilter().addDistinct(FilterType.GROUP, key, entryMap.get(d));
+            children.forEach(c -> {
                 disorderService.getFilter().addDistinct(FilterType.GROUP, key, entryMap.get(c));
             });
         });
@@ -167,8 +169,8 @@ public class DisorderIsADisorderService {
         HashSet<Integer> out = new HashSet<>();
         if (parentEdges.containsKey(parent))
             parentEdges.get(parent).forEach(c -> {
-                out.add(c.getId2());
-                out.addAll(getChildren(c.getId2()));
+                out.add(c.getId1());
+                out.addAll(getChildren(c.getId1()));
             });
         return out;
     }

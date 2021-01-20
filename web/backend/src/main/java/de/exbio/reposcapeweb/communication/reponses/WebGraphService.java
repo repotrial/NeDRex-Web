@@ -539,7 +539,7 @@ public class WebGraphService {
                             edgeController.getEdges(edgeId, nodeIds.first, nodeId1).forEach(id -> {
                                 if ((g.getNodes().get(nodeIds.second).containsKey(id.getId2()) & g.getNodes().get(nodeIds.first).containsKey(id.getId1())) | extend)
                                     edges.add(!edgeController.getDirection(edgeId) & id.getId1() > id.getId2() ? new Edge(id.flipIds()) : new Edge(id));
-                                if (!g.getNodes().get(nodeIds.second).containsKey(id.getId1()) & extend)
+                                if (!g.getNodes().get(nodeIds.first).containsKey(id.getId1()) & extend)
                                     nodes.add(id.getId1());
                                 if (!g.getNodes().get(nodeIds.second).containsKey(id.getId2()) & extend)
                                     nodes.add(id.getId2());
@@ -587,15 +587,18 @@ public class WebGraphService {
                     int node1 = existing[i];
                     g.getNodes().get(node1).keySet().forEach(nodeId1 -> {
                         try {
-                            HashSet<Integer> add = edgeController.getEdges(edgeId, node1, nodeId1).stream().map(PairId::getId2).collect(Collectors.toCollection(HashSet::new));
-                            nodes.addAll(add);
+                            HashSet<PairId> add = new HashSet<>(edgeController.getEdges(edgeId, node1, nodeId1));
                             if (node1 == nodeIds.getFirst())
-                                add.forEach(nodeId2 ->
-                                        edges.add(new Edge(nodeId1, nodeId2))
+                                add.forEach(id -> {
+                                            edges.add(new Edge(id));
+                                            nodes.add(id.getId2());
+                                        }
                                 );
                             else
-                                add.forEach(nodeId2 ->
-                                        edges.add(new Edge(nodeId2, nodeId1))
+                                add.forEach(id -> {
+                                            edges.add(new Edge(id));
+                                            nodes.add(id.getId1());
+                                        }
                                 );
                         } catch (NullPointerException ignore) {
                         }
@@ -1123,7 +1126,7 @@ public class WebGraphService {
             String line = "";
             while ((line = br.readLine()) != null) {
                 LinkedList<String> l = StringUtils.split(line, "\t");
-                if(l.getFirst().length()==0)
+                if (l.getFirst().length() == 0)
                     continue;
                 int typeId = Graphs.getNode(l.getFirst());
                 int nodeid = nodeController.getId(l.getFirst(), l.get(1));
@@ -1168,7 +1171,7 @@ public class WebGraphService {
         sourceIds.forEach(sourceId -> {
             try {
                 edgeController.getEdges(edgeId, Graphs.getNode(sourceType), sourceId).forEach(e -> {
-                    int n = e.getId2();
+                    int n = Graphs.getNode(sourceType) == Graphs.getNodesfromEdge(edgeId).first ? e.getId2() :e.getId1();
                     try {
                         if (addedNodes.add(n))
                             out.add(nodeController.getNode(targetType, n).getAsMap(new HashSet<>(Arrays.asList("id", "displayName", "primaryDomainId"))));
@@ -1184,11 +1187,11 @@ public class WebGraphService {
 
     public Graph createGraphFromIds(String type, List<Integer> nodes, String uid) {
         Graph g = new Graph(historyController.getGraphId());
-        NodeFilter nf = new NodeFilter(nodeController.getFilter(type),nodes);
+        NodeFilter nf = new NodeFilter(nodeController.getFilter(type), nodes);
         g.saveNodeFilter(type, nf);
         g.addNodes(Graphs.getNode(type), nf.toList(-1).stream().map(e -> new Node(e.getNodeId(), e.getName())).collect(Collectors.toList()));
-        cache.put(g.getId(),g);
-        addGraphToHistory(uid,g.getId());
+        cache.put(g.getId(), g);
+        addGraphToHistory(uid, g.getId());
         return g;
     }
 }
