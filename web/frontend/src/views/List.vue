@@ -22,7 +22,7 @@
           <v-card-title>General Information</v-card-title>
           <v-row>
             <v-col>
-              <v-list>
+              <v-list v-if="attributes.nodes !=null">
                 <v-list-item>
                   <b>Nodes ({{ getCounts('nodes') }})</b>
                 </v-list-item>
@@ -37,7 +37,7 @@
               </v-list>
             </v-col>
             <v-col>
-              <v-list>
+              <v-list v-if="attributes.edges!=null">
                 <v-list-item>
                   <b>Edges ({{ getCounts('edges') }})</b>
                 </v-list-item>
@@ -110,8 +110,8 @@
               <span>options</span>
             </v-tooltip>
           </v-card-title>
-          <i v-if="!update.nodes && Object.keys(nodes).length === 0">no node entries</i>
-          <template v-if="Object.keys(nodes).length>0">
+          <i v-if="!update.nodes && nodes!=null &&Object.keys(nodes).length === 0">no node entries</i>
+          <template v-if="nodes !=null && Object.keys(nodes).length>0">
             <v-tabs next-icon="mdi-arrow-right-bold-box-outline"
                     prev-icon="mdi-arrow-left-bold-box-outline"
                     show-arrows
@@ -334,8 +334,8 @@
               <span>options</span>
             </v-tooltip>
           </v-card-title>
-          <i v-if="Object.keys(edges).length === 0">no edge entries</i>
-          <template v-if="Object.keys(edges).length>0">
+          <i v-if="edges !=null && Object.keys(edges).length === 0">no edge entries</i>
+          <template v-if="edges !=null && Object.keys(edges).length>0">
             <v-tabs
               next-icon="mdi-arrow-right-bold-box-outline"
               prev-icon="mdi-arrow-left-bold-box-outline"
@@ -714,63 +714,12 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-    <!--    <v-dialog-->
-    <!--      v-model="optionDialog"-->
-    <!--      persistent-->
-    <!--      max-width="500"-->
-    <!--      v-if="optionDialog && options !== undefined && options.type !== undefined"-->
-    <!--    >-->
-    <!--      <v-card>-->
-    <!--        <v-card-title class="headline">-->
-    <!--          Organize {{ options.title }} Attributes-->
-    <!--        </v-card-title>-->
-    <!--        <v-card-text>Adjust the attributes of the general item tables.-->
-    <!--        </v-card-text>-->
-    <!--        <v-divider></v-divider>-->
-    <!--        <template v-if="options.type.length>0">-->
-    <!--          <v-tabs v-model="optionTab">-->
-    <!--            <v-tabs-slider color="blue"></v-tabs-slider>-->
-    <!--            <v-tab v-for="name in Object.keys(options.attributes)" :key="name">-->
-    <!--              {{options.type}}-->
-    <!--            </v-tab>-->
-    <!--          </v-tabs>-->
-    <!--          <v-tabs-items>-->
-    <!--            <v-list>-->
-    <!--              <v-list-item v-for="attr in options.attributes[optionTab]" :key="attr.name">-->
-    <!--                <v-switch v-model="attr.selected" :label="attr.name" :disabled="(attr.name === 'id')">-->
-    <!--                </v-switch>-->
-    <!--              </v-list-item>-->
-    <!--            </v-list>-->
-    <!--          </v-tabs-items>-->
-    <!--        </template>-->
-
-    <!--        <v-divider></v-divider>-->
-
-    <!--        <v-card-actions>-->
-    <!--          <v-spacer></v-spacer>-->
-    <!--          <v-btn-->
-    <!--            color="green darken-1"-->
-    <!--            text-->
-    <!--            @click="dialogResolve(false)"-->
-    <!--          >-->
-    <!--            Cancel-->
-    <!--          </v-btn>-->
-    <!--          <v-btn-->
-    <!--            color="green darken-1"-->
-    <!--            text-->
-    <!--            @click="dialogResolve(true)"-->
-    <!--          >-->
-    <!--            Apply-->
-    <!--          </v-btn>-->
-    <!--        </v-card-actions>-->
-    <!--      </v-card>-->
-    <!--    </v-dialog>-->
     <v-dialog
       v-model="optionDialog"
       persistent
       max-width="500"
     >
-      <v-card v-if="options !== undefined && options.type !== undefined">
+      <v-card v-if="options !== undefined && options.type != null && options.attributes !=null && attributes[options.type]!=null">
         <v-card-title class="headline">
           Organize {{ options.title }} Attributes
         </v-card-title>
@@ -1388,21 +1337,49 @@ export default {
           if (response.data !== undefined)
             return response.data
         }).then(data => {
-          //TODO just add new data?
-          if (this.options.type === "nodes") {
-            for (let name in data.nodes) {
-              this.attributes.nodes[name] = data.attributes.nodes[name]
-              this.nodes[name] = data.nodes[name]
+            //TODO just add new data?
+            if (this.options.type === "nodes") {
+              for (let name in data.nodes) {
+                let attributesShown = this.attributes.nodes[name].filter(a => a.list).map(a => a.label)
+                let attributes = data.attributes.nodes[name].filter(a => a.list && attributesShown.indexOf(a.label) === -1).map(a=>a.name)
+                let newAttrs = {}
+
+                data.nodes[name].forEach(n => {
+                  newAttrs[n.id] = {}
+                  attributes.forEach(a => {
+                    newAttrs[n.id][a] = n[a]
+                  })
+                })
+                this.attributes.nodes[name] = data.attributes.nodes[name]
+                this.nodes[name].forEach(n => {
+                    let atts = newAttrs[n.id];
+                    Object.keys(atts).forEach(a=> n[a]=atts[a])
+                })
+              }
+              this.update.nodes = true;
+            } else {
+              for (let name in data.edges) {
+                let attributesShown = this.attributes.edges[name].filter(a => a.list).map(a => a.label)
+                let attributes = data.attributes.edges[name].filter(a => a.list && attributesShown.indexOf(a.label) === -1).map(a=>a.name)
+                let newAttrs = {}
+
+                data.edges[name].forEach(e => {
+                  newAttrs[e.id] = {}
+                  attributes.forEach(a => {
+                    newAttrs[e.id][a] = e[a]
+                  })
+                })
+
+                this.attributes.edges[name] = data.attributes.edges[name]
+                this.edges[name].forEach(e => {
+                  let atts = newAttrs[e.id];
+                  Object.keys(atts).forEach(a=> e[a]=atts[a])
+                })
+              }
+              this.update.edges = true
             }
-            this.update.nodes = true;
-          } else {
-            for (let name in data.edges) {
-              this.attributes.edges[name] = data.attributes.edges[name]
-              this.edges[name] = data.edges[name]
-            }
-            this.update.edges = true
           }
-        }).catch(err => {
+        ).catch(err => {
           console.log(err)
         })
       } else {
@@ -1940,7 +1917,7 @@ export default {
         if (response.data !== undefined)
           return response.data
       }).then(data => {
-        this.$emit("addJobEvent",data)
+        this.$emit("addJobEvent", data)
         // this.$socket.subscribeJob(data.jid, "jobUpdateEvent")
       }).catch(console.log)
     },
