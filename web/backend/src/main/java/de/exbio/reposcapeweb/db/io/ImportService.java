@@ -238,8 +238,10 @@ public class ImportService {
             File cached = new File(cacheDir, node.label);
             NodeFilter nf = filterService.readFromFiles(cached);
             if (nf == null || nf.size() == 0) {
-                log.info("Fixing filter cache for "+node.label);
+                log.info("Fixing filter cache for " + node.label);
                 s.readFilterFromDB();
+                if (node.name.equals("disorder"))
+                    disorderIsADisorderService.createDistinctFilters();
                 filterService.writeToFile(s.getFilter(), cached);
                 log.info("Done fixing.");
             } else

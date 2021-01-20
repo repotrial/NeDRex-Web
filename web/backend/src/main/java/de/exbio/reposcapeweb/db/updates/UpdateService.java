@@ -351,7 +351,7 @@ public class UpdateService {
                     case "DisorderHierarchy":
                         if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, DisorderIsADisorder.sourceAttributes))
                             updateSuccessful = disorderIsADisorderService.submitUpdates(runEdgeUpdates(DisorderIsADisorder.class, edge.file, disorderIsADisorderService::mapIds));
-                        filterService.writeToFile(disorderService.getFilter(), new File(filterCacheDir, edge.name));
+                        filterService.writeToFile(disorderService.getFilter(), new File(filterCacheDir, "Disorder"));
                         disorderIsADisorderService.importEdges();
                         break;
                     case "DrugIndication":
