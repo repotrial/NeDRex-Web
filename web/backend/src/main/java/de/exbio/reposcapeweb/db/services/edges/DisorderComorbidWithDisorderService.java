@@ -24,7 +24,7 @@ public class DisorderComorbidWithDisorderService {
     private final DisorderService disorderService;
     //TODO set to directed value of config
     private final boolean directed = false;
-    private final HashMap<Integer, HashMap<Integer, Boolean>> edges = new HashMap<>();
+    private final HashMap<Integer, HashMap<PairId, Boolean>> edges = new HashMap<>();
 
     @Autowired
     public DisorderComorbidWithDisorderService(DisorderService disorderService, DisorderComorbidWithDisorderRepository disorderComorbidWithDisorderRepository) {
@@ -84,26 +84,26 @@ public class DisorderComorbidWithDisorderService {
     private void importEdge(PairId edge) {
         if (!edges.containsKey(edge.getId1()))
             edges.put(edge.getId1(), new HashMap<>());
-        edges.get(edge.getId1()).put(edge.getId2(), true);
+        edges.get(edge.getId1()).put(edge, true);
 
         if (!edges.containsKey(edge.getId2()))
             edges.put(edge.getId2(), new HashMap<>());
-        edges.get(edge.getId2()).put(edge.getId1(), !directed);
+        edges.get(edge.getId2()).put(edge, !directed);
     }
 
     public boolean isEdge(PairId edge) {
-        return isEdge(edge.getId1(), edge.getId2());
-    }
-
-    public boolean isEdge(int id1, int id2) {
         try {
-            return edges.get(id1).get(id2);
+            return edges.get(edge.getId1()).get(edge);
         } catch (NullPointerException e) {
             return false;
         }
     }
 
-    public HashSet<Integer> getEdges(int id) {
+    public boolean isEdge(int id1, int id2) {
+        return isEdge(new PairId(id1,id2));
+    }
+
+    public HashSet<PairId> getEdges(int id) {
         return edges.get(id).entrySet().stream().filter(Map.Entry::getValue).map(Map.Entry::getKey).collect(Collectors.toCollection(HashSet::new));
     }
 

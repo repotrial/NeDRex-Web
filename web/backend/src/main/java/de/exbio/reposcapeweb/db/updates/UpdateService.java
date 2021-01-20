@@ -142,9 +142,9 @@ public class UpdateService {
         dir.mkdirs();
         File ppiFile = new File(dir, "proteinInteractsWithProtein.tsv");
         try (BufferedWriter bw = WriterUtils.getBasicWriter(ppiFile)) {
-            proteinInteractsWithProteinService.getProteins().forEach((id1, map) -> map.forEach((id2, vals) -> {
+            proteinInteractsWithProteinService.getProteins().forEach((id1, map) -> map.forEach((id, vals) -> {
                 try {
-                    bw.write(proteinService.map(id1) + "\t" + proteinService.map(id2) + "\t" + vals.second + "\n");
+                    bw.write(proteinService.map(id1) + "\t" + proteinService.map(id.getId2()) + "\t" + vals.second + "\n");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -156,9 +156,9 @@ public class UpdateService {
 
         File ggiFile = new File(dir, "geneInteractsWithGene.tsv");
         try (BufferedWriter bw = WriterUtils.getBasicWriter(ggiFile)) {
-            proteinInteractsWithProteinService.getGenes().forEach((id1, map) -> map.forEach((id2, vals) -> {
+            proteinInteractsWithProteinService.getGenes().forEach((id1, map) -> map.forEach((id, vals) -> {
                 try {
-                    bw.write(geneService.map(id1) + "\t" + geneService.map(id2) + "\t" + vals.second + "\n");
+                    bw.write(geneService.map(id1) + "\t" + geneService.map(id.getId2()) + "\t" + vals.second + "\n");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -169,9 +169,9 @@ public class UpdateService {
         }
         File gdFile = new File(dir, "drugHasTargetGene.tsv");
         try (BufferedWriter bw = WriterUtils.getBasicWriter(gdFile)) {
-            drugHasTargetService.getGeneEdgesFrom().forEach((id1, set) -> set.forEach(id2 -> {
+            drugHasTargetService.getGeneEdgesFrom().forEach((id1, set) -> set.forEach(id -> {
                 try {
-                    bw.write(drugService.map(id1) + "\t" + geneService.map(id2) + "\n");
+                    bw.write(drugService.map(id1) + "\t" + geneService.map(id.getId2()) + "\n");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -182,9 +182,9 @@ public class UpdateService {
 
         File pdFile = new File(dir, "drugHasTargetProtein.tsv");
         try (BufferedWriter bw = WriterUtils.getBasicWriter(pdFile)) {
-            drugHasTargetService.getProteinEdgesFrom().forEach((id1, set) -> set.forEach(id2 -> {
+            drugHasTargetService.getProteinEdgesFrom().forEach((id1, set) -> set.forEach(id -> {
                 try {
-                    bw.write(drugService.map(id1) + "\t" + proteinService.map(id2) + "\n");
+                    bw.write(drugService.map(id1) + "\t" + proteinService.map(id.getId2()) + "\n");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

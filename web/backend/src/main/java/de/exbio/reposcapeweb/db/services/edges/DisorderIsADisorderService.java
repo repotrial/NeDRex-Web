@@ -24,7 +24,8 @@ public class DisorderIsADisorderService {
 
     private final DisorderIsADisorderRepository disorderIsADisorderRepository;
     private final boolean directed = true;
-    private final HashMap<Integer, HashMap<Integer, Boolean>> edges = new HashMap<>();
+    private final HashMap<Integer, HashSet<PairId>> parentEdges = new HashMap<>();
+    private final HashMap<Integer, HashSet<PairId>> childEdges = new HashMap<>();
 
     private final DisorderService disorderService;
 
@@ -76,29 +77,45 @@ public class DisorderIsADisorderService {
     }
 
     private void importEdge(PairId edge) {
-        if (!edges.containsKey(edge.getId1()))
-            edges.put(edge.getId1(), new HashMap<>());
-        edges.get(edge.getId1()).put(edge.getId2(), !directed);
+        if (!childEdges.containsKey(edge.getId1()))
+            childEdges.put(edge.getId1(), new HashSet<>());
+        childEdges.get(edge.getId1()).add(edge);
 
-        if (!edges.containsKey(edge.getId2()))
-            edges.put(edge.getId2(), new HashMap<>());
-        edges.get(edge.getId2()).put(edge.getId1(), true);
+        if (!parentEdges.containsKey(edge.getId2()))
+            parentEdges.put(edge.getId2(), new HashSet<>());
+        parentEdges.get(edge.getId2()).add(edge);
     }
 
-    public boolean isEdge(PairId edge) {
-        return isEdge(edge.getId1(), edge.getId2());
-    }
-
-    public boolean isEdge(int id1, int id2) {
+    public boolean isParentEdge(PairId edge) {
         try {
-            return edges.get(id1).get(id2);
+            return parentEdges.get(edge.getId1()).contains(edge);
         } catch (NullPointerException e) {
             return false;
         }
     }
 
-    public HashSet<Integer> getEdges(int id) {
-        return edges.get(id).entrySet().stream().filter(Map.Entry::getValue).map(Map.Entry::getKey).collect(Collectors.toCollection(HashSet::new));
+    public boolean isParentEdge(int id1, int id2) {
+        return isParentEdge(new PairId(id1, id2));
+    }
+
+    public boolean isChildEdge(PairId edge) {
+        try {
+            return childEdges.get(edge.getId1()).contains(edge);
+        } catch (NullPointerException e) {
+            return false;
+        }
+    }
+
+    public boolean isChildEdge(int id1, int id2) {
+        return isChildEdge(new PairId(id1, id2));
+    }
+
+    public HashSet<PairId> getParentEdges(int id) {
+        return parentEdges.get(id);
+    }
+
+    public HashSet<PairId> getChildEdges(int id) {
+        return childEdges.get(id);
     }
 
 
@@ -118,7 +135,6 @@ public class DisorderIsADisorderService {
         item.setSourceDomainId(disorderService.map(item.getPrimaryIds().getId1()));
         item.setTargetDomainId(disorderService.map(item.getPrimaryIds().getId2()));
         item.setNodeNames(disorderService.getName(item.getPrimaryIds().getId1()), disorderService.getName(item.getPrimaryIds().getId2()));
-
         return item;
     }
 
@@ -149,12 +165,10 @@ public class DisorderIsADisorderService {
 
     public HashSet<Integer> getChildren(int parent) {
         HashSet<Integer> out = new HashSet<>();
-        if (edges.containsKey(parent))
-            edges.get(parent).forEach((c, b) -> {
-                if (b) {
-                    out.add(c);
-                    out.addAll(getChildren(c));
-                }
+        if (parentEdges.containsKey(parent))
+            parentEdges.get(parent).forEach(c -> {
+                out.add(c.getId2());
+                out.addAll(getChildren(c.getId2()));
             });
         return out;
     }

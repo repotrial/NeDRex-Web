@@ -29,8 +29,8 @@ public class ProteinInPathwayService {
     private final PathwayService pathwayService;
 
     private final boolean directed = true;
-    private final HashMap<Integer, HashSet<Integer>> edgesTo = new HashMap<>();
-    private final HashMap<Integer, HashSet<Integer>> edgesFrom = new HashMap<>();
+    private final HashMap<Integer, HashSet<PairId>> edgesTo = new HashMap<>();
+    private final HashMap<Integer, HashSet<PairId>> edgesFrom = new HashMap<>();
 
     @Autowired
     public ProteinInPathwayService(PathwayService pathwayService, ProteinService proteinService, ProteinInPathwayRepository proteinInPathwayRepository) {
@@ -76,43 +76,43 @@ public class ProteinInPathwayService {
     private void importEdge(PairId edge) {
         if (!edgesFrom.containsKey(edge.getId1()))
             edgesFrom.put(edge.getId1(), new HashSet<>());
-        edgesFrom.get(edge.getId1()).add(edge.getId2());
+        edgesFrom.get(edge.getId1()).add(edge);
 
         if (!edgesTo.containsKey(edge.getId2()))
             edgesTo.put(edge.getId2(), new HashSet<>());
-        edgesTo.get(edge.getId2()).add(edge.getId1());
+        edgesTo.get(edge.getId2()).add(edge);
     }
 
     public boolean isEdgeTo(PairId edge) {
-        return isEdgeTo(edge.getId1(), edge.getId2());
-    }
-
-    public boolean isEdgeTo(int id1, int id2) {
         try {
-            return edgesTo.get(id1).contains(id2);
+            return edgesTo.get(edge.getId1()).contains(edge);
         } catch (NullPointerException e) {
             return false;
         }
+    }
+
+    public boolean isEdgeTo(int id1, int id2) {
+       return isEdgeTo(new PairId(id1,id2));
     }
 
 
     public boolean isEdgeFrom(PairId edge) {
-        return isEdgeFrom(edge.getId1(), edge.getId2());
-    }
-
-    public boolean isEdgeFrom(int id1, int id2) {
         try {
-            return edgesFrom.get(id1).contains(id2);
+            return edgesFrom.get(edge.getId1()).contains(edge);
         } catch (NullPointerException e) {
             return false;
         }
     }
 
-    public HashSet<Integer> getEdgesTo(Integer id){
+    public boolean isEdgeFrom(int id1, int id2) {
+        return isEdgeFrom(new PairId(id1,id2));
+    }
+
+    public HashSet<PairId> getEdgesTo(Integer id){
         return edgesTo.get(id);
     }
 
-    public HashSet<Integer> getEdgesFrom(Integer id){
+    public HashSet<PairId> getEdgesFrom(Integer id){
         return edgesFrom.get(id);
     }
 

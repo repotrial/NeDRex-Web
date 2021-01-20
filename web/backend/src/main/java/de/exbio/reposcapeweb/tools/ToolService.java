@@ -158,11 +158,11 @@ public class ToolService {
         File ggi_all = new File(dataDir, "gene_gene_interaction_all.pairs");
         File ggi_exp = new File(dataDir, "gene_gene_interaction_exp.pairs");
         try (BufferedWriter bw_all = WriterUtils.getBasicWriter(ggi_all); BufferedWriter bw_exp = WriterUtils.getBasicWriter(ggi_exp)) {
-            interactionService.getGenes().forEach((id1, map) -> map.forEach((id2, vals) -> {
+            interactionService.getGenes().forEach((id1, map) -> map.forEach((id, vals) -> {
                         try {
-                            bw_all.write(geneService.map(id1) + "\t" + geneService.map(id2) + "\n");
+                            bw_all.write(geneService.map(id1) + "\t" + geneService.map(id.getId2()) + "\n");
                             if (vals.second) {
-                                bw_exp.write(geneService.map(id1) + "\t" + geneService.map(id2) + "\n");
+                                bw_exp.write(geneService.map(id1) + "\t" + geneService.map(id.getId2()) + "\n");
                             }
                         } catch (IOException e) {
                             e.printStackTrace();
@@ -177,11 +177,11 @@ public class ToolService {
         File ppi_all = new File(dataDir, "protein_protein_interaction_all.pairs");
         File ppi_exp = new File(dataDir, "protein_protein_interaction_exp.pairs");
         try (BufferedWriter bw_all = WriterUtils.getBasicWriter(ppi_all); BufferedWriter bw_exp = WriterUtils.getBasicWriter(ppi_exp)) {
-            interactionService.getProteins().forEach((id1, map) -> map.forEach((id2, vals) -> {
+            interactionService.getProteins().forEach((id1, map) -> map.forEach((id, vals) -> {
                 try {
-                    bw_all.write(proteinService.map(id1) + "\t" + proteinService.map(id2) + "\n");
+                    bw_all.write(proteinService.map(id1) + "\t" + proteinService.map(id.getId2()) + "\n");
                     if (vals.second) {
-                        bw_exp.write(proteinService.map(id1) + "\t" + proteinService.map(id2) + "\n");
+                        bw_exp.write(proteinService.map(id1) + "\t" + proteinService.map(id.getId2()) + "\n");
                     }
                 } catch (IOException e) {
                     e.printStackTrace();

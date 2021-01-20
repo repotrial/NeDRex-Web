@@ -1,6 +1,5 @@
 package de.exbio.reposcapeweb.db.services.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import de.exbio.reposcapeweb.communication.cache.Graphs;
 import de.exbio.reposcapeweb.db.entities.edges.*;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
@@ -24,7 +23,6 @@ public class EdgeController {
     private final ProteinInPathwayService proteinInPathwayService;
     private final ProteinInteractsWithProteinService proteinInteractsWithProteinService;
     private final DrugHasContraindicationService drugHasContraindicationService;
-    private final ObjectMapper objectMapper;
 
     public static HashMap<String,String> edgeName2LabelMap =new HashMap<>();
     public static HashMap<String,String> edgeLabel2NameMap = new HashMap<>();
@@ -40,8 +38,7 @@ public class EdgeController {
             ProteinEncodedByService proteinEncodedByService,
             ProteinInPathwayService proteinInPathwayService,
             ProteinInteractsWithProteinService proteinInteractsWithProteinService,
-            DrugHasContraindicationService drugHasContraindicationService,
-            ObjectMapper objectMapper
+            DrugHasContraindicationService drugHasContraindicationService
 
     ) {
         this.disorderComorbidWithDisorderService = disorderComorbidWithDisorderService;
@@ -52,12 +49,11 @@ public class EdgeController {
         this.proteinEncodedByService = proteinEncodedByService;
         this.proteinInPathwayService = proteinInPathwayService;
         this.proteinInteractsWithProteinService = proteinInteractsWithProteinService;
-        this.objectMapper = objectMapper;
         this.drugHasContraindicationService=drugHasContraindicationService;
     }
 
 
-    public HashSet<Integer> getGenesAssociatedWithDisorderFrom(int id) {
+    public HashSet<PairId> getGenesAssociatedWithDisorderFrom(int id) {
         return associatedWithDisorderService.getGeneEdgesFrom(id);
     }
 
@@ -65,7 +61,7 @@ public class EdgeController {
         return associatedWithDisorderService.isGeneEdgeFrom(id1, id2);
     }
 
-    public HashSet<Integer> getProteinAssociatedWithDisorderFrom(int id) {
+    public HashSet<PairId> getProteinAssociatedWithDisorderFrom(int id) {
         return associatedWithDisorderService.getProteinEdgesFrom(id);
     }
 
@@ -77,7 +73,7 @@ public class EdgeController {
         return associatedWithDisorderService.isProteinEdgeTo(id1, id2);
     }
 
-    public HashSet<Integer> getGenesAssociatedWithDisorderTo(int id) {
+    public HashSet<PairId> getGenesAssociatedWithDisorderTo(int id) {
         return associatedWithDisorderService.getGeneEdgesTo(id);
     }
 
@@ -85,7 +81,7 @@ public class EdgeController {
         return associatedWithDisorderService.isGeneEdgeTo(id1, id2);
     }
 
-    public HashSet<Integer> getProteinAssociatedWithDisorderTo(int id) {
+    public HashSet<PairId> getProteinAssociatedWithDisorderTo(int id) {
         return associatedWithDisorderService.getProteinEdgesTo(id);
     }
 
@@ -94,7 +90,7 @@ public class EdgeController {
     }
 
 
-    public HashSet<Integer> getDisorderComorbidWithDisorder(int id) {
+    public HashSet<PairId> getDisorderComorbidWithDisorder(int id) {
         return disorderComorbidWithDisorderService.getEdges(id);
     }
 
@@ -102,15 +98,16 @@ public class EdgeController {
         return disorderComorbidWithDisorderService.isEdge(id1, id2);
     }
 
-    public HashSet<Integer> getDisorderIsADisorder(int id) {
-        return disorderIsADisorderService.getEdges(id);
+    public HashSet<PairId> getDisorderIsADisorder(int id) {
+        return disorderIsADisorderService.getParentEdges(id);
     }
+
 
     public boolean isDisorderIsADisorder(int id1, int id2) {
-        return disorderIsADisorderService.isEdge(id1, id2);
+        return disorderIsADisorderService.isParentEdge(id1, id2);
     }
 
-    public HashSet<Integer> getDrugHasIndicationFrom(int id) {
+    public HashSet<PairId> getDrugHasIndicationFrom(int id) {
         return drugHasIndicationService.getEdgesFrom(id);
     }
 
@@ -118,7 +115,7 @@ public class EdgeController {
         return drugHasIndicationService.isEdgeFrom(id1, id2);
     }
 
-    public HashSet<Integer> getDrugHasIndicationTo(int id) {
+    public HashSet<PairId> getDrugHasIndicationTo(int id) {
         return drugHasIndicationService.getEdgesTo(id);
     }
 
@@ -127,7 +124,7 @@ public class EdgeController {
     }
 
 
-    public HashSet<Integer> getDrugHasContraindicationFrom(int id) {
+    public HashSet<PairId> getDrugHasContraindicationFrom(int id) {
         return drugHasContraindicationService.getEdgesFrom(id);
     }
 
@@ -135,7 +132,7 @@ public class EdgeController {
         return drugHasContraindicationService.isEdgeFrom(id1, id2);
     }
 
-    public HashSet<Integer> getDrugHasContraindicationTo(int id) {
+    public HashSet<PairId> getDrugHasContraindicationTo(int id) {
         return drugHasContraindicationService.getEdgesTo(id);
     }
 
@@ -143,7 +140,7 @@ public class EdgeController {
         return drugHasContraindicationService.isEdgeTo(id1, id2);
     }
 
-    public HashSet<Integer> getDrugHasTargetGeneFrom(int id) {
+    public HashSet<PairId> getDrugHasTargetGeneFrom(int id) {
         return drugHasTargetService.getGeneEdgesFrom(id);
     }
 
@@ -151,7 +148,7 @@ public class EdgeController {
         return drugHasTargetService.isGeneEdgeFrom(id1, id2);
     }
 
-    public HashSet<Integer> getDrugHasTargetGeneTo(int id) {
+    public HashSet<PairId> getDrugHasTargetGeneTo(int id) {
         return drugHasTargetService.getGeneEdgesTo(id);
     }
 
@@ -159,7 +156,7 @@ public class EdgeController {
         return drugHasTargetService.isGeneEdgeTo(id1, id2);
     }
 
-    public HashSet<Integer> getDrugHasTargetProteinFrom(int id) {
+    public HashSet<PairId> getDrugHasTargetProteinFrom(int id) {
         return drugHasTargetService.getProteinEdgesFrom(id);
     }
 
@@ -167,7 +164,7 @@ public class EdgeController {
         return drugHasTargetService.isProteinEdgeFrom(id1, id2);
     }
 
-    public HashSet<Integer> getDrugHasTargetProteinTo(int id) {
+    public HashSet<PairId> getDrugHasTargetProteinTo(int id) {
         return drugHasTargetService.getProteinEdgesTo(id);
     }
 
@@ -176,7 +173,7 @@ public class EdgeController {
     }
 
 
-    public HashSet<Integer> getProteinEncodedByTo(int id) {
+    public HashSet<PairId> getProteinEncodedByTo(int id) {
         return proteinEncodedByService.getEdgesTo(id);
     }
 
@@ -184,7 +181,7 @@ public class EdgeController {
         return proteinEncodedByService.isEdgeTo(id1, id2);
     }
 
-    public HashSet<Integer> getProteinEncodedByFrom(int id) {
+    public HashSet<PairId> getProteinEncodedByFrom(int id) {
         return proteinEncodedByService.getEdgesFrom(id);
     }
 
@@ -193,7 +190,7 @@ public class EdgeController {
     }
 
 
-    public HashSet<Integer> getProteinInPathwayTo(int id) {
+    public HashSet<PairId> getProteinInPathwayTo(int id) {
         return proteinInPathwayService.getEdgesTo(id);
     }
 
@@ -201,7 +198,7 @@ public class EdgeController {
         return proteinInPathwayService.isEdgeTo(id1, id2);
     }
 
-    public HashSet<Integer> getProteinInPathwayFrom(int id) {
+    public HashSet<PairId> getProteinInPathwayFrom(int id) {
         return proteinInPathwayService.getEdgesFrom(id);
     }
 
@@ -209,7 +206,7 @@ public class EdgeController {
         return proteinInPathwayService.isEdgeFrom(id1, id2);
     }
 
-    public HashSet<Integer> getProteinInteractsWithProtein(int id) {
+    public HashSet<PairId> getProteinInteractsWithProtein(int id) {
         return proteinInteractsWithProteinService.getProteins(id);
     }
 
@@ -222,7 +219,7 @@ public class EdgeController {
         return proteinInteractsWithProteinService.isGeneEdge(id1, id2);
     }
 
-    public HashSet<Integer> getGeneInteractsWithGene(int id) {
+    public HashSet<PairId> getGeneInteractsWithGene(int id) {
         return proteinInteractsWithProteinService.getGenes(id);
     }
 
@@ -371,13 +368,13 @@ public class EdgeController {
         };
     }
 
-    public HashSet<Integer> getEdges(int edgeId, int firstType, Integer node) {
+    public HashSet<PairId> getEdges(int edgeId, int firstType, Integer node) {
         if (Graphs.getNodesfromEdge(edgeId).first == firstType)
             return getEdgesFrom(edgeId, node);
         return getEdgesTo(edgeId, node);
     }
 
-    private HashSet<Integer> getEdgesFrom(int edgeId, Integer node) {
+    private HashSet<PairId> getEdgesFrom(int edgeId, Integer node) {
         return switch (Graphs.getEdge(edgeId)) {
             case "GeneAssociatedWithDisorder" -> getGenesAssociatedWithDisorderFrom(node);
             case "DrugTargetGene" -> getDrugHasTargetGeneFrom(node);
@@ -395,7 +392,7 @@ public class EdgeController {
         };
     }
 
-    private HashSet<Integer> getEdgesTo(int edgeId, Integer node) {
+    private HashSet<PairId> getEdgesTo(int edgeId, Integer node) {
         return switch (Graphs.getEdge(edgeId)) {
             case "GeneAssociatedWithDisorder" -> getGenesAssociatedWithDisorderTo(node);
             case "DrugTargetGene" -> getDrugHasTargetGeneTo(node);

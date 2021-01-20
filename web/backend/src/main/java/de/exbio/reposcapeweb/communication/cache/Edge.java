@@ -1,6 +1,7 @@
 package de.exbio.reposcapeweb.communication.cache;
 
 import de.exbio.reposcapeweb.communication.reponses.WebEdge;
+import de.exbio.reposcapeweb.db.entities.ids.PairId;
 
 import java.util.Objects;
 
@@ -10,6 +11,11 @@ public class Edge {
 
     public Edge(){
 
+    }
+
+    public Edge (PairId id){
+        this.id1 = id.getId1();
+        this.id2 = id.getId2();
     }
 
     public Edge(int id1, int id2) {

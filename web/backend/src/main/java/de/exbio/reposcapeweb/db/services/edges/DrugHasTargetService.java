@@ -38,10 +38,10 @@ public class DrugHasTargetService {
     private final ProteinService proteinService;
 
     private final boolean directed = true;
-    private final HashMap<Integer, HashSet<Integer>> proteinEdgesTo = new HashMap<>();
-    private final HashMap<Integer, HashSet<Integer>> proteinEdgesFrom = new HashMap<>();
-    private final HashMap<Integer, HashSet<Integer>> geneEdgesTo = new HashMap<>();
-    private final HashMap<Integer, HashSet<Integer>> geneEdgesFrom = new HashMap<>();
+    private final HashMap<Integer, HashSet<PairId>> proteinEdgesTo = new HashMap<>();
+    private final HashMap<Integer, HashSet<PairId>> proteinEdgesFrom = new HashMap<>();
+    private final HashMap<Integer, HashSet<PairId>> geneEdgesTo = new HashMap<>();
+    private final HashMap<Integer, HashSet<PairId>> geneEdgesFrom = new HashMap<>();
 
     private final DataSource dataSource;
     private final String clearQuery = "DELETE FROM drug_has_target_gene";
@@ -125,56 +125,59 @@ public class DrugHasTargetService {
     private void importGeneEdge(PairId edge) {
         if (!geneEdgesFrom.containsKey(edge.getId1()))
             geneEdgesFrom.put(edge.getId1(), new HashSet<>());
-        geneEdgesFrom.get(edge.getId1()).add(edge.getId2());
+        geneEdgesFrom.get(edge.getId1()).add(edge);
 
         if (!geneEdgesTo.containsKey(edge.getId2()))
             geneEdgesTo.put(edge.getId2(), new HashSet<>());
-        geneEdgesTo.get(edge.getId2()).add(edge.getId1());
+        geneEdgesTo.get(edge.getId2()).add(edge);
     }
-
 
 
     public boolean isGeneEdgeFrom(PairId edge) {
-        return isGeneEdgeFrom(edge.getId1(), edge.getId2());
+        try {
+            return geneEdgesFrom.get(edge.getId1()).contains(edge);
+        } catch (NullPointerException e) {
+            return false;
+        }
     }
 
     public boolean isGeneEdgeFrom(int id1, int id2) {
-        try {
-            return geneEdgesFrom.get(id1).contains(id2);
-        } catch (NullPointerException e) {
-            return false;
-        }
+        return isGeneEdgeFrom(new PairId(id1,id2));
     }
 
-    public HashSet<Integer> getGeneEdgesTo(int id) {
+    public HashSet<PairId> getGeneEdgesTo(int id) {
         return geneEdgesTo.get(id);
     }
 
-    public boolean isGeneEdgeTo(int id1, int id2) {
+    public boolean isGeneEdgeTo(PairId edge) {
         try {
-            return geneEdgesTo.get(id1).contains(id2);
+            return geneEdgesTo.get(edge.getId1()).contains(edge);
         } catch (NullPointerException e) {
             return false;
         }
     }
 
-    public HashMap<Integer, HashSet<Integer>> getProteinEdgesTo() {
+    public boolean isGeneEdgeTo(int id1, int id2) {
+        return isGeneEdgeTo(new PairId(id1, id2));
+    }
+
+    public HashMap<Integer, HashSet<PairId>> getProteinEdgesTo() {
         return proteinEdgesTo;
     }
 
-    public HashMap<Integer, HashSet<Integer>> getProteinEdgesFrom() {
+    public HashMap<Integer, HashSet<PairId>> getProteinEdgesFrom() {
         return proteinEdgesFrom;
     }
 
-    public HashMap<Integer, HashSet<Integer>> getGeneEdgesTo() {
+    public HashMap<Integer, HashSet<PairId>> getGeneEdgesTo() {
         return geneEdgesTo;
     }
 
-    public HashMap<Integer, HashSet<Integer>> getGeneEdgesFrom() {
+    public HashMap<Integer, HashSet<PairId>> getGeneEdgesFrom() {
         return geneEdgesFrom;
     }
 
-    public HashSet<Integer> getGeneEdgesFrom(int id) {
+    public HashSet<PairId> getGeneEdgesFrom(int id) {
         return geneEdgesFrom.get(id);
     }
 
@@ -186,39 +189,43 @@ public class DrugHasTargetService {
     private void importProteinEdge(PairId edge) {
         if (!proteinEdgesFrom.containsKey(edge.getId1()))
             proteinEdgesFrom.put(edge.getId1(), new HashSet<>());
-        proteinEdgesFrom.get(edge.getId1()).add(edge.getId2());
+        proteinEdgesFrom.get(edge.getId1()).add(edge);
 
         if (!proteinEdgesTo.containsKey(edge.getId2()))
             proteinEdgesTo.put(edge.getId2(), new HashSet<>());
-        proteinEdgesTo.get(edge.getId2()).add(edge.getId1());
+        proteinEdgesTo.get(edge.getId2()).add(edge);
     }
 
 
     public boolean isProteinEdgeFrom(PairId edge) {
-        return isProteinEdgeFrom(edge.getId1(), edge.getId2());
+        try {
+            return proteinEdgesFrom.get(edge.getId1()).contains(edge);
+        } catch (NullPointerException e) {
+            return false;
+        }
     }
 
     public boolean isProteinEdgeFrom(int id1, int id2) {
-        try {
-            return proteinEdgesFrom.get(id1).contains(id2);
-        } catch (NullPointerException e) {
-            return false;
-        }
+        return isProteinEdgeFrom(new PairId(id1, id2));
     }
 
-    public HashSet<Integer> getProteinEdgesTo(int id) {
+    public HashSet<PairId> getProteinEdgesTo(int id) {
         return proteinEdgesTo.get(id);
     }
 
-    public boolean isProteinEdgeTo(int id1, int id2) {
+    public boolean isProteinEdgeTo(PairId edge) {
         try {
-            return proteinEdgesTo.get(id1).contains(id2);
+            return proteinEdgesTo.get(edge.getId1()).contains(edge);
         } catch (NullPointerException e) {
             return false;
         }
     }
 
-    public HashSet<Integer> getProteinEdgesFrom(int id) {
+    public boolean isProteinEdgeTo(int id1, int id2) {
+        return isProteinEdgeTo(new PairId(id1, id2));
+    }
+
+    public HashSet<PairId> getProteinEdgesFrom(int id) {
         return proteinEdgesFrom.get(id);
     }
 
@@ -248,19 +255,16 @@ public class DrugHasTargetService {
     public DrugHasTargetProtein setDomainIds(DrugHasTargetProtein item) {
         item.setSourceDomainId(drugService.map(item.getPrimaryIds().getId1()));
         item.setTargetDomainId(proteinService.map(item.getPrimaryIds().getId2()));
-        item.setNodeNames(drugService.getName(item.getPrimaryIds().getId1()),proteinService.getName(item.getPrimaryIds().getId2()));
+        item.setNodeNames(drugService.getName(item.getPrimaryIds().getId1()), proteinService.getName(item.getPrimaryIds().getId2()));
         return item;
     }
+
     public DrugHasTargetGene setDomainIds(DrugHasTargetGene item) {
         item.setSourceDomainId(drugService.map(item.getPrimaryIds().getId1()));
         item.setTargetDomainId(geneService.map(item.getPrimaryIds().getId2()));
-        item.setNodeNames(drugService.getName(item.getPrimaryIds().getId1()),geneService.getName(item.getPrimaryIds().getId2()));
+        item.setNodeNames(drugService.getName(item.getPrimaryIds().getId1()), geneService.getName(item.getPrimaryIds().getId2()));
         return item;
     }
-
-
-
-
 
 
     public boolean isDirected() {
