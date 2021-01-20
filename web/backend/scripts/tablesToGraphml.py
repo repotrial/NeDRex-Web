@@ -40,14 +40,16 @@ for file in os.listdir("./"):
         for line in fh.readlines():
             if line.startswith("#"):
                 for attr in line.strip()[1:].split("\t"):
+                    if attr.startswith('#'):
+                        attr = attr[1:]
                     attrMap[attr] = len(attrMap)
-                idIndex1 = attrMap["sourceDomainId"] if "sourceDomainId" in attrMap else attrMap["memberOne"]
-                idIndex2 = attrMap["targetDomainId"] if "targetDomainId" in attrMap else attrMap["memberTwo"]
+                idIndex1 = attrMap["sourceDomainId"] if "sourceDomainId" in attrMap else attrMap["SourceDomainId"] if "SourceDomainId" in attrMap else attrMap["memberOne"] if "memberOne" in attrMap else attrMap["MemberOne"]
+                idIndex2 = attrMap["targetDomainId"] if "targetDomainId" in attrMap else attrMap["TargetDomainId"] if "TargetDomainId" in attrMap else attrMap["memberTwo"] if "memberTwo" in attrMap else attrMap["MemberTwo"]
             else:
                 data = {}
                 line = line.strip().split("\t")
                 for attr, idx in attrMap.items():
-                    if attr != "id":
+                    if attr != "id" and attr != "ID":
                         if attr == "type":
                             data[attr] = edgeType
                         else:
