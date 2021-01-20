@@ -1,11 +1,7 @@
 package de.exbio.reposcapeweb.db.services.edges;
 
-import de.exbio.reposcapeweb.db.entities.edges.DisorderComorbidWithDisorder;
 import de.exbio.reposcapeweb.db.entities.edges.DisorderIsADisorder;
-import de.exbio.reposcapeweb.db.entities.edges.GeneAssociatedWithDisorder;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
-import de.exbio.reposcapeweb.db.entities.nodes.Disorder;
-import de.exbio.reposcapeweb.db.entities.nodes.Drug;
 import de.exbio.reposcapeweb.db.repositories.edges.DisorderIsADisorderRepository;
 import de.exbio.reposcapeweb.db.services.nodes.DisorderService;
 import de.exbio.reposcapeweb.db.updates.UpdateOperation;
@@ -27,7 +23,7 @@ public class DisorderIsADisorderService {
     private final Logger log = LoggerFactory.getLogger(DisorderIsADisorderService.class);
 
     private final DisorderIsADisorderRepository disorderIsADisorderRepository;
-    private final boolean directed = false;
+    private final boolean directed = true;
     private final HashMap<Integer, HashMap<Integer, Boolean>> edges = new HashMap<>();
 
     private final DisorderService disorderService;
@@ -82,11 +78,11 @@ public class DisorderIsADisorderService {
     private void importEdge(PairId edge) {
         if (!edges.containsKey(edge.getId1()))
             edges.put(edge.getId1(), new HashMap<>());
-        edges.get(edge.getId1()).put(edge.getId2(), true);
+        edges.get(edge.getId1()).put(edge.getId2(), !directed);
 
         if (!edges.containsKey(edge.getId2()))
             edges.put(edge.getId2(), new HashMap<>());
-        edges.get(edge.getId2()).put(edge.getId1(), !directed);
+        edges.get(edge.getId2()).put(edge.getId1(), true);
     }
 
     public boolean isEdge(PairId edge) {
@@ -136,12 +132,31 @@ public class DisorderIsADisorderService {
 
     public void createDistinctFilters() {
         HashMap<Integer, FilterEntry> entryMap = new HashMap<>();
-        disorderService.findAll().forEach(d -> entryMap.put(d.getId(),new FilterEntry(d.getDisplayName(),FilterType.GROUP,d.getId())));
 
-        findAll().forEach(dd -> {
-            disorderService.getFilter().addDistinct(FilterType.GROUP,new FilterKey(entryMap.get(dd.getPrimaryIds().getId2()).getName()),entryMap.get(dd.getPrimaryIds().getId2()));
-            disorderService.getFilter().addDistinct(FilterType.GROUP,new FilterKey(entryMap.get(dd.getPrimaryIds().getId2()).getName()),entryMap.get(dd.getPrimaryIds().getId1()));
+        importEdges();
+        disorderService.findAll().forEach(d -> {
+            entryMap.put(d.getId(), new FilterEntry(d.getDisplayName(), FilterType.GROUP, d.getId()));
         });
+
+        entryMap.keySet().forEach(d -> {
+            FilterKey key = new FilterKey(entryMap.get(d).getName());
+            disorderService.getFilter().addDistinct(FilterType.GROUP, key, entryMap.get(d));
+            getChildren(d).forEach(c -> {
+                disorderService.getFilter().addDistinct(FilterType.GROUP, key, entryMap.get(c));
+            });
+        });
+    }
+
+    public HashSet<Integer> getChildren(int parent) {
+        HashSet<Integer> out = new HashSet<>();
+        if (edges.containsKey(parent))
+            edges.get(parent).forEach((c, b) -> {
+                if (b) {
+                    out.add(c);
+                    out.addAll(getChildren(c));
+                }
+            });
+        return out;
     }
 
 }
