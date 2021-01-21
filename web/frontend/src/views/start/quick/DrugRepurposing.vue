@@ -405,6 +405,7 @@ export default {
     blitz: Boolean,
     metagraph: Object,
   },
+  sugQuery:"",
 
 
   data() {
@@ -447,28 +448,7 @@ export default {
   watch: {
 
     nodeSuggestions: function (val) {
-      let name = this.suggestionType
-      if (this.suggestions.chosen !== undefined)
-        return
-      this.suggestions.loading = true;
-      this.suggestions.data = []
-      this.$http.post("getSuggestions", {
-        name: name,
-        query: val,
-      }).then(response => {
-        if (response.data !== undefined) {
-          return response.data
-        }
-      }).then(data => {
-        data.suggestions.sort((e1, e2) => {
-          return e2.ids.length - e1.ids.length
-        })
-        this.suggestions.data = data.suggestions;
-      }).catch(err =>
-        console.log(err)
-      ).finally(() =>
-        this.suggestions.loading = false
-      )
+      this.getSuggestions(val,false)
     },
     suggestionModel: function (val) {
       if (val !== undefined && val != null) {
@@ -586,6 +566,42 @@ export default {
 
       params['type'] = ["gene", "protein"][this.seedTypeId]
       this.executeJob(method, params)
+    },
+    getSuggestions: function (val, timeouted) {
+      if (!timeouted) {
+        this.sugQuery = val
+        if (val == null || val.length < 3) {
+          this.suggestions.data = []
+          return
+        }
+        setTimeout(function() {this.getSuggestions(val, true)}.bind(this), 500)
+      } else {
+        if (val !== this.sugQuery) {
+          return
+        }
+        let name = this.suggestionType
+        if (this.suggestions.chosen !== undefined)
+          return
+        this.suggestions.loading = true;
+        this.suggestions.data = []
+        this.$http.post("getSuggestions", {
+          name: name,
+          query: val,
+        }).then(response => {
+          if (response.data !== undefined) {
+            return response.data
+          }
+        }).then(data => {
+          data.suggestions.sort((e1, e2) => {
+            return e2.ids.length - e1.ids.length
+          })
+          this.suggestions.data = data.suggestions;
+        }).catch(err =>
+          console.log(err)
+        ).finally(() =>
+          this.suggestions.loading = false
+        )
+      }
     },
 
     executeJob: function (algorithm, params) {

@@ -886,6 +886,7 @@ export default {
   name: "List",
   gid: undefined,
   uid: undefined,
+  suqQuery: "",
 
   data() {
     return {
@@ -967,34 +968,7 @@ export default {
       this.applySuggestion(val)
     },
     findNodeSuggestions: function (val) {
-      let type = "nodes";
-      let name = Object.keys(this.nodes)[this.nodeTab];
-      if (this.suggestions[type].chosen !== undefined)
-        return
-      this.suggestions[type].loading = true;
-      this.suggestions[type].data = []
-      this.$nextTick().then(() => {
-        this.$http.post("getSuggestions", {
-          gid: this.gid,
-          type: type,
-          name: name,
-          query: val,
-        }).then(response => {
-          if (response.data !== undefined) {
-            return response.data
-          }
-        }).then(data => {
-          data.suggestions.sort((e1, e2) => {
-            return e2.ids.length - e1.ids.length
-          })
-          this.suggestions[type].data = data.suggestions;
-        }).catch(err =>
-          console.log(err)
-        ).finally(() =>
-          this.suggestions[type].loading = false
-        )
-      }).catch(err =>
-        console.log(err))
+      this.getNodeSuggestions(val,false)
     },
   },
   methods: {
@@ -1047,6 +1021,70 @@ export default {
         case "subselect":
           this.loadSelection()
           break
+      }
+    },
+    getNodeSuggestions: function (val, timeouted) {
+      if (!timeouted) {
+        this.sugQuery = val
+        if (val == null || val.length < 2) {
+          this.suggestions.data = []
+          return
+        }
+        setTimeout(function() {this.getNodeSuggestions(val, true)}.bind(this), 500)
+      } else {
+        if (val !== this.sugQuery) {
+          return
+        }
+        let type = "nodes";
+        let name = Object.keys(this.nodes)[this.nodeTab];
+        if (this.suggestions[type].chosen !== undefined)
+          return
+        this.suggestions[type].loading = true;
+        this.suggestions[type].data = []
+        this.$nextTick().then(() => {
+          this.$http.post("getSuggestions", {
+            gid: this.gid,
+            type: type,
+            name: name,
+            query: val,
+          }).then(response => {
+            if (response.data !== undefined) {
+              return response.data
+            }
+          }).then(data => {
+            data.suggestions.sort((e1, e2) => {
+              return e2.ids.length - e1.ids.length
+            })
+            this.suggestions[type].data = data.suggestions;
+          }).catch(err =>
+            console.log(err)
+          ).finally(() =>
+            this.suggestions[type].loading = false
+          )
+        }).catch(err =>
+          console.log(err))
+        // let name = this.suggestionType
+        // if (this.suggestions.chosen !== undefined)
+        //   return
+        // this.suggestions.loading = true;
+        // this.suggestions.data = []
+        // this.$http.post("getSuggestions", {
+        //   name: name,
+        //   query: val,
+        // }).then(response => {
+        //   if (response.data !== undefined) {
+        //     return response.data
+        //   }
+        // }).then(data => {
+        //   data.suggestions.sort((e1, e2) => {
+        //     return e2.ids.length - e1.ids.length
+        //   })
+        //   this.suggestions.data = data.suggestions;
+        // }).catch(err =>
+        //   console.log(err)
+        // ).finally(() =>
+        //   this.suggestions.loading = false
+        // )
       }
     },
     loadList: function (data) {

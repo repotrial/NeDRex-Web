@@ -566,7 +566,8 @@
                 </v-chip>
               </v-col>
               <v-col>
-                <v-switch label="Physics" v-model="graph.physics" @click="updateGraphPhysics()" v-if="results.targets.length>0">
+                <v-switch label="Physics" v-model="graph.physics" @click="updateGraphPhysics()"
+                          v-if="results.targets.length>0">
                 </v-switch>
 
               </v-col>
@@ -606,7 +607,10 @@ export default {
   props: {
     blitz: Boolean,
     metagraph: Object,
+
   },
+
+  sugQuery: undefined,
 
 
   data() {
@@ -615,9 +619,7 @@ export default {
         height: '60vh',
         'min-height': '60vh',
       },
-      targetColorStyle:{
-
-      },
+      targetColorStyle: {},
       graphConfig: {visualized: false},
       uid: undefined,
       seedTypeId: undefined,
@@ -637,7 +639,7 @@ export default {
         label: "DIAMOnD",
         scores: [{id: "rank", name: "Rank"}, {id: "p_hyper", name: "P-Value"}]
       }, {id: "bicon", label: "BiCoN", scores: []}, {id: "must", label: "MuST", scores: []}],
-      graph:{physics:false},
+      graph: {physics: false},
       methodModel: undefined,
       experimentalSwitch: true,
       results: {seeds: [], targets: []},
@@ -665,28 +667,7 @@ export default {
   watch: {
 
     nodeSuggestions: function (val) {
-      let name = this.suggestionType
-      if (this.suggestions.chosen !== undefined)
-        return
-      this.suggestions.loading = true;
-      this.suggestions.data = []
-      this.$http.post("getSuggestions", {
-        name: name,
-        query: val,
-      }).then(response => {
-        if (response.data !== undefined) {
-          return response.data
-        }
-      }).then(data => {
-        data.suggestions.sort((e1, e2) => {
-          return e2.ids.length - e1.ids.length
-        })
-        this.suggestions.data = data.suggestions;
-      }).catch(err =>
-        console.log(err)
-      ).finally(() =>
-        this.suggestions.loading = false
-      )
+      this.getSuggestions(val, false)
     },
     suggestionModel: function (val) {
       if (val !== undefined && val != null) {
@@ -770,8 +751,8 @@ export default {
           this.step++
       }
       if (button === "back") {
-        if(this.step===3){
-          this.results.targets=[]
+        if (this.step === 3) {
+          this.results.targets = []
           this.$refs.graph.reload()
           this.$socket.unsubscribeJob(this.currentJid)
         }
@@ -787,10 +768,46 @@ export default {
       if (this.step === 3)
         this.submitAlgorithm()
     },
+    getSuggestions: function (val, timeouted) {
+      if (!timeouted) {
+        this.sugQuery = val
+        if (val == null || val.length < 3) {
+          this.suggestions.data = []
+          return
+        }
+        setTimeout(function() {this.getSuggestions(val, true)}.bind(this), 500)
+      } else {
+        if (val !== this.sugQuery) {
+          return
+        }
+        let name = this.suggestionType
+        if (this.suggestions.chosen !== undefined)
+          return
+        this.suggestions.loading = true;
+        this.suggestions.data = []
+        this.$http.post("getSuggestions", {
+          name: name,
+          query: val,
+        }).then(response => {
+          if (response.data !== undefined) {
+            return response.data
+          }
+        }).then(data => {
+          data.suggestions.sort((e1, e2) => {
+            return e2.ids.length - e1.ids.length
+          })
+          this.suggestions.data = data.suggestions;
+        }).catch(err =>
+          console.log(err)
+        ).finally(() =>
+          this.suggestions.loading = false
+        )
+      }
+    },
     biconFile: function (file) {
       this.models.bicon.exprFile = file
     },
-    updateGraphPhysics: function(){
+    updateGraphPhysics: function () {
       this.$refs.graph.setPhysics(this.graph.physics)
     },
     submitAlgorithm: function () {
@@ -862,7 +879,7 @@ export default {
       if (result != null && data.state === "DONE") {
         this.$socket.unsubscribeJob(jid)
         this.jobs[jid].result = result
-        this.loadTargetTable(result).then(()=>{
+        this.loadTargetTable(result).then(() => {
           this.loadGraph(result)
         })
 
@@ -897,9 +914,9 @@ export default {
       else
         return this.seedOrigin[id]
     },
-    removeSeed: function(index, id){
-      this.seeds.splice(index,1)
-      this.seedOrigin[id]=undefined
+    removeSeed: function (index, id) {
+      this.seeds.splice(index, 1)
+      this.seedOrigin[id] = undefined
     },
 
     onFileSelected: function (file) {
@@ -943,8 +960,8 @@ export default {
           return response.data
       }).then(data => {
         let text = "id";
-        this.methods[this.methodModel].scores.forEach(s=> text+="\t"+s.name)
-        text+="\n"
+        this.methods[this.methodModel].scores.forEach(s => text += "\t" + s.name)
+        text += "\n"
         this.results.targets.forEach(t => {
             text += data[t.id]
             this.methods[this.methodModel].scores.forEach(s => text += "\t" + t[s.id])
@@ -968,7 +985,7 @@ export default {
       this.readJob(data)
     },
     loadTargetTable: function (gid) {
-      this.targetColorStyle={'background-color': this.metagraph.colorMap[['gene', 'protein'][this.seedTypeId]].light}
+      this.targetColorStyle = {'background-color': this.metagraph.colorMap[['gene', 'protein'][this.seedTypeId]].light}
       return this.$http.get("/getGraphList?id=" + gid).then(response => {
         if (response.data !== undefined)
           return response.data
