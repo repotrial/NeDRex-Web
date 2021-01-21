@@ -22,6 +22,7 @@
     <v-stepper-items>
       <v-stepper-content step="1">
         <v-card
+          v-if="step===1"
           class="mb-12"
           height="75vh"
         >
@@ -162,6 +163,7 @@
 
       <v-stepper-content step="2">
         <v-card
+          v-if="step===2"
           class="mb-12"
           height="700px"
         >
@@ -501,6 +503,7 @@
 
       <v-stepper-content step="3">
         <v-card
+          v-if="step===3"
           class="mb-12"
           height="700px"
         >
@@ -572,9 +575,9 @@
 
               </v-col>
               <v-col>
-                <v-chip outlined v-show="results.targets.length>0" style="margin-top:15px">
+                <v-chip outlined v-show="results.targets.length>0" style="margin-top:15px" @click="loadDrugTargets">
                   <v-icon left>fas fa-angle-double-right</v-icon>
-                  Continue to Drug-Target Identification
+                  Continue to Drug-Ranking
                 </v-chip>
               </v-col>
             </v-row>
@@ -592,7 +595,46 @@
         </v-btn>
       </v-stepper-content>
     </v-stepper-items>
+    <v-dialog
+      v-model="drugTargetPopup"
+      persistent
+      max-width="500"
+    >
+      <v-card>
+        <v-card-title>Continue to Drug-Ranking</v-card-title>
+        <v-card-text>Do you want to use the whole module as input for the drug ranking or just a subset?
+        </v-card-text>
+        <v-card-actions>
+          <v-radio-group v-model="rankingSelect" row>
+            <v-radio :label="'Original seeds ('+seeds.length+')'">
 
+            </v-radio>
+            <v-radio :label="'whole Module ('+results.targets.length+')'">
+            </v-radio>
+            <v-radio :label="'targets only ('+(results.targets.length-seeds.length)+')'">
+            </v-radio>
+          </v-radio-group>
+        </v-card-actions>
+        <v-divider></v-divider>
+
+        <v-card-actions>
+          <v-btn
+            text
+            @click="resolveRankingDialog(false)"
+          >
+            Cancel
+          </v-btn>
+          <v-btn
+            color="green darken-1"
+            text
+            @click="resolveRankingDialog(true)"
+          >
+            Accept
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+
+    </v-dialog>
 
   </v-stepper>
 </template>
@@ -661,7 +703,9 @@ export default {
           trees: 10,
           maxit: 10,
         }
-      }
+      },
+      drugTargetPopup: false,
+      rankingSelect: 1
     }
   },
   watch: {
@@ -733,6 +777,10 @@ export default {
       if (this.blitz) {
         this.methodModel = 0
       }
+      this.results.targets = []
+      this.seedOrigin = []
+      if (this.$refs.graph)
+        this.$refs.graph.reload()
     },
 
     getSuggestionSelection: function () {
@@ -775,7 +823,9 @@ export default {
           this.suggestions.data = []
           return
         }
-        setTimeout(function() {this.getSuggestions(val, true)}.bind(this), 500)
+        setTimeout(function () {
+          this.getSuggestions(val, true)
+        }.bind(this), 500)
       } else {
         if (val !== this.sugQuery) {
           return
@@ -804,12 +854,37 @@ export default {
         )
       }
     },
+    loadDrugTargets: function () {
+      this.rankingSelect = 1
+      this.drugTargetPopup = true
+    },
+    resolveRankingDialog: function (apply) {
+      this.drugTargetPopup = false;
+      if (!apply)
+        return
+
+      let drugSeeds = []
+
+      if (this.rankingSelect === 0) {
+        drugSeeds = this.seeds.map(s => s.id)
+      } else {
+        drugSeeds = this.results.targets.map(t => t.id)
+        if (this.rankingSelect === 2) {
+          this.seeds.forEach(s => drugSeeds.splice(drugSeeds.indexOf(s.id), 1))
+        }
+      }
+      this.$emit("loadDrugTargetEvent", this.blitz, drugSeeds, ["gene", "protein"][this.seedTypeId])
+      this.init()
+    }
+    ,
     biconFile: function (file) {
       this.models.bicon.exprFile = file
-    },
+    }
+    ,
     updateGraphPhysics: function () {
       this.$refs.graph.setPhysics(this.graph.physics)
-    },
+    }
+    ,
     submitAlgorithm: function () {
       let params = {}
       let method = this.methods[this.methodModel].id
@@ -843,7 +918,8 @@ export default {
       }
       params['type'] = ["gene", "protein"][this.seedTypeId]
       this.executeJob(method, params)
-    },
+    }
+    ,
 
     executeJob: function (algorithm, params) {
       let payload = {userId: this.uid, algorithm: algorithm, params: params}
@@ -863,7 +939,8 @@ export default {
         this.$socket.subscribeJob(data.jid, "quickFinishedEvent");
         this.readJob(data)
       }).catch(console.log)
-    },
+    }
+    ,
     readJob: function (data) {
       let jid = data.jid
       this.currentJid = jid
@@ -884,7 +961,8 @@ export default {
         })
 
       }
-    },
+    }
+    ,
 
     addToSelection: function (list, nameFrom) {
       let ids = this.seeds.map(seed => seed.id)
@@ -900,12 +978,14 @@ export default {
           this.seedOrigin[e.id] = [nameFrom]
       })
       this.$emit("printNotificationEvent", "Added " + list.length + "from " + nameFrom + " (" + count + " new) seeds!", 1)
-    },
+    }
+    ,
     methodScores: function () {
       if (this.methodModel !== undefined && this.methodModel > -1)
         return this.methods[this.methodModel].scores;
       return []
-    },
+    }
+    ,
 
 
     getOrigins: function (id) {
@@ -913,11 +993,13 @@ export default {
         return ["?"]
       else
         return this.seedOrigin[id]
-    },
+    }
+    ,
     removeSeed: function (index, id) {
       this.seeds.splice(index, 1)
       this.seedOrigin[id] = undefined
-    },
+    }
+    ,
 
     onFileSelected: function (file) {
       if (file == null)
@@ -935,7 +1017,8 @@ export default {
           this.fileInputModel = undefined
         }).catch(console.log)
       }).catch(console.log)
-    },
+    }
+    ,
 
     downloadList: function () {
       this.$http.post("mapToDomainIds", {
@@ -950,7 +1033,8 @@ export default {
         data.forEach(id => text += id + "\n")
         this.download(["gene", "protein"][this.seedTypeId] + "_seeds.tsv", text)
       }).catch(console.log)
-    },
+    }
+    ,
     downloadResultList: function () {
       this.$http.post("mapToDomainIds", {
         type: ['gene', 'protein'][this.seedTypeId],
@@ -970,7 +1054,8 @@ export default {
         )
         this.download(["gene", "protein"][this.seedTypeId] + "_module.tsv", text)
       }).catch(console.log)
-    },
+    }
+    ,
     download: function (name, content) {
       let dl = document.createElement('a')
       dl.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(content))
@@ -979,11 +1064,13 @@ export default {
       document.body.appendChild(dl)
       dl.click()
       document.body.removeChild(dl)
-    },
+    }
+    ,
     convertJobResult: function (res) {
       let data = JSON.parse(res)
       this.readJob(data)
-    },
+    }
+    ,
     loadTargetTable: function (gid) {
       this.targetColorStyle = {'background-color': this.metagraph.colorMap[['gene', 'protein'][this.seedTypeId]].light}
       return this.$http.get("/getGraphList?id=" + gid).then(response => {
@@ -992,7 +1079,8 @@ export default {
       }).then(data => {
         this.results.targets = data.nodes[["gene", "protein"][this.seedTypeId]]
       }).catch(console.log)
-    },
+    }
+    ,
     loadGraph: function (graphId) {
       this.$refs.graph.show(graphId).then(() => {
         this.$refs.graph.showLoops(false)

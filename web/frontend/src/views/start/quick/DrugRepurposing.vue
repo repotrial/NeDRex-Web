@@ -22,6 +22,7 @@
     <v-stepper-items>
       <v-stepper-content step="1">
         <v-card
+          v-if="step===1"
           class="mb-12"
           height="75vh"
         >
@@ -147,6 +148,7 @@
 
       <v-stepper-content step="2">
         <v-card
+          v-if="step===2"
           class="mb-12"
           height="700px"
         >
@@ -284,6 +286,7 @@
 
       <v-stepper-content step="3">
         <v-card
+          v-if="step===3"
           class="mb-12"
           height="700px"
         >
@@ -319,7 +322,9 @@
                 <Graph ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle"></Graph>
               </v-col>
               <v-col cols="3">
-                <v-card-title class="subtitle-1"> Targets{{ (results.targets.length !== undefined && results.targets.length > 0 ? (" (" + (results.targets.length - seeds.length) + ")") : ": Processing") }}
+                <v-card-title class="subtitle-1"> Targets{{
+                    (results.targets.length !== undefined && results.targets.length > 0 ? (" (" + (results.targets.length - seeds.length) + ")") : ": Processing")
+                  }}
                   <v-progress-circular indeterminate v-if="this.results.targets.length===0" style="margin-left:15px">
                   </v-progress-circular>
                 </v-card-title>
@@ -368,12 +373,6 @@
                 </v-switch>
 
               </v-col>
-              <v-col>
-                <v-chip outlined v-show="results.targets.length>0" style="margin-top:15px">
-                  <v-icon left>fas fa-angle-double-right</v-icon>
-                  Continue to Drug-Target Identification
-                </v-chip>
-              </v-col>
             </v-row>
           </v-container>
         </v-card>
@@ -405,7 +404,7 @@ export default {
     blitz: Boolean,
     metagraph: Object,
   },
-  sugQuery:"",
+  sugQuery: "",
 
 
   data() {
@@ -439,16 +438,16 @@ export default {
       jobs: {},
       currentJid: undefined,
       models: {
-          onlyApproved: true,
-          onlyDirect: true,
-          damping: 0.85
+        onlyApproved: true,
+        onlyDirect: true,
+        damping: 0.85
       }
     }
   },
   watch: {
 
     nodeSuggestions: function (val) {
-      this.getSuggestions(val,false)
+      this.getSuggestions(val, false)
     },
     suggestionModel: function (val) {
       if (val !== undefined && val != null) {
@@ -514,6 +513,10 @@ export default {
       if (this.blitz) {
         this.methodModel = 1
       }
+      this.results.target = []
+      this.seedOrigin = {}
+      if (this.$refs.graph)
+        this.$refs.graph.reload()
     },
 
     getSuggestionSelection: function () {
@@ -574,7 +577,9 @@ export default {
           this.suggestions.data = []
           return
         }
-        setTimeout(function() {this.getSuggestions(val, true)}.bind(this), 500)
+        setTimeout(function () {
+          this.getSuggestions(val, true)
+        }.bind(this), 500)
       } else {
         if (val !== this.sugQuery) {
           return
@@ -665,6 +670,22 @@ export default {
       return []
     },
 
+    setSeeds: function (seedIds, type) {
+      this.seedTypeId = ["gene", "protein"].indexOf(type)
+      this.$http.post("getConnectedNodes", {
+        sourceType: type,
+        targetType: type,
+        sourceIds: seedIds,
+        noloop: true
+      }).then(response => {
+        if (response.data !== undefined)
+          return response.data
+      }).then(data => {
+        this.addToSelection(data, "METH: Module Ident")
+      }).then(() => {
+        this.suggestionModel = undefined
+      }).catch(console.log)
+    },
 
     getOrigins: function (id) {
       if (this.seedOrigin[id] === undefined)
@@ -713,15 +734,15 @@ export default {
           return response.data
       }).then(data => {
         let text = "id";
-        this.methods[this.methodModel].scores.forEach(s=> text+="\t"+s.name)
-        text+="\n"
+        this.methods[this.methodModel].scores.forEach(s => text += "\t" + s.name)
+        text += "\n"
         this.results.targets.forEach(t => {
             text += data[t.id]
-          this.methods[this.methodModel].scores.forEach(s => text += "\t" + t[s.id])
+            this.methods[this.methodModel].scores.forEach(s => text += "\t" + t[s.id])
             text += "\n"
           }
         )
-        this.download( "drug_ranking.tsv", text)
+        this.download("drug_ranking.tsv", text)
       }).catch(console.log)
     },
     download: function (name, content) {
@@ -743,11 +764,11 @@ export default {
         if (response.data !== undefined)
           return response.data
       }).then(data => {
-        this.results.targets = data.nodes.drug.sort((e1,e2)=>e2.score-e1.score)
+        this.results.targets = data.nodes.drug.sort((e1, e2) => e2.score - e1.score)
       }).catch(console.log)
     },
     loadGraph: function (graphId) {
-      this.$refs.graph.show(graphId).then(()=>{
+      this.$refs.graph.show(graphId).then(() => {
         this.$refs.graph.showLoops(false)
       })
     }

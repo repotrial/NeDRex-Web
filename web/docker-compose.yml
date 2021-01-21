@@ -16,6 +16,7 @@ services:
       - SYS_NICE
   server:
     container_name: nedrex-server
+    image: andimajore/nedrex_repo:server
     depends_on:
       - "db"
     build: backend
@@ -30,6 +31,7 @@ services:
 #    entrypoint: ["./wait-for-it.sh","nedrex-db:3306","-t","30", "--","java","-Xmx4g","-jar", "app.jar","--spring.profiles.active=prod","--spring.config.location=./config/server/"]
   web:
     container_name: nedrex-web
+    image: andimajore/nedrex_repo:web
     build: frontend
     depends_on:
       - "server"

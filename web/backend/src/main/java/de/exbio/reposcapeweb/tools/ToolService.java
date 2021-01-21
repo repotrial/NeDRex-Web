@@ -506,7 +506,7 @@ public class ToolService {
                     continue;
                 LinkedList<String> attrs = StringUtils.split(line, "\t");
                 double p_val = Double.parseDouble(attrs.get(2));
-                if (p_val < cutoff) {
+                if (p_val < cutoff && p_val !=0) {
                     int id = domainMap.get(attrs.get(1));
                     results.put(id, new HashMap<>());
                     results.get(id).put("p_hyper", p_val);

@@ -9,7 +9,7 @@ tool=$3
 cd $wd
 if [ $tool == "diamond" ]
 then
-  python3 $4 $5 $6 $7
+  python3 $4 $5 $6 $7 $8
 fi
 if [ $tool == "bicon" ]
 then
@@ -17,7 +17,7 @@ then
 fi
 if [ $tool == "trustrank" ] || [ $tool == "centrality" ]
 then
-  python3 $4 $5 $6 $7
+  python3 $4 $5 $6 $7 $8 $9
 fi
 
 if [ $tool == "must" ]

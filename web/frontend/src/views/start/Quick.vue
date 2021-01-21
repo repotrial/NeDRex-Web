@@ -132,8 +132,9 @@
         <ModuleIdentification ref="moduleIdent" v-if="modus===1" :blitz="blitz" @resetEvent="modus=0" :metagraph="metagraph"
                               @printNotificationEvent="printNotification"
                               @graphLoadEvent="loadGraph"
+                              @loadDrugTargetEvent="loadDrugTarget"
         ></ModuleIdentification>
-        <DrugRepurposing v-if="modus===2" :blitz="blitz" @resetEvent="modus=0" :metagraph="metagraph"
+        <DrugRepurposing ref="drugTargeting" v-if="modus===2" :blitz="blitz" @resetEvent="modus=0" :metagraph="metagraph"
                          @printNotificationEvent="printNotification"
                          @graphLoadEvent="loadGraph"
         ></DrugRepurposing>
@@ -179,6 +180,12 @@ export default {
 
     loadGraph: function (gid) {
       this.$emit("graphLoadEvent", gid)
+    },
+    loadDrugTarget: function(blitz, seeds, type){
+      this.blitz = blitz;
+      this.modus = 2
+      setTimeout(function(){this.$refs.drugTargeting.setSeeds(seeds,type)}.bind(this),500)
+
     }
   },
 
