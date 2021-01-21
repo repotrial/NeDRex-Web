@@ -374,7 +374,6 @@ public class WebGraphService {
                                     return;
                                 }
                                 edgeController.getEdges(edgeId, nodeI[0], id1).forEach(id -> {
-                                    System.out.println(id);
                                     try {
                                         if ((request.connectedOnly & connectedNodes.contains(nodeJ[0]) & !nodeIds.get(nodeJ[0]).get(id.getId2()).hasEdge()) | (experimental && !edgeController.isExperimental(edgeId, id.getId1(), id.getId2())))
                                             return;
