@@ -778,7 +778,7 @@ export default {
         this.methodModel = 0
       }
       this.results.targets = []
-      this.seedOrigin = []
+      this.seedOrigin = {}
       if (this.$refs.graph)
         this.$refs.graph.reload()
     },

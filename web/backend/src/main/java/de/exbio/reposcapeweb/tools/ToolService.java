@@ -259,13 +259,11 @@ public class ToolService {
                 break;
             }
             case CENTRALITY: {
-                System.out.println(request.getParams());
                 File interactions = request.getParams().get("type").equals("gene") ? new File(dataDir, "ranking_files/GGDr_" + (request.experimentalOnly ? "exp" : "all") + ".gt") : new File(dataDir, "ranking_files/PPDr_all.gt");
                 neededFiles.add(interactions);
                 command += "centrality " + centrality.getAbsolutePath() + " " +
                         interactions.getName() +
-                        " seeds.list " +
-                        request.getParams().get("damping") +
+                        " seeds.list" +
                         (request.getParams().get("direct").charAt(0) == 't' ? " Y" : " N") +
                         (request.getParams().get("approved").charAt(0) == 't' ? " Y" : " N");
                 break;
@@ -506,7 +504,7 @@ public class ToolService {
                     continue;
                 LinkedList<String> attrs = StringUtils.split(line, "\t");
                 double p_val = Double.parseDouble(attrs.get(2));
-                if (p_val < cutoff && p_val !=0) {
+                if (p_val < cutoff) {
                     int id = domainMap.get(attrs.get(1));
                     results.put(id, new HashMap<>());
                     results.get(id).put("p_hyper", p_val);

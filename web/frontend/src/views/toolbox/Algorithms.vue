@@ -294,6 +294,7 @@
           <v-row>
             <v-col>
               <v-slider
+                v-show="methodModel==='trustrank'"
                 hide-details
                 class="align-center"
                 v-model="models.trustrank.damping"
@@ -509,7 +510,6 @@ export default {
         centrality: {
           onlyApproved: true,
           onlyDirect: true,
-          damping: 0.85
         },
         must: {
           hubpenalty: 0,
@@ -560,7 +560,8 @@ export default {
       if (this.methodModel === 'trustrank' || this.methodModel === 'centrality') {
         params['direct'] = this.models[this.methodModel].onlyDirect;
         params['approved'] = this.models[this.methodModel].onlyApproved;
-        params['damping'] = this.models[this.methodModel].damping;
+        if (this.methodModel === 'trustrank')
+          params['damping'] = this.models[this.methodModel].damping;
       }
       if (this.methodModel === 'must') {
         params["penalty"] = this.models.must.hubpenalty;

@@ -226,6 +226,7 @@
                   <v-row>
                     <v-col>
                       <v-slider
+                        v-show="methodModel===0"
                         hide-details
                         class="align-center"
                         v-model="models.damping"
@@ -565,7 +566,8 @@ export default {
 
       params['direct'] = this.models.onlyDirect;
       params['approved'] = this.models.onlyApproved;
-      params['damping'] = this.models.damping;
+      if (method === "trustrank")
+        params['damping'] = this.models.damping;
 
       params['type'] = ["gene", "protein"][this.seedTypeId]
       this.executeJob(method, params)
