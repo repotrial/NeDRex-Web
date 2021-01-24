@@ -1,7 +1,8 @@
 <template>
   <div class="graph-window" :style="windowStyle">
     <i>{{ text }}</i>
-    <v-progress-linear v-show="loading" indeterminate :color=loadingColor></v-progress-linear>
+    <v-progress-linear v-if="progress ===undefined" v-show="loading" indeterminate :color=loadingColor ></v-progress-linear>
+    <v-progress-linear v-else v-show="progress <100" :value="progress" :color=loadingColor ></v-progress-linear>
     <network v-if="nodeSet !== undefined && isVisualized()" v-show="!loading" class="wrapper" ref="network"
              :key="key"
              :nodes="nodeSet"
@@ -61,6 +62,7 @@ export default {
     payload: Object,
     configuration: Object,
     startGraph: false,
+    progress:Number,
     windowStyle: {
       height: '75vh',
       'min-height': '75vh',
@@ -135,7 +137,9 @@ export default {
         return
       this.prepareUnconnectedList()
     },
-
+    setLoading: function (val) {
+      this.loading = val
+    },
     prepareUnconnectedList: function () {
       this.unconnected = this.nodeSet.getIds()
       this.edgeSet.get().forEach(item => {
@@ -377,10 +381,19 @@ export default {
             }
           },
           nodes: {
+            // shape:"circle",
             fixed: false,
             physics: true,
-            borderWidth: 2
-
+            borderWidth: 2,
+            // size:25,
+            // scaling:{
+            //   min:0,
+            //   max:100,
+              // label:{
+              //   enabled:true
+              // },
+              // customScalingFunction:this.scalingFunction
+            // }
           },
           edges: {
             hidden: false,
@@ -395,8 +408,7 @@ export default {
           physics: {
             // solver: 'repulsion',
             barnesHut: {
-              // theta: 0.7,
-              gravitationalConstant: -20000,
+              gravitationalConstant: -10000,
               centralGravity: 0.20,
               springLength: 200,
               springConstant: 0.04,
@@ -407,7 +419,7 @@ export default {
             // stabilization: {enabled: true, updateInterval: 10, iterations: 1000, fit: true},
             // timestep: 0.3,
             // wind: {x: 20, y: 20}
-          }
+          },
         },
 
       }
@@ -417,9 +429,18 @@ export default {
       // })
     }
     ,
-    getOptions: function () {
-      return this.options
-    },
+    // scalingFunction:function(min,max,total,value){
+    //   if (max === min || value===undefined) {
+    //     return 0.5;
+    //   }
+    //   else {
+    //     let scale = 1 / (max - min);
+    //     return Math.max(0,(value - min)*scale);
+    //   }
+    // },
+    // getOptions: function () {
+    //   return this.options
+    // },
     setOptions: function (options) {
       this.options = options;
       this.updateOptions()
@@ -553,15 +574,32 @@ export default {
       }
     },
     onClick: function (params) {
+      // this.setNodeSize(this.nodeSet.get().map(n=>n.id),25)
       if (params.nodes.length > 0 || params.edges.length > 0) {
+        // this.$refs.network.enableEditMode()
+        // if (params.nodes.length > 0)
+        //   this.setNodeSize(params.nodes, 100)
         this.$emit('selectionEvent', params)
       } else {
+        // this.$refs.network.disableEditMode()
         this.$emit('selectionEvent')
         this.highlight = false;
       }
       this.saveLayout()
-    }
-    ,
+    },
+    // setNodeSize: function(item, size){
+    //   let updates = []
+    //   if (typeof item === "object") {
+    //     updates = item.map(n=>{
+    //       return {id:n, value:size}
+    //     })
+    //   } else {
+    //     updates.push({id:item, value:size})
+    //   }
+    //   this.updateNodes(updates)
+    //   this.$refs.network.redraw()
+    // }
+    // ,
     focusNode: function (nodeId) {
       this.$refs.network.focus(nodeId)
       if (nodeId === undefined)

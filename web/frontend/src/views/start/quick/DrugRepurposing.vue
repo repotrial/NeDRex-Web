@@ -407,7 +407,6 @@ export default {
   },
   sugQuery: "",
 
-
   data() {
     return {
       graphWindowStyle: {
@@ -423,7 +422,6 @@ export default {
       method: undefined,
       sourceType: undefined,
       step: 1,
-      highlighted: [],
       suggestionType: undefined,
       suggestions: {loading: false, data: []},
       nodeSuggestions: null,
@@ -474,32 +472,6 @@ export default {
     this.$socket.$on("quickFinishedEvent", this.convertJobResult)
     this.uid = this.$cookies.get("uid")
     this.init()
-
-    //TODO dev
-    // this.seedTypeId = 0
-    // this.seeds = [{
-    //   "primaryDomainId": "entrez.3757",
-    //   "displayName": "KCNH2",
-    //   "id": 19888
-    // }, {"primaryDomainId": "entrez.5005", "displayName": "ORM2", "id": 54656}, {
-    //   "primaryDomainId": "entrez.4988",
-    //   "displayName": "OPRM1",
-    //   "id": 13457
-    // }, {"primaryDomainId": "entrez.4985", "displayName": "OPRD1", "id": 13458}, {
-    //   "primaryDomainId": "entrez.4986",
-    //   "displayName": "OPRK1",
-    //   "id": 13459
-    // }, {"primaryDomainId": "entrez.23643", "displayName": "LY96", "id": 1413}, {
-    //   "primaryDomainId": "entrez.3359",
-    //   "displayName": "HTR3A",
-    //   "id": 29783
-    // }, {"primaryDomainId": "entrez.57053", "displayName": "CHRNA10", "id": 1177}, {
-    //   "primaryDomainId": "entrez.116443",
-    //   "displayName": "GRIN3A",
-    //   "id": 50124
-    // }]
-
-
   },
 
   methods: {
@@ -613,7 +585,6 @@ export default {
 
     executeJob: function (algorithm, params) {
       let payload = {userId: this.uid, algorithm: algorithm, params: params}
-      console.log(params)
       payload.selection = true
       payload.experimentalOnly = params.experimentalOnly
       payload["nodes"] = this.seeds.map(n => n.id)
@@ -659,9 +630,10 @@ export default {
           count++
           this.seeds.push(e)
         }
-        if (this.seedOrigin[e.id] !== undefined)
-          this.seedOrigin[e.id].push(nameFrom)
-        else
+        if (this.seedOrigin[e.id] !== undefined) {
+          if (this.seedOrigin[e.id].indexOf(nameFrom) === -1)
+            this.seedOrigin[e.id].push(nameFrom)
+        } else
           this.seedOrigin[e.id] = [nameFrom]
       })
       this.$emit("printNotificationEvent", "Added " + list.length + "from " + nameFrom + " (" + count + " new) seeds!", 1)
@@ -769,9 +741,24 @@ export default {
         this.results.targets = data.nodes.drug.sort((e1, e2) => e2.score - e1.score)
       }).catch(console.log)
     },
+    waitForGraph: function (resolve) {
+      if (this.$refs.graph === undefined)
+        setTimeout(this.waitForGraph, 100)
+      else
+        resolve()
+    },
+    getGraph: function () {
+      return new Promise(resolve => this.waitForGraph(resolve)).then(() => {
+        return this.$refs.graph;
+      })
+    },
     loadGraph: function (graphId) {
-      this.$refs.graph.show(graphId).then(() => {
-        this.$refs.graph.showLoops(false)
+      this.getGraph().then(graph => {
+        graph.setLoading(true)
+        graph.show(graphId).then(() => {
+          graph.showLoops(false)
+          graph.setLoading(false)
+        })
       })
     }
   },

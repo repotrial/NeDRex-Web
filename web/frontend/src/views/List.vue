@@ -289,9 +289,6 @@
                   </v-row>
 
                 </template>
-                <!--                <template v-slot:item.displayName="{item}">-->
-                <!--                 -->
-                <!--                </template>-->
               </v-data-table>
             </v-tabs-items>
           </template>
@@ -509,8 +506,7 @@
         <v-list>
           <template v-for="attr in extension.edges">
             <v-list-item :key="attr.name">
-              <v-switch v-model="attr.selected" :disabled="attr.disabled">
-              </v-switch>
+              <v-switch v-model="attr.selected" :disabled="attr.disabled"></v-switch>
               <span>
                 <v-icon left :color="getColoring('edges',attr.name)[0]">fas fa-genderless</v-icon>
                     <template v-if="direction(attr.name)===0">
@@ -523,12 +519,20 @@
                 {{ attr.name }}
               </span>
             </v-list-item>
-            <v-list-item v-if="attr.both>0 && attr.selected" :key="attr.name+'_addition'">
-              <v-divider vertical style="margin-right:15px; margin-left:15px"></v-divider>
-              <span>Extend by new nodes</span>
-              <v-switch v-model="attr.induced" style="margin-left:5px"></v-switch>
-              <span>Add induced edges only</span>
-            </v-list-item>
+            <template v-if="attr.both>0 && attr.selected">
+              <v-list-item :key="attr.name+'_addition'">
+                <v-divider vertical style="margin-right:15px; margin-left:15px"></v-divider>
+                <span>Extend by new nodes</span>
+                <v-switch v-model="attr.induced" style="margin-left:5px"></v-switch>
+                <span>Add induced edges only</span>
+              </v-list-item>
+              <v-list-item v-if="attr.name==='DisorderHierarchy'">
+                <v-divider vertical style="margin-right:15px; margin-left:15px"></v-divider>
+                <span>Add children</span>
+                <v-switch v-model="attr.switch" style="margin-left:5px"></v-switch>
+                <span>Add parents</span>
+              </v-list-item>
+            </template>
           </template>
         </v-list>
 
@@ -719,7 +723,8 @@
       persistent
       max-width="500"
     >
-      <v-card v-if="options !== undefined && options.type != null && options.attributes !=null && attributes[options.type]!=null">
+      <v-card
+        v-if="options !== undefined && options.type != null && options.attributes !=null && attributes[options.type]!=null">
         <v-card-title class="headline">
           Organize {{ options.title }} Attributes
         </v-card-title>
@@ -788,8 +793,7 @@
           <v-list>
             <template v-for="attr in selectionDialog.seeds">
               <v-list-item :key="attr.name">
-                <v-switch v-model="attr.select" :disabled="attr.disabled">
-                </v-switch>
+                <v-switch v-model="attr.select" :disabled="attr.disabled"></v-switch>
                 <span>
                 <v-icon left :color="getColoring('nodes',attr.name)">fas fa-genderless</v-icon>
                 {{ attr.name }} ({{ countSelected('nodes', attr.name) }})
@@ -968,7 +972,7 @@ export default {
       this.applySuggestion(val)
     },
     findNodeSuggestions: function (val) {
-      this.getNodeSuggestions(val,false)
+      this.getNodeSuggestions(val, false)
     },
   },
   methods: {
@@ -1007,9 +1011,6 @@ export default {
       this.nodepage = {}
     }
     ,
-    getInfoText: function (type, name) {
-      return name + ' (' + this.configuration.countMap[type][name].selected + '/' + this.configuration.countMap[type][name].total + ')'
-    },
     recieveEvent: function (event) {
       switch (event) {
         case "collapse":
@@ -1030,7 +1031,9 @@ export default {
           this.suggestions.data = []
           return
         }
-        setTimeout(function() {this.getNodeSuggestions(val, true)}.bind(this), 500)
+        setTimeout(function () {
+          this.getNodeSuggestions(val, true)
+        }.bind(this), 500)
       } else {
         if (val !== this.sugQuery) {
           return
@@ -1063,28 +1066,6 @@ export default {
           )
         }).catch(err =>
           console.log(err))
-        // let name = this.suggestionType
-        // if (this.suggestions.chosen !== undefined)
-        //   return
-        // this.suggestions.loading = true;
-        // this.suggestions.data = []
-        // this.$http.post("getSuggestions", {
-        //   name: name,
-        //   query: val,
-        // }).then(response => {
-        //   if (response.data !== undefined) {
-        //     return response.data
-        //   }
-        // }).then(data => {
-        //   data.suggestions.sort((e1, e2) => {
-        //     return e2.ids.length - e1.ids.length
-        //   })
-        //   this.suggestions.data = data.suggestions;
-        // }).catch(err =>
-        //   console.log(err)
-        // ).finally(() =>
-        //   this.suggestions.loading = false
-        // )
       }
     },
     loadList: function (data) {
@@ -1143,7 +1124,7 @@ export default {
     },
     applySuggestion: function (val) {
       this.nodeTabLoading = true
-      if (val !== undefined) {
+      if (val != null) {
         let nodes = this.nodes[Object.keys(this.nodes)[this.nodeTab]]
         this.suggestions.nodes.chosen = this.suggestions.nodes.data.filter(item => item.value === val).flatMap(item => item.ids);
         this.backup.nodes[this.nodeTab] = nodes
@@ -1156,9 +1137,9 @@ export default {
       this.nodeTabLoading = false
     },
     toggleSuggestions: function (type) {
-      if (!this.filters[type].suggestions) {
-        this.filters[type].query = ""
-      }
+      this.filterNodeModel = null
+      this.filters[type].query = null
+      this.suggestions[type].data = []
     }
     ,
     filterNode: function (value, search, item) {
@@ -1379,7 +1360,7 @@ export default {
             if (this.options.type === "nodes") {
               for (let name in data.nodes) {
                 let attributesShown = this.attributes.nodes[name].filter(a => a.list).map(a => a.label)
-                let attributes = data.attributes.nodes[name].filter(a => a.list && attributesShown.indexOf(a.label) === -1).map(a=>a.name)
+                let attributes = data.attributes.nodes[name].filter(a => a.list && attributesShown.indexOf(a.label) === -1).map(a => a.name)
                 let newAttrs = {}
 
                 data.nodes[name].forEach(n => {
@@ -1390,15 +1371,15 @@ export default {
                 })
                 this.attributes.nodes[name] = data.attributes.nodes[name]
                 this.nodes[name].forEach(n => {
-                    let atts = newAttrs[n.id];
-                    Object.keys(atts).forEach(a=> n[a]=atts[a])
+                  let atts = newAttrs[n.id];
+                  Object.keys(atts).forEach(a => n[a] = atts[a])
                 })
               }
               this.update.nodes = true;
             } else {
               for (let name in data.edges) {
                 let attributesShown = this.attributes.edges[name].filter(a => a.list).map(a => a.label)
-                let attributes = data.attributes.edges[name].filter(a => a.list && attributesShown.indexOf(a.label) === -1).map(a=>a.name)
+                let attributes = data.attributes.edges[name].filter(a => a.list && attributesShown.indexOf(a.label) === -1).map(a => a.name)
                 let newAttrs = {}
 
                 data.edges[name].forEach(e => {
@@ -1411,7 +1392,7 @@ export default {
                 this.attributes.edges[name] = data.attributes.edges[name]
                 this.edges[name].forEach(e => {
                   let atts = newAttrs[e.id];
-                  Object.keys(atts).forEach(a=> e[a]=atts[a])
+                  Object.keys(atts).forEach(a => e[a] = atts[a])
                 })
               }
               this.update.edges = true
@@ -1426,11 +1407,13 @@ export default {
 
     },
     extensionDialogResolve: function (apply) {
+      let selected = this.extension.edges.filter(e => e.selected)
       let payload = {
         gid: this.gid,
         // nodes: this.extension.nodes.filter(n => n.selected).map(n => n.name),
-        edges: this.extension.edges.filter(e => e.selected).map(e => e.name),
-        induced: this.extension.edges.filter(e => e.selected && e.induced).map(e => e.name)
+        edges: selected.map(e => e.name),
+        induced: selected.filter(e => e.induced).map(e => e.name),
+        switchDirection: selected.filter(e=>e.switch).map(e=>e.name)
       }
       this.extension.nodes = []
       this.extension.edges = []
@@ -1855,8 +1838,8 @@ export default {
         let idx1 = Object.keys(this.attributes.nodes).indexOf(Utils.getNodes(this.metagraph, e)[0])
         let idx2 = Object.keys(this.attributes.nodes).indexOf(Utils.getNodes(this.metagraph, e)[1])
 
-        if (Object.keys(this.attributes.edges).indexOf(e) === -1 && idx1 + idx2 > -2)
-          this.extension.edges.push({name: e, both: idx1 > -1 && idx2 > -1, induced: false})
+        if ((Object.keys(this.attributes.edges).indexOf(e) === -1 || idx1===idx2) && idx1 + idx2 > -2)
+          this.extension.edges.push({name: e, both: idx1 > -1 && idx2 > -1, induced: false,switch:false})
       })
       this.extension.show = true;
       this.$refs.extensionDialog.$forceUpdate()
@@ -1956,7 +1939,6 @@ export default {
           return response.data
       }).then(data => {
         this.$emit("addJobEvent", data)
-        // this.$socket.subscribeJob(data.jid, "jobUpdateEvent")
       }).catch(console.log)
     },
     directionExtended: function (edge) {

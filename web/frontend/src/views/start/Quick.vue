@@ -1,6 +1,6 @@
 <template>
   <v-container>
-    <template v-if="modus===0">
+    <template v-if="modus===-1">
       <v-row>
         <v-col cols="3"></v-col>
         <v-col cols="6">
@@ -21,7 +21,7 @@
               </v-list-item>
               <v-list-item>
                 <v-list-item-content>
-                  <v-btn plain>
+                  <v-btn plain @click="start(0,false)">
                     <v-icon left>
                       fas fa-angle-double-right
                     </v-icon>
@@ -31,7 +31,7 @@
               </v-list-item>
               <v-list-item>
                 <v-list-item-content>
-                  <v-btn plain>
+                  <v-btn plain @click="start(0,true)">
                     <v-icon left>
                       fas fa-bolt
                     </v-icon>
@@ -129,12 +129,18 @@
     </template>
     <v-row>
       <v-col>
-        <ModuleIdentification ref="moduleIdent" v-if="modus===1" :blitz="blitz" @resetEvent="modus=0" :metagraph="metagraph"
+        <CombinedRepurposing ref="comoDrugTarget" v-if="modus===0" :blitz="blitz" @resetEvent="modus=-1":metagraph="metagraph"
+                             @printNotificationEvent="printNotification"
+                             @graphLoadEvent="loadGraph"
+        >
+
+        </CombinedRepurposing>
+        <ModuleIdentification ref="moduleIdent" v-if="modus===1" :blitz="blitz" @resetEvent="modus=-1" :metagraph="metagraph"
                               @printNotificationEvent="printNotification"
                               @graphLoadEvent="loadGraph"
                               @loadDrugTargetEvent="loadDrugTarget"
         ></ModuleIdentification>
-        <DrugRepurposing ref="drugTargeting" v-if="modus===2" :blitz="blitz" @resetEvent="modus=0" :metagraph="metagraph"
+        <DrugRepurposing ref="drugTargeting" v-if="modus===2" :blitz="blitz" @resetEvent="modus=-1" :metagraph="metagraph"
                          @printNotificationEvent="printNotification"
                          @graphLoadEvent="loadGraph"
         ></DrugRepurposing>
@@ -146,6 +152,7 @@
 <script>
 import ModuleIdentification from "./quick/ModuleIdentification";
 import DrugRepurposing from "./quick/DrugRepurposing";
+import CombinedRepurposing from "./quick/CombinedRepurposing";
 
 export default {
   name: "Quick",
@@ -154,13 +161,13 @@ export default {
   },
   data() {
     return {
-      modus: 0,
+      modus: -1,
       blitz: false,
     }
   },
 
   created() {
-    this.modus = 0
+    this.modus = -1
     this.blitz = false
   },
 
@@ -192,7 +199,8 @@ export default {
 
   components: {
     DrugRepurposing,
-    ModuleIdentification
+    ModuleIdentification,
+    CombinedRepurposing
   }
 }
 </script>

@@ -926,6 +926,9 @@ export default {
       // this.options.graph.visualized = true;
       this.$emit('applyEvent');
       this.show.options = false;
+      this.options.graph.physics=false;
+      this.options.graph.loops=true;
+      this.options.graph.single=true;
       this.$nextTick(() => {
         this.show.options = true;
       })

@@ -5,4 +5,5 @@ public class ExtensionRequest {
     public String[] edges;
 //    public String[] nodes;
     public String[] induced;
+    public String[] switchDirection;
 }

@@ -292,4 +292,14 @@ public class NodeController {
             default -> null;
         };
     }
+
+    public int getCount() {
+        int size = 0;
+        size+=getNodeCount("disorder");
+        size+=getNodeCount("drug");
+        size+=getNodeCount("gene");
+        size+=getNodeCount("pathway");
+        size+=getNodeCount("protein");
+        return size;
+    }
 }

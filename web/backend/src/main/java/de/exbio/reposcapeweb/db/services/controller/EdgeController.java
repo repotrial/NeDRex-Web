@@ -98,8 +98,12 @@ public class EdgeController {
         return disorderComorbidWithDisorderService.isEdge(id1, id2);
     }
 
-    public HashSet<PairId> getDisorderIsADisorder(int id) {
+    public HashSet<PairId> getDisorderIsADisorderChildren(int id) {
         return disorderIsADisorderService.getParentEdges(id);
+    }
+
+    public HashSet<PairId> getDisorderIsADisorderParents(int id){
+        return disorderIsADisorderService.getChildEdges(id);
     }
 
 
@@ -368,8 +372,8 @@ public class EdgeController {
         };
     }
 
-    public HashSet<PairId> getEdges(int edgeId, int firstType, Integer node) {
-        if (Graphs.getNodesfromEdge(edgeId).first == firstType)
+    public HashSet<PairId> getEdges(int edgeId, int firstType, Integer node, boolean switchDirection) {
+        if (Graphs.getNodesfromEdge(edgeId).first == firstType & !switchDirection)
             return getEdgesFrom(edgeId, node);
         return getEdgesTo(edgeId, node);
     }
@@ -385,7 +389,7 @@ public class EdgeController {
             case "ProteinProteinInteraction" -> getProteinInteractsWithProtein(node);
             case "ProteinPathway" -> getProteinInPathwayFrom(node);
             case "ProteinAssociatedWithDisorder" -> getProteinAssociatedWithDisorderFrom(node);
-            case "DisorderHierarchy" -> getDisorderIsADisorder(node);
+            case "DisorderHierarchy" -> getDisorderIsADisorderChildren(node);
             case "DisorderComorbidity" -> getDisorderComorbidWithDisorder(node);
             case "GeneGeneInteraction" -> getGeneInteractsWithGene(node);
             default -> null;
@@ -403,7 +407,7 @@ public class EdgeController {
             case "ProteinProteinInteraction" -> getProteinInteractsWithProtein(node);
             case "ProteinPathway" -> getProteinInPathwayTo(node);
             case "ProteinAssociatedWithDisorder" -> getProteinAssociatedWithDisorderTo(node);
-            case "DisorderHierarchy" -> getDisorderIsADisorder(node);
+            case "DisorderHierarchy" -> getDisorderIsADisorderParents(node);
             case "DisorderComorbidity" -> getDisorderComorbidWithDisorder(node);
             case "GeneGeneInteraction" -> getGeneInteractsWithGene(node);
             default -> null;
@@ -649,5 +653,20 @@ public class EdgeController {
         ProteinAssociatedWithDisorder.setUpNameMaps();
         DisorderIsADisorder.setUpNameMaps();
         GeneInteractsWithGene.setUpNameMaps();
+    }
+
+
+    public long getSize(){
+        long size = 0;
+         size+=associatedWithDisorderService.getGeneCount()+ associatedWithDisorderService.getProteinCount();
+        size+=drugHasTargetService.getGeneCount() + drugHasTargetService.getProteinCount();
+        size+= proteinEncodedByService.getCount();
+        size+= drugHasIndicationService.getCount();
+        size+= drugHasContraindicationService.getCount();
+        size+=proteinInteractsWithProteinService.getProteinCount()+ proteinInteractsWithProteinService.getGeneCount();
+        size+= proteinInPathwayService.getCount();
+        size+= disorderComorbidWithDisorderService.getCount();
+        size+= disorderComorbidWithDisorderService.getCount();
+        return size;
     }
 }
