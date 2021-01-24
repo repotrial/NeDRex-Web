@@ -804,21 +804,28 @@ public class WebGraphService {
             historyController.saveDerivedHistory(g.getParent(), history);
             cache.remove(gid);
         }
+        cacheCleanup(uid,gid);
+        exportGraph(g);
+    }
+
+    public void removeTempDir(String gid){
+        File wd = getGraphWD(gid);
+        if (wd.exists()) {
+            try {
+                FileUtils.deleteDirectory(wd);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void cacheCleanup(String uid, String gid){
         if (userGraph.containsKey(uid)) {
             String oldId = userGraph.get(uid);
             cache.remove(oldId);
-            File wd = getGraphWD(oldId);
-            if (wd.exists()) {
-                try {
-                    FileUtils.deleteDirectory(wd);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+            removeTempDir(oldId);
         }
         userGraph.put(uid, gid);
-
-        exportGraph(g);
     }
 
 
@@ -1073,7 +1080,7 @@ public class WebGraphService {
     }
 
     private File getGraphWD(String gid) {
-        return new File("/tmp/" + gid);
+        return new File("/tmp/nedrex_graph-" + gid);
     }
 
     private String escapeStrings(String in) {
@@ -1085,6 +1092,7 @@ public class WebGraphService {
     }
 
     public void remove(String gid) {
+        removeTempDir(gid);
         cache.remove(gid);
         AtomicReference<String> user = new AtomicReference<>(null);
         userGraph.forEach((u, g) -> {
@@ -1111,6 +1119,7 @@ public class WebGraphService {
         toolService.createThumbnail(getDownload(gid), thumb);
         socketController.setThumbnailReady(gid);
         thumbnailGenerating.remove(gid);
+        removeTempDir(gid);
     }
 
     public HashMap<Integer, HashMap<Integer, Point2D>> getLayout(Graph g, File lay) {
@@ -1127,7 +1136,7 @@ public class WebGraphService {
         }
         HashMap<Integer, HashMap<Integer, Point2D>> coords = new HashMap<>();
         try (BufferedReader br = ReaderUtils.getBasicReader(lay)) {
-            String line = "";
+            String line;
             while ((line = br.readLine()) != null) {
                 LinkedList<String> l = StringUtils.split(line, "\t");
                 if (l.getFirst().length() == 0)
@@ -1141,6 +1150,7 @@ public class WebGraphService {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        removeTempDir(g.getId());
         return coords;
     }
 

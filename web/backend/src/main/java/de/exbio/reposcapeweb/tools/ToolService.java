@@ -5,30 +5,22 @@ import de.exbio.reposcapeweb.communication.cache.Graphs;
 import de.exbio.reposcapeweb.communication.jobs.Job;
 import de.exbio.reposcapeweb.communication.jobs.JobRequest;
 import de.exbio.reposcapeweb.communication.jobs.JobResult;
-import de.exbio.reposcapeweb.db.entities.edges.ProteinInteractsWithProtein;
 import de.exbio.reposcapeweb.db.services.edges.ProteinInteractsWithProteinService;
 import de.exbio.reposcapeweb.db.services.nodes.GeneService;
 import de.exbio.reposcapeweb.db.services.nodes.ProteinService;
 import de.exbio.reposcapeweb.utils.*;
+import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
-import org.springframework.objenesis.SpringObjenesis;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.zeroturnaround.zip.ZipEntrySource;
 import org.zeroturnaround.zip.ZipUtil;
-import org.zeroturnaround.zip.transform.ZipEntryTransformer;
 
-import javax.persistence.AssociationOverrides;
 import java.io.*;
-import java.nio.file.CopyOption;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.util.*;
-import java.util.zip.ZipEntry;
 
 @Service
 public class ToolService {
@@ -207,12 +199,24 @@ public class ToolService {
     public File getTempDir(String jobId) {
         if (!tempDirs.containsKey(jobId))
             try {
-                File f = Files.createTempDirectory(new File("/tmp").toPath(), "reposcape_web_job_" + jobId).toFile();
+                File f = Files.createTempDirectory(new File("/tmp").toPath(), "nedrex_job_" + jobId).toFile();
                 tempDirs.put(jobId, f);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         return tempDirs.get(jobId);
+    }
+
+    @Async
+    public void removeTempDir(String jobId) {
+        File wd = getTempDir(jobId);
+        if (wd.exists()) {
+            try {
+                FileUtils.deleteDirectory(wd);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
 
@@ -474,7 +478,6 @@ public class ToolService {
                 File tmp = getTempDir(j.getJobId());
                 new File(tmp, "seeds.list").delete();
 
-//                ZipUtil.packEntries(new File[]{new File(tmp, "edges.list"),new File(tmp, "nodes.list")}, result);
                 if (tmp.list().length > 0) {
                     result = new File(tmp, "results.zip");
                     ZipUtil.packEntries(tmp.listFiles(), result);
@@ -486,12 +489,12 @@ public class ToolService {
                 j.setResultFile(true);
             dest.getParentFile().mkdirs();
             Files.move(result.toPath(), dest.toPath());
-        } catch (IOException e) {
+        } catch (IOException | NullPointerException e) {
             getTempDir(j.getJobId()).delete();
             e.printStackTrace();
             throw new Exception("Missing results exception");
         }
-        getTempDir(j.getJobId()).delete();
+        removeTempDir(j.getJobId());
     }
 
     private HashMap<Integer, HashMap<String, Object>> readDiamondResults(File f, double cutoff, HashMap<String, Integer> domainMap) {
