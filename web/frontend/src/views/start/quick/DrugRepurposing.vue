@@ -307,7 +307,7 @@
                       </tr>
                       </thead>
                       <tbody>
-                      <tr v-for="seed in seeds" :key="seed.id">
+                      <tr v-for="seed in seeds" :key="seed.id" @click="focusNode(['gen_','pro_'][seedTypeId]+seed.id)">
                         <td>{{ seed.displayName }}</td>
                       </tr>
                       </tbody>
@@ -343,9 +343,9 @@
                       </tr>
                       </thead>
                       <tbody>
-                      <tr v-for="seed in results.targets" :key="seed.id" :style="targetColorStyle">
-                        <td>{{ seed.displayName }}</td>
-                        <td v-for="val in methodScores()">{{ seed[val.id] }}</td>
+                      <tr v-for="drug in results.targets" :key="drug.id" :style="targetColorStyle" @click="focusNode('dru_'+drug.id)">
+                        <td>{{ drug.displayName }}</td>
+                        <td v-for="val in methodScores()">{{ drug[val.id] }}</td>
                       </tr>
                       </tbody>
                     </template>
@@ -740,6 +740,12 @@ export default {
       }).then(data => {
         this.results.targets = data.nodes.drug.sort((e1, e2) => e2.score - e1.score)
       }).catch(console.log)
+    },
+    focusNode: function (id) {
+      if (this.$refs.graph === undefined)
+        return
+      this.$refs.graph.setSelection([id])
+      this.$refs.graph.zoomToNode(id)
     },
     waitForGraph: function (resolve) {
       if (this.$refs.graph === undefined)

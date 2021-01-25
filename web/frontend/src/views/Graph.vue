@@ -1,8 +1,9 @@
 <template>
   <div class="graph-window" :style="windowStyle">
     <i>{{ text }}</i>
-    <v-progress-linear v-if="progress ===undefined" v-show="loading" indeterminate :color=loadingColor ></v-progress-linear>
-    <v-progress-linear v-else v-show="progress <100" :value="progress" :color=loadingColor ></v-progress-linear>
+    <v-progress-linear v-if="progress ===undefined" v-show="loading" indeterminate
+                       :color=loadingColor></v-progress-linear>
+    <v-progress-linear v-else v-show="progress <100" :value="progress" :color=loadingColor></v-progress-linear>
     <network v-if="nodeSet !== undefined && isVisualized()" v-show="!loading" class="wrapper" ref="network"
              :key="key"
              :nodes="nodeSet"
@@ -62,7 +63,7 @@ export default {
     payload: Object,
     configuration: Object,
     startGraph: false,
-    progress:Number,
+    progress: Number,
     windowStyle: {
       height: '75vh',
       'min-height': '75vh',
@@ -219,6 +220,9 @@ export default {
     isVisualized: function () {
       return this.configuration.visualized
     },
+    graphExists: function () {
+      return this.$refs.network !== undefined
+    },
     setWindowStyle: function (style) {
       this.windowStyle = style
     },
@@ -293,7 +297,7 @@ export default {
       if (nodes !== undefined && nodes[0] !== undefined) {
         this.$refs.network.selectNodes(nodes)
         this.identifyNeighbors(nodes[0])
-        this.focusNode(nodes[0])
+        this.zoomToNode(nodes[0])
       } else {
         this.$refs.network.unselectAll()
         this.$emit("selectionEvent")
@@ -389,10 +393,10 @@ export default {
             // scaling:{
             //   min:0,
             //   max:100,
-              // label:{
-              //   enabled:true
-              // },
-              // customScalingFunction:this.scalingFunction
+            // label:{
+            //   enabled:true
+            // },
+            // customScalingFunction:this.scalingFunction
             // }
           },
           edges: {
@@ -454,7 +458,7 @@ export default {
     setPhysics: function (boolean) {
       this.physicsOn = boolean;
       this.options.physics.enabled = this.physicsOn
-      if (!this.physicsOn) {
+      if (!this.physicsOn && this.isVisualized()) {
         this.saveLayout()
       }
       this.updateOptions()
@@ -566,8 +570,22 @@ export default {
       })
       this.updateNodes(updates)
     },
+
+    // getVisualizedGraph: function () {
+    //   return this.visualizeNow().then(resolve => {
+    //     setTimeout(this.waitForVisualization, 50, resolve)
+    //   })
+    // },
+    // waitForVisualization: function (resolve) {
+    //   console.log(this.$refs.network)
+    //   if (this.$refs.network !== undefined)
+    //     resolve()
+    //   else
+    //     setTimeout(this.waitForVisualization, 500, resolve)
+    // },
+
     visualizeNow: function () {
-      if (this.configuration.sizeWarning)
+      if (this.configuration.sizeWarning && !this.dialog)
         this.dialog = true
       else {
         this.dialogResolve(true)
@@ -600,10 +618,25 @@ export default {
     //   this.$refs.network.redraw()
     // }
     // ,
+    zoomToNode: function (nodeId) {
+      if (nodeId !== undefined) {
+        this.focusNode(nodeId)
+        this.$refs.network.moveTo({scale: 0.9})
+      }
+    },
     focusNode: function (nodeId) {
-      this.$refs.network.focus(nodeId)
+
       if (nodeId === undefined)
         this.viewAll()
+      else
+        this.$refs.network.focus(nodeId)
+    },
+    focusEdge: function (edgeId) {
+      this.getVisualizedGraph().then(() => {
+        console.log(this.edgeSet.get())
+        if (edgeId === undefined)
+          this.viewAll()
+      })
     }
     ,
     viewAll: function () {

@@ -256,22 +256,6 @@
                     </v-col>
                     <v-col cols="1">
                       <v-tooltip right>
-                        <template v-slot:activator="{ on, attrs }">
-                          <v-icon
-                            color="primary"
-                            dark
-                            v-bind="attrs"
-                            v-on="on"
-                            v-on:click="nodeDetails(item.id)"
-                          >
-                            fas fa-info-circle
-                          </v-icon>
-                        </template>
-                        <span>id:{{ item.id }}</span>
-                      </v-tooltip>
-                    </v-col>
-                    <v-col cols="1">
-                      <v-tooltip right>
                         <template v-slot:activator="{ on, attrs }"
                                   v-if="marks.nodes && marks.nodes[Object.keys(attributes.nodes)[nodeTab]] &&marks.nodes[Object.keys(attributes.nodes)[nodeTab]].indexOf(item.id)>-1">
                           <v-icon
@@ -284,6 +268,46 @@
                           </v-icon>
                         </template>
                         <span>Added by Algorithm</span>
+                      </v-tooltip>
+                    </v-col>
+                  </v-row>
+
+                </template>
+                <template v-slot:item.actions="{item}">
+                  <v-row>
+                    <v-col cols="1">
+                      <v-tooltip right>
+                        <template v-slot:activator="{ on, attrs }">
+                          <v-icon
+                            small
+                            left
+                            color="primary"
+                            dark
+                            v-bind="attrs"
+                            v-on="on"
+                            v-on:click="showInGraph('node',item)"
+                          >
+                            fas fa-project-diagram
+                          </v-icon>
+                        </template>
+                        <span>Focus in graph</span>
+                      </v-tooltip>
+                    </v-col>
+                    <v-col cols="1">
+                      <v-tooltip right>
+                        <template v-slot:activator="{ on, attrs }">
+                          <v-icon
+                            color="primary"
+                            dark
+                            right
+                            v-bind="attrs"
+                            v-on="on"
+                            v-on:click="nodeDetails(item.id)"
+                          >
+                            fas fa-info-circle
+                          </v-icon>
+                        </template>
+                        <span>id:{{ item.id }}</span>
                       </v-tooltip>
                     </v-col>
                   </v-row>
@@ -410,7 +434,6 @@
                       </v-col>
                     </v-row>
                   </v-container>
-                  <!--                  </v-card>-->
                 </template>
                 <template v-slot:item.selected="{item}">
                   <v-row>
@@ -423,22 +446,6 @@
                         style="margin-top: -4px"
                         @click="countClick('edges',edgeTab,item)"
                       ></v-checkbox>
-                    </v-col>
-                    <v-col cols="1">
-                      <v-tooltip right>
-                        <template v-slot:activator="{ on, attrs }">
-                          <v-icon
-                            color="primary"
-                            dark
-                            v-bind="attrs"
-                            v-on="on"
-                            v-on:click="edgeDetails(item)"
-                          >
-                            fas fa-info-circle
-                          </v-icon>
-                        </template>
-                        <span>id:{{ item.id }}</span>
-                      </v-tooltip>
                     </v-col>
                     <v-col cols="1">
                       <v-tooltip right>
@@ -483,6 +490,45 @@
                     <v-icon>fas fa-arrows-alt-h</v-icon>
                     {{ item.idTwo }}
                   </template>
+                </template>
+                <template v-slot:item.actions="{item}">
+                  <v-row>
+<!--                    <v-col cols="1">-->
+<!--                      <v-tooltip right>-->
+<!--                        <template v-slot:activator="{ on, attrs }">-->
+<!--                          <v-icon-->
+<!--                            small-->
+<!--                            left-->
+<!--                            color="primary"-->
+<!--                            dark-->
+<!--                            v-bind="attrs"-->
+<!--                            v-on="on"-->
+<!--                            v-on:click="showInGraph('node',item)"-->
+<!--                          >-->
+<!--                            fas fa-project-diagram-->
+<!--                          </v-icon>-->
+<!--                        </template>-->
+<!--                        <span>Focus in graph</span>-->
+<!--                      </v-tooltip>-->
+<!--                    </v-col>-->
+                                        <v-col cols="1">
+                                          <v-tooltip right>
+                                            <template v-slot:activator="{ on, attrs }">
+                                              <v-icon
+                                                color="primary"
+                                                dark
+                                                v-bind="attrs"
+                                                v-on="on"
+                                                v-on:click="edgeDetails(item)"
+                                              >
+                                                fas fa-info-circle
+                                              </v-icon>
+                                            </template>
+                                            <span>id:{{ item.id }}</span>
+                                          </v-tooltip>
+                                        </v-col>
+                  </v-row>
+
                 </template>
               </v-data-table>
             </v-tabs-items>
@@ -1024,6 +1070,12 @@ export default {
           break
       }
     },
+    showInGraph: function(type,item){
+      let prefix = ""
+      if(type==="node")
+        prefix = Object.keys(this.attributes.nodes)[this.nodeTab].substr(0,3)+"_"
+      this.$emit("focusInGraphEvent",type,prefix+item.id)
+    },
     getNodeSuggestions: function (val, timeouted) {
       if (!timeouted) {
         this.sugQuery = val
@@ -1413,7 +1465,7 @@ export default {
         // nodes: this.extension.nodes.filter(n => n.selected).map(n => n.name),
         edges: selected.map(e => e.name),
         induced: selected.filter(e => e.induced).map(e => e.name),
-        switchDirection: selected.filter(e=>e.switch).map(e=>e.name)
+        switchDirection: selected.filter(e => e.switch).map(e => e.name)
       }
       this.extension.nodes = []
       this.extension.edges = []
@@ -1719,7 +1771,7 @@ export default {
     }
     ,
     headers: function (entity, node) {
-      let out = [{text: "select", align: 'start', sortable: false, value: "selected"}]
+      let out = [{text: "Select", align: 'start', sortable: false, value: "selected"}]
       this.attributes[entity][node].forEach(attr => {
         if (!attr.list)
           return
@@ -1748,6 +1800,7 @@ export default {
         })
       })
       this.update[entity] = false;
+      out.push({text: "actions", align: 'start', sortable: false, value: "actions"})
       return out
     }
     ,
@@ -1838,8 +1891,8 @@ export default {
         let idx1 = Object.keys(this.attributes.nodes).indexOf(Utils.getNodes(this.metagraph, e)[0])
         let idx2 = Object.keys(this.attributes.nodes).indexOf(Utils.getNodes(this.metagraph, e)[1])
 
-        if ((Object.keys(this.attributes.edges).indexOf(e) === -1 || idx1===idx2) && idx1 + idx2 > -2)
-          this.extension.edges.push({name: e, both: idx1 > -1 && idx2 > -1, induced: false,switch:false})
+        if ((Object.keys(this.attributes.edges).indexOf(e) === -1 || idx1 === idx2) && idx1 + idx2 > -2)
+          this.extension.edges.push({name: e, both: idx1 > -1 && idx2 > -1, induced: false, switch: false})
       })
       this.extension.show = true;
       this.$refs.extensionDialog.$forceUpdate()

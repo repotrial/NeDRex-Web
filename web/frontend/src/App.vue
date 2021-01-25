@@ -61,6 +61,7 @@
                     v-on:printNotificationEvent="printNotification"
                     v-on:reloadSide="reloadSide"
                     v-on:addJobEvent="registerJob"
+                    v-on:focusInGraphEvent="focusInGraph"
                     :configuration="options.list"
               ></List>
             </v-container>
@@ -401,6 +402,22 @@ export default {
     },
     reloadSide: function () {
       this.$refs.side.$forceUpdate()
+    },
+    focusInGraph: function (type, id) {
+      if (!this.$refs.graph.isVisualized || !this.$refs.graph.graphExists()) {
+        this.printNotification("Graph must be visualized first!", 2)
+        this.$refs.graph.visualizeNow()
+        return
+      }
+      this.setTabId("graph", false)
+      new Promise(resolve => setTimeout(resolve, 500)).then(() => {
+        if (type === "node") {
+          this.$refs.side.setSelectedNode(id)
+          this.$refs.graph.setSelection([id])
+        }
+        else
+          this.$refs.graph.focusEdge(id)
+      })
     },
     initComponents: function () {
       this.options.start = {skipVis: true, onlyConnected: true, selectedElements: []}

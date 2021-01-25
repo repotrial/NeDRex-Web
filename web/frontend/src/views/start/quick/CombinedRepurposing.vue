@@ -674,11 +674,11 @@
                       </thead>
                       <tbody>
                       <tr v-for="seed in results.targets" v-if="seeds.map(s=>s.id).indexOf(seed.id)===-1" :key="seed.id"
-                          :style="targetColorStyle">
+                          :style="targetColorStyle" @click="focusNode(['gen_','pro_'][seedTypeId]+seed.id)">
                         <td :key="seed.id+'n'">{{ seed.displayName }}</td>
                         <td :key="seed.id+'v'+val.id" v-for="val in moduleMethodScores()">{{ seed[val.id] }}</td>
                       </tr>
-                      <tr v-for="seed in seeds" :key="seed.id">
+                      <tr v-for="seed in seeds" :key="seed.id" @click="focusNode(['gen_','pro_'][seedTypeId]+seed.id)">
                         <td :key="seed.id+'n'">{{ seed.displayName }}</td>
                         <td :key="seed.id+'v'+val.id" v-for="val in moduleMethodScores()"></td>
                       </tr>
@@ -721,7 +721,8 @@
                       </tr>
                       </thead>
                       <tbody>
-                      <tr v-for="drug in results.drugs" :style="drugColorStyle" :key="drug.id">
+                      <tr v-for="drug in results.drugs" :style="drugColorStyle" :key="drug.id"
+                          @click="focusNode('dru_'+drug.id)">
                         <td>{{ drug.displayName }}</td>
                         <td v-for="val in rankingMethodScores()">{{ drug[val.id] }}</td>
                       </tr>
@@ -992,6 +993,13 @@ export default {
         this.init()
         this.$emit("resetEvent")
       }
+    },
+
+    focusNode: function (id) {
+      if (this.$refs.graph === undefined)
+        return
+      this.$refs.graph.setSelection([id])
+      this.$refs.graph.zoomToNode(id)
     },
     getSuggestions: function (val, timeouted) {
       if (!timeouted) {

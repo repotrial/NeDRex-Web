@@ -435,12 +435,4 @@ public class RequestController {
     }
 
 
-//    @RequestMapping(value="/testSocket", method=RequestMethod.GET)
-//    @ResponseBody
-//    @MessageMapping("/jobs")
-//    public void testSocket(@RequestParam("route") String route, @RequestParam("message") String message){
-//        System.out.println("Testing socket on '"+route+"' with message "+ message);
-//        socketTemplate.convertAndSend(route,message);
-//    }
-
 }

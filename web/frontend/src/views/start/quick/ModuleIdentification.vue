@@ -535,11 +535,12 @@
                       <tbody>
                       <tr v-if="seeds.map(s=>s.id).indexOf(seed.id)===-1"
                           v-for="seed in results.targets" :key="seed.id" :style="targetColorStyle"
+                          @click="focusNode(['gen_','pro_'][seedTypeId]+seed.id)"
                       >
                         <td>{{ seed.displayName }}</td>
                         <td v-for="val in methodScores()">{{ seed[val.id] }}</td>
                       </tr>
-                      <tr v-for="seed in seeds" :key="seed.id">
+                      <tr v-for="seed in seeds" :key="seed.id" @click="focusNode(['gen_','pro_'][seedTypeId]+seed.id)">
                         <td>{{ seed.displayName }}</td>
                         <td v-for="val in methodScores()"></td>
                       </tr>
@@ -767,6 +768,12 @@ export default {
         return {value: node.group, text: node.label}
       })
 
+    },
+    focusNode: function (id) {
+      if (this.$refs.graph === undefined)
+        return
+      this.$refs.graph.setSelection([id])
+      this.$refs.graph.zoomToNode(id)
     },
     makeStep: function (s, button) {
       if (button === "continue") {
