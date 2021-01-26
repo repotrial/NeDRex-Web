@@ -18,7 +18,8 @@
     <v-row>
       <v-col cols="6">
         <Graph ref="startgraph" :initgraph="{graph:metagraph,name:'metagraph'}" :startGraph="true"
-               :configuration="{visualized:true}" :window-style="windowStyle"></Graph>
+               :configuration="{visualized:true}" :window-style="windowStyle" >
+        </Graph>
       </v-col>
       <v-col cols="2">
         <v-list v-model="nodeModel" ref="nodeSelector">

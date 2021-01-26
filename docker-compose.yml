@@ -21,7 +21,8 @@ services:
     depends_on:
       - "db"
     volumes:
-      - nedrex-cache-volume:/etc/data
+      - nedrex-cache-volume:/etc/data/db
+      - nedrex-usr-volume:/etc/data/usr
     expose:
       - 8090
     ports:
@@ -38,4 +39,5 @@ services:
     restart: on-failure
 volumes:
   nedrex-db-volume:
+  nedrex-usr-volume:
   nedrex-cache-volume:

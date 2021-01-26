@@ -2,10 +2,10 @@ const Utils =
   {
     getColoring(metagraph, entity, name) {
       if (entity === "nodes") {
-        return metagraph.colorMap[name.toLowerCase()].main;
+        return metagraph.colorMap[name.toLowerCase()];
       } else {
         let names = this.getNodes(metagraph, name)
-        return [metagraph.colorMap[names[0]].main, metagraph.colorMap[names[1]].main]
+        return [metagraph.colorMap[names[0]].main, metagraph.colorMap[names[1]]]
       }
     },
 

@@ -4,16 +4,30 @@
     <v-progress-linear v-if="progress ===undefined" v-show="loading" indeterminate
                        :color=loadingColor></v-progress-linear>
     <v-progress-linear v-else v-show="progress <100" :value="progress" :color=loadingColor></v-progress-linear>
-    <network v-if="nodeSet !== undefined && isVisualized()" v-show="!loading" class="wrapper" ref="network"
-             :key="key"
-             :nodes="nodeSet"
-             :edges="edgeSet"
-             :options="options"
-             :layout="layout"
-             :physics="physics"
-             :events="['click','release','startStabilizing','stabilizationProgress','stabilizationIterationsDone']"
-             @click="onClick">
-    </network>
+    <div :style="{position:'relative', height:'100%',width:'100%',display: 'flex', 'justify-content': 'flex-end'}">
+      <network v-if="nodeSet !== undefined && isVisualized()" v-show="!loading" class="wrapper" ref="network"
+               style="width: 100%"
+               :key="key"
+               :nodes="nodeSet"
+               :edges="edgeSet"
+               :options="options"
+               :layout="layout"
+               :physics="physics"
+               :events="['click','release','startStabilizing','stabilizationProgress','stabilizationIterationsDone']"
+               @click="onClick">
+      </network>
+      <div style="position: absolute" v-if="legend">
+        <div style="display: flex; justify-content: flex-end;">
+          <v-btn v-model="showLegend" @click="showLegend= !showLegend" :title="showLegend ? 'Hide':'Show'" plain>
+            Legend
+            <v-icon right>{{ showLegend ? "fas fa-angle-up" : "fas fa-angle-down" }}</v-icon>
+          </v-btn>
+        </div>
+        <div v-show="showLegend" style="padding-right: 1px">
+          <slot name="legend"></slot>
+        </div>
+      </div>
+    </div>
     <template>
       <v-dialog
         v-if="configuration.sizeWarning && nodeSet !== undefined"
@@ -59,6 +73,7 @@ import {DataSet} from 'vue-vis-network'
 export default {
   name: "graph",
   props: {
+    legend: Boolean,
     initgraph: Object,
     payload: Object,
     configuration: Object,
@@ -82,6 +97,7 @@ export default {
 
   data() {
     return {
+      showLegend: true,
       edgeSet: Object,
       nodeSet: undefined,
       options: Object,
@@ -696,7 +712,7 @@ export default {
   min-height: 100%
 
   background-color: #ffffff
-  padding: 10px
+  padding: 0px
   height: 100%
 
 

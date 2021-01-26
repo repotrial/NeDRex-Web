@@ -354,7 +354,28 @@
                 </template>
               </v-col>
               <v-col cols="7">
-                <Graph ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle"></Graph>
+                <Graph ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle" :legend="results.targets.length>0">
+                  <template v-slot:legend v-if="results.targets.length>0">
+                    <v-card  style="width: 8vw; max-width: 10vw">
+                      <v-list>
+                        <v-list-item>
+                          <v-list-item-icon>
+                            <v-icon left :color="getColoring('nodes',['gene','protein'][seedTypeId]).main">fas fa-genderless</v-icon>
+                          </v-list-item-icon>
+                          <v-list-item-title style="margin-left: -25px">{{['Gene','Protein'][seedTypeId]}}</v-list-item-title>
+                          <v-list-item-subtitle>{{ seeds.length }}</v-list-item-subtitle>
+                        </v-list-item>
+                        <v-list-item>
+                          <v-list-item-icon>
+                            <v-icon left :color="getColoring('nodes','drug').main">fas fa-genderless</v-icon>
+                          </v-list-item-icon>
+                          <v-list-item-title style="margin-left: -25px">Drug</v-list-item-title>
+                          <v-list-item-subtitle>{{ results.targets.length }}</v-list-item-subtitle>
+                        </v-list-item>
+                      </v-list>
+                    </v-card>
+                  </template>
+                </Graph>
               </v-col>
               <v-col cols="3">
                 <v-card-title class="subtitle-1"> Targets{{
@@ -377,7 +398,8 @@
                       </tr>
                       </thead>
                       <tbody>
-                      <tr v-for="drug in results.targets" :key="drug.id" :style="targetColorStyle" @click="focusNode('dru_'+drug.id)">
+                      <tr v-for="drug in results.targets" :key="drug.id" :style="targetColorStyle"
+                          @click="focusNode('dru_'+drug.id)">
                         <td>{{ drug.displayName }}</td>
                         <td v-for="val in methodScores()">{{ drug[val.id] }}</td>
                       </tr>
@@ -387,7 +409,7 @@
                   <v-chip outlined style="margin-top:15px"
                           @click="downloadResultList" v-if="results.targets.length>0">
                     <v-icon left>fas fa-download</v-icon>
-                    Save Drug Ranking (Top {{models.topX}})
+                    Save Drug Ranking (Top {{ models.topX }})
                   </v-chip>
                   <v-chip outlined style="margin-top:15px"
                           @click="downloadFullResultList" v-if="results.targets.length>0">
@@ -479,7 +501,7 @@ export default {
         onlyApproved: true,
         onlyDirect: true,
         damping: 0.85,
-        topX:100,
+        topX: 100,
       }
     }
   },
@@ -739,7 +761,7 @@ export default {
         this.download(["gene", "protein"][this.seedTypeId] + "_seeds.tsv", text)
       }).catch(console.log)
     },
-    downloadFullResultList: function(){
+    downloadFullResultList: function () {
       window.open('/backend/api/downloadJobResult?jid=' + this.currentJid)
     },
     downloadResultList: function () {
@@ -759,7 +781,7 @@ export default {
             text += "\n"
           }
         )
-        this.download("drug_ranking-Top_"+this.models.topX+".tsv", text)
+        this.download("drug_ranking-Top_" + this.models.topX + ".tsv", text)
       }).catch(console.log)
     },
     download: function (name, content) {
@@ -809,7 +831,10 @@ export default {
           graph.setLoading(false)
         })
       })
-    }
+    },
+    getColoring: function (entity, name) {
+      return Utils.getColoring(this.metagraph, entity, name);
+    },
   },
 
   components: {

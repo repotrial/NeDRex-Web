@@ -74,7 +74,7 @@ export default {
   },
   data() {
     return {
-      selectionTab: 0,
+      selectionTab: 1,
     }
   },
   watch: {
