@@ -59,6 +59,8 @@ public class ImportService {
     private final EdgeController edgeController;
     private final NodeController nodeController;
 
+    private final File dbCacheDir;
+
     private final ObjectMapper objectMapper;
 
 
@@ -109,6 +111,8 @@ public class ImportService {
         this.objectMapper = objectMapper;
         this.edgeController = edgeController;
         this.nodeController = nodeController;
+
+        this.dbCacheDir=new File(env.getProperty("path.db.cache"));
     }
 
     public void importNodeData() {
@@ -122,10 +126,9 @@ public class ImportService {
         nodeController.setUp();
         edgeController.setUp();
         log.info("Importing nodeIDs");
-        File cacheDir = new File(env.getProperty("path.db.cache"));
-        importIdMaps(cacheDir, false);
+        importIdMaps(dbCacheDir, false);
         log.info("NodeIdMap import: Done!");
-        importNodeFilters(new File(cacheDir, "filters"));
+        importNodeFilters(new File(dbCacheDir, "filters"));
     }
 
 
@@ -165,7 +168,7 @@ public class ImportService {
     public void importEdges(boolean allowOnUpdate) {
         log.info("Edge-Data import: Start!");
         log.info("Importing edgeIds");
-        File cacheDir = new File(env.getProperty("path.db.cache"));
+//        File cacheDir = new File(env.getProperty("path.db.cache"));
         dbCommunication.scheduleImport(allowOnUpdate);
         DBConfig.getConfig().edges.forEach(edge -> {
             switch (edge.mapsTo) {
@@ -187,7 +190,7 @@ public class ImportService {
 
     public void importIdMaps(File cacheDir, boolean allowOnUpdate) {
         dbCommunication.scheduleImport(allowOnUpdate);
-        File nodeCacheDir = new File(env.getProperty("path.db.cache") + "nodes");
+        File nodeCacheDir = new File(dbCacheDir, "nodes");
         DBConfig.getConfig().nodes.forEach(node -> {
             NodeService s = null;
             switch (node.name) {

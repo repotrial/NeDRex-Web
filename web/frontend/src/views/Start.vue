@@ -39,6 +39,7 @@
         </v-list>
       </v-card>
     </v-container>
+    <Guided v-if="selectionTab===0" :metagraph="metagraph" @printNotificationEvent="printNotification"></Guided>
 
     <Quick v-show="selectionTab===1" :metagraph="metagraph" @printNotificationEvent="printNotification"
         @graphLoadEvent="loadGraph"
@@ -59,6 +60,7 @@
 import Utils from "../scripts/Utils"
 import Advanced from "./start/Advanced";
 import Quick from "./start/Quick"
+import Guided from "./start/Guided";
 
 export default {
   name: "Start",
@@ -72,7 +74,7 @@ export default {
   },
   data() {
     return {
-      selectionTab: 1,
+      selectionTab: 0,
     }
   },
   watch: {
@@ -113,7 +115,8 @@ export default {
   },
   components: {
     Advanced,
-    Quick
+    Quick,
+    Guided
   },
 
 }

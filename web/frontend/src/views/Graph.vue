@@ -458,7 +458,7 @@ export default {
     setPhysics: function (boolean) {
       this.physicsOn = boolean;
       this.options.physics.enabled = this.physicsOn
-      if (!this.physicsOn && this.isVisualized()) {
+      if (this.isVisualized()) {
         this.saveLayout()
       }
       this.updateOptions()

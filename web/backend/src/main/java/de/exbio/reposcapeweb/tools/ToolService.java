@@ -414,9 +414,10 @@ public class ToolService {
                 break;
             }
             case TRUSTRANK, CENTRALITY: {
+                int topX = Integer.parseInt(j.getParams().get("topX"));
                 for (File f : getTempDir(j.getJobId()).listFiles()) {
                     if (!f.getName().equals("seeds.list") && !f.getName().endsWith(".gt")) {
-                        nodes = readTrustRankResults(f, domainMaps, j.getTarget());
+                        nodes = readTrustRankResults(f, domainMaps, j.getTarget(),topX);
                     }
                 }
                 break;
@@ -426,7 +427,7 @@ public class ToolService {
         result.setEdges(edges);
     }
 
-    private HashMap<Integer, HashMap<String, Object>> readTrustRankResults(File f, HashMap<Integer, HashMap<String, Integer>> domainMap, String target) {
+    private HashMap<Integer, HashMap<String, Object>> readTrustRankResults(File f, HashMap<Integer, HashMap<String, Integer>> domainMap, String target, int topX) {
         HashMap<Integer, HashMap<String, Object>> out = new HashMap<>();
         HashMap<String, Integer> drugMap = domainMap.get(Graphs.getNode("drug"));
         HashMap<String, Integer> seedMap = domainMap.get(Graphs.getNode(target));
@@ -441,6 +442,8 @@ public class ToolService {
                 } else {
                     out.put(seedMap.get(line), null);
                 }
+                if(out.size()>=topX)
+                    break;
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -454,7 +457,7 @@ public class ToolService {
         switch (j.getMethod()) {
             case DIAMOND: {
                 for (File f : getTempDir(j.getJobId()).listFiles()) {
-                    if (j.getMethod().equals(Tool.DIAMOND) && f.getName().endsWith(".txt")) {
+                    if (f.getName().endsWith(".txt")) {
                         result = f;
                         break;
                     }
@@ -467,7 +470,7 @@ public class ToolService {
             }
             case TRUSTRANK, CENTRALITY: {
                 for (File f : getTempDir(j.getJobId()).listFiles()) {
-                    if (!f.getName().equals("seeds.list")) {
+                    if (!f.getName().equals("seeds.list") && !f.getName().endsWith(".gt")) {
                         result = f;
                         break;
                     }
@@ -476,7 +479,10 @@ public class ToolService {
             }
             case MUST: {
                 File tmp = getTempDir(j.getJobId());
-                new File(tmp, "seeds.list").delete();
+                Arrays.stream(tmp.listFiles()).forEach(f->{
+                    if(!f.getName().equals("edges.list") && !f.getName().equals("nodes.list"))
+                        f.delete();
+                });
 
                 if (tmp.list().length > 0) {
                     result = new File(tmp, "results.zip");

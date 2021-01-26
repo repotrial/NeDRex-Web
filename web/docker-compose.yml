@@ -21,7 +21,8 @@ services:
       - "db"
     build: backend
     volumes:
-      - nedrex-dev-cache-volume:/etc/data
+      - nedrex-dev-cache-volume:/etc/data/db
+      - nedrex-dev-usr-volume:/etc/data/usr
     expose:
       - 8090
     ports:
@@ -48,4 +49,5 @@ services:
 #      restart: on-failure
 volumes:
   nedrex-dev-db-volume:
+  nedrex-dev-usr-volume:
   nedrex-dev-cache-volume:

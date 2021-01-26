@@ -8,7 +8,7 @@
             <v-list>
               <v-list-item>
                 <v-list-item-title class="title">
-                  Disease Modules + Drug Prioritization
+                  Drug Repurposing
                 </v-list-item-title>
               </v-list-item>
               <v-list-item>

@@ -67,15 +67,15 @@ public class JobController {
     public Job registerJob(JobRequest req) {
         Job j = createJob(req);
 
-        j.addParam("experimentalOnly",req.experimentalOnly);
+        j.addParam("experimentalOnly", req.experimentalOnly);
 
         String[] params = new String[]{"nodesOnly", "addInteractions"};
         for (String param : params)
             if (req.getParams().containsKey(param))
                 j.addParam(param, req.getParams().get(param));
 
-        if (req.getParams().containsKey("pcutoff"))
-            j.addParam("pcutoff", req.getParams().containsKey("pcutoff") ? Math.pow(10, Double.parseDouble(req.getParams().get("pcutoff"))) : 1);
+        j.addParam("pcutoff", req.getParams().containsKey("pcutoff") ? Math.pow(10, Double.parseDouble(req.getParams().get("pcutoff"))) : 1);
+        j.addParam("topX", req.getParams().containsKey("topX") ? Integer.parseInt(req.getParams().get("topX")) : Integer.MAX_VALUE);
         Graph g = graphService.getCachedGraph(req.graphId);
         try {
             prepareJob(j, req, g);
@@ -99,9 +99,9 @@ public class JobController {
     }
 
     private void prepareJob(Job j, JobRequest req, Graph g) {
-        if(g==null & req.selection) {
-            g = graphService.createGraphFromIds(req.getParams().get("type"),req.nodes,j.getUserId());
-            req.graphId=g.getId();
+        if (g == null & req.selection) {
+            g = graphService.createGraphFromIds(req.getParams().get("type"), req.nodes, j.getUserId());
+            req.graphId = g.getId();
             j.setBasisGraph(g.getId());
         }
         if (j.getMethod().equals(ToolService.Tool.BICON))
@@ -195,9 +195,9 @@ public class JobController {
     }
 
 
-    public HashMap<String, Pair<String,Pair<Job.JobState, ToolService.Tool>>> getJobGraphStatesAndTypes(String user) {
-        HashMap<String, Pair<String,Pair<Job.JobState, ToolService.Tool>>> stateMap = new HashMap<>();
-        jobs.values().stream().filter(j -> j.getUserId().equals(user)).forEach(j -> stateMap.put(j.getDerivedGraph(), new Pair<>(j.getJobId(),new Pair<>(j.getState(),j.getMethod()))));
+    public HashMap<String, Pair<String, Pair<Job.JobState, ToolService.Tool>>> getJobGraphStatesAndTypes(String user) {
+        HashMap<String, Pair<String, Pair<Job.JobState, ToolService.Tool>>> stateMap = new HashMap<>();
+        jobs.values().stream().filter(j -> j.getUserId().equals(user)).forEach(j -> stateMap.put(j.getDerivedGraph(), new Pair<>(j.getJobId(), new Pair<>(j.getState(), j.getMethod()))));
         return stateMap;
     }
 

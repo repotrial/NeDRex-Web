@@ -131,7 +131,6 @@
             </v-row>
           </v-container>
 
-
         </v-card>
         <v-btn
           color="primary"
@@ -171,6 +170,40 @@
                   <v-card-title style="margin-left:-25px">Configure Parameters</v-card-title>
                   <v-row>
                     <v-col>
+                      <v-slider
+                        hide-details
+                        class="align-center"
+                        v-model="models.topX"
+                        step="1"
+                        min="1"
+                        max="2000"
+                      >
+                        <template v-slot:prepend>
+                          <v-text-field
+                            v-model="models.topX"
+                            class="mt-0 pt-0"
+                            type="integer"
+                            style="width: 100px"
+                            label="visualize topX"
+                          ></v-text-field>
+                        </template>
+                        <template v-slot:append>
+                          <v-tooltip left>
+                            <template v-slot:activator="{ on, attrs }">
+                              <v-icon
+                                v-bind="attrs"
+                                v-on="on"
+                                left> far fa-question-circle
+                              </v-icon>
+                            </template>
+                            <span>A integer X limiting the visualization to the top X drugs that were found.</span>
+                          </v-tooltip>
+                        </template>
+                      </v-slider>
+                    </v-col>
+                  </v-row>
+                  <v-row>
+                    <v-col>
                       <v-switch
                         label="Only use experimentally validated interaction networks"
                         v-model="experimentalSwitch"
@@ -181,6 +214,7 @@
 
 
                   </v-row>
+
                   <v-row>
                     <v-col>
                       <v-switch
@@ -289,7 +323,7 @@
         <v-card
           v-if="step===3"
           class="mb-12"
-          height="700px"
+          height="750px"
         >
           <v-container>
             <v-row>
@@ -324,7 +358,7 @@
               </v-col>
               <v-col cols="3">
                 <v-card-title class="subtitle-1"> Targets{{
-                    (results.targets.length !== undefined && results.targets.length > 0 ? (" (" + (results.targets.length - seeds.length) + ")") : ": Processing")
+                    (results.targets.length !== undefined && results.targets.length > 0 ? (" (" + (results.targets.length) + ")") : ": Processing")
                   }}
                   <v-progress-circular indeterminate v-if="this.results.targets.length===0" style="margin-left:15px">
                   </v-progress-circular>
@@ -351,14 +385,19 @@
                     </template>
                   </v-simple-table>
                   <v-chip outlined style="margin-top:15px"
-                          @click="downloadResultList" v-if="this.results.targets.length>0">
+                          @click="downloadResultList" v-if="results.targets.length>0">
                     <v-icon left>fas fa-download</v-icon>
-                    Save Drug Ranking
+                    Save Drug Ranking (Top {{models.topX}})
+                  </v-chip>
+                  <v-chip outlined style="margin-top:15px"
+                          @click="downloadFullResultList" v-if="results.targets.length>0">
+                    <v-icon left>fas fa-download</v-icon>
+                    Save Complete Drug Ranking
                   </v-chip>
                 </template>
               </v-col>
             </v-row>
-            <v-divider></v-divider>
+            <v-divider style="margin-top:10px"></v-divider>
             <v-row>
               <v-col>
                 <v-chip outlined v-if="jobs[currentJid]!==undefined && jobs[currentJid].result!==undefined"
@@ -439,7 +478,8 @@ export default {
       models: {
         onlyApproved: true,
         onlyDirect: true,
-        damping: 0.85
+        damping: 0.85,
+        topX:100,
       }
     }
   },
@@ -542,6 +582,7 @@ export default {
         params['damping'] = this.models.damping;
 
       params['type'] = ["gene", "protein"][this.seedTypeId]
+      params['topX'] = this.models.topX
       this.executeJob(method, params)
     },
     getSuggestions: function (val, timeouted) {
@@ -582,7 +623,6 @@ export default {
         )
       }
     },
-
     executeJob: function (algorithm, params) {
       let payload = {userId: this.uid, algorithm: algorithm, params: params}
       payload.selection = true
@@ -699,6 +739,9 @@ export default {
         this.download(["gene", "protein"][this.seedTypeId] + "_seeds.tsv", text)
       }).catch(console.log)
     },
+    downloadFullResultList: function(){
+      window.open('/backend/api/downloadJobResult?jid=' + this.currentJid)
+    },
     downloadResultList: function () {
       this.$http.post("mapToDomainIds", {
         type: 'drug',
@@ -716,7 +759,7 @@ export default {
             text += "\n"
           }
         )
-        this.download("drug_ranking.tsv", text)
+        this.download("drug_ranking-Top_"+this.models.topX+".tsv", text)
       }).catch(console.log)
     },
     download: function (name, content) {

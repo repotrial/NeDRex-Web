@@ -156,7 +156,7 @@ public class HistoryController {
 
 
     public File getGraphPath(String id) {
-        String cachedir = env.getProperty("path.db.cache");
+        String cachedir = env.getProperty("path.usr.cache");
         GraphHistory history = getHistory(id);
         try {
             return new File(cachedir, "users/" + history.getUserId() + "/graphs/" + id + ".json");
@@ -167,7 +167,7 @@ public class HistoryController {
     }
 
     public File getThumbnailPath(String id) {
-        String cachedir = env.getProperty("path.db.cache");
+        String cachedir = env.getProperty("path.usr.cache");
         GraphHistory history = getHistory(id);
         try {
             return new File(cachedir, "users/" + history.getUserId() + "/thumbnails/" + id + ".png");
@@ -178,7 +178,7 @@ public class HistoryController {
     }
 
     public File getLayoutPath(String id) {
-        String cachedir = env.getProperty("path.db.cache");
+        String cachedir = env.getProperty("path.usr.cache");
         GraphHistory history = getHistory(id);
         try {
             return new File(cachedir, "users/" + history.getUserId() + "/layouts/" + id + ".tsv");
@@ -189,7 +189,7 @@ public class HistoryController {
     }
 
     public File getJobPath(Job j) {
-        String cachedir = env.getProperty("path.db.cache");
+        String cachedir = env.getProperty("path.usr.cache");
         if (j.getMethod().equals(ToolService.Tool.MUST))
             return new File(cachedir, "users/" + j.getUserId() + "/jobs/" + j.getJobId() + "_result.zip");
         else

@@ -529,6 +529,40 @@
                   <v-card-title style="margin-left:-25px">Configure Parameters</v-card-title>
                   <v-row>
                     <v-col>
+                      <v-slider
+                        hide-details
+                        class="align-center"
+                        v-model="rankingModels.topX"
+                        step="1"
+                        min="1"
+                        max="2000"
+                      >
+                        <template v-slot:prepend>
+                          <v-text-field
+                            v-model="rankingModels.topX"
+                            class="mt-0 pt-0"
+                            type="integer"
+                            style="width: 100px"
+                            label="visualize topX"
+                          ></v-text-field>
+                        </template>
+                        <template v-slot:append>
+                          <v-tooltip left>
+                            <template v-slot:activator="{ on, attrs }">
+                              <v-icon
+                                v-bind="attrs"
+                                v-on="on"
+                                left> far fa-question-circle
+                              </v-icon>
+                            </template>
+                            <span>A integer X limiting the visualization to the top X drugs that were found.</span>
+                          </v-tooltip>
+                        </template>
+                      </v-slider>
+                    </v-col>
+                  </v-row>
+                  <v-row>
+                    <v-col>
                       <v-switch
                         label="Only use experimentally validated interaction networks"
                         v-model="experimentalSwitch"
@@ -647,7 +681,7 @@
         <v-card
           v-if="step===4"
           class="mb-12"
-          height="700px"
+          height="750px"
         >
           <v-card-subtitle class="headline">4. Results</v-card-subtitle>
           <v-container>
@@ -694,6 +728,11 @@
                     <v-icon left>fas fa-download</v-icon>
                     Save Module
                   </v-chip>
+                  <v-chip outlined style="margin-top:15px"
+                          @click="downloadFullResultList(moduleJid)" v-if="results.targets.length>0">
+                    <v-icon left>fas fa-download</v-icon>
+                    Save Raw Results
+                  </v-chip>
                 </template>
               </v-col>
               <v-col cols="6">
@@ -730,14 +769,19 @@
                     </template>
                   </v-simple-table>
                   <v-chip outlined style="margin-top:15px"
-                          @click="downloadRankingResultList" v-if="this.results.drugs.length>0">
+                          @click="downloadRankingResultList" v-if="results.drugs.length>0">
                     <v-icon left>fas fa-download</v-icon>
-                    Save Drug Ranking
+                    Save Top {{rankingModels.topX}} Drugs
+                  </v-chip>
+                  <v-chip outlined style="margin-top:15px"
+                          @click="downloadFullResultList(rankingJid)" v-if="results.drugs.length>0">
+                    <v-icon left>fas fa-download</v-icon>
+                    Save Complete Drug Ranking
                   </v-chip>
                 </template>
               </v-col>
             </v-row>
-            <v-divider></v-divider>
+            <v-divider style="margin-top:10px"></v-divider>
             <v-row>
               <v-col>
                 <v-chip outlined v-if="rankingJid!=null && rankingGid !=null"
@@ -749,7 +793,7 @@
               </v-col>
               <v-col>
                 <v-switch label="Physics" v-model="graph.physics" @click="updateGraphPhysics()"
-                          v-if="results.targets.length>0">
+                          v-if="resultProgress===100">
                 </v-switch>
 
               </v-col>
@@ -841,6 +885,7 @@ export default {
         }
       },
       rankingModels: {
+        topX:100,
         onlyApproved: true,
         onlyDirect: true,
         damping: 0.85
@@ -875,7 +920,6 @@ export default {
         }).catch(console.log)
       }
     },
-
   },
 
   created() {
@@ -885,28 +929,28 @@ export default {
     this.init()
 
     //TODO dev
-    this.seedTypeId = 0
-    this.seeds = [{
-      "primaryDomainId": "entrez.3757",
-      "displayName": "KCNH2",
-      "id": 19888
-    }, {"primaryDomainId": "entrez.5005", "displayName": "ORM2", "id": 54656}, {
-      "primaryDomainId": "entrez.4988",
-      "displayName": "OPRM1",
-      "id": 13457
-    }, {"primaryDomainId": "entrez.4985", "displayName": "OPRD1", "id": 13458}, {
-      "primaryDomainId": "entrez.4986",
-      "displayName": "OPRK1",
-      "id": 13459
-    }, {"primaryDomainId": "entrez.23643", "displayName": "LY96", "id": 1413}, {
-      "primaryDomainId": "entrez.3359",
-      "displayName": "HTR3A",
-      "id": 29783
-    }, {"primaryDomainId": "entrez.57053", "displayName": "CHRNA10", "id": 1177}, {
-      "primaryDomainId": "entrez.116443",
-      "displayName": "GRIN3A",
-      "id": 50124
-    }]
+    // this.seedTypeId = 0
+    // this.seeds = [{
+    //   "primaryDomainId": "entrez.3757",
+    //   "displayName": "KCNH2",
+    //   "id": 19888
+    // }, {"primaryDomainId": "entrez.5005", "displayName": "ORM2", "id": 54656}, {
+    //   "primaryDomainId": "entrez.4988",
+    //   "displayName": "OPRM1",
+    //   "id": 13457
+    // }, {"primaryDomainId": "entrez.4985", "displayName": "OPRD1", "id": 13458}, {
+    //   "primaryDomainId": "entrez.4986",
+    //   "displayName": "OPRK1",
+    //   "id": 13459
+    // }, {"primaryDomainId": "entrez.23643", "displayName": "LY96", "id": 1413}, {
+    //   "primaryDomainId": "entrez.3359",
+    //   "displayName": "HTR3A",
+    //   "id": 29783
+    // }, {"primaryDomainId": "entrez.57053", "displayName": "CHRNA10", "id": 1177}, {
+    //   "primaryDomainId": "entrez.116443",
+    //   "displayName": "GRIN3A",
+    //   "id": 50124
+    // }]
 
 
   },
@@ -946,7 +990,6 @@ export default {
         let node = this.metagraph.nodes.filter(n => n.id === nid)[0]
         return {value: node.group, text: node.label}
       })
-
     },
     makeStep: function (s, button) {
       if (button === "continue") {
@@ -1122,6 +1165,7 @@ export default {
 
         params['direct'] = this.rankingModels.onlyDirect;
         params['approved'] = this.rankingModels.onlyApproved;
+        params['topX'] = this.rankingModels.topX;
         if (method === "trustrank")
           params['damping'] = this.rankingModels.damping;
 
@@ -1294,7 +1338,6 @@ export default {
       }).catch(console.log)
     },
     downloadRankingResultList: function () {
-      console.log(this.results.drugs)
       this.$http.post("mapToDomainIds", {
         type: 'drug',
         ids: this.results.drugs.map(l => l.id)
@@ -1312,8 +1355,12 @@ export default {
             text += "\n"
           }
         )
-        this.download("drug_ranking.tsv", text)
+        this.download("drug_ranking-Top_"+this.rankingModels.topX+".tsv", text)
       }).catch(console.log)
+    },
+
+    downloadFullResultList: function(jid){
+      window.open('/backend/api/downloadJobResult?jid=' + jid)
     }
     ,
     download: function (name, content) {
@@ -1327,12 +1374,22 @@ export default {
     }
     ,
     loadModuleTargetTable: function () {
-      this.targetColorStyle = {'background-color': this.metagraph.colorMap[['gene', 'protein'][this.seedTypeId]].light}
+      let seedType = ['gene', 'protein'][this.seedTypeId]
+      this.targetColorStyle = {'background-color': this.metagraph.colorMap[seedType].light}
       return this.$http.get("/getGraphList?id=" + this.moduleGid).then(response => {
         if (response.data !== undefined)
           return response.data
       }).then(data => {
-        this.results.targets = data.nodes[["gene", "protein"][this.seedTypeId]]
+        if (this.moduleMethodModel === 0)
+          this.results.targets = data.nodes[seedType].sort((e1, e2) => {
+            if (e1.rank && e2.rank)
+              return e1.rank - e2.rank
+            if(e1.rank)
+              return -1
+            return 1
+          })
+        else
+          this.results.targets = data.nodes[seedType]
       }).catch(console.log)
     }
     ,
