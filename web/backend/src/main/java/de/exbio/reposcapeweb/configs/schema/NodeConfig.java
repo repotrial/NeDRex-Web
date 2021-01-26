@@ -9,6 +9,7 @@ public class NodeConfig {
     public int id;
     public String name;
     public String label;
+    public String sourceId;
     public ColorConfig colors;
     public boolean disabled = false;
     @JsonIgnore

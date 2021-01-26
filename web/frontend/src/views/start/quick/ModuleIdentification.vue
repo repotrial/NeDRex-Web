@@ -570,14 +570,14 @@
                       <v-list>
                         <v-list-item>
                           <v-list-item-icon>
-                            <v-icon left :color="getColoring('nodes',['gene','protein'][seedTypeId]).main" size="43px">fas fa-genderless</v-icon>
+                            <v-icon left :color="getColoring('nodes',['gene','protein'][seedTypeId])" size="43px">fas fa-genderless</v-icon>
                           </v-list-item-icon>
                           <v-list-item-title style="margin-left: -25px">Seed {{['Gene','Protein'][seedTypeId]}}</v-list-item-title>
                           <v-list-item-subtitle>{{ seeds.length }}</v-list-item-subtitle>
                         </v-list-item>
                         <v-list-item>
                           <v-list-item-icon>
-                            <v-icon left :color="getColoring('nodes',['gene','protein'][seedTypeId]).main">fas fa-circle</v-icon>
+                            <v-icon left :color="getColoring('nodes',['gene','protein'][seedTypeId])">fas fa-circle</v-icon>
                           </v-list-item-icon>
                           <v-list-item-title style="margin-left: -25px">Target {{['Gene','Protein'][seedTypeId]}}</v-list-item-title>
                           <v-list-item-subtitle>{{ results.targets.length }}</v-list-item-subtitle>

@@ -360,14 +360,14 @@
                       <v-list>
                         <v-list-item>
                           <v-list-item-icon>
-                            <v-icon left :color="getColoring('nodes',['gene','protein'][seedTypeId]).main">fas fa-genderless</v-icon>
+                            <v-icon left :color="getColoring('nodes',['gene','protein'][seedTypeId])">fas fa-genderless</v-icon>
                           </v-list-item-icon>
                           <v-list-item-title style="margin-left: -25px">{{['Gene','Protein'][seedTypeId]}}</v-list-item-title>
                           <v-list-item-subtitle>{{ seeds.length }}</v-list-item-subtitle>
                         </v-list-item>
                         <v-list-item>
                           <v-list-item-icon>
-                            <v-icon left :color="getColoring('nodes','drug').main">fas fa-genderless</v-icon>
+                            <v-icon left :color="getColoring('nodes','drug')">fas fa-genderless</v-icon>
                           </v-list-item-icon>
                           <v-list-item-title style="margin-left: -25px">Drug</v-list-item-title>
                           <v-list-item-subtitle>{{ results.targets.length }}</v-list-item-subtitle>

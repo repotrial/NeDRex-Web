@@ -743,7 +743,7 @@
                       <v-list dense>
                         <v-list-item>
                           <v-list-item-icon >
-                            <v-icon left :color="getColoring('nodes',['gene','protein'][seedTypeId]).main" size="43px">fas fa-genderless
+                            <v-icon left :color="getColoring('nodes',['gene','protein'][seedTypeId])" size="43px">fas fa-genderless
                             </v-icon>
                           </v-list-item-icon>
                           <v-list-item-title style="margin-left:-25px">{{['Gene','Protein'][seedTypeId]}} (Seed)</v-list-item-title>
@@ -751,14 +751,14 @@
                         </v-list-item>
                         <v-list-item>
                           <v-list-item-icon>
-                            <v-icon left :color="getColoring('nodes',['gene','protein'][seedTypeId]).main">fas fa-circle</v-icon>
+                            <v-icon left :color="getColoring('nodes',['gene','protein'][seedTypeId])">fas fa-circle</v-icon>
                           </v-list-item-icon>
                           <v-list-item-title style="margin-left:-25px" >{{['Gene','Protein'][seedTypeId]}} (Module)</v-list-item-title>
                           <v-list-item-subtitle style="margin-right:-25px; margin-left:-25px">{{results.targets.length}}</v-list-item-subtitle>
                         </v-list-item>
                         <v-list-item>
                           <v-list-item-icon>
-                            <v-icon left :color="getColoring('nodes','drug').main" size="43px">fas fa-genderless
+                            <v-icon left :color="getColoring('nodes','drug')" size="43px">fas fa-genderless
                             </v-icon>
                           </v-list-item-icon>
                           <v-list-item-title style="margin-left:-25px" >Drug</v-list-item-title>
@@ -957,6 +957,7 @@ export default {
     this.$socket.$on("quickModuleFinishedEvent", this.readModuleJob)
     this.$socket.$on("quickRankingFinishedEvent", this.readRankingJob)
     this.uid = this.$cookies.get("uid")
+    this.list
     this.init()
 
     //TODO dev

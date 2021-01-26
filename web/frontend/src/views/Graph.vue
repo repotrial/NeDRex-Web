@@ -18,7 +18,7 @@
       </network>
       <div style="position: absolute" v-if="legend">
         <div style="display: flex; justify-content: flex-end;">
-          <v-btn v-model="showLegend" @click="showLegend= !showLegend" :title="showLegend ? 'Hide':'Show'" plain>
+          <v-btn @click="showLegend= !showLegend" :title="showLegend ? 'Hide':'Show'" :plain="!showLegend">
             Legend
             <v-icon right>{{ showLegend ? "fas fa-angle-up" : "fas fa-angle-down" }}</v-icon>
           </v-btn>

@@ -78,9 +78,11 @@ public class WebGraphService {
 
     public WebGraph getMetaGraph() {
         WebGraph graph = new WebGraph("Metagraph", true, historyController.getGraphId());
+        HashMap<String,Object> sourceIds = new HashMap<>();
 
         DBConfig.getConfig().nodes.forEach(node -> {
             graph.addNode(new WebNode(node.id, node.label, node.name, node.label));
+            sourceIds.put(node.label, node.sourceId);
         });
         graph.getNodes().forEach(n -> graph.setWeight("nodes", n.group, nodeController.getNodeCount(n.group)));
 
@@ -88,6 +90,8 @@ public class WebGraphService {
         graph.getEdges().forEach(e -> graph.setWeight("edges", e.label, edgeController.getEdgeCount(e.label)));
 
         graph.setColorMap(this.getColorMap(null));
+
+        graph.setData(sourceIds);
 
         return graph;
     }

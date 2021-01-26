@@ -350,8 +350,11 @@ export default {
 
   created() {
     this.uid = this.$cookies.get("uid")
-    this.nodeList = this.metagraph.nodes.map((n, index) => {
-      return {id: index, value: n.group, text: n.label}
+    this.nodeList =[]
+    this.nodeIdTypeList=[]
+    this.metagraph.nodes.forEach((n, index) => {
+      this.nodeList.push({id: index, value: n.group, text: n.label})
+      this.nodeIdTypeList.push(this.metagraph.data[n.label])
     })
     this.init()
   },

@@ -252,7 +252,8 @@ export default {
       return 0
     },
     getColoring: function (entity, name) {
-      return Utils.getColoring(this.metagraph, entity, name)
+      let colors =Utils.getColoring(this.metagraph, entity, name)
+      return colors;
     },
   },
   components: {

@@ -4,6 +4,7 @@
       "id": 0,
       "name": "disorder",
       "label": "Disorder",
+      "sourceId": "omim",
       "colors": {
         "main": "#EF553B",
         "light": "#ecd0cb"
@@ -83,6 +84,7 @@
       "id": 1,
       "name": "drug",
       "label": "Drug",
+      "sourceId": "drugbank",
       "colors": {
         "main": "#00CC96",
         "light": "#b4cdcc"
@@ -257,6 +259,7 @@
       "id": 2,
       "name": "gene",
       "label": "Gene",
+      "sourceId": "entrez",
       "colors": {
         "main": "#636EFA",
         "light": "#d6d9f8"
@@ -370,6 +373,7 @@
       "id": 3,
       "name": "pathway",
       "label": "Pathway",
+      "sourceId": "reactome",
       "colors": {
         "main": "#fecb52",
         "light": "#fae6c1"
@@ -431,6 +435,7 @@
       "id": 4,
       "name": "protein",
       "label": "Protein",
+      "sourceId": "uniprot",
       "colors": {
         "main": "#19d3f3",
         "light": "#bcdfe5"
