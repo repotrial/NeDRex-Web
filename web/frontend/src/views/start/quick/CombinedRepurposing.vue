@@ -614,6 +614,25 @@
                         </template>
                       </v-switch>
                     </v-col>
+                    <v-col>
+                      <v-switch
+                        label="Filter Element 'Drugs'"
+                        v-model="rankingModels.filterElements"
+                      >
+                        <template v-slot:append>
+                          <v-tooltip left>
+                            <template v-slot:activator="{ on, attrs }">
+                              <v-icon
+                                v-bind="attrs"
+                                v-on="on"
+                                left> far fa-question-circle
+                              </v-icon>
+                            </template>
+                            <span>Filter often used drugs like Zinc, Gold, Copper,....</span>
+                          </v-tooltip>
+                        </template>
+                      </v-switch>
+                    </v-col>
                   </v-row>
                   <v-row>
                     <v-col>
@@ -919,7 +938,8 @@ export default {
         topX: 100,
         onlyApproved: true,
         onlyDirect: true,
-        damping: 0.85
+        damping: 0.85,
+        filterElements: true,
       },
       drugTargetPopup: false,
       rankingSelect: 1,
@@ -1198,6 +1218,7 @@ export default {
         params['direct'] = this.rankingModels.onlyDirect;
         params['approved'] = this.rankingModels.onlyApproved;
         params['topX'] = this.rankingModels.topX;
+        params['elements']= !this.rankingModels.filterElements;
         if (method === "trustrank")
           params['damping'] = this.rankingModels.damping;
 
