@@ -76,6 +76,7 @@ public class JobController {
 
         j.addParam("pcutoff", req.getParams().containsKey("pcutoff") ? Math.pow(10, Double.parseDouble(req.getParams().get("pcutoff"))) : 1);
         j.addParam("topX", req.getParams().containsKey("topX") ? Integer.parseInt(req.getParams().get("topX")) : Integer.MAX_VALUE);
+        j.addParam("elements", req.getParams().containsKey("elements") && req.getParams().get("elements").startsWith("t"));
         Graph g = graphService.getCachedGraph(req.graphId);
         try {
             prepareJob(j, req, g);

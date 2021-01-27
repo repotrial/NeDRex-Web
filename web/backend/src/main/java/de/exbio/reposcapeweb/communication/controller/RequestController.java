@@ -74,27 +74,6 @@ public class RequestController {
     }
 
 
-//    @RequestMapping(value = "/running", method = RequestMethod.GET)
-//    @ResponseBody
-//    public String checkRunning(){
-//        log.info("Requested Springboot running check!");
-//        return "Router is Running!";
-//    }
-
-//    @RequestMapping(value = "/getExampleGraph1", method = RequestMethod.GET)
-//    @ResponseBody
-//    public String getExampleGraph1() {
-//        log.info("got request on comorbidity graph");
-//        try {
-//            String out = objectMapper.writeValueAsString(webGraphService.getCancerComorbidity());
-//            log.info("Answered request!");
-//            return out;
-//        } catch (JsonProcessingException e) {
-//            e.printStackTrace();
-//        }
-//        return null;
-//    }
-
     @RequestMapping(value = "/getMetagraph", method = RequestMethod.GET)
     @ResponseBody
     public String getMetaGraph() {

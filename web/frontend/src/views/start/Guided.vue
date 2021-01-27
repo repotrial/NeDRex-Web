@@ -44,7 +44,7 @@
                   </v-select>
                 </v-list-item-action>
                 <v-container v-if="sourceTypeId!==undefined">
-                  <v-card-subtitle class="title">1b. Optional: Prefilter the nodes:</v-card-subtitle>
+                  <v-card-subtitle class="title">1b. Prefilter the nodes:</v-card-subtitle>
                   <v-row>
                     <v-col cols="3">
                       <v-select :items="getSuggestionSelection(0)" v-model="suggestionType[0]"
@@ -99,7 +99,7 @@
                                 v-model="fileInputModel"
                                 dense
                   ></v-file-input>
-                  <v-row v-if="sources.length>0">
+                  <v-row>
                     <v-col cols="6">
                       <v-card-title>Source Nodes ({{ sources.length }})
                       </v-card-title>
@@ -241,15 +241,13 @@
                   </v-row>
                 </v-container>
               </v-col>
-
             </v-row>
           </v-container>
-
         </v-card>
         <v-btn
           color="primary"
           @click="makeStep(1,'continue')"
-          :disabled="sourceTypeId===undefined || targetTypeId===undefined"
+          :disabled="sourceTypeId===undefined || targetTypeId===undefined  ||  sources.length<1"
         >
           Continue
         </v-btn>
@@ -402,12 +400,19 @@ export default {
     },
 
     getSuggestionSelection: function (index) {
+      console.log(this.nodeList[[this.sourceTypeId, this.targetTypeId][index]])
       let type = this.nodeList[[this.sourceTypeId, this.targetTypeId][index]].value
+      let selfAdded = false;
       let nodeId = this.metagraph.nodes.filter(n => n.group === type)[0].id
-      return this.metagraph.edges.filter(e => e.from !== e.to && e.from === nodeId || e.to === nodeId).map(e => e.to === nodeId ? e.from : e.to).map(nid => {
+      let typeList = this.metagraph.edges.filter(e => e.from !== e.to && e.from === nodeId || e.to === nodeId).map(e => e.to === nodeId ? e.from : e.to).map(nid => {
         let node = this.metagraph.nodes.filter(n => n.id === nid)[0]
+        if(node.group === type)
+          selfAdded=true
         return {value: node.group, text: node.label}
       })
+      if(!selfAdded)
+        typeList.push({value:type, text:this.nodeList[[this.sourceTypeId, this.targetTypeId][index]].text})
+      return typeList
     },
 
     applySuggestion: function (val, index) {

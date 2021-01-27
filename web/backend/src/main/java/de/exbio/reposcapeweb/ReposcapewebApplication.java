@@ -65,11 +65,17 @@ public class ReposcapewebApplication {
 
     @EventListener(ApplicationReadyEvent.class)
     public void postConstruct() {
+
+
+
         updateService.readMetadata();
         dbService.setImportInProgress(true);
         importService.importNodeData();
+
+        //TODO maybe move importJOb and importHistory to after update?
         jobController.importJobsHistory();
         importService.importHistory();
+
 
         toolService.validateTools();
         dbService.setImportInProgress(false);

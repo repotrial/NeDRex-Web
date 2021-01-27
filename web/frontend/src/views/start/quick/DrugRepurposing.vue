@@ -256,6 +256,25 @@
                         </template>
                       </v-switch>
                     </v-col>
+                    <v-col>
+                      <v-switch
+                        label="Filter Element 'Drugs'"
+                        v-model="models.filterElements"
+                      >
+                        <template v-slot:append>
+                          <v-tooltip left>
+                            <template v-slot:activator="{ on, attrs }">
+                              <v-icon
+                                v-bind="attrs"
+                                v-on="on"
+                                left> far fa-question-circle
+                              </v-icon>
+                            </template>
+                            <span>Filter often used drugs like Zinc, Gold, Copper,....</span>
+                          </v-tooltip>
+                        </template>
+                      </v-switch>
+                    </v-col>
                   </v-row>
                   <v-row>
                     <v-col>
@@ -502,6 +521,7 @@ export default {
         onlyDirect: true,
         damping: 0.85,
         topX: 100,
+        filterElements: true,
       }
     }
   },
@@ -605,6 +625,7 @@ export default {
 
       params['type'] = ["gene", "protein"][this.seedTypeId]
       params['topX'] = this.models.topX
+      params['elements'] = !this.models.filterElements
       this.executeJob(method, params)
     },
     getSuggestions: function (val, timeouted) {

@@ -414,10 +414,9 @@ public class ToolService {
                 break;
             }
             case TRUSTRANK, CENTRALITY: {
-                int topX = Integer.parseInt(j.getParams().get("topX"));
                 for (File f : getTempDir(j.getJobId()).listFiles()) {
                     if (!f.getName().equals("seeds.list") && !f.getName().endsWith(".gt")) {
-                        nodes = readTrustRankResults(f, domainMaps, j.getTarget(),topX);
+                        nodes = readTrustRankResults(f, domainMaps, j.getTarget());
                     }
                 }
                 break;
@@ -427,7 +426,7 @@ public class ToolService {
         result.setEdges(edges);
     }
 
-    private HashMap<Integer, HashMap<String, Object>> readTrustRankResults(File f, HashMap<Integer, HashMap<String, Integer>> domainMap, String target, int topX) {
+    private HashMap<Integer, HashMap<String, Object>> readTrustRankResults(File f, HashMap<Integer, HashMap<String, Integer>> domainMap, String target) {
         HashMap<Integer, HashMap<String, Object>> out = new HashMap<>();
         HashMap<String, Integer> drugMap = domainMap.get(Graphs.getNode("drug"));
         HashMap<String, Integer> seedMap = domainMap.get(Graphs.getNode(target));
@@ -442,8 +441,6 @@ public class ToolService {
                 } else {
                     out.put(seedMap.get(line), null);
                 }
-                if(out.size()>=topX)
-                    break;
             }
         } catch (IOException e) {
             e.printStackTrace();

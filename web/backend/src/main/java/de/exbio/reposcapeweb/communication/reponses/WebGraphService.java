@@ -13,6 +13,7 @@ import de.exbio.reposcapeweb.configs.DBConfig;
 import de.exbio.reposcapeweb.db.DbCommunicationService;
 import de.exbio.reposcapeweb.db.entities.RepoTrialNode;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
+import de.exbio.reposcapeweb.db.entities.nodes.Drug;
 import de.exbio.reposcapeweb.db.entities.nodes.Gene;
 import de.exbio.reposcapeweb.db.entities.nodes.Protein;
 import de.exbio.reposcapeweb.db.history.GraphHistory;
@@ -866,6 +867,10 @@ public class WebGraphService {
     public void applyModuleJob(Job j) {
         int nodeTypeId = Graphs.getNode((j.getMethod().equals(ToolService.Tool.CENTRALITY) | j.getMethod().equals(ToolService.Tool.TRUSTRANK) ? "drug" : j.getMethod().equals(ToolService.Tool.BICON) ? "gene" : j.getTarget()));
 
+        if(j.getMethod()==ToolService.Tool.CENTRALITY | j.getMethod() == ToolService.Tool.TRUSTRANK)
+            filterDrugsMap(nodeTypeId,j);
+
+
         boolean onlyKeepResult = j.getParams().containsKey("nodesOnly") && j.getParams().get("nodesOnly").equals("true");
 
         Graph g = getCachedGraph(j.getBasisGraph());
@@ -897,6 +902,8 @@ public class WebGraphService {
 
             if (j.getMethod().equals(ToolService.Tool.TRUSTRANK) || j.getMethod().equals(ToolService.Tool.CENTRALITY)) {
                 int otherTypeId=nodeTypeId;
+
+
                 derived.addCustomNodeAttributeType(otherTypeId, "score", "numeric");
                 HashMap<Integer, HashMap<String, Object>> idMap = new HashMap<>();
                 j.getResult().getNodes().forEach((k, v) -> {
@@ -914,7 +921,9 @@ public class WebGraphService {
             }
             updateEdges(derived, j, nodeTypeId);
         } else {
-            j.setUpdate("" + (j.getResult().getNodes().size()));
+
+
+            j.setUpdate("" + j.getResult().getNodes().size());
             NodeFilter nf = new NodeFilter(nodeController.getFilter(Graphs.getNode(nodeTypeId)), j.getResult().getNodes().keySet());
             derived.saveNodeFilter(Graphs.getNode(nodeTypeId), nf);
             derived.addNodes(nodeTypeId, nf.toList(-1).stream().map(e -> new Node(e.getNodeId(), e.getName())).collect(Collectors.toList()));
@@ -941,6 +950,23 @@ public class WebGraphService {
             addGraphToHistory(j.getUserId(), derived.getId());
         } else
             j.setStatus(Job.JobState.LIMITED);
+    }
+
+    private void filterDrugsMap(int nodeTypeId, Job j) {
+        int topX = Integer.parseInt(j.getParams().get("topX"));
+        boolean elements = j.getParams().get("elements").startsWith("t");
+        HashMap<Integer,HashMap<String,Object>> newNodes = j.getResult().getNodes();
+        LinkedList<Map.Entry<Integer,HashMap<String,Object>>> sortedEntries =new LinkedList<>(newNodes.entrySet().stream().sorted(Comparator.comparingDouble(e -> ((double) e.getValue().get("score")))).collect(Collectors.toMap(Map.Entry::getKey,Map.Entry::getValue, (e1, e2)-> e1, LinkedHashMap::new)).entrySet());
+        newNodes.clear();
+        Collections.reverse(sortedEntries);
+        for(Map.Entry<Integer,HashMap<String,Object>> e:sortedEntries){
+            if(!elements && ((Drug) nodeController.getNode(Graphs.getNode(nodeTypeId),e.getKey())).getDrugCategories().contains("Elements"))
+                continue;
+            newNodes.put(e.getKey(),e.getValue());
+            if(newNodes.size()>=topX)
+                break;
+        }
+        j.getResult().setNodes(newNodes);
     }
 
     private void updateEdges(Graph g, Job j, Integer nodeTypeId) {
