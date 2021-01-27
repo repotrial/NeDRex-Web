@@ -29,7 +29,7 @@
           height="75vh"
         >
 
-          <v-card-subtitle class="headline">I Node Configuration</v-card-subtitle>
+          <v-card-subtitle class="headline">Node Configuration</v-card-subtitle>
           <v-card-subtitle style="margin-top: -25px">Add seeds to your.</v-card-subtitle>
 
           <v-container style="height: 80%">
@@ -137,7 +137,7 @@
                 </v-container>
               </v-col>
               <v-col cols="2">
-              <v-divider vertical></v-divider>
+                <v-divider vertical></v-divider>
               </v-col>
               <v-col cols="5">
                 <v-list-item-subtitle class="title">2a. Select the target node type:</v-list-item-subtitle>
@@ -258,22 +258,127 @@
       </v-stepper-content>
       <v-stepper-content step="2">
         <v-card
-          v-if="step===1"
+          v-if="step===2"
           class="mb-12"
           height="75vh"
         >
-          <v-card-subtitle class="headline">2. Path Selection</v-card-subtitle>
-          <v-card-subtitle style="margin-top: -25px">Subtitle blabla
+          <v-card-subtitle class="headline">Path Selection</v-card-subtitle>
+          <v-card-subtitle style="margin-top: -25px">Select the path you want to be your graph be based on.
           </v-card-subtitle>
+
+          <v-container style="height: 80%">
+            <v-row style="height: 50vh">
+              <v-col cols="3">
+                <v-radio-group v-model="pathModel">
+                  <v-list-item-subtitle class="title">Direct-Paths</v-list-item-subtitle>
+                  <v-list>
+                    <v-list-item v-for="(path,idx) in paths[0]" :key="idx" v-if="paths[0].length>0">
+                      <v-list-item-title>
+                        <v-tooltip top>
+                          <template v-slot:activator="{on,attrs}">
+                            <v-icon v-on="on" v-bind="attrs" :color="getColoring('nodes',nodeList[sourceTypeId].value)"
+                                    size="30px">
+                              fas fa-genderless
+                            </v-icon>
+                          </template>
+                          <span>{{ nodeList[sourceTypeId].text }}</span>
+                        </v-tooltip>
+                        <span v-for="(edge,idx2) in path" :key="'0_'+idx+'_'+idx2+'_'+edge.label">
+                            <v-tooltip top>
+                               <template v-slot:activator="{ on, attrs }">
+                                  <v-icon v-bind="attrs"
+                                          size="30px"
+                                          v-on="on">{{
+                                      edge.direction ? "fas fa-long-arrow-alt-right" : "fas fa-long-arrow-alt-left"
+                                    }}</v-icon>
+                               </template>
+                              <span>{{ edge.label }}</span>
+                            </v-tooltip>
+                        <v-tooltip top>
+                        <template v-slot:activator="{on,attrs}">
+                          <v-icon v-on="on" v-bind="attrs"
+                                  size="30px"
+                                  :color="getColoring('edges',edge.label)[edge.direction ? 1:0]">fas fa-genderless</v-icon>
+                        </template>
+                        <span>{{ getNodeLabel(edge.label, [edge.direction ? 1 : 0]) }}</span>
+                      </v-tooltip>
+                      </span>
+                      </v-list-item-title>
+                      <v-list-item-action>
+                        <v-radio></v-radio>
+                      </v-list-item-action>
+                    </v-list-item>
+                    <v-list-item v-if="paths[0].length===0">
+                      <v-list-item-subtitle>no direct path available</v-list-item-subtitle>
+                    </v-list-item>
+                  </v-list>
+                  <v-list-item-subtitle class="title">Indirect-Paths</v-list-item-subtitle>
+                  <v-list>
+                    <v-list-item v-for="(path,idx) in paths[1]" :key="idx">
+                      <v-list-item-title>
+                        <v-tooltip top>
+                          <template v-slot:activator="{on,attrs}">
+                            <v-icon v-on="on" v-bind="attrs" size="30px"
+                                    :color="getColoring('nodes',nodeList[sourceTypeId].value)">
+                              fas fa-genderless
+                            </v-icon>
+                          </template>
+                          <span>{{ nodeList[sourceTypeId].text }}</span>
+                        </v-tooltip>
+                        <span v-for="(edge,idx2) in path" :key="'1_'+idx+'_'+idx2+'_'+edge.label">
+                            <v-tooltip top>
+                               <template v-slot:activator="{ on, attrs }">
+                                  <v-icon v-bind="attrs"
+                                          size="30px"
+                                          v-on="on">{{
+                                      edge.direction ? "fas fa-long-arrow-alt-right" : "fas fa-long-arrow-alt-left"
+                                    }}</v-icon>
+                               </template>
+                              <span>{{ edge.label }}</span>
+                            </v-tooltip>
+                        <v-tooltip top>
+                        <template v-slot:activator="{on,attrs}">
+                          <v-icon v-on="on" v-bind="attrs"
+                                  size="30px"
+                                  :color="getColoring('edges',edge.label)[edge.direction ? 1:0]">fas fa-genderless</v-icon>
+                        </template>
+                        <span>{{ getNodeLabel(edge.label, [edge.direction ? 1 : 0]) }}</span>
+                      </v-tooltip>
+                      </span>
+                      </v-list-item-title>
+                      <v-list-item-action>
+                        <v-radio>
+
+                        </v-radio>
+                      </v-list-item-action>
+                    </v-list-item>
+                  </v-list>
+                </v-radio-group>
+              </v-col>
+              <v-divider vertical></v-divider>
+              <v-col>
+                <v-list-item-subtitle class="title">Additional Options</v-list-item-subtitle>
+                <v-card-subtitle>General</v-card-subtitle>
+                <v-list-item>
+                  <span>Remove Intermediate Nodes</span>
+                  <v-switch style="margin-left:5px"></v-switch>
+                  <span>Keep Intermediate Nodes</span>
+                </v-list-item>
+                <v-divider></v-divider>
+                <v-card-subtitle>Node specific</v-card-subtitle>
+              </v-col>
+            </v-row>
+          </v-container>
         </v-card>
         <v-btn
           @click="makeStep(2,'back')"
-          >
+        >
           Back
         </v-btn>
         <v-btn
           color="primary"
           @click="makeStep(2,'continue')"
+          :disabled="pathModel<0"
         >
           Continue
         </v-btn>
@@ -294,7 +399,7 @@
         </v-card>
         <v-btn
           @click="makeStep(3,'back')"
-          >
+        >
           Back
         </v-btn>
         <v-btn text @click="makeStep(3,'cancel')">
@@ -343,13 +448,17 @@ export default {
       nodeTargetSuggestions: null,
       suggestionSourceModel: null,
       suggestionTargetModel: null,
+
+      pathModel: -1,
+
+      paths: {0: [], 1: []},
     }
   },
 
   created() {
     this.uid = this.$cookies.get("uid")
-    this.nodeList =[]
-    this.nodeIdTypeList=[]
+    this.nodeList = []
+    this.nodeIdTypeList = []
     this.metagraph.nodes.forEach((n, index) => {
       this.nodeList.push({id: index, value: n.group, text: n.label})
       this.nodeIdTypeList.push(this.metagraph.data[n.label])
@@ -396,7 +505,40 @@ export default {
       this.nodeTargetSuggestions = null
       this.suggestionSourceModel = null
       this.suggestionTargetModel = null
+      //TODO dev
+      this.sourceTypeId = 3
+      this.targetTypeId = 4
+      this.pathModel = -1
 
+      this.clearPaths()
+      this.sources = [{
+        "primaryDomainId": "entrez.3757",
+        "displayName": "KCNH2",
+        "id": 19888
+      }, {"primaryDomainId": "entrez.5005", "displayName": "ORM2", "id": 54656}, {
+        "primaryDomainId": "entrez.4988",
+        "displayName": "OPRM1",
+        "id": 13457
+      }, {"primaryDomainId": "entrez.4985", "displayName": "OPRD1", "id": 13458}, {
+        "primaryDomainId": "entrez.4986",
+        "displayName": "OPRK1",
+        "id": 13459
+      }, {"primaryDomainId": "entrez.23643", "displayName": "LY96", "id": 1413}, {
+        "primaryDomainId": "entrez.3359",
+        "displayName": "HTR3A",
+        "id": 29783
+      }, {"primaryDomainId": "entrez.57053", "displayName": "CHRNA10", "id": 1177}, {
+        "primaryDomainId": "entrez.116443",
+        "displayName": "GRIN3A",
+        "id": 50124
+      }]
+
+    },
+
+    clearPaths: function () {
+
+      this.paths[0] = []
+      this.paths[1] = []
     },
 
     getSuggestionSelection: function (index) {
@@ -406,12 +548,12 @@ export default {
       let nodeId = this.metagraph.nodes.filter(n => n.group === type)[0].id
       let typeList = this.metagraph.edges.filter(e => e.from !== e.to && e.from === nodeId || e.to === nodeId).map(e => e.to === nodeId ? e.from : e.to).map(nid => {
         let node = this.metagraph.nodes.filter(n => n.id === nid)[0]
-        if(node.group === type)
-          selfAdded=true
+        if (node.group === type)
+          selfAdded = true
         return {value: node.group, text: node.label}
       })
-      if(!selfAdded)
-        typeList.push({value:type, text:this.nodeList[[this.sourceTypeId, this.targetTypeId][index]].text})
+      if (!selfAdded)
+        typeList.push({value: type, text: this.nodeList[[this.sourceTypeId, this.targetTypeId][index]].text})
       return typeList
     },
 
@@ -428,12 +570,35 @@ export default {
         }).then(data => {
           this.addToSelection(data, index, "SUG:" + val.text + "[" + this.suggestionType + "]")
         }).then(() => {
-          this[["suggestionSourceModel","suggestionTargetModel"][index]] = undefined
-          this.sugQuery[index]=""
+          this[["suggestionSourceModel", "suggestionTargetModel"][index]] = undefined
+          this.sugQuery[index] = ""
         }).catch(console.log)
       }
     },
 
+    generatePaths: function () {
+      let sourceId = this.metagraph.nodes[this.sourceTypeId].id + ""
+      let targetId = this.metagraph.nodes[this.targetTypeId].id + ""
+      this.metagraph.edges.forEach(e1 => {
+        if (e1.to === sourceId || e1.from === sourceId) {
+          let i1 = (e1.to === sourceId) ? e1.from : e1.to
+          if (i1 === targetId)
+            this.paths[0].push([{label: e1.label, direction: e1.from === sourceId}])
+          else
+            this.metagraph.edges.forEach(e2 => {
+              if (e2.to === i1 || e2.from === i1) {
+                let i2 = (e2.to === i1) ? e2.from : e2.to
+                if (i2 === targetId)
+                  this.paths[1].push([{label: e1.label, direction: e1.from === sourceId}, {
+                    label: e2.label,
+                    direction: e2.to === targetId
+                  }])
+              }
+            })
+        }
+      })
+      console.log(this.paths)
+    },
 
     getSuggestions: function (val, index, timeouted) {
       if (!timeouted) {
@@ -566,14 +731,19 @@ export default {
     makeStep: function (s, button) {
       if (button === "continue") {
         this.step++
+        if (this.step === 2)
+          this.generatePaths()
       }
       if (button === "back") {
-        if (this.step === 3) {
-          this.results.targets = []
-          this.$refs.graph.reload()
+        this.step--
+        if (this.step === 2) {
+          // this.results.targets = []
+          // this.$refs.graph.reload()
           // this.$socket.unsubscribeJob(this.currentJid)
         }
-        this.step--
+        if (this.step === 1)
+          this.clearPaths()
+
       }
 
       if (button === "cancel") {
@@ -584,6 +754,15 @@ export default {
         console.log("load graph")
       // this.submitAlgorithm()
     },
+
+    getColoring: function (entity, name) {
+      return Utils.getColoring(this.metagraph, entity, name);
+    },
+
+    getNodeLabel: function (name, idx) {
+      let id = Utils.getNodes(this.metagraph, name)[idx]
+      return id.substring(0, 1).toUpperCase() + id.substring(1)
+    }
 
   }
 

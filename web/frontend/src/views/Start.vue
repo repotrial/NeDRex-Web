@@ -14,8 +14,8 @@
         <v-list-item>
           <v-tabs v-model="selectionTab" centered>
             <v-tabs-slider color="blue"></v-tabs-slider>
-            <v-tab>Guided Exploration</v-tab>
             <v-tab>Quick Start</v-tab>
+            <v-tab>Guided Exploration</v-tab>
             <v-tab>Advanced Exploration</v-tab>
           </v-tabs>
         </v-list-item>
@@ -39,15 +39,14 @@
         </v-list>
       </v-card>
     </v-container>
-    <Guided v-if="selectionTab===0" :metagraph="metagraph" @printNotificationEvent="printNotification"></Guided>
-
-    <Quick v-show="selectionTab===1" :metagraph="metagraph" @printNotificationEvent="printNotification"
-        @graphLoadEvent="loadGraph"
-    >
-    </Quick>
+    <Quick v-if="selectionTab===0" :metagraph="metagraph" @printNotificationEvent="printNotification"
+           @graphLoadEvent="loadGraph"
+    ></Quick>
+    <Guided v-if="selectionTab===1" :metagraph="metagraph" @printNotificationEvent="printNotification"></Guided>
 
 
-    <Advanced ref="advanced" v-show="selectionTab===2"
+
+    <Advanced ref="advanced" v-if="selectionTab===2"
               :metagraph="metagraph" :options="options" :colors="colors" :filters="filters"
               @printNotificationEvent="printNotification"
               @graphLoadEvent="loadGraph"

@@ -980,29 +980,6 @@ export default {
     this.list
     this.init()
 
-    //TODO dev
-    // this.seedTypeId = 0
-    // this.seeds = [{
-    //   "primaryDomainId": "entrez.3757",
-    //   "displayName": "KCNH2",
-    //   "id": 19888
-    // }, {"primaryDomainId": "entrez.5005", "displayName": "ORM2", "id": 54656}, {
-    //   "primaryDomainId": "entrez.4988",
-    //   "displayName": "OPRM1",
-    //   "id": 13457
-    // }, {"primaryDomainId": "entrez.4985", "displayName": "OPRD1", "id": 13458}, {
-    //   "primaryDomainId": "entrez.4986",
-    //   "displayName": "OPRK1",
-    //   "id": 13459
-    // }, {"primaryDomainId": "entrez.23643", "displayName": "LY96", "id": 1413}, {
-    //   "primaryDomainId": "entrez.3359",
-    //   "displayName": "HTR3A",
-    //   "id": 29783
-    // }, {"primaryDomainId": "entrez.57053", "displayName": "CHRNA10", "id": 1177}, {
-    //   "primaryDomainId": "entrez.116443",
-    //   "displayName": "GRIN3A",
-    //   "id": 50124
-    // }]
 
 
   },
