@@ -1,26 +1,27 @@
 <template>
   <v-card ref="legend" elevation="3" style="margin:15px" v-if="metagraph!==undefined && entityGraph!==undefined">
-    <v-list-item @click="show=!show">
-      <v-list-item-title>
-        <v-icon left>{{ show ? "far fa-minus-square" : "far fa-plus-square" }}</v-icon>
-        Legend
-      </v-list-item-title>
-    </v-list-item>
-    <v-divider></v-divider>
+<!--    <v-list-item @click="show=!show">-->
+<!--      <v-list-item-title>-->
+<!--        <v-icon left>{{ show ? "far fa-minus-square" : "far fa-plus-square" }}</v-icon>-->
+<!--        Legend-->
+<!--      </v-list-item-title>-->
+<!--    </v-list-item>-->
+<!--    <v-divider></v-divider>-->
     <v-container v-show="show">
-      <v-tabs
-        fixed-tabs
-        v-model="tabModel"
-      >
-        <v-tabs-slider></v-tabs-slider>
-        <v-tab class="primary--text">
-         Nodes
-        </v-tab>
-        <v-tab class="primary--text">
-          Edges
-        </v-tab>
-      </v-tabs>
-          <v-list v-show="tabModel===0">
+<!--      <v-tabs-->
+<!--        fixed-tabs-->
+<!--        v-model="tabModel"-->
+<!--      >-->
+<!--        <v-tabs-slider></v-tabs-slider>-->
+<!--        <v-tab class="primary&#45;&#45;text">-->
+<!--         Nodes-->
+<!--        </v-tab>-->
+<!--        <v-tab class="primary&#45;&#45;text">-->
+<!--          Edges-->
+<!--        </v-tab>-->
+<!--      </v-tabs>-->
+      <v-card-title>Nodes</v-card-title>
+          <v-list>
             <v-list-item v-for="node in Object.values(countMap.nodes)" :key="node.name">
               <v-chip outlined @click="toggleNode(node.name)">
                 <v-icon left :color="getColoring('nodes',node.name)">fas fa-genderless</v-icon>
@@ -28,7 +29,8 @@
               </v-chip>
             </v-list-item>
           </v-list>
-          <v-list v-show="tabModel===1">
+      <v-card-title>Edges</v-card-title>
+          <v-list>
             <v-list-item v-for="edge in Object.values(countMap.edges)" :key="edge.name">
               <v-chip outlined @click="toggleEdge(edge.name)">
                 <v-icon left :color="getColoring('edges',edge.name)[0]" >fas fa-genderless</v-icon>

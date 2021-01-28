@@ -1,5 +1,5 @@
 <template>
-  <v-app-bar app prominent elevation="0" hide-on-scroll color="white">
+  <v-app-bar app elevation="0" :dense="!prominent" :shrink-on-scroll="prominent"  color="white">
     <div id="particles-js"></div>
     <div id="title-div" style="position:fixed">
       <h1 id="title">NeDRex</h1>
@@ -22,6 +22,9 @@ import '../dist/js/particles.js'
 
 export default {
   name: "headerBar",
+  props:{
+    prominent:true,
+  },
   mounted() {
     this.initParticles()
   },
@@ -153,7 +156,6 @@ export default {
   margin: auto
   vertical-align: middle
   text-shadow: 2px 2px 5px #45495b
-  font-size: 80px
   user-select: none
 
 

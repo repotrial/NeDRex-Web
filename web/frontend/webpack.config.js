@@ -3,7 +3,8 @@ var webpack = require('webpack')
 // const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 let host_dev = "localhost";
-let host_prod = "nedrex-server";
+//let host_prod = "nedrex-server";
+let host_prod= "www.exbio.wzw.tum.de/nedrex"
 
 let host_backend_dev = "http://"+host_dev + ":8090";
 let host_backend_prod = "http://"+host_prod + ":8090";

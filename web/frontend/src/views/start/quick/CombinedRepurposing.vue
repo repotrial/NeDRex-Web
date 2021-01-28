@@ -979,8 +979,8 @@ export default {
     this.uid = this.$cookies.get("uid")
     this.list
     this.init()
-
-
+  },
+  destroyed() {
 
   },
 

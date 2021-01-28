@@ -73,7 +73,7 @@ export default {
   },
   data() {
     return {
-      selectionTab: 1,
+      selectionTab: 0,
     }
   },
   watch: {

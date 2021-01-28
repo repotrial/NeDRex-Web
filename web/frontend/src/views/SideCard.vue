@@ -337,14 +337,19 @@
           </v-simple-table>
         </v-container>
       </v-card>
+      <template v-if="(selectedTab===1 && options.graph.visualized)" :options="options.graph.selection">
+        <Selection ref="selection" :options="options.graph.selection"
+                   @selectModeEvent="toggleSelectMode"
+                   @nodeSelectionEvent="loadSelection"
+                  @applyMultiSelect="applyMultiSelect"
+        >
+        </Selection>
 
-
-      <Legend :metagraph="metagraph" :countMap="options.list.countMap" :entity-graph="options.list.entityGraph"
-              :options="options.graph.legend"
-              v-if="(selectedTab===1 && options.graph.visualized)"
-              @graphViewEvent="graphViewEvent"
-      ></Legend>
-
+        <!--        <Legend :metagraph="metagraph" :countMap="options.list.countMap" :entity-graph="options.list.entityGraph"-->
+        <!--                :options="options.graph.legend"-->
+        <!--                @graphViewEvent="graphViewEvent"-->
+        <!--        ></Legend>-->
+      </template>
       <v-card ref="info" elevation="3" style="margin:15px" v-if="(selectedTab===1 && options.graph.visualized)">
 
         <v-list-item @click="show.info=!show.info">
@@ -540,7 +545,8 @@
 import Utils from "../scripts/Utils"
 import Algorithms from "./toolbox/Algorithms.vue"
 import Jobs from "./toolbox/Jobs"
-import Legend from "./toolbox/Legend"
+// import Legend from "./toolbox/Legend"
+import Selection from "./toolbox/Selection";
 
 export default {
   props: {
@@ -926,19 +932,23 @@ export default {
       // this.options.graph.visualized = true;
       this.$emit('applyEvent');
       this.show.options = false;
-      this.options.graph.physics=false;
-      this.options.graph.loops=true;
-      this.options.graph.single=true;
+      this.options.graph.physics = false;
+      this.options.graph.loops = true;
+      this.options.graph.single = true;
       this.$nextTick(() => {
         this.show.options = true;
       })
 
+    },
+    toggleSelectMode: function (select) {
+      this.$emit('selectModeEvent', select)
     }
     ,
     setFiltering: function () {
       this.show.filterAdding = true;
     }
     ,
+
     loadFilter: function (data) {
       if (data !== undefined) {
         this.filters = data.filters
@@ -948,6 +958,12 @@ export default {
       }
     }
     ,
+    applyMultiSelect: function(selection){
+      this.$emit("applyMultiSelect",selection);
+    },
+    setMultiSelect: function(selection){
+      this.$refs.selection.setSelection(selection)
+    },
     nodeDetails: function (id) {
       let str = id.split("_")
       this.$emit("nodeDetailsEvent", {prefix: str[0], id: str[1]})
@@ -1046,7 +1062,8 @@ export default {
   components: {
     Algorithms,
     Jobs,
-    Legend
+    // Legend,
+    Selection
   },
 
 }

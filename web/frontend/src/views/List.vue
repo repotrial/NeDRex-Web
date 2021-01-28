@@ -493,40 +493,40 @@
                 </template>
                 <template v-slot:item.actions="{item}">
                   <v-row>
-<!--                    <v-col cols="1">-->
-<!--                      <v-tooltip right>-->
-<!--                        <template v-slot:activator="{ on, attrs }">-->
-<!--                          <v-icon-->
-<!--                            small-->
-<!--                            left-->
-<!--                            color="primary"-->
-<!--                            dark-->
-<!--                            v-bind="attrs"-->
-<!--                            v-on="on"-->
-<!--                            v-on:click="showInGraph('node',item)"-->
-<!--                          >-->
-<!--                            fas fa-project-diagram-->
-<!--                          </v-icon>-->
-<!--                        </template>-->
-<!--                        <span>Focus in graph</span>-->
-<!--                      </v-tooltip>-->
-<!--                    </v-col>-->
-                                        <v-col cols="1">
-                                          <v-tooltip right>
-                                            <template v-slot:activator="{ on, attrs }">
-                                              <v-icon
-                                                color="primary"
-                                                dark
-                                                v-bind="attrs"
-                                                v-on="on"
-                                                v-on:click="edgeDetails(item)"
-                                              >
-                                                fas fa-info-circle
-                                              </v-icon>
-                                            </template>
-                                            <span>id:{{ item.id }}</span>
-                                          </v-tooltip>
-                                        </v-col>
+                    <!--                    <v-col cols="1">-->
+                    <!--                      <v-tooltip right>-->
+                    <!--                        <template v-slot:activator="{ on, attrs }">-->
+                    <!--                          <v-icon-->
+                    <!--                            small-->
+                    <!--                            left-->
+                    <!--                            color="primary"-->
+                    <!--                            dark-->
+                    <!--                            v-bind="attrs"-->
+                    <!--                            v-on="on"-->
+                    <!--                            v-on:click="showInGraph('node',item)"-->
+                    <!--                          >-->
+                    <!--                            fas fa-project-diagram-->
+                    <!--                          </v-icon>-->
+                    <!--                        </template>-->
+                    <!--                        <span>Focus in graph</span>-->
+                    <!--                      </v-tooltip>-->
+                    <!--                    </v-col>-->
+                    <v-col cols="1">
+                      <v-tooltip right>
+                        <template v-slot:activator="{ on, attrs }">
+                          <v-icon
+                            color="primary"
+                            dark
+                            v-bind="attrs"
+                            v-on="on"
+                            v-on:click="edgeDetails(item)"
+                          >
+                            fas fa-info-circle
+                          </v-icon>
+                        </template>
+                        <span>id:{{ item.id }}</span>
+                      </v-tooltip>
+                    </v-col>
                   </v-row>
 
                 </template>
@@ -937,6 +937,7 @@ export default {
   gid: undefined,
   uid: undefined,
   suqQuery: "",
+  prefixMap: undefined,
 
   data() {
     return {
@@ -1042,6 +1043,7 @@ export default {
         this.configuration.entityGraph = data
         this.reloadCountMap()
         this.loading = false
+        this.$emit("loadLegendEvent", true)
       })
         .catch(err => console.log(err))
     },
@@ -1055,6 +1057,27 @@ export default {
       this.loadList(undefined)
       this.selectAllModel = {nodes: {}, edges: {}}
       this.nodepage = {}
+    },
+    applyMultiSelect: function (selection) {
+      if (this.prefixMap === undefined) {
+        this.prefixMap = {}
+        Object.values(this.metagraph.nodes).forEach(n => this.prefixMap[n.group.substring(0, 3)] = n.group)
+      }
+      let selectionMap = {}
+      selection.forEach(node => {
+        let spl = node.split("_")
+        let group = this.prefixMap[spl[0]]
+        let id = parseInt(spl[1])
+        if (selectionMap[group] === undefined)
+          selectionMap[group] = [id]
+        else
+          selectionMap[group].push(id)
+      })
+      Object.keys(selectionMap).forEach(group=>{
+        this.select("nodes",group,selectionMap[group])
+      })
+      this.reloadCountMap()
+
     }
     ,
     recieveEvent: function (event) {
@@ -1070,11 +1093,11 @@ export default {
           break
       }
     },
-    showInGraph: function(type,item){
+    showInGraph: function (type, item) {
       let prefix = ""
-      if(type==="node")
-        prefix = Object.keys(this.attributes.nodes)[this.nodeTab].substr(0,3)+"_"
-      this.$emit("focusInGraphEvent",type,prefix+item.id)
+      if (type === "node")
+        prefix = Object.keys(this.attributes.nodes)[this.nodeTab].substr(0, 3) + "_"
+      this.$emit("focusInGraphEvent", type, prefix + item.id)
     },
     getNodeSuggestions: function (val, timeouted) {
       if (!timeouted) {

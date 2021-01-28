@@ -1,7 +1,7 @@
-<template>
-  <v-app>
-    <headerBar @showVersionEvent="showVersionInfo=true"/>
-    <v-card>
+<template style="overflow-y: hidden">
+  <v-app :style="{marginTop:selectedTabId===0 ? '60px': '0px'}">
+    <headerBar @showVersionEvent="showVersionInfo=true" :prominent="selectedTabId===0" style="z-index: 1000;"/>
+    <v-card style="position: sticky ; top:0px; margin-top: -10px; z-index: 999 ">
       <v-toolbar flat>
         <template v-slot:extension>
           <v-tabs
@@ -42,14 +42,25 @@
             </v-container>
             <v-container v-show="selectedTabId===1" fluid>
               <Graph ref="graph"
+                     style="position: sticky; "
                      v-on:selectionEvent="loadSelection"
                      v-on:finishedEvent="setTabNotification(1)"
                      v-on:visualisationEvent="visualisationEvent"
                      v-on:printNotificationEvent="printNotification"
                      v-on:graphLoadedEvent="loadList"
+                     v-on:multiSelectionEvent="setMultiSelection"
                      :configuration="options.graph"
                      :window-style="graphWindowStyle"
-              ></Graph>
+                     :legend="showLegend"
+              >
+                <template v-slot:legend>
+                  <Legend v-if="showLegend" :metagraph="metagraph" :countMap="options.list.countMap" :entityGraph="options.list.entityGraph"
+                    :options="options.graph.legend"
+                    @graphViewEvent="graphViewEvent"></Legend>
+
+                </template>
+
+              </Graph>
 
             </v-container>
             <v-container v-show="selectedTabId===2" fluid>
@@ -62,6 +73,7 @@
                     v-on:reloadSide="reloadSide"
                     v-on:addJobEvent="registerJob"
                     v-on:focusInGraphEvent="focusInGraph"
+                    @loadLegendEvent="loadLegendEvent"
                     :configuration="options.list"
               ></List>
             </v-container>
@@ -158,9 +170,11 @@
                     v-on:executeAlgorithmEvent="executeAlgorithm"
                     v-on:graphLoadEvent="loadGraph"
                     v-on:reloadHistoryEvent="reloadHistory"
+                    @selectModeEvent="toggleGraphSelectMode"
                     @showLoopsEvent="showLoops"
                     @showUnconnectedEvent="showUnconnected"
                     @graphViewEvent="graphViewEvent"
+                    @applyMultiSelect="applyMultiSelect"
                     :options="options"
                     :selected-tab="selectedTabId"
                     :filters="startFilters"
@@ -270,6 +284,7 @@ import History from "./views/History";
 import List from './views/List.vue'
 import SideCard from './views/SideCard.vue'
 import headerBar from './components/header.vue'
+import Legend from "./views/toolbox/Legend";
 import Utils from "./scripts/Utils"
 
 
@@ -304,7 +319,8 @@ export default {
       graphWindowStyle: {
         height: '75vh',
         'min-height': '75vh',
-      }
+      },
+      showLegend: false,
     }
   },
   created() {
@@ -403,6 +419,10 @@ export default {
     reloadSide: function () {
       this.$refs.side.$forceUpdate()
     },
+
+    toggleGraphSelectMode: function(select){
+      this.$refs.graph.toggleSelectMode(select);
+    },
     focusInGraph: function (type, id) {
       if (!this.$refs.graph.isVisualized || !this.$refs.graph.graphExists()) {
         this.printNotification("Graph must be visualized first!", 2)
@@ -429,6 +449,7 @@ export default {
         visualized: false,
         sizeWarning: false,
         component: false,
+        selection:{selectMode:false},
         legend: {}
       }
       this.options.list = {showAll: true, selected: 0, total: 0, countMap: {nodes: {}, edges: {}}, entityGraph: {}}
@@ -436,6 +457,20 @@ export default {
     },
     loadSubSelection: function (selection) {
       this.loadGraph({data: selection})
+    },
+
+    loadLegendEvent: function(val){
+      if(val===this.showLegend && val){
+        this.showLegend=false;
+      }
+      this.$nextTick(()=>{this.showLegend=val})
+    },
+    applyMultiSelect: function(selection){
+      this.$refs.list.applyMultiSelect(selection)
+      this.printNotification("Added "+selection.length+" nodes to selection!",1)
+    },
+    setMultiSelection: function(selection){
+      this.$refs.side.setMultiSelect(selection)
     },
     sizeWarning: function (info) {
       this.listWarnObject = info;
@@ -641,7 +676,8 @@ export default {
     SideCard,
     Start,
     List,
-    History
+    History,
+    Legend
   }
   ,
 
@@ -666,7 +702,7 @@ export default {
   -moz-osx-font-smoothing: grayscale
   text-align: center
   color: #2c3e50
-  margin-top: 60px
+  //padding-top: 60px
 
 
 h1, h2

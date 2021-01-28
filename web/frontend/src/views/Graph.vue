@@ -6,15 +6,18 @@
     <v-progress-linear v-else v-show="progress <100" :value="progress" :color=loadingColor></v-progress-linear>
     <div :style="{position:'relative', height:'100%',width:'100%',display: 'flex', 'justify-content': 'flex-end'}">
       <network v-if="nodeSet !== undefined && isVisualized()" v-show="!loading" class="wrapper" ref="network"
-               style="width: 100%"
+               :style="{width: '100%',cursor:canvasCursor}"
                :key="key"
                :nodes="nodeSet"
                :edges="edgeSet"
                :options="options"
                :layout="layout"
                :physics="physics"
-               :events="['click','release','startStabilizing','stabilizationProgress','stabilizationIterationsDone']"
-               @click="onClick">
+               :events="['click','release','startStabilizing','stabilizationProgress','stabilizationIterationsDone','mousemove','mousedown','mouseup']"
+               @click="onClick"
+               v-on:mousedown.right="dragMouseDown"
+
+      >
       </network>
       <div style="position: absolute" v-if="legend">
         <div style="display: flex; justify-content: flex-end;">
@@ -23,7 +26,7 @@
             <v-icon right>{{ showLegend ? "fas fa-angle-up" : "fas fa-angle-down" }}</v-icon>
           </v-btn>
         </div>
-        <div v-show="showLegend" style="padding-right: 1px">
+        <div v-show="showLegend" style="padding-right: 1px" >
           <slot name="legend"></slot>
         </div>
       </div>
@@ -95,6 +98,8 @@ export default {
   gid: undefined,
   unconnected: [],
 
+
+
   data() {
     return {
       showLegend: true,
@@ -110,6 +115,16 @@ export default {
       dialog: false,
       skipVis: false,
       skipDialog: false,
+
+      network: undefined,
+      canvas: undefined,
+      ctx: undefined,
+      rect: {},
+      drag: false,
+      drawingSurfaceImageData: undefined,
+      offsetLeft:0,
+      offsetTop:0,
+      canvasCursor: "default",
     }
   }
   ,
@@ -229,7 +244,6 @@ export default {
       this.dialog = false;
       this.configuration.visualized = vis;
       if (vis) {
-        this.$forceUpdate()
         this.$emit("visualisationEvent")
       }
     },
@@ -336,6 +350,12 @@ export default {
 
         },
         options: {
+          interaction: {
+            multiselect: true,
+            hideEdgesOnDrag:true,
+            hideEdgesOnZoom:true,
+            // dragView:false,
+          },
           groups: {
             drug: {
               // hidden: false,
@@ -476,6 +496,19 @@ export default {
       this.options.physics.enabled = this.physicsOn
       if (this.isVisualized()) {
         this.saveLayout()
+      }
+      this.updateOptions()
+    },
+
+    toggleSelectMode: function(select){
+      if(select){
+          this.options.interaction.zoomView=false;
+          this.options.interaction.dragView = false;
+          this.initDragSelect();
+      }else{
+        this.options.interaction.zoomView=true;
+        this.options.interaction.dragView=true;
+        this.removeDragSelect();
       }
       this.updateOptions()
     },
@@ -698,6 +731,99 @@ export default {
         this.showOnlyComponent(data.selected, data.state)
       }
     },
+
+    initDragSelect: function () {
+      if (this.$refs.network !== undefined && this.network ===undefined) {
+        this.network = this.$refs.network.network
+        this.canvas = this.network.canvas.frame.canvas;
+        this.canvas.oncontextmenu = function () {
+          return false
+        }
+        this.ctx = this.canvas.getContext('2d');
+        this.canvas.addEventListener("mousemove",this.dragMouseMove)
+        this.canvas.addEventListener("mousedown", this.dragMouseDown)
+        this.canvas.addEventListener("mouseup",this.dragMouseUp)
+      }
+    },
+
+    removeDragSelect: function(){
+      this.network = undefined;
+      this.canvas.removeEventListener("mousemove",this.dragMouseMove)
+      this.canvas.removeEventListener("mousedown",this.dragMouseDown)
+      this.canvas.removeEventListener("mouseup",this.dragMouseUp)
+    },
+
+    dragMouseMove:function(e,drag,rect,ctx) {
+      if (this.drag) {
+        this.restoreDrawingSurface();
+        this.rect.w = (e.pageX - this.offsetLeft) - this.rect.startX;
+        this.rect.h = (e.pageY - this.offsetTop) - this.rect.startY ;
+
+        this.ctx.setLineDash([5]);
+        this.ctx.strokeStyle = "rgb(0, 102, 0)";
+        this.ctx.strokeRect(this.rect.startX, this.rect.startY, this.rect.w, this.rect.h);
+        this.ctx.setLineDash([]);
+        this.ctx.fillStyle = "rgba(0, 255, 0, 0.2)";
+        this.ctx.fillRect(this.rect.startX, this.rect.startY, this.rect.w, this.rect.h);
+      }
+    },
+    dragMouseDown: function(e) {
+      if (e.button ===0) {
+        this.offsetLeft = e.target.getBoundingClientRect().left
+        this.offsetTop = e.target.getBoundingClientRect().top
+        // this.selectedNodes = e.ctrlKey ? this.network.getSelectedNodes() : null;
+        this.saveDrawingSurface();
+        this.rect={}
+        // let that = this;
+        this.rect.startX = e.pageX - this.offsetLeft;
+        this.rect.startY = e.pageY - this.offsetTop;
+        this.drag = true;
+        this.canvasCursor = "crosshair";
+      }
+    },
+
+    dragMouseUp: function(e) {
+      if (e.button ===0) {
+        this.restoreDrawingSurface();
+        this.drag = false;
+
+        this.canvasCursor = "default";
+        this.selectNodesFromHighlight();
+      }
+    },
+
+    saveDrawingSurface: function () {
+      this.drawingSurfaceImageData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+    },
+
+    restoreDrawingSurface: function () {
+      this.ctx.putImageData(this.drawingSurfaceImageData, 0, 0);
+    },
+
+    selectNodesFromHighlight: function () {
+      let fromX, toX, fromY, toY;
+      let nodesIdInDrawing = [];
+      let xRange = this.getStartToEnd(this.rect.startX, this.rect.w);
+      let yRange = this.getStartToEnd(this.rect.startY, this.rect.h);
+
+      let allNodes = this.nodeSet.get();
+      let selection = []
+      for (let i = 0; i < allNodes.length; i++) {
+        let curNode = allNodes[i];
+        let nodePosition = this.network.getPositions([curNode.id]);
+        let nodeXY = this.network.canvasToDOM({x: nodePosition[curNode.id].x, y: nodePosition[curNode.id].y});
+        if (xRange.start <= nodeXY.x && nodeXY.x <= xRange.end && yRange.start <= nodeXY.y && nodeXY.y <= yRange.end) {
+          nodesIdInDrawing.push(curNode.id);
+          selection.push({id:curNode.id, label:curNode.label})
+        }
+      }
+      this.network.selectNodes(nodesIdInDrawing);
+      this.$emit("multiSelectionEvent",selection)
+    },
+
+    getStartToEnd: function (start, theLen) {
+      return theLen > 0 ? {start: start, end: start + theLen} : {start: start + theLen, end: start};
+    }
 
 
   }
