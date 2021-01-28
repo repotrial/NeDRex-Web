@@ -30,7 +30,7 @@
         >
 
           <v-card-subtitle class="headline">Node Configuration</v-card-subtitle>
-          <v-card-subtitle style="margin-top: -25px">Add seeds to your.</v-card-subtitle>
+          <v-card-subtitle style="margin-top: -25px">Add nodes you want your graph to be build on.</v-card-subtitle>
 
           <v-container style="height: 80%">
             <v-row style="height: 50vh">
@@ -359,13 +359,30 @@
               <v-col>
                 <v-list-item-subtitle class="title">Additional Options</v-list-item-subtitle>
                 <v-card-subtitle>General</v-card-subtitle>
-                <v-list-item>
-                  <span>Remove Intermediate Nodes</span>
-                  <v-switch style="margin-left:5px"></v-switch>
-                  <span>Keep Intermediate Nodes</span>
-                </v-list-item>
+                <v-row v-show="!direct">
+                  <v-col cols="7">
+                    <v-tooltip top>
+                      <template v-slot:activator="{on,attrs}">
+                        <v-list-item v-bind="attrs" v-on="on">
+                          <span>Remove Intermediate Nodes</span>
+                          <v-switch v-model="options.general.keep" style="margin-left: 5px" @click=" print(options.general.name) "></v-switch>
+                          <span>Keep Intermediate Nodes</span>
+
+                        </v-list-item>
+                      </template>
+                      <span>Decide if you want to keep all edges or replace the created paths by generating one connecting your source and target nodes directly.</span>
+                    </v-tooltip>
+                  </v-col>
+                  <v-col cols="5">
+                    <v-text-field v-model="options.general.name" v-show="!options.general.keep"
+                                  label="Combined Edge Name"
+                                  :rules="[value => !!value || 'Required!',value=>metagraph.edges.map(e=>e.label).indexOf(value)===-1 || 'Existing names are not possible!']"></v-text-field>
+                  </v-col>
+                </v-row>
                 <v-divider></v-divider>
                 <v-card-subtitle>Node specific</v-card-subtitle>
+                <v-divider></v-divider>
+                <v-card-subtitle>Edge specific</v-card-subtitle>
               </v-col>
             </v-row>
           </v-container>
@@ -378,7 +395,7 @@
         <v-btn
           color="primary"
           @click="makeStep(2,'continue')"
-          :disabled="pathModel<0"
+          :disabled="(selectedPath === undefined || selectedPath.length === 0) || (!options.general.keep&&!direct && (options.general.name === undefined || options.general.name.length===0))"
         >
           Continue
         </v-btn>
@@ -389,13 +406,112 @@
       </v-stepper-content>
       <v-stepper-content step="3">
         <v-card
-          v-if="step===1"
+          v-if="step===3"
           class="mb-12"
           height="75vh"
         >
-          <v-card-subtitle class="headline">3. Results</v-card-subtitle>
-          <v-card-subtitle style="margin-top: -25px">Subtitle blabala
+          <v-card-subtitle class="headline">3. Graph</v-card-subtitle>
+          <v-card-subtitle style="margin-top: -25px">The network you created
           </v-card-subtitle>
+
+          <v-row>
+            <v-col cols="2">
+              <v-card-title class="subtitle-1">Sources ({{ sources.length }})
+              </v-card-title>
+              <v-simple-table max-height="45vh" height="45vh" class="overflow-y-auto" fixed-header>
+                <template v-slot:default>
+                  <thead>
+                  <tr>
+                    <th class="text-left">
+                      Name
+                    </th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  <tr v-for="node in sources" :key="node.id"
+                      @click="focusNode(nodeList[sourceTypeId].value.substring(0,3)+'_'+node.id)"
+                      :style="{'background-color': metagraph.colorMap[nodeList[sourceTypeId].value].light}">
+                    <td>{{ node.displayName }}</td>
+                  </tr>
+                  </tbody>
+                </template>
+              </v-simple-table>
+              <v-chip outlined style="margin-top:15px" @click="downloadList">
+                <v-icon left>fas fa-download</v-icon>
+                Save Sources ({{ nodeList[sourceTypeId].text }})
+              </v-chip>
+            </v-col>
+            <v-col cols="7">
+              <Graph ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle"
+                     :legend="$refs.graph!==undefined && $refs.graph.isVisualized()">
+                <template v-slot:legend>
+                  <v-card style="width: 11vw; max-width: 11vw" v-if="info!==undefined">
+                    <v-list>
+                      <v-list-item v-for="node in Object.keys(info.nodes)" :key="node">
+                        <v-list-item-icon>
+                          <v-icon left :color="getColoring('nodes',node)">fas fa-genderless</v-icon>
+                        </v-list-item-icon>
+                        <v-list-item-title style="margin-left: -25px">
+                          {{ node.substr(0, 1).toUpperCase() + node.substr(1) }}
+                        </v-list-item-title>
+                        <v-list-item-subtitle>{{ info.nodes[node] }}</v-list-item-subtitle>
+                      </v-list-item>
+                    </v-list>
+                  </v-card>
+                </template>
+              </Graph>
+            </v-col>
+            <v-col cols="3">
+              <v-card-title class="subtitle-1"> Targets{{
+                  (targets.length > 0 ? (" (" + (targets.length) + ")") : ": Processing")
+                }}
+                <v-progress-circular indeterminate v-if="targets.length===0" style="margin-left:15px">
+                </v-progress-circular>
+              </v-card-title>
+              <template v-if="targets.length>=0">
+                <v-simple-table max-height="45vh" height="45vh" class="overflow-y-auto" fixed-header>
+                  <template v-slot:default>
+                    <thead>
+                    <tr>
+                      <th class="text-left">
+                        Name
+                      </th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-for="target in targets" :key="target.id"
+                        @click="focusNode(nodeList[targetTypeId].value.substring(0,3)+'_'+target.id)"
+                        :style="{'background-color': metagraph.colorMap[nodeList[targetTypeId].value].light}">
+                      <td>{{ target.displayName }}</td>
+                    </tr>
+                    </tbody>
+                  </template>
+                </v-simple-table>
+                <v-chip outlined style="margin-top:15px"
+                        @click="downloadList(1)" v-if="targets.length>0">
+                  <v-icon left>fas fa-download</v-icon>
+                  Save Targets ({{ nodeList[targetTypeId].text }})
+                </v-chip>
+              </template>
+            </v-col>
+          </v-row>
+          <v-divider style="margin-top:10px"></v-divider>
+          <v-row>
+            <v-col>
+              <v-chip outlined v-if="gid!==undefined"
+                      style="margin-top:10px"
+                      @click="$emit('graphLoadEvent',{post: {id: gid}})">
+                <v-icon left>fas fa-angle-double-right</v-icon>
+                Load Result into Advanced View
+              </v-chip>
+            </v-col>
+            <v-col>
+              <v-switch label="Physics" v-model="graph.physics" @click="$refs.graph.setPhysics(graph.physics)"
+                        v-if="$refs.graph!==undefined && $refs.graph.isVisualized()">
+              </v-switch>
+
+            </v-col>
+          </v-row>
         </v-card>
         <v-btn
           @click="makeStep(3,'back')"
@@ -412,6 +528,7 @@
 
 <script>
 import Utils from "../../scripts/Utils";
+import Graph from "../Graph";
 
 export default {
   name: "Guided",
@@ -430,6 +547,7 @@ export default {
         height: '60vh',
         'min-height': '60vh',
       },
+      graphConfig: {visualized: false},
 
       sources: [],
       targets: [],
@@ -441,6 +559,7 @@ export default {
       step: 1,
       nodeList: [],
       nodeIdTypeList: [],
+      selectedPath: [],
 
       suggestionType: [undefined, undefined],
       suggestions: {loading: false, data: []},
@@ -451,14 +570,30 @@ export default {
 
       pathModel: -1,
 
+      gid: undefined,
+
+      graph: {
+        physics: false,
+      },
+
+      info: undefined,
+      direct: false,
+
       paths: {0: [], 1: []},
+
+      options: {
+        general: {
+          keep: false,
+          name: undefined,
+        },
+        nodes: {},
+        edges: {}
+      }
     }
   },
 
   created() {
     this.uid = this.$cookies.get("uid")
-    this.nodeList = []
-    this.nodeIdTypeList = []
     this.metagraph.nodes.forEach((n, index) => {
       this.nodeList.push({id: index, value: n.group, text: n.label})
       this.nodeIdTypeList.push(this.metagraph.data[n.label])
@@ -481,6 +616,18 @@ export default {
       this.applySuggestion(val, 1)
     },
 
+    pathModel: function (val) {
+      if (val < this.paths[0].length) {
+        this.selectedPath = this.paths[0][val]
+        this.direct = true
+        this.options.general.keep = true
+      } else {
+        this.selectedPath = this.paths[1][val - this.paths[0].length]
+        this.direct = false
+        this.options.general.keep = false
+      }
+    }
+
 
   },
 
@@ -488,51 +635,39 @@ export default {
 
 
     init: function () {
-
+      this.step = 1
       this.sugQuery = [undefined, undefined]
+
 
       this.sourceTypeId = undefined
       this.targetTypeId = undefined
-      this.step = 1
-
+      //
+      //
       this.sources = []
       this.targets = []
       this.nodeOrigins = [{}, {}]
-
+      //
       this.suggestionType = [undefined, undefined]
       this.suggestions = {loading: false, data: []}
       this.nodeSourceSuggestions = null
       this.nodeTargetSuggestions = null
       this.suggestionSourceModel = null
       this.suggestionTargetModel = null
-      //TODO dev
-      this.sourceTypeId = 3
-      this.targetTypeId = 4
+
+
+      this.selectedPath = []
       this.pathModel = -1
-
       this.clearPaths()
-      this.sources = [{
-        "primaryDomainId": "entrez.3757",
-        "displayName": "KCNH2",
-        "id": 19888
-      }, {"primaryDomainId": "entrez.5005", "displayName": "ORM2", "id": 54656}, {
-        "primaryDomainId": "entrez.4988",
-        "displayName": "OPRM1",
-        "id": 13457
-      }, {"primaryDomainId": "entrez.4985", "displayName": "OPRD1", "id": 13458}, {
-        "primaryDomainId": "entrez.4986",
-        "displayName": "OPRK1",
-        "id": 13459
-      }, {"primaryDomainId": "entrez.23643", "displayName": "LY96", "id": 1413}, {
-        "primaryDomainId": "entrez.3359",
-        "displayName": "HTR3A",
-        "id": 29783
-      }, {"primaryDomainId": "entrez.57053", "displayName": "CHRNA10", "id": 1177}, {
-        "primaryDomainId": "entrez.116443",
-        "displayName": "GRIN3A",
-        "id": 50124
-      }]
 
+      this.options.general.keep = false
+      this.options.general.name = undefined
+
+      this.info = undefined
+
+    },
+
+    print: function (message) {
+      console.log(message)
     },
 
     clearPaths: function () {
@@ -542,7 +677,6 @@ export default {
     },
 
     getSuggestionSelection: function (index) {
-      console.log(this.nodeList[[this.sourceTypeId, this.targetTypeId][index]])
       let type = this.nodeList[[this.sourceTypeId, this.targetTypeId][index]].value
       let selfAdded = false;
       let nodeId = this.metagraph.nodes.filter(n => n.group === type)[0].id
@@ -561,9 +695,9 @@ export default {
       if (val !== undefined && val != null) {
         this.$http.post("getConnectedNodes", {
           sourceType: this.suggestionType[index],
-          targetType: this.nodeList[this.sourceTypeId].value,
+          targetType: this.nodeList[[[this.sourceTypeId, this.targetTypeId][index]]].value,
           sourceIds: val.ids,
-          noloop: this.nodeList[this.sourceTypeId].value === this.suggestionType[index]
+          noloop: this.nodeList[[[this.sourceTypeId, this.targetTypeId][index]]].value === this.suggestionType[index]
         }).then(response => {
           if (response.data !== undefined)
             return response.data
@@ -597,7 +731,34 @@ export default {
             })
         }
       })
-      console.log(this.paths)
+    },
+
+    focusNode: function (id) {
+      if (this.$refs.graph === undefined)
+        return
+      this.$refs.graph.setSelection([id])
+      this.$refs.graph.zoomToNode(id)
+    },
+
+    submitGraphGeneration: function () {
+      this.$http.post("/getGuidedGraph", {
+        uid: this.$cookies.get("uid"),
+        sourceType: this.nodeList[this.sourceTypeId].value,
+        targetType: this.nodeList[this.targetTypeId].value,
+        sources: this.sources.map(n => n.id),
+        targets: this.targets.map(n => n.id),
+        path: this.selectedPath,
+        params: this.options,
+      }).then(response => {
+        if (response.data !== undefined) {
+          return response.data
+        }
+      }).then(data => {
+        this.info = data;
+        this.gid = data.id
+        this.$refs.graph.show(this.gid)
+        this.loadTargetTable(this.gid)
+      }).catch(console.log)
     },
 
     getSuggestions: function (val, index, timeouted) {
@@ -682,9 +843,20 @@ export default {
           origins[e.id] = [nameFrom]
 
       })
-      this.$emit("printNotificationEvent", "Added " + list.length + "from " + nameFrom + " (" + count + " new) seeds!", 1)
+      this.$emit("printNotificationEvent", "Added " + list.length + "from " + nameFrom + " (" + count + " new) nodes!", 1)
     }
     ,
+    loadTargetTable: function (gid) {
+      let groupName = this.nodeList[this.targetTypeId].value
+      return this.$http.get("/getGraphList?id=" + gid).then(response => {
+        if (response.data !== undefined)
+          return response.data
+      }).then(data => {
+        this.targets = data.nodes[groupName].map(n => {
+          return {id: n.id, displayName: n.displayName}
+        })
+      }).catch(console.log)
+    },
 
     getOrigins: function (id, index) {
       if (this.nodeOrigins[index][id] === undefined)
@@ -725,8 +897,7 @@ export default {
       document.body.appendChild(dl)
       dl.click()
       document.body.removeChild(dl)
-    }
-    ,
+    },
 
     makeStep: function (s, button) {
       if (button === "continue") {
@@ -737,22 +908,22 @@ export default {
       if (button === "back") {
         this.step--
         if (this.step === 2) {
-          // this.results.targets = []
-          // this.$refs.graph.reload()
-          // this.$socket.unsubscribeJob(this.currentJid)
+          if (this.$refs.graph !== undefined)
+            this.$refs.graph.reload()
+          this.info = undefined
         }
         if (this.step === 1)
           this.clearPaths()
-
       }
 
       if (button === "cancel") {
+        this.step = 1
+        if (this.$refs.graph !== undefined)
+          this.$refs.graph.reload()
         this.init()
-        // this.$emit("resetEvent")
       }
       if (this.step === 3)
-        console.log("load graph")
-      // this.submitAlgorithm()
+        this.submitGraphGeneration()
     },
 
     getColoring: function (entity, name) {
@@ -764,6 +935,9 @@ export default {
       return id.substring(0, 1).toUpperCase() + id.substring(1)
     }
 
+  },
+  components: {
+    Graph,
   }
 
 }

@@ -476,6 +476,7 @@ export default {
       this.$refs.list.getList(gid, this.metagraph)
     },
     evalPostInfo: function (info, tab) {
+      //TODO move to graph view
       let sum = 0
       for (let n in info.nodes)
         sum += info.nodes[n];

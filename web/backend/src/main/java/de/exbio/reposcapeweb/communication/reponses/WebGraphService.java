@@ -79,7 +79,7 @@ public class WebGraphService {
 
     public WebGraph getMetaGraph() {
         WebGraph graph = new WebGraph("Metagraph", true, historyController.getGraphId());
-        HashMap<String,Object> sourceIds = new HashMap<>();
+        HashMap<String, Object> sourceIds = new HashMap<>();
 
         DBConfig.getConfig().nodes.forEach(node -> {
             graph.addNode(new WebNode(node.id, node.label, node.name, node.label));
@@ -522,112 +522,118 @@ public class WebGraphService {
         });
     }
 
+    public void extendGraph(Graph g, HashSet<String> requestedEdges, HashSet<String> inducedEdges, HashSet<String> switched) {
+        while (!requestedEdges.isEmpty()) {
+            HashSet<String> added = new HashSet<>();
+            requestedEdges.forEach(e -> {
+                added.add(e);
+                extendGraph(g, e, inducedEdges.contains(e), switched.contains(e));
+            });
+            if (added.isEmpty())
+                break;
+            requestedEdges.removeAll(added);
+        }
+    }
+
+    public void extendGraph(Graph g, String e, boolean induced, boolean switched) {
+        int edgeId = g.getEdge(e);
+        boolean extend = !induced;
+        Pair<Integer, Integer> nodeIds = g.getNodesfromEdge(edgeId);
+        LinkedList<Edge> edges = new LinkedList<>();
+        HashSet<Integer> nodes = new HashSet<>();
+
+        if (g.getNodes().containsKey(nodeIds.first) & nodeIds.first.equals(nodeIds.second)) {
+            g.getNodes().get(nodeIds.first).keySet().forEach(nodeId1 -> {
+                try {
+                    edgeController.getEdges(edgeId, nodeIds.first, nodeId1, switched).forEach(id -> {
+                        Set<Integer> existing = g.getNodes().get(nodeIds.first).keySet();
+                        boolean existing1 = existing.contains(id.getId1());
+                        boolean existing2 = existing.contains(id.getId2());
+                        if ((existing1 & existing2) | extend)
+                            edges.add(!edgeController.getDirection(edgeId) & id.getId1() > id.getId2() ? new Edge(id.flipIds()) : new Edge(id));
+                        if (!existing1 & extend)
+                            nodes.add(id.getId1());
+                        if (!existing2 & extend)
+                            nodes.add(id.getId2());
+                    });
+                } catch (NullPointerException ignore) {
+                }
+            });
+
+            HashSet<Integer> allNodes = new HashSet<>(nodes);
+            allNodes.addAll(g.getNodes().get(nodeIds.first).keySet());
+            NodeFilter nf = new NodeFilter(nodeController.getFilter(Graphs.getNode(nodeIds.first)), allNodes);
+            g.saveNodeFilter(Graphs.getNode(nodeIds.first), nf);
+            HashMap<Integer, Node> nodeMap = g.getNodes().get(nodeIds.first);
+            nf.toList(-1).forEach(entry -> {
+                if (!nodeMap.containsKey(entry.getNodeId()))
+                    nodeMap.put(entry.getNodeId(), new Node(entry.getNodeId(), entry.getName()));
+            });
+            if (extend)
+                g.addNodes(nodeIds.first, nodeMap);
+            g.addEdges(edgeId, edges);
+            return;
+        }
+        int[] existing = new int[]{g.getNodes().containsKey(nodeIds.first) ? nodeIds.first : nodeIds.second};
+        int[] adding = new int[]{(existing[0] == nodeIds.first ? nodeIds.second : nodeIds.first)};
+        if (g.getNodes().containsKey(nodeIds.first) & g.getNodes().containsKey(nodeIds.second)) {
+            existing = new int[]{existing[0], adding[0]};
+            adding = new int[]{adding[0], existing[0]};
+            g.getNodes().get(nodeIds.first).keySet().forEach(nodeId1 -> {
+                try {
+                    edgeController.getEdges(edgeId, nodeIds.first, nodeId1, switched).forEach(id -> {
+                        if (g.getNodes().get(nodeIds.second).containsKey(id.getId2()) && g.getNodes().get(nodeIds.first).containsKey(id.getId1()))
+                            edges.add(new Edge(id));
+                    });
+                } catch (NullPointerException ignore) {
+                }
+            });
+            if (!extend) {
+                g.addEdges(edgeId, edges);
+                return;
+            }
+        }
+        HashMap<Integer, HashMap<Integer, Node>> nodeMap = new HashMap<>();
+        for (int i = 0; i < existing.length; i++) {
+            int node1 = existing[i];
+            g.getNodes().get(node1).keySet().forEach(nodeId1 -> {
+                try {
+                    HashSet<PairId> add = new HashSet<>(edgeController.getEdges(edgeId, node1, nodeId1, switched));
+                    if (node1 == nodeIds.getFirst())
+                        add.forEach(id -> {
+                                    edges.add(new Edge(id));
+                                    nodes.add(id.getId2());
+                                }
+                        );
+                    else
+                        add.forEach(id -> {
+                                    edges.add(new Edge(id));
+                                    nodes.add(id.getId1());
+                                }
+                        );
+                } catch (NullPointerException ignore) {
+                }
+            });
+
+
+            int node2 = adding[i];
+            NodeFilter nf = new NodeFilter(nodeController.getFilter(Graphs.getNode(node2)), nodes);
+            g.saveNodeFilter(Graphs.getNode(node2), nf);
+
+            nodeMap.put(node2, new HashMap<>());
+            nf.toList(-1).forEach(entry -> nodeMap.get(node2).put(entry.getNodeId(), new Node(entry.getNodeId(), entry.getName())));
+        }
+        nodeMap.forEach(g::addNodes);
+        g.addEdges(edgeId, edges);
+    }
+
     public WebGraphInfo getExtension(ExtensionRequest request) {
         Graph g = getCachedGraph(request.gid).clone(historyController.getGraphId());
         cache.put(g.getId(), g);
         HashSet<String> inducedEdges = new HashSet<>(Arrays.asList(request.induced));
         HashSet<String> requestedEdges = new HashSet<>(Arrays.asList(request.edges));
         HashSet<String> switched = new HashSet<>(Arrays.asList(request.switchDirection));
-        while (!requestedEdges.isEmpty()) {
-            HashSet<String> added = new HashSet<>();
-            requestedEdges.forEach(e -> {
-                int edgeId = g.getEdge(e);
-                boolean extend = !inducedEdges.contains(e);
-                Pair<Integer, Integer> nodeIds = g.getNodesfromEdge(edgeId);
-                added.add(e);
-                LinkedList<Edge> edges = new LinkedList<>();
-                HashSet<Integer> nodes = new HashSet<>();
-
-                if (g.getNodes().containsKey(nodeIds.first) & nodeIds.first.equals(nodeIds.second)) {
-                    g.getNodes().get(nodeIds.first).keySet().forEach(nodeId1 -> {
-                        try {
-                            edgeController.getEdges(edgeId, nodeIds.first, nodeId1,switched.contains(e)).forEach(id -> {
-                                Set<Integer> existing = g.getNodes().get(nodeIds.first).keySet();
-                                boolean existing1 = existing.contains(id.getId1());
-                                boolean existing2 = existing.contains(id.getId2());
-                                if ((existing1 & existing2) | extend)
-                                    edges.add(!edgeController.getDirection(edgeId) & id.getId1() > id.getId2() ? new Edge(id.flipIds()) : new Edge(id));
-                                if (!existing1 & extend)
-                                    nodes.add(id.getId1());
-                                if (!existing2 & extend)
-                                    nodes.add(id.getId2());
-                            });
-                        } catch (NullPointerException ignore) {
-                        }
-                    });
-
-                    HashSet<Integer> allNodes = new HashSet<>(nodes);
-                    allNodes.addAll(g.getNodes().get(nodeIds.first).keySet());
-                    NodeFilter nf = new NodeFilter(nodeController.getFilter(Graphs.getNode(nodeIds.first)), allNodes);
-                    g.saveNodeFilter(Graphs.getNode(nodeIds.first), nf);
-                    HashMap<Integer, Node> nodeMap = g.getNodes().get(nodeIds.first);
-                    nf.toList(-1).forEach(entry -> {
-                        if (!nodeMap.containsKey(entry.getNodeId()))
-                            nodeMap.put(entry.getNodeId(), new Node(entry.getNodeId(), entry.getName()));
-                    });
-                    if (extend)
-                        g.addNodes(nodeIds.first, nodeMap);
-                    g.addEdges(edgeId, edges);
-                    return;
-                }
-                int[] existing = new int[]{g.getNodes().containsKey(nodeIds.first) ? nodeIds.first : nodeIds.second};
-                int[] adding = new int[]{(existing[0] == nodeIds.first ? nodeIds.second : nodeIds.first)};
-                if (g.getNodes().containsKey(nodeIds.first) & g.getNodes().containsKey(nodeIds.second)) {
-                    existing = new int[]{existing[0], adding[0]};
-                    adding = new int[]{adding[0], existing[0]};
-                    g.getNodes().get(nodeIds.first).keySet().forEach(nodeId1 -> {
-                        try {
-                            edgeController.getEdges(edgeId, nodeIds.first, nodeId1, switched.contains(e)).forEach(id -> {
-                                if (g.getNodes().get(nodeIds.second).containsKey(id.getId2()) && g.getNodes().get(nodeIds.first).containsKey(id.getId1()))
-                                    edges.add(new Edge(id));
-                            });
-                        } catch (NullPointerException ignore) {
-                        }
-                    });
-                    if (!extend) {
-                        g.addEdges(edgeId, edges);
-                        return;
-                    }
-                }
-
-                HashMap<Integer, HashMap<Integer, Node>> nodeMap = new HashMap<>();
-                for (int i = 0; i < existing.length; i++) {
-                    int node1 = existing[i];
-                    g.getNodes().get(node1).keySet().forEach(nodeId1 -> {
-                        try {
-                            HashSet<PairId> add = new HashSet<>(edgeController.getEdges(edgeId, node1, nodeId1, switched.contains(e)));
-                            if (node1 == nodeIds.getFirst())
-                                add.forEach(id -> {
-                                            edges.add(new Edge(id));
-                                            nodes.add(id.getId2());
-                                        }
-                                );
-                            else
-                                add.forEach(id -> {
-                                            edges.add(new Edge(id));
-                                            nodes.add(id.getId1());
-                                        }
-                                );
-                        } catch (NullPointerException ignore) {
-                        }
-                    });
-
-
-                    int node2 = adding[i];
-                    NodeFilter nf = new NodeFilter(nodeController.getFilter(Graphs.getNode(node2)), nodes);
-                    g.saveNodeFilter(Graphs.getNode(node2), nf);
-
-                    nodeMap.put(node2, new HashMap<>());
-                    nf.toList(-1).forEach(entry -> nodeMap.get(node2).put(entry.getNodeId(), new Node(entry.getNodeId(), entry.getName())));
-                }
-                nodeMap.forEach(g::addNodes);
-//                }
-                g.addEdges(edgeId, edges);
-            });
-            if (added.isEmpty())
-                break;
-            requestedEdges.removeAll(added);
-        }
+        extendGraph(g, requestedEdges, inducedEdges, switched);
         return g.toInfo();
     }
 
@@ -651,16 +657,19 @@ public class WebGraphService {
     public WebGraphInfo getCollapsedGraph(CollapseRequest request) {
         Graph g = getCachedGraph(request.gid).clone(historyController.getGraphId());
         cache.put(g.getId(), g);
-        int collapseNode = Graphs.getNode(request.node);
-        int edgeId1 = g.getEdge(request.edge1);
-        Pair<Integer, Integer> nodes1 = g.getNodesfromEdge(g.getEdge(request.edge1));
-        HashMap<Integer, HashSet<Integer>> edgeMap1 = prepareEdgeMap(g.getEdges().get(edgeId1), nodes1.first == collapseNode);
+        collapseGraph(g, Graphs.getNode(request.node), g.getEdge(request.edge1), g.getEdge(request.edge2), request.edgeName, request.self, request.keep);
+        return g.toInfo();
+    }
+
+    public void collapseGraph(Graph g, int collapseNode, int edge1, int edge2, String name, boolean self, boolean keep) {
+        Pair<Integer, Integer> nodes1 = g.getNodesfromEdge(edge1);
+        HashMap<Integer, HashSet<Integer>> edgeMap1 = prepareEdgeMap(g.getEdges().get(edge1), nodes1.first == collapseNode);
         LinkedList<Edge> edges = new LinkedList<>();
         int startNodeId = nodes1.getFirst() == collapseNode ? nodes1.getSecond() : nodes1.getFirst();
         int targetNodeId;
         HashMap<Integer, HashMap<Integer, Object>> edgeWeights = new HashMap<>();
         HashMap<Integer, HashMap<Integer, Object>> jaccardIndex = new HashMap<>();
-        if (request.self) {
+        if (self) {
             targetNodeId = startNodeId;
             edgeMap1.forEach((middle, startNodes) ->
                     startNodes.forEach(targetNode ->
@@ -685,10 +694,9 @@ public class WebGraphService {
             );
         } else {
 
-            int edgeId2 = g.getEdge(request.edge2);
-            Pair<Integer, Integer> nodes2 = g.getNodesfromEdge(g.getEdge(request.edge2));
+            Pair<Integer, Integer> nodes2 = g.getNodesfromEdge(edge2);
             targetNodeId = nodes2.getFirst() == collapseNode ? nodes2.getSecond() : nodes2.getFirst();
-            HashMap<Integer, HashSet<Integer>> edgeMap2 = prepareEdgeMap(g.getEdges().get(edgeId2), nodes2.first == collapseNode);
+            HashMap<Integer, HashSet<Integer>> edgeMap2 = prepareEdgeMap(g.getEdges().get(edge2), nodes2.first == collapseNode);
 
             edgeMap1.forEach((middle, startNodes) -> {
                 try {
@@ -713,18 +721,18 @@ public class WebGraphService {
                 } catch (NullPointerException ignore) {
                 }
             });
-            if (!request.keep)
-                g.getEdges().remove(edgeId2);
+            if (!keep)
+                g.getEdges().remove(edge2);
         }
-        g.addCustomEdge(startNodeId, targetNodeId, request.edgeName, edges);
-        int eid = g.getEdge(request.edgeName);
+        g.addCustomEdge(startNodeId, targetNodeId, name, edges);
+        int eid = g.getEdge(name);
         g.addCustomEdgeAttribute(eid, "Weight", edgeWeights);
         g.addCustomAttributeType(eid, "Weight", "numeric");
         //TODO working?
         g.addCustomEdgeAttribute(eid, "JaccardIndex", jaccardIndex);
         g.addCustomAttributeType(eid, "JaccardIndex", "numeric");
-        if (!request.keep) {
-            g.getEdges().remove(edgeId1);
+        if (!keep) {
+            g.getEdges().remove(edge1);
             HashSet<Integer> otherConnectedEdges = new HashSet<>();
             g.getEdges().keySet().forEach(e -> {
                 Pair<Integer, Integer> nodeIDs = g.getNodesfromEdge(e);
@@ -734,7 +742,6 @@ public class WebGraphService {
             if (otherConnectedEdges.isEmpty())
                 g.getNodes().remove(collapseNode);
         }
-        return g.toInfo();
     }
 
     public String[] getCustomEdgeAttributes(Graph g, int edgeId) {
@@ -809,11 +816,11 @@ public class WebGraphService {
             historyController.saveDerivedHistory(g.getParent(), history);
             cache.remove(gid);
         }
-        cacheCleanup(uid,gid);
+        cacheCleanup(uid, gid);
         exportGraph(g);
     }
 
-    public void removeTempDir(String gid){
+    public void removeTempDir(String gid) {
         File wd = getGraphWD(gid);
         if (wd.exists()) {
             try {
@@ -824,7 +831,7 @@ public class WebGraphService {
         }
     }
 
-    public void cacheCleanup(String uid, String gid){
+    public void cacheCleanup(String uid, String gid) {
         if (userGraph.containsKey(uid)) {
             String oldId = userGraph.get(uid);
             cache.remove(oldId);
@@ -867,8 +874,8 @@ public class WebGraphService {
     public void applyModuleJob(Job j) {
         int nodeTypeId = Graphs.getNode((j.getMethod().equals(ToolService.Tool.CENTRALITY) | j.getMethod().equals(ToolService.Tool.TRUSTRANK) ? "drug" : j.getMethod().equals(ToolService.Tool.BICON) ? "gene" : j.getTarget()));
 
-        if(j.getMethod()==ToolService.Tool.CENTRALITY | j.getMethod() == ToolService.Tool.TRUSTRANK)
-            filterDrugsMap(nodeTypeId,j);
+        if (j.getMethod() == ToolService.Tool.CENTRALITY | j.getMethod() == ToolService.Tool.TRUSTRANK)
+            filterDrugsMap(nodeTypeId, j);
 
 
         boolean onlyKeepResult = j.getParams().containsKey("nodesOnly") && j.getParams().get("nodesOnly").equals("true");
@@ -901,7 +908,7 @@ public class WebGraphService {
             }
 
             if (j.getMethod().equals(ToolService.Tool.TRUSTRANK) || j.getMethod().equals(ToolService.Tool.CENTRALITY)) {
-                int otherTypeId=nodeTypeId;
+                int otherTypeId = nodeTypeId;
 
 
                 derived.addCustomNodeAttributeType(otherTypeId, "score", "numeric");
@@ -955,15 +962,15 @@ public class WebGraphService {
     private void filterDrugsMap(int nodeTypeId, Job j) {
         int topX = Integer.parseInt(j.getParams().get("topX"));
         boolean elements = j.getParams().get("elements").startsWith("t");
-        HashMap<Integer,HashMap<String,Object>> newNodes = j.getResult().getNodes();
-        LinkedList<Map.Entry<Integer,HashMap<String,Object>>> sortedEntries =new LinkedList<>(newNodes.entrySet().stream().sorted(Comparator.comparingDouble(e -> ((double) e.getValue().get("score")))).collect(Collectors.toMap(Map.Entry::getKey,Map.Entry::getValue, (e1, e2)-> e1, LinkedHashMap::new)).entrySet());
+        HashMap<Integer, HashMap<String, Object>> newNodes = j.getResult().getNodes();
+        LinkedList<Map.Entry<Integer, HashMap<String, Object>>> sortedEntries = new LinkedList<>(newNodes.entrySet().stream().sorted(Comparator.comparingDouble(e -> ((double) e.getValue().get("score")))).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new)).entrySet());
         newNodes.clear();
         Collections.reverse(sortedEntries);
-        for(Map.Entry<Integer,HashMap<String,Object>> e:sortedEntries){
-            if(!elements && ((Drug) nodeController.getNode(Graphs.getNode(nodeTypeId),e.getKey())).getDrugCategories().contains("Elements"))
+        for (Map.Entry<Integer, HashMap<String, Object>> e : sortedEntries) {
+            if (!elements && ((Drug) nodeController.getNode(Graphs.getNode(nodeTypeId), e.getKey())).getDrugCategories().contains("Elements"))
                 continue;
-            newNodes.put(e.getKey(),e.getValue());
-            if(newNodes.size()>=topX)
+            newNodes.put(e.getKey(), e.getValue());
+            if (newNodes.size() >= topX)
                 break;
         }
         j.getResult().setNodes(newNodes);
@@ -1215,7 +1222,7 @@ public class WebGraphService {
         sourceIds.forEach(sourceId -> {
             try {
                 edgeController.getEdges(edgeId, Graphs.getNode(sourceType), sourceId, false).forEach(e -> {
-                    int n = Graphs.getNode(sourceType) == Graphs.getNodesfromEdge(edgeId).first ? e.getId2() :e.getId1();
+                    int n = Graphs.getNode(sourceType) == Graphs.getNodesfromEdge(edgeId).first ? e.getId2() : e.getId1();
                     try {
                         if (addedNodes.add(n))
                             out.add(nodeController.getNode(targetType, n).getAsMap(new HashSet<>(Arrays.asList("id", "displayName", "primaryDomainId"))));
@@ -1229,6 +1236,14 @@ public class WebGraphService {
 
     }
 
+    public HashMap<Integer, Node> nodeFilterToNode(NodeFilter nf) {
+        HashMap<Integer, Node> nodes = new HashMap<>();
+        nf.toList(-1).forEach(entry -> {
+            nodes.put(entry.getNodeId(), new Node(entry.getNodeId(), entry.getName()));
+        });
+        return nodes;
+    }
+
     public Graph createGraphFromIds(String type, List<Integer> nodes, String uid) {
         Graph g = new Graph(historyController.getGraphId());
         NodeFilter nf = new NodeFilter(nodeController.getFilter(type), nodes);
@@ -1237,5 +1252,47 @@ public class WebGraphService {
         cache.put(g.getId(), g);
         addGraphToHistory(uid, g.getId());
         return g;
+    }
+
+    public WebGraphInfo getGuidedGraph(GuidedRequest request) {
+        Graph g = new Graph(historyController.getGraphId());
+        cache.put(g.getId(), g);
+        int sourceTypeId = Graphs.getNode(request.sourceType);
+
+        NodeFilter nfs = new NodeFilter(nodeController.getFilter(request.sourceType), request.sources);
+        g.addNodes(sourceTypeId, nodeFilterToNode(nfs));
+        g.saveNodeFilter(request.sourceType, nfs);
+
+        for (int p = 0; p < request.path.size(); p++) {
+            boolean endDefined = p == request.path.size() - 1 & request.targets.size() > 0;
+            if (endDefined) {
+                int targetTypeId = Graphs.getNode(request.targetType);
+                NodeFilter nft = new NodeFilter(nodeController.getFilter(request.targetType), request.targets);
+                g.addNodes(targetTypeId, nodeFilterToNode(nft));
+                g.saveNodeFilter(request.targetType, nft);
+            }
+            extendGraph(g, request.path.get(p).get("label"), endDefined, false);
+        }
+
+        if (!(boolean)request.params.get("general").get("keep")) {
+            String edgeName = request.params.get("general").get("name").toString();
+            for (int p = 0; p < request.path.size() - 1; p++) {
+                int edge2 = Graphs.getEdge(request.path.get(p + 1).get("label"));
+                Pair<Integer, Integer> nodes;
+                int edge1;
+                if (p == 0) {
+                    edge1 = Graphs.getEdge(request.path.get(p).get("label"));
+                } else {
+                    edge1 = g.getEdge(edgeName);
+                }
+                nodes = g.getNodesfromEdge(edge1);
+                collapseGraph(g, nodes.first == sourceTypeId ? nodes.second : nodes.first, edge1, edge2, edgeName, false, false);
+            }
+        }
+
+        addGraphToHistory(request.uid, g.getId());
+
+
+        return g.toInfo();
     }
 }

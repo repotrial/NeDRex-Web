@@ -42,7 +42,7 @@
     <Quick v-if="selectionTab===0" :metagraph="metagraph" @printNotificationEvent="printNotification"
            @graphLoadEvent="loadGraph"
     ></Quick>
-    <Guided v-if="selectionTab===1" :metagraph="metagraph" @printNotificationEvent="printNotification"></Guided>
+    <Guided v-if="selectionTab===1" :metagraph="metagraph" @printNotificationEvent="printNotification"  @graphLoadEvent="loadGraph"></Guided>
 
 
 

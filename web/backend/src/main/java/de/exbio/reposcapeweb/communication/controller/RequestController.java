@@ -185,6 +185,13 @@ public class RequestController {
         return toJson(webGraphService.getConnectionGraph(gid));
     }
 
+    @RequestMapping(value ="/getGuidedGraph", method=RequestMethod.POST)
+    @ResponseBody
+    public String getGuidedGraph(@RequestBody GuidedRequest request){
+        return toJson(webGraphService.getGuidedGraph(request));
+
+    }
+
 
     @RequestMapping(value = "/getGraphList", method = RequestMethod.GET)
     @ResponseBody
