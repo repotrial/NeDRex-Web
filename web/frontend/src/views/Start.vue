@@ -5,6 +5,7 @@
         <v-list-item>
           <v-list-item-title class="title">Select your exploration path</v-list-item-title>
         </v-list-item>
+        <a ref="top"></a>
         <v-list-item>
           <v-list-item-subtitle>For new users or basic tasks like drug-target identification, the guided path is
             recommended.
@@ -21,8 +22,7 @@
         </v-list-item>
       </v-list>
     </v-card>
-
-    <v-container v-show="selectionTab===0">
+    <v-container v-show="selectionTab===1">
       <v-card class="mx-auto">
         <v-list>
           <v-list-item>
@@ -40,7 +40,7 @@
       </v-card>
     </v-container>
     <Quick v-if="selectionTab===0" :metagraph="metagraph" @printNotificationEvent="printNotification"
-           @graphLoadEvent="loadGraph"
+           @graphLoadEvent="loadGraph" @focusEvent="focusTop"
     ></Quick>
     <Guided v-if="selectionTab===1" :metagraph="metagraph" @printNotificationEvent="printNotification"  @graphLoadEvent="loadGraph"></Guided>
 
@@ -79,6 +79,7 @@ export default {
   watch: {
     selectionTab: function (val) {
       this.$emit("showSideEvent", val === 2)
+      this.focusTop()
     }
   },
   created() {
@@ -111,6 +112,11 @@ export default {
     getStartType: function () {
       return this.selectionTab;
     },
+    focusTop: function(){
+      let element = this.$refs["top"];
+      this.$nextTick(()=>element.scrollIntoView(true))
+    },
+
   },
   components: {
     Advanced,

@@ -175,6 +175,16 @@
                     Infer new edge
                   </v-chip>
                 </v-list-item>
+                <v-list-item>
+                  <v-chip
+                    v-on:click="$emit('colorSelectionEvent')"
+                    class="pa-3"
+                    outlined
+                  >
+                    <v-icon left>fas fa-palette</v-icon>
+                    Set selection color
+                  </v-chip>
+                </v-list-item>
               </template>
               <template v-if="menu.options.list.tab===1">
                 <v-list-item>
@@ -646,7 +656,6 @@ export default {
     reloadHistory: function () {
       this.$emit("reloadHistoryEvent")
     },
-
 
     format: function (item, value) {
       if (item === "SourceIDs" || item === "SourceID" || item === "TargetID" || item === "TargetIDs" || item === "MemberOne" || item === "MemberTwo") {

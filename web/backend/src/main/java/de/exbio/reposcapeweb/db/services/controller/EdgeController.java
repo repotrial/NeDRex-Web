@@ -669,4 +669,19 @@ public class EdgeController {
         size+= disorderComorbidWithDisorderService.getCount();
         return size;
     }
+
+    public HashSet<String> getSourceAttributes(String type) {
+        return switch (type) {
+            case "GeneAssociatedWithDisorder" -> GeneAssociatedWithDisorder.sourceAttributes;
+            case "ProteinEncodedBy" -> ProteinEncodedBy.sourceAttributes;
+            case "DrugIndication" -> DrugHasIndication.sourceAttributes;
+            case "DrugContraindication" -> DrugHasContraindication.sourceAttributes;
+            case "DrugTargetProtein" -> DrugHasTargetProtein.sourceAttributes;
+            case "ProteinProteinInteraction" -> ProteinInteractsWithProtein.sourceAttributes;
+            case "ProteinPathway" -> ProteinInPathway.sourceAttributes;
+            case "DisorderHierarchy" -> DisorderIsADisorder.sourceAttributes;
+            case "DisorderComorbidity" -> DisorderComorbidWithDisorder.sourceAttributes;
+            default -> null;
+        };
+    }
 }

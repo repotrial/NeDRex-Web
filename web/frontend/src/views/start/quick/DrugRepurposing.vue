@@ -3,7 +3,7 @@
     alt-labels
     v-model="step"
   >
-    <v-stepper-header>
+    <v-stepper-header ref="head">
       <v-stepper-step step="1" :complete="step>1">
         Select Seeds
         <small v-if="seedTypeId!==undefined">{{ ["Gene", "Protein"][seedTypeId] }} ({{ seeds.length }})</small>
@@ -43,7 +43,7 @@
             </v-col>
           </v-row>
           <v-container style="height: 80%">
-            <v-row style="height: 50vh">
+            <v-row style="height: 50vh" >
               <v-col cols="6">
                 <v-container v-if="seedTypeId!==undefined">
                   <v-card-title style="margin-left: -25px">Add seeds associated to</v-card-title>
@@ -108,7 +108,7 @@
               <v-col cols="5">
                 <v-card-title class="subtitle-1">Selected Seeds ({{ seeds.length }})
                 </v-card-title>
-                <v-list max-height="40vh" height="40vh" class="overflow-y-auto">
+                <v-list max-height="40vh" height="40vh" class="overflow-y-auto" ref="seedList">
                   <v-list-item v-for="(seed,index) in seeds" :key="seed.id">
                     <v-list-item-title>{{ seed.displayName }}</v-list-item-title>
                     <v-list>
@@ -126,6 +126,14 @@
                 <v-chip outlined v-show="seeds.length>0" style="margin-top:15px" @click="downloadList">
                   <v-icon left>fas fa-download</v-icon>
                   Save
+                </v-chip>
+                <v-chip outlined v-show="seeds.length>0" style="margin-top:15px" @click="clearList">
+                  <v-icon left>fas fa-trash-alt</v-icon>
+                  Clear
+                </v-chip>
+                <v-chip outlined v-show="seeds.length>0" style="margin-top:15px" @click="removeNonIntersecting()">
+                  <v-icon left>fas fa-minus-square</v-icon>
+                  Remove non-intersecting
                 </v-chip>
               </v-col>
             </v-row>
@@ -373,15 +381,19 @@
                 </template>
               </v-col>
               <v-col cols="7">
-                <Graph ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle" :legend="results.targets.length>0">
+                <Graph ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle"
+                       :legend="results.targets.length>0">
                   <template v-slot:legend v-if="results.targets.length>0">
-                    <v-card  style="width: 8vw; max-width: 10vw">
+                    <v-card style="width: 8vw; max-width: 10vw">
                       <v-list>
                         <v-list-item>
                           <v-list-item-icon>
-                            <v-icon left :color="getColoring('nodes',['gene','protein'][seedTypeId])">fas fa-genderless</v-icon>
+                            <v-icon left :color="getColoring('nodes',['gene','protein'][seedTypeId])">fas
+                              fa-genderless
+                            </v-icon>
                           </v-list-item-icon>
-                          <v-list-item-title style="margin-left: -25px">{{['Gene','Protein'][seedTypeId]}}</v-list-item-title>
+                          <v-list-item-title style="margin-left: -25px">{{ ['Gene', 'Protein'][seedTypeId] }}
+                          </v-list-item-title>
                           <v-list-item-subtitle>{{ seeds.length }}</v-list-item-subtitle>
                         </v-list-item>
                         <v-list-item>
@@ -827,23 +839,41 @@ export default {
         this.results.targets = data.nodes.drug.sort((e1, e2) => e2.score - e1.score)
       }).catch(console.log)
     },
+    clearList: function () {
+      this.seeds = []
+      this.seedOrigin = {}
+    },
+    removeNonIntersecting: function () {
+      let remove=[]
+      Object.keys(this.seedOrigin).forEach(seed=>{
+        if(this.seedOrigin[seed].length<2) {
+          this.seedOrigin[seed]=undefined
+          remove.push(parseInt(seed))
+        }
+      })
+      this.seeds = this.seeds.filter(s=>remove.indexOf(s.id) === -1)
+    }
+    ,
     focusNode: function (id) {
       if (this.$refs.graph === undefined)
         return
       this.$refs.graph.setSelection([id])
       this.$refs.graph.zoomToNode(id)
-    },
+    }
+    ,
     waitForGraph: function (resolve) {
       if (this.$refs.graph === undefined)
         setTimeout(this.waitForGraph, 100)
       else
         resolve()
-    },
+    }
+    ,
     getGraph: function () {
       return new Promise(resolve => this.waitForGraph(resolve)).then(() => {
         return this.$refs.graph;
       })
-    },
+    }
+    ,
     loadGraph: function (graphId) {
       this.getGraph().then(graph => {
         graph.setLoading(true)
@@ -852,10 +882,15 @@ export default {
           graph.setLoading(false)
         })
       })
+    }
+    ,
+    focus: function(){
+      this.$emit("focusEvent")
     },
     getColoring: function (entity, name) {
       return Utils.getColoring(this.metagraph, entity, name);
-    },
+    }
+    ,
   },
 
   components: {

@@ -1,7 +1,6 @@
 package de.exbio.reposcapeweb.db.updates;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import de.exbio.reposcapeweb.configs.DBConfig;
@@ -14,6 +13,8 @@ import de.exbio.reposcapeweb.db.entities.edges.*;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
 import de.exbio.reposcapeweb.db.entities.nodes.*;
 import de.exbio.reposcapeweb.db.io.ImportService;
+import de.exbio.reposcapeweb.db.services.controller.EdgeController;
+import de.exbio.reposcapeweb.db.services.controller.NodeController;
 import de.exbio.reposcapeweb.db.services.edges.*;
 import de.exbio.reposcapeweb.db.services.nodes.*;
 import de.exbio.reposcapeweb.filter.FilterService;
@@ -35,6 +36,7 @@ import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
@@ -49,6 +51,9 @@ public class UpdateService {
     private final DbCommunicationService dbCommunication;
     private final DataSource dataSource;
     private final FilterService filterService;
+
+    private final NodeController nodeController;
+    private final EdgeController edgeController;
 
     private final DisorderService disorderService;
     private final DrugService drugService;
@@ -94,7 +99,9 @@ public class UpdateService {
                          ProteinInPathwayService proteinInPathwayService,
                          ProteinInteractsWithProteinService proteinInteractsWithProteinService,
                          DrugHasContraindicationService drugHasContraindicationService,
-                         ToolService toolService
+                         ToolService toolService,
+                         NodeController nodeController,
+                         EdgeController edgeController
     ) {
         this.env = environment;
         this.objectMapper = objectMapper;
@@ -117,6 +124,8 @@ public class UpdateService {
         this.proteinInteractsWithProteinService = proteinInteractsWithProteinService;
         this.drugHasContraindicationService = drugHasContraindicationService;
         this.toolService = toolService;
+        this.nodeController = nodeController;
+        this.edgeController = edgeController;
 
         jsonReformatter = new File(new File(env.getProperty("path.scripts.dir")), "reformatJson.sh");
 
@@ -262,39 +271,82 @@ public class UpdateService {
         String fileType = env.getProperty("file.collections.filetype");
         fileType = fileType.charAt(0) == '.' ? fileType : '.' + fileType;
 
-        log.info("Downloading database files!");
-        downloadUpdates(url, updateDir, fileType);
-        log.info("Validation of entity count in cached files!");
+        if (validateSchema()) {
 
-        DBConfig.getConfig().nodes.forEach(node -> restructureUpdates(node.file, node.name));
-        DBConfig.getConfig().edges.stream().filter(e -> e.original).forEach(edge -> restructureUpdates(edge.file, edge.name));
 
-        executingUpdates();
+            log.info("Downloading database files!");
+            downloadUpdates(url, updateDir, fileType);
+            log.info("Validation of entity count in cached files!");
 
-        if (this.metadata == null || this.lastUpdate != this.metadata.getLastUpdate()) {
-            buildMetadata();
-            this.lastCheck = this.lastUpdate;
-            updateMetadata(this.lastCheck, this.lastUpdate);
+            DBConfig.getConfig().nodes.forEach(node -> restructureUpdates(node.file, node.name));
+            DBConfig.getConfig().edges.stream().filter(e -> e.original).forEach(edge -> restructureUpdates(edge.file, edge.name));
+
+            executingUpdates();
+
+            if (this.metadata == null || this.lastUpdate != this.metadata.getLastUpdate()) {
+                buildMetadata();
+                this.lastCheck = this.lastUpdate;
+                updateMetadata(this.lastCheck, this.lastUpdate);
+            } else {
+                this.lastCheck = LocalDateTime.now().toEpochSecond(ZoneOffset.ofTotalSeconds(0));
+                updateMetadata(this.lastCheck);
+            }
+            overrideOldData(cacheDir);
         } else {
-            this.lastCheck =  LocalDateTime.now().toEpochSecond(ZoneOffset.ofTotalSeconds(0));
-            updateMetadata(this.lastCheck);
+            log.warn("Database update is skipped due to errors!");
         }
 
-
-        overrideOldData(cacheDir);
-
-
         FileUtils.deleteDirectory(updateDir);
+    }
+
+    private boolean validateSchema() {
+        AtomicBoolean valid = new AtomicBoolean(true);
+        DBConfig.getConfig().nodes.forEach(n -> {
+            HashSet<String> attributes = null;
+            try {
+                attributes = getAttributeNames(ReaderUtils.getUrlContent(new URL(env.getProperty("url.api.db") + n.name + "/attributes")));
+                if (!RepoTrialUtils.validateFormat(attributes, nodeController.getSourceAttributes(n.name))) {
+                    valid.set(false);
+                    log.error("Node " + n.name + " changed schema in RepoTrialDB! please update the database-config file and internal structure.");
+                    log.error("DB-Schema: " + attributes.toString());
+                    log.error("Internal Schema: " + nodeController.getSourceAttributes(n.name));
+                } else {
+                    log.debug("Schema of " + n.name + " from RepoTrialDB is valid!");
+                }
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
+        });
+
+        DBConfig.getConfig().edges.forEach(e -> {
+            HashSet<String> attributes = null;
+            if (e.original)
+                try {
+                    attributes = getAttributeNames(ReaderUtils.getUrlContent(new URL(env.getProperty("url.api.db") + e.name + "/attributes")));
+                    if (!RepoTrialUtils.validateFormat(attributes, edgeController.getSourceAttributes(e.mapsTo))) {
+                        valid.set(false);
+                        log.error("Edge " + e.name + " changed schema in RepoTrialDB! please update the database-config file and internal structure.");
+                        log.error("DB-Schema: " + attributes.toString());
+                        log.error("Internal Schema: " + edgeController.getSourceAttributes(e.mapsTo));
+                    } else {
+                        log.debug("Schema of " + e.name + " from RepoTrialDB is valid!");
+                    }
+                } catch (MalformedURLException e2) {
+                    e2.printStackTrace();
+                }
+        });
+
+        return valid.get();
     }
 
     private <T extends RepoTrialNode> EnumMap<UpdateOperation, HashMap<String, T>> startNodeUpdate(Class<T> valueType, File c) {
         EnumMap<UpdateOperation, HashMap<String, T>> updates = new EnumMap<>(UpdateOperation.class);
         if (!readNodeUpdates(c, updates, valueType))
             importNodeInsertions(c, updates, valueType);
-        if (updates.values().stream().map(HashMap::size).reduce((a,b)->a+b).orElse(0) > 0)
+        if (updates.values().stream().map(HashMap::size).reduce((a, b) -> a + b).orElse(0) > 0)
             this.lastUpdate = LocalDateTime.now().toEpochSecond(ZoneOffset.ofTotalSeconds(0));
         else
-            this.lastCheck =  LocalDateTime.now().toEpochSecond(ZoneOffset.ofTotalSeconds(0));
+            this.lastCheck = LocalDateTime.now().toEpochSecond(ZoneOffset.ofTotalSeconds(0));
         return updates;
     }
 
@@ -325,8 +377,8 @@ public class UpdateService {
         HashSet<String> attributeDefinition = null;
         try {
             attributeDefinition = getAttributeNames(ReaderUtils.getUrlContent(new URL(env.getProperty("url.api.db") + first + "/attributes")));
-            if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, ProteinEncodedBy.sourceAttributes))
-                updateSuccessful = proteinEncodedByService.submitUpdates(runEdgeUpdates(ProteinEncodedBy.class, DBConfig.getConfig().edges.stream().filter(edge -> edge.mapsTo.equals("ProteinEncodedBy")).collect(Collectors.toList()).get(0).file, proteinEncodedByService::mapIds));
+//            if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, ProteinEncodedBy.sourceAttributes))
+            updateSuccessful = proteinEncodedByService.submitUpdates(runEdgeUpdates(ProteinEncodedBy.class, DBConfig.getConfig().edges.stream().filter(edge -> edge.mapsTo.equals("ProteinEncodedBy")).collect(Collectors.toList()).get(0).file, proteinEncodedByService::mapIds));
             proteinEncodedByService.importEdges();
         } catch (MalformedURLException e) {
             e.printStackTrace();
@@ -344,44 +396,44 @@ public class UpdateService {
 
                 switch (edge.mapsTo) {
                     case "DisorderComorbidity":
-                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, DisorderComorbidWithDisorder.sourceAttributes))
-                            updateSuccessful = disorderComorbidWithDisorderService.submitUpdates(runEdgeUpdates(DisorderComorbidWithDisorder.class, edge.file, disorderComorbidWithDisorderService::mapIds));
+//                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, DisorderComorbidWithDisorder.sourceAttributes))
+                        updateSuccessful = disorderComorbidWithDisorderService.submitUpdates(runEdgeUpdates(DisorderComorbidWithDisorder.class, edge.file, disorderComorbidWithDisorderService::mapIds));
                         disorderComorbidWithDisorderService.importEdges();
                         break;
                     case "DisorderHierarchy":
-                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, DisorderIsADisorder.sourceAttributes))
-                            updateSuccessful = disorderIsADisorderService.submitUpdates(runEdgeUpdates(DisorderIsADisorder.class, edge.file, disorderIsADisorderService::mapIds));
+//                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, DisorderIsADisorder.sourceAttributes))
+                        updateSuccessful = disorderIsADisorderService.submitUpdates(runEdgeUpdates(DisorderIsADisorder.class, edge.file, disorderIsADisorderService::mapIds));
                         filterService.writeToFile(disorderService.getFilter(), new File(filterCacheDir, "Disorder"));
                         disorderIsADisorderService.importEdges();
                         break;
                     case "DrugIndication":
-                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, DrugHasIndication.sourceAttributes))
-                            updateSuccessful = drugHasIndicationService.submitUpdates(runEdgeUpdates(DrugHasIndication.class, edge.file, drugHasIndicationService::mapIds));
+//                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, DrugHasIndication.sourceAttributes))
+                        updateSuccessful = drugHasIndicationService.submitUpdates(runEdgeUpdates(DrugHasIndication.class, edge.file, drugHasIndicationService::mapIds));
                         drugHasIndicationService.importEdges();
                         break;
                     case "DrugContraindication":
-                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, DrugHasContraindication.sourceAttributes))
-                            updateSuccessful = drugHasContraindicationService.submitUpdates(runEdgeUpdates(DrugHasContraindication.class, edge.file, drugHasContraindicationService::mapIds));
+//                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, DrugHasContraindication.sourceAttributes))
+                        updateSuccessful = drugHasContraindicationService.submitUpdates(runEdgeUpdates(DrugHasContraindication.class, edge.file, drugHasContraindicationService::mapIds));
                         drugHasContraindicationService.importEdges();
                         break;
                     case "DrugTargetProtein":
-                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, DrugHasTargetProtein.sourceAttributes))
-                            updateSuccessful = drugHasTargetService.submitUpdates(runEdgeUpdates(DrugHasTargetProtein.class, edge.file, drugHasTargetService::mapIds));
+//                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, DrugHasTargetProtein.sourceAttributes))
+                        updateSuccessful = drugHasTargetService.submitUpdates(runEdgeUpdates(DrugHasTargetProtein.class, edge.file, drugHasTargetService::mapIds));
                         drugHasTargetService.importEdges();
                         break;
                     case "GeneAssociatedWithDisorder":
-                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, GeneAssociatedWithDisorder.sourceAttributes))
-                            updateSuccessful = associatedWithDisorderService.submitUpdates(runEdgeUpdates(GeneAssociatedWithDisorder.class, edge.file, associatedWithDisorderService::mapIds));
+//                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, GeneAssociatedWithDisorder.sourceAttributes))
+                        updateSuccessful = associatedWithDisorderService.submitUpdates(runEdgeUpdates(GeneAssociatedWithDisorder.class, edge.file, associatedWithDisorderService::mapIds));
                         associatedWithDisorderService.importEdges();
                         break;
                     case "ProteinPathway":
-                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, ProteinInPathway.sourceAttributes))
-                            updateSuccessful = proteinInPathwayService.submitUpdates(runEdgeUpdates(ProteinInPathway.class, edge.file, proteinInPathwayService::mapIds));
+//                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, ProteinInPathway.sourceAttributes))
+                        updateSuccessful = proteinInPathwayService.submitUpdates(runEdgeUpdates(ProteinInPathway.class, edge.file, proteinInPathwayService::mapIds));
                         proteinInPathwayService.importEdges();
                         break;
                     case "ProteinProteinInteraction":
-                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, ProteinInteractsWithProtein.sourceAttributes))
-                            updateSuccessful = proteinInteractsWithProteinService.submitUpdates(runEdgeUpdates(ProteinInteractsWithProtein.class, edge.file, proteinInteractsWithProteinService::mapProteinIds));
+//                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, ProteinInteractsWithProtein.sourceAttributes))
+                        updateSuccessful = proteinInteractsWithProteinService.submitUpdates(runEdgeUpdates(ProteinInteractsWithProtein.class, edge.file, proteinInteractsWithProteinService::mapProteinIds));
                         proteinInteractsWithProteinService.importEdges();
                         break;
                 }
@@ -409,36 +461,36 @@ public class UpdateService {
 
                 switch (node.name) {
                     case "drug": {
-                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, Drug.sourceAttributes))
-                            updateSuccessful = drugService.submitUpdates(startNodeUpdate(Drug.class, node.file));
+//                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, Drug.sourceAttributes))
+                        updateSuccessful = drugService.submitUpdates(startNodeUpdate(Drug.class, node.file));
                         RepoTrialUtils.writeNodeMap(new File(nodeCacheDir, node.label + ".map"), drugService.getIdToDomainMap());
                         filterService.writeToFile(drugService.getFilter(), new File(filterCacheDir, node.label));
                         break;
                     }
                     case "pathway": {
-                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, Pathway.sourceAttributes))
-                            updateSuccessful = pathwayService.submitUpdates(startNodeUpdate(Pathway.class, node.file));
+//                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, Pathway.sourceAttributes))
+                        updateSuccessful = pathwayService.submitUpdates(startNodeUpdate(Pathway.class, node.file));
                         RepoTrialUtils.writeNodeMap(new File(nodeCacheDir, node.label + ".map"), pathwayService.getIdToDomainMap());
                         filterService.writeToFile(pathwayService.getFilter(), new File(filterCacheDir, node.label));
                         break;
                     }
                     case "disorder": {
-                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, Disorder.sourceAttributes))
-                            updateSuccessful = disorderService.submitUpdates(startNodeUpdate(Disorder.class, node.file));
+//                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, Disorder.sourceAttributes))
+                        updateSuccessful = disorderService.submitUpdates(startNodeUpdate(Disorder.class, node.file));
                         RepoTrialUtils.writeNodeMap(new File(nodeCacheDir, node.label + ".map"), disorderService.getIdToDomainMap());
                         filterService.writeToFile(disorderService.getFilter(), new File(filterCacheDir, node.label));
                         break;
                     }
                     case "gene": {
-                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, Gene.sourceAttributes))
-                            updateSuccessful = geneService.submitUpdates(startNodeUpdate(Gene.class, node.file));
+//                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, Gene.sourceAttributes))
+                        updateSuccessful = geneService.submitUpdates(startNodeUpdate(Gene.class, node.file));
                         RepoTrialUtils.writeNodeMap(new File(nodeCacheDir, node.label + ".map"), geneService.getIdToDomainMap());
                         filterService.writeToFile(geneService.getFilter(), new File(filterCacheDir, node.label));
                         break;
                     }
                     case "protein": {
-                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, Protein.sourceAttributes))
-                            updateSuccessful = proteinService.submitUpdates(startNodeUpdate(Protein.class, node.file));
+//                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, Protein.sourceAttributes))
+                        updateSuccessful = proteinService.submitUpdates(startNodeUpdate(Protein.class, node.file));
                         RepoTrialUtils.writeNodeMap(new File(nodeCacheDir, node.label + ".map"), proteinService.getIdToDomainMap());
                         filterService.writeToFile(proteinService.getFilter(), new File(filterCacheDir, node.label));
                         break;

@@ -920,6 +920,51 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <v-dialog
+      v-model="selectionColor.show"
+      persistent
+      max-width="500"
+    >
+      <v-card>
+        <v-card-title class="headline">
+          Recolor Selected Nodes
+        </v-card-title>
+        <v-card-text>Adjust temporary color and name of your selection in the graph. The name is for the legend.
+        </v-card-text>
+        <v-divider></v-divider>
+        <v-list>
+          <v-list-item>
+            <v-list-item-content>
+              <v-text-field v-model=selectionColor.name label="Name"
+                            :rules="[value=>!!value|| 'Required!']"></v-text-field>
+            </v-list-item-content>
+          </v-list-item>
+          <v-list-item>
+            <v-color-picker v-model=selectionColor.color dot-size="20" mode="hexa"></v-color-picker>
+          </v-list-item>
+        </v-list>
+        <v-divider></v-divider>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            color="green darken-1"
+            text
+            @click="resolveRecoloring(false)"
+          >
+            Cancel
+          </v-btn>
+          <v-btn
+            color="green darken-1"
+            text
+            @click="resolveRecoloring(true,selectionColor.name, selectionColor.color.hex)"
+            :disabled="selectionColor.name==null ||selectionColor.name.length===0"
+          >
+            Recolor
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -995,7 +1040,7 @@ export default {
       filterNodeModel: null,
       loading: true,
       nodeTabLoading: false,
-
+      selectionColor: {show: false, name: "", color: {}}
     }
   },
 
@@ -1073,8 +1118,8 @@ export default {
         else
           selectionMap[group].push(id)
       })
-      Object.keys(selectionMap).forEach(group=>{
-        this.select("nodes",group,selectionMap[group])
+      Object.keys(selectionMap).forEach(group => {
+        this.select("nodes", group, selectionMap[group])
       })
       this.reloadCountMap()
 
@@ -1543,7 +1588,7 @@ export default {
         self: this.collapse.self.selected,
         edgeName: this.collapse.edgeName,
         edge1: this.collapse.edge1,
-        edge2: this.collapse.edge2,
+        edge2: this.collapse.edge2.length === 0 ? this.collapse.edge1 : this.collapse.edge2,
         node: this.collapse.nodes.filter(n => n.selected)[0].name,
         keep: this.collapse.keep
       }
@@ -1557,6 +1602,14 @@ export default {
     },
     setLoading: function (boolean) {
       this.loading = boolean
+    },
+    resolveRecoloring: function (apply, name, color) {
+      this.selectionColor.show = false
+      if (!apply)
+        return
+      let selectionIds = []
+      Object.keys(this.nodes).forEach(name => this.nodes[name].filter(n => n.selected).forEach(n => selectionIds.push({id: name.substring(0, 3) + "_" + n.id})))
+      this.$emit("recolorGraphEvent", {ids: selectionIds, color: color, name: name})
     },
     printNotification: function (message, type) {
       this.$emit("printNotificationEvent", message, type)
@@ -1827,11 +1880,14 @@ export default {
       return out
     }
     ,
-    headerNames: function (entity, node) {
+    headerNames: function (entity, node, remove) {
       let headers = this.headers(entity, node);
       let out = []
       headers.forEach(header => out.push(header.text))
-      let idx = out.indexOf("select")
+      let idx = out.indexOf("Select")
+      if (idx > -1)
+        out.splice(idx, 1)
+      idx = out.indexOf("actions")
       if (idx > -1)
         out.splice(idx, 1)
       return out;
@@ -2029,6 +2085,13 @@ export default {
         return 0
       return e.directed ? 1 : 2
     },
+    selectColor: function () {
+      if (Object.values(this.configuration.countMap.nodes).map(n => n.selected).reduce((i, v) => i + v) === 0) {
+        this.printNotification("Please select some nodes first!", 2)
+        return;
+      }
+      this.selectionColor.show = true
+    },
     countClick: function (entity, tabId, item) {
       let bool = entity === 'nodes' ? item : item.selected;
       let name = Object.keys(this.attributes[entity])[tabId]
@@ -2048,10 +2111,8 @@ export default {
       }
     },
     scrollFocus: function (refName) {
-      var element = this.$refs[refName];
+      let element = this.$refs[refName];
       element.scrollIntoView()
-
-
     }
   }
 }

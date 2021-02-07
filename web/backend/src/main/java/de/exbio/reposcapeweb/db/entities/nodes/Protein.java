@@ -226,16 +226,16 @@ public class Protein extends RepoTrialNode {
                 map.get(FilterType.SYNONYM).put(new FilterKey(syn), syns);
         });
 
-        if (geneName != null) {
-            map.put(FilterType.ORIGIN, new HashMap<>());
-            map.get(FilterType.ORIGIN).put(new FilterKey(geneName), new FilterEntry(displayName, FilterType.ORIGIN, id));
-        }
-
         return map;
     }
 
     @Override
     public EnumMap<FilterType, Map<FilterKey, FilterEntry>> toDistinctFilter() {
-        return new EnumMap<>(FilterType.class);
+        EnumMap<FilterType, Map<FilterKey, FilterEntry>> map = new EnumMap<>(FilterType.class);
+        if (geneName != null) {
+            map.put(FilterType.ORIGIN, new HashMap<>());
+            map.get(FilterType.ORIGIN).put(new FilterKey(geneName), new FilterEntry(displayName, FilterType.ORIGIN, id));
+        }
+        return map;
     }
 }

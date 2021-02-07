@@ -3,7 +3,7 @@
     alt-labels
     v-model="step"
   >
-    <v-stepper-header>
+    <v-stepper-header ref="head">
       <v-stepper-step step="1" :complete="step>1">
         Select Seeds
         <small v-if="seedTypeId!==undefined">{{ ["Gene", "Protein"][seedTypeId] }} ({{ seeds.length }})</small>
@@ -11,12 +11,12 @@
       <v-divider></v-divider>
       <v-stepper-step step="2" :complete="step>2 || blitz">
         Module Method
-        <small v-if="method!==undefined">{{ method }}</small>
+        <small v-if="moduleMethodModel>-1">{{ moduleMethods[moduleMethodModel].label }}</small>
       </v-stepper-step>
       <v-divider></v-divider>
       <v-stepper-step step="3" :complete="step>3 || blitz">
         Ranking Method
-        <small v-if="method!==undefined">{{ method }}</small>
+        <small v-if="rankingMethodModel>-1">{{ rankingMethods[rankingMethodModel].label }}</small>
       </v-stepper-step>
       <v-divider></v-divider>
       <v-stepper-step step="4">
@@ -29,7 +29,7 @@
         <v-card
           v-if="step===1"
           class="mb-12"
-          height="75vh"
+          max-height="80vh"
         >
 
           <v-card-subtitle class="headline">1. Seed Configuration</v-card-subtitle>
@@ -62,8 +62,8 @@
               </v-list-item-action>
             </v-col>
           </v-row>
-          <v-container style="height: 80%">
-            <v-row style="height: 50vh">
+          <v-container style="height: 55vh">
+            <v-row style="height: 100%">
               <v-col cols="6">
                 <v-container v-if="seedTypeId!==undefined">
                   <v-card-title style="margin-left: -25px">Add seeds associated to</v-card-title>
@@ -146,6 +146,14 @@
                 <v-chip outlined v-show="seeds.length>0" style="margin-top:15px" @click="downloadSeedList">
                   <v-icon left>fas fa-download</v-icon>
                   Save
+                </v-chip>
+                <v-chip outlined v-show="seeds.length>0" style="margin-top:15px" @click="clearList">
+                  <v-icon left>fas fa-trash-alt</v-icon>
+                  Clear
+                </v-chip>
+                <v-chip outlined v-show="seeds.length>0" style="margin-top:15px" @click="removeNonIntersecting()">
+                  <v-icon left>fas fa-minus-square</v-icon>
+                  Remove non-intersecting
                 </v-chip>
               </v-col>
             </v-row>
@@ -496,7 +504,7 @@
           color="primary"
           :disabled="moduleMethodModel===undefined ||(moduleMethodModel===1 && moduleModels.bicon.exprFile ===undefined)"
         >
-          Run
+          Continue
         </v-btn>
 
         <v-btn text @click="makeStep(2,'cancel')">
@@ -700,7 +708,7 @@
         <v-card
           v-if="step===4"
           class="mb-12"
-          height="750px"
+          height="80vh"
         >
           <v-card-subtitle class="headline">4. Results</v-card-subtitle>
           <v-container>
@@ -1035,7 +1043,7 @@ export default {
 
         if (this.step === 4)
           this.submitRankingAlgorithm()
-
+        this.focus()
 
       }
       if (button === "back") {
@@ -1072,6 +1080,20 @@ export default {
         return
       this.$refs.graph.setSelection([id])
       this.$refs.graph.zoomToNode(id)
+    },
+    clearList: function(){
+      this.seeds = []
+      this.seedOrigin = {}
+    },
+    removeNonIntersecting: function () {
+      let remove=[]
+      Object.keys(this.seedOrigin).forEach(seed=>{
+        if(this.seedOrigin[seed].length<2) {
+          this.seedOrigin[seed]=undefined
+          remove.push(parseInt(seed))
+        }
+      })
+      this.seeds = this.seeds.filter(s=>remove.indexOf(s.id) === -1)
     },
     getSuggestions: function (val, timeouted) {
       if (!timeouted) {
@@ -1458,9 +1480,13 @@ export default {
         })
       })
     },
+    focus: function(){
+      this.$emit("focusEvent")
+    },
     getColoring: function (entity, name) {
       return Utils.getColoring(this.metagraph, entity, name);
     },
+
   },
 
   components: {

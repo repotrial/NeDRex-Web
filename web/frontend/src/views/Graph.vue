@@ -19,14 +19,14 @@
 
       >
       </network>
-      <div style="position: absolute" v-if="legend">
+      <div style="position: absolute" v-if="legend ">
         <div style="display: flex; justify-content: flex-end;">
           <v-btn @click="showLegend= !showLegend" :title="showLegend ? 'Hide':'Show'" :plain="!showLegend">
             Legend
             <v-icon right>{{ showLegend ? "fas fa-angle-up" : "fas fa-angle-down" }}</v-icon>
           </v-btn>
         </div>
-        <div v-show="showLegend" style="padding-right: 1px" >
+        <div v-show="showLegend" style="padding-right: 2px; padding-top:2px">
           <slot name="legend"></slot>
         </div>
       </div>
@@ -37,6 +37,7 @@
         v-model="dialog"
         persistent
         max-width="290"
+        style="z-index: 1000"
       >
         <v-card>
           <v-card-title class="headline">
@@ -99,7 +100,6 @@ export default {
   unconnected: [],
 
 
-
   data() {
     return {
       showLegend: true,
@@ -122,8 +122,8 @@ export default {
       rect: {},
       drag: false,
       drawingSurfaceImageData: undefined,
-      offsetLeft:0,
-      offsetTop:0,
+      offsetLeft: 0,
+      offsetTop: 0,
       canvasCursor: "default",
     }
   }
@@ -352,8 +352,8 @@ export default {
         options: {
           interaction: {
             multiselect: true,
-            hideEdgesOnDrag:true,
-            hideEdgesOnZoom:true,
+            hideEdgesOnDrag: true,
+            hideEdgesOnZoom: true,
             // dragView:false,
           },
           groups: {
@@ -500,14 +500,14 @@ export default {
       this.updateOptions()
     },
 
-    toggleSelectMode: function(select){
-      if(select){
-          this.options.interaction.zoomView=false;
-          this.options.interaction.dragView = false;
-          this.initDragSelect();
-      }else{
-        this.options.interaction.zoomView=true;
-        this.options.interaction.dragView=true;
+    toggleSelectMode: function (select) {
+      if (select) {
+        this.options.interaction.zoomView = false;
+        this.options.interaction.dragView = false;
+        this.initDragSelect();
+      } else {
+        this.options.interaction.zoomView = true;
+        this.options.interaction.dragView = true;
         this.removeDragSelect();
       }
       this.updateOptions()
@@ -519,7 +519,26 @@ export default {
       })
       this.updateNodes(updates)
     },
-
+    recolorGraph: function (request) {
+      let group = {
+        color: {
+          border: request.color,
+          background: request.color,
+          highlight: {border: request.color, background: request.color}
+        }
+      }
+      let groupLower = request.name.toLowerCase()
+      this.options.groups[groupLower] = group;
+      let updates = request.ids
+      updates.forEach(n => n.group = groupLower)
+      if (this.$refs.network === undefined)
+        this.$emit("printNotificationEvent", "Graph was not ready", 2)
+      else {
+        this.updateOptions()
+        this.updateNodes(updates)
+        this.$emit("printNotificationEvent", request.ids.length + " nodes recolored!", 1)
+      }
+    },
     updateOptions: function () {
       this.$refs.network.setOptions(this.options)
     }
@@ -634,7 +653,7 @@ export default {
     // },
 
     visualizeNow: function () {
-      if (this.configuration.sizeWarning && !this.dialog)
+      if (this.configuration.sizeWarning && !this.dialog && this.$refs.network === undefined)
         this.dialog = true
       else {
         this.dialogResolve(true)
@@ -733,31 +752,31 @@ export default {
     },
 
     initDragSelect: function () {
-      if (this.$refs.network !== undefined && this.network ===undefined) {
+      if (this.$refs.network !== undefined && this.network === undefined) {
         this.network = this.$refs.network.network
         this.canvas = this.network.canvas.frame.canvas;
         this.canvas.oncontextmenu = function () {
           return false
         }
         this.ctx = this.canvas.getContext('2d');
-        this.canvas.addEventListener("mousemove",this.dragMouseMove)
+        this.canvas.addEventListener("mousemove", this.dragMouseMove)
         this.canvas.addEventListener("mousedown", this.dragMouseDown)
-        this.canvas.addEventListener("mouseup",this.dragMouseUp)
+        this.canvas.addEventListener("mouseup", this.dragMouseUp)
       }
     },
 
-    removeDragSelect: function(){
+    removeDragSelect: function () {
       this.network = undefined;
-      this.canvas.removeEventListener("mousemove",this.dragMouseMove)
-      this.canvas.removeEventListener("mousedown",this.dragMouseDown)
-      this.canvas.removeEventListener("mouseup",this.dragMouseUp)
+      this.canvas.removeEventListener("mousemove", this.dragMouseMove)
+      this.canvas.removeEventListener("mousedown", this.dragMouseDown)
+      this.canvas.removeEventListener("mouseup", this.dragMouseUp)
     },
 
-    dragMouseMove:function(e,drag,rect,ctx) {
+    dragMouseMove: function (e, drag, rect, ctx) {
       if (this.drag) {
         this.restoreDrawingSurface();
         this.rect.w = (e.pageX - this.offsetLeft) - this.rect.startX;
-        this.rect.h = (e.pageY - this.offsetTop) - this.rect.startY ;
+        this.rect.h = (e.pageY - this.offsetTop) - this.rect.startY;
 
         this.ctx.setLineDash([5]);
         this.ctx.strokeStyle = "rgb(0, 102, 0)";
@@ -767,13 +786,13 @@ export default {
         this.ctx.fillRect(this.rect.startX, this.rect.startY, this.rect.w, this.rect.h);
       }
     },
-    dragMouseDown: function(e) {
-      if (e.button ===0) {
+    dragMouseDown: function (e) {
+      if (e.button === 0) {
         this.offsetLeft = e.target.getBoundingClientRect().left
         this.offsetTop = e.target.getBoundingClientRect().top
         // this.selectedNodes = e.ctrlKey ? this.network.getSelectedNodes() : null;
         this.saveDrawingSurface();
-        this.rect={}
+        this.rect = {}
         // let that = this;
         this.rect.startX = e.pageX - this.offsetLeft;
         this.rect.startY = e.pageY - this.offsetTop;
@@ -782,8 +801,8 @@ export default {
       }
     },
 
-    dragMouseUp: function(e) {
-      if (e.button ===0) {
+    dragMouseUp: function (e) {
+      if (e.button === 0) {
         this.restoreDrawingSurface();
         this.drag = false;
 
@@ -814,11 +833,11 @@ export default {
         let nodeXY = this.network.canvasToDOM({x: nodePosition[curNode.id].x, y: nodePosition[curNode.id].y});
         if (xRange.start <= nodeXY.x && nodeXY.x <= xRange.end && yRange.start <= nodeXY.y && nodeXY.y <= yRange.end) {
           nodesIdInDrawing.push(curNode.id);
-          selection.push({id:curNode.id, label:curNode.label})
+          selection.push({id: curNode.id, label: curNode.label})
         }
       }
       this.network.selectNodes(nodesIdInDrawing);
-      this.$emit("multiSelectionEvent",selection)
+      this.$emit("multiSelectionEvent", selection)
     },
 
     getStartToEnd: function (start, theLen) {

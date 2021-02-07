@@ -65,9 +65,7 @@ public class ReposcapewebApplication {
 
     @EventListener(ApplicationReadyEvent.class)
     public void postConstruct() {
-
-
-
+        long start = System.currentTimeMillis();
         updateService.readMetadata();
         dbService.setImportInProgress(true);
         importService.importNodeData();
@@ -88,6 +86,7 @@ public class ReposcapewebApplication {
         }
         if (env.getProperty("update.db-dump").equals("true"))
             updateService.renewDBDumps();
+        log.info("Startup took "+(int)((System.currentTimeMillis()-start)/1000)+"s");
         log.debug("Current RAM usage: " + (int) ((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024)
                 + "MB");
         log.info("Loaded " + nodeController.getCount() + " nodes and " + edgeController.getSize() + " edges!");

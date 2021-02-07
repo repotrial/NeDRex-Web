@@ -6,14 +6,23 @@
     <v-stepper-header>
       <v-stepper-step step="1" :complete="step>1">
         Select Nodes
-        <small v-if="sourceTypeId!==undefined & targetTypeId!==undefined">{{
-            nodeList[sourceTypeId].text
-          }}->{{ nodeList[targetTypeId].text }}</small>
+        <small v-if="sourceTypeId!==undefined & targetTypeId!==undefined">
+          <span>{{nodeList[sourceTypeId].text }}</span>
+          ->
+          <span>{{ nodeList[targetTypeId].text }}</span>
+        </small>
       </v-stepper-step>
       <v-divider></v-divider>
       <v-stepper-step step="2" :complete="step>2 ">
         Select Path
-        <small>Something</small>
+        <small v-if="selectedPath!==undefined && selectedPath.length>0"
+               style="margin-left: -100px;margin-right: -100px">
+          <span>{{ nodeList[sourceTypeId].text }}
+          <span v-for="(edge,idx) in selectedPath" :key="'stepper_'+idx+'_'+edge.label">
+            -> {{ getNodeLabel(edge.label, [edge.direction ? 1 : 0]) }}
+          </span>
+          </span>
+        </small>
       </v-stepper-step>
       <v-divider></v-divider>
       <v-stepper-step step="3">
@@ -26,14 +35,14 @@
         <v-card
           v-if="step===1"
           class="mb-12"
-          height="75vh"
+          max-height="85vh"
         >
 
           <v-card-subtitle class="headline">Node Configuration</v-card-subtitle>
           <v-card-subtitle style="margin-top: -25px">Add nodes you want your graph to be build on.</v-card-subtitle>
 
           <v-container style="height: 80%">
-            <v-row style="height: 50vh">
+            <v-row style="height: 70vh">
               <v-col cols="5">
                 <v-list-item-subtitle class="title">1a. Select the source node type:</v-list-item-subtitle>
                 <v-list-item-action>
@@ -104,16 +113,6 @@
                       <v-card-title>Source Nodes ({{ sources.length }})
                       </v-card-title>
                     </v-col>
-                    <v-col>
-                      <v-chip outlined v-show="sources.length>0" style="margin-top:15px" @click="removeAll(0)">
-                        <v-icon left>fas fa-download</v-icon>
-                        Clear All
-                      </v-chip>
-                      <v-chip outlined v-show="sources.length>0" style="margin-top:15px" @click="downloadList(0)">
-                        <v-icon left>fas fa-download</v-icon>
-                        Save
-                      </v-chip>
-                    </v-col>
                   </v-row>
                   <v-row>
                     <v-col>
@@ -132,6 +131,23 @@
                           </v-list-item-action>
                         </v-list-item>
                       </v-list>
+                    </v-col>
+                  </v-row>
+                  <v-row>
+                    <v-col>
+                      <v-chip outlined v-show="sources.length>0" style="margin-top:15px"
+                              @click="removeNonIntersecting(0)">
+                        <v-icon left>fas fa-minus-square</v-icon>
+                        Keep Intersection
+                      </v-chip>
+                      <v-chip outlined v-show="sources.length>0" style="margin-top:15px" @click="removeAll(0)">
+                        <v-icon left>fas fa-trash-alt</v-icon>
+                        Clear
+                      </v-chip>
+                      <v-chip outlined v-show="sources.length>0" style="margin-top:15px" @click="downloadList(0)">
+                        <v-icon left>fas fa-download</v-icon>
+                        Save
+                      </v-chip>
                     </v-col>
                   </v-row>
                 </v-container>
@@ -209,16 +225,6 @@
                       <v-card-title>Target Nodes ({{ targets.length }})
                       </v-card-title>
                     </v-col>
-                    <v-col>
-                      <v-chip outlined v-show="targets.length>0" style="margin-top:15px" @click="removeAll(1)">
-                        <v-icon left>fas fa-download</v-icon>
-                        Clear All
-                      </v-chip>
-                      <v-chip outlined v-show="targets.length>0" style="margin-top:15px" @click="downloadList(1)">
-                        <v-icon left>fas fa-download</v-icon>
-                        Save
-                      </v-chip>
-                    </v-col>
                   </v-row>
                   <v-row>
                     <v-col>
@@ -237,6 +243,23 @@
                           </v-list-item-action>
                         </v-list-item>
                       </v-list>
+                    </v-col>
+                  </v-row>
+                  <v-row>
+                    <v-col>
+                      <v-chip outlined v-show="targets.length>0" style="margin-top:15px"
+                              @click="removeNonIntersecting(1)">
+                        <v-icon left>fas fa-minus-square</v-icon>
+                        Keep Intersection
+                      </v-chip>
+                      <v-chip outlined v-show="targets.length>0" style="margin-top:15px" @click="removeAll(1)">
+                        <v-icon left>fas fa-trash-alt</v-icon>
+                        Clear
+                      </v-chip>
+                      <v-chip outlined v-show="targets.length>0" style="margin-top:15px" @click="downloadList(1)">
+                        <v-icon left>fas fa-download</v-icon>
+                        Save
+                      </v-chip>
                     </v-col>
                   </v-row>
                 </v-container>
@@ -260,14 +283,14 @@
         <v-card
           v-if="step===2"
           class="mb-12"
-          height="75vh"
+          max-height="75vh"
         >
           <v-card-subtitle class="headline">Path Selection</v-card-subtitle>
           <v-card-subtitle style="margin-top: -25px">Select the path you want to be your graph be based on.
           </v-card-subtitle>
 
           <v-container style="height: 80%">
-            <v-row style="height: 50vh">
+            <v-row style="min-height: 35vh; margin-bottom: 15px">
               <v-col cols="3">
                 <v-radio-group v-model="pathModel">
                   <v-list-item-subtitle class="title">Direct-Paths</v-list-item-subtitle>
@@ -365,7 +388,8 @@
                       <template v-slot:activator="{on,attrs}">
                         <v-list-item v-bind="attrs" v-on="on">
                           <span>Remove Intermediate Nodes</span>
-                          <v-switch v-model="options.general.keep" style="margin-left: 5px" @click=" print(options.general.name) "></v-switch>
+                          <v-switch v-model="options.general.keep" style="margin-left: 5px"
+                                    @click=" print(options.general.name) "></v-switch>
                           <span>Keep Intermediate Nodes</span>
 
                         </v-list-item>
@@ -408,7 +432,7 @@
         <v-card
           v-if="step===3"
           class="mb-12"
-          height="75vh"
+          max-height="80vh"
         >
           <v-card-subtitle class="headline">3. Graph</v-card-subtitle>
           <v-card-subtitle style="margin-top: -25px">The network you created
@@ -852,6 +876,7 @@ export default {
         if (response.data !== undefined)
           return response.data
       }).then(data => {
+        console.log(data)
         this.targets = data.nodes[groupName].map(n => {
           return {id: n.id, displayName: n.displayName}
         })
@@ -873,6 +898,18 @@ export default {
     removeAll: function (index) {
       this[["sources", "targets"][index]] = []
       this.nodeOrigins[index] = {}
+    },
+    removeNonIntersecting: function (index) {
+      let remove = []
+      let seedOrigin = this.nodeOrigins[index]
+      let seeds = this[["sources", "targets"][index]]
+      Object.keys(seedOrigin).forEach(seed => {
+        if (seedOrigin[seed] === undefined || seedOrigin[seed].length < 2) {
+          seedOrigin[seed] = undefined
+          remove.push(parseInt(seed))
+        }
+      })
+      this[["sources", "targets"][index]] = seeds.filter(s => remove.indexOf(s.id) === -1)
     }
     ,
     downloadList: function (index) {

@@ -295,11 +295,22 @@ public class NodeController {
 
     public int getCount() {
         int size = 0;
-        size+=getNodeCount("disorder");
-        size+=getNodeCount("drug");
-        size+=getNodeCount("gene");
-        size+=getNodeCount("pathway");
-        size+=getNodeCount("protein");
+        size += getNodeCount("disorder");
+        size += getNodeCount("drug");
+        size += getNodeCount("gene");
+        size += getNodeCount("pathway");
+        size += getNodeCount("protein");
         return size;
+    }
+
+    public HashSet<String> getSourceAttributes(String type) {
+        return switch (type) {
+            case "disorder" -> Disorder.sourceAttributes;
+            case "drug" -> Drug.sourceAttributes;
+            case "gene" -> Gene.sourceAttributes;
+            case "pathway" -> Pathway.sourceAttributes;
+            case "protein" -> Protein.sourceAttributes;
+            default -> null;
+        };
     }
 }

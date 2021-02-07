@@ -54,9 +54,10 @@
                      :legend="showLegend"
               >
                 <template v-slot:legend>
-                  <Legend v-if="showLegend" :metagraph="metagraph" :countMap="options.list.countMap" :entityGraph="options.list.entityGraph"
-                    :options="options.graph.legend"
-                    @graphViewEvent="graphViewEvent"></Legend>
+                  <Legend v-if="showLegend" :metagraph="metagraph" :countMap="options.list.countMap" ref="legend"
+                          :entityGraph="options.list.entityGraph"
+                          :options="options.graph.legend"
+                          @graphViewEvent="graphViewEvent"></Legend>
 
                 </template>
 
@@ -74,6 +75,7 @@
                     v-on:addJobEvent="registerJob"
                     v-on:focusInGraphEvent="focusInGraph"
                     @loadLegendEvent="loadLegendEvent"
+                    @recolorGraphEvent="recolorGraph"
                     :configuration="options.list"
               ></List>
             </v-container>
@@ -175,6 +177,7 @@
                     @showUnconnectedEvent="showUnconnected"
                     @graphViewEvent="graphViewEvent"
                     @applyMultiSelect="applyMultiSelect"
+                    @colorSelectionEvent="selectionColorSelect"
                     :options="options"
                     :selected-tab="selectedTabId"
                     :filters="startFilters"
@@ -387,6 +390,10 @@ export default {
         }).catch(err => console.log(err))
       }
     },
+    selectionColorSelect: function () {
+      this.$refs.list.selectColor()
+        this.$refs.graph.visualizeNow()
+    },
     setTabId: function (tab, skipReroute) {
       this.selectTab(['start', 'graph', 'list', 'history'].indexOf(tab), skipReroute)
     },
@@ -420,7 +427,7 @@ export default {
       this.$refs.side.$forceUpdate()
     },
 
-    toggleGraphSelectMode: function(select){
+    toggleGraphSelectMode: function (select) {
       this.$refs.graph.toggleSelectMode(select);
     },
     focusInGraph: function (type, id) {
@@ -434,8 +441,7 @@ export default {
         if (type === "node") {
           this.$refs.side.setSelectedNode(id)
           this.$refs.graph.setSelection([id])
-        }
-        else
+        } else
           this.$refs.graph.focusEdge(id)
       })
     },
@@ -449,7 +455,7 @@ export default {
         visualized: false,
         sizeWarning: false,
         component: false,
-        selection:{selectMode:false},
+        selection: {selectMode: false},
         legend: {}
       }
       this.options.list = {showAll: true, selected: 0, total: 0, countMap: {nodes: {}, edges: {}}, entityGraph: {}}
@@ -459,22 +465,26 @@ export default {
       this.loadGraph({data: selection})
     },
 
-    loadLegendEvent: function(val){
-      if(val===this.showLegend && val){
-        this.showLegend=false;
+    loadLegendEvent: function (val) {
+      if (val === this.showLegend && val) {
+        this.showLegend = false;
       }
-      this.$nextTick(()=>{this.showLegend=val})
+      this.$nextTick(() => {
+        this.showLegend = val
+      })
     },
-    applyMultiSelect: function(selection){
+    applyMultiSelect: function (selection) {
       this.$refs.list.applyMultiSelect(selection)
-      this.printNotification("Added "+selection.length+" nodes to selection!",1)
+      this.printNotification("Added " + selection.length + " nodes to selection!", 1)
     },
-    setMultiSelection: function(selection){
+    setMultiSelection: function (selection) {
       this.$refs.side.setMultiSelect(selection)
     },
     sizeWarning: function (info) {
-      this.listWarnObject = info;
-      this.listDialog = true;
+      if (!this.$cookies.get("override-limit")) {
+        this.listWarnObject = info;
+        this.listDialog = true;
+      }
     },
     loadGraph: function (graph) {
       this.tabslist[1].icon = "fas fa-circle-notch fa-spin"
@@ -499,6 +509,10 @@ export default {
         })
       }).catch(console.log)
     },
+    recolorGraph: function (request) {
+      this.$refs.legend.addColoring(request)
+      this.$nextTick(() => this.$refs.graph.recolorGraph(request))
+    },
     listSelectionEvent: function (type, operation) {
       if (operation === "all")
         this.$refs.list.selectAll(type)
@@ -517,7 +531,7 @@ export default {
         sum += info.nodes[n];
       for (let e in info.edges)
         sum += info.edges[e]
-      if (sum >= 100000) {
+      if (sum >= 100000 && !this.$cookies.get("override-limit")) {
         this.sizeWarning(info)
         this.tabslist[1].icon = "fas fa-project-diagram"
         this.tabslist[2].icon = "fas fa-list-ul"
@@ -702,7 +716,7 @@ export default {
   -moz-osx-font-smoothing: grayscale
   text-align: center
   color: #2c3e50
-  //padding-top: 60px
+//padding-top: 60px
 
 
 h1, h2

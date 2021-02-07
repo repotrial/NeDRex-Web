@@ -25,7 +25,7 @@
                     <v-icon left>
                       fas fa-angle-double-right
                     </v-icon>
-                    Quick Module Drug Identification
+                    Quick Drug Repurposing
                   </v-btn>
                 </v-list-item-content>
               </v-list-item>
@@ -35,7 +35,7 @@
                     <v-icon left>
                       fas fa-bolt
                     </v-icon>
-                    Blitz Module Drug Identification
+                    Blitz Drug Repurposing
                   </v-btn>
                 </v-list-item-content>
               </v-list-item>
@@ -129,20 +129,23 @@
     </template>
     <v-row>
       <v-col>
-        <CombinedRepurposing ref="comoDrugTarget" v-if="modus===0" :blitz="blitz" @resetEvent="modus=-1":metagraph="metagraph"
+        <CombinedRepurposing v-if="modus===0" :blitz="blitz" @resetEvent="modus=-1" :metagraph="metagraph"
                              @printNotificationEvent="printNotification"
                              @graphLoadEvent="loadGraph"
+                             @focusEvent="focusTop"
         >
 
         </CombinedRepurposing>
-        <ModuleIdentification ref="moduleIdent" v-if="modus===1" :blitz="blitz" @resetEvent="modus=-1" :metagraph="metagraph"
+        <ModuleIdentification v-if="modus===1" :blitz="blitz" @resetEvent="modus=-1" :metagraph="metagraph"
                               @printNotificationEvent="printNotification"
                               @graphLoadEvent="loadGraph"
                               @loadDrugTargetEvent="loadDrugTarget"
+                              @focusEvent="focusTop"
         ></ModuleIdentification>
-        <DrugRepurposing ref="drugTargeting" v-if="modus===2" :blitz="blitz" @resetEvent="modus=-1" :metagraph="metagraph"
+        <DrugRepurposing v-if="modus===2" :blitz="blitz" @resetEvent="modus=-1" :metagraph="metagraph"
                          @printNotificationEvent="printNotification"
                          @graphLoadEvent="loadGraph"
+                         @focusEvent="focusTop"
         ></DrugRepurposing>
       </v-col>
     </v-row>
@@ -170,7 +173,15 @@ export default {
     this.modus = -1
     this.blitz = false
   },
+  watch:{
+    modus: function(val){
+        if(val>-1){
+         this.focusTop()
+        }
+    }
 
+
+  },
 
   methods: {
     start: function (modus, blitz) {
@@ -193,6 +204,9 @@ export default {
       this.modus = 2
       setTimeout(function(){this.$refs.drugTargeting.setSeeds(seeds,type)}.bind(this),500)
 
+    },
+    focusTop: function(){
+      this.$emit("focusEvent")
     }
   },
 

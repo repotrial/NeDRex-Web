@@ -360,7 +360,6 @@ public class WebGraphService {
 
                 LinkedList<Integer> edgeIds = Graphs.getEdgesfromNodes(nodeI[0], nodeJ[0]);
                 if (edgeIds == null) {
-                    log.debug("Edge for " + nodeI[0] + " & " + nodeJ[0] + " do not exist!");
                     continue;
                 }
                 edgeIds.forEach(edgeId -> {
@@ -400,6 +399,7 @@ public class WebGraphService {
                 });
             }
         }
+        //TODO update filter if only connected are used
         if (request.connectedOnly) {
             nodeIds.forEach((type, nodeMap) -> nodeMap.entrySet().stream().filter(e -> e.getValue().hasEdge()).forEach(e -> finalG.addNode(type, e.getValue())));
         } else
@@ -1201,6 +1201,16 @@ public class WebGraphService {
                     id = type.equals("gene") ? "entrez." : "uniprot." + id;
                 ids.add(nodeController.getId(type, id));
             } catch (NullPointerException ignore) {
+                try {
+                    if (id.contains("\t")) {
+                        id = StringUtils.split(id, "\t").get(0);
+                        ids.add(nodeController.getId(type, id));
+                    } else {
+                        id = StringUtils.split(id, ",").get(0);
+                        ids.add(nodeController.getId(type, id));
+                    }
+                } catch (NullPointerException ignore2) {
+                }
             }
         });
         nodeController.findByIds(type, ids).forEach(o -> {
@@ -1274,7 +1284,7 @@ public class WebGraphService {
             extendGraph(g, request.path.get(p).get("label"), endDefined, false);
         }
 
-        if (!(boolean)request.params.get("general").get("keep")) {
+        if (!(boolean) request.params.get("general").get("keep")) {
             String edgeName = request.params.get("general").get("name").toString();
             for (int p = 0; p < request.path.size() - 1; p++) {
                 int edge2 = Graphs.getEdge(request.path.get(p + 1).get("label"));
