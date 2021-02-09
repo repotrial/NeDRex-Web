@@ -36,7 +36,7 @@ export default {
             "value": 500,
             "density": {
               "enable": true,
-              "value_area": 700
+              "value_area": 1000
             }
           },
           "color": {
@@ -49,11 +49,11 @@ export default {
               "color": "#000000"
             },
             "polygon": {
-              "nb_sides": 5
+              "nb_sides": 4
             },
           },
           "opacity": {
-            "value": 0.5,
+            "value": 1,
             "random": true,
             "anim": {
               "enable": false,
@@ -67,14 +67,14 @@ export default {
             "random": true,
             "anim": {
               "enable": false,
-              "speed": 40,
+              "speed": 30,
               "size_min": 0.3,
               "sync": false
             }
           },
           "line_linked": {
             "enable": true,
-            "distance": 250,
+            "distance": 200,
             "color": "#000e30",
             "opacity": 0.4,
             "width": 1
@@ -98,14 +98,14 @@ export default {
           "detect_on": "canvas",
           "events": {
             "onhover": {
-              "enable": true,
+              "enable": false,
               "mode": "grab"
             },
             "onclick": {
-              "enable": true,
+              "enable": false,
               "mode": "push"
             },
-            "resize": true
+            "resize": false
           },
           "modes": {
             "grab": {
@@ -133,7 +133,7 @@ export default {
             }
           }
         },
-        "retina_detect": true
+        "retina_detect": false
       })
     }
   }
