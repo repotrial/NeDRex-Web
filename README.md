@@ -1,8 +1,8 @@
 # NeDRex-Web / RepoScape-Web
 Is an interactive and responsive web interface for the heterogenous, molecularbiological network database RepoTrialDB.
 
-## Exmaple Data
-The folder for example cases and according figures can be found [here](/material) 
+## Material
+The folder for data of example cases and according figures can be found [here](/material) 
 
 
 ## Deployement with Docker
