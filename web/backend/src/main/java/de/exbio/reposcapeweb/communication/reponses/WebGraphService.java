@@ -87,7 +87,7 @@ public class WebGraphService {
         });
         graph.getNodes().forEach(n -> graph.setWeight("nodes", n.group, nodeController.getNodeCount(n.group)));
 
-        DBConfig.getConfig().edges.forEach(edge -> graph.addEdge(new WebEdge(Graphs.getNode(edge.source), Graphs.getNode(edge.target)).setLabel(edge.mapsTo).setTitle(edge.mapsTo)));
+        DBConfig.getConfig().edges.forEach(edge -> graph.addEdge(new WebEdge(Graphs.getNode(edge.source), Graphs.getNode(edge.target)).setLabel(edge.mapsTo).setTitle(edge.mapsTo).setDashes(!edge.original).setArrowHead(edge.directed)));
         graph.getEdges().forEach(e -> graph.setWeight("edges", e.label, edgeController.getEdgeCount(e.label)));
 
         graph.setColorMap(this.getColorMap(null));

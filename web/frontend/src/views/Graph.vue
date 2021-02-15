@@ -377,7 +377,6 @@ export default {
               // hidden: false,
               color: {
                 border: '#636EFA',
-
                 background: '#d6d9f8',
                 highlight: {border: '#636EFA', background: '#d6d9f8'}
               }
@@ -492,7 +491,7 @@ export default {
       this.nodeSet.update(updates)
     },
     setPhysics: function (boolean) {
-      this.physicsOn = boolean;
+      this.physicsOn = false;
       this.options.physics.enabled = this.physicsOn
       if (this.isVisualized()) {
         this.saveLayout()

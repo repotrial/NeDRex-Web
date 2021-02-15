@@ -769,7 +769,7 @@ export default {
           case "doid":
             return "https://disease-ontology.org/term/DOID%3" + split[1]
           case "snomedct":
-            return "https://snomedbrowser.com/Codes/Details/" + split[1]
+            return "http://snomed.info/id/" + split[1]
           case "omim":
             return "https://www.omim.org/entry/" + split[1]
           case "orpha":
@@ -785,7 +785,7 @@ export default {
       }
 
       if (item === "ICD-10")
-        return "https://icd.who.int/browse10/2016/en#/" + value
+        return "https://icd.who.int/browse10/2019/en#/" + value
       if (item === "Symbol")
         return "https://www.genecards.org/cgi-bin/carddisp.pl?gene=" + value
       if (item === "Genomic Location")
@@ -852,7 +852,7 @@ export default {
           case "doid":
             return "#073399"
           case "snomedct":
-            return "#234979"
+            return "#00a9e0"
           case "omim":
             return "#333333"
           case "orpha":
