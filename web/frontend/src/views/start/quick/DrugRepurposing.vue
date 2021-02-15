@@ -790,7 +790,7 @@ export default {
           return response.data
       }).then(data => {
         let text = "";
-        data.forEach(id => text += id + "\n")
+        Object.values(data).forEach(id => text += id + "\n")
         this.download(["gene", "protein"][this.seedTypeId] + "_seeds.tsv", text)
       }).catch(console.log)
     },
