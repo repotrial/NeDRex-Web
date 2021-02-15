@@ -1,4 +1,4 @@
-#Example Overview
+# Example Overview
 Here some example cases alongside data that is produced along the exploration is presented. In addition images are provided.
 A list explaining the content follows!
 
@@ -18,7 +18,7 @@ This example shows the creation of a gene-induced disorder-disorder network. A l
 - [GiDD Network Small](induced_subnetworks/GiDD-network_small.png): A small image of the GiDD layout.
 
 ## Drug Repurposing
-
+The goal of the drug repurposing examples is to show different approaches to use our tool to identify alternative targets for drugs.
 
 ### Drug-Target Investigation
 In this example, the the genes (proteins) that are targeted by Aspirin are taken to explore the disease associations there are for these Aspirin genes.
@@ -29,8 +29,21 @@ In this example, the the genes (proteins) that are targeted by Aspirin are taken
 
 
 ### Hypothesis-driven Drug Repurposing
+This approach uses two disorders ALCL (anaplastic large-cell lymphoma) and NSCLC (non-small-cell lung carcinoma) derives for each a +50 disease module with DIAMOnD, creates the module intersection and uses the intersection to identify drug targets for both disorders.
 
-- [ALCL vs NSCLC](drug_repurposing/hypothesis_driven_drug_repurposing/alcl_vs_nsclc.png)
+- [ALCL vs NSCLC](drug_repurposing/hypothesis_driven_drug_repurposing/alcl_vs_nsclc.png): The example setup as an image
+- [ALCL Seeds](drug_repurposing/hypothesis_driven_drug_repurposing/ALCL_seeds.tsv): Seed list of ALCL
+- [ALCL Module List](drug_repurposing/hypothesis_driven_drug_repurposing/ALCL_module.tsv): Module list of ALCL
+- [ALCL Module Graph](drug_repurposing/hypothesis_driven_drug_repurposing/ALCL_module.graphml): Module as graphml of ALCL
+- [NSCLC Seeds](drug_repurposing/hypothesis_driven_drug_repurposing/NSCLC_seeds.tsv): Seed list of NSCLC
+- [NSCLC Module List](drug_repurposing/hypothesis_driven_drug_repurposing/NSCLC_module.tsv): Module list of NSCLC
+- [NSCLC Module Graph](drug_repurposing/hypothesis_driven_drug_repurposing/NSCLC_module.graphml): Module as graphml of NSCLC
+- [ALCL vs NSCLC Intersection List](drug_repurposing/hypothesis_driven_drug_repurposing/ALCL-NSCLC_modules_intersecting.tsv): A list with the module intersection of ALCL and NSCLC
+- [ALCL vs NSCLC Intersection Drugs](drug_repurposing/hypothesis_driven_drug_repurposing/ALCL-NSCLC_modules_intersecting-drugs.tsv): The ranked drugs for the module intersection
+- [ALCL vs NSCLC Intersection Graph](drug_repurposing/hypothesis_driven_drug_repurposing/ALCL-NSCLC_modules_intersecting-drugs.graphml): The graphml file for the graph of the ranked drugs for the module intesection
+
+A list of Screenshots depicting the exact example step-by-step.
+
 - [ALCL vs NSCLC-1](drug_repurposing/hypothesis_driven_drug_repurposing/alcl_vs_nsclc-1.png)
 - [ALCL vs NSCLC-2](drug_repurposing/hypothesis_driven_drug_repurposing/alcl_vs_nsclc-2.png)
 - [ALCL vs NSCLC-3](drug_repurposing/hypothesis_driven_drug_repurposing/alcl_vs_nsclc-3.png)
