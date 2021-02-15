@@ -70,13 +70,13 @@ Blitz Module is used to create a disease module for AD, the protein interactions
 #### Blitz Drug Repurposing
 The Blitz Drug Repurposing (Blitz Drug Module + Blitz Drug Prioritization) is applied on AD.
 
-- [Alzheimer Drugs List](drug_repurposing/explorative_drug_repurposing/Blitz_Repurposing-Alzheimer.tsv): The list of drugs found by Blitz Repurposing for AD.
+- [Alzheimer Drugs List](drug_repurposing/explorative_drug_repurposing/Blitz_Repurposing-Alzheimer_drugs.tsv): The list of drugs found by Blitz Repurposing for AD.
 - [Alzheimer Drugs Graph](drug_repurposing/explorative_drug_repurposing/Blitz_Repurposing-Alzheimer.graphml): The graphml for the created network of Blitz Repurposing for AD.
 
 #### Quick Drug Repurposing
 A Closeness Centrality parameter (Only approved) was disabled.
 
-- [Alzheimer Drugs List](drug_repurposing/explorative_drug_repurposing/Quick_Repurposing-Alzheimer.tsv): The list of drugs found by Quick Repurposing for AD.
+- [Alzheimer Drugs List](drug_repurposing/explorative_drug_repurposing/Quick_Repurposing-Alzheimer_drugs.tsv): The list of drugs found by Quick Repurposing for AD.
 - [Alzheimer Drugs Graph](drug_repurposing/explorative_drug_repurposing/Quick_Repurposing-Alzheimer.graphml): The graphml for the created network of Quick Repurposing for AD.
 
 
