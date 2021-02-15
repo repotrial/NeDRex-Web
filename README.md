@@ -2,7 +2,7 @@
 Is an interactive and responsive web interface for the heterogenous, molecularbiological network database RepoTrialDB.
 
 ## Exmaple Data
-The folder for example cases and according figures can be found [here](/example_data) 
+The folder for example cases and according figures can be found [here](/material) 
 
 
 ## Deployement with Docker
@@ -43,7 +43,7 @@ npm run dev
 #### Backend
 Use maven to compile project and start application, make sure you use >=java14.
 ```
-cd $gitroot/web/backend 
+cd $gitroot/web/backend
 mvn package
 java -Xmx4g -jar target/reposcapeweb-backend-0.0.1-SNAPSHOT-spring-boot.jar
 ```
@@ -57,6 +57,3 @@ or
 cd $gitroot/web/frontend
 npm run dev
 ```
-
-
-
