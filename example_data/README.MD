@@ -2,24 +2,30 @@
 Here some example cases alongside data that is produced along the exploration is presented. In addition images are provided.
 A list explaining the content follows!
 
-- [metagraph](metagraph.png): Image describing the node and edge types that are used
+- [Metagraph](metagraph.png): Image describing the node and edge types that are used
 - [Technologies](Technologies.png): Image containing a simplified view of the project setup
 - [Datamanagement](Datamanagement.png): Image containing a simplified view of data communication and processing in this project
 
 
 ## Induced Subnetworks
+This example shows the creation of a gene-induced disorder-disorder network. A list of disorder umbrella terms is taken to create a gene-disease network and from that a disease-disease network is derived by using shared genes as conneciton.
 
-- [GiDD-network](induced_subnetworks/GiDD-network.png)
-- [GiDD-network-small-genes](induced_subnetworks/GiDD-network_small-genes.png)
-- [GiDD-network-small](induced_subnetworks/GiDD-network_small.png)
-
+- [Disorder Umbrealla-names](induced_subnetworks/disorder_umbrellas.list): The umbrella term list used to create the disorder lists
+- [Disorder Names](induced_subnetworks/disorders.list): List of all disorders used for the GiDD
+- [GiDD Network](induced_subnetworks/GiDD.graphml): A graphml file for the GiDD
+- [GiDD](induced_subnetworks/GiDD-network.png): A high resolution image of the GiDD with colored disorder groups and labeled subgroups.
+- [G-D Network Small](induced_subnetworks/GiDD-network_small-genes.png): A small image of the gene-disorder layout based on the disorder list.
+- [GiDD Network Small](induced_subnetworks/GiDD-network_small.png): A small image of the GiDD layout.
 
 ## Drug Repurposing
 
 
 ### Drug-Target Investigation
+In this example, the the genes (proteins) that are targeted by Aspirin are taken to explore the disease associations there are for these Aspirin genes.
 
-- [Aspirin-module](drug_repurposing/drug-target_investigation/Aspirin-module.png)
+- [Aspirin Genes](drug_repurposing/drug-target_investigation/Aspirin-module.png): The list of genes Aspirin targets.
+- [Aspirin Disorders](drug_repurposing/drug-target_investigation/Aspirin-disorder.list): The list of disorders identified to be associated with genes that are targeted by Aspirin
+- [Aspirin Network](drug_repurposing/drug-target_investigation/Aspirin-targets.graphml): A graphml file containing the aspirin-gene-disorder network
 
 
 ### Hypothesis-driven Drug Repurposing
@@ -37,17 +43,23 @@ A list explaining the content follows!
 
 
 ## Page Explanation
+The following images are describing the different components in the different views of the web interface:
 
-- [Quick-start](page_explanation/Quick_start.png)
-- [Quick-seeds](page_explanation/Quick_seeds.png)
-- [Quick-algorithm](page_explanation/Quick_algorithm.png)
-- [Quick-results](page_explanation/Quick_results.png)
+### Quick Drug Repurposing
+- [Start](page_explanation/Quick_start.png)
+- [Seed Selection](page_explanation/Quick_seeds.png)
+- [Algorithm Configuration](page_explanation/Quick_algorithm.png)
+- [Result Page](page_explanation/Quick_results.png)
 
-- [Guided-nodes](page_explanation/Guided_nodes.png)
-- [Guided-paths](page_explanation/Guided_paths.png)
-- [Guided-result](page_explanation/Guided_result.png)
+### Guided Exploration
 
-- [Advanced-start](page_explanation/Advanced_start.png)
-- [Advanced-list](page_explanation/Advanced_list.png)
-- [Advanced-graph](page_explanation/Advanced_graph.png)
-- [Advanced-history](page_explanation/Advanced_history.png)
+- [Node Selection](page_explanation/Guided_nodes.png)
+- [Path Configuration](page_explanation/Guided_paths.png)
+- [Result Page](page_explanation/Guided_result.png)
+
+### Advanced Exploration
+
+- [Start](page_explanation/Advanced_start.png)
+- [List View](page_explanation/Advanced_list.png)
+- [Graph View](page_explanation/Advanced_graph.png)
+- [Graph History](page_explanation/Advanced_history.png)
