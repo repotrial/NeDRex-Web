@@ -53,6 +53,31 @@ A list of Screenshots depicting the exact example step-by-step.
 - [ALCL vs NSCLC-7](drug_repurposing/hypothesis_driven_drug_repurposing/alcl_vs_nsclc-7.png)
 - [ALCL vs NSCLC-8](drug_repurposing/hypothesis_driven_drug_repurposing/alcl_vs_nsclc-8.png)
 
+### Explorative Drug Repurposing
+In this example Alzheimer's Disease (AD) is taken as example to go through a exploratory process of trying to identify drugs for the given disorder. The methods grow more complex and sophisticated with each step:
+
+#### Guided Exploration
+The Guided Exploration is used to create a basic Alzheimer-protein-drug network.
+
+- [Alzheimer Drugs Graph](explorative_drug_repurposing/Guided-Alzheimer-drugs.graphml): The graphml file showing the first result of creating a Alzheimer-gene-drug network.
+
+#### Blitz Module Creation
+Blitz Module is used to create a disease module for AD, the protein interactions are used to create a new induced drug network.
+
+- [Alzheimer Module List](explorative_drug_repurposing/Blitz-Alzheimer-protein_module.tsv): The module created by the blitz module creation for AD
+- [Alzheimer Module Graph](explorative_drug_repurposing/Blitz-Alzheimer-protein_module_induced_drugs.graphml): The graphml file for the protein module induced Alzheimer-drug network
+
+#### Blitz Drug Repurposing
+The Blitz Drug Repurposing (Blitz Drug Module + Blitz Drug Prioritization) is applied on AD.
+
+- [Alzheimer Drugs List](explorative_drug_repurposing/Blitz_Repurposing-Alzheimer.tsv): The list of drugs found by Blitz Repurposing for AD.
+- [Alzheimer Drugs Graph](explorative_drug_repurposing/Blitz_Repurposing-Alzheimer.graphml): The graphml for the created network of Blitz Repurposing for AD.
+
+#### Quick Drug Repurposing
+A Closeness Centrality parameter (Only approved) was disabled.
+
+- [Alzheimer Drugs List](explorative_drug_repurposing/Quick_Repurposing-Alzheimer.tsv): The list of drugs found by Quick Repurposing for AD.
+- [Alzheimer Drugs Graph](explorative_drug_repurposing/Quick_Repurposing-Alzheimer.graphml): The graphml for the created network of Quick Repurposing for AD.
 
 
 ## Page Explanation
