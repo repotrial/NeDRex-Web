@@ -670,6 +670,7 @@ public class WebGraphService {
         HashMap<Integer, HashMap<Integer, Object>> edgeWeights = new HashMap<>();
         HashMap<Integer, HashMap<Integer, Object>> jaccardIndex = new HashMap<>();
         if (self) {
+            //TODO problems?
             targetNodeId = startNodeId;
             edgeMap1.forEach((middle, startNodes) ->
                     startNodes.forEach(targetNode ->
@@ -685,7 +686,7 @@ public class WebGraphService {
                                     if (!edgeWeights.containsKey(startNode) || !edgeWeights.get(startNode).containsKey(targetNode))
                                         edges.add(new Edge(startNode, targetNode));
                                     edgeWeights.get(startNode).put(targetNode, weight);
-                                    jaccardIndex.get(startNode).put(targetNode, StatUtils.calculateJaccardIndex(startNodes, startNodes));
+                                    jaccardIndex.get(startNode).put(targetNode, 1);
                                 }
                             })
 
@@ -693,11 +694,11 @@ public class WebGraphService {
                     )
             );
         } else {
-
             Pair<Integer, Integer> nodes2 = g.getNodesfromEdge(edge2);
             targetNodeId = nodes2.getFirst() == collapseNode ? nodes2.getSecond() : nodes2.getFirst();
             HashMap<Integer, HashSet<Integer>> edgeMap2 = prepareEdgeMap(g.getEdges().get(edge2), nodes2.first == collapseNode);
-
+            HashMap<Integer, HashSet<Integer>> jaccardSet1 = new HashMap<>();
+            HashMap<Integer, HashSet<Integer>> jaccardSet2 = new HashMap<>();
             edgeMap1.forEach((middle, startNodes) -> {
                 try {
                     HashSet<Integer> targetNodes = edgeMap2.get(middle);
@@ -705,30 +706,45 @@ public class WebGraphService {
                             startNodes.forEach(startNode -> {
                                 int weight = 1;
                                 if (!startNode.equals(targetNode)) {
-                                    if (edgeWeights.containsKey(startNode) && edgeWeights.get(startNode).containsKey(targetNode))
-                                        weight += (int) edgeWeights.get(startNode).get(targetNode);
-                                    if (!edgeWeights.containsKey(startNode)) {
-                                        edgeWeights.put(startNode, new HashMap<>());
-                                        jaccardIndex.put(startNode, new HashMap<>());
-                                    }
+                                    if (!jaccardSet1.containsKey(startNode))
+                                        jaccardSet1.put(startNode, new HashSet<>());
+                                    jaccardSet1.get(startNode).add(middle);
+                                    if (!jaccardSet2.containsKey(targetNode))
+                                        jaccardSet2.put(targetNode, new HashSet<>());
+                                    jaccardSet2.get(targetNode).add(middle);
+
                                     if (!edgeWeights.containsKey(startNode) || !edgeWeights.get(startNode).containsKey(targetNode))
                                         edges.add(new Edge(startNode, targetNode));
+
+                                    if (edgeWeights.containsKey(startNode) && edgeWeights.get(startNode).containsKey(targetNode))
+                                        weight += (int) edgeWeights.get(startNode).get(targetNode);
+
+                                    if (!edgeWeights.containsKey(startNode)) {
+                                        edgeWeights.put(startNode, new HashMap<>());
+                                    }
                                     edgeWeights.get(startNode).put(targetNode, weight);
-                                    jaccardIndex.get(startNode).put(targetNode, StatUtils.calculateJaccardIndex(startNodes, targetNodes));
+
                                 }
                             })
                     );
                 } catch (NullPointerException ignore) {
                 }
             });
+            edges.forEach(e->{
+                if (!jaccardIndex.containsKey(e.getId1()))
+                    jaccardIndex.put(e.getId1(), new HashMap<>());
+                jaccardIndex.get(e.getId1()).put(e.getId2(), StatUtils.calculateJaccardIndex(jaccardSet1.get(e.getId1()), jaccardSet2.get(e.getId2())));
+            });
+
+
             if (!keep)
                 g.getEdges().remove(edge2);
+
         }
         g.addCustomEdge(startNodeId, targetNodeId, name, edges);
         int eid = g.getEdge(name);
         g.addCustomEdgeAttribute(eid, "Weight", edgeWeights);
         g.addCustomAttributeType(eid, "Weight", "numeric");
-        //TODO working?
         g.addCustomEdgeAttribute(eid, "JaccardIndex", jaccardIndex);
         g.addCustomAttributeType(eid, "JaccardIndex", "numeric");
         if (!keep) {

@@ -537,12 +537,12 @@
             </v-col>
           </v-row>
         </v-card>
-        <v-btn
+        <v-btn style="margin-bottom: 10px"
           @click="makeStep(3,'back')"
         >
           Back
         </v-btn>
-        <v-btn text @click="makeStep(3,'cancel')">
+        <v-btn style="margin-bottom: 10px" text @click="makeStep(3,'cancel')">
           Restart
         </v-btn>
       </v-stepper-content>

@@ -1,5 +1,5 @@
 <template>
-  <v-app-bar app elevation="0" :dense="!prominent" :shrink-on-scroll="prominent"  color="white">
+  <v-app-bar app elevation="0" :dense="!prominent" :prominent="prominent"  color="white">
     <div id="particles-js"></div>
     <div id="title-div" style="position:fixed">
       <h1 id="title">NeDRex</h1>

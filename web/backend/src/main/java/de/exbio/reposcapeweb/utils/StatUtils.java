@@ -1,10 +1,11 @@
 package de.exbio.reposcapeweb.utils;
 
+import java.util.Collection;
 import java.util.HashSet;
 
 public class StatUtils {
 
-    public static double calculateJaccardIndex(HashSet set1, HashSet set2){
+    public static double calculateJaccardIndex(Collection set1, Collection set2){
         if(set1.size()==0 && set2.size()==0)
             return 1;
         HashSet<Object> all = new HashSet<>(set1);

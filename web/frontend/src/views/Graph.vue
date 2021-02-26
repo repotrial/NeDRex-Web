@@ -491,7 +491,7 @@ export default {
       this.nodeSet.update(updates)
     },
     setPhysics: function (boolean) {
-      this.physicsOn = false;
+      this.physicsOn = boolean;
       this.options.physics.enabled = this.physicsOn
       if (this.isVisualized()) {
         this.saveLayout()

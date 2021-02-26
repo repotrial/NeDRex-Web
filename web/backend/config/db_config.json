@@ -6,8 +6,8 @@
       "label": "Disorder",
       "sourceId": "omim",
       "colors": {
-        "main": "#EF553B",
-        "light": "#ecd0cb"
+        "main": "#b2248f",
+        "light": "#ff33cc"
       },
       "attributes": [
         {
@@ -86,8 +86,8 @@
       "label": "Drug",
       "sourceId": "drugbank",
       "colors": {
-        "main": "#00CC96",
-        "light": "#b4cdcc"
+        "main": "#8d619a",
+        "light": "#d6aae3"
       },
       "attributes": [
         {
@@ -261,8 +261,8 @@
       "label": "Gene",
       "sourceId": "entrez",
       "colors": {
-        "main": "#636EFA",
-        "light": "#d6d9f8"
+        "main": "#009393",
+        "light": "#00cccc"
       },
       "attributes": [
         {
@@ -375,8 +375,8 @@
       "label": "Pathway",
       "sourceId": "reactome",
       "colors": {
-        "main": "#fecb52",
-        "light": "#fae6c1"
+        "main": "#ab6722",
+        "light": "#ff9933"
       },
       "attributes": [
         {
@@ -437,8 +437,8 @@
       "label": "Protein",
       "sourceId": "uniprot",
       "colors": {
-        "main": "#19d3f3",
-        "light": "#bcdfe5"
+        "main": "#005d8f",
+        "light": "#0082c8"
       },
       "attributes": [
         {

@@ -57,5 +57,11 @@ public class Edge {
         return Objects.hash(id1, id2);
     }
 
-
+    @Override
+    public String toString() {
+        return "Edge{" +
+                "id1=" + id1 +
+                ", id2=" + id2 +
+                '}';
+    }
 }
