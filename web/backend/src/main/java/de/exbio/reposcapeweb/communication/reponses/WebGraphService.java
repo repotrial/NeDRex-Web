@@ -689,8 +689,6 @@ public class WebGraphService {
                                     jaccardIndex.get(startNode).put(targetNode, 1);
                                 }
                             })
-
-
                     )
             );
         } else {
@@ -723,7 +721,6 @@ public class WebGraphService {
                                         edgeWeights.put(startNode, new HashMap<>());
                                     }
                                     edgeWeights.get(startNode).put(targetNode, weight);
-
                                 }
                             })
                     );

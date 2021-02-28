@@ -1064,6 +1064,8 @@ export default {
       this.applySuggestion(val)
     },
     findNodeSuggestions: function (val) {
+      if(val!=null && val.length ===0)
+        val=null
       this.getNodeSuggestions(val, false)
     },
   },
@@ -1146,11 +1148,11 @@ export default {
     },
     getNodeSuggestions: function (val, timeouted) {
       if (!timeouted) {
-        this.sugQuery = val
         if (val == null || val.length < 2) {
           this.suggestions.data = []
           return
         }
+        this.sugQuery = val
         setTimeout(function () {
           this.getNodeSuggestions(val, true)
         }.bind(this), 500)
@@ -1293,8 +1295,6 @@ export default {
       }
       switch (operator) {
 
-        case "empty":
-          return value === undefined || value == null || value === ""
         case "=":
           return value == search
         case "!=":
@@ -1334,7 +1334,7 @@ export default {
           } else {
             out = ["equals"]
             if (!attr.id)
-              ["contains", "matches", "empty"].forEach(o => out.push(o))
+              ["contains", "matches"].forEach(o => out.push(o))
           }
         }
       })
@@ -1794,24 +1794,27 @@ export default {
     }
     ,
     deselectAll: function (type) {
-      let tab = (type === "nodes") ? this.nodeTab : this.edgeTab
       let data = {nodes: this.nodes, edges: this.edges}
-      let items = data[type][Object.keys(data[type])[tab]]
-      let isDistinct = this.isDistinctAttribute(type, this.filters[type].attribute.name)
-      if (isDistinct) {
-        this.distinctFilter(type, items, tab).forEach(item => {
-          item.selected = false
-        })
+      if (type === "all") {
+        Object.values(data).forEach(set=>Object.values(set).forEach(type=>type.forEach(n=>n.selected=false)))
       } else {
-        let filterActive = this.filters[type].attribute.name !== undefined && this.filters[type].attribute.name.length > 0 && this.filters[type].query !== null && this.filters[type].query.length > 0 && this.filters[type].attribute.operator !== undefined && this.filters[type].attribute.operator.length > 0
-        items.forEach(item => {
-          if (type === "nodes") {
-            if (!filterActive || (filterActive && this.filterNode(undefined, this.filters[type].query, item)))
+        let tab = (type === "nodes") ? this.nodeTab : this.edgeTab
+        let items = data[type][Object.keys(data[type])[tab]]
+        let isDistinct = this.isDistinctAttribute(type, this.filters[type].attribute.name)
+        if (isDistinct) {
+          this.distinctFilter(type, items, tab).forEach(item => {
+            item.selected = false
+          })
+        } else {
+          let filterActive = this.filters[type].attribute.name !== undefined && this.filters[type].attribute.name.length > 0 && this.filters[type].query !== null && this.filters[type].query.length > 0 && this.filters[type].attribute.operator !== undefined && this.filters[type].attribute.operator.length > 0
+          items.forEach(item => {
+            if (type === "nodes") {
+              if (!filterActive || (filterActive && this.filterNode(undefined, this.filters[type].query, item)))
+                item.selected = false;
+            } else if (!filterActive || (filterActive && this.filterEdge(undefined, this.filters[type].query, item)))
               item.selected = false;
-          } else if (!filterActive || (filterActive && this.filterEdge(undefined, this.filters[type].query, item)))
-            item.selected = false;
-
-        })
+          })
+        }
       }
       this.reloadCountMap()
       this.$nextTick().then(() => {

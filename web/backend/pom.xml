@@ -13,7 +13,7 @@
     <artifactId>reposcapeweb-backend</artifactId>
     <name>reposcapeweb-backend</name>
     <description>Backend for the RepoScape-Web Application</description>
-    <packaging>jar</packaging>
+    <packaging>war</packaging>
 
 
     <properties>
@@ -22,6 +22,7 @@
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <start-class>de.exbio.reposcapeweb.ReposcapewebApplication</start-class>
     </properties>
 
     <dependencies>
@@ -44,6 +45,11 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-tomcat</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>
@@ -92,23 +98,24 @@
         </plugins>
     </build-->
     <build>
+        <finalName>${project.artifactId}</finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>${springboot.version}</version>
-                <executions>
-                    <execution>
-                        <configuration>
-                            <classifier>spring-boot</classifier>
-                            <mainClass>de.exbio.reposcapeweb.ReposcapewebApplication
-                            </mainClass>
-                        </configuration>
-                        <goals>
-                            <goal>repackage</goal>
-                        </goals>
-                    </execution>
-                </executions>
+<!--                <executions>-->
+<!--                    <execution>-->
+<!--                        <configuration>-->
+<!--                            <classifier>spring-boot</classifier>-->
+<!--                            <mainClass>de.exbio.reposcapeweb.ReposcapewebApplication-->
+<!--                            </mainClass>-->
+<!--                        </configuration>-->
+<!--                        <goals>-->
+<!--                            <goal>repackage</goal>-->
+<!--                        </goals>-->
+<!--                    </execution>-->
+<!--                </executions>-->
             </plugin>
             <!--            <plugin>-->
             <!--                <groupId>org.apache.maven.plugins</groupId>-->

@@ -42,33 +42,27 @@ import java.util.stream.Collectors;
  *
  * @author Andreas Maier
  */
-@Controller
+@RestController
 @RequestMapping(value = "/api")
 public class RequestController {
 
     private final Logger log = LoggerFactory.getLogger(RequestController.class);
 
-    private final DrugService drugService;
     private final ObjectMapper objectMapper;
     private final WebGraphService webGraphService;
-    private final EdgeController edgeController;
     private final NodeController nodeController;
     private final HistoryController historyController;
     private final JobController jobController;
-    private final SimpMessagingTemplate socketTemplate;
     private final DbCommunicationService dbCommunicationService;
     private final UpdateService updateService;
 
     @Autowired
-    public RequestController(UpdateService updateService, DbCommunicationService dbCommunicationService, SimpMessagingTemplate simpMessagingTemplate, DrugService drugService, ObjectMapper objectMapper, WebGraphService webGraphService, EdgeController edgeController, NodeController nodeController, HistoryController historyController, JobController jobController) {
-        this.drugService = drugService;
+    public RequestController(UpdateService updateService, DbCommunicationService dbCommunicationService,ObjectMapper objectMapper, WebGraphService webGraphService, NodeController nodeController, HistoryController historyController, JobController jobController) {
         this.objectMapper = objectMapper;
         this.webGraphService = webGraphService;
-        this.edgeController = edgeController;
         this.nodeController = nodeController;
         this.historyController = historyController;
         this.jobController = jobController;
-        this.socketTemplate = simpMessagingTemplate;
         this.dbCommunicationService = dbCommunicationService;
         this.updateService = updateService;
     }

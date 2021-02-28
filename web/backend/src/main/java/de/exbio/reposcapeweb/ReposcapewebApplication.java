@@ -1,12 +1,9 @@
 package de.exbio.reposcapeweb;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.exbio.reposcapeweb.communication.cache.Graphs;
 import de.exbio.reposcapeweb.communication.jobs.JobController;
 import de.exbio.reposcapeweb.communication.reponses.WebGraphService;
 import de.exbio.reposcapeweb.db.DbCommunicationService;
-import de.exbio.reposcapeweb.db.entities.nodes.Disorder;
-import de.exbio.reposcapeweb.db.entities.nodes.Drug;
 import de.exbio.reposcapeweb.db.io.ImportService;
 import de.exbio.reposcapeweb.db.services.controller.EdgeController;
 import de.exbio.reposcapeweb.db.services.controller.NodeController;
@@ -15,23 +12,19 @@ import de.exbio.reposcapeweb.db.services.nodes.DisorderService;
 import de.exbio.reposcapeweb.db.updates.UpdateService;
 import de.exbio.reposcapeweb.filter.FilterService;
 import de.exbio.reposcapeweb.tools.ToolService;
-import de.exbio.reposcapeweb.utils.WriterUtils;
+import org.springframework.boot.autoconfigure.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.env.Environment;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.IOException;
-import java.util.concurrent.atomic.AtomicReference;
-
 @SpringBootApplication
-public class ReposcapewebApplication {
+public class ReposcapewebApplication extends SpringBootServletInitializer {
 
     private Logger log = LoggerFactory.getLogger(ReposcapewebApplication.class);
 
@@ -39,29 +32,36 @@ public class ReposcapewebApplication {
         SpringApplication.run(ReposcapewebApplication.class, args);
     }
 
-    private final UpdateService updateService;
-    private final Environment env;
-    private final ImportService importService;
-    private final ToolService toolService;
-    private final JobController jobController;
-    private final EdgeController edgeController;
-    private final NodeController nodeController;
-    private final ProteinInteractsWithProteinService proteinInteractsWithProteinService;
-    private final DbCommunicationService dbService;
-
     @Autowired
-    public ReposcapewebApplication(DbCommunicationService dbService, ProteinInteractsWithProteinService proteinInteractsWithProteinService, JobController jobController, NodeController nodeController, ObjectMapper objectMapper, EdgeController edgeController, DisorderService disorderService, UpdateService updateService, Environment environment, ImportService importService, FilterService filterService, ToolService toolService, WebGraphService graphService) {
-        this.updateService = updateService;
-        this.importService = importService;
-        this.env = environment;
-        this.toolService = toolService;
-        this.jobController = jobController;
-        this.edgeController = edgeController;
-        this.nodeController = nodeController;
-        this.proteinInteractsWithProteinService = proteinInteractsWithProteinService;
-        this.dbService = dbService;
+    private UpdateService updateService;
+    @Autowired
+    private Environment env;
+    @Autowired
+    private ImportService importService;
+    @Autowired
+    private ToolService toolService;
+    @Autowired
+    private JobController jobController;
+    @Autowired
+    private EdgeController edgeController;
+    @Autowired
+    private NodeController nodeController;
+    @Autowired
+    private DbCommunicationService dbService;
 
-    }
+//    @Autowired
+//    public ReposcapewebApplication(DbCommunicationService dbService, ProteinInteractsWithProteinService proteinInteractsWithProteinService, JobController jobController, NodeController nodeController, ObjectMapper objectMapper, EdgeController edgeController, DisorderService disorderService, UpdateService updateService, Environment environment, ImportService importService, FilterService filterService, ToolService toolService, WebGraphService graphService) {
+//        this.updateService = updateService;
+//        this.importService = importService;
+//        this.env = environment;
+//        this.toolService = toolService;
+//        this.jobController = jobController;
+//        this.edgeController = edgeController;
+//        this.nodeController = nodeController;
+//        this.proteinInteractsWithProteinService = proteinInteractsWithProteinService;
+//        this.dbService = dbService;
+//
+//    }
 
     @EventListener(ApplicationReadyEvent.class)
     public void postConstruct() {
