@@ -11,7 +11,7 @@
 
     <version>0.0.1-SNAPSHOT</version>
     <artifactId>reposcapeweb-backend</artifactId>
-    <name>reposcapeweb-backend</name>
+    <name>nedrexweb-backend</name>
     <description>Backend for the RepoScape-Web Application</description>
     <packaging>war</packaging>
 
