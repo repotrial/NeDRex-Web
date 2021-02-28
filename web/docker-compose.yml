@@ -27,6 +27,9 @@ services:
       - 8090
     ports:
       - "8090:8090"
+    environment:
+      - CONTEXT_PATH=/backend
+      - PORT=8090
     restart: on-failure
 #    entrypoint: "tail -f /dev/null"
 #    entrypoint: ["./wait-for-it.sh","nedrex-db:3306","-t","30", "--","java","-Xmx4g","-jar", "app.jar","--spring.profiles.active=prod","--spring.config.location=./config/server/"]

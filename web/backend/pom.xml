@@ -10,7 +10,7 @@
     </parent>
 
     <version>0.0.1-SNAPSHOT</version>
-    <artifactId>reposcapeweb-backend</artifactId>
+    <artifactId>nedrexweb-backend</artifactId>
     <name>nedrexweb-backend</name>
     <description>Backend for the RepoScape-Web Application</description>
     <packaging>war</packaging>
