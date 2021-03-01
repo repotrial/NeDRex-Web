@@ -39,8 +39,8 @@ RUN rm nedrexweb-backend.war
 
 #RUN apt update
 #RUN apt install less
-RUN mkdir conf/Catalina conf/Catalina/localhost
-RUN echo '<Context path="/backend" docBase="../nedrexweb-backend"/>' > conf/Catalina/localhost/nedrexweb-backend.xml
+RUN mkdir -p conf/Catalina/localhost
+RUN echo '<Context path="/backend" docBase="../nedrexweb-backend"/>' > conf/Catalina/localhost/backend.xml
 RUN echo 'spring.profiles.active=prod' >> conf/catalina.properties
 
 COPY scripts/tomcatenv.sh bin/setenv.sh
@@ -57,4 +57,4 @@ RUN rm -rf webapps/*
 
 #CMD "tail -f scripts/wait-for-it.sh"
 #"./wait-for-it.sh","nedrex-db:3306","-t","30", "--","java","-Xmx4g","-jar", "app.jar","--spring.profiles.active=prod","--spring.config.location=./config/server/"
-ENTRYPOINT /usr/app/scripts/set-context.sh conf/Catalina/localhost/nedrexweb-backend.xml ; /usr/app/scripts/set-server.sh conf/server.xml ; ../wait-for-it.sh nedrex-db:3306 -t 30 -- bin/catalina.sh run
+ENTRYPOINT /usr/app/scripts/set-context.sh conf/Catalina/localhost/backend.xml ; /usr/app/scripts/set-server.sh conf/server.xml ; ../wait-for-it.sh nedrex-db:3306 -t 30 -- bin/catalina.sh run
