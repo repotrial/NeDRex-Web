@@ -291,6 +291,7 @@
 
 <script>
 import Utils from "../scripts/Utils";
+import * as CONFIG from "../Config"
 
 export default {
   name: "History.vue",
@@ -517,9 +518,7 @@ export default {
 
 
     getThumbnail: function (graph_id) {
-      let url = "/backend/api/getThumbnailPath?gid=" + graph_id
-
-      return url
+      return CONFIG.HOST_URL+"/backend/api/getThumbnailPath?gid=" + graph_id
     },
 
     // thumbnailExists: function (graph_id) {
@@ -535,7 +534,7 @@ export default {
     //   }
     // },
     downloadJob: function (jobid) {
-      window.open('/backend/api/downloadJobResult?jid=' + jobid)
+      window.open(CONFIG.HOST_URL+'/backend/api/downloadJobResult?jid=' + jobid)
     },
 
     reverseList: function () {

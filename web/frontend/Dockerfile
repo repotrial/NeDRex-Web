@@ -1,47 +1,17 @@
-FROM node:alpine
+FROM node:latest as build-stage
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY ./ .
 
+ARG configuration=prod
 
-WORKDIR /usr/src/app
+RUN npm run build
 
-COPY package.json .
+FROM nginx as production-stage
+RUN mkdir /app
+COPY --from=build-stage /app/dist /app
+COPY nginx-nedrex.conf /etc/nginx/nginx.conf
 
-#RUN apt-get update
-#RUN apt-get -y install g++ build-essential
+#TODO need to fix websocket connection (just use env var for ws in connection script?)
 
-RUN apk add --no-cache --virtual .gyp \
-      python \
-      make \
-      g++ \
-      && npm install
-
-EXPOSE 8080
-
-COPY . .
-
-CMD [ "npm", "run","prod" ]
-
-#FROM tiangolo/node-frontend:10 as build-stage
-#
-#WORKDIR /app
-#COPY package*.json /app/
-#
-#RUN npm install
-#
-#
-#COPY ./ /app/
-#
-#ARG configuration=prod
-#
-#RUN npm run build
-#
-#FROM nginx:1.15
-#
-#COPY ./dist/ /usr/share/nginx/html
-#
-#
-#COPY --from=build-stage /nginx.conf /etc/nginx/conf.d/default.conf
-#
-##TODO nginx-config
-#COPY ./nginx-nedrex.conf /etc/nginx/extra-conf.d/
-#
-#EXPOSE 8080

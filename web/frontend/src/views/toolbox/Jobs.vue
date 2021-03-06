@@ -104,6 +104,7 @@
 
 <script>
 import Utils from "../../scripts/Utils";
+import * as CONFIG from "../../Config"
 
 export default {
   name: "Jobs",
@@ -159,7 +160,7 @@ export default {
       // this.$refs.jobs.$forceUpdate()
     },
     downloadJob: function (job) {
-      window.open('/backend/api/downloadJobResult?jid=' + job.jid)
+      window.open(CONFIG.HOST_URL+'/backend/api/downloadJobResult?jid=' + job.jid)
     },
 
 

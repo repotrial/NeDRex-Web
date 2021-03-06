@@ -1,45 +1,64 @@
-FROM ubuntu
-#
-WORKDIR /usr/app
-#
-RUN apt update --fix-missing
-ENV TZ=Europe/Berlin
-RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
-RUN apt install -y wget \
-                   pkg-config \
-                   diffutils \
-                   unzip \
-                   curl \
-                   gnupg2 \
-                   libboost-all-dev \
-                   libgmp-dev \
-                   libcgal-dev \
-                   libcairomm-1.0-dev \
-                   python3-cairo-dev \
-                   libsparsehash-dev \
-                   python3 \
-                   python3-pip
+FROM node:latest as build-stage
+WORKDIR /app
+COPY frontend/package*.json ./
+RUN npm install
+COPY frontend/ .
 
+ARG configuration=prod
+
+RUN npm run build
+
+FROM andimajore/nedrex_repo:server_base as production-stage
 
 ENV PYTHONPATH=$PYTHONPATH:/usr/local/lib/python3.8/dist-packages/
 ENV PYTHON=/usr/bin/python3
-RUN pip3 install pipreqs numpy
-##
-RUN wget https://download.java.net/java/GA/jdk15.0.1/51f4f36ad4ef43e39d0dfdbaf6549e32/9/GPL/openjdk-15.0.1_linux-x64_bin.tar.gz
-RUN tar -xzf openjdk-15.0.1_linux-x64_bin.tar.gz
-RUN rm openjdk-15.0.1_linux-x64_bin.tar.gz
 ENV JAVA_HOME=/usr/app/jdk-15.0.1
 ENV PATH=$PATH:$JAVA_HOME/bin
-##
-##
-RUN mkdir graph_tools
-WORKDIR /usr/app/scripts/graph_tools
-RUN wget https://downloads.skewed.de/graph-tool/graph-tool-2.35.tar.bz2
-RUN tar -xf graph-tool-2.35.tar.bz2
-WORKDIR /usr/app/scripts/graph_tools/graph-tool-2.35
-#
-RUN ./configure
-RUN make
-RUN make install
+
+RUN mkdir scripts cache
 WORKDIR /usr/app/scripts
-RUN rm -rf graph_tools
+COPY backend/scripts* .
+
+RUN pipreqs ./
+RUN cat requirements.txt | grep -v "graph_tool" > reqs.txt
+RUN pip3 install -r reqs.txt
+RUN pip3 uninstall -y networkx
+RUN pip3 install networkx==2.3
+
+WORKDIR /usr/app
+
+COPY backend/scripts/wait-for-it.sh wait-for-it.sh
+
+RUN wget https://ftp-stud.hs-esslingen.de/pub/Mirrors/ftp.apache.org/dist/tomcat/tomcat-8/v8.5.63/bin/apache-tomcat-8.5.63.tar.gz
+RUN tar -xzf apache-tomcat-8.5.63.tar.gz
+RUN rm apache-tomcat-8.5.63.tar.gz
+RUN mv apache-tomcat-8.5.63 apache-tomcat
+
+COPY backend/config/db_config.json config/db/
+COPY backend/src/main/resources/application-prod.properties config/server/
+RUN mkdir cache
+
+WORKDIR apache-tomcat
+
+COPY backend/target/nedrexweb-backend.war ./
+RUN mkdir nedrexweb-backend
+WORKDIR nedrexweb-backend
+RUN unzip ../nedrexweb-backend.war
+WORKDIR ../
+RUN rm nedrexweb-backend.war
+
+RUN mkdir nedrexweb-frontend
+COPY --from=build-stage /app/dist nedrexweb-frontend/
+
+RUN mkdir -p conf/Catalina/localhost
+
+RUN echo '<Context path="/backend" docBase="../nedrexweb-backend"/>' > conf/Catalina/localhost/backend.xml
+RUN echo '<Context path="/nedrex" docBase="../nedrexweb-frontend"/>' > conf/Catalina/localhost/nedrex.xml
+RUN echo 'spring.profiles.active=prod' >> conf/catalina.properties
+
+COPY backend/scripts/tomcatenv.sh bin/setenv.sh
+
+RUN rm -rf webapps/*
+
+
+ENTRYPOINT /usr/app/scripts/set-context.sh conf/Catalina/localhost/backend.xml ; /usr/app/scripts/set-server.sh conf/server.xml ; ../wait-for-it.sh nedrex-db:3306 -t 30 -- bin/catalina.sh run

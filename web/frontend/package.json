@@ -1,14 +1,15 @@
 {
-  "name": "NeDRex",
+  "name": "nedrex",
   "description": "A Vue Frontend for Exploration of the RepoTrial-Database",
   "version": "1.0.0",
   "author": "Andreas Maier",
   "license": "MIT",
   "private": true,
+  "homepage": "",
   "scripts": {
-    "dev": "cross-env NODE_ENV=development webpack-dev-server --open --hot",
-    "prod": "cross-env NODE_ENV=production webpack-dev-server --host 0.0.0.0 --disable-host-check",
-    "build": "cross-env NODE_ENV=production webpack --progress --hide-modules"
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "lint": "vue-cli-service lint"
   },
   "dependencies": {
     "@babel/polyfill": "^7.11.5",
@@ -16,6 +17,7 @@
     "@fortawesome/free-solid-svg-icons": "^5.14.0",
     "@fortawesome/vue-fontawesome": "^2.0.0",
     "@stomp/stompjs": "^6.0.0",
+    "@vue/cli-service": "^4.5.11",
     "axios": "^0.21.1",
     "babel-polyfill": "^6.26.0",
     "file-saver": "^2.0.5",
@@ -31,11 +33,6 @@
     "vuetify": "^2.3.10",
     "vuex": "^3.5.1"
   },
-  "browserslist": [
-    "> 1%",
-    "last 2 versions",
-    "not ie <= 8"
-  ],
   "devDependencies": {
     "@babel/preset-env": "^7.11.5",
     "@fortawesome/fontawesome-free": "^5.14.0",

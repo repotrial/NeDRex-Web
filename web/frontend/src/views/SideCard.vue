@@ -557,6 +557,7 @@ import Algorithms from "./toolbox/Algorithms.vue"
 import Jobs from "./toolbox/Jobs"
 // import Legend from "./toolbox/Legend"
 import Selection from "./toolbox/Selection";
+import * as CONFIG from "../Config"
 
 export default {
   props: {
@@ -1064,7 +1065,7 @@ export default {
       Utils.formatTime(timestamp)
     },
     requestGraphDownload: function () {
-      window.open('/backend/api/downloadGraph?gid=' + this.gid)
+      window.open(CONFIG.HOST_URL+'/backend/api/downloadGraph?gid=' + this.gid)
     }
   }
   ,

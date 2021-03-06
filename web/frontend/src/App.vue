@@ -539,7 +539,7 @@ export default {
       } else {
         this.options.graph.noPhysics = sum > 50000
         this.gid = info.id
-        let tab = tab !== undefined ? tab : "list"
+        let tab = this.tab !== undefined ? this.tab : "list"
         this.$http.get("/archiveHistory?uid=" + this.$cookies.get("uid") + "&gid=" + info.id).then(() => {
           this.$router.push({path: '/' + info.id + "/" + tab})
           this.$refs.graph.reload()

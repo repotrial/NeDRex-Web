@@ -680,6 +680,7 @@
 <script>
 import Utils from "../../../scripts/Utils";
 import Graph from "../../Graph";
+import * as CONFIG from "../../../Config"
 
 export default {
   name: "ModuleIdentification",
@@ -1054,7 +1055,7 @@ export default {
       }).catch(console.log)
     },
     downloadFullResultList: function () {
-      window.open('/backend/api/downloadJobResult?jid=' + this.currentJid)
+      window.open(CONFIG.HOST_URL+'/backend/api/downloadJobResult?jid=' + this.currentJid)
     }
     ,
     downloadResultList: function () {

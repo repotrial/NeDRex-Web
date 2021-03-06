@@ -878,6 +878,7 @@
 <script>
 import Utils from "../../../scripts/Utils";
 import Graph from "../../Graph";
+import * as CONFIG from "../../../Config"
 
 export default {
   name: "CombinedRepurposing",
@@ -1412,7 +1413,7 @@ export default {
     },
 
     downloadFullResultList: function (jid) {
-      window.open('/backend/api/downloadJobResult?jid=' + jid)
+      window.open(CONFIG.HOST_URL+'/backend/api/downloadJobResult?jid=' + jid)
     }
     ,
     download: function (name, content) {

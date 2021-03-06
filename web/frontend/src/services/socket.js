@@ -1,6 +1,6 @@
-import SockJS from "sockjs-client"
 import {Client, Stomp} from "@stomp/stompjs";
 import Vue from "vue"
+import * as CONFIG from "../Config"
 
 
 const emitter = new Vue({
@@ -10,7 +10,9 @@ const emitter = new Vue({
     this.client.configure({
       /* uses SockJS as websocket */
       webSocketFactory: function () {
-        return new SockJS("/backend/jobs");
+        console.log("ENVIRONMENT: "+process.env.BACKEND_HOST)
+        console.log("Try opening connection to "+CONFIG.SOCKET_URL+"/backend/jobs")
+        return new WebSocket(CONFIG.SOCKET_URL+"/backend/jobs")
       },
       onConnect: function (frame) {
         console.log("connected!");
@@ -26,7 +28,7 @@ const emitter = new Vue({
       }
     });
     this.client.activate();
-    console.log("[ INFO ] Communicator initialized");
+    console.log("[ INFO ] Communicator initialized to "+CONFIG.HOST_URL+"/backend/jobs");
   },
   methods: {
 

@@ -10,7 +10,7 @@ import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 import {library} from '@fortawesome/fontawesome-svg-core'
 import {faUserSecret} from '@fortawesome/free-solid-svg-icons'
 import {Network} from "vue-vis-network";
-
+import * as CONFIG from "./Config"
 library.add(faUserSecret)
 
 Vue.component('font-awesome-icon', FontAwesomeIcon)
@@ -21,7 +21,7 @@ Vue.use(VueCookies);
 
 import ApiService from "./services/api.service";
 
-ApiService.init("/backend/api/");
+ApiService.init(CONFIG.HOST_URL+"/backend/api/")
 Vue.prototype.$http = ApiService;
 
 
