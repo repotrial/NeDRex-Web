@@ -4,14 +4,26 @@ COPY package*.json ./
 RUN npm install
 COPY ./ .
 
-ARG configuration=prod
-
 RUN npm run build
 
-FROM nginx as production-stage
-RUN mkdir /app
-COPY --from=build-stage /app/dist /app
-COPY nginx-nedrex.conf /etc/nginx/nginx.conf
+FROM andimajore/nedrex_repo:server_base as production-stage
 
-#TODO need to fix websocket connection (just use env var for ws in connection script?)
+WORKDIR /usr/app
 
+RUN wget https://ftp-stud.hs-esslingen.de/pub/Mirrors/ftp.apache.org/dist/tomcat/tomcat-8/v8.5.63/bin/apache-tomcat-8.5.63.tar.gz
+RUN tar -xzf apache-tomcat-8.5.63.tar.gz
+RUN rm apache-tomcat-8.5.63.tar.gz
+RUN mv apache-tomcat-8.5.63 apache-tomcat
+
+WORKDIR apache-tomcat
+RUN rm -rf webapps/*
+
+COPY --from=build-stage /app/dist webapps/nedrex/
+COPY docker/WEB-INF webapps/nedrex/WEB-INF
+
+COPY docker/conf/* conf/
+
+#EXPOSE 8080
+#EXPOSE 8090
+
+ENTRYPOINT bin/catalina.sh run

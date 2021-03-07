@@ -14,45 +14,31 @@ services:
       - nedrex-dev-db-volume:/var/lib/mysql
     cap_add:
       - SYS_NICE
-#  web:
-#    container_name: nedrex-web
-#    image: andimajore/nedrex_repo:web
-#    build: frontend
-#    depends_on:
-#      - "server"
-#    ports:
-#      - "8080:80"
-#    environment:
-#      - CONTEXT_PATH=/
-#      - BACKEND_HOST=nedrex-server
-#      - BACKEND_PORT=8090
-#    restart: on-failure
-#    links:
-#      - server
-#    web-server:
-#      container_name: nedrex-web-server
-#      build: frontend
-#      depends_on:
-#        - "server"
-#      ports:
-#        - "8080:8080"
-#      restart: on-failure
+  web:
+    container_name: nedrex-web
+    image: andimajore/nedrex_repo:web
+    build: frontend
+    ports:
+      - "8080:8080"
+    environment:
+    #      - CONTEXT_PATH=/backend
+      - BACKEND_HOST_URL=localhost
+      - FRONTEND_HOST_URL=localhost
+    #      - PORT=8080
+    restart: on-failure
   server:
     container_name: nedrex-server
     image: andimajore/nedrex_repo:server
     depends_on:
       - "db"
-    build: .
+    build: backend
     volumes:
       - nedrex-dev-cache-volume:/etc/data/db
       - nedrex-dev-usr-volume:/etc/data/usr
     ports:
-      - "8080:8080"
       - "8090:8090"
-    environment:
+#    environment:
 #      - CONTEXT_PATH=/backend
-      - FRONTEND_HOST_URL=localhost
-      - BACKEND_HOST_URL=localhost
 #      - PORT=8080
     restart: on-failure
 volumes:

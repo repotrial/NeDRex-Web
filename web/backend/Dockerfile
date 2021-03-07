@@ -1,4 +1,4 @@
-FROM andimajore/nedrex_repo:server_base
+FROM andimajore/nedrex_repo:server_base as production-stage
 
 ENV PYTHONPATH=$PYTHONPATH:/usr/local/lib/python3.8/dist-packages/
 ENV PYTHON=/usr/bin/python3
@@ -7,7 +7,7 @@ ENV PATH=$PATH:$JAVA_HOME/bin
 
 RUN mkdir scripts cache
 WORKDIR /usr/app/scripts
-COPY scripts* .
+COPY scripts/* ./
 
 RUN pipreqs ./
 RUN cat requirements.txt | grep -v "graph_tool" > reqs.txt
@@ -29,32 +29,15 @@ COPY src/main/resources/application-prod.properties config/server/
 RUN mkdir cache
 
 WORKDIR apache-tomcat
-
-COPY target/nedrexweb-backend.war ./
-RUN mkdir nedrexweb-backend
-WORKDIR nedrexweb-backend
-RUN unzip ../nedrexweb-backend.war
-WORKDIR ../
-RUN rm nedrexweb-backend.war
-
-#RUN apt update
-#RUN apt install less
-RUN mkdir -p conf/Catalina/localhost
-RUN echo '<Context path="/backend" docBase="../nedrexweb-backend"/>' > conf/Catalina/localhost/backend.xml
-RUN echo 'spring.profiles.active=prod' >> conf/catalina.properties
-
-COPY scripts/tomcatenv.sh bin/setenv.sh
-
 RUN rm -rf webapps/*
 
+RUN mkdir -p webapps/backend
+WORKDIR webapps/backend
+COPY target/nedrexweb-backend.war ./
+RUN unzip nedrexweb-backend.war
+RUN rm nedrexweb-backend.war
+WORKDIR ../../
 
-#adjust server.xml
-#copy script to set context path env var
-#copy script to set port
-#hosturl necessary?
+COPY docker/conf/* conf/
 
-#EXPOSE 8090
-
-#CMD "tail -f scripts/wait-for-it.sh"
-#"./wait-for-it.sh","nedrex-db:3306","-t","30", "--","java","-Xmx4g","-jar", "app.jar","--spring.profiles.active=prod","--spring.config.location=./config/server/"
-ENTRYPOINT /usr/app/scripts/set-context.sh conf/Catalina/localhost/backend.xml ; /usr/app/scripts/set-server.sh conf/server.xml ; ../wait-for-it.sh nedrex-db:3306 -t 30 -- bin/catalina.sh run
+ENTRYPOINT ../wait-for-it.sh nedrex-db:3306 -t 30 -- bin/catalina.sh run

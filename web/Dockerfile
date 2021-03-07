@@ -42,7 +42,7 @@ WORKDIR apache-tomcat
 
 RUN rm -rf webapps/*
 COPY --from=build-stage /app/dist webapps/nedrex/
-COPY frontend/docker/static/WEB-INF webapps/nedrex/WEB-INF
+COPY frontend/docker/WEB-INF webapps/nedrex/WEB-INF
 
 
 RUN mkdir -p webapps2/backend
@@ -52,7 +52,7 @@ RUN unzip nedrexweb-backend.war
 RUN rm nedrexweb-backend.war
 WORKDIR ../../
 
-COPY frontend/docker/static/conf/* conf/
+COPY docker/static/conf/* conf/
 
 #EXPOSE 8080
 #EXPOSE 8090
