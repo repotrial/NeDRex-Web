@@ -18,7 +18,7 @@ wget https://raw.githubusercontent.com/AndiMajore/RepoScapeWeb/master/docker-com
 docker-compose pull
 docker-compose up
 ```
-NeDRex-Web interface is running on [localhost:8080/nedrex](http://localhost:8080/nedrex/)
+NeDRex-Web interface is running on [localhost:8080/nedrex/](http://localhost:8080/nedrex/)
 
 ## Manual Deployement
 First clone the project:
