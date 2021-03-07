@@ -17,27 +17,25 @@ RUN pip3 install networkx==2.3
 
 WORKDIR /usr/app
 
-COPY scripts/wait-for-it.sh wait-for-it.sh
-
 RUN wget https://ftp-stud.hs-esslingen.de/pub/Mirrors/ftp.apache.org/dist/tomcat/tomcat-8/v8.5.63/bin/apache-tomcat-8.5.63.tar.gz
 RUN tar -xzf apache-tomcat-8.5.63.tar.gz
 RUN rm apache-tomcat-8.5.63.tar.gz
 RUN mv apache-tomcat-8.5.63 apache-tomcat
+RUN rm -rf apache-tomcat/webapps/*
 
 COPY config/db_config.json config/db/
 COPY src/main/resources/application-prod.properties config/server/
 RUN mkdir cache
 
 WORKDIR apache-tomcat
-RUN rm -rf webapps/*
-
+COPY docker/conf/* conf/
 RUN mkdir -p webapps/backend
 WORKDIR webapps/backend
 COPY target/nedrexweb-backend.war ./
 RUN unzip nedrexweb-backend.war
 RUN rm nedrexweb-backend.war
-WORKDIR ../../
 
-COPY docker/conf/* conf/
+WORKDIR /usr/app
+COPY scripts/wait-for-it.sh wait-for-it.sh
 
-ENTRYPOINT ../wait-for-it.sh nedrex-db:3306 -t 30 -- bin/catalina.sh run
+ENTRYPOINT ./wait-for-it.sh nedrex-db:3306 -t 30 -- apache-tomcat/bin/catalina.sh run

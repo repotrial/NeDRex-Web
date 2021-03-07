@@ -10,15 +10,17 @@ RUN apt install -y wget \
                    diffutils \
                    unzip \
                    curl \
-                   gnupg2 \
                    libboost-all-dev \
                    libgmp-dev \
                    libcgal-dev \
                    libcairomm-1.0-dev \
                    python3-cairo-dev \
-                   libsparsehash-dev \
-                   python3 \
-                   python3-pip
+                   libsparsehash-dev
+
+
+RUN apt update --fix-missing && apt install -y gnupg2 \
+                                               python3 \
+                                               python3-pip
 
 
 ENV PYTHONPATH=$PYTHONPATH:/usr/local/lib/python3.8/dist-packages/
@@ -43,3 +45,11 @@ RUN make
 RUN make install
 WORKDIR /usr/app/scripts
 RUN rm -rf graph_tools
+
+#WORKDIR /usr/app
+#
+#RUN wget https://ftp-stud.hs-esslingen.de/pub/Mirrors/ftp.apache.org/dist/tomcat/tomcat-8/v8.5.63/bin/apache-tomcat-8.5.63.tar.gz
+#RUN tar -xzf apache-tomcat-8.5.63.tar.gz
+#RUN rm apache-tomcat-8.5.63.tar.gz
+#RUN mv apache-tomcat-8.5.63 apache-tomcat
+#RUN rm -rf apache-tomcat/webapps/*

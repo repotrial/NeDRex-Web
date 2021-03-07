@@ -10,8 +10,7 @@ const emitter = new Vue({
     this.client.configure({
       /* uses SockJS as websocket */
       webSocketFactory: function () {
-        console.log("ENVIRONMENT: "+process.env.BACKEND_HOST)
-        console.log("Try opening connection to "+CONFIG.SOCKET_URL+"/backend/jobs")
+        console.log("Try opening Websocket connection!")
         return new WebSocket(CONFIG.SOCKET_URL+"/backend/jobs")
       },
       onConnect: function (frame) {

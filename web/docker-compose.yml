@@ -16,18 +16,15 @@ services:
       - SYS_NICE
   web:
     container_name: nedrex-web
+#   image: andimajore/nedrex_repo:web_exbio
     image: andimajore/nedrex_repo:web
     build: frontend
     ports:
       - "8080:8080"
-    environment:
-    #      - CONTEXT_PATH=/backend
-      - BACKEND_HOST_URL=localhost
-      - FRONTEND_HOST_URL=localhost
-    #      - PORT=8080
     restart: on-failure
   server:
     container_name: nedrex-server
+#    image: andimajore/nedrex_repo:server_exbio
     image: andimajore/nedrex_repo:server
     depends_on:
       - "db"
@@ -37,9 +34,6 @@ services:
       - nedrex-dev-usr-volume:/etc/data/usr
     ports:
       - "8090:8090"
-#    environment:
-#      - CONTEXT_PATH=/backend
-#      - PORT=8080
     restart: on-failure
 volumes:
   nedrex-dev-db-volume:
