@@ -40,25 +40,21 @@ RUN mkdir cache
 
 WORKDIR apache-tomcat
 
-COPY backend/target/nedrexweb-backend.war ./
-RUN mkdir nedrexweb-backend
-WORKDIR nedrexweb-backend
-RUN unzip ../nedrexweb-backend.war
-WORKDIR ../
-RUN rm nedrexweb-backend.war
-
-RUN mkdir nedrexweb-frontend
-COPY --from=build-stage /app/dist nedrexweb-frontend/
-
-RUN mkdir -p conf/Catalina/localhost
-
-RUN echo '<Context path="/backend" docBase="../nedrexweb-backend"/>' > conf/Catalina/localhost/backend.xml
-RUN echo '<Context path="/nedrex" docBase="../nedrexweb-frontend"/>' > conf/Catalina/localhost/nedrex.xml
-RUN echo 'spring.profiles.active=prod' >> conf/catalina.properties
-
-COPY backend/scripts/tomcatenv.sh bin/setenv.sh
-
 RUN rm -rf webapps/*
+COPY --from=build-stage /app/dist webapps/nedrex/
+COPY frontend/docker/static/WEB-INF webapps/nedrex/WEB-INF
 
 
-ENTRYPOINT /usr/app/scripts/set-context.sh conf/Catalina/localhost/backend.xml ; /usr/app/scripts/set-server.sh conf/server.xml ; ../wait-for-it.sh nedrex-db:3306 -t 30 -- bin/catalina.sh run
+RUN mkdir -p webapps2/backend
+WORKDIR webapps2/backend
+COPY backend/target/nedrexweb-backend.war ./
+RUN unzip nedrexweb-backend.war
+RUN rm nedrexweb-backend.war
+WORKDIR ../../
+
+COPY frontend/docker/static/conf/* conf/
+
+#EXPOSE 8080
+#EXPOSE 8090
+
+ENTRYPOINT ../wait-for-it.sh nedrex-db:3306 -t 30 -- bin/catalina.sh run

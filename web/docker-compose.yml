@@ -14,25 +14,6 @@ services:
       - nedrex-dev-db-volume:/var/lib/mysql
     cap_add:
       - SYS_NICE
-#  server:
-#    container_name: nedrex-server
-#    image: andimajore/nedrex_repo:server
-#    depends_on:
-#      - "db"
-#    build: backend
-#    volumes:
-#      - nedrex-dev-cache-volume:/etc/data/db
-#      - nedrex-dev-usr-volume:/etc/data/usr
-#    expose:
-#      - 8090
-##    ports:
-##      - "8090:8090"
-#    environment:
-#      - CONTEXT_PATH=/backend
-#      - PORT=8090
-#    restart: on-failure
-#    entrypoint: "tail -f /dev/null"
-#    entrypoint: ["./wait-for-it.sh","nedrex-db:3306","-t","30", "--","java","-Xmx4g","-jar", "app.jar","--spring.profiles.active=prod","--spring.config.location=./config/server/"]
 #  web:
 #    container_name: nedrex-web
 #    image: andimajore/nedrex_repo:web
@@ -65,18 +46,16 @@ services:
     volumes:
       - nedrex-dev-cache-volume:/etc/data/db
       - nedrex-dev-usr-volume:/etc/data/usr
-    expose:
-      - 8080
     ports:
       - "8080:8080"
+      - "8090:8090"
     environment:
 #      - CONTEXT_PATH=/backend
-      - PORT=8080
+      - FRONTEND_HOST_URL=localhost
+      - BACKEND_HOST_URL=localhost
+#      - PORT=8080
     restart: on-failure
 volumes:
   nedrex-dev-db-volume:
   nedrex-dev-usr-volume:
   nedrex-dev-cache-volume:
-networks:
-  server-network:
-  db-network:
