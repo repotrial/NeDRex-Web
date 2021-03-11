@@ -5,7 +5,7 @@
       <v-list ref="list">
         <v-list-item v-for="node in Object.values(countMap.nodes)" :key="node.name">
           <v-chip outlined @click="toggleNode(node.name)">
-            <v-icon left :color="getColoring('nodes',node.name)">fas fa-genderless</v-icon>
+            <v-icon left :color="getColoring('nodes',node.name,)">fas fa-genderless</v-icon>
             {{ node.name }} ({{ node.total }})
           </v-chip>
         </v-list-item>
@@ -21,14 +21,14 @@
       <v-list>
         <v-list-item v-for="edge in Object.values(countMap.edges)" :key="edge.name">
           <v-chip outlined @click="toggleEdge(edge.name)">
-            <v-icon left :color="getColoring('edges',edge.name)[0]">fas fa-genderless</v-icon>
+            <v-icon left :color="getColoring('edges',edge.name,)[0]">fas fa-genderless</v-icon>
             <template v-if="direction(edge.name)===0">
               <v-icon left>fas fa-undo-alt</v-icon>
             </template>
             <template v-else>
               <v-icon v-if="direction(edge.name)===1" left>fas fa-long-arrow-alt-right</v-icon>
               <v-icon v-else left>fas fa-arrows-alt-h</v-icon>
-              <v-icon left :color="getColoring('edges',edge.name)[1]">fas fa-genderless</v-icon>
+              <v-icon left :color="getColoring('edges',edge.name,)[1]">fas fa-genderless</v-icon>
             </template>
             {{ edge.name }} ({{ edge.total }})
           </v-chip>
@@ -79,14 +79,14 @@ export default {
     toggleEdge: function (edgeName) {
       this.graphChangeVisEvent('edges', edgeName)
     },
-    getColoring: function (entity, name) {
+    getColoring: function (entity, name,style) {
       if (this.options.toggled[entity] === undefined)
         this.options.toggled[entity] = {}
       if (this.options.toggled[entity][name] === undefined)
         this.options.toggled[entity][name] = true;
       if (!this.options.toggled[entity][name])
         return "gray";
-      return Utils.getColoringExtended(this.metagraph, this.entityGraph, entity, name);
+      return Utils.getColoringExtended(this.metagraph, this.entityGraph, entity, name,style);
     },
     direction: function (edge) {
       return Utils.directionExtended(this.entityGraph, edge)

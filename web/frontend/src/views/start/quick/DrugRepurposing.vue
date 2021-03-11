@@ -382,7 +382,7 @@
               </v-col>
               <v-col cols="7">
                 <Graph ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle"
-                       :legend="results.targets.length>0">
+                       :legend="results.targets.length>0" :meta="metagraph">
                   <template v-slot:legend v-if="results.targets.length>0">
                     <v-card style="width: 8vw; max-width: 10vw">
                       <v-list>

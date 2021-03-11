@@ -1,20 +1,20 @@
 const Utils =
   {
-    getColoring(metagraph, entity, name) {
+    getColoring(metagraph, entity, name, colorstyle) {
       if (entity === "nodes") {
-        return metagraph.colorMap[name.toLowerCase()].main;
+        return metagraph.colorMap[name.toLowerCase()][colorstyle? colorstyle: "main"];
       } else {
         let names = this.getNodes(metagraph, name)
-        return [metagraph.colorMap[names[0]].main, metagraph.colorMap[names[1]].main]
+        return [metagraph.colorMap[names[0]][colorstyle? colorstyle: "main"], metagraph.colorMap[names[1]][colorstyle? colorstyle: "main"]]
       }
     },
 
-    getColoringExtended(metagraph, entityGraph, entity, name) {
+    getColoringExtended(metagraph, entityGraph, entity, name,colorstyle) {
       if (entity === "nodes") {
-        return metagraph.colorMap[name.toLowerCase()].main;
+        return metagraph.colorMap[name.toLowerCase()][colorstyle? colorstyle: "main"];
       } else {
         let names = this.getNodesExtended(entityGraph, name)
-        return [metagraph.colorMap[names[0]].main, metagraph.colorMap[names[1]].main]
+        return [metagraph.colorMap[names[0]][colorstyle? colorstyle: "main"], metagraph.colorMap[names[1]][colorstyle? colorstyle: "main"]]
       }
     },
 

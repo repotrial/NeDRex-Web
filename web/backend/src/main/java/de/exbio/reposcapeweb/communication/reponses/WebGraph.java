@@ -17,6 +17,7 @@ public class WebGraph {
     HashMap<String,Object> colorMap;
     HashMap<String,Object> data;
     HashMap<String,HashMap<String,Long>> weights = new HashMap<>();
+    Object options = null;
 
     public WebGraph(String id){
         this.id = id;
@@ -101,5 +102,13 @@ public class WebGraph {
 
     public HashMap<String, HashMap<String, Long>> getWeights() {
         return weights;
+    }
+
+    public Object getOptions() {
+        return options;
+    }
+
+    public void setOptions(Object config) {
+        this.options=config;
     }
 }

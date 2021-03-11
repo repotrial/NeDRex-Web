@@ -29,7 +29,6 @@
                     :color="nodeModel.indexOf(item.index)===-1?'gray':'primary'"
                     :text-color="nodeModel.indexOf(item.index)===-1?'black':'gray'"
             >
-              <!--                    <v-icon left :color="getColoring('nodes',item.label)">fas fa-genderless</v-icon>-->
               <v-icon left :color="getColoring('nodes',item.label)">fas fa-genderless</v-icon>
               {{ item.label }}
               <span style="color: gray; margin-left: 3pt"
@@ -252,7 +251,7 @@ export default {
       return 0
     },
     getColoring: function (entity, name) {
-      let colors =Utils.getColoring(this.metagraph, entity, name)
+      let colors =Utils.getColoring(this.metagraph, entity, name,"light")
       return colors;
     },
   },

@@ -83,6 +83,7 @@ export default {
     configuration: Object,
     startGraph: false,
     progress: Number,
+    meta: Object,
     windowStyle: {
       height: '75vh',
       'min-height': '75vh',
@@ -146,6 +147,12 @@ export default {
         this.init()
     }
   },
+  watch: {
+    meta: function () {
+      this.setMetagraph(this.meta)
+    }
+
+  },
 
 
   methods: {
@@ -201,6 +208,8 @@ export default {
     init: function () {
       if (!this.skipVis)
         this.configuration.visualized = true;
+      if((this.metagraph ==null || this.options ==null) && this.meta!=null)
+        this.setMetagraph(this.meta)
       //TODO getgraphinfo to handle displaying of sidebar and disabling of enable-physics and disable visualize graph when graph not loaded
       return this.$http.get("/getGraph?id=" + this.gid).then(response => {
 
@@ -266,18 +275,32 @@ export default {
     //   return this.loading
     // },
     drawGraph: function () {
+      if (this.metagraph == null || this.options == null) {
+        if (this.metagraph)
+          this.setMetagraph(this.metagraph)
+        setTimeout(this.drawGraph, 50)
+        return
+      }
       if (this.nodeSet === undefined || this.edgeSet === undefined)
         return
       if (this.directed) {
-        this.options.edges["arrows"] = {to: {enabled: true}}
+        this.options.edges.arrows = {to: {enabled: true}}
       } else
-        this.options.edges["arrows"] = {};
+        this.options.edges.arrows = {};
       this.key += 1
       this.nodes = this.nodeSet.get({returnType: "Object"})
       // this.setNodeColors()
       this.loading = false;
       this.prepare()
       this.$emit('finishedEvent')
+    },
+    setMetagraph: function (metagraph) {
+      this.metagraph = metagraph;
+      let defaults = metagraph.options;
+      this.options = defaults.options;
+      this.layout = defaults.layout;
+      this.physics = defaults.physics;
+      this.updateOptions()
     },
     loadData: function (payload) {
       this.configuration.visualized = true
@@ -286,20 +309,11 @@ export default {
         this.skipVis = payload.skipVis
 
       if (payload !== undefined && payload.name !== undefined && payload.name === "metagraph" && this.metagraph === undefined) {
-        this.metagraph = payload.graph;
-      }
-      if (this.metagraph !== undefined) {
+        this.setMetagraph(payload.graph);
         this.edgeSet = new DataSet(this.metagraph.edges);
         this.nodeSet = new DataSet(this.metagraph.nodes);
         this.directed = this.metagraph.directed;
       }
-
-
-      let defaults = this.getDefaults(payload)
-      this.options = defaults.options;
-      this.layout = defaults.layout;
-      this.physics = defaults.physics;
-
       if (payload) {
         if (payload.get !== undefined)
           this.getData(payload.get)
@@ -313,6 +327,30 @@ export default {
     checkSizeWarning: function () {
       this.configuration.sizeWarning = (this.nodeSet !== undefined && this.nodeSet.getIds().length > 1000) || (this.edgeSet !== undefined && this.edgeSet.getIds().length > 1000)
     },
+    // loadMetaColors: function (fromDefaults) {
+    //   if(!this.metagraph || !this.metagraph.colorMap)
+    //     return
+    //   if (!fromDefaults) {
+    //     this.options = this.metagraph.options
+    //   }
+    //   Object.keys(this.options.groups).forEach(group => {
+    //     if (group.endsWith("other"))
+    //       return
+    //     if (group.endsWith("Module")) {
+    //       let restgroup = group.replace("Module", "")
+    //       this.options.groups[group].color.border = this.metagraph.colorMap[restgroup].light;
+    //       this.options.groups[group].color.background = this.metagraph.colorMap[restgroup].light;
+    //       this.options.groups[group].color.highlight.border = this.metagraph.colorMap[restgroup].light;
+    //       this.options.groups[group].color.highlight.background = this.metagraph.colorMap[restgroup].light;
+    //     } else {
+    //       this.options.groups[group].color.border = this.metagraph.colorMap[group].light;
+    //       this.options.groups[group].color.background = this.metagraph.colorMap[group].main;
+    //       this.options.groups[group].color.highlight.border = this.metagraph.colorMap[group].light;
+    //       this.options.groups[group].color.highlight.background = this.metagraph.colorMap[group].main;
+    //     }
+    //   })
+    //   this.updateOptions()
+    // },
 
 
     getCurrentGraph: function () {
@@ -338,136 +376,14 @@ export default {
     ,
 
 
-    getDefaults: function () {
-      return {
-        // nodes: new DataSet(this.metagraph.nodes),
-        // edges: new DataSet(this.metagraph.edges),
-        // directed: this.metagraph.directed,
-        layout: {
-          improvedLayout: false,
-          // clusterThreshold: 1000,
-          // hierarchical: {enabled: true}
-
-        },
-        options: {
-          interaction: {
-            multiselect: true,
-            hideEdgesOnDrag: true,
-            hideEdgesOnZoom: true,
-            // dragView:false,
-          },
-          groups: {
-            drug: {
-              // hidden: false,
-              color: {
-                border: '#00CC96',
-                background: '#b4cdcc',
-                highlight: {border: '#00CC96', background: '#b4cdcc'}
-              }
-            },
-            disorder: {
-              // hidden: false,
-              color: {
-                border: '#EF553B',
-                background: '#ecd0cb',
-                highlight: {border: '#EF553B', background: '#ecd0cb'}
-              }
-            },
-            gene: {
-              // hidden: false,
-              color: {
-                border: '#636EFA',
-                background: '#d6d9f8',
-                highlight: {border: '#636EFA', background: '#d6d9f8'}
-              }
-            },
-            geneModule: {
-              // hidden: false,
-              color: {
-                border: '#636EFA',
-
-                background: '#636EFA',
-                highlight: {border: '#636EFA', background: '#636EFA'}
-              }
-            },
-            protein: {
-              // hidden: false,
-              color: {
-                border: '#19d3f3',
-                background: '#bcdfe5',
-                highlight: {border: '#19d3f3', background: '#bcdfe5'}
-              }
-            },
-            proteinModule: {
-              // hidden: false,
-              color: {
-                border: '#19d3f3',
-                background: '#19d3f3',
-                highlight: {border: '#19d3f3', background: '#19d3f3'}
-              }
-            },
-            pathway: {
-              // hidden: false,
-              color: {
-                border: '#fecb52',
-
-                background: '#fae6c1',
-                highlight: {border: '#fecb52', background: '#fae6c1'}
-              }
-            },
-            other: {
-              color: {border: '#6b6a6a', background: '#D2E5FF', highlight: {border: '#6b6a6a', background: '#D2E5FF'}}
-            }
-          },
-          nodes: {
-            // shape:"circle",
-            fixed: false,
-            physics: true,
-            borderWidth: 2,
-            // size:25,
-            // scaling:{
-            //   min:0,
-            //   max:100,
-            // label:{
-            //   enabled:true
-            // },
-            // customScalingFunction:this.scalingFunction
-            // }
-          },
-          edges: {
-            hidden: false,
-            // arrows:{to:{enabled:true}},
-            // scaling:{label:{enabled: true}},
-            smooth: {enabled: false},
-            color: '#454545',
-            width: 0.3,
-            physics: true,
-            // length:300
-          },
-          physics: {
-            // solver: 'repulsion',
-            barnesHut: {
-              gravitationalConstant: -10000,
-              centralGravity: 0.20,
-              springLength: 200,
-              springConstant: 0.04,
-              damping: 0.5,
-              avoidOverlap: 0.8
-            },
-            enabled: false,
-            // stabilization: {enabled: true, updateInterval: 10, iterations: 1000, fit: true},
-            // timestep: 0.3,
-            // wind: {x: 20, y: 20}
-          },
-        },
-
-      }
-      // }).catch(err => {
-      //   this.loadingColor = this.colors.bar.error;
-      //   console.log(err)
-      // })
-    }
-    ,
+    // getDefaults: function () {
+    //   return this.metagraph.options
+    //   // }).catch(err => {
+    //   //   this.loadingColor = this.colors.bar.error;
+    //   //   console.log(err)
+    //   // })
+    // }
+    // ,
     // scalingFunction:function(min,max,total,value){
     //   if (max === min || value===undefined) {
     //     return 0.5;
@@ -539,7 +455,8 @@ export default {
       }
     },
     updateOptions: function () {
-      this.$refs.network.setOptions(this.options)
+      if (this.$refs.network)
+        this.$refs.network.setOptions(this.options)
     }
     ,
     mergeOptions: function (options) {
@@ -700,7 +617,6 @@ export default {
     },
     focusEdge: function (edgeId) {
       this.getVisualizedGraph().then(() => {
-        console.log(this.edgeSet.get())
         if (edgeId === undefined)
           this.viewAll()
       })

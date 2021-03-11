@@ -1,5 +1,5 @@
 <template style="overflow-y: hidden">
-  <v-app :style="{marginTop:selectedTabId===0 ? '60px': '0px'}">
+  <v-app :style="{marginTop:selectedTabId===0 ? '60px': '0px'}" id="app">
     <headerBar @showVersionEvent="showVersionInfo=true" :prominent="selectedTabId===0" style="z-index: 1000;"/>
     <v-card style="position: sticky ; top:0px; margin-top: -10px; z-index: 999 ">
       <v-toolbar flat>
@@ -49,9 +49,11 @@
                      v-on:printNotificationEvent="printNotification"
                      v-on:graphLoadedEvent="loadList"
                      v-on:multiSelectionEvent="setMultiSelection"
+                     v-on:setMetagraphEvent="setMetagraph"
                      :configuration="options.graph"
                      :window-style="graphWindowStyle"
                      :legend="showLegend"
+                     :meta="metagraph"
               >
                 <template v-slot:legend>
                   <Legend v-if="showLegend" :metagraph="metagraph" :countMap="options.list.countMap" ref="legend"
@@ -289,13 +291,29 @@ import SideCard from './views/SideCard.vue'
 import headerBar from './components/header.vue'
 import Legend from "./views/toolbox/Legend";
 import Utils from "./scripts/Utils"
-
+import * as CONFIG from "./Config"
 
 export default {
   name: 'app',
   exampleGraph: undefined,
   gid: undefined,
   tab: undefined,
+  head :{
+    title:{
+      inner:'NeDRex-Web | Network-based Drug Repurposing and Exploration'
+    },
+    link :[
+      {rel: 'favicon', href: './favicon.ico', type: 'image/ico' }
+
+    ]
+
+  },
+  // metaInfo:{
+  //   title:'NeDRex-Web | Network-based Drug Repurposing and Exploration',
+  //   link:[
+  //     { rel: 'favicon', href: './static/favicon.ico' }
+  //   ]
+  // },
 
   data() {
     return {
@@ -426,7 +444,9 @@ export default {
     reloadSide: function () {
       this.$refs.side.$forceUpdate()
     },
-
+    setMetagraph: function(){
+      this.$refs.graph.setMetagraph(this.metagraph)
+    },
     toggleGraphSelectMode: function (select) {
       this.$refs.graph.toggleSelectMode(select);
     },
@@ -539,9 +559,9 @@ export default {
       } else {
         this.options.graph.noPhysics = sum > 50000
         this.gid = info.id
-        let tab = this.tab !== undefined ? this.tab : "list"
+        let tab = (this.tab !== undefined && this.tab !=="start" && this.tab!=="history") ? this.tab : "list"
         this.$http.get("/archiveHistory?uid=" + this.$cookies.get("uid") + "&gid=" + info.id).then(() => {
-          this.$router.push({path: '/' + info.id + "/" + tab})
+          this.$router.push({path: "/" + info.id + "/" + tab})
           this.$refs.graph.reload()
           this.$refs.list.reload()
           this.$refs.history.reload()

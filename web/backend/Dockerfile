@@ -23,7 +23,7 @@ RUN rm apache-tomcat-8.5.63.tar.gz
 RUN mv apache-tomcat-8.5.63 apache-tomcat
 RUN rm -rf apache-tomcat/webapps/*
 
-COPY config/db_config.json config/db/
+COPY config/ config/
 COPY src/main/resources/application-prod.properties config/server/
 RUN mkdir cache
 

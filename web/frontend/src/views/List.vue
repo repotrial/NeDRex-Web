@@ -29,7 +29,7 @@
                 <v-list-item v-for="node in Object.values(configuration.countMap.nodes)"
                              :key="node.name">
                   <v-chip outlined @click="focus('nodes',Object.keys(attributes.nodes).indexOf(node.name))">
-                    <v-icon left :color="getExtendedColoring('nodes',node.name)">fas fa-genderless</v-icon>
+                    <v-icon left :color="getExtendedColoring('nodes',node.name,'light')">fas fa-genderless</v-icon>
                     {{ node.name }} ({{ node.selected }}/{{ node.total }})
                   </v-chip>
                 </v-list-item>
@@ -43,14 +43,14 @@
                 </v-list-item>
                 <v-list-item v-for="edge in Object.values(configuration.countMap.edges)" :key="edge.name">
                   <v-chip outlined @click="focus('edges',Object.keys(attributes.edges).indexOf(edge.name))">
-                    <v-icon left :color="getExtendedColoring('edges',edge.name)[0]">fas fa-genderless</v-icon>
+                    <v-icon left :color="getExtendedColoring('edges',edge.name,'light')[0]">fas fa-genderless</v-icon>
                     <template v-if="directionExtended(edge.name)===0">
                       <v-icon left>fas fa-undo-alt</v-icon>
                     </template>
                     <template v-else>
                       <v-icon v-if="directionExtended(edge.name)===1" left>fas fa-long-arrow-alt-right</v-icon>
                       <v-icon v-else left>fas fa-arrows-alt-h</v-icon>
-                      <v-icon left :color="getExtendedColoring('edges',edge.name)[1]">fas fa-genderless</v-icon>
+                      <v-icon left :color="getExtendedColoring('edges',edge.name,'light')[1]">fas fa-genderless</v-icon>
                     </template>
                     {{ edge.name }} ({{ edge.selected }}/{{ edge.total }})
 
@@ -554,13 +554,13 @@
             <v-list-item :key="attr.name">
               <v-switch v-model="attr.selected" :disabled="attr.disabled"></v-switch>
               <span>
-                <v-icon left :color="getColoring('edges',attr.name)[0]">fas fa-genderless</v-icon>
+                <v-icon left :color="getColoring('edges',attr.name,'light')[0]">fas fa-genderless</v-icon>
                     <template v-if="direction(attr.name)===0">
                       <v-icon left>fas fa-undo-alt</v-icon>
                     </template>
                     <template v-else>
                       <v-icon>fas fa-long-arrow-alt-right</v-icon>
-                      <v-icon left :color="getColoring('edges',attr.name)[1]">fas fa-genderless</v-icon>
+                      <v-icon left :color="getColoring('edges',attr.name,'light')[1]">fas fa-genderless</v-icon>
                     </template>
                 {{ attr.name }}
               </span>
@@ -638,7 +638,7 @@
                     <v-switch v-model="attr.selected" :disabled="attr.disabled" @click="isDisabled('nodes',attr.name)">
                     </v-switch>
                     <span>
-                <v-icon left :color="getColoring('nodes',attr.name)">fas fa-genderless</v-icon>
+                <v-icon left :color="getColoring('nodes',attr.name,'light')">fas fa-genderless</v-icon>
                 {{ attr.name }}
               </span>
                   </v-list-item>
@@ -658,13 +658,13 @@
                     <v-switch v-model="attr.selected" :disabled="attr.disabled" @click="isDisabled('edges',attr.name)">
                     </v-switch>
                     <span>
-                <v-icon left :color="getExtendedColoring('edges',attr.name)[0]">fas fa-genderless</v-icon>
+                <v-icon left :color="getExtendedColoring('edges',attr.name,'light')[0]">fas fa-genderless</v-icon>
                     <template v-if="directionExtended(attr.name)===0">
                       <v-icon left>fas fa-undo-alt</v-icon>
                     </template>
                     <template v-else>
                       <v-icon>fas fa-long-arrow-alt-right</v-icon>
-                      <v-icon left :color="getExtendedColoring('edges',attr.name)[1]">fas fa-genderless</v-icon>
+                      <v-icon left :color="getExtendedColoring('edges',attr.name,'light')[1]">fas fa-genderless</v-icon>
                     </template>
                 {{ attr.name }}
               </span>
@@ -684,21 +684,21 @@
           <v-col>
 
             <v-icon
-              :color="getExtendedColoring('nodes',getExtendedNodes(collapse.edge1,collapse.nodes.filter(n => n.selected)[0].name))">
+              :color="getExtendedColoring('nodes',getExtendedNodes(collapse.edge1,collapse.nodes.filter(n => n.selected)[0].name),'light')">
               fas fa-genderless
             </v-icon>
             <v-icon>fas fa-long-arrow-alt-right</v-icon>
-            <v-icon :color="getExtendedColoring('nodes',collapse.nodes.filter(n => n.selected)[0].name)">fas
+            <v-icon :color="getExtendedColoring('nodes',collapse.nodes.filter(n => n.selected)[0].name,'light')">fas
               fa-genderless
             </v-icon>
             <v-icon>fas fa-long-arrow-alt-right</v-icon>
             <v-icon v-if="collapse.self.selected"
-                    :color="getExtendedColoring('nodes',getExtendedNodes(collapse.edge1,collapse.nodes.filter(n => n.selected)[0].name))">
+                    :color="getExtendedColoring('nodes',getExtendedNodes(collapse.edge1,collapse.nodes.filter(n => n.selected)[0].name),'light')">
               fas
               fa-genderless
             </v-icon>
             <v-icon v-else
-                    :color="getExtendedColoring('nodes',getExtendedNodes(collapse.edge2,collapse.nodes.filter(n => n.selected)[0].name))">
+                    :color="getExtendedColoring('nodes',getExtendedNodes(collapse.edge2,collapse.nodes.filter(n => n.selected)[0].name),'light')">
               fas fa-genderless
             </v-icon>
           </v-col>
@@ -841,7 +841,7 @@
               <v-list-item :key="attr.name">
                 <v-switch v-model="attr.select" :disabled="attr.disabled"></v-switch>
                 <span>
-                <v-icon left :color="getColoring('nodes',attr.name)">fas fa-genderless</v-icon>
+                <v-icon left :color="getColoring('nodes',attr.name,'light')">fas fa-genderless</v-icon>
                 {{ attr.name }} ({{ countSelected('nodes', attr.name) }})
               </span>
               </v-list-item>
@@ -859,13 +859,13 @@
                 <v-switch v-model="attr.select" :disabled="attr.disabled">
                 </v-switch>
                 <span>
-                <v-icon left :color="getExtendedColoring('edges',attr.name)[0]">fas fa-genderless</v-icon>
+                <v-icon left :color="getExtendedColoring('edges',attr.name,'light')[0]">fas fa-genderless</v-icon>
                     <template v-if="directionExtended(attr.name)===0">
                       <v-icon left>fas fa-undo-alt</v-icon>
                     </template>
                     <template v-else>
                       <v-icon>fas fa-long-arrow-alt-right</v-icon>
-                      <v-icon left :color="getExtendedColoring('edges',attr.name)[1]">fas fa-genderless</v-icon>
+                      <v-icon left :color="getExtendedColoring('edges',attr.name,'light')[1]">fas fa-genderless</v-icon>
                     </template>
                 {{ attr.name }} ({{ countSelected('edges', attr.name) }})
               </span>
@@ -2035,13 +2035,13 @@ export default {
       )
       return out
     },
-    getExtendedColoring: function (entity, name) {
+    getExtendedColoring: function (entity, name,style) {
       if (this.metagraph === undefined) {
         return this.reloadMetagraph().then(function () {
-          return this.getExtendedColoring(entity, name)
+          return this.getExtendedColoring(entity, name,style)
         })
       }
-      return Utils.getColoringExtended(this.metagraph, this.configuration.entityGraph, entity, name)
+      return Utils.getColoringExtended(this.metagraph, this.configuration.entityGraph, entity, name,style)
     },
     getExtendedNodes: function (name, not) {
       let nodes = Utils.getNodesExtended(this.configuration.entityGraph, name)
@@ -2049,13 +2049,13 @@ export default {
         return nodes;
       return nodes[0] === not ? nodes[1] : nodes[0]
     },
-    getColoring: function (entity, name) {
+    getColoring: function (entity, name,style) {
       if (this.metagraph === undefined) {
         return this.reloadMetagraph().then(function () {
-          return this.getColoring(entity, name)
+          return this.getColoring(entity, name,style)
         })
       }
-      return Utils.getColoring(this.metagraph, entity, name)
+      return Utils.getColoring(this.metagraph, entity, name,style)
     },
     executeAlgorithm: function (algorithm, params) {
       let payload = {userId: this.uid, graphId: this.gid, algorithm: algorithm, params: params}

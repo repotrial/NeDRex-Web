@@ -2,6 +2,7 @@ package de.exbio.reposcapeweb.db.io;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.exbio.reposcapeweb.configs.DBConfig;
+import de.exbio.reposcapeweb.configs.VisConfig;
 import de.exbio.reposcapeweb.configs.schema.Config;
 import de.exbio.reposcapeweb.db.DbCommunicationService;
 import de.exbio.reposcapeweb.db.entities.edges.*;
@@ -120,6 +121,12 @@ public class ImportService {
         File conf = new File(env.getProperty("file.db.config"));
         try {
             DBConfig.importConfig(conf, objectMapper.readValue(conf, Config.class));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        File visconf = new File(env.getProperty("file.vis.config"));
+        try {
+            VisConfig.importConfig(visconf, objectMapper.readValue(visconf,Object.class));
         } catch (IOException e) {
             e.printStackTrace();
         }

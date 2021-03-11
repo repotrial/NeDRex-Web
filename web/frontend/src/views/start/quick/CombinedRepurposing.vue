@@ -764,13 +764,13 @@
               </v-col>
               <v-col cols="6">
                 <Graph ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle"
-                       :progress="resultProgress" :legend="resultProgress===100">
+                       :progress="resultProgress" :legend="resultProgress===100" :meta="metagraph">
                   <template v-slot:legend v-if="results.drugs.length>0">
                     <v-card  style="width: 11vw; max-width: 20vw">
                       <v-list dense>
                         <v-list-item>
                           <v-list-item-icon >
-                            <v-icon left :color="getColoring('nodes',['gene','protein'][seedTypeId])" size="43px">fas fa-genderless
+                            <v-icon left :color="getColoring('nodes',['gene','protein'][seedTypeId],'light')" size="43px">fas fa-genderless
                             </v-icon>
                           </v-list-item-icon>
                           <v-list-item-title style="margin-left:-25px">{{['Gene','Protein'][seedTypeId]}} (Seed)</v-list-item-title>
@@ -778,14 +778,14 @@
                         </v-list-item>
                         <v-list-item>
                           <v-list-item-icon>
-                            <v-icon left :color="getColoring('nodes',['gene','protein'][seedTypeId])">fas fa-circle</v-icon>
+                            <v-icon left :color="getColoring('nodes',['gene','protein'][seedTypeId],'light')">fas fa-circle</v-icon>
                           </v-list-item-icon>
                           <v-list-item-title style="margin-left:-25px" >{{['Gene','Protein'][seedTypeId]}} (Module)</v-list-item-title>
                           <v-list-item-subtitle style="margin-right:-25px; margin-left:-25px">{{results.targets.length}}</v-list-item-subtitle>
                         </v-list-item>
                         <v-list-item>
                           <v-list-item-icon>
-                            <v-icon left :color="getColoring('nodes','drug')" size="43px">fas fa-genderless
+                            <v-icon left :color="getColoring('nodes','drug','light')" size="43px">fas fa-genderless
                             </v-icon>
                           </v-list-item-icon>
                           <v-list-item-title style="margin-left:-25px" >Drug</v-list-item-title>
@@ -1484,8 +1484,8 @@ export default {
     focus: function(){
       this.$emit("focusEvent")
     },
-    getColoring: function (entity, name) {
-      return Utils.getColoring(this.metagraph, entity, name);
+    getColoring: function (entity, name,style) {
+      return Utils.getColoring(this.metagraph, entity, name,style);
     },
 
   },

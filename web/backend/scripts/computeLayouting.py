@@ -1,6 +1,7 @@
 from graph_tool.all import *
 from graph_tool.draw import *
 import sys
+import json
 import math
 from matplotlib.colors import colorConverter as Colors
 
@@ -15,25 +16,26 @@ if mode == "0":
     makeLayout = True
 if mode == "1":
     thumb = sys.argv[3]
+    config = sys.argv[4]
     makeImage = True
 if mode == "2":
     out = sys.argv[3]
     thumb = sys.argv[4]
+    config = sys.argv[5]
     makeLayout = True
     makeImage = True
 
 g = load_graph(file)
 pos = sfdp_layout(g)
 
-colorMap = {
-    'disorder': Colors.to_rgba("#EF553B"),
-    'drug': Colors.to_rgba("#00CC96"),
-    'gene': Colors.to_rgba("#636EFA"),
-    'pathway': Colors.to_rgba("#fecb52"),
-    'protein': Colors.to_rgba('#19d3f3'),
-    'default': Colors.to_rgba('#ffffff')}
+colorMap = {'default': Colors.to_rgba('#ffffff')}
+
 
 if makeImage:
+    with open(config) as fh:
+        conf=json.load(fh)
+        for vals in conf["nodes"]:
+            colorMap[vals["name"]]=Colors.to_rgba(vals["colors"]["light"])
     plot_color = g.new_vertex_property('vector<double>')
     g.vertex_properties['plot_color'] = plot_color
     nodeCount = 0
@@ -43,8 +45,6 @@ nodeCount = 0
 for x in g.vertices():
     nodeCount += 1
     if makeImage:
-        print(x)
-        print(g.properties[('v', "type")][x])
         try:
             plot_color[x] = colorMap[g.properties[('v', "type")][x]]
         except:

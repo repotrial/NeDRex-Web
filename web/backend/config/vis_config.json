@@ -1,0 +1,74 @@
+{
+  "layout": {
+    "improvedLayout": false
+  },
+  "options": {
+    "interaction": {
+      "multiselect": true,
+      "hideEdgesOnDrag": true,
+      "hideEdgesOnZoom": true
+    },
+    "groups": {
+      "drug": {
+        "color": {
+        }
+      },
+      "disorder": {
+        "color": {
+        }
+      },
+      "gene": {
+        "color": {
+        }
+      },
+      "geneModule": {
+        "color": {
+        }
+      },
+      "protein": {
+        "color": {
+        }
+      },
+      "proteinModule": {
+        "color": {
+        }
+      },
+      "pathway": {
+        "color": {
+        }
+      },
+      "other": {
+        "color": {
+        }
+      }
+    },
+    "nodes": {
+      "fixed": false,
+      "physics": true,
+      "borderWidth": 2,
+      "font": {
+        "color": "black"
+      }
+    },
+    "edges": {
+      "hidden": false,
+      "smooth": {
+        "enabled": false
+      },
+      "color": "#454545",
+      "width": 0.3,
+      "physics": true
+    },
+    "physics": {
+      "barnesHut": {
+        "gravitationalConstant": -10000,
+        "centralGravity": 0.20,
+        "springLength": 200,
+        "springConstant": 0.04,
+        "damping": 0.5,
+        "avoidOverlap": 0.8
+      },
+      "enabled": false
+    }
+  }
+}

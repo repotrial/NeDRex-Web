@@ -10,6 +10,7 @@ import de.exbio.reposcapeweb.communication.controller.SocketController;
 import de.exbio.reposcapeweb.communication.jobs.Job;
 import de.exbio.reposcapeweb.communication.requests.*;
 import de.exbio.reposcapeweb.configs.DBConfig;
+import de.exbio.reposcapeweb.configs.VisConfig;
 import de.exbio.reposcapeweb.db.DbCommunicationService;
 import de.exbio.reposcapeweb.db.entities.RepoTrialNode;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
@@ -57,6 +58,7 @@ public class WebGraphService {
     private HashSet<String> thumbnailGenerating = new HashSet<>();
     private HashSet<String> layoutGenerating = new HashSet<>();
     private HashSet<String> graphmlGenerating = new HashSet<>();
+    private WebGraph metagraph = null;
 
 
     @Autowired
@@ -78,23 +80,24 @@ public class WebGraphService {
     }
 
     public WebGraph getMetaGraph() {
-        WebGraph graph = new WebGraph("Metagraph", true, historyController.getGraphId());
-        HashMap<String, Object> sourceIds = new HashMap<>();
+        if (metagraph == null) {
+            metagraph = new WebGraph("Metagraph", true, historyController.getGraphId());
+            HashMap<String, Object> sourceIds = new HashMap<>();
 
-        DBConfig.getConfig().nodes.forEach(node -> {
-            graph.addNode(new WebNode(node.id, node.label, node.name, node.label));
-            sourceIds.put(node.label, node.sourceId);
-        });
-        graph.getNodes().forEach(n -> graph.setWeight("nodes", n.group, nodeController.getNodeCount(n.group)));
+            DBConfig.getConfig().nodes.forEach(node -> {
+                metagraph.addNode(new WebNode(node.id, node.label, node.name, node.label));
+                sourceIds.put(node.label, node.sourceId);
+            });
+            metagraph.getNodes().forEach(n -> metagraph.setWeight("nodes", n.group, nodeController.getNodeCount(n.group)));
 
-        DBConfig.getConfig().edges.forEach(edge -> graph.addEdge(new WebEdge(Graphs.getNode(edge.source), Graphs.getNode(edge.target)).setLabel(edge.mapsTo).setTitle(edge.mapsTo).setDashes(!edge.original).setArrowHead(edge.directed)));
-        graph.getEdges().forEach(e -> graph.setWeight("edges", e.label, edgeController.getEdgeCount(e.label)));
+            DBConfig.getConfig().edges.forEach(edge -> metagraph.addEdge(new WebEdge(Graphs.getNode(edge.source), Graphs.getNode(edge.target)).setLabel(edge.mapsTo).setTitle(edge.mapsTo).setDashes(!edge.original).setArrowHead(edge.directed)));
+            metagraph.getEdges().forEach(e -> metagraph.setWeight("edges", e.label, edgeController.getEdgeCount(e.label)));
 
-        graph.setColorMap(this.getColorMap(null));
-
-        graph.setData(sourceIds);
-
-        return graph;
+            metagraph.setColorMap(this.getColorMap(null));
+            metagraph.setData(sourceIds);
+            metagraph.setOptions(VisConfig.getConfig());
+        }
+        return metagraph;
     }
 
     public HashMap<String, Object> getColorMap(Collection<String> nodetypes) {
@@ -727,7 +730,7 @@ public class WebGraphService {
                 } catch (NullPointerException ignore) {
                 }
             });
-            edges.forEach(e->{
+            edges.forEach(e -> {
                 if (!jaccardIndex.containsKey(e.getId1()))
                     jaccardIndex.put(e.getId1(), new HashMap<>());
                 jaccardIndex.get(e.getId1()).put(e.getId2(), StatUtils.calculateJaccardIndex(jaccardSet1.get(e.getId1()), jaccardSet2.get(e.getId2())));

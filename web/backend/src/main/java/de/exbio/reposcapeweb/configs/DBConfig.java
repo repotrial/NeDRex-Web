@@ -304,4 +304,7 @@ public class DBConfig {
         }));
     }
 
+    public static File getConfFile() {
+        return confFile;
+    }
 }

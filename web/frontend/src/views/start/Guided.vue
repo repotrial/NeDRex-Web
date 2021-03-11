@@ -299,7 +299,7 @@
                       <v-list-item-title>
                         <v-tooltip top>
                           <template v-slot:activator="{on,attrs}">
-                            <v-icon v-on="on" v-bind="attrs" :color="getColoring('nodes',nodeList[sourceTypeId].value)"
+                            <v-icon v-on="on" v-bind="attrs" :color="getColoring('nodes',nodeList[sourceTypeId].value,'light')"
                                     size="30px">
                               fas fa-genderless
                             </v-icon>
@@ -321,7 +321,7 @@
                         <template v-slot:activator="{on,attrs}">
                           <v-icon v-on="on" v-bind="attrs"
                                   size="30px"
-                                  :color="getColoring('edges',edge.label)[edge.direction ? 1:0]">fas fa-genderless</v-icon>
+                                  :color="getColoring('edges',edge.label,'light')[edge.direction ? 1:0]">fas fa-genderless</v-icon>
                         </template>
                         <span>{{ getNodeLabel(edge.label, [edge.direction ? 1 : 0]) }}</span>
                       </v-tooltip>
@@ -342,7 +342,7 @@
                         <v-tooltip top>
                           <template v-slot:activator="{on,attrs}">
                             <v-icon v-on="on" v-bind="attrs" size="30px"
-                                    :color="getColoring('nodes',nodeList[sourceTypeId].value)">
+                                    :color="getColoring('nodes',nodeList[sourceTypeId].value,'light')">
                               fas fa-genderless
                             </v-icon>
                           </template>
@@ -363,7 +363,7 @@
                         <template v-slot:activator="{on,attrs}">
                           <v-icon v-on="on" v-bind="attrs"
                                   size="30px"
-                                  :color="getColoring('edges',edge.label)[edge.direction ? 1:0]">fas fa-genderless</v-icon>
+                                  :color="getColoring('edges',edge.label,'light')[edge.direction ? 1:0]">fas fa-genderless</v-icon>
                         </template>
                         <span>{{ getNodeLabel(edge.label, [edge.direction ? 1 : 0]) }}</span>
                       </v-tooltip>
@@ -467,7 +467,7 @@
             </v-col>
             <v-col cols="7">
               <Graph ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle"
-                     :legend="$refs.graph!==undefined && $refs.graph.isVisualized()">
+                     :legend="$refs.graph!==undefined && $refs.graph.isVisualized()" :meta="metagraph">
                 <template v-slot:legend>
                   <v-card style="width: 11vw; max-width: 11vw" v-if="info!==undefined">
                     <v-list>
@@ -963,8 +963,8 @@ export default {
         this.submitGraphGeneration()
     },
 
-    getColoring: function (entity, name) {
-      return Utils.getColoring(this.metagraph, entity, name);
+    getColoring: function (entity, name,style) {
+      return Utils.getColoring(this.metagraph, entity, name,style);
     },
 
     getNodeLabel: function (name, idx) {

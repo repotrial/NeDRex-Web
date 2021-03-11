@@ -572,8 +572,8 @@
                 </template>
               </v-col>
               <v-col cols="8">
-                <Graph ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle" :legend="results.targets.length>0">
-                  <template v-slot:legend  v-if="results.targets.length>0">
+                <Graph ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle" :legend="results.targets.length>0" :meta="metagraph">
+                  <template v-slot:legend  v-if="results.targets.length>0" >
                     <v-card style="width: 13vw; max-width: 15vw">
                       <v-list>
                         <v-list-item>
