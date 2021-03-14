@@ -222,7 +222,7 @@ public class ToolService {
 
 
     public String createCommand(Job job, JobRequest request) {
-        String command = "localhost:8090/backend/api/finishedJob?id=" + job.getJobId() + " " + getTempDir(job.getJobId()).getAbsolutePath() + " ";
+        String command = "localhost:"+env.getProperty("server.port")+env.getProperty("server.servlet.context-path")+"/api/finishedJob?id=" + job.getJobId() + " " + getTempDir(job.getJobId()).getAbsolutePath() + " ";
         LinkedList<File> neededFiles = new LinkedList<>();
         switch (job.getMethod()) {
             case DIAMOND: {

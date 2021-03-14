@@ -25,7 +25,7 @@ Vue.use(VueHead)
 
 import ApiService from "./services/api.service";
 
-ApiService.init(CONFIG.HOST_URL+"/backend/api/")
+ApiService.init(CONFIG.HOST_URL+CONFIG.CONTEXT_PATH+"/api/")
 Vue.prototype.$http = ApiService;
 
 

@@ -1055,7 +1055,7 @@ export default {
       }).catch(console.log)
     },
     downloadFullResultList: function () {
-      window.open(CONFIG.HOST_URL+'/backend/api/downloadJobResult?jid=' + this.currentJid)
+      window.open(CONFIG.HOST_URL+CONFIG.CONTEXT_PATH+'/api/downloadJobResult?jid=' + this.currentJid)
     }
     ,
     downloadResultList: function () {

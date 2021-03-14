@@ -16,7 +16,7 @@ services:
       - SYS_NICE
   web:
     container_name: nedrex-web
-#   image: andimajore/nedrex_repo:web_exbio
+    #image: andimajore/nedrex_repo:web_exbio
     image: andimajore/nedrex_repo:web
     build: frontend
     ports:

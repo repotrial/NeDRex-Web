@@ -11,7 +11,7 @@ const emitter = new Vue({
       /* uses SockJS as websocket */
       webSocketFactory: function () {
         console.log("Try opening Websocket connection!")
-        return new WebSocket(CONFIG.SOCKET_URL+"/backend/jobs")
+        return new WebSocket(CONFIG.SOCKET_URL+CONFIG.CONTEXT_PATH+"/jobs")
       },
       onConnect: function (frame) {
         console.log("connected!");
@@ -27,7 +27,7 @@ const emitter = new Vue({
       }
     });
     this.client.activate();
-    console.log("[ INFO ] Communicator initialized to "+CONFIG.HOST_URL+"/backend/jobs");
+    console.log("[ INFO ] Communicator initialized to "+CONFIG.HOST_URL+CONFIG.CONTEXT_PATH+"/jobs");
   },
   methods: {
 

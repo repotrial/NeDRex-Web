@@ -1398,7 +1398,6 @@ export default {
         if (response.data !== undefined)
           return response.data
       }).then(data => {
-        console.log(data)
         let text = "id";
         this.rankingMethods[this.rankingMethodModel].scores.forEach(s => text += "\t" + s.name)
         text += "\n"
@@ -1413,7 +1412,7 @@ export default {
     },
 
     downloadFullResultList: function (jid) {
-      window.open(CONFIG.HOST_URL+'/backend/api/downloadJobResult?jid=' + jid)
+      window.open(CONFIG.HOST_URL+CONFIG.CONTEXT_PATH+'/api/downloadJobResult?jid=' + jid)
     }
     ,
     download: function (name, content) {

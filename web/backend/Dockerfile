@@ -17,10 +17,10 @@ RUN pip3 install networkx==2.3
 
 WORKDIR /usr/app
 
-RUN wget https://ftp-stud.hs-esslingen.de/pub/Mirrors/ftp.apache.org/dist/tomcat/tomcat-8/v8.5.63/bin/apache-tomcat-8.5.63.tar.gz
-RUN tar -xzf apache-tomcat-8.5.63.tar.gz
-RUN rm apache-tomcat-8.5.63.tar.gz
-RUN mv apache-tomcat-8.5.63 apache-tomcat
+RUN wget https://ftp-stud.hs-esslingen.de/pub/Mirrors/ftp.apache.org/dist/tomcat/tomcat-8/v8.5.64/bin/apache-tomcat-8.5.64.tar.gz
+RUN tar -xzf apache-tomcat-8.5.64.tar.gz
+RUN rm apache-tomcat-8.5.64.tar.gz
+RUN mv apache-tomcat-8.5.64 apache-tomcat
 RUN rm -rf apache-tomcat/webapps/*
 
 COPY config/ config/
@@ -29,8 +29,8 @@ RUN mkdir cache
 
 WORKDIR apache-tomcat
 COPY docker/conf/* conf/
-RUN mkdir -p webapps/backend
-WORKDIR webapps/backend
+RUN mkdir -p webapps/nedrex_backend
+WORKDIR webapps/nedrex_backend
 COPY target/nedrexweb-backend.war ./
 RUN unzip nedrexweb-backend.war
 RUN rm nedrexweb-backend.war

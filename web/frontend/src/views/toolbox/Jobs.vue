@@ -160,7 +160,7 @@ export default {
       // this.$refs.jobs.$forceUpdate()
     },
     downloadJob: function (job) {
-      window.open(CONFIG.HOST_URL+'/backend/api/downloadJobResult?jid=' + job.jid)
+      window.open(CONFIG.HOST_URL+CONFIG.CONTEXT_PATH+'/api/downloadJobResult?jid=' + job.jid)
     },
 
 

@@ -518,7 +518,7 @@ export default {
 
 
     getThumbnail: function (graph_id) {
-      return CONFIG.HOST_URL+"/backend/api/getThumbnailPath?gid=" + graph_id
+      return CONFIG.HOST_URL+CONFIG.CONTEXT_PATH+"/api/getThumbnailPath?gid=" + graph_id
     },
 
     // thumbnailExists: function (graph_id) {
@@ -534,7 +534,7 @@ export default {
     //   }
     // },
     downloadJob: function (jobid) {
-      window.open(CONFIG.HOST_URL+'/backend/api/downloadJobResult?jid=' + jobid)
+      window.open(CONFIG.HOST_URL+CONFIG.CONTEXT_PATH+'/api/downloadJobResult?jid=' + jobid)
     },
 
     reverseList: function () {

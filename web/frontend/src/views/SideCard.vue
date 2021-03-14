@@ -1065,7 +1065,7 @@ export default {
       Utils.formatTime(timestamp)
     },
     requestGraphDownload: function () {
-      window.open(CONFIG.HOST_URL+'/backend/api/downloadGraph?gid=' + this.gid)
+      window.open(CONFIG.HOST_URL+CONFIG.CONTEXT_PATH+'/api/downloadGraph?gid=' + this.gid)
     }
   }
   ,
