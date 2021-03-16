@@ -7,12 +7,18 @@ The folder for data of example cases and according figures can be found [here](/
 
 ## Deployement with Docker
 Use the [docker-compose](docker-compose.yml) file to deploy NeDRex-Web on your machine:
+Adjust image names based on the purpose:
+- Local execution:
+  `andimajore/nedrex_repo:server` and `andimajore/nedrex_repo:web`
+- Execution on exbio servers:
+   `andimajore/nedrex_repo:server_exbio` and `andimajore/nedrex_repo:web_exbio`
+   
 ```bash
 wget https://raw.githubusercontent.com/AndiMajore/RepoScapeWeb/master/docker-compose.yml -O docker-compose.yml
 docker-compose pull
 docker-compose up
 ```
-NeDRex-Web interface is running on [localhost:8080](http://localhost:8080)
+NeDRex-Web interface is running on [localhost:8080/nedrex/](http://localhost:8080/nedrex/)
 
 ## Manual Deployement
 First clone the project:
@@ -37,23 +43,26 @@ Use IDE to run [Main-Class/Spring-Boot-Application](web/backend/src/main/java/de
 #### Frontend
 ```
 cd $gitroot/web/frontend
-npm run dev
+npm run serve
 ```
-### Deployement
+### Production
+#### Tomcat settings
+If the services are planned to be deployed using a tomcat server, the configuration files used for the dockerized tomcat versions can be found in `frontend/docker/` and `backend/docker/`.
+
 #### Backend
 Use maven to compile project and start application, make sure you use >=java14.
 ```
 cd $gitroot/web/backend
 mvn package
-java -Xmx4g -jar target/reposcapeweb-backend-0.0.1-SNAPSHOT-spring-boot.jar
+java -Xmx4g -jar target/nerdrexweb-backend.war
 ```
+or deploy with a tomcat server.
+
 #### Frontend
+Generate webcontent to `dist/` directory:
 ```
 cd $gitroot/web/frontend
-npm run prod
+npm run build
 ```
-or
-```
-cd $gitroot/web/frontend
-npm run dev
-```
+Host paths can be set by editing the `src/Config.js` file before building.
+The content of `dist/` can be served by nginx or tomcat server.
