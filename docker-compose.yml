@@ -24,14 +24,14 @@ services:
       - nedrex-cache-volume:/etc/data/db
       - nedrex-usr-volume:/etc/data/usr
     ports:
-      - "8090:8090"
+      - "8034:8090"
     restart: on-failure
 
   web:
     container_name: nedrex-web
     image: andimajore/nedrex_repo:web_exbio
     ports:
-      - "8080:8080"
+      - "8024:8080"
     restart: on-failure
 volumes:
   nedrex-db-volume:

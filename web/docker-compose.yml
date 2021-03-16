@@ -16,11 +16,11 @@ services:
       - SYS_NICE
   web:
     container_name: nedrex-web
-    #image: andimajore/nedrex_repo:web_exbio
+#    image: andimajore/nedrex_repo:web_exbio
     image: andimajore/nedrex_repo:web
     build: frontend
     ports:
-      - "8080:8080"
+      - "8024:8080"
     restart: on-failure
   server:
     container_name: nedrex-server
@@ -33,7 +33,7 @@ services:
       - nedrex-dev-cache-volume:/etc/data/db
       - nedrex-dev-usr-volume:/etc/data/usr
     ports:
-      - "8090:8090"
+      - "8034:8090"
     restart: on-failure
 volumes:
   nedrex-dev-db-volume:
