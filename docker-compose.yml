@@ -2,7 +2,7 @@ version: "3.3"
 services:
 
   db:
-    container_name: nedrex-db
+    container_name: nedrex-web-db
     image: mysql
     command: --default-authentication-plugin=mysql_native_password
     restart: on-failure
@@ -16,7 +16,7 @@ services:
     cap_add:
       - SYS_NICE
   server:
-    container_name: nedrex-server
+    container_name: nedrex-web-server
     image: andimajore/nedrex_repo:server_exbio
     depends_on:
       - "db"
@@ -28,7 +28,7 @@ services:
     restart: on-failure
 
   web:
-    container_name: nedrex-web
+    container_name: nedrex-web-view
     image: andimajore/nedrex_repo:web_exbio
     ports:
       - "8024:8080"

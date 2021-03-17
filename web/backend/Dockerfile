@@ -38,4 +38,4 @@ RUN rm nedrexweb-backend.war
 WORKDIR /usr/app
 COPY scripts/wait-for-it.sh wait-for-it.sh
 
-ENTRYPOINT ./wait-for-it.sh nedrex-db:3306 -t 30 -- apache-tomcat/bin/catalina.sh run
+ENTRYPOINT ./wait-for-it.sh nedrex-web-db:3306 -t 30 -- apache-tomcat/bin/catalina.sh run
