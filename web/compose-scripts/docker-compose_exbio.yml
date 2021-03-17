@@ -16,19 +16,19 @@ services:
       - SYS_NICE
   web:
     container_name: nedrex-web-view
-    image: andimajore/nedrex_repo:web
+    image: andimajore/nedrex_repo:web_exbio
     build: frontend
     ports:
       - "8024:8080"
     restart: on-failure
   server:
     container_name: nedrex-web-server
-    image: andimajore/nedrex_repo:server
+    image: andimajore/nedrex_repo:server_exbio
     depends_on:
       - "db"
     build: backend
     environment:
-       - spring_profiles_active=prod
+      - spring_profiles_active=exbio
     volumes:
       - nedrex-dev-cache-volume:/etc/data/db
       - nedrex-dev-usr-volume:/etc/data/usr

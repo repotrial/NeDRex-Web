@@ -1,6 +1,6 @@
 
-const HOST = "localhost"
-const PROTOCOL = "http"
+const HOST = "www.exbio.wzw.tum.de"
+const PROTOCOL = "https"
 
 export const CONTEXT_PATH="/nedrex_backend"
 export const BACKEND_PORT =  "8034"
