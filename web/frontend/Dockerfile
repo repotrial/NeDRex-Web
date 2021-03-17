@@ -17,8 +17,8 @@ RUN mv apache-tomcat-8.5.64 apache-tomcat
 RUN rm -rf webapps/*
 
 WORKDIR apache-tomcat
-COPY --from=build-stage /app/dist webapps/nedrex/
-COPY docker/WEB-INF webapps/nedrex/WEB-INF
+COPY --from=build-stage /app/dist webapps/ROOT/
+COPY docker/WEB-INF webapps/ROOT/WEB-INF
 
 COPY docker/conf/* conf/
 

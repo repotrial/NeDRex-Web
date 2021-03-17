@@ -6,7 +6,7 @@ Vue.use(Router);
 
 const router = new Router({
     mode: "history",
-    base: "/nedrex",
+    base: "/",
     routes: [
       {path:"/:gid", component: App, redirect:"/:gid/start"},
       {path:"/:gid/:tab", name:"App", component: App, props:false},
