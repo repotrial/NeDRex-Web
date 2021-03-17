@@ -11,17 +11,12 @@ import {library} from '@fortawesome/fontawesome-svg-core'
 import {faUserSecret} from '@fortawesome/free-solid-svg-icons'
 import {Network} from "vue-vis-network";
 import * as CONFIG from "./Config"
-import VueMeta from "vue-meta";
-import VueHead from "vue-head";
 library.add(faUserSecret)
 
 Vue.component('font-awesome-icon', FontAwesomeIcon)
 Vue.component('network', Network);
 
 Vue.use(VueCookies);
-
-Vue.use(VueHead)
-
 
 import ApiService from "./services/api.service";
 

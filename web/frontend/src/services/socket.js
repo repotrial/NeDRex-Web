@@ -1,4 +1,5 @@
 import {Client, Stomp} from "@stomp/stompjs";
+import * as SockJS from 'sockjs-client';
 import Vue from "vue"
 import * as CONFIG from "../Config"
 
@@ -11,7 +12,8 @@ const emitter = new Vue({
       /* uses SockJS as websocket */
       webSocketFactory: function () {
         console.log("Try opening Websocket connection!")
-        return new WebSocket(CONFIG.SOCKET_URL+CONFIG.CONTEXT_PATH+"/jobs")
+        return new SockJS(CONFIG.SOCKET_URL+CONFIG.CONTEXT_PATH+"/jobs")
+        // return new WebSocket(CONFIG.SOCKET_URL+CONFIG.CONTEXT_PATH+"/jobs")
       },
       onConnect: function (frame) {
         console.log("connected!");

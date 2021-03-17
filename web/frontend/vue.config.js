@@ -2,7 +2,7 @@ module.exports = {
 
   outputDir: "dist",
   assetsDir: "static",
-  publicPath: "/",
+  publicPath: "/nedrex/",
 
   devServer: {
     proxy: {

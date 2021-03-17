@@ -298,16 +298,16 @@ export default {
   exampleGraph: undefined,
   gid: undefined,
   tab: undefined,
-  head :{
-    title:{
-      inner:'NeDRex-Web | Network-based Drug Repurposing and Exploration'
-    },
-    link :[
-      {rel: 'favicon', href: './favicon.ico', type: 'image/ico' }
-
-    ]
-
-  },
+  // head :{
+  //   title:{
+  //     inner:'NeDRex-Web | Network-based Drug Repurposing and Exploration'
+  //   },
+  //   link :[
+  //     {rel: 'favicon', href: './favicon.ico', type: 'image/ico' }
+  //
+  //   ]
+  //
+  // },
   // metaInfo:{
   //   title:'NeDRex-Web | Network-based Drug Repurposing and Exploration',
   //   link:[
