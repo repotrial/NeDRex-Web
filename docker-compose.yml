@@ -23,6 +23,8 @@ services:
     volumes:
       - nedrex-cache-volume:/etc/data/db
       - nedrex-usr-volume:/etc/data/usr
+    environment:
+      - spring_profiles_active=exbio
     ports:
       - "8034:8090"
     restart: on-failure

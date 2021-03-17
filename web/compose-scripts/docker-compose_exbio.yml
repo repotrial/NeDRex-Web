@@ -11,7 +11,7 @@ services:
       MYSQL_USER: reposcaper
       MYSQL_PASSWORD: repotrial
     volumes:
-      - nedrex-dev-db-volume:/var/lib/mysql
+      - nedrex-db-volume:/var/lib/mysql
     cap_add:
       - SYS_NICE
   web:
@@ -30,12 +30,12 @@ services:
     environment:
       - spring_profiles_active=exbio
     volumes:
-      - nedrex-dev-cache-volume:/etc/data/db
-      - nedrex-dev-usr-volume:/etc/data/usr
+      - nedrex-cache-volume:/etc/data/db
+      - nedrex-usr-volume:/etc/data/usr
     ports:
       - "8034:8090"
     restart: on-failure
 volumes:
-  nedrex-dev-db-volume:
-  nedrex-dev-usr-volume:
-  nedrex-dev-cache-volume:
+  nedrex-db-volume:
+  nedrex-usr-volume:
+  nedrex-cache-volume:
