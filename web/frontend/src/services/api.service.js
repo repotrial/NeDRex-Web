@@ -1,5 +1,4 @@
 import axios from 'axios'
-// import { TokenService } from './storage.service'
 
 const ApiService = {
 
@@ -7,20 +6,11 @@ const ApiService = {
     axios.defaults.baseURL = baseURL;
   },
 
-  // setHeader() {
-  //   axios.defaults.headers.common["Authorization"] = `Bearer ${TokenService.getToken()}`
-  // },
-
-  removeHeader() {
-    axios.defaults.headers.common = {}
-  },
-
   get(resource) {
     return axios.get(resource)
   },
 
-  /* added callback for fileupload to get progress and shit */
-  post(resource, data, callback) {
+  post(resource, data,callback) {
     return axios.post(resource, data, callback);
   },
 

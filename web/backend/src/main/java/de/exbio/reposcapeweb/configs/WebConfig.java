@@ -11,11 +11,13 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 @EnableWebMvc
 public class WebConfig extends WebMvcConfigurerAdapter {
 
+
     @Autowired
     private Environment env;
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/api/**")
-                .allowedOrigins(env.getProperty("server.allowedOrigin"));
+                .allowedOrigins(env.getProperty("server.allowedOrigin").split(","));
     }
+
 }
