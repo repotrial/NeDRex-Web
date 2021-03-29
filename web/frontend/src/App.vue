@@ -1,6 +1,6 @@
 <template style="overflow-y: hidden">
   <v-app :style="{marginTop:selectedTabId===0 ? '60px': '0px'}" id="app">
-    <headerBar @showVersionEvent="showVersionInfo=true" :prominent="selectedTabId===0" style="z-index: 1000;"/>
+    <headerBar @showVersionEvent="showVersionInfo=true" @showBugEvent="showBugInfo=true" @showHelpEvent="showHelp=true" :prominent="selectedTabId===0" style="z-index: 1000;"/>
     <v-card style="position: sticky ; top:0px; margin-top: -10px; z-index: 999 ">
       <v-toolbar flat>
         <template v-slot:extension>
@@ -213,6 +213,98 @@
 
       </v-dialog>
     </v-container>
+    <v-bottom-sheet inset v-model="showBugInfo" width="30vw">
+      <v-sheet dark>
+        <v-list>
+          <v-list-item>
+            <v-list-item-title>
+              Found a Bug?
+            </v-list-item-title>
+          </v-list-item>
+          <v-list-item>
+            <v-list-item-content>
+              Did you find a bug or have other ideas to improve NeDRex-Web? Great! Just let us know using one of the following options:
+            </v-list-item-content>
+          </v-list-item>
+
+          <v-list-item>
+            <v-list-item-icon>
+              <v-icon left>fas fa-at</v-icon>
+            </v-list-item-icon>
+            <v-list-item-title>By Mail:</v-list-item-title>
+            <v-list-item-subtitle>maieran@cip.ifi.lmu.de</v-list-item-subtitle>
+          </v-list-item>
+
+          <v-list-item>
+            <v-list-item-icon>
+              <v-icon left>fab fa-github</v-icon>
+
+            </v-list-item-icon>
+            <v-list-item-title>Filing an Issue:</v-list-item-title>
+            <v-list-item-subtitle>
+              <v-chip outlined @click="openExternal('https://github.com/AndiMajore/RepoScapeWeb/issues')">
+                Github-Page
+                <v-icon right>fas fa-external-link-alt</v-icon>
+              </v-chip>
+              </v-list-item-subtitle>
+          </v-list-item>
+          <v-list-item>
+            <v-list-item-icon>
+              <v-icon left>fas fa-table</v-icon>
+
+            </v-list-item-icon>
+            <v-list-item-title>Adding to spreadsheet:</v-list-item-title>
+            <v-list-item-subtitle>
+              <v-chip outlined @click="openExternal('https://docs.google.com/spreadsheets/d/15ZqaWko_EH4filOLfwC_ZxtEAb-FxJ2sKSPv9MmV75I/edit?usp=sharing')">
+                Google-Spreadsheet
+                <v-icon right>fas fa-external-link-alt</v-icon>
+              </v-chip>
+            </v-list-item-subtitle>
+          </v-list-item>
+        </v-list>
+      </v-sheet>
+
+    </v-bottom-sheet >
+    <v-bottom-sheet inset v-model="showHelp" width="30vw">
+      <v-sheet dark>
+
+        <v-list>
+          <v-list-item>
+            <v-list-item-title>
+             Need help?
+            </v-list-item-title>
+          </v-list-item>
+          <v-list-item>
+            <v-list-item-content>
+              You can either write an email or checking resources explaining each page of NeDRex-Web:
+            </v-list-item-content>
+          </v-list-item>
+
+          <v-list-item>
+            <v-list-item-icon>
+              <v-icon left>fas fa-at</v-icon>
+            </v-list-item-icon>
+            <v-list-item-title>By Mail:</v-list-item-title>
+            <v-list-item-subtitle>maieran@cip.ifi.lmu.de</v-list-item-subtitle>
+          </v-list-item>
+
+          <v-list-item>
+            <v-list-item-icon>
+              <v-icon left>fab fa-github</v-icon>
+
+            </v-list-item-icon>
+            <v-list-item-title>Application-Example:</v-list-item-title>
+            <v-list-item-subtitle>
+              <v-chip outlined @click="openExternal('https://github.com/AndiMajore/RepoScapeWeb/tree/master/material/page_explanation')">
+                Page-Explanations
+                <v-icon right>fas fa-external-link-alt</v-icon>
+              </v-chip>
+            </v-list-item-subtitle>
+          </v-list-item>
+        </v-list>
+      </v-sheet>
+
+    </v-bottom-sheet >
     <v-bottom-sheet inset v-model="showVersionInfo" width="60vw">
       <v-sheet dark>
         <v-list>
@@ -298,22 +390,6 @@ export default {
   exampleGraph: undefined,
   gid: undefined,
   tab: undefined,
-  // head :{
-  //   title:{
-  //     inner:'NeDRex-Web | Network-based Drug Repurposing and Exploration'
-  //   },
-  //   link :[
-  //     {rel: 'favicon', href: './favicon.ico', type: 'image/ico' }
-  //
-  //   ]
-  //
-  // },
-  // metaInfo:{
-  //   title:'NeDRex-Web | Network-based Drug Repurposing and Exploration',
-  //   link:[
-  //     { rel: 'favicon', href: './static/favicon.ico' }
-  //   ]
-  // },
 
   data() {
     return {
@@ -335,6 +411,8 @@ export default {
       cookiesPopup: false,
       startFilters: {},
       showVersionInfo: false,
+      showBugInfo: false,
+      showHelp: false,
       metadata: {},
       sideHidden: true,
       graphWindowStyle: {
@@ -682,6 +760,10 @@ export default {
       if (style === 2) {
         this.setNotification(this.notifications.style2, message)
       }
+    },
+
+    openExternal: function (url) {
+      window.open(url, '_blank')
     },
     setNotification: function (to, message) {
       to.message = message;

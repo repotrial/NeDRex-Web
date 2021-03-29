@@ -1,5 +1,5 @@
 <template>
-  <v-app-bar app elevation="0" :dense="!prominent" :prominent="prominent"  color="white">
+  <v-app-bar app elevation="0" :dense="!prominent" :prominent="prominent" color="white">
     <div id="particles-js"></div>
     <div id="title-div" style="position:fixed">
       <h1 id="title">NeDRex</h1>
@@ -7,11 +7,33 @@
     <v-row>
       <v-col cols="11"></v-col>
       <v-col cols="1">
-        <v-btn icon @click="$emit('showVersionEvent')" style="background-color: white">
-          <v-icon color="primary">
-            far fa-question-circle
-          </v-icon>
-        </v-btn>
+        <v-row >
+          <v-col style=" padding-right:0; padding-bottom: 0">
+            <v-btn icon small @click="$emit('showVersionEvent')" style="background-color: white">
+              <v-icon color="primary">
+                fas fa-info-circle
+              </v-icon>
+            </v-btn>
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col  style=" padding-right:0; padding-bottom: 0">
+            <v-btn small icon @click="$emit('showBugEvent')" style="background-color: white">
+              <v-icon color="primary">
+                fas fa-bug
+              </v-icon>
+            </v-btn>
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col style=" padding-right:0; padding-bottom: 0">
+            <v-btn small icon @click="$emit('showHelpEvent')" style="background-color: white">
+              <v-icon color="primary">
+                fas fa-question-circle
+              </v-icon>
+            </v-btn>
+          </v-col>
+        </v-row>
       </v-col>
     </v-row>
   </v-app-bar>
@@ -22,8 +44,8 @@ import '../js/particles.js'
 
 export default {
   name: "headerBar",
-  props:{
-    prominent:true,
+  props: {
+    prominent: true,
   },
   mounted() {
     this.initParticles()
