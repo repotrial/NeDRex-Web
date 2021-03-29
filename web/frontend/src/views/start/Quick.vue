@@ -13,8 +13,8 @@
               </v-list-item>
               <v-list-item>
                 <v-list-item-content>
-                  Identify disease modules like in the standalone Quickstart module but with direct use in a subsequent
-                  drug prioritization analysis. Using the Blitz mode will use default values for the algorithmic
+                  Identify disease modules like in the standalone Agile Start module but with direct use in a subsequent
+                  drug prioritization analysis. Using the Minimal mode will use default values for the algorithmic
                   choices,
                   so only the starting genes will have to be defined.
                 </v-list-item-content>
@@ -25,7 +25,7 @@
                     <v-icon left>
                       fas fa-angle-double-right
                     </v-icon>
-                    Quick Drug Repurposing
+                    Agile Drug Repurposing
                   </v-btn>
                 </v-list-item-content>
               </v-list-item>
@@ -35,7 +35,7 @@
                     <v-icon left>
                       fas fa-bolt
                     </v-icon>
-                    Blitz Drug Repurposing
+                    Quick Drug Repurposing
                   </v-btn>
                 </v-list-item-content>
               </v-list-item>
@@ -58,7 +58,7 @@
                     <v-list-item-content>
                       Identify disease modules by selecting seed genes or protein by hand, suggestions using information
                       about e.g. association to disorders or by uploading a list. Tune the parameters of the algorithms
-                      (Quick) or just use the default for even less necessary input work (Blitz).
+                      (Agile) or just use the default for even less necessary input work (Quick).
                     </v-list-item-content>
                   </v-list-item>
                   <v-list-item>
@@ -67,7 +67,7 @@
                         <v-icon left>
                           fas fa-angle-double-right
                         </v-icon>
-                        Quick Module Identification
+                        Agile Module Identification
                       </v-btn>
                     </v-list-item-content>
                   </v-list-item>
@@ -77,7 +77,7 @@
                         <v-icon left>
                           fas fa-bolt
                         </v-icon>
-                        Blitz Module Identification
+                        Quick Module Identification
                       </v-btn>
                     </v-list-item-content>
                   </v-list-item>
@@ -97,7 +97,7 @@
                     <v-list-item-content>
                       Starting e.g. with a disorder to derive Genes/Proteins for module identification and subsequent
                       drug
-                      ranking (e.g. trustrank)
+                      ranking (e.g. TrustRank)
                     </v-list-item-content>
                   </v-list-item>
                   <v-list-item>
@@ -106,7 +106,7 @@
                         <v-icon left>
                           fas fa-angle-double-right
                         </v-icon>
-                        Quick Drug Prioritization
+                        Agile Drug Prioritization
                       </v-btn>
                     </v-list-item-content>
                   </v-list-item>
@@ -116,7 +116,7 @@
                         <v-icon left>
                           fas fa-bolt
                         </v-icon>
-                        Blitz Drug Repurposing
+                        Quick Drug Repurposing
                       </v-btn>
                     </v-list-item-content>
                   </v-list-item>

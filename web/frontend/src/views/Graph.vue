@@ -1,9 +1,10 @@
 <template>
   <div class="graph-window" :style="windowStyle">
     <i>{{ text }}</i>
-    <v-progress-linear v-if="progress ===undefined" v-show="loading" indeterminate
+    <v-progress-linear v-if="progress ===undefined" v-show="loading && !waiting" indeterminate
                        :color=loadingColor></v-progress-linear>
     <v-progress-linear v-else v-show="progress <100" :value="progress" :color=loadingColor></v-progress-linear>
+    <i v-show="loading && waiting && progress ===undefined">No graph has been loaded yet!</i>
     <div :style="{position:'relative', height:'100%',width:'100%',display: 'flex', 'justify-content': 'flex-end'}">
       <network v-if="nodeSet !== undefined && isVisualized()" v-show="!loading" class="wrapper" ref="network"
                :style="{width: '100%',cursor:canvasCursor}"
@@ -112,6 +113,7 @@ export default {
       key: 0,
       text: "",
       loading: true,
+      waiting:true,
       loadingColor: 'primary',
       dialog: false,
       skipVis: false,
@@ -224,6 +226,7 @@ export default {
         })
     },
     setGraph: function (graph) {
+      this.waiting=false
       this.loadingColor = this.colors.bar.vis
       if (!this.skipDialog)
         this.dialog = true;
@@ -574,7 +577,12 @@ export default {
         this.dialog = true
       else {
         this.dialogResolve(true)
+        this.reloadLegend()
       }
+    },
+    reloadLegend: function(){
+      this.showLegend=!this.showLegend
+      this.showLegend=!this.showLegend
     },
     onClick: function (params) {
       // this.setNodeSize(this.nodeSet.get().map(n=>n.id),25)

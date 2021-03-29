@@ -2,21 +2,15 @@
   <div>
     <v-container v-if="metagraph!==undefined">
       <v-card style="margin:5px;padding-bottom:15px" :loading="loading" ref="info">
-
         <template slot="progress">
           <v-card-title>General Information</v-card-title>
-          <v-progress-circular
+          <v-progress-circular v-if="!waiting"
             color="primary"
             size="50"
             width="5"
             indeterminate
           ></v-progress-circular>
-          <!--          <v-progress-linear-->
-          <!--            color="primary"-->
-          <!--            height="5"-->
-          <!--            indeterminate-->
-          <!--          ></v-progress-linear>-->
-          <!--          <v-card-title>General Information</v-card-title>-->
+          <i v-else>No data available!</i>
         </template>
         <v-container v-if="!loading">
           <v-card-title>General Information</v-card-title>
@@ -75,12 +69,13 @@
       <v-card style="margin:5px;padding-bottom: 15px" :loading="loading">
         <template slot="progress">
           <v-card-title>Nodes</v-card-title>
-          <v-progress-circular
+          <v-progress-circular v-if="!waiting"
             color="primary"
             size="50"
             width="5"
             indeterminate
           ></v-progress-circular>
+          <i v-else>No data available!</i>
           <!--          <v-progress-linear-->
           <!--            color="primary"-->
           <!--            height="5"-->
@@ -321,12 +316,13 @@
       <v-card style="margin:5px;padding-bottom: 15px" :loading="loading">
         <template slot="progress">
           <v-card-title>Edges</v-card-title>
-          <v-progress-circular
+          <v-progress-circular v-if="!waiting"
             color="primary"
             size="50"
             width="5"
             indeterminate
           ></v-progress-circular>
+          <i v-else>No data available!</i>
           <!--          <v-progress-linear-->
           <!--            color="primary"-->
           <!--            height="5"-->
@@ -999,6 +995,7 @@ export default {
       edgeOptionHover: false,
       optionDialog: false,
       metagraph: undefined,
+      waiting: true,
       selectionDialog: {
         show: false,
         type: "",
@@ -1989,6 +1986,7 @@ export default {
       }).catch(err => console.log(err))
     },
     getList: function (gid, metagraph) {
+      this.waiting = false
       this.setMetagraph(metagraph)
       this.clearLists()
       this.$http.get("/getGraphList?id=" + gid + "&cached=true").then(response => {
