@@ -100,10 +100,16 @@ export default {
   metagraph: undefined,
   gid: undefined,
   unconnected: [],
+
   network: undefined,
   canvas: undefined,
   ctx: undefined,
-
+  rect: {},
+  drag: false,
+  drawingSurfaceImageData: undefined,
+  offsetLeft: 0,
+  offsetTop: 0,
+  canvasCursor: "default",
 
   data() {
     return {
@@ -121,12 +127,6 @@ export default {
       dialog: false,
       skipVis: false,
       skipDialog: false,
-      rect: {},
-      drag: false,
-      drawingSurfaceImageData: undefined,
-      offsetLeft: 0,
-      offsetTop: 0,
-      canvasCursor: "default",
     }
   }
   ,
@@ -677,7 +677,6 @@ export default {
 
     initDragSelect: function () {
       if (this.$refs.network !== undefined && this.network === undefined) {
-        console.log(this.$refs.network.network)
         this.network = this.$refs.network.network
         this.canvas = this.network.canvas.frame.canvas;
         this.canvas.oncontextmenu = function () {
