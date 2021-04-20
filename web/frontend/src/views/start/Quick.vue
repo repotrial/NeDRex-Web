@@ -197,6 +197,7 @@ export default {
 
     loadGraph: function (gid) {
       this.$emit("graphLoadEvent", gid)
+      this.modus=-1
     },
     loadDrugTarget: function(blitz, seeds, type){
       this.blitz = blitz;
