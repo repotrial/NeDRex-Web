@@ -144,7 +144,7 @@ public class UpdateService {
     }
 
     public void renewDBDumps() {
-        log.info("Creating database dump filed for external Tool");
+        log.info("Creating database dump files for external Tool");
         File dir = new File(env.getProperty("path.external.cache"));
         if (dir.exists())
             dir.delete();

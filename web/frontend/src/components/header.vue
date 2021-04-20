@@ -1,39 +1,75 @@
 <template>
-  <v-app-bar app elevation="0" :dense="!prominent" :prominent="prominent" color="white">
-    <div id="particles-js"></div>
+  <v-app-bar app elevation="0" :height="prominent? 100:50" color="#383838">
+    <div v-show="prominent" id="particles-js"></div>
     <div id="title-div" style="position:fixed">
-      <h1 id="title">NeDRex</h1>
+      <img src="/static/NeDRex-logo-bright-removebg-cropped.png" :width="prominent?250:175" :style="{'padding-top':'25px'}">
     </div>
     <v-row>
       <v-col cols="11"></v-col>
-      <v-col cols="1">
-        <v-row >
-          <v-col style=" padding-right:0; padding-bottom: 0">
-            <v-btn icon small @click="$emit('showVersionEvent')" style="background-color: white">
-              <v-icon color="primary">
-                fas fa-info-circle
-              </v-icon>
-            </v-btn>
-          </v-col>
-        </v-row>
-        <v-row>
-          <v-col  style=" padding-right:0; padding-bottom: 0">
-            <v-btn small icon @click="$emit('showBugEvent')" style="background-color: white">
-              <v-icon color="primary">
-                fas fa-bug
-              </v-icon>
-            </v-btn>
-          </v-col>
-        </v-row>
+      <v-col cols="1" style="padding-top: 0">
         <v-row>
           <v-col style=" padding-right:0; padding-bottom: 0">
-            <v-btn small icon @click="$emit('showHelpEvent')" style="background-color: white">
-              <v-icon color="primary">
-                fas fa-question-circle
-              </v-icon>
-            </v-btn>
+            <v-menu bottom transition="slide-y-transition">
+              <template v-slot:activator="{on,attrs}">
+                <v-btn icon small right style="background-color: #383838" v-bind="attrs" v-on="on">
+                  <v-icon color="primary">
+                    fas fa-bars
+                  </v-icon>
+                </v-btn>
+              </template>
+              <v-list color="#383838">
+                <v-list-item>
+                  <v-btn icon small @click="$emit('showVersionEvent')" style="background-color: #383838">
+                    <v-icon color="primary">
+                      fas fa-info-circle
+                    </v-icon>
+                  </v-btn>
+                </v-list-item>
+                <v-list-item>
+                  <v-btn small icon @click="$emit('showBugEvent')" style="background-color:  #383838">
+                    <v-icon color="primary">
+                      fas fa-bug
+                    </v-icon>
+                  </v-btn>
+                </v-list-item>
+                <v-list-item>
+                  <v-btn small icon @click="$emit('showHelpEvent')" style="background-color:  #383838">
+                    <v-icon color="primary">
+                      fas fa-question-circle
+                    </v-icon>
+                  </v-btn>
+                </v-list-item>
+              </v-list>
+            </v-menu>
           </v-col>
         </v-row>
+<!--        <v-row>-->
+<!--          <v-col style=" padding-right:0; padding-bottom: 0">-->
+<!--            <v-btn icon small @click="$emit('showVersionEvent')" style="background-color: #383838">-->
+<!--              <v-icon color="primary">-->
+<!--                fas fa-info-circle-->
+<!--              </v-icon>-->
+<!--            </v-btn>-->
+<!--          </v-col>-->
+<!--        </v-row>-->
+<!--        <v-row>-->
+<!--          <v-col style=" padding-right:0; padding-bottom: 0">-->
+<!--            <v-btn small icon @click="$emit('showBugEvent')" style="background-color:  #383838">-->
+<!--              <v-icon color="primary">-->
+<!--                fas fa-bug-->
+<!--              </v-icon>-->
+<!--            </v-btn>-->
+<!--          </v-col>-->
+<!--        </v-row>-->
+<!--        <v-row>-->
+<!--          <v-col style=" padding-right:0; padding-bottom: 0">-->
+<!--            <v-btn small icon @click="$emit('showHelpEvent')" style="background-color:  #383838">-->
+<!--              <v-icon color="primary">-->
+<!--                fas fa-question-circle-->
+<!--              </v-icon>-->
+<!--            </v-btn>-->
+<!--          </v-col>-->
+<!--        </v-row>-->
       </v-col>
     </v-row>
   </v-app-bar>
@@ -62,13 +98,13 @@ export default {
             }
           },
           "color": {
-            "value": "#000000"
+            "value": "#35d0d4"
           },
           "shape": {
             "type": "circle",
             "stroke": {
               "width": 0,
-              "color": "#000000"
+              "color": "#c8c8c8"
             },
             "polygon": {
               "nb_sides": 4
@@ -97,7 +133,7 @@ export default {
           "line_linked": {
             "enable": true,
             "distance": 200,
-            "color": "#000e30",
+            "color": "#66c2c5",
             "opacity": 0.4,
             "width": 1
           },
@@ -168,17 +204,17 @@ export default {
   position: fixed
   //filter: blur(1px)
   //-webkit-filter: blur(1px)
-  background: white
+  background: #383838
   height: 95%
   width: 97.5%
 
-#title
-  color: white
-  text-align: center
-  margin: auto
-  vertical-align: middle
-  text-shadow: 2px 2px 5px #45495b
-  user-select: none
+//#title
+//  color: white
+//  text-align: center
+//  margin: auto
+//  vertical-align: middle
+//  text-shadow: 2px 2px 5px #45495b
+//  user-select: none
 
 
 #title-div

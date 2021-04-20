@@ -2,21 +2,23 @@
   <v-app :style="{marginTop:selectedTabId===0 ? '60px': '0px'}" id="app">
     <headerBar @showVersionEvent="showVersionInfo=true" @showBugEvent="showBugInfo=true" @showHelpEvent="showHelp=true" :prominent="selectedTabId===0" style="z-index: 1000;"/>
     <v-card style="position: sticky ; top:0px; margin-top: -10px; z-index: 999 ">
-      <v-toolbar flat>
+      <v-toolbar flat color="#383838">
         <template v-slot:extension>
           <v-tabs
             fixed-tabs
             v-model="selectedTabId"
+            background-color="#383838"
+            color="#35d0d4"
           >
             <v-tabs-slider></v-tabs-slider>
             <v-tab v-for="tab in tabslist" class="primary--text" v-on:click="selectTab(tab.id)" :key=tab.id>
               <v-badge
                 dot
-                color="blue"
+                color="#35d0d4"
                 :value="tab.note"
               >
                 <i :style="{color:tab.color}">
-                  <v-icon dense>{{ tab.icon }}</v-icon>
+                  <v-icon dense :color="tab.color">{{ tab.icon }}</v-icon>
                   {{ tab.label }}
                 </i>
               </v-badge>
@@ -426,7 +428,7 @@ export default {
     this.loadUser()
     this.colors = {
       buttons: {graphs: {active: "deep-purple accent-2", inactive: undefined}},
-      tabs: {active: "rgba(25 118 210)", inactive: "rgba(0,0,0,.54)"}
+      tabs: {active: "#35d0d4", inactive: "white"}
     }
     this.tabslist = [
       {id: 0, label: "Start", icon: "fas fa-filter", color: this.colors.tabs.active, note: false},
