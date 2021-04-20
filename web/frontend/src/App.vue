@@ -38,7 +38,7 @@
 
             <v-container v-show="selectedTabId===0" fluid>
               <Start v-if="metagraph !== undefined" ref="start"
-                     v-on:graphLoadEvent="loadGraph"
+                     v-on:graphLoadEvent="loadGraphNewTab"
                      v-on:printNotificationEvent="printNotification"
                      @showSideEvent="setSideVisible"
                      @clearURLEvent="clearURL"
@@ -632,6 +632,10 @@ export default {
           console.log(err)
         })
       }).catch(console.log)
+    },
+    loadGraphNewTab: function(graph){
+      let route = this.$router.resolve({name:"App",params:{gid:graph.post.id, tab:"list"}})
+      window.open(route.href,"_blank")
     },
     recolorGraph: function (request) {
       this.$refs.legend.addColoring(request)

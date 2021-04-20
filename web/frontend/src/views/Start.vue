@@ -113,7 +113,7 @@ export default {
 
     loadGraph: function (data) {
       this.$emit("graphLoadEvent", data)
-      this.reset()
+      // this.reset()
     },
 
     direction: function (edge) {
