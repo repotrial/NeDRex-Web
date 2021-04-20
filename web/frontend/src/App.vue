@@ -498,7 +498,6 @@ export default {
       this.gid=undefined
       if (this.$router.currentRoute.fullPath.length > 1) {
         this.$router.push("/")
-        console.log(this.$route.params)
         this.reloadAll()
         this.$refs.graph.reload()
       }
@@ -750,6 +749,8 @@ export default {
     selectTab: function (tabid, skipReroute) {
       if (this.selectedTabId === tabid)
         return
+      if(this.selectedTabId===0)
+        this.$refs.start.reset()
       let colInactive = this.colors.tabs.inactive;
       let colActive = this.colors.tabs.active;
       for (let idx in this.tabslist) {

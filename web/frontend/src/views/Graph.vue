@@ -550,7 +550,6 @@ export default {
       this.toggleNodesVisible(this.nodeSet.get().map(item => item.id), boolean)
     },
     hideGroupVisibility: function (name, boolean) {
-      console.log("toggle: " + name + " -> " + boolean)
       let updates = this.nodeSet.get({
         filter: function (item) {
           return item.group === name

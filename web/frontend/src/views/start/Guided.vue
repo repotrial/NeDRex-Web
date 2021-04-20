@@ -689,6 +689,9 @@ export default {
       this.info = undefined
 
     },
+    reset: function (){
+      this.init()
+    },
 
     print: function (message) {
       console.log(message)

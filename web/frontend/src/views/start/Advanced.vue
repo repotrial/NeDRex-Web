@@ -1,89 +1,89 @@
 <template>
   <v-container>
-  <v-card class="mx-auto">
-    <v-list>
-      <v-list-item>
-        <v-list-item-title class="title">
-          Customized Exploration
-        </v-list-item-title>
-      </v-list-item>
-      <v-list-item>
-        <v-list-item-subtitle>
-          Query a specified starting graph.
-        </v-list-item-subtitle>
-      </v-list-item>
-    </v-list>
-    <v-divider></v-divider>
-  <v-container v-if="metagraph !== undefined">
-    <v-row>
-      <v-col cols="6">
-        <Graph ref="startgraph" :initgraph="{graph:metagraph,name:'metagraph'}" :startGraph="true"
-               :configuration="{visualized:true}" :window-style="windowStyle" >
-        </Graph>
-      </v-col>
-      <v-col cols="2">
-        <v-list v-model="nodeModel" ref="nodeSelector">
-          <v-card-title>Nodes</v-card-title>
-          <v-list-item v-for="item in nodes" :key="item.index">
-            <v-chip outlined v-on:click="toggleNode(item.index)"
-                    :color="nodeModel.indexOf(item.index)===-1?'gray':'primary'"
-                    :text-color="nodeModel.indexOf(item.index)===-1?'black':'gray'"
-            >
-              <v-icon left :color="getColoring('nodes',item.label)">fas fa-genderless</v-icon>
-              {{ item.label }}
-              <span style="color: gray; margin-left: 3pt"
-                    v-show="nodeModel.indexOf(item.index)>-1">({{
-                  metagraph.weights.nodes[item.label.toLowerCase()]
-                }})</span>
-            </v-chip>
-          </v-list-item>
-        </v-list>
+    <v-card class="mx-auto">
+      <v-list>
+        <v-list-item>
+          <v-list-item-title class="title">
+            Customized Exploration
+          </v-list-item-title>
+        </v-list-item>
+        <v-list-item>
+          <v-list-item-subtitle>
+            Query a specified starting graph.
+          </v-list-item-subtitle>
+        </v-list-item>
+      </v-list>
+      <v-divider></v-divider>
+      <v-container v-if="metagraph !== undefined">
+        <v-row>
+          <v-col cols="6">
+            <Graph ref="startgraph" :initgraph="{graph:metagraph,name:'metagraph'}" :startGraph="true"
+                   :configuration="{visualized:true}" :window-style="windowStyle">
+            </Graph>
+          </v-col>
+          <v-col cols="2">
+            <v-list v-model="nodeModel" ref="nodeSelector">
+              <v-card-title>Nodes</v-card-title>
+              <v-list-item v-for="item in nodes" :key="item.index">
+                <v-chip outlined v-on:click="toggleNode(item.index)"
+                        :color="nodeModel.indexOf(item.index)===-1?'gray':'primary'"
+                        :text-color="nodeModel.indexOf(item.index)===-1?'black':'gray'"
+                >
+                  <v-icon left :color="getColoring('nodes',item.label)">fas fa-genderless</v-icon>
+                  {{ item.label }}
+                  <span style="color: gray; margin-left: 3pt"
+                        v-show="nodeModel.indexOf(item.index)>-1">({{
+                      metagraph.weights.nodes[item.label.toLowerCase()]
+                    }})</span>
+                </v-chip>
+              </v-list-item>
+            </v-list>
 
-      </v-col>
-      <v-col cols="4">
-        <v-list v-model="edgeModel">
-          <v-card-title>Edges</v-card-title>
-          <template v-for="item in edges">
-            <v-list-item :key="item.index">
-              <v-chip outlined v-on:click="toggleEdge(item.index)"
-                      :color="edgeModel.indexOf(item.index)===-1?'gray':'primary'"
-                      :text-color="edgeModel.indexOf(item.index)===-1?'black':'gray'"
-              >
+          </v-col>
+          <v-col cols="4">
+            <v-list v-model="edgeModel">
+              <v-card-title>Edges</v-card-title>
+              <template v-for="item in edges">
+                <v-list-item :key="item.index">
+                  <v-chip outlined v-on:click="toggleEdge(item.index)"
+                          :color="edgeModel.indexOf(item.index)===-1?'gray':'primary'"
+                          :text-color="edgeModel.indexOf(item.index)===-1?'black':'gray'"
+                  >
 
-                <v-icon left :color="getColoring('edges',item.label)[0]">fas fa-genderless</v-icon>
-                <template v-if="direction(item.label)===0">
-                  <v-icon left>fas fa-undo-alt</v-icon>
-                </template>
-                <template v-else>
-                  <v-icon v-if="direction(item.label)===1" left>fas fa-long-arrow-alt-right</v-icon>
-                  <v-icon v-else left>fas fa-arrows-alt-h</v-icon>
-                  <v-icon left :color="getColoring('edges',item.label)[1]">fas fa-genderless</v-icon>
-                </template>
-                {{ item.label }}
-                <span style="color: gray; margin-left: 3pt"
-                      v-show="edgeModel.indexOf(item.index)>-1">({{ metagraph.weights.edges[item.label] }})</span>
-              </v-chip>
-            </v-list-item>
-            <v-list-item
-              v-show="edgeModel.indexOf(item.index)>-1 && (item.label==='ProteinInteractsWithProtein' ||item.label==='GeneInteractsWithGene' )">
-              <v-chip outlined v-on:click="interactions[item.label]=false"
-                      :color="interactions[item.label]?'gray':'primary'"
-              >
-                experimental
-              </v-chip>
-              <v-chip outlined v-on:click="interactions[item.label]=true"
-                      :color="!interactions[item.label]?'gray':'primary'"
-              >
-                all
-              </v-chip>
+                    <v-icon left :color="getColoring('edges',item.label)[0]">fas fa-genderless</v-icon>
+                    <template v-if="direction(item.label)===0">
+                      <v-icon left>fas fa-undo-alt</v-icon>
+                    </template>
+                    <template v-else>
+                      <v-icon v-if="direction(item.label)===1" left>fas fa-long-arrow-alt-right</v-icon>
+                      <v-icon v-else left>fas fa-arrows-alt-h</v-icon>
+                      <v-icon left :color="getColoring('edges',item.label)[1]">fas fa-genderless</v-icon>
+                    </template>
+                    {{ item.label }}
+                    <span style="color: gray; margin-left: 3pt"
+                          v-show="edgeModel.indexOf(item.index)>-1">({{ metagraph.weights.edges[item.label] }})</span>
+                  </v-chip>
+                </v-list-item>
+                <v-list-item
+                  v-show="edgeModel.indexOf(item.index)>-1 && (item.label==='ProteinInteractsWithProtein' ||item.label==='GeneInteractsWithGene' )">
+                  <v-chip outlined v-on:click="interactions[item.label]=false"
+                          :color="interactions[item.label]?'gray':'primary'"
+                  >
+                    experimental
+                  </v-chip>
+                  <v-chip outlined v-on:click="interactions[item.label]=true"
+                          :color="!interactions[item.label]?'gray':'primary'"
+                  >
+                    all
+                  </v-chip>
 
-            </v-list-item>
-          </template>
-        </v-list>
-      </v-col>
-    </v-row>
-  </v-container>
-  </v-card>
+                </v-list-item>
+              </template>
+            </v-list>
+          </v-col>
+        </v-row>
+      </v-container>
+    </v-card>
   </v-container>
 </template>
 
@@ -109,7 +109,7 @@ export default {
       nodeModel: [],
       edgeModel: [],
       filterId: -1,
-      windowStyle:{
+      windowStyle: {
         height: '75vh',
         'min-height': '75vh',
       }
@@ -128,6 +128,9 @@ export default {
     this.initLists(this.metagraph)
   },
   methods: {
+    reset: function () {
+      this.loadGraph(false)
+    },
     initLists: function (selectionGraph) {
       selectionGraph.nodes.forEach(n => {
         this.nodes.push({index: this.nodes.length, id: parseInt(n.id), label: n.label})
@@ -156,9 +159,9 @@ export default {
         this.edgeModel = []
         this.options.selectedElements.length = 0
         this.filters.length = 0
-        this.$nextTick(() => {
-          this.$refs.nodeSelector.$forceUpdate()
-        })
+        // this.$nextTick(() => {
+        //   this.$refs.nodeSelector.$forceUpdate()
+        // })
         return
       }
       graphLoad = {post: {nodes: {}, edges: {}}}
@@ -184,7 +187,7 @@ export default {
     },
     toggleNode: function (nodeIndex) {
       let index = this.nodeModel.indexOf(nodeIndex)
-      this.$refs.startgraph.hideGroupVisibility(this.nodes[nodeIndex].label.toLowerCase(), index>-1,true)
+      this.$refs.startgraph.hideGroupVisibility(this.nodes[nodeIndex].label.toLowerCase(), index > -1, true)
       if (index >= 0) {
         let remove = -1;
         for (let idx in this.options.selectedElements) {
@@ -251,7 +254,7 @@ export default {
       return 0
     },
     getColoring: function (entity, name) {
-      let colors =Utils.getColoring(this.metagraph, entity, name,"light")
+      let colors = Utils.getColoring(this.metagraph, entity, name, "light")
       return colors;
     },
   },

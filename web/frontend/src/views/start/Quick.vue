@@ -133,7 +133,7 @@
                              @printNotificationEvent="printNotification"
                              @graphLoadEvent="loadGraph"
                              @focusEvent="focusTop"
-        >
+        ref="drugRepurposing">
 
         </CombinedRepurposing>
         <ModuleIdentification v-if="modus===1" :blitz="blitz" @resetEvent="modus=-1" :metagraph="metagraph"
@@ -141,11 +141,13 @@
                               @graphLoadEvent="loadGraph"
                               @loadDrugTargetEvent="loadDrugTarget"
                               @focusEvent="focusTop"
+                              ref="moduleIdentification"
         ></ModuleIdentification>
         <DrugRepurposing v-if="modus===2" :blitz="blitz" @resetEvent="modus=-1" :metagraph="metagraph"
                          @printNotificationEvent="printNotification"
                          @graphLoadEvent="loadGraph"
                          @focusEvent="focusTop"
+                         ref="drugRanking"
         ></DrugRepurposing>
       </v-col>
     </v-row>
@@ -184,6 +186,15 @@ export default {
   },
 
   methods: {
+    reset: function(){
+      if(this.modus===0)
+        this.$refs.drugRepurposing.reset()
+      if(this.modus===1)
+        this.$refs.moduleIdentification.reset()
+      if(this.modus===2)
+        this.$refs.drugRanking.reset()
+      this.modus=-1
+    },
     start: function (modus, blitz) {
       this.modus = modus;
       this.blitz = blitz;
@@ -197,7 +208,6 @@ export default {
 
     loadGraph: function (gid) {
       this.$emit("graphLoadEvent", gid)
-      this.modus=-1
     },
     loadDrugTarget: function(blitz, seeds, type){
       this.blitz = blitz;

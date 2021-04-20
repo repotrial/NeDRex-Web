@@ -586,7 +586,9 @@ export default {
       if (this.$refs.graph)
         this.$refs.graph.reload()
     },
-
+    reset: function (){
+      this.init()
+    },
     getSuggestionSelection: function () {
       let type = ["gene", "protein"][this.seedTypeId]
       let nodeId = this.metagraph.nodes.filter(n => n.group === type)[0].id

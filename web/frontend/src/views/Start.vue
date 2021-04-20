@@ -41,9 +41,9 @@
     </v-container>
     <Quick v-if="selectionTab===0" :metagraph="metagraph" @printNotificationEvent="printNotification"
            @graphLoadEvent="loadGraph" @focusEvent="focusTop" @clearURLEvent="$emit('clearURLEvent')"
-    ></Quick>
+    ref="quick"></Quick>
     <Guided v-if="selectionTab===1" :metagraph="metagraph" @printNotificationEvent="printNotification"
-            @graphLoadEvent="loadGraph"></Guided>
+            @graphLoadEvent="loadGraph" ref="guided"></Guided>
 
 
     <Advanced ref="advanced" v-if="selectionTab===2"
@@ -88,6 +88,16 @@ export default {
   mounted() {
   },
   methods: {
+    reset: function(){
+      if(this.selectionTab===0)
+        this.$refs.quick.reset()
+      if(this.selectionTab===1)
+        this.$refs.guided.reset()
+      if(this.selectionTab===2)
+        this.$refs.advanced.reset()
+      this.selectionTab=0;
+    }
+    ,
     printNotification: function (message, style) {
       this.$emit("printNotificationEvent", message, style)
     },
@@ -99,6 +109,7 @@ export default {
 
     loadGraph: function (data) {
       this.$emit("graphLoadEvent", data)
+      this.reset()
     },
 
     direction: function (edge) {
