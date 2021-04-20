@@ -941,6 +941,8 @@ export default {
 
     makeStep: function (s, button) {
       if (button === "continue") {
+        if(this.step===1)
+          this.$emit("clearURLEvent")
         this.step++
         if (this.step === 2)
           this.generatePaths()

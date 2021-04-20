@@ -187,11 +187,11 @@ export default {
 
   methods: {
     reset: function(){
-      if(this.modus===0)
+      if(this.modus===0 && this.$refs.drugRepurposing)
         this.$refs.drugRepurposing.reset()
-      if(this.modus===1)
+      if(this.modus===1 && this.$refs.moduleIdentification)
         this.$refs.moduleIdentification.reset()
-      if(this.modus===2)
+      if(this.modus===2 && this.$refs.drugRanking)
         this.$refs.drugRanking.reset()
       this.modus=-1
     },

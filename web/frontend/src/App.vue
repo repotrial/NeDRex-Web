@@ -749,7 +749,7 @@ export default {
     selectTab: function (tabid, skipReroute) {
       if (this.selectedTabId === tabid)
         return
-      if(this.selectedTabId===0)
+      if(this.selectedTabId===0 && !skipReroute)
         this.$refs.start.reset()
       let colInactive = this.colors.tabs.inactive;
       let colActive = this.colors.tabs.active;
