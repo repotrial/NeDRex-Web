@@ -1069,6 +1069,7 @@ export default {
   methods: {
     reload: function () {
       this.nodes = {}
+      this.waiting=true
       this.attributes = {}
       this.edges = {}
       this.marks = {}

@@ -20,7 +20,7 @@
 
       >
       </network>
-      <div style="position: absolute" v-if="legend ">
+      <div style="position: absolute" v-if="legend && !waiting">
         <div style="display: flex; justify-content: flex-end;">
           <v-btn @click="showLegend= !showLegend" :title="showLegend ? 'Hide':'Show'" :plain="!showLegend">
             Legend
@@ -109,7 +109,6 @@ export default {
   drawingSurfaceImageData: undefined,
   offsetLeft: 0,
   offsetTop: 0,
-  canvasCursor: "default",
 
   data() {
     return {
@@ -122,11 +121,12 @@ export default {
       key: 0,
       text: "",
       loading: true,
-      waiting:true,
+      waiting: true,
       loadingColor: 'primary',
       dialog: false,
       skipVis: false,
       skipDialog: false,
+      canvasCursor: "default",
     }
   }
   ,
@@ -163,6 +163,8 @@ export default {
       this.configuration.visualized = false
       this.gid = this.$route.params["gid"]
       this.skipDialog = false
+      this.waiting = true
+      this.toggleSelectMode(false)
       if (this.gid !== undefined)
         this.init()
     },
@@ -209,7 +211,7 @@ export default {
     init: function () {
       if (!this.skipVis)
         this.configuration.visualized = true;
-      if((this.metagraph ==null || this.options ==null) && this.meta!=null)
+      if ((this.metagraph == null || this.options == null) && this.meta != null)
         this.setMetagraph(this.meta)
       //TODO getgraphinfo to handle displaying of sidebar and disabling of enable-physics and disable visualize graph when graph not loaded
       return this.$http.get("/getGraph?id=" + this.gid).then(response => {
@@ -225,7 +227,7 @@ export default {
         })
     },
     setGraph: function (graph) {
-      this.waiting=false
+      this.waiting = false
       this.loadingColor = this.colors.bar.vis
       if (!this.skipDialog)
         this.dialog = true;
@@ -548,7 +550,7 @@ export default {
       this.toggleNodesVisible(this.nodeSet.get().map(item => item.id), boolean)
     },
     hideGroupVisibility: function (name, boolean) {
-      console.log("toggle: "+name+" -> "+boolean)
+      console.log("toggle: " + name + " -> " + boolean)
       let updates = this.nodeSet.get({
         filter: function (item) {
           return item.group === name
@@ -580,9 +582,9 @@ export default {
         this.reloadLegend()
       }
     },
-    reloadLegend: function(){
-      this.showLegend=!this.showLegend
-      this.showLegend=!this.showLegend
+    reloadLegend: function () {
+      this.showLegend = !this.showLegend
+      this.showLegend = !this.showLegend
     },
     onClick: function (params) {
       // this.setNodeSize(this.nodeSet.get().map(n=>n.id),25)
@@ -691,9 +693,11 @@ export default {
 
     removeDragSelect: function () {
       this.network = undefined;
-      this.canvas.removeEventListener("mousemove", this.dragMouseMove)
-      this.canvas.removeEventListener("mousedown", this.dragMouseDown)
-      this.canvas.removeEventListener("mouseup", this.dragMouseUp)
+      if (this.canvas) {
+        this.canvas.removeEventListener("mousemove", this.dragMouseMove)
+        this.canvas.removeEventListener("mousedown", this.dragMouseDown)
+        this.canvas.removeEventListener("mouseup", this.dragMouseUp)
+      }
     },
 
     dragMouseMove: function (e, drag, rect, ctx) {

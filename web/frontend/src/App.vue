@@ -1,6 +1,7 @@
 <template style="overflow-y: hidden">
   <v-app :style="{marginTop:selectedTabId===0 ? '60px': '0px'}" id="app">
-    <headerBar @showVersionEvent="showVersionInfo=true" @showBugEvent="showBugInfo=true" @showHelpEvent="showHelp=true" :prominent="selectedTabId===0" style="z-index: 1000;"/>
+    <headerBar @showVersionEvent="showVersionInfo=true" @showBugEvent="showBugInfo=true" @showHelpEvent="showHelp=true"
+               :prominent="selectedTabId===0" style="z-index: 1000;"/>
     <v-card style="position: sticky ; top:0px; margin-top: -10px; z-index: 999 ">
       <v-toolbar flat color="#383838">
         <template v-slot:extension>
@@ -40,6 +41,7 @@
                      v-on:graphLoadEvent="loadGraph"
                      v-on:printNotificationEvent="printNotification"
                      @showSideEvent="setSideVisible"
+                     @clearURLEvent="clearURL"
                      :colors="colors" :metagraph="metagraph" :options="options.start" :filters="startFilters"></Start>
             </v-container>
             <v-container v-show="selectedTabId===1" fluid>
@@ -225,7 +227,8 @@
           </v-list-item>
           <v-list-item>
             <v-list-item-content>
-              Did you find a bug or have other ideas to improve NeDRex-Web? Great! Just let us know using one of the following options:
+              Did you find a bug or have other ideas to improve NeDRex-Web? Great! Just let us know using one of the
+              following options:
             </v-list-item-content>
           </v-list-item>
 
@@ -248,7 +251,7 @@
                 Github-Page
                 <v-icon right>fas fa-external-link-alt</v-icon>
               </v-chip>
-              </v-list-item-subtitle>
+            </v-list-item-subtitle>
           </v-list-item>
           <v-list-item>
             <v-list-item-icon>
@@ -257,7 +260,8 @@
             </v-list-item-icon>
             <v-list-item-title>Adding to spreadsheet:</v-list-item-title>
             <v-list-item-subtitle>
-              <v-chip outlined @click="openExternal('https://docs.google.com/spreadsheets/d/15ZqaWko_EH4filOLfwC_ZxtEAb-FxJ2sKSPv9MmV75I/edit?usp=sharing')">
+              <v-chip outlined
+                      @click="openExternal('https://docs.google.com/spreadsheets/d/15ZqaWko_EH4filOLfwC_ZxtEAb-FxJ2sKSPv9MmV75I/edit?usp=sharing')">
                 Google-Spreadsheet
                 <v-icon right>fas fa-external-link-alt</v-icon>
               </v-chip>
@@ -266,14 +270,14 @@
         </v-list>
       </v-sheet>
 
-    </v-bottom-sheet >
+    </v-bottom-sheet>
     <v-bottom-sheet inset v-model="showHelp" width="30vw">
       <v-sheet dark>
 
         <v-list>
           <v-list-item>
             <v-list-item-title>
-             Need help?
+              Need help?
             </v-list-item-title>
           </v-list-item>
           <v-list-item>
@@ -297,7 +301,8 @@
             </v-list-item-icon>
             <v-list-item-title>Application-Example:</v-list-item-title>
             <v-list-item-subtitle>
-              <v-chip outlined @click="openExternal('https://github.com/AndiMajore/RepoScapeWeb/tree/master/material/page_explanation')">
+              <v-chip outlined
+                      @click="openExternal('https://github.com/AndiMajore/RepoScapeWeb/tree/master/material/page_explanation')">
                 Page-Explanations
                 <v-icon right>fas fa-external-link-alt</v-icon>
               </v-chip>
@@ -306,7 +311,7 @@
         </v-list>
       </v-sheet>
 
-    </v-bottom-sheet >
+    </v-bottom-sheet>
     <v-bottom-sheet inset v-model="showVersionInfo" width="60vw">
       <v-sheet dark>
         <v-list>
@@ -446,13 +451,14 @@ export default {
       this.applyUrlTab(true)
       if (new_gid !== this.gid) {
         this.gid = new_gid
-        this.tabslist[1].icon = "fas fa-project-diagram"
-        this.tabslist[2].icon = "fas fa-list-ul"
-        this.$refs.list.setLoading(true)
-        this.$refs.graph.reload()
-        this.$refs.list.reload()
-        this.$refs.history.reload()
-        this.$refs.side.reload()
+        this.reloadAll()
+        // this.tabslist[1].icon = "fas fa-project-diagram"
+        // this.tabslist[2].icon = "fas fa-list-ul"
+        // this.$refs.list.setLoading(true)
+        // this.$refs.graph.reload()
+        // this.$refs.list.reload()
+        // this.$refs.history.reload()
+        // this.$refs.side.reload()
       }
     },
 
@@ -488,9 +494,28 @@ export default {
         }).catch(err => console.log(err))
       }
     },
+    clearURL: function () {
+      this.gid=undefined
+      if (this.$router.currentRoute.fullPath.length > 1) {
+        this.$router.push("/")
+        console.log(this.$route.params)
+        this.reloadAll()
+        this.$refs.graph.reload()
+      }
+    },
+    reloadAll: function(){
+      this.tabslist[1].icon = "fas fa-project-diagram"
+      this.tabslist[2].icon = "fas fa-list-ul"
+      this.$refs.list.setLoading(true)
+      this.$refs.graph.reload()
+      this.$refs.list.reload()
+      this.$refs.history.reload()
+      this.$refs.side.reload()
+
+    },
     selectionColorSelect: function () {
       this.$refs.list.selectColor()
-        this.$refs.graph.visualizeNow()
+      this.$refs.graph.visualizeNow()
     },
     setTabId: function (tab, skipReroute) {
       this.selectTab(['start', 'graph', 'list', 'history'].indexOf(tab), skipReroute)
@@ -524,7 +549,7 @@ export default {
     reloadSide: function () {
       this.$refs.side.$forceUpdate()
     },
-    setMetagraph: function(){
+    setMetagraph: function () {
       this.$refs.graph.setMetagraph(this.metagraph)
     },
     toggleGraphSelectMode: function (select) {
@@ -639,7 +664,7 @@ export default {
       } else {
         this.options.graph.noPhysics = sum > 50000
         this.gid = info.id
-        let tab = (this.tab !== undefined && this.tab !=="start" && this.tab!=="history") ? this.tab : "list"
+        let tab = (this.tab !== undefined && this.tab !== "start" && this.tab !== "history") ? this.tab : "list"
         this.$http.get("/archiveHistory?uid=" + this.$cookies.get("uid") + "&gid=" + info.id).then(() => {
           this.$router.push({path: "/" + info.id + "/" + tab})
           this.$refs.graph.reload()

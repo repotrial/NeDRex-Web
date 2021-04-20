@@ -187,8 +187,7 @@ export default {
     start: function (modus, blitz) {
       this.modus = modus;
       this.blitz = blitz;
-      // if(modus===1)
-      //   this.$refs.modules.init()
+      this.$emit("clearURLEvent")
     },
 
 

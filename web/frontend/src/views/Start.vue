@@ -40,10 +40,10 @@
       </v-card>
     </v-container>
     <Quick v-if="selectionTab===0" :metagraph="metagraph" @printNotificationEvent="printNotification"
-           @graphLoadEvent="loadGraph" @focusEvent="focusTop"
+           @graphLoadEvent="loadGraph" @focusEvent="focusTop" @clearURLEvent="$emit('clearURLEvent')"
     ></Quick>
-    <Guided v-if="selectionTab===1" :metagraph="metagraph" @printNotificationEvent="printNotification"  @graphLoadEvent="loadGraph"></Guided>
-
+    <Guided v-if="selectionTab===1" :metagraph="metagraph" @printNotificationEvent="printNotification"
+            @graphLoadEvent="loadGraph"></Guided>
 
 
     <Advanced ref="advanced" v-if="selectionTab===2"
@@ -112,11 +112,10 @@ export default {
     getStartType: function () {
       return this.selectionTab;
     },
-    focusTop: function(){
+    focusTop: function () {
       let element = this.$refs["top"];
-      this.$nextTick(()=>element.scrollIntoView(true))
+      this.$nextTick(() => element.scrollIntoView(true))
     },
-
   },
   components: {
     Advanced,
