@@ -100,6 +100,9 @@ export default {
   metagraph: undefined,
   gid: undefined,
   unconnected: [],
+  network: undefined,
+  canvas: undefined,
+  ctx: undefined,
 
 
   data() {
@@ -118,10 +121,6 @@ export default {
       dialog: false,
       skipVis: false,
       skipDialog: false,
-
-      network: undefined,
-      canvas: undefined,
-      ctx: undefined,
       rect: {},
       drag: false,
       drawingSurfaceImageData: undefined,
@@ -549,6 +548,7 @@ export default {
       this.toggleNodesVisible(this.nodeSet.get().map(item => item.id), boolean)
     },
     hideGroupVisibility: function (name, boolean) {
+      console.log("toggle: "+name+" -> "+boolean)
       let updates = this.nodeSet.get({
         filter: function (item) {
           return item.group === name
@@ -677,6 +677,7 @@ export default {
 
     initDragSelect: function () {
       if (this.$refs.network !== undefined && this.network === undefined) {
+        console.log(this.$refs.network.network)
         this.network = this.$refs.network.network
         this.canvas = this.network.canvas.frame.canvas;
         this.canvas.oncontextmenu = function () {
