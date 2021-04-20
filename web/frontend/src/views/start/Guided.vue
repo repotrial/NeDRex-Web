@@ -460,7 +460,7 @@
                   </tbody>
                 </template>
               </v-simple-table>
-              <v-chip outlined style="margin-top:15px" @click="downloadList">
+              <v-chip outlined style="margin-top:15px" @click="downloadList(0)">
                 <v-icon left>fas fa-download</v-icon>
                 Save Sources ({{ nodeList[sourceTypeId].text }})
               </v-chip>
