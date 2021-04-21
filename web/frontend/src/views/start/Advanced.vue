@@ -26,8 +26,7 @@
                     <v-card-title>General</v-card-title>
                     <v-list>
                       <v-list-item v-if="filters[selectedEdge.label]">
-                        <v-switch @change="evalEdgeOptionUpdate('internalOnly')"
-                                  v-model="filters[selectedEdge.label].internalOnly"
+                        <v-switch v-model="filters[selectedEdge.label].internalOnly"
                                   label="Connect filtered nodes only"></v-switch>
                       </v-list-item>
                     </v-list>
@@ -228,6 +227,7 @@ export default {
     loadGraph: function (bool) {
       let graphLoad = {}
       if (!bool) {
+        console.log("clearing advanced")
         this.options.selectedElements.forEach(e => {
           if (e.type === "node") {
             this.$refs.startgraph.hideGroupVisibility(this.nodes[e.index].label.toLowerCase(), true)
@@ -237,7 +237,8 @@ export default {
         this.nodeModel = []
         this.edgeModel = []
         this.options.selectedElements.length = 0
-        this.filters.length = 0
+        Object.keys(this.filters).forEach(key=> delete this.filters[key])
+        this.$refs.filterTable.$forceUpdate()
         this.graphSelection()
         return
       }
@@ -279,24 +280,23 @@ export default {
           if (!this.filters[edge.label])
             this.filters[edge.label] = {name:edge.label,internalOnly: true}
           this.$set(this.tools, "general", true)
-
         }
       }
 
     },
-    evalEdgeOptionUpdate: function (updateName) {
-      if (updateName === "internalOnly") {
-        let bool = this.filter[this.selectedEdge.label][updateName]
-        if(bool && this.selectedEdge.externalNode){
-          this.$refs.startgraph.removeNode(externalNode)
-        } else{
-          this.createExternalNode(this.selectedEdge.from)
-        }
-      }
-    },
-    createExternalNode:function(nodeId){
-      let node = this.$refs.startgraph.getNodeById(nodeId)
-    },
+    // evalEdgeOptionUpdate: function (updateName) {
+    //   if (updateName === "internalOnly") {
+    //     let bool = this.filters[this.selectedEdge.label][updateName]
+    //     if(bool && this.selectedEdge.externalNode){
+    //       this.$refs.startgraph.removeNode(externalNode)
+    //     } else{
+    //       this.createExternalNode(this.selectedEdge.from)
+    //     }
+    //   }
+    // },
+    // createExternalNode:function(nodeId){
+    //   let node = this.$refs.startgraph.getNodeById(nodeId)
+    // },
     toggleNode: function (nodeIndex) {
       let index = this.nodeModel.indexOf(nodeIndex)
       this.$refs.startgraph.hideGroupVisibility(this.nodes[nodeIndex].label.toLowerCase(), index > -1, true)
@@ -376,6 +376,8 @@ export default {
           name: this.edges[edgeIndex].label,
           filter: []
         })
+        if (!this.filters[this.edges[edgeIndex].label])
+          this.filters[this.edges[edgeIndex].label] = {name:this.edges[edgeIndex].label,internalOnly: true}
       }
       this.$nextTick(() => {
         this.$refs.startgraph.focusNode()

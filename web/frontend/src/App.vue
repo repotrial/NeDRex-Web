@@ -628,7 +628,10 @@ export default {
         this.$http.post("/getGraphInfo", graph.post).then(response => {
           return response.data
         }).then(info => {
-          this.evalPostInfo(info, graph.post.tab)
+          if(!graph.post.id)
+            this.evalPostInfo(info, graph.post.tab)
+          else
+            this.loadGraphURL(graph.post.id,"list")
         }).catch(err => {
           console.log(err)
         })
@@ -670,14 +673,17 @@ export default {
         this.gid = info.id
         let tab = (this.tab !== undefined && this.tab !== "start" && this.tab !== "history") ? this.tab : "list"
         this.$http.get("/archiveHistory?uid=" + this.$cookies.get("uid") + "&gid=" + info.id).then(() => {
-          this.$router.push({path: "/" + info.id + "/" + tab})
-          this.$refs.graph.reload()
-          this.$refs.list.reload()
-          this.$refs.history.reload()
-          this.$refs.side.reload()
+          this.loadGraphURL(info.id,tab)
         }).catch(err => console.log(err))
 
       }
+    },
+    loadGraphURL: function(id,tab){
+      this.$router.push({path: "/" + id + "/" + tab})
+      this.$refs.graph.reload()
+      this.$refs.list.reload()
+      this.$refs.history.reload()
+      this.$refs.side.reload()
     },
     registerJob: function (data) {
       this.$refs.side.addJob(data)

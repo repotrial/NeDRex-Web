@@ -639,6 +639,7 @@ export default {
       if (this.configuration.sizeWarning && !this.dialog && this.$refs.network === undefined)
         this.dialog = true
       else {
+        this.setPhysics(false)
         this.dialogResolve(true)
         this.reloadLegend()
       }

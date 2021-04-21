@@ -356,55 +356,84 @@ public class WebGraphService {
         });
         Integer[] nodes = nodeIds.keySet().toArray(new Integer[0]);
         HashSet<Integer> connectedNodes = new HashSet<>();
-        for (int i = 0; i < nodes.length; i++) {
-            for (int j = i; j < nodes.length; j++) {
-                final int[] nodeI = {nodes[i]};
-                final int[] nodeJ = {nodes[j]};
+        for (int l = 0; l < 2; l++) {
+            for (int i = 0; i < nodes.length; i++) {
+                for (int j = i; j < nodes.length; j++) {
+                    if ((l != 0 && i == j) || (l == 0 && i != j))
+                        continue;
+                    final int[] nodeI = {nodes[i]};
+                    final int[] nodeJ = {nodes[j]};
 
-                LinkedList<Integer> edgeIds = Graphs.getEdgesfromNodes(nodeI[0], nodeJ[0]);
-                if (edgeIds == null) {
-                    continue;
-                }
-                edgeIds.forEach(edgeId -> {
-                    if (!Graphs.checkEdgeDirection(edgeId, nodeI[0], nodeJ[0])) {
-                        int tmp = nodeI[0];
-                        nodeI[0] = nodeJ[0];
-                        nodeJ[0] = tmp;
+                    LinkedList<Integer> edgeIds = Graphs.getEdgesfromNodes(nodeI[0], nodeJ[0]);
+                    if (edgeIds == null) {
+                        continue;
                     }
-                    boolean experimental = (request.interactions.containsKey(Graphs.getEdge(edgeId)) && !request.interactions.get(Graphs.getEdge(edgeId)));
-                    if (request.edges.containsKey(Graphs.getEdge(edgeId))) {
-                        LinkedList<Edge> edges = new LinkedList<>();
+                    boolean loop = nodeI[0] == nodeJ[0];
+                    HashSet<Integer> externalNodes = new HashSet<>();
+                    edgeIds.forEach(edgeId -> {
+                        boolean internalOnly = loop && request.edges.containsKey(Graphs.getEdge(edgeId)) && ((HashMap<String, Object>) request.edges.get(Graphs.getEdge(edgeId))).containsKey("filters") &&(boolean) ((HashMap<String, Object>) request.edges.get(Graphs.getEdge(edgeId)).get("filters")).get("internalOnly");
+                        if (!Graphs.checkEdgeDirection(edgeId, nodeI[0], nodeJ[0])) {
+                            int tmp = nodeI[0];
+                            nodeI[0] = nodeJ[0];
+                            nodeJ[0] = tmp;
+                        }
 
-                        nodeIds.get(nodeI[0]).forEach((id1, v1) -> {
-                            try {
-                                if (request.connectedOnly & connectedNodes.contains(nodeI[0]) & !v1.hasEdge()) {
-                                    return;
-                                }
-                                edgeController.getEdges(edgeId, nodeI[0], id1, false).forEach(id -> {
-                                    try {
-                                        if ((request.connectedOnly & connectedNodes.contains(nodeJ[0]) & !nodeIds.get(nodeJ[0]).get(id.getId2()).hasEdge()) | (experimental && !edgeController.isExperimental(edgeId, id.getId1(), id.getId2())))
-                                            return;
-                                        nodeIds.get(nodeJ[0]).get(id.getId2()).setHasEdge(true);
-                                        v1.setHasEdge(true);
-                                        edges.add(new Edge(id.getId1(), id.getId2()));
-                                    } catch (NullPointerException ignore) {
+                        boolean experimental = (request.interactions.containsKey(Graphs.getEdge(edgeId)) && !request.interactions.get(Graphs.getEdge(edgeId)));
+                        if (request.edges.containsKey(Graphs.getEdge(edgeId))) {
+                            LinkedList<Edge> edges = new LinkedList<>();
+
+                            nodeIds.get(nodeI[0]).forEach((id1, v1) -> {
+                                try {
+                                    if (request.connectedOnly & connectedNodes.contains(nodeI[0]) & !v1.hasEdge()) {
+                                        return;
                                     }
-                                });
-                            } catch (NullPointerException ignore) {
+                                    edgeController.getEdges(edgeId, nodeI[0], id1, false).forEach(id -> {
+                                        try {
+                                            if ((!loop | internalOnly) && ((request.connectedOnly & connectedNodes.contains(nodeJ[0]) & !nodeIds.get(nodeJ[0]).get(id.getId2()).hasEdge()) | (experimental && !edgeController.isExperimental(edgeId, id.getId1(), id.getId2()))))
+                                                return;
+                                            if (!loop || (internalOnly && nodeIds.get(nodeJ[0]).containsKey(id.getId2()) && nodeIds.get(nodeJ[0]).containsKey(id.getId1()))) {
+                                                nodeIds.get(nodeJ[0]).get(v1.getId() == id.getId1() ? id.getId2() : id.getId1()).setHasEdge(true);
+                                                v1.setHasEdge(true);
+                                                edges.add(new Edge(id.getId1(), id.getId2()));
+                                            } else if (!internalOnly) {
+                                                int nonNodeId = v1.getId() == id.getId1() ? id.getId2() : id.getId1();
+                                                if (!nodeIds.get(nodeJ[0]).containsKey(nonNodeId)) {
+                                                    externalNodes.add(nonNodeId);
+                                                }else{
+                                                    nodeIds.get(nodeJ[0]).get(nonNodeId).setHasEdge(true);
+                                                }
+                                                v1.setHasEdge(true);
+                                                edges.add(new Edge(id.getId1(), id.getId2()));
+                                            }
+                                        } catch (NullPointerException ignore) {
+                                        }
+                                    });
+                                } catch (NullPointerException ignore) {
+                                }
+                            });
+                            finalG.addEdges(edgeId, edges);
+                            if (loop && !internalOnly) {
+                                HashSet<Integer> newNodes = new HashSet<>(nodeIds.get(nodeI[0]).keySet());
+                                newNodes.addAll(externalNodes);
+                                NodeFilter nf = new NodeFilter(nodeController.getFilter(Graphs.getNode(nodeI[0])), newNodes);
+                                finalG.saveNodeFilter(Graphs.getNode(nodeI[0]), nf);
+                                HashMap<Integer, Node> ids = nodeIds.get(nodeI[0]);
+                                nf.toList(-1).stream().filter(entry -> !ids.containsKey(entry.getNodeId())).forEach(entry -> ids.put(entry.getNodeId(), new Node(entry.getNodeId(), entry.getName(), true)));
                             }
-                        });
-                        finalG.addEdges(edgeId, edges);
-                        if (request.nodes.get(Graphs.getNode(nodeI[0])).filters.length == 0)
-                            connectedNodes.add(nodeI[0]);
-                        if (request.nodes.get(Graphs.getNode(nodeJ[0])).filters.length == 0)
-                            connectedNodes.add(nodeJ[0]);
-                    }
-                });
+                            if (request.nodes.get(Graphs.getNode(nodeI[0])).filters.length == 0)
+                                connectedNodes.add(nodeI[0]);
+                            if (request.nodes.get(Graphs.getNode(nodeJ[0])).filters.length == 0)
+                                connectedNodes.add(nodeJ[0]);
+                        }
+                    });
+
+                }
             }
         }
         //TODO update filter if only connected are used
         if (request.connectedOnly) {
-            nodeIds.forEach((type, nodeMap) -> nodeMap.entrySet().stream().filter(e -> e.getValue().hasEdge()).forEach(e -> finalG.addNode(type, e.getValue())));
+            nodeIds.forEach((type, nodeMap) ->
+                nodeMap.entrySet().stream().filter(e -> e.getValue().hasEdge()).forEach(e -> finalG.addNode(type, e.getValue())));
         } else
             nodeIds.forEach((type, nodeMap) -> nodeMap.forEach((key, value) -> finalG.addNode(type, value)));
 

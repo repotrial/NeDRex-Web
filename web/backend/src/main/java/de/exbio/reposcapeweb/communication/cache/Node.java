@@ -14,6 +14,11 @@ public class Node {
         this.name = name;
     }
 
+    public Node (int id, String name, boolean hasEdge){
+        this(id,name);
+        this.hasEdge=hasEdge;
+    }
+
     public int getId() {
         return id;
     }
