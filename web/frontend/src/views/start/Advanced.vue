@@ -17,14 +17,78 @@
       <v-container v-if="metagraph !== undefined">
         <v-row>
           <v-col cols="6">
-            <Graph ref="startgraph" :initgraph="{graph:metagraph,name:'metagraph'}" :startGraph="true"
+            <Graph ref="startgraph" @selectionEvent="graphSelection" :initgraph="{graph:metagraph,name:'metagraph'}"
+                   :startGraph="true" tools
                    :configuration="{visualized:true}" :window-style="windowStyle">
+              <template v-slot:tools>
+                <v-card elevation="3" style="margin:15px">
+                  <v-container v-if="tools.general">
+                    <v-card-title>General</v-card-title>
+                    <v-list>
+                      <v-list-item v-if="filters[selectedEdge.label]">
+                        <v-switch @change="evalEdgeOptionUpdate('internalOnly')"
+                                  v-model="filters[selectedEdge.label].internalOnly"
+                                  label="Connect filtered nodes only"></v-switch>
+                      </v-list-item>
+                    </v-list>
+                  </v-container>
+                  <v-container v-show="tools.filter">
+                    <v-card-title>Filters</v-card-title>
+                    <v-simple-table fixed-header ref="filterTable" v-if="filterEntity.length>0">
+                      <template v-slot:default>
+                        <thead>
+                        <tr>
+                          <th class="text-center">Type</th>
+                          <th class="text-center">Filter</th>
+                          <th class="text-center">Operation</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr v-for="(item,index) in filters[filterEntity]" :key="item.type+item.expression">
+                          <td>{{ item.type }}</td>
+                          <td>{{ item.expression }}</td>
+                          <td>
+                            <v-chip outlined v-on:click="removeFilter(index)">
+                              <v-icon dense>fas fa-trash</v-icon>
+                            </v-chip>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>
+                            <v-select
+                              v-model="filterTypeModel"
+                              :items="filterTypes"
+                              label="type"
+                            ></v-select>
+                          </td>
+                          <td>
+                            <v-text-field
+                              v-model="filterModel"
+                              :label="filterLabel"
+                              placeholder="Pattern"
+                            ></v-text-field>
+                          </td>
+                          <td>
+                            <v-chip outlined v-on:click="saveFilter"
+                                    :disabled="filterModel ===undefined|| filterModel.length ===0 ||filterTypeModel ===undefined">
+                              <v-icon dense>fas fa-plus</v-icon>
+                            </v-chip>
+                          </td>
+                        </tr>
+                        </tbody>
+                      </template>
+                    </v-simple-table>
+                  </v-container>
+                </v-card>
+
+
+              </template>
             </Graph>
           </v-col>
           <v-col cols="2">
             <v-list v-model="nodeModel" ref="nodeSelector">
               <v-card-title>Nodes</v-card-title>
-              <v-list-item v-for="item in nodes" :key="item.index">
+              <v-list-item v-for="item in nodes.filter(n=>!n.external)" :key="item.index">
                 <v-chip outlined v-on:click="toggleNode(item.index)"
                         :color="nodeModel.indexOf(item.index)===-1?'gray':'primary'"
                         :text-color="nodeModel.indexOf(item.index)===-1?'black':'gray'"
@@ -43,7 +107,7 @@
           <v-col cols="4">
             <v-list v-model="edgeModel">
               <v-card-title>Edges</v-card-title>
-              <template v-for="item in edges">
+              <template v-for="item in edges.filter(e=>!e.external)">
                 <v-list-item :key="item.index">
                   <v-chip outlined v-on:click="toggleEdge(item.index)"
                           :color="edgeModel.indexOf(item.index)===-1?'gray':'primary'"
@@ -89,7 +153,7 @@
 
 <script>
 import Utils from "../../scripts/Utils";
-import Graph from "../Graph";
+import Graph from "../graph/Graph";
 
 export default {
   name: "Advanced",
@@ -101,6 +165,7 @@ export default {
       type: Object
     },
   },
+
   data() {
     return {
       interactions: {ProteinInteractsWithProtein: false, GeneInteractsWithGene: false},
@@ -109,10 +174,24 @@ export default {
       nodeModel: [],
       edgeModel: [],
       filterId: -1,
+      tools: {general: false, filter: false},
       windowStyle: {
         height: '75vh',
         'min-height': '75vh',
-      }
+      },
+
+      filterAdd: false,
+      filterAdding: false,
+      filterSelectDisabled: false,
+      filterTypes: ['startsWith', 'contain', 'match'],
+      filterEntity: "",
+      neighborNodes: [],
+      filterLabel: "",
+      filterType: "",
+      filterTypeModel: [],
+      filterModel: "",
+      filterName: "",
+      selectedEdge: Object,
     }
   },
   created() {
@@ -159,9 +238,7 @@ export default {
         this.edgeModel = []
         this.options.selectedElements.length = 0
         this.filters.length = 0
-        // this.$nextTick(() => {
-        //   this.$refs.nodeSelector.$forceUpdate()
-        // })
+        this.graphSelection()
         return
       }
       graphLoad = {post: {nodes: {}, edges: {}}}
@@ -184,6 +261,41 @@ export default {
       graphLoad.post["uid"] = this.$cookies.get("uid")
       graphLoad["skipVis"] = this.options.skipVis;
       this.$emit("graphLoadEvent", graphLoad)
+    },
+    graphSelection: function (params) {
+      this.$set(this.tools, "general", false)
+      this.$set(this.tools, "filter", false)
+      if (!params) {
+        return
+      }
+      if (params.nodes.length > 0) {
+        this.$set(this.tools, "filter", true)
+        let node = this.metagraph.nodes.filter(n => n.id === params.nodes[0])[0]
+        this.setFilter(node.label)
+      } else {
+        let edge = this.metagraph.edges.filter(m => params.edges[0] === m.id)[0]
+        this.selectedEdge = edge
+        if (edge.from === edge.to) {
+          if (!this.filters[edge.label])
+            this.filters[edge.label] = {name:edge.label,internalOnly: true}
+          this.$set(this.tools, "general", true)
+
+        }
+      }
+
+    },
+    evalEdgeOptionUpdate: function (updateName) {
+      if (updateName === "internalOnly") {
+        let bool = this.filter[this.selectedEdge.label][updateName]
+        if(bool && this.selectedEdge.externalNode){
+          this.$refs.startgraph.removeNode(externalNode)
+        } else{
+          this.createExternalNode(this.selectedEdge.from)
+        }
+      }
+    },
+    createExternalNode:function(nodeId){
+      let node = this.$refs.startgraph.getNodeById(nodeId)
     },
     toggleNode: function (nodeIndex) {
       let index = this.nodeModel.indexOf(nodeIndex)
@@ -213,6 +325,27 @@ export default {
         this.$refs.startgraph.focusNode()
         this.$refs.nodeSelector.$forceUpdate()
       })
+    },
+    saveFilter: function () {
+      let data = {type: this.filterTypeModel, expression: this.filterModel};
+
+      if (this.filters[this.filterEntity] === undefined)
+        this.filters[this.filterEntity] = []
+
+      if (this.filters[this.filterEntity].filter(f => (f.type === this.filterTypeModel && f.expression === this.filterModel)).length === 0) {
+        this.filters[this.filterEntity].push(data)
+      }
+      this.filterTypeModel = ""
+      this.filterModel = ""
+    }
+    ,
+    removeFilter: function (idx) {
+      this.filters[this.filterEntity].splice(idx, 1)
+      this.$refs.filterTable.$forceUpdate()
+    },
+    setFilter: function (name) {
+      this.filterName = name
+      this.filterEntity = name
     },
     toggleEdge: function (edgeIndex) {
       let index = this.edgeModel.indexOf(edgeIndex)

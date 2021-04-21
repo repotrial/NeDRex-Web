@@ -40,10 +40,10 @@
       </v-card>
     </v-container>
     <Quick v-if="selectionTab===0" :metagraph="metagraph" @printNotificationEvent="printNotification"
-           @graphLoadEvent="loadGraph" @focusEvent="focusTop" @clearURLEvent="$emit('clearURLEvent')"
+           @graphLoadEvent="loadGraphNewTab" @focusEvent="focusTop" @clearURLEvent="$emit('clearURLEvent')"
            ref="quick"></Quick>
     <Guided v-if="selectionTab===1" :metagraph="metagraph" @printNotificationEvent="printNotification"
-            @graphLoadEvent="loadGraph" @clearURLEvent="$emit('clearURLEvent')" ref="guided"></Guided>
+            @graphLoadEvent="loadGraphNewTab" @clearURLEvent="$emit('clearURLEvent')" ref="guided"></Guided>
 
 
     <Advanced ref="advanced" v-if="selectionTab===2"
@@ -114,6 +114,10 @@ export default {
     loadGraph: function (data) {
       this.$emit("graphLoadEvent", data)
       // this.reset()
+    },
+    loadGraphNewTab: function (data) {
+      this.$emit("graphLoadNewTabEvent", data)
+      this.reset()
     },
 
     direction: function (edge) {

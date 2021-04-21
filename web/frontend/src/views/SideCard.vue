@@ -266,87 +266,87 @@
         </v-list>
       </v-card>
 
-      <v-card ref="filters" elevation="3" style="margin:15px" v-if="selectedTab===0">
+<!--      <v-card ref="filters" elevation="3" style="margin:15px" v-if="selectedTab===0">-->
 
-        <v-list-item @click="show.filters=!show.filters">
-          <v-list-item-title>
-            <v-icon left>{{ show.filters ? "far fa-minus-square" : "far fa-plus-square" }}</v-icon>
-            Filters
-          </v-list-item-title>
-        </v-list-item>
-        <v-divider></v-divider>
+<!--        <v-list-item @click="show.filters=!show.filters">-->
+<!--          <v-list-item-title>-->
+<!--            <v-icon left>{{ show.filters ? "far fa-minus-square" : "far fa-plus-square" }}</v-icon>-->
+<!--            Filters-->
+<!--          </v-list-item-title>-->
+<!--        </v-list-item>-->
+<!--        <v-divider></v-divider>-->
 
-        <v-container v-show="show.filters">
-          <v-row>
-            <v-col>
-              <v-list-item>
-                <v-chip outlined
-                        @click="show.filterAdd=!show.filterAdd; show.filterSelectDisabled=false; filterEntity=''">
-                  <v-icon left>{{ show.filterAdd ? "fas fa-check" : "fas fa-filter" }}</v-icon>
-                  {{ show.filterAdd ? "Done" : "Edit Filters" }}
-                </v-chip>
-              </v-list-item>
-            </v-col>
-            <v-col>
-              <v-select v-if="show.filterAdd "
-                        v-model="filterEntity"
-                        :items="options.start.selectedElements"
-                        :autofocus="show.filterAdd"
-                        item-text="name"
-                        item-value="name"
-                        @focusout="show.filterSelectDisabled=true"
-                        :disabled="show.filterSelectDisabled"
-                        @change="setFiltering"
-              >Select Entity
-              </v-select>
-            </v-col>
-          </v-row>
-          <v-simple-table fixed-header ref="filterTable" v-if="filterEntity.length>0">
-            <template v-slot:default>
-              <thead>
-              <tr>
-                <th class="text-center">Type</th>
-                <th class="text-center">Filter</th>
-                <th class="text-center">Operation</th>
-              </tr>
-              </thead>
-              <tbody>
-              <tr v-for="(item,index) in filters[filterEntity]" :key="item.type+item.expression">
-                <td>{{ item.type }}</td>
-                <td>{{ item.expression }}</td>
-                <td>
-                  <v-chip outlined v-on:click="removeFilter(index)">
-                    <v-icon dense>fas fa-trash</v-icon>
-                  </v-chip>
-                </td>
-              </tr>
-              <tr v-if="show.filterAdding">
-                <td>
-                  <v-select
-                    v-model="filterTypeModel"
-                    :items="filterTypes"
-                    label="type"
-                  ></v-select>
-                </td>
-                <td>
-                  <v-text-field
-                    v-model="filterModel"
-                    :label="filterLabel"
-                    placeholder="Pattern"
-                  ></v-text-field>
-                </td>
-                <td>
-                  <v-chip outlined v-on:click="saveFilter"
-                          :disabled="filterModel ===undefined|| filterModel.length ===0 ||filterTypeModel ===undefined">
-                    <v-icon dense>fas fa-plus</v-icon>
-                  </v-chip>
-                </td>
-              </tr>
-              </tbody>
-            </template>
-          </v-simple-table>
-        </v-container>
-      </v-card>
+<!--        <v-container v-show="show.filters">-->
+<!--          <v-row>-->
+<!--            <v-col>-->
+<!--              <v-list-item>-->
+<!--                <v-chip outlined-->
+<!--                        @click="show.filterAdd=!show.filterAdd; show.filterSelectDisabled=false; filterEntity=''">-->
+<!--                  <v-icon left>{{ show.filterAdd ? "fas fa-check" : "fas fa-filter" }}</v-icon>-->
+<!--                  {{ show.filterAdd ? "Done" : "Edit Filters" }}-->
+<!--                </v-chip>-->
+<!--              </v-list-item>-->
+<!--            </v-col>-->
+<!--            <v-col>-->
+<!--              <v-select v-if="show.filterAdd "-->
+<!--                        v-model="filterEntity"-->
+<!--                        :items="options.start.selectedElements.filter(e=>e.type==='node')"-->
+<!--                        :autofocus="show.filterAdd"-->
+<!--                        item-text="name"-->
+<!--                        item-value="name"-->
+<!--                        @focusout="show.filterSelectDisabled=true"-->
+<!--                        :disabled="show.filterSelectDisabled"-->
+<!--                        @change="setFiltering"-->
+<!--              >Select Entity-->
+<!--              </v-select>-->
+<!--            </v-col>-->
+<!--          </v-row>-->
+<!--          <v-simple-table fixed-header ref="filterTable" v-if="filterEntity.length>0">-->
+<!--            <template v-slot:default>-->
+<!--              <thead>-->
+<!--              <tr>-->
+<!--                <th class="text-center">Type</th>-->
+<!--                <th class="text-center">Filter</th>-->
+<!--                <th class="text-center">Operation</th>-->
+<!--              </tr>-->
+<!--              </thead>-->
+<!--              <tbody>-->
+<!--              <tr v-for="(item,index) in filters[filterEntity]" :key="item.type+item.expression">-->
+<!--                <td>{{ item.type }}</td>-->
+<!--                <td>{{ item.expression }}</td>-->
+<!--                <td>-->
+<!--                  <v-chip outlined v-on:click="removeFilter(index)">-->
+<!--                    <v-icon dense>fas fa-trash</v-icon>-->
+<!--                  </v-chip>-->
+<!--                </td>-->
+<!--              </tr>-->
+<!--              <tr v-if="show.filterAdding">-->
+<!--                <td>-->
+<!--                  <v-select-->
+<!--                    v-model="filterTypeModel"-->
+<!--                    :items="filterTypes"-->
+<!--                    label="type"-->
+<!--                  ></v-select>-->
+<!--                </td>-->
+<!--                <td>-->
+<!--                  <v-text-field-->
+<!--                    v-model="filterModel"-->
+<!--                    :label="filterLabel"-->
+<!--                    placeholder="Pattern"-->
+<!--                  ></v-text-field>-->
+<!--                </td>-->
+<!--                <td>-->
+<!--                  <v-chip outlined v-on:click="saveFilter"-->
+<!--                          :disabled="filterModel ===undefined|| filterModel.length ===0 ||filterTypeModel ===undefined">-->
+<!--                    <v-icon dense>fas fa-plus</v-icon>-->
+<!--                  </v-chip>-->
+<!--                </td>-->
+<!--              </tr>-->
+<!--              </tbody>-->
+<!--            </template>-->
+<!--          </v-simple-table>-->
+<!--        </v-container>-->
+<!--      </v-card>-->
       <template v-if="(selectedTab===1 && options.graph.visualized)" :options="options.graph.selection">
         <Selection ref="selection" :options="options.graph.selection"
                    @selectModeEvent="toggleSelectMode"
@@ -571,12 +571,12 @@ export default {
   description: "",
   selectedNode: undefined,
   neighborNodes: [],
-  filterLabel: "",
-  filterType: "",
-  filterTypes: [],
-  filterTypeModel: [],
-  filterModel: "",
-  filterName: "",
+  // filterLabel: "",
+  // filterType: "",
+  // filterTypes: [],
+  // filterTypeModel: [],
+  // filterModel: "",
+  // filterName: "",
   detailedObject: undefined,
 
 
@@ -585,10 +585,10 @@ export default {
       gid: undefined,
       show: {
         options: true,
-        filters: false,
-        filterAdd: false,
-        filterAdding: false,
-        filterSelectDisabled: false,
+        // filters: false,
+        // filterAdd: false,
+        // filterAdding: false,
+        // filterSelectDisabled: false,
         info: false,
         legend: false,
         detail: false,
@@ -609,18 +609,18 @@ export default {
       neighborNodes: this.neighborNodes,
       title: this.title,
       description: this.description,
-      filterLabel: this.filterLabel,
-      filterTypes: this.filterTypes,
-      filterTypeModel: this.filterTypeModel,
-      filterModel: this.filterModel,
+      // filterLabel: this.filterLabel,
+      // filterTypes: this.filterTypes,
+      // filterTypeModel: this.filterTypeModel,
+      // filterModel: this.filterModel,
+      // filterEntity: "",
       detailedObject: this.detailedObject,
-      filterEntity: "",
       hover: {arrow: false,},
       details: {redirected: false},
     }
   },
   created() {
-    this.filterTypes = ['startsWith', 'contain', 'match']
+    // this.filterTypes = ['startsWith', 'contain', 'match']
     this.gid = this.$route.params["gid"]
   },
 
@@ -1014,29 +1014,29 @@ export default {
       this.show.detail = true
     },
 
-    clearModels: function () {
-      this.filterModel = ""
-      this.filterTypeModel = ""
-    }
-    ,
-    saveFilter: function () {
-      let data = {type: this.filterTypeModel, expression: this.filterModel};
-
-      if (this.filters[this.filterEntity] === undefined)
-        this.filters[this.filterEntity] = []
-
-      if (this.filters[this.filterEntity].filter(f => (f.type === this.filterTypeModel && f.expression === this.filterModel)).length === 0) {
-        this.filters[this.filterEntity].push(data)
-      }
-      this.filterTypeModel = ""
-      this.filterModel = ""
-    }
-    ,
-    removeFilter: function (idx) {
-      this.filters[this.filterEntity].splice(idx, 1)
-      this.$refs.filterTable.$forceUpdate()
-    }
-    ,
+    // clearModels: function () {
+    //   this.filterModel = ""
+    //   this.filterTypeModel = ""
+    // }
+    // ,
+    // saveFilter: function () {
+    //   let data = {type: this.filterTypeModel, expression: this.filterModel};
+    //
+    //   if (this.filters[this.filterEntity] === undefined)
+    //     this.filters[this.filterEntity] = []
+    //
+    //   if (this.filters[this.filterEntity].filter(f => (f.type === this.filterTypeModel && f.expression === this.filterModel)).length === 0) {
+    //     this.filters[this.filterEntity].push(data)
+    //   }
+    //   this.filterTypeModel = ""
+    //   this.filterModel = ""
+    // }
+    // ,
+    // removeFilter: function (idx) {
+    //   this.filters[this.filterEntity].splice(idx, 1)
+    //   this.$refs.filterTable.$forceUpdate()
+    // }
+    // ,
     getDetailDotColor: function (attribute) {
       if (this.detailedObject.node)
         return this.getColoring('nodes', this.detailedObject["Type"]);

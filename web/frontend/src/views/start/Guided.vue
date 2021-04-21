@@ -552,7 +552,7 @@
 
 <script>
 import Utils from "../../scripts/Utils";
-import Graph from "../Graph";
+import Graph from "../graph/Graph";
 
 export default {
   name: "Guided",

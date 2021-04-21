@@ -20,16 +20,29 @@
 
       >
       </network>
-      <div style="position: absolute" v-if="legend && !waiting">
-        <div style="display: flex; justify-content: flex-end;">
-          <v-btn @click="showLegend= !showLegend" :title="showLegend ? 'Hide':'Show'" :plain="!showLegend">
-            Legend
-            <v-icon right>{{ showLegend ? "fas fa-angle-up" : "fas fa-angle-down" }}</v-icon>
-          </v-btn>
-        </div>
-        <div v-show="showLegend" style="padding-right: 2px; padding-top:2px">
-          <slot name="legend"></slot>
-        </div>
+      <div style="position: absolute" v-if=" !waiting">
+        <template v-if="legend">
+          <div style="display: flex; justify-content: flex-end;">
+            <v-btn @click="showLegend= !showLegend" :title="showLegend ? 'Hide':'Show'" :plain="!showLegend">
+              Legend
+              <v-icon right>{{ showLegend ? "fas fa-angle-up" : "fas fa-angle-down" }}</v-icon>
+            </v-btn>
+          </div>
+          <div v-show="showLegend" style="padding-right: 2px; padding-top:2px">
+            <slot name="legend"></slot>
+          </div>
+        </template>
+        <template v-if="tools">
+          <div style="display: flex; justify-content: flex-end;">
+            <v-btn @click="showTools= !showTools" :title="showTools ? 'Hide':'Show'" :plain="!showTools">
+              Tools
+              <v-icon right>{{ showTools ? "fas fa-angle-up" : "fas fa-angle-down" }}</v-icon>
+            </v-btn>
+          </div>
+          <div v-show="showTools" style="padding-right: 2px; padding-top:2px">
+            <slot name="tools"></slot>
+          </div>
+        </template>
       </div>
     </div>
     <template>
@@ -79,6 +92,7 @@ export default {
   name: "graph",
   props: {
     legend: Boolean,
+    tools: Boolean,
     initgraph: Object,
     payload: Object,
     configuration: Object,
@@ -113,6 +127,7 @@ export default {
   data() {
     return {
       showLegend: true,
+      showTools: true,
       edgeSet: Object,
       nodeSet: undefined,
       options: Object,
@@ -146,6 +161,8 @@ export default {
       this.gid = this.$route.params["gid"]
       if (this.gid !== undefined)
         this.init()
+    }else{
+      this.waiting=false
     }
   },
   watch: {
@@ -314,8 +331,33 @@ export default {
 
       if (payload !== undefined && payload.name !== undefined && payload.name === "metagraph" && this.metagraph === undefined) {
         this.setMetagraph(payload.graph);
-        this.edgeSet = new DataSet(this.metagraph.edges);
-        this.nodeSet = new DataSet(this.metagraph.nodes);
+        let edges = this.metagraph.edges
+        let nodes = this.metagraph.nodes
+        // let loops = edges.filter(e=>e.from===e.to)
+        // loops.forEach(e=>{
+        //   let node = {...nodes.filter(n=>n.id===e.from)[0]};
+        //   node.id = nodes.length
+        //   node.label +=" unfiltered"
+        //   node.external = true
+        //   nodes.push(node)
+        //   edges.filter(e2=>e2.from ===e.from || e2.to ===e.from).filter(e2=>e2.from!==e2.to).forEach(e2=>{
+        //     let edge = {...e2}
+        //     if(edge.to===e.from)
+        //       edge.to = node.id
+        //     if(edge.from ===e.from)
+        //       edge.from =node.id
+        //     edge.external=true
+        //     edges.push(edge)
+        //   })
+        // })
+
+        this.edgeSet = new DataSet(edges);
+        this.nodeSet = new DataSet(nodes);
+        // nodes.filter(n=>n.external).map(n=>n.id).forEach(id=>this.nodeSet.get({
+        //   filter(item){
+        //     return item.id===id
+        //   }
+        // })[0].external=true)
         this.directed = this.metagraph.directed;
       }
       if (payload) {
@@ -464,6 +506,26 @@ export default {
         this.$refs.network.setOptions(this.options)
     }
     ,
+    getNodeById: function(nodeId){
+      return this.nodeSet.get({
+          filter: function (item) {
+            return item.id === nodeId
+          }
+        }
+      )[0]
+    },
+    removeNodeById:function(nodeId){
+      this.nodeSet = this.nodeSet.get({
+          filter: function (item) {
+            return item.id !== nodeId
+          }
+        }
+      )
+      this.updateNodes(this.nodeSet)
+    },
+    // addNode: function(node){
+    //   this.network
+    // },
     mergeOptions: function (options) {
       //TODO merge
       this.options = options;

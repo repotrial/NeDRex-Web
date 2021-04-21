@@ -38,7 +38,8 @@
 
             <v-container v-show="selectedTabId===0" fluid>
               <Start v-if="metagraph !== undefined" ref="start"
-                     v-on:graphLoadEvent="loadGraphNewTab"
+                     v-on:graphLoadEvent="loadGraph"
+                     @graphLoadNewTabEvent="loadGraphNewTab"
                      v-on:printNotificationEvent="printNotification"
                      @showSideEvent="setSideVisible"
                      @clearURLEvent="clearURL"
@@ -382,13 +383,13 @@
 </template>
 
 <script>
-import Graph from './views/Graph.vue';
+import Graph from './views/graph/Graph.vue';
 import Start from './views/Start.vue';
 import History from "./views/History";
 import List from './views/List.vue'
 import SideCard from './views/SideCard.vue'
 import headerBar from './components/header.vue'
-import Legend from "./views/toolbox/Legend";
+import Legend from "./views/graph/Legend";
 import Utils from "./scripts/Utils"
 import * as CONFIG from "./Config"
 

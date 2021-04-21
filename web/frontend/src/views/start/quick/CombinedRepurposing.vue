@@ -877,7 +877,7 @@
 
 <script>
 import Utils from "../../../scripts/Utils";
-import Graph from "../../Graph";
+import Graph from "../../graph/Graph";
 import * as CONFIG from "../../../Config"
 
 export default {
