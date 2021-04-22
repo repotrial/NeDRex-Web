@@ -20,6 +20,11 @@ public class Node {
     public Node (int id, String name, boolean hasEdge){
         this(id,name);
         this.hasEdge=hasEdge;
+        Long l1 = Long.valueOf(27);
+        Long l2 = new Long(274573440);
+        if(l1.equals(l2)){
+
+        }
     }
 
     public int getId() {

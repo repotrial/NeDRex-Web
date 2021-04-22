@@ -3,19 +3,18 @@
     <headerBar @showVersionEvent="showVersionInfo=true" @showBugEvent="showBugInfo=true" @showHelpEvent="showHelp=true"
                :prominent="selectedTabId===0" style="z-index: 1000;"/>
     <v-card style="position: sticky ; top:0px; margin-top: -10px; z-index: 999 ">
-      <v-toolbar flat color="#383838">
+      <v-toolbar flat :color="colors.main.bg1">
         <template v-slot:extension>
           <v-tabs
             fixed-tabs
             v-model="selectedTabId"
-            background-color="#383838"
-            color="#35d0d4"
+            :color="colors.main.primary"
           >
             <v-tabs-slider></v-tabs-slider>
             <v-tab v-for="tab in tabslist" class="primary--text" v-on:click="selectTab(tab.id)" :key=tab.id>
               <v-badge
                 dot
-                color="#35d0d4"
+                :color="colors.main.primary"
                 :value="tab.note"
               >
                 <i :style="{color:tab.color}">
@@ -218,8 +217,8 @@
 
       </v-dialog>
     </v-container>
-    <v-bottom-sheet inset v-model="showBugInfo" width="30vw">
-      <v-sheet dark>
+    <v-bottom-sheet inset v-model="showBugInfo" width="30vw" :overlay-color="colors.main.primary">
+      <v-sheet dark :color="colors.main.bg1">
         <v-list>
           <v-list-item>
             <v-list-item-title>
@@ -272,8 +271,8 @@
       </v-sheet>
 
     </v-bottom-sheet>
-    <v-bottom-sheet inset v-model="showHelp" width="30vw">
-      <v-sheet dark>
+    <v-bottom-sheet inset v-model="showHelp" width="30vw" :overlay-color="colors.main.primary">
+      <v-sheet dark :color="colors.main.bg1">
 
         <v-list>
           <v-list-item>
@@ -313,7 +312,7 @@
       </v-sheet>
 
     </v-bottom-sheet>
-    <v-bottom-sheet inset v-model="showVersionInfo" width="60vw">
+    <v-bottom-sheet inset v-model="showVersionInfo" width="60vw" :overlay-color="colors.main.primary">
       <v-sheet dark>
         <v-list>
           <v-list-item>
@@ -399,6 +398,7 @@ export default {
   gid: undefined,
   tab: undefined,
 
+
   data() {
     return {
       // graphLoad: {},
@@ -433,6 +433,7 @@ export default {
   created() {
     this.loadUser()
     this.colors = {
+      main:{bg1:'#383838', primary:'#35d0d4'},
       buttons: {graphs: {active: "deep-purple accent-2", inactive: undefined}},
       tabs: {active: "#35d0d4", inactive: "white"}
     }
