@@ -90,6 +90,7 @@ export default {
   methods: {
     reset: function () {
       this.resetIndex(this.startTab)
+      //TODO try to find out why this in not working
       // this.startTab = 0;
     }
     ,

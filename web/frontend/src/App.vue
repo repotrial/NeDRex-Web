@@ -781,15 +781,12 @@ export default {
       this.$refs.list.reloadTables()
     },
     adaptSidecard: function (param) {
-      console.log("adapting sidecard")
       if (this.selectedTabId === 0) {
         if (param !== undefined) {
           this.$refs.side.loadFilter(param)
         } else {
           this.$refs.side.loadFilter(undefined)
         }
-      }else{
-        console.log(this.selectedTabId)
       }
     },
     loadDetails: function (params) {
