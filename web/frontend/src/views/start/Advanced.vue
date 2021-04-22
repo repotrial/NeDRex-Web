@@ -207,7 +207,18 @@ export default {
   },
   methods: {
     reset: function () {
-      this.loadGraph(false)
+      this.options.selectedElements.forEach(e => {
+        if (e.type === "node") {
+          this.$refs.startgraph.hideGroupVisibility(this.nodes[e.index].label.toLowerCase(), true)
+        } else
+          this.$refs.startgraph.toggleEdgeVisible(this.edges[e.index].label)
+      })
+      this.nodeModel = []
+      this.edgeModel = []
+      this.options.selectedElements.length = 0
+
+      Object.keys(this.filters).forEach(key=>this.$delete(this.filters,key))
+      this.graphSelection()
     },
     initLists: function (selectionGraph) {
       selectionGraph.nodes.forEach(n => {
@@ -227,19 +238,7 @@ export default {
     loadGraph: function (bool) {
       let graphLoad = {}
       if (!bool) {
-        console.log("clearing advanced")
-        this.options.selectedElements.forEach(e => {
-          if (e.type === "node") {
-            this.$refs.startgraph.hideGroupVisibility(this.nodes[e.index].label.toLowerCase(), true)
-          } else
-            this.$refs.startgraph.toggleEdgeVisible(this.edges[e.index].label)
-        })
-        this.nodeModel = []
-        this.edgeModel = []
-        this.options.selectedElements.length = 0
-        Object.keys(this.filters).forEach(key=> delete this.filters[key])
-        this.$refs.filterTable.$forceUpdate()
-        this.graphSelection()
+        this.reset()
         return
       }
       graphLoad = {post: {nodes: {}, edges: {}}}

@@ -9,13 +9,11 @@ import 'babel-polyfill'
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 import {library} from '@fortawesome/fontawesome-svg-core'
 import {faUserSecret} from '@fortawesome/free-solid-svg-icons'
-import {Network} from "vue-vis-network";
+
 import * as CONFIG from "./Config"
 library.add(faUserSecret)
 
 Vue.component('font-awesome-icon', FontAwesomeIcon)
-Vue.component('network', Network);
-
 Vue.use(VueCookies);
 
 import ApiService from "./services/api.service";
@@ -31,6 +29,7 @@ Vue.prototype.$socket = Socket
 new Vue({
   router,
   vuetify,
+  // Network,
   globalVariables: global,
   render: h => h(App)
 }).$mount("#app")

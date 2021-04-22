@@ -6,7 +6,7 @@
     <v-progress-linear v-else v-show="progress <100" :value="progress" :color=loadingColor></v-progress-linear>
     <i v-show="loading && waiting && progress ===undefined">No graph has been loaded yet!</i>
     <div :style="{position:'relative', height:'100%',width:'100%',display: 'flex', 'justify-content': 'flex-end'}">
-      <network v-if="nodeSet !== undefined && isVisualized()" v-show="!loading" class="wrapper" ref="network"
+      <Network v-if="nodeSet !== undefined" v-show="!loading  && isVisualized()" class="wrapper" ref="network"
                :style="{width: '100%',cursor:canvasCursor}"
                :key="key"
                :nodes="nodeSet"
@@ -17,9 +17,8 @@
                :events="['click','release','startStabilizing','stabilizationProgress','stabilizationIterationsDone','mousemove','mousedown','mouseup']"
                @click="onClick"
                v-on:mousedown.right="dragMouseDown"
-
       >
-      </network>
+      </Network>
       <div style="position: absolute" v-if=" !waiting">
         <template v-if="legend">
           <div style="display: flex; justify-content: flex-end;">
@@ -87,6 +86,7 @@
 
 <script>
 import {DataSet} from 'vue-vis-network'
+ import {Network} from "vue-vis-network";
 
 export default {
   name: "graph",
@@ -115,7 +115,7 @@ export default {
   gid: undefined,
   unconnected: [],
 
-  network: undefined,
+  net: undefined,
   canvas: undefined,
   ctx: undefined,
   rect: {},
@@ -146,6 +146,8 @@ export default {
   }
   ,
   created() {
+    // this.networkInit()
+
     this.key = 0
     this.loading = true;
     this.colors = {bar: {backend: "#6db33f", vis: 'primary', error: 'red darken-2'}}
@@ -161,8 +163,8 @@ export default {
       this.gid = this.$route.params["gid"]
       if (this.gid !== undefined)
         this.init()
-    }else{
-      this.waiting=false
+    } else {
+      this.waiting = false
     }
   },
   watch: {
@@ -174,6 +176,26 @@ export default {
 
 
   methods: {
+    // networkInit: function(){
+    //   var network = Vue.extend(Network)
+    //   var inst = new network({
+    //     propsData:{ style:{width: '100%',cursor:this.canvasCursor},
+    //     key:this.key,
+    //     nodes: this.nodeSet,
+    //     edges: this.edgeSet,
+    //     options: this.options,
+    //     layout: this.layout,
+    //     physics: this.physics,
+    //     events:['click','release','startStabilizing','stabilizationProgress','stabilizationIterationsDone','mousemove','mousedown','mouseup']}
+    //   },
+    //   )
+    //   inst.$mount()
+    //   this.$refs.networkcontainer.appendChild(inst)
+
+    //   v-if="nodeSet !== undefined" v-show="!loading  && isVisualized()" class="wrapper" ref="network"
+    // @click="onClick"
+    //   v-on:mousedown.right="dragMouseDown"
+    // },
     reload: function () {
       this.key = 0
       this.loading = true;
@@ -317,7 +339,7 @@ export default {
     },
     setMetagraph: function (metagraph) {
       this.metagraph = metagraph;
-      let defaults = metagraph.options;
+      let defaults = JSON.parse(JSON.stringify(metagraph.options));
       this.options = defaults.options;
       this.layout = defaults.layout;
       this.physics = defaults.physics;
@@ -476,6 +498,8 @@ export default {
     },
 
     saveLayout: function () {
+      if (!this.$refs.network)
+        return
       let updates = Object.entries(this.$refs.network.getPositions()).map(e => {
         return {id: e[0], x: e[1].x, y: e[1].y}
       })
@@ -506,7 +530,7 @@ export default {
         this.$refs.network.setOptions(this.options)
     }
     ,
-    getNodeById: function(nodeId){
+    getNodeById: function (nodeId) {
       return this.nodeSet.get({
           filter: function (item) {
             return item.id === nodeId
@@ -514,7 +538,7 @@ export default {
         }
       )[0]
     },
-    removeNodeById:function(nodeId){
+    removeNodeById: function (nodeId) {
       this.nodeSet = this.nodeSet.get({
           filter: function (item) {
             return item.id !== nodeId
@@ -740,9 +764,9 @@ export default {
     },
 
     initDragSelect: function () {
-      if (this.$refs.network !== undefined && this.network === undefined) {
-        this.network = this.$refs.network.network
-        this.canvas = this.network.canvas.frame.canvas;
+      if (this.$refs.network !== undefined && this.net === undefined) {
+        this.net = this.$refs.network.network
+        this.canvas = this.net.canvas.frame.canvas;
         this.canvas.oncontextmenu = function () {
           return false
         }
@@ -754,7 +778,7 @@ export default {
     },
 
     removeDragSelect: function () {
-      this.network = undefined;
+      this.net = undefined;
       if (this.canvas) {
         this.canvas.removeEventListener("mousemove", this.dragMouseMove)
         this.canvas.removeEventListener("mousedown", this.dragMouseDown)
@@ -819,14 +843,14 @@ export default {
       let selection = []
       for (let i = 0; i < allNodes.length; i++) {
         let curNode = allNodes[i];
-        let nodePosition = this.network.getPositions([curNode.id]);
-        let nodeXY = this.network.canvasToDOM({x: nodePosition[curNode.id].x, y: nodePosition[curNode.id].y});
+        let nodePosition = this.net.getPositions([curNode.id]);
+        let nodeXY = this.net.canvasToDOM({x: nodePosition[curNode.id].x, y: nodePosition[curNode.id].y});
         if (xRange.start <= nodeXY.x && nodeXY.x <= xRange.end && yRange.start <= nodeXY.y && nodeXY.y <= yRange.end) {
           nodesIdInDrawing.push(curNode.id);
           selection.push({id: curNode.id, label: curNode.label})
         }
       }
-      this.network.selectNodes(nodesIdInDrawing);
+      this.net.selectNodes(nodesIdInDrawing);
       this.$emit("multiSelectionEvent", selection)
     },
 
@@ -835,6 +859,9 @@ export default {
     }
 
 
+  },
+  components: {
+    Network
   }
 }
 </script>

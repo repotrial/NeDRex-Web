@@ -9,6 +9,9 @@ public class Node {
     private boolean hasEdge =false;
 
 
+    public Node(){
+    }
+
     public Node(int id, String name){
         this.id = id;
         this.name = name;
@@ -45,5 +48,9 @@ public class Node {
 
     public boolean isHasEdge() {
         return hasEdge;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

@@ -432,8 +432,7 @@ public class WebGraphService {
         }
         //TODO update filter if only connected are used
         if (request.connectedOnly) {
-            nodeIds.forEach((type, nodeMap) ->
-                nodeMap.entrySet().stream().filter(e -> e.getValue().hasEdge()).forEach(e -> finalG.addNode(type, e.getValue())));
+            nodeIds.forEach((type, nodeMap) -> nodeMap.entrySet().stream().filter(e -> e.getValue().hasEdge()).forEach(e -> finalG.addNode(type, e.getValue())));
         } else
             nodeIds.forEach((type, nodeMap) -> nodeMap.forEach((key, value) -> finalG.addNode(type, value)));
 

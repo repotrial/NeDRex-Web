@@ -13,7 +13,7 @@
         </v-list-item>
         <v-divider></v-divider>
         <v-list-item>
-          <v-tabs v-model="selectionTab" centered>
+          <v-tabs v-model="startTab" centered>
             <v-tabs-slider color="blue"></v-tabs-slider>
             <v-tab>Quick Start</v-tab>
             <v-tab>Guided Exploration</v-tab>
@@ -22,7 +22,7 @@
         </v-list-item>
       </v-list>
     </v-card>
-    <v-container v-show="selectionTab===1">
+    <v-container v-show="startTab===1">
       <v-card class="mx-auto">
         <v-list>
           <v-list-item>
@@ -39,14 +39,14 @@
         </v-list>
       </v-card>
     </v-container>
-    <Quick v-if="selectionTab===0" :metagraph="metagraph" @printNotificationEvent="printNotification"
+    <Quick v-if="startTab===0" :metagraph="metagraph" @printNotificationEvent="printNotification"
            @graphLoadEvent="loadGraphNewTab" @focusEvent="focusTop" @clearURLEvent="$emit('clearURLEvent')"
            ref="quick"></Quick>
-    <Guided v-if="selectionTab===1" :metagraph="metagraph" @printNotificationEvent="printNotification"
+    <Guided v-if="startTab===1" :metagraph="metagraph" @printNotificationEvent="printNotification"
             @graphLoadEvent="loadGraphNewTab" @clearURLEvent="$emit('clearURLEvent')" ref="guided"></Guided>
 
 
-    <Advanced ref="advanced" v-if="selectionTab===2"
+    <Advanced ref="advanced" v-if="startTab===2"
               :metagraph="metagraph" :options="options" :colors="colors" :filters="filters"
               @printNotificationEvent="printNotification"
               @graphLoadEvent="loadGraph"
@@ -73,24 +73,24 @@ export default {
   },
   data() {
     return {
-      selectionTab: 0,
+      startTab: 0,
     }
   },
   watch: {
-    selectionTab: function (val) {
+    startTab: function (val) {
       this.$emit("showSideEvent", val === 2)
       this.focusTop()
     }
   },
   created() {
-    this.$emit("showSideEvent", this.selectionTab === 2)
+    this.$emit("showSideEvent", this.startTab === 2)
   },
   mounted() {
   },
   methods: {
     reset: function () {
-      this.resetIndex(this.selectionTab)
-      this.selectionTab = 0;
+      this.resetIndex(this.startTab)
+      // this.startTab = 0;
     }
     ,
 
@@ -107,7 +107,7 @@ export default {
     },
 
     executeGraphLoad: function (bool) {
-      if (this.selectionTab === 2)
+      if (this.startTab === 2)
         this.$refs.advanced.loadGraph(bool)
     },
 
@@ -129,7 +129,7 @@ export default {
       return Utils.getColoring(this.metagraph, entity, name)
     },
     getStartType: function () {
-      return this.selectionTab;
+      return this.startTab;
     },
     focusTop: function () {
       let element = this.$refs["top"];
