@@ -4,6 +4,15 @@ Is an interactive and responsive web interface for the heterogenous, molecularbi
 ## Material
 The folder for data of example cases and according figures can be found [here](/material) 
 
+## Building Docker Images
+Use the `web/docker-compose.sh` to regenerate images.
+Execute the bash script in the `web` directory with following parameter:
+
+- Local production test images:
+    `./docker-compose.sh prod`
+- Current server configuration images:
+-   `./docker-compose.sh exbio`
+
 
 ## Deployement with Docker
 Use the [docker-compose](docker-compose.yml) file to deploy NeDRex-Web on your machine:
@@ -12,7 +21,6 @@ Adjust image names based on the purpose:
   `andimajore/nedrex_repo:server` and `andimajore/nedrex_repo:web`
 - Execution on exbio servers:
    `andimajore/nedrex_repo:server_exbio` and `andimajore/nedrex_repo:web_exbio`
-   
 ```bash
 wget https://raw.githubusercontent.com/AndiMajore/RepoScapeWeb/master/docker-compose.yml -O docker-compose.yml
 docker-compose pull
@@ -42,7 +50,7 @@ mysql < (curl https://raw.githubusercontent.com/AndiMajore/RepoScapeWeb/master/w
 Use IDE to run [Main-Class/Spring-Boot-Application](web/backend/src/main/java/de/exbio/reposcapeweb/ReposcapewebApplication.java).
 #### Frontend
 ```
-cd $gitroot/web/frontend
+cd web/frontend
 npm run serve
 ```
 ### Production
@@ -52,7 +60,7 @@ If the services are planned to be deployed using a tomcat server, the configurat
 #### Backend
 Use maven to compile project and start application, make sure you use >=java14.
 ```
-cd $gitroot/web/backend
+cd web/backend
 mvn package
 java -Xmx4g -jar target/nerdrexweb-backend.war
 ```
@@ -61,8 +69,8 @@ or deploy with a tomcat server.
 #### Frontend
 Generate webcontent to `dist/` directory:
 ```
-cd $gitroot/web/frontend
+cd web/frontend
 npm run build
 ```
-Host paths can be set by editing the `src/Config.js` file before building.
+Host paths can be set by according editing the `src/Config.js` file before building.
 The content of `dist/` can be served by nginx or tomcat server.
