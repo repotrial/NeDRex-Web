@@ -1,6 +1,7 @@
 <template style="overflow-y: hidden">
   <v-app :style="{marginTop:selectedTabId===0 ? '60px': '0px'}" id="app">
     <headerBar @showVersionEvent="showVersionInfo=true" @showBugEvent="showBugInfo=true" @showHelpEvent="showHelp=true"
+               @redirectEvent="redirect"
                :prominent="selectedTabId===0" style="z-index: 1000;"/>
     <v-card style="position: sticky ; top:0px; margin-top: -10px; z-index: 999 ">
       <v-toolbar flat :color="colors.main.bg1">
@@ -433,7 +434,7 @@ export default {
   created() {
     this.loadUser()
     this.colors = {
-      main:{bg1:'#383838', primary:'#35d0d4'},
+      main: {bg1: '#383838', primary: '#35d0d4'},
       buttons: {graphs: {active: "deep-purple accent-2", inactive: undefined}},
       tabs: {active: "#35d0d4", inactive: "white"}
     }
@@ -446,21 +447,15 @@ export default {
     this.loadMetadata()
     this.initGraphs()
     this.sideHidden = false
+    this.setView()
   },
   watch: {
     '$route'(to, from) {
       let new_gid = this.$route.params["gid"]
       this.applyUrlTab(true)
-      if (new_gid !== this.gid) {
+      if (new_gid && new_gid !== this.gid) {
         this.gid = new_gid
         this.reloadAll()
-        // this.tabslist[1].icon = "fas fa-project-diagram"
-        // this.tabslist[2].icon = "fas fa-list-ul"
-        // this.$refs.list.setLoading(true)
-        // this.$refs.graph.reload()
-        // this.$refs.list.reload()
-        // this.$refs.history.reload()
-        // this.$refs.side.reload()
       }
     },
 
@@ -469,7 +464,6 @@ export default {
         this.sideHidden = false
       if (val === 0 && this.$refs.start.getStartType() < 2)
         this.sideHidden = true
-
     }
   },
   methods: {
@@ -496,15 +490,22 @@ export default {
         }).catch(err => console.log(err))
       }
     },
-    clearURL: function () {
-      this.gid=undefined
+    clearURL: function (view) {
+      this.gid = undefined
       if (this.$router.currentRoute.fullPath.length > 1) {
-        this.$router.push("/")
-        this.reloadAll()
-        this.$refs.graph.reload()
+        if (!view)
+          this.$router.push("/home")
+        else {
+          let path = "explore/" + view + "/start"
+          if (this.$route.fullPath !== path)
+            this.$router.push(path)
+          this.reloadAll()
+          this.$refs.graph.reload()
+        }
       }
-    },
-    reloadAll: function(){
+    }
+    ,
+    reloadAll: function () {
       this.tabslist[1].icon = "fas fa-project-diagram"
       this.tabslist[2].icon = "fas fa-list-ul"
       this.$refs.list.setLoading(true)
@@ -513,21 +514,30 @@ export default {
       this.$refs.history.reload()
       this.$refs.side.reload()
 
-    },
+    }
+    ,
+    setView: function () {
+      console.log(this.$route)
+      //TODO set start graph based on params
+    }
+    ,
     selectionColorSelect: function () {
       this.$refs.list.selectColor()
       this.$refs.graph.visualizeNow()
-    },
+    }
+    ,
     setTabId: function (tab, skipReroute) {
       this.selectTab(['start', 'graph', 'list', 'history'].indexOf(tab), skipReroute)
-    },
+    }
+    ,
     applyUrlTab: function (skipReroute) {
       let new_tab = this.$route.params["tab"]
       if (new_tab !== this.tab) {
         this.tab = new_tab
         this.setTabId(new_tab, skipReroute)
       }
-    },
+    }
+    ,
     initGraphs: function () {
       this.gid = this.$route.params["gid"]
       this.initComponents()
@@ -540,22 +550,28 @@ export default {
       }).catch(err => {
         console.log(err)
       })
-    },
+    }
+    ,
     setSideVisible: function (bool) {
       this.sideHidden = !bool
-    },
+    }
+    ,
     visualisationEvent: function () {
       this.reloadSide()
-    },
+    }
+    ,
     reloadSide: function () {
       this.$refs.side.$forceUpdate()
-    },
+    }
+    ,
     setMetagraph: function () {
       this.$refs.graph.setMetagraph(this.metagraph)
-    },
+    }
+    ,
     toggleGraphSelectMode: function (select) {
       this.$refs.graph.toggleSelectMode(select);
-    },
+    }
+    ,
     focusInGraph: function (type, id) {
       if (!this.$refs.graph.isVisualized || !this.$refs.graph.graphExists()) {
         this.printNotification("Graph must be visualized first!", 2)
@@ -570,7 +586,14 @@ export default {
         } else
           this.$refs.graph.focusEdge(id)
       })
-    },
+    }
+    ,
+    redirect: function (route) {
+      if (this.$route.fullPath !== route) {
+        this.$router.push(route)
+      }
+    }
+    ,
     initComponents: function () {
       this.options.start = {skipVis: true, onlyConnected: true, selectedElements: []}
       this.options.graph = {
@@ -586,10 +609,12 @@ export default {
       }
       this.options.list = {showAll: true, selected: 0, total: 0, countMap: {nodes: {}, edges: {}}, entityGraph: {}}
       this.options.history = {chronological: false, otherUsers: false, entityGraph: {}, favos: false}
-    },
+    }
+    ,
     loadSubSelection: function (selection) {
       this.loadGraph({data: selection})
-    },
+    }
+    ,
 
     loadLegendEvent: function (val) {
       if (val === this.showLegend && val) {
@@ -598,20 +623,24 @@ export default {
       this.$nextTick(() => {
         this.showLegend = val
       })
-    },
+    }
+    ,
     applyMultiSelect: function (selection) {
       this.$refs.list.applyMultiSelect(selection)
       this.printNotification("Added " + selection.length + " nodes to selection!", 1)
-    },
+    }
+    ,
     setMultiSelection: function (selection) {
       this.$refs.side.setMultiSelect(selection)
-    },
+    }
+    ,
     sizeWarning: function (info) {
       if (!this.$cookies.get("override-limit")) {
         this.listWarnObject = info;
         this.listDialog = true;
       }
-    },
+    }
+    ,
     loadGraph: function (graph) {
       this.tabslist[1].icon = "fas fa-circle-notch fa-spin"
       this.tabslist[2].icon = "fas fa-circle-notch fa-spin"
@@ -629,23 +658,28 @@ export default {
         this.$http.post("/getGraphInfo", graph.post).then(response => {
           return response.data
         }).then(info => {
-          if(!graph.post.id)
+          if (!graph.post.id)
             this.evalPostInfo(info, graph.post.tab)
           else
-            this.loadGraphURL(graph.post.id,"list")
+            this.loadGraphURL(graph.post.id, "list")
         }).catch(err => {
           console.log(err)
         })
       }).catch(console.log)
-    },
-    loadGraphNewTab: function(graph){
-      let route = this.$router.resolve({name:"App",params:{gid:graph.post.id, tab:"list"}})
-      window.open(route.href,"_blank")
-    },
+    }
+    ,
+    loadGraphNewTab: function (graph) {
+      let route = this.$router.resolve({
+        path: "/explore/advanced/list/"+graph.post.id,
+      })
+      window.open(route.href, "_blank")
+    }
+    ,
     recolorGraph: function (request) {
       this.$refs.legend.addColoring(request)
       this.$nextTick(() => this.$refs.graph.recolorGraph(request))
-    },
+    }
+    ,
     listSelectionEvent: function (type, operation) {
       if (operation === "all")
         this.$refs.list.selectAll(type)
@@ -653,10 +687,12 @@ export default {
         this.$refs.list.deselectAll(type)
       if (operation === "induced")
         this.$refs.list.selectEdges()
-    },
+    }
+    ,
     loadList: function (gid) {
       this.$refs.list.getList(gid, this.metagraph)
-    },
+    }
+    ,
     evalPostInfo: function (info, tab) {
       //TODO move to graph view
       let sum = 0
@@ -674,42 +710,51 @@ export default {
         this.gid = info.id
         let tab = (this.tab !== undefined && this.tab !== "start" && this.tab !== "history") ? this.tab : "list"
         this.$http.get("/archiveHistory?uid=" + this.$cookies.get("uid") + "&gid=" + info.id).then(() => {
-          this.loadGraphURL(info.id,tab)
+          this.loadGraphURL(info.id, tab)
         }).catch(err => console.log(err))
 
       }
-    },
-    loadGraphURL: function(id,tab){
-      this.$router.push({path: "/" + id + "/" + tab})
+    }
+    ,
+    loadGraphURL: function (id, tab) {
+      this.$router.push({path: "/explore/advanced/" + tab + "/" + id})
       this.$refs.graph.reload()
       this.$refs.list.reload()
       this.$refs.history.reload()
       this.$refs.side.reload()
-    },
+    }
+    ,
     registerJob: function (data) {
       this.$refs.side.addJob(data)
-    },
+    }
+    ,
     reloadHistory: function () {
       this.$refs.history.reload()
-    },
+    }
+    ,
     executeAlgorithm: function (algorithm, params) {
       this.$refs.list.executeAlgorithm(algorithm, params)
-    },
+    }
+    ,
     applyEvent: function (bool) {
       if (this.selectedTabId === 0)
         this.$refs.start.executeGraphLoad(bool)
       if (this.selectedTabId === 1)
         this.$refs.graph.visualizeNow()
-    },
+    }
+    ,
     listModification: function (event) {
       this.$refs.list.recieveEvent(event)
-    },
+    }
+    ,
     reverseHistorySorting: function () {
       this.$refs.history.reverseList()
-    },
+    }
+    ,
     historyReloadEvent: function () {
       this.$refs.history.$forceUpdate()
-    },
+    }
+    ,
     nodeDetails: function (data) {
       let type = ""
       this.metagraph.nodes.forEach(n => {
@@ -718,7 +763,8 @@ export default {
       })
       this.selectTab(2)
       this.loadDetails({type: "node", name: type, id: data.id})
-    },
+    }
+    ,
     setTabNotification: function (tabId) {
       if (this.selectedTabId !== tabId)
         this.tabslist[tabId].note = true
@@ -732,20 +778,24 @@ export default {
     ,
     updatePhysics: function () {
       this.$refs.graph.setPhysics(this.options.graph.physics)
-    },
+    }
+    ,
     showLoops: function (state) {
       this.$refs.graph.showLoops(state)
-    },
+    }
+    ,
     showUnconnected: function (state) {
       this.$refs.graph.showUnconnected(state)
-    },
+    }
+    ,
     loadSelection: function (params) {
       if (params !== undefined)
         this.$refs.side.loadSelection(this.$refs.graph.identifyNeighbors(params.nodes[0]))
       else {
         this.$refs.side.loadSelection(this.$refs.graph.getAllNodes())
       }
-    },
+    }
+    ,
     setSelectedNode: function (nodeId) {
       if (nodeId !== undefined) {
         this.$refs.graph.setSelection([nodeId]);
@@ -754,14 +804,16 @@ export default {
         this.$refs.graph.setSelection()
         this.loadSelection()
       }
-    },
+    }
+    ,
     filter: function (filterData) {
       this.adaptSidecard(filterData)
-    },
+    }
+    ,
     selectTab: function (tabid, skipReroute) {
       if (this.selectedTabId === tabid)
         return
-      if(this.selectedTabId===0 && !skipReroute)
+      if (this.selectedTabId === 0 && !skipReroute)
         this.$refs.start.reset()
       let colInactive = this.colors.tabs.inactive;
       let colActive = this.colors.tabs.active;
@@ -774,13 +826,15 @@ export default {
       }
       this.selectedTabId = tabid;
       if (!skipReroute && this.gid !== undefined)
-        this.$router.push("/" + this.gid + "/" + ['start', 'graph', 'list', 'history'][tabid])
+        this.$router.push("/explore/advanced/" + ['start', 'graph', 'list', 'history'][tabid] + "/" + this.gid)
 
       this.adaptSidecard()
-    },
+    }
+    ,
     reloadTables: function () {
       this.$refs.list.reloadTables()
-    },
+    }
+    ,
     adaptSidecard: function (param) {
       if (this.selectedTabId === 0) {
         if (param !== undefined) {
@@ -789,10 +843,12 @@ export default {
           this.$refs.side.loadFilter(undefined)
         }
       }
-    },
+    }
+    ,
     loadDetails: function (params) {
       this.$refs.side.loadDetails(params)
-    },
+    }
+    ,
     printNotification: function (message, style) {
       if (style === 1) {
         this.setNotification(this.notifications.style1, message)
@@ -800,18 +856,22 @@ export default {
       if (style === 2) {
         this.setNotification(this.notifications.style2, message)
       }
-    },
+    }
+    ,
 
     openExternal: function (url) {
       window.open(url, '_blank')
-    },
+    }
+    ,
     setNotification: function (to, message) {
       to.message = message;
       to.show = true;
-    },
+    }
+    ,
     graphViewEvent: function (data) {
       this.$refs.graph.graphViewEvent(data)
-    },
+    }
+    ,
 
     loadMetadata() {
       this.$http.get("getMetadata").then(response => {
@@ -820,7 +880,8 @@ export default {
       }).then(meta => {
         this.metadata = meta
       }).catch(console.log)
-    },
+    }
+    ,
     formatTimestamp(ts) {
       return Utils.formatTime(ts)
     }

@@ -15,9 +15,9 @@
         <v-list-item>
           <v-tabs v-model="startTab" centered>
             <v-tabs-slider color="blue"></v-tabs-slider>
-            <v-tab>Quick Start</v-tab>
-            <v-tab>Guided Exploration</v-tab>
-            <v-tab>Advanced Exploration</v-tab>
+            <v-tab @click="checkURLclear('quick')">Quick Start</v-tab>
+            <v-tab @click="checkURLclear('guided')" >Guided Exploration</v-tab>
+            <v-tab @click="checkURLclear('advanced')">Advanced Exploration</v-tab>
           </v-tabs>
         </v-list-item>
       </v-list>
@@ -40,10 +40,10 @@
       </v-card>
     </v-container>
     <Quick v-if="startTab===0" :metagraph="metagraph" @printNotificationEvent="printNotification"
-           @graphLoadEvent="loadGraphNewTab" @focusEvent="focusTop" @clearURLEvent="$emit('clearURLEvent')"
+           @graphLoadEvent="loadGraphNewTab" @focusEvent="focusTop" @clearURLEvent="$emit('clearURLEvent','quick')"
            ref="quick"></Quick>
     <Guided v-if="startTab===1" :metagraph="metagraph" @printNotificationEvent="printNotification"
-            @graphLoadEvent="loadGraphNewTab" @clearURLEvent="$emit('clearURLEvent')" ref="guided"></Guided>
+            @graphLoadEvent="loadGraphNewTab" @clearURLEvent="$emit('clearURLEvent', 'guided')" ref="guided"></Guided>
 
 
     <Advanced ref="advanced" v-if="startTab===2"
@@ -105,6 +105,11 @@ export default {
     },
     printNotification: function (message, style) {
       this.$emit("printNotificationEvent", message, style)
+    },
+
+    checkURLclear: function(view){
+      if(!this.$route.params.gid)
+        this.$emit("clearURLEvent",view)
     },
 
     executeGraphLoad: function (bool) {
