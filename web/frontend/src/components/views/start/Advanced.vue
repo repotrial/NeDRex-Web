@@ -9,13 +9,75 @@
         </v-list-item>
         <v-list-item>
           <v-list-item-subtitle>
-            Query a specified starting graph.
+            Create a specified starting graph by selecting the nodes and edge types it should contain.
+            Apply filters or set options in the "TOOLS" panel by clicking onto the meta-entities in the graph.
           </v-list-item-subtitle>
         </v-list-item>
       </v-list>
       <v-divider></v-divider>
       <v-container v-if="metagraph !== undefined">
         <v-row>
+
+          <v-col cols="2">
+            <v-list v-model="nodeModel" ref="nodeSelector">
+              <v-card-title>Nodes</v-card-title>
+              <v-list-item v-for="item in nodes.filter(n=>!n.external)" :key="item.index">
+                <v-chip outlined v-on:click="toggleNode(item.index)"
+                        :color="nodeModel.indexOf(item.index)===-1?'gray':'primary'"
+                        :text-color="nodeModel.indexOf(item.index)===-1?'black':'gray'"
+                >
+                  <v-icon left :color="getColoring('nodes',item.label)">fas fa-genderless</v-icon>
+                  {{ item.label }}
+                  <span style="color: gray; margin-left: 3pt"
+                        v-show="nodeModel.indexOf(item.index)>-1">({{
+                      metagraph.weights.nodes[item.label.toLowerCase()]
+                    }})</span>
+                </v-chip>
+              </v-list-item>
+            </v-list>
+
+          </v-col>
+          <v-col cols="4">
+            <v-list v-model="edgeModel">
+              <v-card-title>Edges</v-card-title>
+              <template v-for="item in edges.filter(e=>!e.external)">
+                <v-list-item :key="item.index">
+                  <v-chip outlined v-on:click="toggleEdge(item.index)"
+                          :color="edgeModel.indexOf(item.index)===-1?'gray':'primary'"
+                          :text-color="edgeModel.indexOf(item.index)===-1?'black':'gray'"
+                  >
+
+                    <v-icon left :color="getColoring('edges',item.label)[0]">fas fa-genderless</v-icon>
+                    <template v-if="direction(item.label)===0">
+                      <v-icon left>fas fa-undo-alt</v-icon>
+                    </template>
+                    <template v-else>
+                      <v-icon v-if="direction(item.label)===1" left>fas fa-long-arrow-alt-right</v-icon>
+                      <v-icon v-else left>fas fa-arrows-alt-h</v-icon>
+                      <v-icon left :color="getColoring('edges',item.label)[1]">fas fa-genderless</v-icon>
+                    </template>
+                    {{ item.label }}
+                    <span style="color: gray; margin-left: 3pt"
+                          v-show="edgeModel.indexOf(item.index)>-1">({{ metagraph.weights.edges[item.label] }})</span>
+                  </v-chip>
+                </v-list-item>
+                <v-list-item
+                  v-show="edgeModel.indexOf(item.index)>-1 && (item.label==='ProteinInteractsWithProtein' ||item.label==='GeneInteractsWithGene' )">
+                  <v-chip outlined v-on:click="interactions[item.label]=false"
+                          :color="interactions[item.label]?'gray':'primary'"
+                  >
+                    experimental
+                  </v-chip>
+                  <v-chip outlined v-on:click="interactions[item.label]=true"
+                          :color="!interactions[item.label]?'gray':'primary'"
+                  >
+                    all
+                  </v-chip>
+
+                </v-list-item>
+              </template>
+            </v-list>
+          </v-col>
           <v-col cols="6">
             <Graph ref="startgraph" @selectionEvent="graphSelection" :initgraph="{graph:metagraph,name:'metagraph'}"
                    :startGraph="true" tools
@@ -83,66 +145,6 @@
 
               </template>
             </Graph>
-          </v-col>
-          <v-col cols="2">
-            <v-list v-model="nodeModel" ref="nodeSelector">
-              <v-card-title>Nodes</v-card-title>
-              <v-list-item v-for="item in nodes.filter(n=>!n.external)" :key="item.index">
-                <v-chip outlined v-on:click="toggleNode(item.index)"
-                        :color="nodeModel.indexOf(item.index)===-1?'gray':'primary'"
-                        :text-color="nodeModel.indexOf(item.index)===-1?'black':'gray'"
-                >
-                  <v-icon left :color="getColoring('nodes',item.label)">fas fa-genderless</v-icon>
-                  {{ item.label }}
-                  <span style="color: gray; margin-left: 3pt"
-                        v-show="nodeModel.indexOf(item.index)>-1">({{
-                      metagraph.weights.nodes[item.label.toLowerCase()]
-                    }})</span>
-                </v-chip>
-              </v-list-item>
-            </v-list>
-
-          </v-col>
-          <v-col cols="4">
-            <v-list v-model="edgeModel">
-              <v-card-title>Edges</v-card-title>
-              <template v-for="item in edges.filter(e=>!e.external)">
-                <v-list-item :key="item.index">
-                  <v-chip outlined v-on:click="toggleEdge(item.index)"
-                          :color="edgeModel.indexOf(item.index)===-1?'gray':'primary'"
-                          :text-color="edgeModel.indexOf(item.index)===-1?'black':'gray'"
-                  >
-
-                    <v-icon left :color="getColoring('edges',item.label)[0]">fas fa-genderless</v-icon>
-                    <template v-if="direction(item.label)===0">
-                      <v-icon left>fas fa-undo-alt</v-icon>
-                    </template>
-                    <template v-else>
-                      <v-icon v-if="direction(item.label)===1" left>fas fa-long-arrow-alt-right</v-icon>
-                      <v-icon v-else left>fas fa-arrows-alt-h</v-icon>
-                      <v-icon left :color="getColoring('edges',item.label)[1]">fas fa-genderless</v-icon>
-                    </template>
-                    {{ item.label }}
-                    <span style="color: gray; margin-left: 3pt"
-                          v-show="edgeModel.indexOf(item.index)>-1">({{ metagraph.weights.edges[item.label] }})</span>
-                  </v-chip>
-                </v-list-item>
-                <v-list-item
-                  v-show="edgeModel.indexOf(item.index)>-1 && (item.label==='ProteinInteractsWithProtein' ||item.label==='GeneInteractsWithGene' )">
-                  <v-chip outlined v-on:click="interactions[item.label]=false"
-                          :color="interactions[item.label]?'gray':'primary'"
-                  >
-                    experimental
-                  </v-chip>
-                  <v-chip outlined v-on:click="interactions[item.label]=true"
-                          :color="!interactions[item.label]?'gray':'primary'"
-                  >
-                    all
-                  </v-chip>
-
-                </v-list-item>
-              </template>
-            </v-list>
           </v-col>
         </v-row>
       </v-container>

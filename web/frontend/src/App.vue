@@ -30,7 +30,7 @@
     </v-card>
     <v-container align-self="start">
       <v-row>
-        <v-col :cols="sideHidden ? 12:9">
+        <v-col :cols="sideHidden ? 12:10">
           <v-main app style="padding-top: 0">
             <v-container v-show="selectedTabId===0" fluid>
 
@@ -161,7 +161,7 @@
             </v-dialog>
           </v-main>
         </v-col>
-        <v-col cols="3" v-show="!sideHidden">
+        <v-col cols="2" v-show="!sideHidden" style="margin-left:-40px">
           <SideCard ref="side"
                     v-on:printNotificationEvent="printNotification"
                     v-on:nodeSelectionEvent="setSelectedNode"
@@ -216,163 +216,13 @@
       </v-dialog>
     </v-container>
     <v-bottom-sheet inset v-model="showBugInfo" width="30vw" :overlay-color="colors.main.bg1">
-      <v-sheet dark :color="colors.main.bg1">
-        <v-list>
-          <v-list-item>
-            <v-list-item-title>
-              Found a Bug?
-            </v-list-item-title>
-          </v-list-item>
-          <v-list-item>
-            <v-list-item-content>
-              Did you find a bug or have other ideas to improve NeDRex-Web? Great! Just let us know using one of the
-              following options:
-            </v-list-item-content>
-          </v-list-item>
-
-          <v-list-item>
-            <v-list-item-icon>
-              <v-icon left>fas fa-at</v-icon>
-            </v-list-item-icon>
-            <v-list-item-title>By Mail:</v-list-item-title>
-            <v-list-item-subtitle>maieran@cip.ifi.lmu.de</v-list-item-subtitle>
-          </v-list-item>
-
-          <v-list-item>
-            <v-list-item-icon>
-              <v-icon left>fab fa-github</v-icon>
-
-            </v-list-item-icon>
-            <v-list-item-title>Filing an Issue:</v-list-item-title>
-            <v-list-item-subtitle>
-              <v-chip outlined @click="openExternal('https://github.com/AndiMajore/RepoScapeWeb/issues')">
-                Github-Page
-                <v-icon right>fas fa-external-link-alt</v-icon>
-              </v-chip>
-            </v-list-item-subtitle>
-          </v-list-item>
-          <v-list-item>
-            <v-list-item-icon>
-              <v-icon left>fas fa-table</v-icon>
-
-            </v-list-item-icon>
-            <v-list-item-title>Adding to spreadsheet:</v-list-item-title>
-            <v-list-item-subtitle>
-              <v-chip outlined
-                      @click="openExternal('https://docs.google.com/spreadsheets/d/15ZqaWko_EH4filOLfwC_ZxtEAb-FxJ2sKSPv9MmV75I/edit?usp=sharing')">
-                Google-Spreadsheet
-                <v-icon right>fas fa-external-link-alt</v-icon>
-              </v-chip>
-            </v-list-item-subtitle>
-          </v-list-item>
-        </v-list>
-      </v-sheet>
-
+      <BugSheet :color="colors.main.bg1"></BugSheet>
     </v-bottom-sheet>
     <v-bottom-sheet inset v-model="showHelp" width="30vw" :overlay-color="colors.main.bg1">
-      <v-sheet dark :color="colors.main.bg1">
-
-        <v-list>
-          <v-list-item>
-            <v-list-item-title>
-              Need help?
-            </v-list-item-title>
-          </v-list-item>
-          <v-list-item>
-            <v-list-item-content>
-              You can either write an email or checking resources explaining each page of NeDRex-Web:
-            </v-list-item-content>
-          </v-list-item>
-
-          <v-list-item>
-            <v-list-item-icon>
-              <v-icon left>fas fa-at</v-icon>
-            </v-list-item-icon>
-            <v-list-item-title>By Mail:</v-list-item-title>
-            <v-list-item-subtitle>maieran@cip.ifi.lmu.de</v-list-item-subtitle>
-          </v-list-item>
-
-          <v-list-item>
-            <v-list-item-icon>
-              <v-icon left>fab fa-github</v-icon>
-
-            </v-list-item-icon>
-            <v-list-item-title>Application-Example:</v-list-item-title>
-            <v-list-item-subtitle>
-              <v-chip outlined
-                      @click="openExternal('https://github.com/AndiMajore/RepoScapeWeb/tree/master/material/page_explanation')">
-                Page-Explanations
-                <v-icon right>fas fa-external-link-alt</v-icon>
-              </v-chip>
-            </v-list-item-subtitle>
-          </v-list-item>
-        </v-list>
-      </v-sheet>
-
+      <HelpSheet :color="colors.main.bg1"></HelpSheet>
     </v-bottom-sheet>
     <v-bottom-sheet inset v-model="showVersionInfo" width="60vw" :overlay-color="colors.main.bg1">
-      <v-sheet dark>
-        <v-list>
-          <v-list-item>
-            <v-card-title>DATA SOURCE INFORMATION</v-card-title>
-          </v-list-item>
-          <v-list-item>
-            <v-row>
-              <v-col cols="5">
-                <v-list>
-                  <v-list-item>
-                    <v-list-item-icon>
-                      <v-icon left>fas fa-server</v-icon>
-                    </v-list-item-icon>
-                    <v-list-item-title>RepoTrialDB-version:</v-list-item-title>
-                    <span>{{
-                        metadata.repotrial && metadata.repotrial.version ? metadata.repotrial.version : "?"
-                      }}</span>
-                  </v-list-item>
-                  <v-list-item>
-                    <v-list-item-icon>
-                      <v-icon left>fas fa-sync</v-icon>
-                    </v-list-item-icon>
-                    <v-list-item-title>Last Check:</v-list-item-title>
-                    <span>{{
-                        metadata.lastCheck !== undefined ? formatTimestamp(metadata.lastCheck)[1] + " ago" : "?"
-                      }}</span>
-                  </v-list-item>
-                  <v-list-item>
-                    <v-list-item-icon>
-                      <v-icon left>fas fa-cloud-download-alt</v-icon>
-                    </v-list-item-icon>
-                    <v-list-item-title>Last Update:</v-list-item-title>
-                    <span>{{
-                        metadata.lastUpdate !== undefined ? formatTimestamp(metadata.lastUpdate)[1] + " ago" : "?"
-                      }}</span>
-                  </v-list-item>
-                </v-list>
-              </v-col>
-              <v-divider vertical></v-divider>
-              <v-col cols="6">
-                <v-list v-if="metadata.repotrial &&metadata.repotrial.source_databases">
-                  <v-list-item v-for="source in Object.keys(metadata.repotrial.source_databases)" :key="source">
-                    <v-list-item-icon>
-                      <v-icon left>fas fa-database</v-icon>
-                      {{ source }}
-                    </v-list-item-icon>
-                    <v-list-item-title>
-                      <span>{{ metadata.repotrial.source_databases[source].date }}</span>
-                    </v-list-item-title>
-                    <v-list-item-subtitle v-if="metadata.repotrial.source_databases[source].version!=null">
-                      <span>(Version: {{ metadata.repotrial.source_databases[source].version }})</span>
-                    </v-list-item-subtitle>
-                    <v-list-item-subtitle v-else></v-list-item-subtitle>
-                  </v-list-item>
-                </v-list>
-              </v-col>
-            </v-row>
-
-          </v-list-item>
-        </v-list>
-        <v-divider style="margin-left:25px; margin-right: 25px"></v-divider>
-      </v-sheet>
+      <VersionSheet :color="colors.main.bg1" :metadata="metadata"></VersionSheet>
     </v-bottom-sheet>
     <Footer :color="colors.main.bg1"></Footer>
   </v-app>
@@ -390,6 +240,9 @@ import Legend from "./components/views/graph/Legend";
 import Footer from "@/components/app/Footer";
 import Utils from "./scripts/Utils"
 import * as CONFIG from "./Config"
+import BugSheet from "@/components/app/sheets/BugSheet";
+import HelpSheet from "@/components/app/sheets/HelpSheet";
+import VersionSheet from "@/components/app/sheets/VersionSheet";
 
 export default {
   name: 'app',
@@ -899,7 +752,10 @@ export default {
     History,
     Legend,
     Home,
-    Footer
+    Footer,
+    BugSheet,
+    HelpSheet,
+    VersionSheet
   }
   ,
 

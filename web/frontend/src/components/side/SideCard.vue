@@ -1,7 +1,7 @@
 <template>
-  <v-container style="position: fixed; width: 25%">
+  <v-container style="position: fixed; width: 20%">
 
-    <v-card elevation="3" style="padding-top: 15px; overflow-y: auto; max-height: 75vh">
+    <v-card elevation="3" style="padding-top: 15px; overflow-y: auto; max-height: 80vh">
       <v-card-title>Toolbox</v-card-title>
 
       <v-card-title v-show="gid!==undefined">
