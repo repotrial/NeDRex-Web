@@ -17,7 +17,8 @@
           <v-icon left>fas fa-at</v-icon>
         </v-list-item-icon>
         <v-list-item-title>By Mail:</v-list-item-title>
-        <v-list-item-subtitle><a :href="'mailto:andreas.maier-1@uni-hamburg.de?subject='+getMailSubject()">andreas.maier-1(at)uni-hamburg.de</a>
+        <v-list-item-subtitle><v-chip outlined><a :href="'mailto:andreas.maier-1@uni-hamburg.de?subject='+getMailSubject()">andreas.maier-1(at)uni-hamburg.de</a>
+        </v-chip>
         </v-list-item-subtitle>
       </v-list-item>
 
@@ -31,7 +32,7 @@
           <v-chip outlined
                   @click="openExternal('https://github.com/AndiMajore/RepoScapeWeb/tree/master/material/page_explanation')">
             Page-Explanations
-            <v-icon right>fas fa-external-link-alt</v-icon>
+            <v-icon size="18" right>fas fa-external-link-alt</v-icon>
           </v-chip>
         </v-list-item-subtitle>
       </v-list-item>
@@ -53,7 +54,7 @@ export default {
       window.open(url, '_blank')
     },
     getMailSubject: function () {
-      let subject = "NeDRex-Web Issue!"
+      let subject = "Needing help with NeDRex-Web!"
       subject += " (UID=" + this.$cookies.get("uid") + ")"
       if (this.$route.params["gid"])
         subject += " [GID=" + this.$route.params["gid"] + "]"
