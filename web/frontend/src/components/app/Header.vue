@@ -2,7 +2,7 @@
   <v-app-bar app elevation="0" :height="prominent? 100:50" color="#383838">
     <div v-show="prominent" id="particles-js"></div>
     <div id="title-div" style="position:fixed">
-      <img src="/static/NeDRex-logo-bright-removebg-cropped.png" :width="prominent?250:175" :style="{'padding-top':'25px', cursor: 'pointer'}" @click="$emit('redirectEvent','/home')">
+      <img :src="getConfig().STATIC_PATH+'NeDRex-logo-bright-removebg-cropped.png'" :width="prominent?250:175" :style="{'padding-top':'25px', cursor: 'pointer'}" @click="$emit('redirectEvent','/home')">
     </div>
     <v-row>
       <v-col cols="11"></v-col>
@@ -43,33 +43,6 @@
             </v-menu>
           </v-col>
         </v-row>
-<!--        <v-row>-->
-<!--          <v-col style=" padding-right:0; padding-bottom: 0">-->
-<!--            <v-btn icon small @click="$emit('showVersionEvent')" style="background-color: #383838">-->
-<!--              <v-icon color="primary">-->
-<!--                fas fa-info-circle-->
-<!--              </v-icon>-->
-<!--            </v-btn>-->
-<!--          </v-col>-->
-<!--        </v-row>-->
-<!--        <v-row>-->
-<!--          <v-col style=" padding-right:0; padding-bottom: 0">-->
-<!--            <v-btn small icon @click="$emit('showBugEvent')" style="background-color:  #383838">-->
-<!--              <v-icon color="primary">-->
-<!--                fas fa-bug-->
-<!--              </v-icon>-->
-<!--            </v-btn>-->
-<!--          </v-col>-->
-<!--        </v-row>-->
-<!--        <v-row>-->
-<!--          <v-col style=" padding-right:0; padding-bottom: 0">-->
-<!--            <v-btn small icon @click="$emit('showHelpEvent')" style="background-color:  #383838">-->
-<!--              <v-icon color="primary">-->
-<!--                fas fa-question-circle-->
-<!--              </v-icon>-->
-<!--            </v-btn>-->
-<!--          </v-col>-->
-<!--        </v-row>-->
       </v-col>
     </v-row>
   </v-app-bar>
@@ -77,6 +50,7 @@
 
 <script>
 import '../../js/particles.js'
+import * as CONFIG from "../../Config"
 
 export default {
   name: "headerBar",
@@ -87,6 +61,9 @@ export default {
     this.initParticles()
   },
   methods: {
+    getConfig: function(){
+      return CONFIG
+    },
     initParticles() {
       window.particlesJS("particles-js", {
         "particles": {

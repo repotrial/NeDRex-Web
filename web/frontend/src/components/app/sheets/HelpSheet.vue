@@ -17,7 +17,8 @@
           <v-icon left>fas fa-at</v-icon>
         </v-list-item-icon>
         <v-list-item-title>By Mail:</v-list-item-title>
-        <v-list-item-subtitle>maieran@cip.ifi.lmu.de</v-list-item-subtitle>
+        <v-list-item-subtitle><a :href="'mailto:andreas.maier-1@uni-hamburg.de?subject='+getMailSubject()">andreas.maier-1(at)uni-hamburg.de</a>
+        </v-list-item-subtitle>
       </v-list-item>
 
       <v-list-item>
@@ -47,9 +48,16 @@ export default {
     color: String,
   },
 
-  methods:{
+  methods: {
     openExternal: function (url) {
       window.open(url, '_blank')
+    },
+    getMailSubject: function () {
+      let subject = "NeDRex-Web Issue!"
+      subject += " (UID=" + this.$cookies.get("uid") + ")"
+      if (this.$route.params["gid"])
+        subject += " [GID=" + this.$route.params["gid"] + "]"
+      return subject
     }
   }
 }

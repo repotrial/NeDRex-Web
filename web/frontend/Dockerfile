@@ -3,6 +3,7 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY ./ .
+COPY docker/index.html public/index.html
 COPY docker/vue.config.js ./vue.config.js
 COPY docker/Config.js src/Config.js
 
