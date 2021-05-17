@@ -216,11 +216,11 @@
                     </v-container>
                   </v-row>
                   <v-divider></v-divider>
-                  <v-row v-if="selected.thumbnailReady" style="padding:15px">
+                  <v-row v-if="selected.thumbnailReady" style="padding:15px;display: flex;justify-content: center">
                     <v-img max-height="600" max-width="600" :src="getThumbnail(selectedId)">
                     </v-img>
                   </v-row>
-                  <v-row v-else style="padding:15px">
+                  <v-row v-else style="padding:15px;display: flex;justify-content: center" >
                     <i style="color:gray">creating preview...</i>
                     <v-progress-linear
                       indeterminate
@@ -228,9 +228,8 @@
                     ></v-progress-linear>
                   </v-row>
                   <v-row style="margin-top:10px">
-                    <v-col>
                       <v-textarea outlined label="Description" @change="updateDesc" :value="description" rows="5"
-                                  no-resize>
+                                  no-resize style="margin: 15px">
                         <template v-slot:append>
                           <v-container style="margin-right: -5px">
                             <v-row>
@@ -246,8 +245,6 @@
                           </v-container>
                         </template>
                       </v-textarea>
-                    </v-col>
-
                   </v-row>
                 </v-container>
               </v-card>
