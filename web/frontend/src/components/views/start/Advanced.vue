@@ -46,8 +46,7 @@
                           :color="edgeModel.indexOf(item.index)===-1?'gray':'primary'"
                           :text-color="edgeModel.indexOf(item.index)===-1?'black':'gray'"
                   >
-
-                    <v-icon left :color="getColoring('edges',item.label)[0]">fas fa-genderless</v-icon>
+                      <v-icon left :color="getColoring('edges',item.label)[0]">fas fa-genderless</v-icon>
                     <template v-if="direction(item.label)===0">
                       <v-icon left>fas fa-undo-alt</v-icon>
                     </template>

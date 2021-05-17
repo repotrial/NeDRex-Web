@@ -184,6 +184,7 @@
                       </v-col>
                       <v-col
                         :cols="(filters.nodes.suggestions)?12:8"
+                        style="display: flex; justify-content: center"
                       >
                         <v-text-field
                           :disabled="filters.nodes.attribute.name == null || filters.nodes.attribute.name.length ===0 || filters.nodes.attribute.operator == null|| filters.nodes.attribute.dist"

@@ -21,24 +21,26 @@
       </Network>
       <div style="position: absolute" v-if=" !waiting">
         <template v-if="legend">
-          <div style="display: flex; justify-content: flex-end;">
-            <v-btn @click="showLegend= !showLegend" :title="showLegend ? 'Hide':'Show'" :plain="!showLegend">
+          <div style="display: flex; justify-content: flex-end; ">
+            <v-btn @click="showLegend= !showLegend" :title="showLegend ? 'Hide':'Show'" plain style="z-index: 900">
+              <v-icon left>fas fa-scroll</v-icon>
               Legend
               <v-icon right>{{ showLegend ? "fas fa-angle-up" : "fas fa-angle-down" }}</v-icon>
             </v-btn>
           </div>
-          <div v-show="showLegend" style="padding-right: 2px; padding-top:2px">
+          <div v-show="showLegend" style="margin-right: -15px; margin-top:-50px">
             <slot name="legend"></slot>
           </div>
         </template>
         <template v-if="tools">
           <div style="display: flex; justify-content: flex-end;">
-            <v-btn @click="showTools= !showTools" :title="showTools ? 'Hide':'Show'" :plain="!showTools">
+            <v-btn @click="showTools= !showTools" :title="showTools ? 'Hide':'Show'" plain style="z-index: 900">
+              <v-icon left>fas fa-tools</v-icon>
               Tools
               <v-icon right>{{ showTools ? "fas fa-angle-up" : "fas fa-angle-down" }}</v-icon>
             </v-btn>
           </div>
-          <div v-show="showTools" style="padding-right: 2px; padding-top:2px">
+          <div v-show="showTools" style="margin-right: -15px; margin-top:-50px">
             <slot name="tools"></slot>
           </div>
         </template>
