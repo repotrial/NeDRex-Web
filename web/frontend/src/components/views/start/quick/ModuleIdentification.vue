@@ -574,18 +574,18 @@
               <v-col cols="8">
                 <Graph ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle" :legend="results.targets.length>0" :meta="metagraph">
                   <template v-slot:legend  v-if="results.targets.length>0" >
-                    <v-card style="width: 13vw; max-width: 15vw">
+                    <v-card style="width: 13vw; max-width: 15vw; padding-top: 35px">
                       <v-list>
                         <v-list-item>
                           <v-list-item-icon>
-                            <v-icon left :color="getColoring('nodes',['gene','protein'][seedTypeId])" size="43px">fas fa-genderless</v-icon>
+                            <v-icon left :color="getColoring('nodes',['gene','protein'][seedTypeId],'light')" size="43px">fas fa-genderless</v-icon>
                           </v-list-item-icon>
                           <v-list-item-title style="margin-left: -25px">Seed {{['Gene','Protein'][seedTypeId]}}</v-list-item-title>
                           <v-list-item-subtitle>{{ seeds.length }}</v-list-item-subtitle>
                         </v-list-item>
                         <v-list-item>
                           <v-list-item-icon>
-                            <v-icon left :color="getColoring('nodes',['gene','protein'][seedTypeId])">fas fa-circle</v-icon>
+                            <v-icon left :color="getColoring('nodes',['gene','protein'][seedTypeId],'light')">fas fa-circle</v-icon>
                           </v-list-item-icon>
                           <v-list-item-title style="margin-left: -25px">Target {{['Gene','Protein'][seedTypeId]}}</v-list-item-title>
                           <v-list-item-subtitle>{{ results.targets.length-seeds.length}}</v-list-item-subtitle>

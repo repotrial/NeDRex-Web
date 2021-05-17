@@ -384,11 +384,11 @@
                 <Graph ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle"
                        :legend="results.targets.length>0" :meta="metagraph">
                   <template v-slot:legend v-if="results.targets.length>0">
-                    <v-card style="width: 8vw; max-width: 10vw">
+                    <v-card style="width: 8vw; max-width: 10vw;padding-top: 35px">
                       <v-list>
                         <v-list-item>
                           <v-list-item-icon>
-                            <v-icon left :color="getColoring('nodes',['gene','protein'][seedTypeId])">fas
+                            <v-icon left :color="getColoring('nodes',['gene','protein'][seedTypeId],'light')">fas
                               fa-genderless
                             </v-icon>
                           </v-list-item-icon>
@@ -398,7 +398,7 @@
                         </v-list-item>
                         <v-list-item>
                           <v-list-item-icon>
-                            <v-icon left :color="getColoring('nodes','drug')">fas fa-genderless</v-icon>
+                            <v-icon left :color="getColoring('nodes','drug','light')">fas fa-genderless</v-icon>
                           </v-list-item-icon>
                           <v-list-item-title style="margin-left: -25px">Drug</v-list-item-title>
                           <v-list-item-subtitle>{{ results.targets.length }}</v-list-item-subtitle>

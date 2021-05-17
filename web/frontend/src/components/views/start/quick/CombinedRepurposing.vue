@@ -766,7 +766,7 @@
                 <Graph ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle"
                        :progress="resultProgress" :legend="resultProgress===100" :meta="metagraph">
                   <template v-slot:legend v-if="results.drugs.length>0">
-                    <v-card  style="width: 11vw; max-width: 20vw">
+                    <v-card  style="width: 11vw; max-width: 20vw; padding-top: 35px">
                       <v-list dense>
                         <v-list-item>
                           <v-list-item-icon >

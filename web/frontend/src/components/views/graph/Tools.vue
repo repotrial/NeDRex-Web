@@ -1,5 +1,5 @@
 <template>
-  <v-card ref="tools" elevation="3" style="margin:15px" v-if="metagraph!==undefined && entityGraph!==undefined">
+  <v-card ref="tools" elevation="3" v-if="metagraph!==undefined && entityGraph!==undefined">
     <v-container v-show="show">
       <v-list ref="list">
         <v-list-item>

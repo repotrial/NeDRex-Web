@@ -469,11 +469,11 @@
               <Graph ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle"
                      :legend="$refs.graph!==undefined && $refs.graph.isVisualized()" :meta="metagraph">
                 <template v-slot:legend>
-                  <v-card style="width: 11vw; max-width: 11vw" v-if="info!==undefined">
+                  <v-card style="width: 11vw; max-width: 11vw; padding-top: 35px" v-if="info!==undefined">
                     <v-list>
                       <v-list-item v-for="node in Object.keys(info.nodes)" :key="node">
                         <v-list-item-icon>
-                          <v-icon left :color="getColoring('nodes',node)">fas fa-genderless</v-icon>
+                          <v-icon left :color="getColoring('nodes',node,'light')">fas fa-genderless</v-icon>
                         </v-list-item-icon>
                         <v-list-item-title style="margin-left: -25px">
                           {{ node.substr(0, 1).toUpperCase() + node.substr(1) }}

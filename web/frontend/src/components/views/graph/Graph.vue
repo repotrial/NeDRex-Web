@@ -28,7 +28,7 @@
               <v-icon right>{{ showLegend ? "fas fa-angle-up" : "fas fa-angle-down" }}</v-icon>
             </v-btn>
           </div>
-          <div v-show="showLegend" style="margin-right: -15px; margin-top:-50px">
+          <div v-show="showLegend" style="margin-top:-35px">
             <slot name="legend"></slot>
           </div>
         </template>
@@ -40,7 +40,7 @@
               <v-icon right>{{ showTools ? "fas fa-angle-up" : "fas fa-angle-down" }}</v-icon>
             </v-btn>
           </div>
-          <div v-show="showTools" style="margin-right: -15px; margin-top:-50px">
+          <div v-show="showTools" style="margin-top:-35px">
             <slot name="tools"></slot>
           </div>
         </template>
