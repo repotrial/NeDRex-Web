@@ -1,5 +1,5 @@
 <template>
-  <v-footer app dark padless height="45px">
+  <v-footer app dark padless height="35px">
     <v-card
       width="100%"
       flat
@@ -7,7 +7,7 @@
       :color="color"
       class="white--text text-center"
     >
-      <v-card-text class="white--text" style="margin-top: -10px">
+      <v-card-text class="white--text" style="margin-top: -15px">
         NeDRex-Web
         <v-btn icon @click="openExternal('https://github.com/AndiMajore/RepoScapeWeb')">
           <v-icon size="22px">fab fa-github</v-icon>
