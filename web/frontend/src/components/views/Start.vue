@@ -56,7 +56,7 @@
 </template>
 
 <script>
-import Utils from "../scripts/Utils"
+import Utils from "../../scripts/Utils"
 import Advanced from "./start/Advanced";
 import Quick from "./start/Quick"
 import Guided from "./start/Guided";
@@ -84,6 +84,7 @@ export default {
   },
   created() {
     this.$emit("showSideEvent", this.startTab === 2)
+    this.setView()
   },
   mounted() {
   },
@@ -141,6 +142,24 @@ export default {
       let element = this.$refs["top"];
       this.$nextTick(() => element.scrollIntoView(true))
     },
+    showTab: function(idx){
+      this.startTab=idx
+    },
+    setView: function(){
+      let path = this.$route.path.split("/")
+      let start = path.indexOf('start')>-1
+      let mode = path.length > 1 ? path[2] : undefined
+
+      if(start){
+        if(mode==="quick")
+          this.showTab(0)
+        else if(mode==="guided")
+          this.showTab(1)
+        else if(mode==="advanced")
+          this.showTab(2)
+      }
+
+    }
   },
   components: {
     Advanced,

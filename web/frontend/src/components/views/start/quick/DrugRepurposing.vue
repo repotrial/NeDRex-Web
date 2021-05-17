@@ -487,9 +487,9 @@
 </template>
 
 <script>
-import Utils from "../../../scripts/Utils";
+import Utils from "../../../../scripts/Utils";
 import Graph from "../../graph/Graph";
-import * as CONFIG from "../../../Config"
+import * as CONFIG from "../../../../Config"
 
 export default {
   name: "DrugRepurposing",

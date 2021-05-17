@@ -290,8 +290,8 @@
 </template>
 
 <script>
-import Utils from "../scripts/Utils";
-import * as CONFIG from "../Config"
+import Utils from "../../scripts/Utils";
+import * as CONFIG from "../../Config"
 
 export default {
   name: "History.vue",

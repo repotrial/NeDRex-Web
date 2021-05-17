@@ -10,16 +10,11 @@
       </v-stepper-step>
       <v-divider></v-divider>
       <v-stepper-step step="2" :complete="step>2 || blitz">
-        Module Method
-        <small v-if="moduleMethodModel>-1">{{ moduleMethods[moduleMethodModel].label }}</small>
+        Select Method
+        <small v-if=" methodModel>-1">{{ methods[methodModel].label }}</small>
       </v-stepper-step>
       <v-divider></v-divider>
-      <v-stepper-step step="3" :complete="step>3 || blitz">
-        Ranking Method
-        <small v-if="rankingMethodModel>-1">{{ rankingMethods[rankingMethodModel].label }}</small>
-      </v-stepper-step>
-      <v-divider></v-divider>
-      <v-stepper-step step="4">
+      <v-stepper-step step="3">
         Results
       </v-stepper-step>
     </v-stepper-header>
@@ -29,7 +24,7 @@
         <v-card
           v-if="step===1"
           class="mb-12"
-          max-height="80vh"
+          min-height="80vh"
         >
 
           <v-card-subtitle class="headline">1. Seed Configuration</v-card-subtitle>
@@ -62,8 +57,8 @@
               </v-list-item-action>
             </v-col>
           </v-row>
-          <v-container style="height: 55vh">
-            <v-row style="height: 100%">
+          <v-container style="height: 80%">
+            <v-row style="height: 50vh">
               <v-col cols="6">
                 <v-container v-if="seedTypeId!==undefined">
                   <v-card-title style="margin-left: -25px">Add seeds associated to</v-card-title>
@@ -143,7 +138,7 @@
                     </v-list-item-action>
                   </v-list-item>
                 </v-list>
-                <v-chip outlined v-show="seeds.length>0" style="margin-top:15px" @click="downloadSeedList">
+                <v-chip outlined v-show="seeds.length>0" style="margin-top:15px" @click="downloadList">
                   <v-icon left>fas fa-download</v-icon>
                   Save
                 </v-chip>
@@ -178,7 +173,7 @@
         <v-card
           v-if="step===2"
           class="mb-12"
-          height="700px"
+          min-height="700px"
         >
           <v-card-subtitle class="headline">2. Module Identification Algorithm Selection</v-card-subtitle>
           <v-card-subtitle style="margin-top: -25px">Select and adjust the algorithm you want to use on your seeds to
@@ -188,15 +183,15 @@
             <v-row style="height: 100%">
               <v-col>
                 <v-card-title style="margin-left: -25px">Select the Base-Algorithm</v-card-title>
-                <v-radio-group v-model="moduleMethodModel" row>
-                  <v-radio v-for="method in moduleMethods"
+                <v-radio-group v-model="methodModel" row>
+                  <v-radio v-for="method in methods"
                            :label="method.label"
                            :key="method.label"
                            :disabled="method.id!=='bicon'&&seeds.length===0"
                   >
                   </v-radio>
                 </v-radio-group>
-                <template v-if="moduleMethodModel!==undefined">
+                <template v-if="methodModel!==undefined">
                   <v-card-title style="margin-left:-25px">Configure Parameters</v-card-title>
                   <v-row>
                     <v-col>
@@ -205,10 +200,12 @@
                         v-model="experimentalSwitch"
                       >
                       </v-switch>
+
                     </v-col>
 
+
                   </v-row>
-                  <template v-if="moduleMethods[moduleMethodModel].id==='bicon'">
+                  <template v-if="methods[methodModel].id==='bicon'">
                     <v-file-input
                       v-on:change="biconFile"
                       show-size
@@ -222,13 +219,13 @@
                         <v-range-slider
                           hide-details
                           class="align-center"
-                          v-model="moduleModels.bicon.lg"
+                          v-model="models.bicon.lg"
                           min="1"
                           max="1000"
                         >
                           <template v-slot:prepend>
                             <v-text-field
-                              v-model="moduleModels.bicon.lg[0]"
+                              v-model="models.bicon.lg[0]"
                               class="mt-0 pt-0"
                               type="number"
                               style="width: 60px"
@@ -237,7 +234,7 @@
                           </template>
                           <template v-slot:append>
                             <v-text-field
-                              v-model="moduleModels.bicon.lg[1]"
+                              v-model="models.bicon.lg[1]"
                               class="mt-0 pt-0"
                               type="number"
                               style="width: 60px"
@@ -259,19 +256,19 @@
                     </v-row>
 
                   </template>
-                  <template v-if="moduleMethods[moduleMethodModel].id==='diamond'">
+                  <template v-if="methods[methodModel].id==='diamond'">
                     <v-row>
                       <v-col>
                         <v-slider
                           hide-details
                           class="align-center"
-                          v-model="moduleModels.diamond.nModel"
+                          v-model="models.diamond.nModel"
                           min="1"
                           max="1000"
                         >
                           <template v-slot:prepend>
                             <v-text-field
-                              v-model="moduleModels.diamond.nModel"
+                              v-model="models.diamond.nModel"
                               class="mt-0 pt-0"
                               type="number"
                               style="width: 60px"
@@ -299,13 +296,13 @@
                         <v-slider
                           hide-details
                           class="align-center"
-                          v-model="moduleModels.diamond.alphaModel"
+                          v-model="models.diamond.alphaModel"
                           min="1"
                           max="100"
                         >
                           <template v-slot:prepend>
                             <v-text-field
-                              v-model="moduleModels.diamond.alphaModel"
+                              v-model="models.diamond.alphaModel"
                               class="mt-0 pt-0"
                               type="number"
                               style="width: 60px"
@@ -333,14 +330,14 @@
                         <v-slider
                           hide-details
                           class="align-center"
-                          v-model="moduleModels.diamond.pModel"
+                          v-model="models.diamond.pModel"
                           min="-100"
                           max="0"
                         >
                           <template v-slot:prepend>
                             <v-text-field
                               prefix="10^"
-                              v-model="moduleModels.diamond.pModel"
+                              v-model="models.diamond.pModel"
                               class="mt-0 pt-0"
                               type="number"
                               style="width: 80px"
@@ -363,20 +360,20 @@
                       </v-col>
                     </v-row>
                   </template>
-                  <template v-if="moduleMethods[moduleMethodModel].id==='must'">
+                  <template v-if="methods[methodModel].id==='must'">
                     <v-row>
                       <v-col>
                         <v-slider
                           hide-details
                           class="align-center"
-                          v-model="moduleModels.must.hubpenalty"
+                          v-model="models.must.hubpenalty"
                           min="0"
                           max="1"
                           step="0.01"
                         >
                           <template v-slot:prepend>
                             <v-text-field
-                              v-model="moduleModels.must.hubpenalty"
+                              v-model="models.must.hubpenalty"
                               class="mt-0 pt-0"
                               type="number"
                               style="width: 70px"
@@ -402,7 +399,7 @@
                       <v-col>
                         <v-switch
                           label="Multiple"
-                          v-model="moduleModels.must.multiple"
+                          v-model="models.must.multiple"
                         >
                           <template v-slot:append>
                             <v-tooltip left>
@@ -419,18 +416,18 @@
                         </v-switch>
                       </v-col>
                     </v-row>
-                    <v-row v-show="moduleModels.must.multiple">
+                    <v-row v-show="models.must.multiple">
                       <v-col>
                         <v-slider
                           hide-details
                           class="align-center"
-                          v-model="moduleModels.must.trees"
+                          v-model="models.must.trees"
                           min="2"
                           max="50"
                         >
                           <template v-slot:prepend>
                             <v-text-field
-                              v-model="moduleModels.must.trees"
+                              v-model="models.must.trees"
                               class="mt-0 pt-0"
                               type="number"
                               style="width: 70px"
@@ -457,13 +454,13 @@
                         <v-slider
                           hide-details
                           class="align-center"
-                          v-model="moduleModels.must.maxit"
+                          v-model="models.must.maxit"
                           min="0"
                           max="20"
                         >
                           <template v-slot:prepend>
                             <v-text-field
-                              v-model="moduleModels.must.maxit"
+                              v-model="models.must.maxit"
                               class="mt-0 pt-0"
                               type="number"
                               style="width: 70px"
@@ -502,9 +499,9 @@
         <v-btn
           @click="makeStep(2,'continue')"
           color="primary"
-          :disabled="moduleMethodModel===undefined ||(moduleMethodModel===1 && moduleModels.bicon.exprFile ===undefined)"
+          :disabled="methodModel===undefined ||(methodModel===1 && models.bicon.exprFile ===undefined)"
         >
-          Continue
+          Run
         </v-btn>
 
         <v-btn text @click="makeStep(2,'cancel')">
@@ -516,206 +513,16 @@
         <v-card
           v-if="step===3"
           class="mb-12"
-          height="700px"
+          min-height="750px"
         >
-          <v-card-subtitle class="headline">3. Drug Ranking Algorithm Selection</v-card-subtitle>
-          <v-card-subtitle style="margin-top: -25px">Select and adjust the algorithm you want to use on your seeds to
-            generate a ranked list of applicable drugs for.
-          </v-card-subtitle>
-          <v-container style="height: 80%">
-            <v-row style="height: 100%">
-              <v-col>
-                <v-card-title style="margin-left: -25px">Select the Base-Algorithm</v-card-title>
-                <v-radio-group v-model="rankingMethodModel" row>
-                  <v-radio v-for="method in rankingMethods"
-                           :label="method.label"
-                           :key="method.label"
-                  >
-                  </v-radio>
-                </v-radio-group>
-                <template v-if="rankingMethodModel!==undefined">
-                  <v-card-title style="margin-left:-25px">Configure Parameters</v-card-title>
-                  <v-row>
-                    <v-col>
-                      <v-slider
-                        hide-details
-                        class="align-center"
-                        v-model="rankingModels.topX"
-                        step="1"
-                        min="1"
-                        max="2000"
-                      >
-                        <template v-slot:prepend>
-                          <v-text-field
-                            v-model="rankingModels.topX"
-                            class="mt-0 pt-0"
-                            type="integer"
-                            style="width: 100px"
-                            label="visualize topX"
-                          ></v-text-field>
-                        </template>
-                        <template v-slot:append>
-                          <v-tooltip left>
-                            <template v-slot:activator="{ on, attrs }">
-                              <v-icon
-                                v-bind="attrs"
-                                v-on="on"
-                                left> far fa-question-circle
-                              </v-icon>
-                            </template>
-                            <span>A integer X limiting the visualization to the top X drugs that were found.</span>
-                          </v-tooltip>
-                        </template>
-                      </v-slider>
-                    </v-col>
-                  </v-row>
-                  <v-row>
-                    <v-col>
-                      <v-switch
-                        label="Only use experimentally validated interaction networks"
-                        v-model="experimentalSwitch"
-                      >
-                      </v-switch>
-
-                    </v-col>
-
-
-                  </v-row>
-                  <v-row>
-                    <v-col>
-                      <v-switch
-                        label="Only direct Drugs"
-                        v-model="rankingModels.onlyDirect"
-                      >
-                        <template v-slot:append>
-                          <v-tooltip left>
-                            <template v-slot:activator="{ on, attrs }">
-                              <v-icon
-                                v-bind="attrs"
-                                v-on="on"
-                                left> far fa-question-circle
-                              </v-icon>
-                            </template>
-                            <span>If only the drugs interacting directly with seeds should be considered in the ranking,
-                             this should be selected. If including the non-direct drugs is desired unselect.</span>
-                          </v-tooltip>
-                        </template>
-                      </v-switch>
-                    </v-col>
-                    <v-col>
-                      <v-switch
-                        label="Only approved Drugs"
-                        v-model="rankingModels.onlyApproved"
-                      >
-                        <template v-slot:append>
-                          <v-tooltip left>
-                            <template v-slot:activator="{ on, attrs }">
-                              <v-icon
-                                v-bind="attrs"
-                                v-on="on"
-                                left> far fa-question-circle
-                              </v-icon>
-                            </template>
-                            <span>If only approved drugs should be considered in the ranking,
-                             this should be selected. If including all approved and unapproved drugs is desired unselect.</span>
-                          </v-tooltip>
-                        </template>
-                      </v-switch>
-                    </v-col>
-                    <v-col>
-                      <v-switch
-                        label="Filter Element 'Drugs'"
-                        v-model="rankingModels.filterElements"
-                      >
-                        <template v-slot:append>
-                          <v-tooltip left>
-                            <template v-slot:activator="{ on, attrs }">
-                              <v-icon
-                                v-bind="attrs"
-                                v-on="on"
-                                left> far fa-question-circle
-                              </v-icon>
-                            </template>
-                            <span>Filter often used drugs like Zinc, Gold, Copper,....</span>
-                          </v-tooltip>
-                        </template>
-                      </v-switch>
-                    </v-col>
-                  </v-row>
-                  <v-row>
-                    <v-col>
-                      <v-slider
-                        v-show="rankingMethodModel===0"
-                        hide-details
-                        class="align-center"
-                        v-model="rankingModels.damping"
-                        step="0.01"
-                        min="0"
-                        max="1"
-                      >
-                        <template v-slot:prepend>
-                          <v-text-field
-                            v-model="rankingModels.damping"
-                            class="mt-0 pt-0"
-                            type="float"
-                            style="width: 60px"
-                            label="damping-factor"
-                          ></v-text-field>
-                        </template>
-                        <template v-slot:append>
-                          <v-tooltip left>
-                            <template v-slot:activator="{ on, attrs }">
-                              <v-icon
-                                v-bind="attrs"
-                                v-on="on"
-                                left> far fa-question-circle
-                              </v-icon>
-                            </template>
-                            <span>A float value between 0-1 to be used as damping factor parameter.</span>
-                          </v-tooltip>
-                        </template>
-                      </v-slider>
-                    </v-col>
-                  </v-row>
-
-                  <v-row>
-                    <v-col></v-col>
-                  </v-row>
-                </template>
-              </v-col>
-            </v-row>
-          </v-container>
-        </v-card>
-
-        <v-btn text @click="makeStep(2,'back')">
-          Back
-        </v-btn>
-
-        <v-btn
-          @click="makeStep(2,'continue')"
-          color="primary"
-          :disabled="moduleMethodModel===undefined"
-        >
-          Run
-        </v-btn>
-
-        <v-btn text @click="makeStep(2,'cancel')">
-          Cancel
-        </v-btn>
-      </v-stepper-content>
-
-      <v-stepper-content step="4">
-        <v-card
-          v-if="step===4"
-          class="mb-12"
-          height="80vh"
-        >
-          <v-card-subtitle class="headline">4. Results</v-card-subtitle>
+          <v-card-subtitle class="headline">3. Results</v-card-subtitle>
+          <!--          <v-card-subtitle style="margin-top: -25px">-->
+          <!--          </v-card-subtitle>-->
           <v-container>
             <v-row>
               <v-col cols="3">
                 <v-card-title class="subtitle-1">Seeds ({{ seeds.length }}) {{
-                    (results.targets.length !== undefined && results.targets.length > 0 ? ("& Targets(" + (results.targets.length - seeds.length) + ")") : ": Processing")
+                    (results.targets.length !== undefined && results.targets.length > 0 ? ("& Targets(" + (results.targets.length-seeds.length) + ")") : ": Processing")
                   }}
                   <v-progress-circular indeterminate v-if="this.results.targets.length===0" style="margin-left:15px">
                   </v-progress-circular>
@@ -728,68 +535,60 @@
                         <th class="text-left">
                           Name
                         </th>
-                        <th v-for="val in moduleMethodScores()" class="text-left">
+                        <th v-for="val in methodScores()" class="text-left">
                           {{ val.name }}
                         </th>
                       </tr>
                       </thead>
                       <tbody>
-                      <tr v-for="seed in results.targets" v-if="seeds.map(s=>s.id).indexOf(seed.id)===-1" :key="seed.id"
-                          :style="targetColorStyle" @click="focusNode(['gen_','pro_'][seedTypeId]+seed.id)">
-                        <td :key="seed.id+'n'">{{ seed.displayName }}</td>
-                        <td :key="seed.id+'v'+val.id" v-for="val in moduleMethodScores()">{{ seed[val.id] }}</td>
+                      <tr v-if="seeds.map(s=>s.id).indexOf(seed.id)===-1"
+                          v-for="seed in results.targets" :key="seed.id" :style="targetColorStyle"
+                          @click="focusNode(['gen_','pro_'][seedTypeId]+seed.id)"
+                      >
+                        <td>{{ seed.displayName }}</td>
+                        <td v-for="val in methodScores()">{{ seed[val.id] }}</td>
                       </tr>
                       <tr v-for="seed in seeds" :key="seed.id" @click="focusNode(['gen_','pro_'][seedTypeId]+seed.id)">
-                        <td :key="seed.id+'n'">{{ seed.displayName }}</td>
-                        <td :key="seed.id+'v'+val.id" v-for="val in moduleMethodScores()"></td>
+                        <td>{{ seed.displayName }}</td>
+                        <td v-for="val in methodScores()"></td>
                       </tr>
                       </tbody>
                     </template>
                   </v-simple-table>
-                  <v-chip outlined style="margin-top:15px" @click="downloadSeedList">
+                  <v-chip outlined style="margin-top:15px" @click="downloadList">
                     <v-icon left>fas fa-download</v-icon>
                     Save Seeds
                   </v-chip>
                   <v-chip outlined style="margin-top:15px"
-                          @click="downloadModuleResultList">
+                          @click="downloadResultList">
                     <v-icon left>fas fa-download</v-icon>
                     Save Module
                   </v-chip>
                   <v-chip outlined style="margin-top:15px"
-                          @click="downloadFullResultList(moduleJid)" v-if="results.targets.length>0">
+                          @click="downloadFullResultList">
                     <v-icon left>fas fa-download</v-icon>
                     Save Raw Results
                   </v-chip>
                 </template>
               </v-col>
-              <v-col cols="6">
-                <Graph ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle"
-                       :progress="resultProgress" :legend="resultProgress===100" :meta="metagraph">
-                  <template v-slot:legend v-if="results.drugs.length>0">
-                    <v-card  style="width: 11vw; max-width: 20vw">
-                      <v-list dense>
+              <v-col cols="8">
+                <Graph ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle" :legend="results.targets.length>0" :meta="metagraph">
+                  <template v-slot:legend  v-if="results.targets.length>0" >
+                    <v-card style="width: 13vw; max-width: 15vw">
+                      <v-list>
                         <v-list-item>
-                          <v-list-item-icon >
-                            <v-icon left :color="getColoring('nodes',['gene','protein'][seedTypeId],'light')" size="43px">fas fa-genderless
-                            </v-icon>
+                          <v-list-item-icon>
+                            <v-icon left :color="getColoring('nodes',['gene','protein'][seedTypeId])" size="43px">fas fa-genderless</v-icon>
                           </v-list-item-icon>
-                          <v-list-item-title style="margin-left:-25px">{{['Gene','Protein'][seedTypeId]}} (Seed)</v-list-item-title>
-                          <v-list-item-subtitle style="margin-right:-25px; margin-left:-25px">{{ seeds.length }}</v-list-item-subtitle>
+                          <v-list-item-title style="margin-left: -25px">Seed {{['Gene','Protein'][seedTypeId]}}</v-list-item-title>
+                          <v-list-item-subtitle>{{ seeds.length }}</v-list-item-subtitle>
                         </v-list-item>
                         <v-list-item>
                           <v-list-item-icon>
-                            <v-icon left :color="getColoring('nodes',['gene','protein'][seedTypeId],'light')">fas fa-circle</v-icon>
+                            <v-icon left :color="getColoring('nodes',['gene','protein'][seedTypeId])">fas fa-circle</v-icon>
                           </v-list-item-icon>
-                          <v-list-item-title style="margin-left:-25px" >{{['Gene','Protein'][seedTypeId]}} (Module)</v-list-item-title>
-                          <v-list-item-subtitle style="margin-right:-25px; margin-left:-25px">{{results.targets.length}}</v-list-item-subtitle>
-                        </v-list-item>
-                        <v-list-item>
-                          <v-list-item-icon>
-                            <v-icon left :color="getColoring('nodes','drug','light')" size="43px">fas fa-genderless
-                            </v-icon>
-                          </v-list-item-icon>
-                          <v-list-item-title style="margin-left:-25px" >Drug</v-list-item-title>
-                          <v-list-item-subtitle style="margin-right:-25px; margin-left:-25px">{{results.drugs.length}}</v-list-item-subtitle>
+                          <v-list-item-title style="margin-left: -25px">Target {{['Gene','Protein'][seedTypeId]}}</v-list-item-title>
+                          <v-list-item-subtitle>{{ results.targets.length-seeds.length}}</v-list-item-subtitle>
                         </v-list-item>
                       </v-list>
                     </v-card>
@@ -797,109 +596,110 @@
 
                 </Graph>
               </v-col>
-              <v-col cols="3">
-                <v-card-title class="subtitle-1"> Drugs{{
-                    (results.drugs.length !== undefined && results.drugs.length > 0 ? (" (" + (results.drugs.length) + ")") : ": Processing")
-                  }}
-                  <v-progress-circular indeterminate v-if="results.drugs.length===0" style="margin-left:15px">
-                  </v-progress-circular>
-                </v-card-title>
-                <template v-if="results.drugs.length>0">
-                  <v-simple-table max-height="45vh" height="45vh" class="overflow-y-auto" fixed-header>
-                    <template v-slot:default>
-                      <thead>
-                      <tr>
-                        <th class="text-left">
-                          Name
-                        </th>
-                        <th v-for="val in rankingMethodScores()" class="text-left">
-                          {{ val.name }}
-                        </th>
-                      </tr>
-                      </thead>
-                      <tbody>
-                      <tr v-for="drug in results.drugs" :style="drugColorStyle" :key="drug.id"
-                          @click="focusNode('dru_'+drug.id)">
-                        <td>{{ drug.displayName }}</td>
-                        <td v-for="val in rankingMethodScores()">{{ drug[val.id] }}</td>
-                      </tr>
-                      </tbody>
-                    </template>
-                  </v-simple-table>
-                  <v-chip outlined style="margin-top:15px"
-                          @click="downloadRankingResultList" v-if="results.drugs.length>0">
-                    <v-icon left>fas fa-download</v-icon>
-                    Save Top {{ rankingModels.topX }} Drugs
-                  </v-chip>
-                  <v-chip outlined style="margin-top:15px"
-                          @click="downloadFullResultList(rankingJid)" v-if="results.drugs.length>0">
-                    <v-icon left>fas fa-download</v-icon>
-                    Save Complete Drug Ranking
-                  </v-chip>
-                </template>
-              </v-col>
             </v-row>
-            <v-divider style="margin-top:10px"></v-divider>
+            <v-divider style="margin-top:10px; margin-bottom: 10px"></v-divider>
             <v-row>
               <v-col>
-                <v-chip outlined v-if="rankingJid!=null && rankingGid !=null"
+                <v-chip outlined v-if="currentJid!=null"
                         style="margin-top:15px"
-                        @click="$emit('graphLoadEvent',{post: {id: rankingGid}})">
+                        @click="$emit('graphLoadEvent',{post: {id: currentGid}})">
                   <v-icon left>fas fa-angle-double-right</v-icon>
                   Load Result into Advanced View
                 </v-chip>
               </v-col>
               <v-col>
                 <v-switch label="Physics" v-model="graph.physics" @click="updateGraphPhysics()"
-                          v-if="resultProgress===100">
+                          v-if="results.targets.length>0">
                 </v-switch>
 
+              </v-col>
+              <v-col>
+                <v-chip outlined v-show="results.targets.length>0" style="margin-top:15px" @click="loadDrugTargets">
+                  <v-icon left>fas fa-angle-double-right</v-icon>
+                  Continue to Drug-Ranking
+                </v-chip>
               </v-col>
             </v-row>
           </v-container>
         </v-card>
         <v-btn
           color="primary"
-          @click="makeStep(4,'back')"
+          @click="makeStep(3,'back')"
         >
           Back
         </v-btn>
 
-        <v-btn text @click="makeStep(4,'cancel')">
+        <v-btn text @click="makeStep(3,'cancel')">
           Restart
         </v-btn>
       </v-stepper-content>
     </v-stepper-items>
+    <v-dialog
+      v-model="drugTargetPopup"
+      persistent
+      max-width="500"
+    >
+      <v-card>
+        <v-card-title>Continue to Drug-Ranking</v-card-title>
+        <v-card-text>Do you want to use the whole module as input for the drug ranking or just a subset?
+        </v-card-text>
+        <v-card-actions>
+          <v-radio-group v-model="rankingSelect" row>
+            <v-radio :label="'Original seeds ('+seeds.length+')'">
 
+            </v-radio>
+            <v-radio :label="'whole Module ('+results.targets.length+')'">
+            </v-radio>
+            <v-radio :label="'targets only ('+(results.targets.length-seeds.length)+')'">
+            </v-radio>
+          </v-radio-group>
+        </v-card-actions>
+        <v-divider></v-divider>
 
+        <v-card-actions>
+          <v-btn
+            text
+            @click="resolveRankingDialog(false)"
+          >
+            Cancel
+          </v-btn>
+          <v-btn
+            color="green darken-1"
+            text
+            @click="resolveRankingDialog(true)"
+          >
+            Accept
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+
+    </v-dialog>
   </v-stepper>
 </template>
 
 <script>
-import Utils from "../../../scripts/Utils";
+import Utils from "../../../../scripts/Utils";
 import Graph from "../../graph/Graph";
-import * as CONFIG from "../../../Config"
+import * as CONFIG from "../../../../Config"
 
 export default {
-  name: "CombinedRepurposing",
+  name: "ModuleIdentification",
+
   props: {
     blitz: Boolean,
     metagraph: Object,
-
   },
-
   sugQuery: undefined,
-
 
   data() {
     return {
-      resultProgress: 0,
       graphWindowStyle: {
         height: '60vh',
         'min-height': '60vh',
       },
       targetColorStyle: {},
-      drugColorStyle: {},
+      currentJid: undefined,
+      currentGid: undefined,
       graphConfig: {visualized: false},
       uid: undefined,
       seedTypeId: undefined,
@@ -913,20 +713,17 @@ export default {
       nodeSuggestions: null,
       suggestionModel: null,
       fileInputModel: undefined,
-      moduleMethods: [{
+      methods: [{
         id: "diamond",
         label: "DIAMOnD",
         scores: [{id: "rank", name: "Rank"}, {id: "p_hyper", name: "P-Value"}]
       }, {id: "bicon", label: "BiCoN", scores: []}, {id: "must", label: "MuST", scores: []}],
-      rankingMethods: [
-        {id: "trustrank", label: "TrustRank", scores: [{id: "score", name: "Score"}]},
-        {id: "centrality", label: "Closeness Centrality", scores: [{id: "score", name: "Score"}]}],
       graph: {physics: false},
-      moduleMethodModel: undefined,
+      methodModel: undefined,
       rankingMethodModel: undefined,
       experimentalSwitch: true,
-      results: {seeds: [], targets: []},
-      moduleModels: {
+      results: {targets: [], drugs: []},
+      models: {
         diamond: {
           nModel: 200,
           alphaModel: 1,
@@ -943,19 +740,8 @@ export default {
           maxit: 10,
         }
       },
-      rankingModels: {
-        topX: 100,
-        onlyApproved: true,
-        onlyDirect: true,
-        damping: 0.85,
-        filterElements: true,
-      },
       drugTargetPopup: false,
-      rankingSelect: 1,
-      moduleGid: undefined,
-      moduleJid: undefined,
-      rankingGid: undefined,
-      rankingJid: undefined,
+      rankingSelect: 1
     }
   },
   watch: {
@@ -980,17 +766,13 @@ export default {
         }).catch(console.log)
       }
     },
+
   },
 
   created() {
-    this.$socket.$on("quickModuleFinishedEvent", this.readModuleJob)
-    this.$socket.$on("quickRankingFinishedEvent", this.readRankingJob)
+    this.$socket.$on("quickFinishedEvent", this.convertJobResult)
     this.uid = this.$cookies.get("uid")
-    this.list
     this.init()
-  },
-  destroyed() {
-
   },
 
   methods: {
@@ -1001,28 +783,23 @@ export default {
       this.step = 1
       this.seedTypeId = undefined
       this.seeds = []
-      this.moduleMethodModel = undefined
+      this.currentJid = undefined
+      this.currentGid = undefined
+      this.methodModel = undefined
       if (this.blitz) {
-        this.moduleMethodModel = 0
-      }
-      this.rankingMethodModel = undefined
-      if (this.blitz) {
-        this.rankingMethodModel = 1
+        this.methodModel = 0
       }
       this.results.targets = []
       this.results.drugs = []
       this.seedOrigin = {}
       if (this.$refs.graph)
         this.$refs.graph.reload()
-      this.moduleJid = undefined
-      this.moduleGid = undefined
-      this.rankingJid = undefined
-      this.rankingGid = undefined
-      this.resultProgress = 0
     },
+
     reset: function(){
       this.init()
     },
+
     getSuggestionSelection: function () {
       let type = ["gene", "protein"][this.seedTypeId]
       let nodeId = this.metagraph.nodes.filter(n => n.group === type)[0].id
@@ -1030,54 +807,8 @@ export default {
         let node = this.metagraph.nodes.filter(n => n.id === nid)[0]
         return {value: node.group, text: node.label}
       })
+
     },
-    makeStep: function (s, button) {
-      if (button === "continue") {
-
-        this.step++
-
-        if (this.step === 3)
-          this.submitModuleAlgorithm()
-
-        if (this.step === 2 && this.blitz) {
-          this.submitModuleAlgorithm()
-          this.step += 2
-        }
-
-        if (this.step === 4)
-          this.submitRankingAlgorithm()
-        this.focus()
-
-      }
-      if (button === "back") {
-        this.step--
-
-        if (this.step === 3) {
-          this.results.drugs = []
-          this.rankingGid = undefined
-          this.$refs.graph.reload()
-          this.resultProgress = 50
-          if (this.rankingJid !== undefined)
-            this.$socket.unsubscribeJob(this.rankingJid)
-        }
-
-        if (this.step === 2 || (this.step === 3 && this.blitz)) {
-          this.resultProgress = 0
-          this.results.targets = []
-          if (this.moduleJid !== undefined)
-            this.$socket.unsubscribeJob(this.moduleJid)
-        }
-        if (this.step === 3 && this.blitz)
-          this.step -= 2
-
-      }
-
-      if (button === "cancel") {
-        this.init()
-        this.$emit("resetEvent")
-      }
-    },
-
     focusNode: function (id) {
       if (this.$refs.graph === undefined)
         return
@@ -1097,6 +828,29 @@ export default {
         }
       })
       this.seeds = this.seeds.filter(s=>remove.indexOf(s.id) === -1)
+    },
+    makeStep: function (s, button) {
+      if (button === "continue") {
+        this.step++
+        if (this.step === 2 && this.blitz)
+          this.step++
+      }
+      if (button === "back") {
+        if (this.step === 3) {
+          this.results.targets = []
+          this.$refs.graph.reload()
+          this.$socket.unsubscribeJob(this.currentJid)
+        }
+        this.step--
+        if (this.step === 2 && this.blitz)
+          this.step--
+      }
+      if (button === "cancel") {
+        this.init()
+        this.$emit("resetEvent")
+      }
+      if (this.step === 3)
+        this.submitAlgorithm()
     },
     getSuggestions: function (val, timeouted) {
       if (!timeouted) {
@@ -1136,101 +890,70 @@ export default {
         )
       }
     },
-    // loadDrugTargets: function () {
-    //   this.rankingSelect = 1
-    //   this.drugTargetPopup = true
-    // },
-    // resolveRankingDialog: function (apply) {
-    //   this.drugTargetPopup = false;
-    //   if (!apply)
-    //     return
-    //
-    //   let drugSeeds = []
-    //
-    //   if (this.rankingSelect === 0) {
-    //     drugSeeds = this.seeds.map(s => s.id)
-    //   } else {
-    //     drugSeeds = this.results.targets.map(t => t.id)
-    //     if (this.rankingSelect === 2) {
-    //       this.seeds.forEach(s => drugSeeds.splice(drugSeeds.indexOf(s.id), 1))
-    //     }
-    //   }
-    //   this.$emit("loadDrugTargetEvent", this.blitz, drugSeeds, ["gene", "protein"][this.seedTypeId])
-    //   this.init()
-    // }
-    // ,
+    loadDrugTargets: function () {
+      this.rankingSelect = 1
+      this.drugTargetPopup = true
+    },
+    resolveRankingDialog: function (apply) {
+      this.drugTargetPopup = false;
+      if (!apply)
+        return
+
+      let drugSeeds = []
+
+      if (this.rankingSelect === 0) {
+        drugSeeds = this.seeds.map(s => s.id)
+      } else {
+        drugSeeds = this.results.targets.map(t => t.id)
+        if (this.rankingSelect === 2) {
+          this.seeds.forEach(s => drugSeeds.splice(drugSeeds.indexOf(s.id), 1))
+        }
+      }
+      this.$emit("loadDrugTargetEvent", this.blitz, drugSeeds, ["gene", "protein"][this.seedTypeId])
+      this.init()
+    }
+    ,
     biconFile: function (file) {
-      this.moduleModels.bicon.exprFile = file
+      this.models.bicon.exprFile = file
     }
     ,
     updateGraphPhysics: function () {
       this.$refs.graph.setPhysics(this.graph.physics)
     }
     ,
-    submitModuleAlgorithm: function () {
+    submitAlgorithm: function () {
       let params = {}
-      let method = this.moduleMethods[this.moduleMethodModel].id
+      let method = this.methods[this.methodModel].id
       params.experimentalOnly = this.experimentalSwitch
-
       params["addInteractions"] = true
       params["nodesOnly"] = true
       if (method === 'bicon') {
         this.seeds = []
-        params['lg_min'] = this.moduleModels.bicon.lg[0];
-        params['lg_max'] = this.moduleModels.bicon.lg[1];
+        params['lg_min'] = this.models.bicon.lg[0];
+        params['lg_max'] = this.models.bicon.lg[1];
         params['type'] = "gene"
-        Utils.readFile(this.moduleModels.bicon.exprFile).then(content => {
+        Utils.readFile(this.models.bicon.exprFile).then(content => {
           params['exprData'] = content
-          this.executeModuleJob(method, params)
+          this.executeJob(method, params)
         })
         return
       }
-
       if (method === 'diamond') {
-        params['n'] = this.moduleModels.diamond.nModel;
-        params['alpha'] = this.moduleModels.diamond.alphaModel;
-        params['pcutoff'] = this.moduleModels.diamond.pModel;
+        params['n'] = this.models.diamond.nModel;
+        params['alpha'] = this.models.diamond.alphaModel;
+        params['pcutoff'] = this.models.diamond.pModel;
       }
-
       if (method === 'must') {
-        params["penalty"] = this.moduleModels.must.hubpenalty;
-        params["multiple"] = this.moduleModels.must.multiple
-        params["trees"] = this.moduleModels.must.trees
-        params["maxit"] = this.moduleModels.must.maxit
+        params["penalty"] = this.models.must.hubpenalty;
+        params["multiple"] = this.models.must.multiple
+        params["trees"] = this.models.must.trees
+        params["maxit"] = this.models.must.maxit
       }
       params['type'] = ["gene", "protein"][this.seedTypeId]
-      this.executeModuleJob(method, params)
+      this.executeJob(method, params)
     }
     ,
-    waitForModuleJob: function (resolve) {
-      if (this.moduleGid == null)
-        setTimeout(this.waitForModuleJob, 100, resolve)
-      else
-        resolve()
-    },
-    submitRankingAlgorithm: function () {
-      new Promise(resolve => this.waitForModuleJob(resolve)).then(() => {
-        let params = {}
-        let method = this.rankingMethods[this.rankingMethodModel].id
-        params.experimentalOnly = this.experimentalSwitch
-
-        params["addInteractions"] = true
-        params["nodesOnly"] = true
-
-        params['direct'] = this.rankingModels.onlyDirect;
-        params['approved'] = this.rankingModels.onlyApproved;
-        params['topX'] = this.rankingModels.topX;
-        params['elements']= !this.rankingModels.filterElements;
-        if (method === "trustrank")
-          params['damping'] = this.rankingModels.damping;
-
-        params['type'] = ["gene", "protein"][this.seedTypeId]
-        this.executeRankingJob(method, params)
-      })
-    },
-
-    executeModuleJob: function (algorithm, params) {
-      this.resultProgress = 0
+    executeJob: function (algorithm, params) {
       let payload = {userId: this.uid, algorithm: algorithm, params: params}
       payload.selection = true
       payload.experimentalOnly = params.experimentalOnly
@@ -1245,56 +968,24 @@ export default {
         if (response.data !== undefined)
           return response.data
       }).then(data => {
-        this.$socket.subscribeJob(data.jid, "quickModuleFinishedEvent");
-        this.readModuleJob(data, true)
+        this.$socket.subscribeJob(data.jid, "quickFinishedEvent");
+        this.readJob(data)
       }).catch(console.log)
     }
     ,
-    executeRankingJob: function (algorithm, params) {
-      let payload = {userId: this.uid, graphId: this.moduleGid, algorithm: algorithm, params: params}
-      payload.selection = false
-      payload.experimentalOnly = params.experimentalOnly
-      // payload["nodes"] = this.seeds.map(n => n.id)
-      // if (this.seeds.length === 0) {
-      //   this.printNotification("Cannot execute " + algorithm + " without seed nodes!", 1)
-      //   return;
-      // }
-      this.$http.post("/submitJob", payload).then(response => {
-        if (response.data !== undefined)
-          return response.data
-      }).then(data => {
-        this.$socket.subscribeJob(data.jid, "quickRankingFinishedEvent");
-        this.readRankingJob(data, true)
-      }).catch(console.log)
-    },
-    readModuleJob: function (result, clean) {
-      this.resultProgress += 5
-      let data = clean ? result : JSON.parse(result)
-      this.moduleJid = data.jid
-      this.moduleGid = data.gid
-      if (this.moduleGid != null && data.state === "DONE") {
-        this.$socket.unsubscribeJob(this.moduleJid)
-        this.loadModuleTargetTable().then(() => {
-          this.resultProgress = 25
-          this.loadGraph(this.moduleGid)
-        })
-      }
-    }
-    ,
-    readRankingJob: function (result, clean) {
-      this.resultProgress += 5
-      let data = clean ? result : JSON.parse(result)
-      this.rankingJid = data.jid
-      this.rankingGid = data.gid
-      if (this.rankingGid != null && data.state === "DONE") {
-        this.resultProgress = 75
-        this.$socket.unsubscribeJob(this.rankingJid)
-        this.loadRankingTargetTable(this.rankingGid).then(() => {
-          this.loadGraph(this.rankingGid)
+    readJob: function (data) {
+      let jid = data.jid
+      this.currentJid = jid
+      this.currentGid = data.gid
+      if (this.currentGid != null && data.state === "DONE") {
+        this.$socket.unsubscribeJob(jid)
+        this.loadTargetTable(this.currentGid).then(() => {
+          this.loadGraph(this.currentGid)
         })
 
       }
-    },
+    }
+    ,
 
     addToSelection: function (list, nameFrom) {
       let ids = this.seeds.map(seed => seed.id)
@@ -1314,17 +1005,13 @@ export default {
       this.$emit("printNotificationEvent", "Added " + list.length + "from " + nameFrom + " (" + count + " new) seeds!", 1)
     }
     ,
-    moduleMethodScores: function () {
-      if (this.moduleMethodModel !== undefined && this.moduleMethodModel > -1)
-        return this.moduleMethods[this.moduleMethodModel].scores;
+    methodScores: function () {
+      if (this.methodModel !== undefined && this.methodModel > -1)
+        return this.methods[this.methodModel].scores;
       return []
     }
     ,
-    rankingMethodScores: function () {
-      if (this.rankingMethodModel !== undefined && this.rankingMethodModel > -1)
-        return this.rankingMethods[this.rankingMethodModel].scores;
-      return []
-    },
+
 
     getOrigins: function (id) {
       if (this.seedOrigin[id] === undefined)
@@ -1358,7 +1045,7 @@ export default {
     }
     ,
 
-    downloadSeedList: function () {
+    downloadList: function () {
       this.$http.post("mapToDomainIds", {
         type: ['gene', 'protein'][this.seedTypeId],
         ids: this.seeds.map(s => s.id)
@@ -1370,9 +1057,12 @@ export default {
         Object.values(data).forEach(id => text += id + "\n")
         this.download(["gene", "protein"][this.seedTypeId] + "_seeds.tsv", text)
       }).catch(console.log)
+    },
+    downloadFullResultList: function () {
+      window.open(CONFIG.HOST_URL+CONFIG.CONTEXT_PATH+'/api/downloadJobResult?jid=' + this.currentJid)
     }
     ,
-    downloadModuleResultList: function () {
+    downloadResultList: function () {
       this.$http.post("mapToDomainIds", {
         type: ['gene', 'protein'][this.seedTypeId],
         ids: this.results.targets.map(l => l.id)
@@ -1381,40 +1071,16 @@ export default {
           return response.data
       }).then(data => {
         let text = "id";
-        this.moduleMethods[this.moduleMethodModel].scores.forEach(s => text += "\t" + s.name)
+        this.methods[this.methodModel].scores.forEach(s => text += "\t" + s.name)
         text += "\n"
         this.results.targets.forEach(t => {
             text += data[t.id]
-            this.moduleMethods[this.moduleMethodModel].scores.forEach(s => text += "\t" + t[s.id])
+            this.methods[this.methodModel].scores.forEach(s => text += "\t" + t[s.id])
             text += "\n"
           }
         )
         this.download(["gene", "protein"][this.seedTypeId] + "_module.tsv", text)
       }).catch(console.log)
-    },
-    downloadRankingResultList: function () {
-      this.$http.post("mapToDomainIds", {
-        type: 'drug',
-        ids: this.results.drugs.map(l => l.id)
-      }).then(response => {
-        if (response.data !== undefined)
-          return response.data
-      }).then(data => {
-        let text = "id";
-        this.rankingMethods[this.rankingMethodModel].scores.forEach(s => text += "\t" + s.name)
-        text += "\n"
-        this.results.drugs.forEach(t => {
-            text += data[t.id]
-            this.rankingMethods[this.rankingMethodModel].scores.forEach(s => text += "\t" + t[s.id])
-            text += "\n"
-          }
-        )
-        this.download("drug_ranking-Top_" + this.rankingModels.topX + ".tsv", text)
-      }).catch(console.log)
-    },
-
-    downloadFullResultList: function (jid) {
-      window.open(CONFIG.HOST_URL+CONFIG.CONTEXT_PATH+'/api/downloadJobResult?jid=' + jid)
     }
     ,
     download: function (name, content) {
@@ -1427,18 +1093,23 @@ export default {
       document.body.removeChild(dl)
     }
     ,
-    loadModuleTargetTable: function () {
-      let seedType = ['gene', 'protein'][this.seedTypeId]
+    convertJobResult: function (res) {
+      let data = JSON.parse(res)
+      this.readJob(data)
+    }
+    ,
+    loadTargetTable: function (gid) {
+      let seedType = [["gene", "protein"][this.seedTypeId]]
       this.targetColorStyle = {'background-color': this.metagraph.colorMap[seedType].light}
-      return this.$http.get("/getGraphList?id=" + this.moduleGid).then(response => {
+      return this.$http.get("/getGraphList?id=" + gid).then(response => {
         if (response.data !== undefined)
           return response.data
       }).then(data => {
-        if (this.moduleMethodModel === 0)
+        if (this.methodModel === 0)
           this.results.targets = data.nodes[seedType].sort((e1, e2) => {
             if (e1.rank && e2.rank)
               return e1.rank - e2.rank
-            if (e1.rank)
+            if(e1.rank)
               return -1
             return 1
           })
@@ -1447,18 +1118,9 @@ export default {
       }).catch(console.log)
     }
     ,
-    loadRankingTargetTable: function () {
-      this.drugColorStyle = {'background-color': this.metagraph.colorMap['drug'].light}
-      return this.$http.get("/getGraphList?id=" + this.rankingGid).then(response => {
-        if (response.data !== undefined)
-          return response.data
-      }).then(data => {
-        this.results.drugs = data.nodes.drug.sort((e1, e2) => e2.score - e1.score)
-      }).catch(console.log)
-    },
     waitForGraph: function (resolve) {
       if (this.$refs.graph === undefined)
-        setTimeout(this.waitForGraph, 100, resolve)
+        setTimeout(this.waitForGraph, 100)
       else
         resolve()
     },
@@ -1467,29 +1129,25 @@ export default {
         return this.$refs.graph;
       })
     },
-    loadGraph: function (graphId) {
-      this.getGraph().then(graph => {
-        this.resultProgress += 5
-        graph.setLoading(true)
-        graph.show(graphId).then(() => {
-          this.resultProgress += 15
-          graph.showLoops(false)
-          let seedIds = this.seeds.map(s => s.id)
-          this.resultProgress += 3
-          graph.modifyGroups(this.results.targets.filter(n => seedIds.indexOf(n.id) === -1).map(n => ["gen_", "pro_"][this.seedTypeId] + n.id), ["geneModule", "proteinModule"][this.seedTypeId])
-          graph.setLoading(false)
-          this.resultProgress += 2
-        })
-      })
+    getColoring: function (entity, name) {
+      return Utils.getColoring(this.metagraph, entity, name);
     },
     focus: function(){
       this.$emit("focusEvent")
     },
-    getColoring: function (entity, name,style) {
-      return Utils.getColoring(this.metagraph, entity, name,style);
-    },
-
-  },
+    loadGraph: function (graphId) {
+      this.getGraph().then(graph => {
+        graph.setLoading(true)
+        graph.show(graphId).then(() => {
+          graph.showLoops(false)
+          let seedIds = this.seeds.map(s => s.id)
+          graph.modifyGroups(this.results.targets.filter(n => seedIds.indexOf(n.id) === -1).map(n => ["gen_", "pro_"][this.seedTypeId] + n.id), ["geneModule", "proteinModule"][this.seedTypeId])
+          graph.setLoading(false)
+        })
+      })
+    }
+  }
+  ,
 
   components: {
     Graph

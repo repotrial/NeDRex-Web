@@ -76,7 +76,7 @@
 </template>
 
 <script>
-import '../js/particles.js'
+import '../../js/particles.js'
 
 export default {
   name: "headerBar",

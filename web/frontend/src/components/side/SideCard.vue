@@ -552,12 +552,12 @@
 </template>
 
 <script>
-import Utils from "../scripts/Utils"
+import Utils from "../../scripts/Utils"
 import Algorithms from "./toolbox/Algorithms.vue"
 import Jobs from "./toolbox/Jobs"
 // import Legend from "./toolbox/Legend"
 import Selection from "./toolbox/Selection";
-import * as CONFIG from "../Config"
+import * as CONFIG from "../../Config"
 
 export default {
   props: {

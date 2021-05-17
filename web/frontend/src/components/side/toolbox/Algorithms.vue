@@ -475,7 +475,7 @@
 </template>
 
 <script>
-import Utils from "../../scripts/Utils";
+import Utils from "../../../scripts/Utils";
 
 export default {
   name: "Algorithms",

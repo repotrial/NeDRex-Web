@@ -3,7 +3,7 @@
     <headerBar @showVersionEvent="showVersionInfo=true" @showBugEvent="showBugInfo=true" @showHelpEvent="showHelp=true"
                @redirectEvent="redirect"
                :prominent="selectedTabId===0" style="z-index: 1000;"/>
-    <v-card style="position: sticky ; top:0px; margin-top: -10px; z-index: 999 ">
+    <v-card style="position: sticky ; top: 0; margin-top: -10px; z-index: 999 ">
       <v-toolbar flat :color="colors.main.bg1">
         <template v-slot:extension>
           <v-tabs
@@ -24,19 +24,16 @@
                 </i>
               </v-badge>
             </v-tab>
-
           </v-tabs>
         </template>
       </v-toolbar>
     </v-card>
-
     <v-container align-self="start">
       <v-row>
         <v-col :cols="sideHidden ? 12:9">
-
           <v-main app style="padding-top: 0">
-
             <v-container v-show="selectedTabId===0" fluid>
+
               <Start v-if="metagraph !== undefined" ref="start"
                      v-on:graphLoadEvent="loadGraph"
                      @graphLoadNewTabEvent="loadGraphNewTab"
@@ -218,7 +215,7 @@
 
       </v-dialog>
     </v-container>
-    <v-bottom-sheet inset v-model="showBugInfo" width="30vw" :overlay-color="colors.main.primary">
+    <v-bottom-sheet inset v-model="showBugInfo" width="30vw" :overlay-color="colors.main.bg1">
       <v-sheet dark :color="colors.main.bg1">
         <v-list>
           <v-list-item>
@@ -272,7 +269,7 @@
       </v-sheet>
 
     </v-bottom-sheet>
-    <v-bottom-sheet inset v-model="showHelp" width="30vw" :overlay-color="colors.main.primary">
+    <v-bottom-sheet inset v-model="showHelp" width="30vw" :overlay-color="colors.main.bg1">
       <v-sheet dark :color="colors.main.bg1">
 
         <v-list>
@@ -313,7 +310,7 @@
       </v-sheet>
 
     </v-bottom-sheet>
-    <v-bottom-sheet inset v-model="showVersionInfo" width="60vw" :overlay-color="colors.main.primary">
+    <v-bottom-sheet inset v-model="showVersionInfo" width="60vw" :overlay-color="colors.main.bg1">
       <v-sheet dark>
         <v-list>
           <v-list-item>
@@ -377,19 +374,20 @@
         <v-divider style="margin-left:25px; margin-right: 25px"></v-divider>
       </v-sheet>
     </v-bottom-sheet>
-    <!--    <v-footer app>-->
-    <!--    </v-footer>-->
+    <Footer :color="colors.main.bg1"></Footer>
   </v-app>
 </template>
 
 <script>
-import Graph from './views/graph/Graph.vue';
-import Start from './views/Start.vue';
-import History from "./views/History";
-import List from './views/List.vue'
-import SideCard from './views/SideCard.vue'
-import headerBar from './components/header.vue'
-import Legend from "./views/graph/Legend";
+import Graph from './components/views/graph/Graph.vue';
+import Start from './components/views/Start.vue';
+import History from "./components/views/History";
+import List from './components/views/List.vue'
+import SideCard from './components/side/SideCard.vue'
+import Home from './components/views/Home.vue'
+import headerBar from './components/app/Header.vue'
+import Legend from "./components/views/graph/Legend";
+import Footer from "@/components/app/Footer";
 import Utils from "./scripts/Utils"
 import * as CONFIG from "./Config"
 
@@ -453,6 +451,7 @@ export default {
     '$route'(to, from) {
       let new_gid = this.$route.params["gid"]
       this.applyUrlTab(true)
+      this.setView()
       if (new_gid && new_gid !== this.gid) {
         this.gid = new_gid
         this.reloadAll()
@@ -496,7 +495,7 @@ export default {
         if (!view)
           this.$router.push("/home")
         else {
-          let path = "explore/" + view + "/start"
+          let path = "/explore/" + view + "/start"
           if (this.$route.fullPath !== path)
             this.$router.push(path)
           this.reloadAll()
@@ -518,6 +517,10 @@ export default {
     ,
     setView: function () {
       console.log(this.$route)
+      let path = this.$route.path.split("/")
+      let start = path.indexOf('start')>-1
+      let mode = path.length > 1 ? path[2] : undefined
+
       //TODO set start graph based on params
     }
     ,
@@ -894,7 +897,9 @@ export default {
     Start,
     List,
     History,
-    Legend
+    Legend,
+    Home,
+    Footer
   }
   ,
 

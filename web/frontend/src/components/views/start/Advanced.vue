@@ -151,7 +151,7 @@
 </template>
 
 <script>
-import Utils from "../../scripts/Utils";
+import Utils from "../../../scripts/Utils";
 import Graph from "../graph/Graph";
 
 export default {
