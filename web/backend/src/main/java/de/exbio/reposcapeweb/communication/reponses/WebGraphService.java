@@ -359,7 +359,7 @@ public class WebGraphService {
         for (int l = 0; l < 2; l++) {
             for (int i = 0; i < nodes.length; i++) {
                 for (int j = i; j < nodes.length; j++) {
-                    if ((l != 0 && i == j) || (l == 0 && i != j))
+                    if ((l == 0 && i == j) || (l != 0 && i != j))
                         continue;
                     final int[] nodeI = {nodes[i]};
                     final int[] nodeJ = {nodes[j]};
@@ -371,13 +371,12 @@ public class WebGraphService {
                     boolean loop = nodeI[0] == nodeJ[0];
                     HashSet<Integer> externalNodes = new HashSet<>();
                     edgeIds.forEach(edgeId -> {
-                        boolean internalOnly = loop && request.edges.containsKey(Graphs.getEdge(edgeId)) && ((HashMap<String, Object>) request.edges.get(Graphs.getEdge(edgeId))).containsKey("filters") &&(boolean) ((HashMap<String, Object>) request.edges.get(Graphs.getEdge(edgeId)).get("filters")).get("internalOnly");
+                        boolean internalOnly = loop && request.edges.containsKey(Graphs.getEdge(edgeId)) && ((HashMap<String, Object>) request.edges.get(Graphs.getEdge(edgeId))).containsKey("filters") && (boolean) ((HashMap<String, Object>) request.edges.get(Graphs.getEdge(edgeId)).get("filters")).get("internalOnly");
                         if (!Graphs.checkEdgeDirection(edgeId, nodeI[0], nodeJ[0])) {
                             int tmp = nodeI[0];
                             nodeI[0] = nodeJ[0];
                             nodeJ[0] = tmp;
                         }
-
                         boolean experimental = (request.interactions.containsKey(Graphs.getEdge(edgeId)) && !request.interactions.get(Graphs.getEdge(edgeId)));
                         if (request.edges.containsKey(Graphs.getEdge(edgeId))) {
                             LinkedList<Edge> edges = new LinkedList<>();
@@ -391,6 +390,7 @@ public class WebGraphService {
                                         try {
                                             if ((!loop | internalOnly) && ((request.connectedOnly & connectedNodes.contains(nodeJ[0]) & !nodeIds.get(nodeJ[0]).get(id.getId2()).hasEdge()) | (experimental && !edgeController.isExperimental(edgeId, id.getId1(), id.getId2()))))
                                                 return;
+//                                            System.out.println(nodeIds.get(nodeJ[0]).containsKey(id.getId2())+"=id2 & "+ nodeIds.get(nodeJ[0]).containsKey(id.getId1())+" = id1");
                                             if (!loop || (internalOnly && nodeIds.get(nodeJ[0]).containsKey(id.getId2()) && nodeIds.get(nodeJ[0]).containsKey(id.getId1()))) {
                                                 nodeIds.get(nodeJ[0]).get(v1.getId() == id.getId1() ? id.getId2() : id.getId1()).setHasEdge(true);
                                                 v1.setHasEdge(true);
@@ -399,7 +399,7 @@ public class WebGraphService {
                                                 int nonNodeId = v1.getId() == id.getId1() ? id.getId2() : id.getId1();
                                                 if (!nodeIds.get(nodeJ[0]).containsKey(nonNodeId)) {
                                                     externalNodes.add(nonNodeId);
-                                                }else{
+                                                } else {
                                                     nodeIds.get(nodeJ[0]).get(nonNodeId).setHasEdge(true);
                                                 }
                                                 v1.setHasEdge(true);
@@ -433,6 +433,10 @@ public class WebGraphService {
         //TODO update filter if only connected are used
         if (request.connectedOnly) {
             nodeIds.forEach((type, nodeMap) -> nodeMap.entrySet().stream().filter(e -> e.getValue().hasEdge()).forEach(e -> finalG.addNode(type, e.getValue())));
+            finalG.getNodes().forEach((nid, nids) -> {
+                NodeFilter nf = new NodeFilter(finalG.getNodeFilter(Graphs.getNode(nid)), nids.keySet());
+                finalG.saveNodeFilter(Graphs.getNode(nid), nf);
+            });
         } else
             nodeIds.forEach((type, nodeMap) -> nodeMap.forEach((key, value) -> finalG.addNode(type, value)));
 

@@ -486,7 +486,7 @@
         {
           "name": "taxid",
           "source": true,
-          "list": true,
+          "list": false,
           "detail": true,
           "id": true,
           "type": "numeric",
