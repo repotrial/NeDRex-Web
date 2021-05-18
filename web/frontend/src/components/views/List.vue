@@ -5,10 +5,10 @@
         <template slot="progress">
           <v-card-title>General Information</v-card-title>
           <v-progress-circular v-if="!waiting"
-            color="primary"
-            size="50"
-            width="5"
-            indeterminate
+                               color="primary"
+                               size="50"
+                               width="5"
+                               indeterminate
           ></v-progress-circular>
           <i v-else>No data available!</i>
         </template>
@@ -70,10 +70,10 @@
         <template slot="progress">
           <v-card-title>Nodes</v-card-title>
           <v-progress-circular v-if="!waiting"
-            color="primary"
-            size="50"
-            width="5"
-            indeterminate
+                               color="primary"
+                               size="50"
+                               width="5"
+                               indeterminate
           ></v-progress-circular>
           <i v-else>No data available!</i>
           <!--          <v-progress-linear-->
@@ -158,6 +158,7 @@
                           v-model="filters.nodes.attribute.name"
                           @change="resetFilter('nodes')"
                           outlined
+                          style="width: 100%"
                         ></v-select>
                       </v-col>
                       <v-col
@@ -171,6 +172,7 @@
                           :items="operatorNames('nodes',Object.keys(nodes)[nodeTab],filters.nodes.attribute.name)"
                           label="Operator"
                           outlined
+                          style="width: 100%"
                         ></v-select>
                         <v-select
                           v-else
@@ -179,6 +181,7 @@
                           :items="attributes.nodes[Object.keys(nodes)[nodeTab]].filter(a=>a.label===filters.nodes.attribute.name)[0].values"
                           label="Value"
                           outlined
+                          style="width: 100%"
                         >
                         </v-select>
                       </v-col>
@@ -318,10 +321,10 @@
         <template slot="progress">
           <v-card-title>Edges</v-card-title>
           <v-progress-circular v-if="!waiting"
-            color="primary"
-            size="50"
-            width="5"
-            indeterminate
+                               color="primary"
+                               size="50"
+                               width="5"
+                               indeterminate
           ></v-progress-circular>
           <i v-else>No data available!</i>
           <!--          <v-progress-linear-->
@@ -389,6 +392,7 @@
                           v-model="filters.edges.attribute.name"
                           @change="resetFilter('edges')"
                           outlined
+                          style="width: 100%"
                         ></v-select>
                       </v-col>
                       <v-col
@@ -403,6 +407,7 @@
                           :disabled="filters.edges.attribute.name === undefined || filters.edges.attribute.name == null || filters.edges.attribute.name.length ===0"
                           label="Operator"
                           outlined
+                          style="width: 100%"
                         ></v-select>
                         <v-select
                           v-else
@@ -411,6 +416,7 @@
                           :items="attributes.edges[Object.keys(edges)[edgeTab]].filter(a=>a.label===filters.edges.attribute.name)[0].values"
                           label="Value"
                           outlined
+                          style="width: 100%"
                         >
                         </v-select>
                       </v-col>
@@ -543,7 +549,7 @@
         <v-card-title class="headline">
           Add more edges to your current graph
         </v-card-title>
-        <v-card-text>Adjust the attributes of the general item tables.
+        <v-card-text>Select edge types to be added to the current network. Additional options may be displayed on selection.
         </v-card-text>
         <v-divider></v-divider>
         <v-list>
@@ -604,12 +610,13 @@
       v-model="collapse.show"
       persistent
       max-width="500"
+      style="z-index: 1000"
     >
       <v-card v-if="collapse.show" ref="dialog">
         <v-card-title class="headline">
           Edge Creation Configuration
         </v-card-title>
-        <v-card-text>Select a node and one or two edges which should be combined to a new edge.
+        <v-card-text>Select a node and one or two edges which should be used to create a new user-named edge.
         </v-card-text>
         <v-divider></v-divider>
         <v-container>
@@ -655,7 +662,7 @@
                     <v-switch v-model="attr.selected" :disabled="attr.disabled" @click="isDisabled('edges',attr.name)">
                     </v-switch>
                     <span>
-                <v-icon left :color="getExtendedColoring('edges',attr.name,'light')[0]">fas fa-genderless</v-icon>
+                    <v-icon left :color="getExtendedColoring('edges',attr.name,'light')[0]">fas fa-genderless</v-icon>
                     <template v-if="directionExtended(attr.name)===0">
                       <v-icon left>fas fa-undo-alt</v-icon>
                     </template>
@@ -672,14 +679,14 @@
           </v-row>
         </v-container>
         <v-divider></v-divider>
-        <v-text-field
-          label="Edge Name"
-          outlined
-          v-model="collapse.edgeName">
-        </v-text-field>
-        <v-row v-if="collapse.accept">
-          <v-col>
-
+        <div style="display: flex; justify-content: center">
+            <v-text-field
+              label="Edge Name"
+              outlined
+              v-model="collapse.edgeName" style="margin:25px">
+            </v-text-field>
+        </div>
+        <div v-if="collapse.accept" style="display: flex; justify-content: center">
             <v-icon
               :color="getExtendedColoring('nodes',getExtendedNodes(collapse.edge1,collapse.nodes.filter(n => n.selected)[0].name),'light')">
               fas fa-genderless
@@ -698,8 +705,7 @@
                     :color="getExtendedColoring('nodes',getExtendedNodes(collapse.edge2,collapse.nodes.filter(n => n.selected)[0].name),'light')">
               fas fa-genderless
             </v-icon>
-          </v-col>
-        </v-row>
+        </div>
         <v-card-text v-if="collapse.accept">
           <template v-if="!collapse.self.selected">
             Generate edge by merging {{ collapse.edge1 }} and
@@ -1062,15 +1068,15 @@ export default {
       this.applySuggestion(val)
     },
     findNodeSuggestions: function (val) {
-      if(val!=null && val.length ===0)
-        val=null
+      if (val != null && val.length === 0)
+        val = null
       this.getNodeSuggestions(val, false)
     },
   },
   methods: {
     reload: function () {
       this.nodes = {}
-      this.waiting=true
+      this.waiting = true
       this.attributes = {}
       this.edges = {}
       this.marks = {}
@@ -1795,7 +1801,7 @@ export default {
     deselectAll: function (type) {
       let data = {nodes: this.nodes, edges: this.edges}
       if (type === "all") {
-        Object.values(data).forEach(set=>Object.values(set).forEach(type=>type.forEach(n=>n.selected=false)))
+        Object.values(data).forEach(set => Object.values(set).forEach(type => type.forEach(n => n.selected = false)))
       } else {
         let tab = (type === "nodes") ? this.nodeTab : this.edgeTab
         let items = data[type][Object.keys(data[type])[tab]]
@@ -2035,13 +2041,13 @@ export default {
       )
       return out
     },
-    getExtendedColoring: function (entity, name,style) {
+    getExtendedColoring: function (entity, name, style) {
       if (this.metagraph === undefined) {
         return this.reloadMetagraph().then(function () {
-          return this.getExtendedColoring(entity, name,style)
+          return this.getExtendedColoring(entity, name, style)
         })
       }
-      return Utils.getColoringExtended(this.metagraph, this.configuration.entityGraph, entity, name,style)
+      return Utils.getColoringExtended(this.metagraph, this.configuration.entityGraph, entity, name, style)
     },
     getExtendedNodes: function (name, not) {
       let nodes = Utils.getNodesExtended(this.configuration.entityGraph, name)
@@ -2049,13 +2055,13 @@ export default {
         return nodes;
       return nodes[0] === not ? nodes[1] : nodes[0]
     },
-    getColoring: function (entity, name,style) {
+    getColoring: function (entity, name, style) {
       if (this.metagraph === undefined) {
         return this.reloadMetagraph().then(function () {
-          return this.getColoring(entity, name,style)
+          return this.getColoring(entity, name, style)
         })
       }
-      return Utils.getColoring(this.metagraph, entity, name,style)
+      return Utils.getColoring(this.metagraph, entity, name, style)
     },
     executeAlgorithm: function (algorithm, params) {
       let payload = {userId: this.uid, graphId: this.gid, algorithm: algorithm, params: params}

@@ -29,7 +29,9 @@
 
           <v-card-subtitle class="headline">1. Seed Configuration</v-card-subtitle>
           <v-card-subtitle style="margin-top: -25px">Add seeds to your
-            list{{ blitz ? "." : " or leave it empty if you plan to select BiCon as your Algorithm." }}
+            list{{ blitz ? "." : " or leave it empty if you plan to select BiCon as your Algorithm." }} Use the
+            autocomplete system or the id list upload to add seed entries. The list can be manually adjusted or the
+            intersection of multiple sources may be created.
           </v-card-subtitle>
           <v-row v-show="!blitz">
             <v-col>
@@ -176,8 +178,8 @@
           min-height="700px"
         >
           <v-card-subtitle class="headline">2. Module Identification Algorithm Selection</v-card-subtitle>
-          <v-card-subtitle style="margin-top: -25px">Select and adjust the algorithm you want to use on your seeds to
-            identify the disease module.
+          <v-card-subtitle style="margin-top: -25px">Select and adjust the algorithm you want to apply on your seeds to
+            construct a disease module.
           </v-card-subtitle>
           <v-container style="height: 80%">
             <v-row style="height: 100%">
@@ -199,6 +201,19 @@
                         label="Only use experimentally validated interaction networks"
                         v-model="experimentalSwitch"
                       >
+                        <template v-slot:append>
+                          <v-tooltip left>
+                            <template v-slot:activator="{ on, attrs }">
+                              <v-icon
+                                v-bind="attrs"
+                                v-on="on"
+                                left> far fa-question-circle
+                                style="flex-grow: 0"
+                              </v-icon>
+                            </template>
+                            <span>Restricts the edges in the {{['Gene', 'Protein'][seedTypeId]+'-'+['Gene', 'Protein'][seedTypeId]}} interaction network to experimentally validated ones.</span>
+                          </v-tooltip>
+                        </template>
                       </v-switch>
 
                     </v-col>
@@ -522,7 +537,7 @@
             <v-row>
               <v-col cols="3">
                 <v-card-title class="subtitle-1">Seeds ({{ seeds.length }}) {{
-                    (results.targets.length !== undefined && results.targets.length > 0 ? ("& Targets(" + (results.targets.length-seeds.length) + ")") : ": Processing")
+                    (results.targets.length !== undefined && results.targets.length > 0 ? ("& Targets(" + (results.targets.length - seeds.length) + ")") : ": Processing")
                   }}
                   <v-progress-circular indeterminate v-if="this.results.targets.length===0" style="margin-left:15px">
                   </v-progress-circular>
@@ -572,23 +587,30 @@
                 </template>
               </v-col>
               <v-col cols="8">
-                <Graph ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle" :legend="results.targets.length>0" :meta="metagraph">
-                  <template v-slot:legend  v-if="results.targets.length>0" >
+                <Graph ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle"
+                       :legend="results.targets.length>0" :meta="metagraph">
+                  <template v-slot:legend v-if="results.targets.length>0">
                     <v-card style="width: 13vw; max-width: 15vw; padding-top: 35px">
                       <v-list>
                         <v-list-item>
                           <v-list-item-icon>
-                            <v-icon left :color="getColoring('nodes',['gene','protein'][seedTypeId],'light')" size="43px">fas fa-genderless</v-icon>
+                            <v-icon left :color="getColoring('nodes',['gene','protein'][seedTypeId],'light')"
+                                    size="43px">fas fa-genderless
+                            </v-icon>
                           </v-list-item-icon>
-                          <v-list-item-title style="margin-left: -25px">Seed {{['Gene','Protein'][seedTypeId]}}</v-list-item-title>
+                          <v-list-item-title style="margin-left: -25px">Seed {{ ['Gene', 'Protein'][seedTypeId] }}
+                          </v-list-item-title>
                           <v-list-item-subtitle>{{ seeds.length }}</v-list-item-subtitle>
                         </v-list-item>
                         <v-list-item>
                           <v-list-item-icon>
-                            <v-icon left :color="getColoring('nodes',['gene','protein'][seedTypeId],'light')">fas fa-circle</v-icon>
+                            <v-icon left :color="getColoring('nodes',['gene','protein'][seedTypeId],'light')">fas
+                              fa-circle
+                            </v-icon>
                           </v-list-item-icon>
-                          <v-list-item-title style="margin-left: -25px">Target {{['Gene','Protein'][seedTypeId]}}</v-list-item-title>
-                          <v-list-item-subtitle>{{ results.targets.length-seeds.length}}</v-list-item-subtitle>
+                          <v-list-item-title style="margin-left: -25px">Target {{ ['Gene', 'Protein'][seedTypeId] }}
+                          </v-list-item-title>
+                          <v-list-item-subtitle>{{ results.targets.length - seeds.length }}</v-list-item-subtitle>
                         </v-list-item>
                       </v-list>
                     </v-card>
@@ -796,7 +818,7 @@ export default {
         this.$refs.graph.reload()
     },
 
-    reset: function(){
+    reset: function () {
       this.init()
     },
 
@@ -815,19 +837,19 @@ export default {
       this.$refs.graph.setSelection([id])
       this.$refs.graph.zoomToNode(id)
     },
-    clearList: function(){
+    clearList: function () {
       this.seeds = []
       this.seedOrigin = {}
     },
     removeNonIntersecting: function () {
-      let remove=[]
-      Object.keys(this.seedOrigin).forEach(seed=>{
-        if(this.seedOrigin[seed].length<2) {
-          this.seedOrigin[seed]=undefined
+      let remove = []
+      Object.keys(this.seedOrigin).forEach(seed => {
+        if (this.seedOrigin[seed].length < 2) {
+          this.seedOrigin[seed] = undefined
           remove.push(parseInt(seed))
         }
       })
-      this.seeds = this.seeds.filter(s=>remove.indexOf(s.id) === -1)
+      this.seeds = this.seeds.filter(s => remove.indexOf(s.id) === -1)
     },
     makeStep: function (s, button) {
       if (button === "continue") {
@@ -1059,7 +1081,7 @@ export default {
       }).catch(console.log)
     },
     downloadFullResultList: function () {
-      window.open(CONFIG.HOST_URL+CONFIG.CONTEXT_PATH+'/api/downloadJobResult?jid=' + this.currentJid)
+      window.open(CONFIG.HOST_URL + CONFIG.CONTEXT_PATH + '/api/downloadJobResult?jid=' + this.currentJid)
     }
     ,
     downloadResultList: function () {
@@ -1109,7 +1131,7 @@ export default {
           this.results.targets = data.nodes[seedType].sort((e1, e2) => {
             if (e1.rank && e2.rank)
               return e1.rank - e2.rank
-            if(e1.rank)
+            if (e1.rank)
               return -1
             return 1
           })
@@ -1132,7 +1154,7 @@ export default {
     getColoring: function (entity, name) {
       return Utils.getColoring(this.metagraph, entity, name);
     },
-    focus: function(){
+    focus: function () {
       this.$emit("focusEvent")
     },
     loadGraph: function (graphId) {

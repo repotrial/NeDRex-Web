@@ -34,7 +34,7 @@
 
           <v-card-subtitle class="headline">1. Seed Configuration</v-card-subtitle>
           <v-card-subtitle style="margin-top: -25px">Add seeds to your
-            list{{ blitz ? "." : " or leave it empty if you plan to select BiCon as your Algorithm." }}
+            list{{ blitz ? "." : " or leave it empty if you plan to select BiCon as your Algorithm." }} Use the autocomplete system or the id list upload to add seed entries. The list can be manually adjusted or the intersection of multiple sources may be created.
           </v-card-subtitle>
           <v-row v-show="!blitz">
             <v-col>
@@ -181,8 +181,8 @@
           height="700px"
         >
           <v-card-subtitle class="headline">2. Module Identification Algorithm Selection</v-card-subtitle>
-          <v-card-subtitle style="margin-top: -25px">Select and adjust the algorithm you want to use on your seeds to
-            identify the disease module.
+          <v-card-subtitle style="margin-top: -25px">Select and adjust the algorithm you want to apply on your seeds to
+            construct a disease module.
           </v-card-subtitle>
           <v-container style="height: 80%">
             <v-row style="height: 100%">
@@ -198,16 +198,27 @@
                 </v-radio-group>
                 <template v-if="moduleMethodModel!==undefined">
                   <v-card-title style="margin-left:-25px">Configure Parameters</v-card-title>
-                  <v-row>
-                    <v-col>
+                    <span>
                       <v-switch
-                        label="Only use experimentally validated interaction networks"
+                        :label="'Only use experimentally validated '+['Gene', 'Protein'][seedTypeId]+'-'+['Gene', 'Protein'][seedTypeId]+' interactions'"
                         v-model="experimentalSwitch"
                       >
+                        <template v-slot:append>
+                          <v-tooltip left>
+                            <template v-slot:activator="{ on, attrs }">
+                              <v-icon
+                                v-bind="attrs"
+                                v-on="on"
+                                left> far fa-question-circle
+                                style="flex-grow: 0"
+                              </v-icon>
+                            </template>
+                            <span>Restricts the edges in the {{['Gene', 'Protein'][seedTypeId]+'-'+['Gene', 'Protein'][seedTypeId]}} interaction network to experimentally validated ones.</span>
+                          </v-tooltip>
+                        </template>
                       </v-switch>
-                    </v-col>
+                    </span>
 
-                  </v-row>
                   <template v-if="moduleMethods[moduleMethodModel].id==='bicon'">
                     <v-file-input
                       v-on:change="biconFile"
@@ -519,8 +530,8 @@
           height="700px"
         >
           <v-card-subtitle class="headline">3. Drug Ranking Algorithm Selection</v-card-subtitle>
-          <v-card-subtitle style="margin-top: -25px">Select and adjust the algorithm you want to use on your seeds to
-            generate a ranked list of applicable drugs for.
+          <v-card-subtitle style="margin-top: -25px">Select and adjust the algorithm you want to apply on the constructed module to
+            identify and rank drug candidates.
           </v-card-subtitle>
           <v-container style="height: 80%">
             <v-row style="height: 100%">
@@ -572,9 +583,21 @@
                   <v-row>
                     <v-col>
                       <v-switch
-                        label="Only use experimentally validated interaction networks"
+                        :label="'Only use experimentally validated '+['Gene', 'Protein'][seedTypeId]+'-'+['Gene', 'Protein'][seedTypeId]+' interactions'"
                         v-model="experimentalSwitch"
                       >
+                        <template v-slot:append>
+                          <v-tooltip left>
+                            <template v-slot:activator="{ on, attrs }">
+                              <v-icon
+                                v-bind="attrs"
+                                v-on="on"
+                                left> far fa-question-circle
+                              </v-icon>
+                            </template>
+                            <span>Restricts the edges in the {{['Gene', 'Protein'][seedTypeId]+'-'+['Gene', 'Protein'][seedTypeId]}} network to experimentally validated ones.</span>
+                          </v-tooltip>
+                        </template>
                       </v-switch>
 
                     </v-col>
@@ -583,6 +606,7 @@
                   </v-row>
                   <v-row>
                     <v-col>
+                      <div style="">
                       <v-switch
                         label="Only direct Drugs"
                         v-model="rankingModels.onlyDirect"
@@ -601,6 +625,7 @@
                           </v-tooltip>
                         </template>
                       </v-switch>
+                      </div>
                     </v-col>
                     <v-col>
                       <v-switch

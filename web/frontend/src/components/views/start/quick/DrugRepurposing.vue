@@ -11,7 +11,7 @@
       <v-divider></v-divider>
       <v-stepper-step step="2" :complete="step>2 || blitz">
         Select Method
-        <small v-if="method!==undefined">{{ method }}</small>
+        <small v-if=" methodModel>-1">{{ methods[methodModel].label }}</small>
       </v-stepper-step>
       <v-divider></v-divider>
       <v-stepper-step step="3">
@@ -28,7 +28,10 @@
         >
 
           <v-card-subtitle class="headline">1. Seed Configuration</v-card-subtitle>
-          <v-card-subtitle style="margin-top: -25px">Add seeds to your.</v-card-subtitle>
+          <v-card-subtitle style="margin-top: -25px">Add seeds to your
+            list. Use the autocomplete system or the id list upload to add seed entries. The list can be manually
+            adjusted or the intersection of multiple sources may be created.
+          </v-card-subtitle>
           <v-row>
             <v-col>
               <v-list-item-subtitle class="title">Select the seed type</v-list-item-subtitle>
@@ -43,7 +46,7 @@
             </v-col>
           </v-row>
           <v-container style="height: 80%">
-            <v-row style="height: 50vh" >
+            <v-row style="height: 50vh">
               <v-col cols="6">
                 <v-container v-if="seedTypeId!==undefined">
                   <v-card-title style="margin-left: -25px">Add seeds associated to</v-card-title>
@@ -160,8 +163,9 @@
           height="700px"
         >
           <v-card-subtitle class="headline">2. Algorithm Selection</v-card-subtitle>
-          <v-card-subtitle style="margin-top: -25px">Select and adjust the algorithm you want to use on your seeds to
-            generate a ranked list of applicable drugs for.
+          <v-card-subtitle style="margin-top: -25px">Select and adjust the algorithm you want to apply on the
+            constructed module to
+            identify and rank drug candidates.
           </v-card-subtitle>
           <v-container style="height: 80%">
             <v-row style="height: 100%">
@@ -216,13 +220,21 @@
                         label="Only use experimentally validated interaction networks"
                         v-model="experimentalSwitch"
                       >
+                        <template v-slot:append>
+                          <v-tooltip left>
+                            <template v-slot:activator="{ on, attrs }">
+                              <v-icon
+                                v-bind="attrs"
+                                v-on="on"
+                                left> far fa-question-circle
+                              </v-icon>
+                            </template>
+                            <span>Restricts the edges in the {{ ['Gene', 'Protein'][seedTypeId] + '-' + ['Gene', 'Protein'][seedTypeId] }} network to experimentally validated ones.</span>
+                          </v-tooltip>
+                        </template>
                       </v-switch>
-
                     </v-col>
-
-
                   </v-row>
-
                   <v-row>
                     <v-col>
                       <v-switch
@@ -586,7 +598,7 @@ export default {
       if (this.$refs.graph)
         this.$refs.graph.reload()
     },
-    reset: function (){
+    reset: function () {
       this.init()
     },
     getSuggestionSelection: function () {
@@ -798,7 +810,7 @@ export default {
       }).catch(console.log)
     },
     downloadFullResultList: function () {
-      window.open(CONFIG.HOST_URL+CONFIG.CONTEXT_PATH+'/api/downloadJobResult?jid=' + this.currentJid)
+      window.open(CONFIG.HOST_URL + CONFIG.CONTEXT_PATH + '/api/downloadJobResult?jid=' + this.currentJid)
     },
     downloadResultList: function () {
       this.$http.post("mapToDomainIds", {
@@ -847,14 +859,14 @@ export default {
       this.seedOrigin = {}
     },
     removeNonIntersecting: function () {
-      let remove=[]
-      Object.keys(this.seedOrigin).forEach(seed=>{
-        if(this.seedOrigin[seed].length<2) {
-          this.seedOrigin[seed]=undefined
+      let remove = []
+      Object.keys(this.seedOrigin).forEach(seed => {
+        if (this.seedOrigin[seed].length < 2) {
+          this.seedOrigin[seed] = undefined
           remove.push(parseInt(seed))
         }
       })
-      this.seeds = this.seeds.filter(s=>remove.indexOf(s.id) === -1)
+      this.seeds = this.seeds.filter(s => remove.indexOf(s.id) === -1)
     }
     ,
     focusNode: function (id) {
@@ -887,7 +899,7 @@ export default {
       })
     }
     ,
-    focus: function(){
+    focus: function () {
       this.$emit("focusEvent")
     },
     getColoring: function (entity, name) {

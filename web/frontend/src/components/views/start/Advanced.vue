@@ -82,7 +82,7 @@
                    :startGraph="true" tools
                    :configuration="{visualized:true}" :window-style="windowStyle">
               <template v-slot:tools>
-                <v-card elevation="3" style="margin:15px">
+                <v-card elevation="3">
                   <v-container v-if="tools.general">
                     <v-card-title>General</v-card-title>
                     <v-list>

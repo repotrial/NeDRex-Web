@@ -6,17 +6,18 @@
           <v-list-item-title class="title">Select your exploration path</v-list-item-title>
         </v-list-item>
         <a ref="top"></a>
-        <v-list-item>
-          <v-list-item-subtitle>For new users or basic tasks like drug-target identification, the guided path is
-            recommended.
-          </v-list-item-subtitle>
-        </v-list-item>
+        <div class="v-card__subtitle">
+          Select the method to start exploring the NeDRex graph. For immediate and easy algorithmic discovery
+          pipelines use the <i>Quick Start</i> page. <i>Guided Exploration</i> may be used for the creation of
+          graphs based on some specific path through the metagraph and the derivation of induced graphs. In the <i>Advanced
+          Exploration</i> graphs can be freely constructed.
+        </div>
         <v-divider></v-divider>
         <v-list-item>
           <v-tabs v-model="startTab" centered>
             <v-tabs-slider color="blue"></v-tabs-slider>
             <v-tab @click="checkURLclear('quick')">Quick Start</v-tab>
-            <v-tab @click="checkURLclear('guided')" >Guided Exploration</v-tab>
+            <v-tab @click="checkURLclear('guided')">Guided Exploration</v-tab>
             <v-tab @click="checkURLclear('advanced')">Advanced Exploration</v-tab>
           </v-tabs>
         </v-list-item>
@@ -32,8 +33,8 @@
           </v-list-item>
           <v-list-item>
             <v-list-item-subtitle>
-              Selection of a starting point (e.g. Disorder) and then targets of interest (e.g. Drug or Gene/Protein) in
-              different steps for easy usage.
+              Use the Guided Exploration Start to create a graph based on specific start and target nodes types. Select
+              a path connecting these metanodes and control the result through additional parameters.
             </v-list-item-subtitle>
           </v-list-item>
         </v-list>
@@ -108,9 +109,9 @@ export default {
       this.$emit("printNotificationEvent", message, style)
     },
 
-    checkURLclear: function(view){
-      if(!this.$route.params.gid)
-        this.$emit("clearURLEvent",view)
+    checkURLclear: function (view) {
+      if (!this.$route.params.gid)
+        this.$emit("clearURLEvent", view)
     },
 
     executeGraphLoad: function (bool) {
@@ -142,20 +143,20 @@ export default {
       let element = this.$refs["top"];
       this.$nextTick(() => element.scrollIntoView(true))
     },
-    showTab: function(idx){
-      this.startTab=idx
+    showTab: function (idx) {
+      this.startTab = idx
     },
-    setView: function(){
+    setView: function () {
       let path = this.$route.path.split("/")
-      let start = path.indexOf('start')>-1
+      let start = path.indexOf('start') > -1
       let mode = path.length > 1 ? path[2] : undefined
 
-      if(start){
-        if(mode==="quick")
+      if (start) {
+        if (mode === "quick")
           this.showTab(0)
-        else if(mode==="guided")
+        else if (mode === "guided")
           this.showTab(1)
-        else if(mode==="advanced")
+        else if (mode === "advanced")
           this.showTab(2)
       }
 

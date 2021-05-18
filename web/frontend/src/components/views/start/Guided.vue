@@ -39,7 +39,10 @@
         >
 
           <v-card-subtitle class="headline">Node Configuration</v-card-subtitle>
-          <v-card-subtitle style="margin-top: -25px">Add nodes you want your graph to be build on.</v-card-subtitle>
+          <v-card-subtitle style="margin-top: -25px">Select the starting node type (e.g. Disorder) and then a target of interest (e.g Drug or Gene/Protein).
+            Select specific start nodes of the selected type by using the auto-complete system or list upload.
+            Manually adjust the list. <i>Optional:</i> Also specify the target nodes in the same way in case only
+            specific connections might be of interest.</v-card-subtitle>
 
           <v-container style="height: 80%">
             <v-row style="height: 70vh">
@@ -286,7 +289,7 @@
           max-height="75vh"
         >
           <v-card-subtitle class="headline">Path Selection</v-card-subtitle>
-          <v-card-subtitle style="margin-top: -25px">Select the path you want to be your graph be based on.
+          <v-card-subtitle style="margin-top: -25px">Select a path connecting {{nodeList[sourceTypeId].text +' and '+ nodeList[targetTypeId].text }}. Further decide to keep the intermediate node (in case an indirect path is selected) or to create a new edge type given a user defined name. Additional path specific configuration may be available.
           </v-card-subtitle>
 
           <v-container style="height: 80%">

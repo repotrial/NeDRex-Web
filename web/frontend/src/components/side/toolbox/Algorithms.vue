@@ -93,10 +93,38 @@
         <template v-if="methodModel !==undefined && methodModel!=='must'">
           <v-row>
             <v-col>
-              <v-switch v-model="models.advanced.keepNodesOnly" label="Keep only derived Graph"></v-switch>
+              <v-switch v-model="models.advanced.keepNodesOnly" label="Keep only derived Graph">
+                <template v-slot:append>
+                  <v-tooltip left>
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-icon
+                        v-bind="attrs"
+                        v-on="on"
+                        left> far fa-question-circle
+                      </v-icon>
+                    </template>
+                    <span>If deactivated the resulting graph will consist of the currently loaded graph extended by the algorithmic results.</span>
+                  </v-tooltip>
+                </template>
+              </v-switch>
             </v-col>
+            </v-row>
+          <v-row>
             <v-col>
-              <v-switch v-model="models.advanced.addInteractions" label="Add new interaction Edges"></v-switch>
+              <v-switch v-model="models.advanced.addInteractions" label="Add new interaction Edges">
+                <template v-slot:append>
+                  <v-tooltip left>
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-icon
+                        v-bind="attrs"
+                        v-on="on"
+                        left> far fa-question-circle
+                      </v-icon>
+                    </template>
+                    <span>When activated, gene or protein nodes identified by an algorithm will be used to add interaction edges between them.</span>
+                  </v-tooltip>
+                </template>
+              </v-switch>
             </v-col>
           </v-row>
           <v-divider></v-divider>

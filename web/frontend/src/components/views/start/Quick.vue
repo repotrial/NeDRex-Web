@@ -13,10 +13,10 @@
               </v-list-item>
               <v-list-item>
                 <v-list-item-content>
-                  Identify disease modules like in the standalone Agile Start module but with direct use in a subsequent
-                  drug prioritization analysis. Using the Minimal mode will use default values for the algorithmic
-                  choices,
-                  so only the starting genes will have to be defined.
+                  Identify disease modules as in the standalone mode (Agile/Quick Module Identification) but with direct
+                  use in a subsequent
+                  drug prioritization analysis. Using the Quick mode will use default values for the algorithmic
+                  choices, limiting the users decisions to identifying the starting genes.
                 </v-list-item-content>
               </v-list-item>
               <v-list-item>
@@ -56,7 +56,7 @@
                   </v-list-item>
                   <v-list-item>
                     <v-list-item-content>
-                      Identify disease modules by selecting seed genes or protein by hand, suggestions using information
+                      Identify disease modules by selecting seed genes or proteins by hand, suggestions using information
                       about e.g. association to disorders or by uploading a list. Tune the parameters of the algorithms
                       (Agile) or just use the default for even less necessary input work (Quick).
                     </v-list-item-content>
@@ -95,9 +95,7 @@
                   </v-list-item>
                   <v-list-item>
                     <v-list-item-content>
-                      Starting e.g. with a disorder to derive Genes/Proteins for module identification and subsequent
-                      drug
-                      ranking (e.g. TrustRank)
+                     Based on a set of given input genes or proteins drug candidates can be identified through the application of ranking algorithms in combination with the protein or gene interaction network and their known drug associations.
                     </v-list-item-content>
                   </v-list-item>
                   <v-list-item>
@@ -133,7 +131,7 @@
                              @printNotificationEvent="printNotification"
                              @graphLoadEvent="loadGraph"
                              @focusEvent="focusTop"
-        ref="drugRepurposing">
+                             ref="drugRepurposing">
 
         </CombinedRepurposing>
         <ModuleIdentification v-if="modus===1" :blitz="blitz" @resetEvent="modus=-1" :metagraph="metagraph"
@@ -175,25 +173,25 @@ export default {
     this.modus = -1
     this.blitz = false
   },
-  watch:{
-    modus: function(val){
-        if(val>-1){
-         this.focusTop()
-        }
+  watch: {
+    modus: function (val) {
+      if (val > -1) {
+        this.focusTop()
+      }
     }
 
 
   },
 
   methods: {
-    reset: function(){
-      if(this.modus===0 && this.$refs.drugRepurposing)
+    reset: function () {
+      if (this.modus === 0 && this.$refs.drugRepurposing)
         this.$refs.drugRepurposing.reset()
-      if(this.modus===1 && this.$refs.moduleIdentification)
+      if (this.modus === 1 && this.$refs.moduleIdentification)
         this.$refs.moduleIdentification.reset()
-      if(this.modus===2 && this.$refs.drugRanking)
+      if (this.modus === 2 && this.$refs.drugRanking)
         this.$refs.drugRanking.reset()
-      this.modus=-1
+      this.modus = -1
     },
     start: function (modus, blitz) {
       this.modus = modus;
@@ -209,13 +207,15 @@ export default {
     loadGraph: function (gid) {
       this.$emit("graphLoadEvent", gid)
     },
-    loadDrugTarget: function(blitz, seeds, type){
+    loadDrugTarget: function (blitz, seeds, type) {
       this.blitz = blitz;
       this.modus = 2
-      setTimeout(function(){this.$refs.drugTargeting.setSeeds(seeds,type)}.bind(this),500)
+      setTimeout(function () {
+        this.$refs.drugTargeting.setSeeds(seeds, type)
+      }.bind(this), 500)
 
     },
-    focusTop: function(){
+    focusTop: function () {
       this.$emit("focusEvent")
     }
   },
