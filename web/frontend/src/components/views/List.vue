@@ -544,6 +544,7 @@
       persistent
       max-width="500"
       ref="extensionDialog"
+      style="z-index: 1000"
     >
       <v-card v-if="extension.show">
         <v-card-title class="headline">
@@ -772,6 +773,7 @@
       v-model="optionDialog"
       persistent
       max-width="500"
+      style="z-index: 1000"
     >
       <v-card
         v-if="options !== undefined && options.type != null && options.attributes !=null && attributes[options.type]!=null">
@@ -823,6 +825,7 @@
       v-model="selectionDialog.show"
       persistent
       max-width="500"
+      style="z-index: 1000"
     >
       <v-card v-if="selectionDialog.show && selectionDialog.type !== undefined">
         <v-list>
@@ -928,6 +931,7 @@
       v-model="selectionColor.show"
       persistent
       max-width="500"
+      style="z-index: 1000"
     >
       <v-card>
         <v-card-title class="headline">
@@ -943,7 +947,7 @@
                             :rules="[value=>!!value|| 'Required!']"></v-text-field>
             </v-list-item-content>
           </v-list-item>
-          <v-list-item>
+          <v-list-item style="justify-content: center">
             <v-color-picker v-model=selectionColor.color dot-size="20" mode="hexa"></v-color-picker>
           </v-list-item>
         </v-list>
@@ -1133,7 +1137,7 @@ export default {
 
     }
     ,
-    recieveEvent: function (event) {
+    receiveEvent: function (event) {
       switch (event) {
         case "collapse":
           this.collapseGraph()
@@ -1261,9 +1265,10 @@ export default {
       }
       this.nodeTabLoading = false
     },
-    resetSuggestions: function(full){
-      if(full)
+    resetSuggestions: function (full) {
+      if (full) {
         this.suggestions.nodes.chosen = undefined
+      }
       if (this.backup.nodes[this.nodeTab])
         this.nodes[Object.keys(this.nodes)[this.nodeTab]] = this.backup.nodes[this.nodeTab]
     },
@@ -1616,6 +1621,7 @@ export default {
       this.selectionColor.show = false
       if (!apply)
         return
+      this.filterNodeModel = null
       let selectionIds = []
       Object.keys(this.nodes).forEach(name => this.nodes[name].filter(n => n.selected).forEach(n => selectionIds.push({id: name.substring(0, 3) + "_" + n.id})))
       this.$emit("recolorGraphEvent", {ids: selectionIds, color: color, name: name})
@@ -1696,7 +1702,7 @@ export default {
         this.printNotification("Please select some nodes first!", 1)
         return;
       }
-      this.resetSuggestions(true)
+      this.filterNodeModel = null
       for (let type in this.nodes) {
         update.nodes[type] = []
         this.nodes[type] = this.filterSelected(this.nodes[type])
@@ -1806,7 +1812,8 @@ export default {
     deselectAll: function (type) {
       let data = {nodes: this.nodes, edges: this.edges}
       if (type === "all") {
-        Object.values(data).forEach(set => Object.values(set).forEach(type => type.forEach(n => n.selected = false)))
+        this.filterNodeModel = null
+        this.$nextTick(()=> Object.values(data).forEach(set => Object.values(set).forEach(type => type.forEach(n => this.$set(n,"selected",false)))))
       } else {
         let tab = (type === "nodes") ? this.nodeTab : this.edgeTab
         let items = data[type][Object.keys(data[type])[tab]]
@@ -1826,8 +1833,9 @@ export default {
           })
         }
       }
-      this.reloadCountMap()
+
       this.$nextTick().then(() => {
+        this.reloadCountMap()
         if ("nodes" === type)
           this.$refs.nodeTab.$forceUpdate()
         else
@@ -1907,6 +1915,7 @@ export default {
     }
     ,
     selectEdges: function () {
+      this.filterNodeModel = null
       this.selectionDialog.type = "nodes"
       this.selectionDialog.title = "Edges"
 
@@ -1923,6 +1932,7 @@ export default {
       this.$nextTick()
     },
     collapseGraph: function () {
+      this.filterNodeModel = null
       this.collapse.nodes = Object.values(this.configuration.entityGraph.nodes).map(n => {
         return {name: n.name, selected: false, id: n.id, disabled: false}
       })
@@ -1978,6 +1988,7 @@ export default {
       return true
     },
     extendGraph: function () {
+      this.filterNodeModel = null
       this.extension.edges = []
       this.metagraph.edges.map(e => e.label).map(e => {
         let idx1 = Object.keys(this.attributes.nodes).indexOf(Utils.getNodes(this.metagraph, e)[0])
@@ -2069,6 +2080,7 @@ export default {
       return Utils.getColoring(this.metagraph, entity, name, style)
     },
     executeAlgorithm: function (algorithm, params) {
+      this.filterNodeModel = null
       let payload = {userId: this.uid, graphId: this.gid, algorithm: algorithm, params: params}
       payload.selection = params.selection
       payload.experimentalOnly = params.experimentalOnly
@@ -2132,6 +2144,7 @@ export default {
 }
 </script>
 
-<style scoped>
+<style lang="sass">
+
 
 </style>

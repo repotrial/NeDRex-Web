@@ -600,7 +600,7 @@ export default {
     }
     ,
     listModification: function (event) {
-      this.$refs.list.recieveEvent(event)
+      this.$refs.list.receiveEvent(event)
     }
     ,
     reverseHistorySorting: function () {
