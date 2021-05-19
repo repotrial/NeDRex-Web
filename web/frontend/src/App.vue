@@ -441,9 +441,11 @@ export default {
       })
     }
     ,
-    redirect: function (route) {
+    redirect: function (route,reload) {
       if (this.$route.fullPath !== route) {
         this.$router.push(route)
+        if(reload)
+          this.$router.go()
       }
     }
     ,
