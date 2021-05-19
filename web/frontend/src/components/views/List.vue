@@ -935,15 +935,15 @@
     >
       <v-card>
         <v-card-title class="headline">
-          Recolor Selected Nodes
+          Regroup Selected Nodes
         </v-card-title>
-        <v-card-text>Adjust temporary color and name of your selection in the graph. The name is for the legend.
+        <v-card-text>Create a temporary new group with a custom color and name for your node selection in the visualized graph. New groups are also visible in the legend and can be toggled equally to normal node-groups. This overrides the original group of any node selected!
         </v-card-text>
         <v-divider></v-divider>
         <v-list>
           <v-list-item>
             <v-list-item-content>
-              <v-text-field v-model=selectionColor.name label="Name"
+              <v-text-field v-model=selectionColor.name label="Group-Name"
                             :rules="[value=>!!value|| 'Required!']"></v-text-field>
             </v-list-item-content>
           </v-list-item>

@@ -182,7 +182,7 @@
                     outlined
                   >
                     <v-icon left>fas fa-palette</v-icon>
-                    Set selection color
+                    New group from selection
                   </v-chip>
                 </v-list-item>
               </template>

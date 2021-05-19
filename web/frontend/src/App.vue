@@ -32,18 +32,17 @@
       <v-row>
         <v-col :cols="sideHidden ? 12:10">
           <v-main app style="padding-top: 0">
-            <v-container v-show="selectedTabId===0" fluid>
+            <v-container fluid>
 
-              <Start v-if="metagraph !== undefined" ref="start"
+              <Start v-show="selectedTabId===0" v-if="metagraph !== undefined" ref="start"
                      v-on:graphLoadEvent="loadGraph"
                      @graphLoadNewTabEvent="loadGraphNewTab"
                      v-on:printNotificationEvent="printNotification"
                      @showSideEvent="setSideVisible"
                      @clearURLEvent="clearURL"
                      :colors="colors" :metagraph="metagraph" :options="options.start" :filters="startFilters"></Start>
-            </v-container>
-            <v-container v-show="selectedTabId===1" fluid>
-              <Graph ref="graph"
+              <Graph v-show="selectedTabId===1"
+                     ref="graph"
                      style="position: sticky; "
                      v-on:selectionEvent="loadSelection"
                      v-on:finishedEvent="setTabNotification(1)"
@@ -67,9 +66,8 @@
 
               </Graph>
 
-            </v-container>
-            <v-container v-show="selectedTabId===2" fluid>
               <List ref="list"
+                    v-show="selectedTabId===2"
                     v-on:finishedEvent="setTabNotification(2)"
                     v-on:selectionEvent="loadDetails"
                     v-on:loadSelectionEvent="loadSubSelection"
@@ -161,7 +159,7 @@
             </v-dialog>
           </v-main>
         </v-col>
-        <v-col cols="2" v-show="!sideHidden" style="margin-left:-40px">
+        <v-col cols="2" v-show="!sideHidden" style="margin-left:-40px; margin-right: 0">
           <SideCard ref="side"
                     v-on:printNotificationEvent="printNotification"
                     v-on:nodeSelectionEvent="setSelectedNode"
@@ -371,7 +369,7 @@ export default {
     setView: function () {
       console.log(this.$route)
       let path = this.$route.path.split("/")
-      let start = path.indexOf('start')>-1
+      let start = path.indexOf('start') > -1
       let mode = path.length > 1 ? path[2] : undefined
 
       //TODO set start graph based on params
@@ -526,7 +524,7 @@ export default {
     ,
     loadGraphNewTab: function (graph) {
       let route = this.$router.resolve({
-        path: "/explore/advanced/list/"+graph.post.id,
+        path: "/explore/advanced/list/" + graph.post.id,
       })
       window.open(route.href, "_blank")
     }
