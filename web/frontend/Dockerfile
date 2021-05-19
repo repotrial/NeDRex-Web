@@ -1,7 +1,6 @@
 FROM node:latest as build-stage
 WORKDIR /app
 COPY package*.json ./
-#RUN npm update
 RUN npm install
 COPY ./ .
 COPY docker/index.html public/index.htmld
