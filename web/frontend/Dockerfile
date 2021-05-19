@@ -1,9 +1,10 @@
 FROM node:latest as build-stage
 WORKDIR /app
 COPY package*.json ./
+#RUN npm update
 RUN npm install
 COPY ./ .
-COPY docker/index.html public/index.html
+COPY docker/index.html public/index.htmld
 COPY docker/vue.config.js ./vue.config.js
 COPY docker/Config.js src/Config.js
 
