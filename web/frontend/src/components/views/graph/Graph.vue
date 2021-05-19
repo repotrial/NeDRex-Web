@@ -256,7 +256,6 @@ export default {
         this.setMetagraph(this.meta)
       //TODO getgraphinfo to handle displaying of sidebar and disabling of enable-physics and disable visualize graph when graph not loaded
       return this.$http.get("/getGraph?id=" + this.gid).then(response => {
-
         if (response !== undefined)
           return response.data
       })

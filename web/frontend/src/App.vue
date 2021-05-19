@@ -367,7 +367,6 @@ export default {
     }
     ,
     setView: function () {
-      console.log(this.$route)
       let path = this.$route.path.split("/")
       let start = path.indexOf('start') > -1
       let mode = path.length > 1 ? path[2] : undefined
@@ -552,6 +551,10 @@ export default {
       let sum = 0
       for (let n in info.nodes)
         sum += info.nodes[n];
+      if(sum===0){
+        this.printNotification("Resulting graph contains no node!",2)
+        return
+      }
       for (let e in info.edges)
         sum += info.edges[e]
       if (sum >= 100000 && !this.$cookies.get("override-limit")) {
