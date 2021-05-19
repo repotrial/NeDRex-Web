@@ -198,7 +198,8 @@
                           class="mx-4"
                         ></v-text-field>
                         <v-autocomplete
-                          clearable
+                          deletable-chips
+                          chips
                           :search-input.sync="findNodeSuggestions"
                           v-show="filters.nodes.suggestions"
                           :loading="suggestions.nodes.loading"
@@ -549,7 +550,8 @@
         <v-card-title class="headline">
           Add more edges to your current graph
         </v-card-title>
-        <v-card-text>Select edge types to be added to the current network. Additional options may be displayed on selection.
+        <v-card-text>Select edge types to be added to the current network. Additional options may be displayed on
+          selection.
         </v-card-text>
         <v-divider></v-divider>
         <v-list>
@@ -680,31 +682,31 @@
         </v-container>
         <v-divider></v-divider>
         <div style="display: flex; justify-content: center">
-            <v-text-field
-              label="Edge Name"
-              outlined
-              v-model="collapse.edgeName" style="margin:25px">
-            </v-text-field>
+          <v-text-field
+            label="Edge Name"
+            outlined
+            v-model="collapse.edgeName" style="margin:25px">
+          </v-text-field>
         </div>
         <div v-if="collapse.accept" style="display: flex; justify-content: center">
-            <v-icon
-              :color="getExtendedColoring('nodes',getExtendedNodes(collapse.edge1,collapse.nodes.filter(n => n.selected)[0].name),'light')">
-              fas fa-genderless
-            </v-icon>
-            <v-icon>fas fa-long-arrow-alt-right</v-icon>
-            <v-icon :color="getExtendedColoring('nodes',collapse.nodes.filter(n => n.selected)[0].name,'light')">fas
-              fa-genderless
-            </v-icon>
-            <v-icon>fas fa-long-arrow-alt-right</v-icon>
-            <v-icon v-if="collapse.self.selected"
-                    :color="getExtendedColoring('nodes',getExtendedNodes(collapse.edge1,collapse.nodes.filter(n => n.selected)[0].name),'light')">
-              fas
-              fa-genderless
-            </v-icon>
-            <v-icon v-else
-                    :color="getExtendedColoring('nodes',getExtendedNodes(collapse.edge2,collapse.nodes.filter(n => n.selected)[0].name),'light')">
-              fas fa-genderless
-            </v-icon>
+          <v-icon
+            :color="getExtendedColoring('nodes',getExtendedNodes(collapse.edge1,collapse.nodes.filter(n => n.selected)[0].name),'light')">
+            fas fa-genderless
+          </v-icon>
+          <v-icon>fas fa-long-arrow-alt-right</v-icon>
+          <v-icon :color="getExtendedColoring('nodes',collapse.nodes.filter(n => n.selected)[0].name,'light')">fas
+            fa-genderless
+          </v-icon>
+          <v-icon>fas fa-long-arrow-alt-right</v-icon>
+          <v-icon v-if="collapse.self.selected"
+                  :color="getExtendedColoring('nodes',getExtendedNodes(collapse.edge1,collapse.nodes.filter(n => n.selected)[0].name),'light')">
+            fas
+            fa-genderless
+          </v-icon>
+          <v-icon v-else
+                  :color="getExtendedColoring('nodes',getExtendedNodes(collapse.edge2,collapse.nodes.filter(n => n.selected)[0].name),'light')">
+            fas fa-genderless
+          </v-icon>
         </div>
         <v-card-text v-if="collapse.accept">
           <template v-if="!collapse.self.selected">
@@ -1251,14 +1253,16 @@ export default {
     },
     applySuggestion: function (val) {
       this.nodeTabLoading = true
+      if (this.backup.nodes[this.nodeTab])
+        this.nodes[Object.keys(this.nodes)[this.nodeTab]] = this.backup.nodes[this.nodeTab]
       if (val != null) {
         let nodes = this.nodes[Object.keys(this.nodes)[this.nodeTab]]
         this.suggestions.nodes.chosen = this.suggestions.nodes.data.filter(item => item.value === val).flatMap(item => item.ids);
         this.backup.nodes[this.nodeTab] = nodes
         this.nodes[Object.keys(this.nodes)[this.nodeTab]] = nodes.filter((i, k) => this.suggestions.nodes.chosen.indexOf(i.id) !== -1)
-        this.filters.nodes.query = val
+        // this.filters.nodes.query = val
       } else {
-        this.nodes[Object.keys(this.nodes)[this.nodeTab]] = this.backup.nodes[this.nodeTab]
+        // this.nodes[Object.keys(this.nodes)[this.nodeTab]] = this.backup.nodes[this.nodeTab]
         this.suggestions.nodes.chosen = undefined
       }
       this.nodeTabLoading = false
