@@ -1375,7 +1375,7 @@ export default {
           return
 
         if (type === "edges") {
-          if (this.collapse.edge1.length === 0)
+          if (this.collapse.edge1.length === 0 || this.collapse.self.selected)
             this.collapse.edge1 = name
           else
             this.collapse.edge2 = name
@@ -1389,7 +1389,6 @@ export default {
       })
 
       let edges = this.collapse.edges.filter(e => e.selected)
-
       this.collapse.edges.forEach(e => {
         if (node === undefined || (!e.selected && (((e.from !== node.id && e.to !== node.id)) || edges.length === 2 || (edges.length === 1 && this.collapse.self.selected))))
           e.disabled = true
@@ -1937,7 +1936,7 @@ export default {
         return {name: n.name, selected: false, id: n.id, disabled: false}
       })
       this.collapse.edges = Object.values(this.configuration.entityGraph.edges).map(e => {
-        return {name: e.name, selected: false, from: e.node1, to: e.node2, disabled: false}
+        return {name: e.name, selected: false, from: e.node1, to: e.node2, disabled: true}
       })
       this.collapse.self.selected = false
       if (this.collapse.edges.length < 2) {
@@ -1946,18 +1945,6 @@ export default {
         this.collapse.edges.forEach(e => {
           e.selected = true
           this.collapse.edge1 = e.name
-        })
-      } else if (this.collapse.edges.length === 2 && !this.collapse.self.selected) {
-        this.collapse.edges.forEach(e => {
-          e.selected = true
-          if (this.collapse.edge1.length === 0)
-            this.collapse.edge1 = e.name
-          else
-            this.collapse.edge2 = e.name
-        })
-      } else if (this.collapse.nodes.length > 1) {
-        this.collapse.edges.forEach(e => {
-          e.disabled = true;
         })
       }
       if (this.collapse.nodes.length === 1) {
@@ -1968,7 +1955,6 @@ export default {
       this.collapse.accept = this.isConnectedCollapse()
       this.collapse.show = true;
       this.$nextTick()
-
     },
     isConnectedCollapse: function () {
       let node = undefined;
@@ -2069,6 +2055,7 @@ export default {
       let nodes = Utils.getNodesExtended(this.configuration.entityGraph, name)
       if (not === undefined)
         return nodes;
+      console.log(name+" not="+not +" in "+(nodes[0]+"/"+nodes[1]))
       return nodes[0] === not ? nodes[1] : nodes[0]
     },
     getColoring: function (entity, name, style) {
