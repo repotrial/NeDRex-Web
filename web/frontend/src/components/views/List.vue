@@ -198,7 +198,6 @@
                           class="mx-4"
                         ></v-text-field>
                         <v-autocomplete
-                          deletable-chips
                           chips
                           :search-input.sync="findNodeSuggestions"
                           v-show="filters.nodes.suggestions"
@@ -1169,8 +1168,6 @@ export default {
         }
         let type = "nodes";
         let name = Object.keys(this.nodes)[this.nodeTab];
-        if (this.suggestions[type].chosen !== undefined)
-          return
         this.suggestions[type].loading = true;
         this.suggestions[type].data = []
         this.$nextTick().then(() => {
@@ -1253,19 +1250,22 @@ export default {
     },
     applySuggestion: function (val) {
       this.nodeTabLoading = true
-      if (this.backup.nodes[this.nodeTab])
-        this.nodes[Object.keys(this.nodes)[this.nodeTab]] = this.backup.nodes[this.nodeTab]
       if (val != null) {
+        this.resetSuggestions()
         let nodes = this.nodes[Object.keys(this.nodes)[this.nodeTab]]
-        this.suggestions.nodes.chosen = this.suggestions.nodes.data.filter(item => item.value === val).flatMap(item => item.ids);
         this.backup.nodes[this.nodeTab] = nodes
+        this.suggestions.nodes.chosen = this.suggestions.nodes.data.filter(item => item.value === val).flatMap(item => item.ids);
         this.nodes[Object.keys(this.nodes)[this.nodeTab]] = nodes.filter((i, k) => this.suggestions.nodes.chosen.indexOf(i.id) !== -1)
-        // this.filters.nodes.query = val
       } else {
-        // this.nodes[Object.keys(this.nodes)[this.nodeTab]] = this.backup.nodes[this.nodeTab]
-        this.suggestions.nodes.chosen = undefined
+        this.resetSuggestions(true)
       }
       this.nodeTabLoading = false
+    },
+    resetSuggestions: function(full){
+      if(full)
+        this.suggestions.nodes.chosen = undefined
+      if (this.backup.nodes[this.nodeTab])
+        this.nodes[Object.keys(this.nodes)[this.nodeTab]] = this.backup.nodes[this.nodeTab]
     },
     toggleSuggestions: function (type) {
       this.filterNodeModel = null
@@ -1696,6 +1696,7 @@ export default {
         this.printNotification("Please select some nodes first!", 1)
         return;
       }
+      this.resetSuggestions(true)
       for (let type in this.nodes) {
         update.nodes[type] = []
         this.nodes[type] = this.filterSelected(this.nodes[type])
