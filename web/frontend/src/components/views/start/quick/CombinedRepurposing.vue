@@ -740,7 +740,7 @@
             <v-row>
               <v-col cols="3">
                 <v-card-title class="subtitle-1">Seeds ({{ seeds.length }}) {{
-                    (results.targets.length !== undefined && results.targets.length > 0 ? ("& Targets(" + (results.targets.length - seeds.length) + ")") : ": Processing")
+                    (results.targets.length !== undefined && results.targets.length > 0 ? ("& Module (" + getTargetCount() + ")") : ": Processing")
                   }}
                   <v-progress-circular indeterminate v-if="this.results.targets.length===0" style="margin-left:15px">
                   </v-progress-circular>
@@ -1192,6 +1192,10 @@ export default {
       this.$refs.graph.setPhysics(this.graph.physics)
     }
     ,
+    getTargetCount: function(){
+      let seedids = this.seeds.map(s=>s.id)
+      return this.results.targets.filter(t=>seedids.indexOf(t.id)===-1).length
+    },
     submitModuleAlgorithm: function () {
       let params = {}
       let method = this.moduleMethods[this.moduleMethodModel].id
