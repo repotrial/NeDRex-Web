@@ -537,7 +537,7 @@
             <v-row>
               <v-col cols="3">
                 <v-card-title class="subtitle-1">Seeds ({{ seeds.length }}) {{
-                    (results.targets.length !== undefined && results.targets.length > 0 ? ("& Targets(" + (results.targets.length - seeds.length) + ")") : ": Processing")
+                    (results.targets.length !== undefined && results.targets.length > 0 ? ("& Module (" + getTargetCount() + ")") : ": Processing")
                   }}
                   <v-progress-circular indeterminate v-if="this.results.targets.length===0" style="margin-left:15px">
                   </v-progress-circular>
@@ -590,7 +590,7 @@
                 <Graph ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle"
                        :legend="results.targets.length>0" :meta="metagraph">
                   <template v-slot:legend v-if="results.targets.length>0">
-                    <v-card style="width: 13vw; max-width: 15vw; padding-top: 35px">
+                    <v-card style="width: 15vw; max-width: 17vw; padding-top: 35px">
                       <v-list>
                         <v-list-item>
                           <v-list-item-icon>
@@ -608,7 +608,7 @@
                               fa-circle
                             </v-icon>
                           </v-list-item-icon>
-                          <v-list-item-title style="margin-left: -25px">Target {{ ['Gene', 'Protein'][seedTypeId] }}
+                          <v-list-item-title style="margin-left: -25px">Module {{ ['Gene', 'Protein'][seedTypeId] }}
                           </v-list-item-title>
                           <v-list-item-subtitle>{{ results.targets.length - seeds.length }}</v-list-item-subtitle>
                         </v-list-item>
@@ -670,9 +670,9 @@
             <v-radio :label="'Original seeds ('+seeds.length+')'">
 
             </v-radio>
-            <v-radio :label="'whole Module ('+results.targets.length+')'">
+            <v-radio :label="'whole Module ('+getTargetCount()+seeds.length+')'">
             </v-radio>
-            <v-radio :label="'targets only ('+(results.targets.length-seeds.length)+')'">
+            <v-radio :label="'non-seeds only ('+getTargetCount()+')'">
             </v-radio>
           </v-radio-group>
         </v-card-actions>
@@ -1008,6 +1008,10 @@ export default {
       }
     }
     ,
+    getTargetCount: function(){
+      let seedids = this.seeds.map(s=>s.id)
+      return this.results.targets.filter(t=>seedids.indexOf(t.id)===-1).length
+    },
 
     addToSelection: function (list, nameFrom) {
       let ids = this.seeds.map(seed => seed.id)

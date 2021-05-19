@@ -8,10 +8,10 @@
           </v-list-item-title>
         </v-list-item>
         <v-list-item>
-          <v-list-item-subtitle>
+          <div class="v-card__subtitle">
             Create a specified starting graph by selecting the nodes and edge types it should contain.
             Apply filters or set options in the "TOOLS" panel by clicking onto the meta-entities in the graph.
-          </v-list-item-subtitle>
+          </div>
         </v-list-item>
       </v-list>
       <v-divider></v-divider>

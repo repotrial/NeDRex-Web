@@ -32,10 +32,10 @@
             </v-list-item-title>
           </v-list-item>
           <v-list-item>
-            <v-list-item-subtitle>
+            <div class="v-card__subtitle">
               Use the Guided Exploration Start to create a graph based on specific start and target nodes types. Select
               a path connecting these metanodes and control the result through additional parameters.
-            </v-list-item-subtitle>
+            </div>
           </v-list-item>
         </v-list>
       </v-card>

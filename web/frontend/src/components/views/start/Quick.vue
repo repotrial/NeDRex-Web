@@ -211,7 +211,7 @@ export default {
       this.blitz = blitz;
       this.modus = 2
       setTimeout(function () {
-        this.$refs.drugTargeting.setSeeds(seeds, type)
+        this.$refs.drugRanking.setSeeds(seeds, type)
       }.bind(this), 500)
 
     },
