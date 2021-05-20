@@ -282,9 +282,9 @@ public class UpdateService {
             DBConfig.getConfig().edges.stream().filter(e -> e.original).forEach(edge -> restructureUpdates(edge.file, edge.name));
 
             executingUpdates();
-
-            if (this.metadata == null || this.lastUpdate != this.metadata.getLastUpdate()) {
-                buildMetadata();
+            log.info("Update Metadata");
+            buildMetadata();
+            if (this.lastUpdate != this.metadata.getLastUpdate()) {
                 this.lastCheck = this.lastUpdate;
                 updateMetadata(this.lastCheck, this.lastUpdate);
             } else {
