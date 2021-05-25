@@ -977,7 +977,6 @@
 </template>
 
 <script>
-import Utils from "../../scripts/Utils";
 
 export default {
   props: {
@@ -1750,7 +1749,7 @@ export default {
       })
     },
     selectDependentNodes: function (type, edges) {
-      let nodes = Utils.getNodesExtended(this.configuration.entityGraph, type)
+      let nodes = this.$utils.getNodesExtended(this.configuration.entityGraph, type)
       let nodeName1 = nodes[0];
       let nodeName2 = nodes[1];
       let nodeTab1 = Object.keys(this.attributes.nodes).indexOf(nodeName1)
@@ -1783,7 +1782,7 @@ export default {
       let items = this[type][name]
       let isDistinct = this.isDistinctAttribute(type, this.filters[type].attribute.name)
       if (isDistinct) {
-        this.distinctFilter(type, items).forEach(item => {
+        this.distinctFilter(type, items,tab).forEach(item => {
           item.selected = true
         })
       } else {
@@ -1977,8 +1976,8 @@ export default {
       this.filterNodeModel = null
       this.extension.edges = []
       this.metagraph.edges.map(e => e.label).map(e => {
-        let idx1 = Object.keys(this.attributes.nodes).indexOf(Utils.getNodes(this.metagraph, e)[0])
-        let idx2 = Object.keys(this.attributes.nodes).indexOf(Utils.getNodes(this.metagraph, e)[1])
+        let idx1 = Object.keys(this.attributes.nodes).indexOf(this.$utils.getNodes(this.metagraph, e)[0])
+        let idx2 = Object.keys(this.attributes.nodes).indexOf(this.$utils.getNodes(this.metagraph, e)[1])
 
         if ((Object.keys(this.attributes.edges).indexOf(e) === -1 || idx1 === idx2) && idx1 + idx2 > -2)
           this.extension.edges.push({name: e, both: idx1 > -1 && idx2 > -1, induced: false, switch: false})
@@ -2049,10 +2048,10 @@ export default {
           return this.getExtendedColoring(entity, name, style)
         })
       }
-      return Utils.getColoringExtended(this.metagraph, this.configuration.entityGraph, entity, name, style)
+      return this.$utils.getColoringExtended(this.metagraph, this.configuration.entityGraph, entity, name, style)
     },
     getExtendedNodes: function (name, not) {
-      let nodes = Utils.getNodesExtended(this.configuration.entityGraph, name)
+      let nodes = this.$utils.getNodesExtended(this.configuration.entityGraph, name)
       if (not === undefined)
         return nodes;
       console.log(name+" not="+not +" in "+(nodes[0]+"/"+nodes[1]))
@@ -2064,7 +2063,7 @@ export default {
           return this.getColoring(entity, name, style)
         })
       }
-      return Utils.getColoring(this.metagraph, entity, name, style)
+      return this.$utils.getColoring(this.metagraph, entity, name, style)
     },
     executeAlgorithm: function (algorithm, params) {
       this.filterNodeModel = null

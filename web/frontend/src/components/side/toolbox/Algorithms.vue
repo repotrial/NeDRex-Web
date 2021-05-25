@@ -503,7 +503,6 @@
 </template>
 
 <script>
-import Utils from "../../../scripts/Utils";
 
 export default {
   name: "Algorithms",
@@ -572,7 +571,7 @@ export default {
         params['lg_min'] = this.models.bicon.lg[0];
         params['lg_max'] = this.models.bicon.lg[1];
         params['type'] = "gene"
-        Utils.readFile(this.models.bicon.exprFile).then(content => {
+        this.$utils.readFile(this.models.bicon.exprFile).then(content => {
           params['exprData'] = content
           this.$emit('executeAlgorithmEvent', this.methodModel, params)
         })
@@ -604,10 +603,10 @@ export default {
 
 
     getColoring: function (type, name) {
-      return Utils.getColoring(this.metagraph, type, name)
+      return this.$utils.getColoring(this.metagraph, type, name)
     },
     getNodeNames: function (type) {
-      return Utils.getNodes(this.metagraph, type)
+      return this.$utils.getNodes(this.metagraph, type)
     },
     isDisabled: function () {
       if (this.methodModel === undefined || this.methodModel.length === 0)
@@ -644,7 +643,7 @@ export default {
     },
 
     formatTime: function (timestamp) {
-      return Utils.formatTime(timestamp)
+      return this.$utils.formatTime(timestamp)
     },
   }
 

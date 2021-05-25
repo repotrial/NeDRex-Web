@@ -40,8 +40,6 @@
 
 <script>
 
-import Utils from "../../../scripts/Utils"
-
 export default {
   props: {
     metagraph: undefined,
@@ -86,10 +84,10 @@ export default {
         this.options.toggled[entity][name] = true;
       if (!this.options.toggled[entity][name])
         return "gray";
-      return Utils.getColoringExtended(this.metagraph, this.entityGraph, entity, name,style);
+      return this.$utils.getColoringExtended(this.metagraph, this.entityGraph, entity, name,style);
     },
     direction: function (edge) {
-      return Utils.directionExtended(this.entityGraph, edge)
+      return this.$utils.directionExtended(this.entityGraph, edge)
     },
     getCounts: function (entity) {
       let objects = Object.values(this[entity]);

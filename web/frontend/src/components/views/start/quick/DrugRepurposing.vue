@@ -53,9 +53,9 @@
                   <v-row>
                     <v-col cols="3">
                       <v-select :items="getSuggestionSelection()" v-model="suggestionType"
-                                placeholder="connected to"></v-select>
+                                placeholder="connected to" style="width: 100%"></v-select>
                     </v-col>
-                    <v-col>
+                    <v-col cols="6">
                       <v-autocomplete
                         clearable
                         :search-input.sync="nodeSuggestions"
@@ -66,6 +66,8 @@
                         label="by suggestions"
                         class="mx-4"
                         return-object
+                        auto-select-first
+                        style="width: 100%"
                       >
                         <template v-slot:item="{ item }">
                           <v-list-item-avatar
@@ -103,6 +105,7 @@
                                 prepend-icon="far fa-list-alt"
                                 v-model="fileInputModel"
                                 dense
+                                style="width: 75%"
                   ></v-file-input>
                 </v-container>
               </v-col>
@@ -113,7 +116,7 @@
                 </v-card-title>
                 <v-list max-height="40vh" height="40vh" class="overflow-y-auto" ref="seedList">
                   <v-list-item v-for="(seed,index) in seeds" :key="seed.id">
-                    <v-list-item-title>{{ seed.displayName }}</v-list-item-title>
+                    <v-list-item-title>{{ $utils.adjustLabels(seed.displayName) }}</v-list-item-title>
                     <v-list>
                       <template v-for="o in getOrigins(seed.id)">
                         <v-list-item-subtitle :key="seed.id+o">{{ o }}</v-list-item-subtitle>
@@ -229,7 +232,9 @@
                                 left> far fa-question-circle
                               </v-icon>
                             </template>
-                            <span>Restricts the edges in the {{ ['Gene', 'Protein'][seedTypeId] + '-' + ['Gene', 'Protein'][seedTypeId] }} network to experimentally validated ones.</span>
+                            <span>Restricts the edges in the {{
+                                ['Gene', 'Protein'][seedTypeId] + '-' + ['Gene', 'Protein'][seedTypeId]
+                              }} network to experimentally validated ones.</span>
                           </v-tooltip>
                         </template>
                       </v-switch>
@@ -366,22 +371,23 @@
         >
           <v-container>
             <v-row>
-              <v-col cols="2">
+              <v-col cols="2" style="padding:0">
                 <v-card-title class="subtitle-1">Seeds ({{ seeds.length }})
                 </v-card-title>
                 <template v-if="results.targets.length>=0">
-                  <v-simple-table max-height="45vh" height="45vh" class="overflow-y-auto" fixed-header>
+                  <v-simple-table max-height="45vh" height="45vh" class="overflow-y-auto" fixed-header dense>
                     <template v-slot:default>
                       <thead>
                       <tr>
-                        <th class="text-left">
+                        <th class="text-center td-name">
                           Name
                         </th>
                       </tr>
                       </thead>
                       <tbody>
-                      <tr v-for="seed in seeds" :key="seed.id" @click="focusNode(['gen_','pro_'][seedTypeId]+seed.id)">
-                        <td>{{ seed.displayName }}</td>
+                      <tr class="td-name td-result" v-for="seed in seeds" :key="seed.id"
+                          @click="focusNode(['gen_','pro_'][seedTypeId]+seed.id)">
+                        <td>{{ $utils.adjustLabels(seed.displayName) }}</td>
                       </tr>
                       </tbody>
                     </template>
@@ -392,7 +398,7 @@
                   </v-chip>
                 </template>
               </v-col>
-              <v-col cols="7">
+              <v-col cols="8">
                 <Graph ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle"
                        :legend="results.targets.length>0" :meta="metagraph">
                   <template v-slot:legend v-if="results.targets.length>0">
@@ -420,7 +426,7 @@
                   </template>
                 </Graph>
               </v-col>
-              <v-col cols="3">
+              <v-col cols="2" style="padding: 0">
                 <v-card-title class="subtitle-1"> Targets{{
                     (results.targets.length !== undefined && results.targets.length > 0 ? (" (" + (results.targets.length) + ")") : ": Processing")
                   }}
@@ -428,14 +434,15 @@
                   </v-progress-circular>
                 </v-card-title>
                 <template v-if="results.targets.length>=0">
-                  <v-simple-table max-height="45vh" height="45vh" class="overflow-y-auto" fixed-header>
+                  <v-simple-table max-height="45vh" height="45vh" class="overflow-y-auto" fixed-header dense>
                     <template v-slot:default>
                       <thead>
                       <tr>
-                        <th class="text-left">
+                        <th class="text-center td-name td-result">
                           Name
                         </th>
-                        <th v-for="val in methodScores()" class="text-left">
+                        <th v-for="val in methodScores()"
+                            :class="'text-center td-score'+(val.name==='Rank' ? ' td-rank':'')">
                           {{ val.name }}
                         </th>
                       </tr>
@@ -443,8 +450,10 @@
                       <tbody>
                       <tr v-for="drug in results.targets" :key="drug.id" :style="targetColorStyle"
                           @click="focusNode('dru_'+drug.id)">
-                        <td>{{ drug.displayName }}</td>
-                        <td v-for="val in methodScores()">{{ drug[val.id] }}</td>
+                        <td class="td-result td-name">{{ drug.displayName }}</td>
+                        <td :class="'td-result td-score'+(val.id==='rank' ? ' td-rank':'')" v-for="val in methodScores()">
+                          {{ drug[val.id] }}
+                        </td>
                       </tr>
                       </tbody>
                     </template>
@@ -465,7 +474,7 @@
             <v-divider style="margin-top:10px"></v-divider>
             <v-row>
               <v-col>
-                <v-chip outlined v-if="jobs[currentJid]!==undefined && jobs[currentJid].result!==undefined"
+                <v-chip outlined v-if="jobs[currentJid] && jobs[currentJid].result"
                         style="margin-top:15px"
                         @click="$emit('graphLoadEvent',{post: {id: jobs[currentJid].result}})">
                   <v-icon left>fas fa-angle-double-right</v-icon>
@@ -499,7 +508,6 @@
 </template>
 
 <script>
-import Utils from "../../../../scripts/Utils";
 import Graph from "../../graph/Graph";
 import * as CONFIG from "../../../../Config"
 
@@ -533,8 +541,8 @@ export default {
       suggestionModel: null,
       fileInputModel: undefined,
       methods: [
-        {id: "trustrank", label: "TrustRank", scores: [{id: "score", name: "Score"}]},
-        {id: "centrality", label: "Closeness Centrality", scores: [{id: "score", name: "Score"}]}],
+        {id: "trustrank", label: "TrustRank", scores: [{id: "score", name: "Score", decimal: true}]},
+        {id: "centrality", label: "Closeness Centrality", scores: [{id: "score", name: "Score", decimal: true}]}],
       graph: {physics: false},
       methodModel: undefined,
       experimentalSwitch: true,
@@ -781,7 +789,7 @@ export default {
     onFileSelected: function (file) {
       if (file == null)
         return
-      Utils.readFile(file).then(content => {
+      this.$utils.readFile(file).then(content => {
         this.$http.post("mapFileListToItems", {
           type: ['gene', 'protein'][this.seedTypeId],
           file: content
@@ -846,23 +854,31 @@ export default {
       this.readJob(data)
     },
     loadTargetTable: function (gid) {
+      let scoreAttrs = this.methods[this.methodModel].scores.filter(s => s.decimal)
       this.targetColorStyle = {'background-color': this.metagraph.colorMap['drug'].light}
       return this.$http.get("/getGraphList?id=" + gid).then(response => {
         if (response.data !== undefined)
           return response.data
-      }).then(data => {
+      }).then(data => this.$utils.roundScores(data, 'drug', scoreAttrs)
+      ).then(data => {
         this.results.targets = data.nodes.drug.sort((e1, e2) => e2.score - e1.score)
       }).catch(console.log)
     },
+    roundScores: function (data) {
+      console.log(data)
+      return data
+    }
+    ,
     clearList: function () {
       this.seeds = []
       this.seedOrigin = {}
-    },
+    }
+    ,
     removeNonIntersecting: function () {
       let remove = []
       Object.keys(this.seedOrigin).forEach(seed => {
         if (this.seedOrigin[seed].length < 2) {
-          this.seedOrigin[seed] = undefined
+          delete this.seedOrigin[seed]
           remove.push(parseInt(seed))
         }
       })
@@ -901,9 +917,10 @@ export default {
     ,
     focus: function () {
       this.$emit("focusEvent")
-    },
+    }
+    ,
     getColoring: function (entity, name) {
-      return Utils.getColoring(this.metagraph, entity, name);
+      return this.$utils.getColoring(this.metagraph, entity, name);
     }
     ,
   },
@@ -914,6 +931,19 @@ export default {
 }
 </script>
 
-<style scoped>
+<style lang="sass">
+
+
+.td-name
+  max-width: 4vw
+
+.td-score
+  max-width: 4vw
+
+.td-rank
+  max-width: 3vw !important
+
+.td-result
+  font-size: smaller !important
 
 </style>

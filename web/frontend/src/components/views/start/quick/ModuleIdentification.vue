@@ -60,16 +60,16 @@
             </v-col>
           </v-row>
           <v-container style="height: 80%">
-            <v-row style="height: 50vh">
+            <v-row style="height: 50vh;">
               <v-col cols="6">
                 <v-container v-if="seedTypeId!==undefined">
                   <v-card-title style="margin-left: -25px">Add seeds associated to</v-card-title>
                   <v-row>
                     <v-col cols="3">
                       <v-select :items="getSuggestionSelection()" v-model="suggestionType"
-                                placeholder="connected to"></v-select>
+                                placeholder="connected to" style="width: 100%"></v-select>
                     </v-col>
-                    <v-col>
+                    <v-col cols="6">
                       <v-autocomplete
                         clearable
                         :search-input.sync="nodeSuggestions"
@@ -80,6 +80,8 @@
                         label="by suggestions"
                         class="mx-4"
                         return-object
+                        style="width: 100%"
+                        auto-select-first
                       >
                         <template v-slot:item="{ item }">
                           <v-list-item-avatar
@@ -117,6 +119,7 @@
                                 prepend-icon="far fa-list-alt"
                                 v-model="fileInputModel"
                                 dense
+                                style="width: 75%"
                   ></v-file-input>
                 </v-container>
               </v-col>
@@ -127,7 +130,7 @@
                 </v-card-title>
                 <v-list ref="seedlist" max-height="40vh" height="40vh" class="overflow-y-auto">
                   <v-list-item v-for="(seed,index) in seeds" :key="seed.id">
-                    <v-list-item-title>{{ seed.displayName }}</v-list-item-title>
+                    <v-list-item-title>{{ $utils.adjustLabels(seed.displayName) }}</v-list-item-title>
                     <v-list>
                       <template v-for="o in getOrigins(seed.id)">
                         <v-list-item-subtitle :key="seed.id+o">{{ o }}</v-list-item-subtitle>
@@ -535,7 +538,7 @@
           <!--          </v-card-subtitle>-->
           <v-container>
             <v-row>
-              <v-col cols="3">
+              <v-col cols="3" style="padding: 0">
                 <v-card-title class="subtitle-1">Seeds ({{ seeds.length }}) {{
                     (results.targets.length !== undefined && results.targets.length > 0 ? ("& Module (" + getTargetCount() + ")") : ": Processing")
                   }}
@@ -543,14 +546,14 @@
                   </v-progress-circular>
                 </v-card-title>
                 <template v-if="results.targets.length>=0">
-                  <v-simple-table max-height="45vh" height="45vh" class="overflow-y-auto" fixed-header>
+                  <v-simple-table max-height="45vh" height="45vh" class="overflow-y-auto" fixed-header dense>
                     <template v-slot:default>
                       <thead>
                       <tr>
-                        <th class="text-left">
+                        <th class="text-center td-name">
                           Name
                         </th>
-                        <th v-for="val in methodScores()" class="text-left">
+                        <th v-for="val in methodScores()" :class="'text-center td-score'+val.name==='Rank' ? ' td-rank':''">
                           {{ val.name }}
                         </th>
                       </tr>
@@ -560,12 +563,12 @@
                           v-for="seed in results.targets" :key="seed.id" :style="targetColorStyle"
                           @click="focusNode(['gen_','pro_'][seedTypeId]+seed.id)"
                       >
-                        <td>{{ seed.displayName }}</td>
-                        <td v-for="val in methodScores()">{{ seed[val.id] }}</td>
+                        <td class="td-result td-name">{{ $utils.adjustLabels(seed.displayName) }}</td>
+                        <td :class="'td-result td-score'+(val.id==='rank' ? ' td-rank':'')" v-for="val in methodScores()">{{ seed[val.id] }}</td>
                       </tr>
                       <tr v-for="seed in seeds" :key="seed.id" @click="focusNode(['gen_','pro_'][seedTypeId]+seed.id)">
-                        <td>{{ seed.displayName }}</td>
-                        <td v-for="val in methodScores()"></td>
+                        <td class="td-result td-name" > {{ $utils.adjustLabels(seed.displayName) }}</td>
+                        <td :class="'td-result td-score'+(val.id==='rank' ? ' td-rank':'')" v-for="val in methodScores()"></td>
                       </tr>
                       </tbody>
                     </template>
@@ -586,7 +589,7 @@
                   </v-chip>
                 </template>
               </v-col>
-              <v-col cols="8">
+              <v-col cols="9">
                 <Graph ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle"
                        :legend="results.targets.length>0" :meta="metagraph">
                   <template v-slot:legend v-if="results.targets.length>0">
@@ -622,7 +625,7 @@
             <v-divider style="margin-top:10px; margin-bottom: 10px"></v-divider>
             <v-row>
               <v-col>
-                <v-chip outlined v-if="currentJid!=null"
+                <v-chip outlined v-if="currentGid"
                         style="margin-top:15px"
                         @click="$emit('graphLoadEvent',{post: {id: currentGid}})">
                   <v-icon left>fas fa-angle-double-right</v-icon>
@@ -670,7 +673,7 @@
             <v-radio :label="'Original seeds ('+seeds.length+')'">
 
             </v-radio>
-            <v-radio :label="'whole Module ('+getTargetCount()+seeds.length+')'">
+            <v-radio :label="'whole Module ('+(getTargetCount()+seeds.length)+')'">
             </v-radio>
             <v-radio :label="'non-seeds only ('+getTargetCount()+')'">
             </v-radio>
@@ -700,7 +703,6 @@
 </template>
 
 <script>
-import Utils from "../../../../scripts/Utils";
 import Graph from "../../graph/Graph";
 import * as CONFIG from "../../../../Config"
 
@@ -738,7 +740,7 @@ export default {
       methods: [{
         id: "diamond",
         label: "DIAMOnD",
-        scores: [{id: "rank", name: "Rank"}, {id: "p_hyper", name: "P-Value"}]
+        scores: [{id: "rank", name: "Rank"}, {id: "p_hyper", name: "P-Value", decimal:true}]
       }, {id: "bicon", label: "BiCoN", scores: []}, {id: "must", label: "MuST", scores: []}],
       graph: {physics: false},
       methodModel: undefined,
@@ -845,7 +847,7 @@ export default {
       let remove = []
       Object.keys(this.seedOrigin).forEach(seed => {
         if (this.seedOrigin[seed].length < 2) {
-          this.seedOrigin[seed] = undefined
+          delete this.seedOrigin[seed]
           remove.push(parseInt(seed))
         }
       })
@@ -954,7 +956,7 @@ export default {
         params['lg_min'] = this.models.bicon.lg[0];
         params['lg_max'] = this.models.bicon.lg[1];
         params['type'] = "gene"
-        Utils.readFile(this.models.bicon.exprFile).then(content => {
+        this.$utils.readFile(this.models.bicon.exprFile).then(content => {
           params['exprData'] = content
           this.executeJob(method, params)
         })
@@ -1048,14 +1050,14 @@ export default {
     ,
     removeSeed: function (index, id) {
       this.seeds.splice(index, 1)
-      this.seedOrigin[id] = undefined
+      delete this.seedOrigin[id]
     }
     ,
 
     onFileSelected: function (file) {
       if (file == null)
         return
-      Utils.readFile(file).then(content => {
+      this.$utils.readFile(file).then(content => {
         this.$http.post("mapFileListToItems", {
           type: ['gene', 'protein'][this.seedTypeId],
           file: content
@@ -1107,8 +1109,8 @@ export default {
         )
         this.download(["gene", "protein"][this.seedTypeId] + "_module.tsv", text)
       }).catch(console.log)
-    }
-    ,
+    },
+
     download: function (name, content) {
       let dl = document.createElement('a')
       dl.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(content))
@@ -1126,11 +1128,12 @@ export default {
     ,
     loadTargetTable: function (gid) {
       let seedType = [["gene", "protein"][this.seedTypeId]]
+      let scoreAttr = this.methods[this.methodModel].scores.filter(s => s.decimal)
       this.targetColorStyle = {'background-color': this.metagraph.colorMap[seedType].light}
       return this.$http.get("/getGraphList?id=" + gid).then(response => {
         if (response.data !== undefined)
           return response.data
-      }).then(data => {
+      }).then(data => this.$utils.roundScores(data, seedType, scoreAttr)).then(data => {
         if (this.methodModel === 0)
           this.results.targets = data.nodes[seedType].sort((e1, e2) => {
             if (e1.rank && e2.rank)
@@ -1142,8 +1145,8 @@ export default {
         else
           this.results.targets = data.nodes[seedType]
       }).catch(console.log)
-    }
-    ,
+    },
+
     waitForGraph: function (resolve) {
       if (this.$refs.graph === undefined)
         setTimeout(this.waitForGraph, 100)
@@ -1156,7 +1159,7 @@ export default {
       })
     },
     getColoring: function (entity, name) {
-      return Utils.getColoring(this.metagraph, entity, name);
+      return this.$utils.getColoring(this.metagraph, entity, name);
     },
     focus: function () {
       this.$emit("focusEvent")
@@ -1181,6 +1184,20 @@ export default {
 }
 </script>
 
-<style scoped>
+<style lang="sass">
+
+
+
+.td-name
+  max-width: 4vw
+
+.td-score
+  max-width: 4vw
+
+.td-rank
+  max-width: 3vw !important
+
+.td-result
+  font-size: smaller !important
 
 </style>

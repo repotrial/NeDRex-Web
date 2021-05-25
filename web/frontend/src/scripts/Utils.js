@@ -2,19 +2,19 @@ const Utils =
   {
     getColoring(metagraph, entity, name, colorstyle) {
       if (entity === "nodes") {
-        return metagraph.colorMap[name.toLowerCase()][colorstyle? colorstyle: "main"];
+        return metagraph.colorMap[name.toLowerCase()][colorstyle ? colorstyle : "main"];
       } else {
         let names = this.getNodes(metagraph, name)
-        return [metagraph.colorMap[names[0]][colorstyle? colorstyle: "main"], metagraph.colorMap[names[1]][colorstyle? colorstyle: "main"]]
+        return [metagraph.colorMap[names[0]][colorstyle ? colorstyle : "main"], metagraph.colorMap[names[1]][colorstyle ? colorstyle : "main"]]
       }
     },
 
-    getColoringExtended(metagraph, entityGraph, entity, name,colorstyle) {
+    getColoringExtended(metagraph, entityGraph, entity, name, colorstyle) {
       if (entity === "nodes") {
-        return metagraph.colorMap[name.toLowerCase()][colorstyle? colorstyle: "main"];
+        return metagraph.colorMap[name.toLowerCase()][colorstyle ? colorstyle : "main"];
       } else {
         let names = this.getNodesExtended(entityGraph, name)
-        return [metagraph.colorMap[names[0]][colorstyle? colorstyle: "main"], metagraph.colorMap[names[1]][colorstyle? colorstyle: "main"]]
+        return [names[0] !== "default" ? metagraph.colorMap[names[0]][colorstyle ? colorstyle : "main"] : "gray", names[1] !== "default" ? metagraph.colorMap[names[1]][colorstyle ? colorstyle : "main"] : "gray"]
       }
     },
 
@@ -27,8 +27,8 @@ const Utils =
 
     getNodesExtended(entityGraph, name) {
       let edge = Object.values(entityGraph.edges).filter(n => n.name === name)[0]
-      let n1 = entityGraph.nodes[edge.node1].name;
-      let n2 = entityGraph.nodes[edge.node2].name;
+      let n1 = entityGraph.nodes[edge.node1] ? entityGraph.nodes[edge.node1].name : "default";
+      let n2 = entityGraph.nodes[edge.node2] ? entityGraph.nodes[edge.node2].name : "default";
       return [n1, n2]
     },
 
@@ -76,12 +76,45 @@ const Utils =
       });
     },
 
-
     waitForFileContent: function (file) {
       return this.readFile(file).then(content => {
         return content
       })
     }
     ,
+    roundScores: function (data, nodeType, scoreAttrs) {
+      data.nodes[nodeType].forEach(item => {
+        if (typeof scoreAttrs === 'object') {
+          if (scoreAttrs.id)
+            this.roundScores(item, scoreAttrs.id)
+          else
+            scoreAttrs.forEach(scoreAttr => this.roundScore(item, scoreAttr.id))
+        } else
+          this.roundScore(item, scoreAttrs)
+      })
+      return data
+    },
+    roundScore: function (item, scoreAttr) {
+      if (!item[scoreAttr])
+        return
+      let score = item[scoreAttr]
+      if ((score + "").indexOf('e') > -1) {
+        let parts = (score + "").split('e')
+        score = parseFloat(this.round(parseFloat(parts[0]), 2) + 'e' + parts[1])
+      } else {
+        score = this.round(score, 6)
+      }
+      item[scoreAttr] = score
+    },
+
+    round: function (value, decimals) {
+      let factor = Math.pow(10, decimals)
+      return Math.round(value * factor) / factor
+    },
+    adjustLabels: function (label) {
+      if(label.endsWith("_HUMAN"))
+        label = label.substring(0,label.length - 6)
+      return label
+    }
   }
 export default Utils

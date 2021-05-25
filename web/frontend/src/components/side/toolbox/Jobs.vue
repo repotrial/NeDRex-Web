@@ -103,7 +103,6 @@
 </template>
 
 <script>
-import Utils from "../../../scripts/Utils";
 import * as CONFIG from "../../../Config"
 
 export default {
@@ -184,7 +183,7 @@ export default {
     }
     ,
     formatTime: function (timestamp) {
-      return Utils.formatTime(timestamp)
+      return this.$utils.formatTime(timestamp)
     }
     ,
 

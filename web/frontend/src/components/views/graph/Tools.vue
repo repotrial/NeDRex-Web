@@ -12,7 +12,6 @@
 
 <script>
 
-import Utils from "../../../scripts/Utils"
 
 export default {
   props: {

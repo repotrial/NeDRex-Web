@@ -236,7 +236,6 @@ import Home from './components/views/Home.vue'
 import headerBar from './components/app/Header.vue'
 import Legend from "./components/views/graph/Legend";
 import Footer from "@/components/app/Footer";
-import Utils from "./scripts/Utils"
 import * as CONFIG from "./Config"
 import BugSheet from "@/components/app/sheets/BugSheet";
 import HelpSheet from "@/components/app/sheets/HelpSheet";
@@ -742,7 +741,7 @@ export default {
     }
     ,
     formatTimestamp(ts) {
-      return Utils.formatTime(ts)
+      return this.$utils.formatTime(ts)
     }
   }
   ,

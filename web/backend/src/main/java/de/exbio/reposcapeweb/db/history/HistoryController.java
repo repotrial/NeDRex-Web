@@ -266,11 +266,13 @@ public class HistoryController {
     public void remove(String gid) {
         GraphHistory g = graphMap.get(gid);
         int idx = -1;
-        for (int i = 0; i < g.getParent().getDerived().size(); i++) {
-            if (g.getParent().getDerived().get(i).getGraphId().equals(gid))
-                idx = i;
+        if(g.getParent()!=null) {
+            for (int i = 0; i < g.getParent().getDerived().size(); i++) {
+                if (g.getParent().getDerived().get(i).getGraphId().equals(gid))
+                    idx = i;
+            }
+            g.getParent().getDerived().remove(idx);
         }
-        g.getParent().getDerived().remove(idx);
         g.getDerived().forEach(child -> {
             g.getParent().addDerivate(child);
             child.setParent(g.getParent());

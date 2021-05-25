@@ -65,8 +65,6 @@
 
 <script>
 
-import Utils from "@/scripts/Utils";
-
 export default {
   name: "BugSheet",
 
@@ -80,7 +78,7 @@ export default {
       window.open(url, '_blank')
     },
     formatTimestamp(ts) {
-      return Utils.formatTime(ts)
+      return this.$utils.formatTime(ts)
     }
   }
 }

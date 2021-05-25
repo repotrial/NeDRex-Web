@@ -152,7 +152,6 @@
 </template>
 
 <script>
-import Utils from "../../../scripts/Utils";
 import Graph from "../graph/Graph";
 
 export default {
@@ -384,12 +383,12 @@ export default {
       })
     },
     direction: function (edge) {
-      if (Utils.isEdgeDirected(this.metagraph, edge))
+      if (this.$utils.isEdgeDirected(this.metagraph, edge))
         return 1
       return 0
     },
     getColoring: function (entity, name) {
-      let colors = Utils.getColoring(this.metagraph, entity, name, "light")
+      let colors = this.$utils.getColoring(this.metagraph, entity, name, "light")
       return colors;
     },
   },

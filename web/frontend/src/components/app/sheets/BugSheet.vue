@@ -37,7 +37,6 @@
         <v-list-item>
           <v-list-item-icon>
             <v-icon left>fas fa-table</v-icon>
-
           </v-list-item-icon>
           <v-list-item-title>Adding to spreadsheet:</v-list-item-title>
           <v-list-item-subtitle>
@@ -47,6 +46,13 @@
               <v-icon right>fas fa-external-link-alt</v-icon>
             </v-chip>
           </v-list-item-subtitle>
+        </v-list-item>
+        <v-divider style="margin: 15px;"></v-divider>
+        <v-list-item>
+          <v-list-item-subtitle>UID: {{$cookies.get("uid")? $cookies.get("uid") : "N/A"}}</v-list-item-subtitle>
+        </v-list-item>
+        <v-list-item>
+          <v-list-item-subtitle>GID: {{$route.params.gid ? $route.params.gid : "N/A"}}</v-list-item-subtitle>
         </v-list-item>
       </v-list>
     </v-sheet>

@@ -11,6 +11,7 @@ import {library} from '@fortawesome/fontawesome-svg-core'
 import {faUserSecret} from '@fortawesome/free-solid-svg-icons'
 
 import * as CONFIG from "./Config"
+import Utils from "./scripts/Utils"
 library.add(faUserSecret)
 
 Vue.component('font-awesome-icon', FontAwesomeIcon)
@@ -24,12 +25,12 @@ Vue.prototype.$http = ApiService;
 
 import Socket from "./services/socket";
 Vue.prototype.$socket = Socket
+Vue.prototype.$utils = Utils
 
 
 new Vue({
   router,
   vuetify,
-  // Network,
   globalVariables: global,
   render: h => h(App)
 }).$mount("#app")

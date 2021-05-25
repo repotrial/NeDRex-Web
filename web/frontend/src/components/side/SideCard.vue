@@ -552,7 +552,6 @@
 </template>
 
 <script>
-import Utils from "../../scripts/Utils"
 import Algorithms from "./toolbox/Algorithms.vue"
 import Jobs from "./toolbox/Jobs"
 // import Legend from "./toolbox/Legend"
@@ -923,19 +922,19 @@ export default {
     getColoring: function (type, name) {
       // if (name.endsWith("Drug"))
       //   name = "drug"
-      return Utils.getColoring(this.metagraph, type, name)
+      return this.$utils.getColoring(this.metagraph, type, name)
     },
 
     getExtendedColoring: function (type, name) {
       // if (name.endsWith("Drug"))
       //   name = "drug"
-      return Utils.getColoringExtended(this.metagraph, this.options.list.entityGraph, type, name)
+      return this.$utils.getColoringExtended(this.metagraph, this.options.list.entityGraph, type, name)
     },
     getNodeNames: function (type) {
-      return Utils.getNodes(this.metagraph, type)
+      return this.$utils.getNodes(this.metagraph, type)
     },
     getExtendedNodeNames: function (type) {
-      return Utils.getNodesExtended(this.options.list.entityGraph, type)
+      return this.$utils.getNodesExtended(this.options.list.entityGraph, type)
     },
 
     visualizeGraph: function () {
@@ -1001,7 +1000,7 @@ export default {
           if (response.data !== undefined) {
             this.detailedObject = response.data
             this.detailedObject.edge = true;
-            this.detailedObject.directed = Utils.directionExtended(this.options.list.entityGraph, data.name)
+            this.detailedObject.directed = this.$utils.directionExtended(this.options.list.entityGraph, data.name)
             if (this.detailedObject['Source'] !== undefined)
               this.description = "for " + data.name + " " + this.detailedObject['Name'] + " (id:" + this.detailedObject['Source'] + "->" + this.detailedObject['Target'] + ")"
             if (this.detailedObject['IDOne'] !== undefined)
@@ -1062,7 +1061,7 @@ export default {
       this.$emit("graphLoadEvent", data)
     },
     formatTime: function (timestamp) {
-      Utils.formatTime(timestamp)
+      this.$utils.formatTime(timestamp)
     },
     requestGraphDownload: function () {
       window.open(CONFIG.HOST_URL+CONFIG.CONTEXT_PATH+'/api/downloadGraph?gid=' + this.gid)

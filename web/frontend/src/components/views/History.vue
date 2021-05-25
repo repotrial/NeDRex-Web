@@ -287,7 +287,6 @@
 </template>
 
 <script>
-import Utils from "../../scripts/Utils";
 import * as CONFIG from "../../Config"
 
 export default {
@@ -382,7 +381,7 @@ export default {
           return context.getExtendedColoring(entity, name)
         }).catch(console.log)
       }
-      return Utils.getColoringExtended(this.metagraph, this.selected.entityGraph, entity, name)
+      return this.$utils.getColoringExtended(this.metagraph, this.selected.entityGraph, entity, name)
     },
     handleSelection: function (selected) {
       if (selected[0] === undefined || this.selectedId === selected[0])

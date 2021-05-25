@@ -35,7 +35,7 @@
         <v-card
           v-if="step===1"
           class="mb-12"
-          max-height="85vh"
+          max-height="90vh"
         >
 
           <v-card-subtitle class="headline">Node Configuration</v-card-subtitle>
@@ -45,7 +45,7 @@
             specific connections might be of interest.</v-card-subtitle>
 
           <v-container style="height: 80%">
-            <v-row style="height: 70vh">
+            <v-row style="height: 75vh">
               <v-col cols="5">
                 <v-list-item-subtitle class="title">1a. Select the source node type:</v-list-item-subtitle>
                 <v-list-item-action>
@@ -73,6 +73,7 @@
                         label="by suggestions"
                         class="mx-4"
                         return-object
+                        auto-select-first
                       >
                         <template v-slot:item="{ item }">
                           <v-list-item-avatar
@@ -185,6 +186,7 @@
                         label="by suggestions"
                         class="mx-4"
                         return-object
+                        auto-select-first
                       >
                         <template v-slot:item="{ item }">
                           <v-list-item-avatar
@@ -554,7 +556,6 @@
 </template>
 
 <script>
-import Utils from "../../../scripts/Utils";
 import Graph from "../graph/Graph";
 
 export default {
@@ -839,7 +840,7 @@ export default {
     onFileSelected: function (file, index) {
       if (file == null)
         return
-      Utils.readFile(file).then(content => {
+      this.$utils.readFile(file).then(content => {
         this.$http.post("mapFileListToItems", {
           type: this.nodeList[[this.sourceTypeId, this.targetTypeId][index]],
           file: content
@@ -972,11 +973,11 @@ export default {
     },
 
     getColoring: function (entity, name,style) {
-      return Utils.getColoring(this.metagraph, entity, name,style);
+      return this.$utils.getColoring(this.metagraph, entity, name,style);
     },
 
     getNodeLabel: function (name, idx) {
-      let id = Utils.getNodes(this.metagraph, name)[idx]
+      let id = this.$utils.getNodes(this.metagraph, name)[idx]
       return id.substring(0, 1).toUpperCase() + id.substring(1)
     }
 
