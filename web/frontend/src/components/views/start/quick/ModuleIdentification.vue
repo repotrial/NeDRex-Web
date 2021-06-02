@@ -70,7 +70,9 @@
                                 placeholder="connected to" style="width: 100%"></v-select>
                     </v-col>
                     <v-col cols="6">
-                      <SuggestionAutocomplete :suggestion-type="suggestionType" :target-node-type="['gene', 'protein'][this.seedTypeId]" @addToSelectionEvent="addToSelection"></SuggestionAutocomplete>
+                      <SuggestionAutocomplete :suggestion-type="suggestionType"
+                                              :target-node-type="['gene', 'protein'][this.seedTypeId]"
+                                              @addToSelectionEvent="addToSelection"></SuggestionAutocomplete>
                     </v-col>
                   </v-row>
                   <v-card-subtitle>or</v-card-subtitle>
@@ -175,7 +177,9 @@
                                 style="flex-grow: 0"
                               </v-icon>
                             </template>
-                            <span>Restricts the edges in the {{ ['Gene', 'Protein'][seedTypeId] + '-' + ['Gene', 'Protein'][seedTypeId] }} interaction network to experimentally validated ones.</span>
+                            <span>Restricts the edges in the {{
+                                ['Gene', 'Protein'][seedTypeId] + '-' + ['Gene', 'Protein'][seedTypeId]
+                              }} interaction network to experimentally validated ones.</span>
                           </v-tooltip>
                         </template>
                       </v-switch>

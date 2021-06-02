@@ -1,17 +1,36 @@
 <template>
-  <v-list-item dense style="max-width: 50vw">
-    <v-list-item-avatar tile>
-      <v-icon>{{ getIcon(data.type) }}</v-icon>
+  <v-list-item dense style="width: 25vw; max-width: 35vw; max-height: 5vh">
+    <v-list-item-avatar tile style="margin-left: -20px">
+      <v-tooltip right :open-delay="styling.tooltipDelay">
+        <template v-slot:activator="{on, attrs}">
+
+          <v-icon size="25" v-on="on" v-bind="attrs">{{ getIcon(data.type) }}</v-icon>
+        </template>
+        <span>{{ data.type }}</span>
+      </v-tooltip>
     </v-list-item-avatar>
-    <v-list-item-content>
-      <v-list-item-title>{{ data.key }}</v-list-item-title>
-      <v-list-item-subtitle>{{data.type}}</v-list-item-subtitle>
+    <v-list-item-content style="width: 20vw; max-width: 30vw">
+      <v-tooltip bottom :open-delay="styling.tooltipDelay">
+        <template v-slot:activator="{on, attrs}">
+          <v-list-item-title style="font-size: medium" v-bind="attrs" v-on="on">{{ data.text }}</v-list-item-title>
+        </template>
+        <span>{{ data.text }}</span>
+      </v-tooltip>
       <v-list-item-subtitle>
-        <span style="font-size: smaller">for <i>'{{ data.text }}'</i></span>
+        <v-tooltip top :open-delay="styling.tooltipDelay">
+          <template v-slot:activator="{on, attrs}">
+            <span style="font-size: smaller; overflow-y:auto"><b>{{ data.type.replaceAll("_", " ") }}</b>: <i v-on="on"
+                                                                                                              v-bind="attrs">'{{
+                data.key
+              }}'</i></span>
+          </template>
+          <span>{{ data.key }}</span>
+        </v-tooltip>
+
       </v-list-item-subtitle>
     </v-list-item-content>
-    <v-list-item-action>
-      <v-chip>
+    <v-list-item-action style="margin-right: -10px">
+      <v-chip pill>
         {{ data.size }}
       </v-chip>
     </v-list-item-action>
@@ -25,6 +44,13 @@ export default {
     total: Number,
   },
   name: "SuggestionElement",
+
+  data(){
+    return{
+        styling:{tooltipDelay:400}
+    }
+  },
+
 
   methods: {
     getIcon: function (type) {
