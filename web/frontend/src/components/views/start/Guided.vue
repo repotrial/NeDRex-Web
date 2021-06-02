@@ -63,24 +63,7 @@
                                 placeholder="connected to"></v-select>
                     </v-col>
                     <v-col>
-                      <v-autocomplete
-                        clearable
-                        :search-input.sync="nodeSourceSuggestions"
-                        :disabled="suggestionType[0]===undefined || suggestionType[0]<0"
-                        :loading="suggestions.loading"
-                        :items="suggestions.data"
-                        :filter="()=>{return true}"
-                        v-model="suggestionSourceModel"
-                        item-value="key"
-                        label="by suggestions"
-                        class="mx-4"
-                        return-object
-                        auto-select-first
-                      >
-                        <template v-slot:item="{ item }">
-                         <SuggestionElement :data="item"></SuggestionElement>
-                        </template>
-                      </v-autocomplete>
+                      <SuggestionAutocomplete :suggestion-type="suggestionType[0]" :index="0" :target-node-type="this.nodeList[[[this.sourceTypeId, this.targetTypeId][0]]].value" @addToSelectionEvent="addToSelection"></SuggestionAutocomplete>
                     </v-col>
                   </v-row>
                   <v-card-subtitle>or</v-card-subtitle>
@@ -155,22 +138,7 @@
                                 placeholder="connected to"></v-select>
                     </v-col>
                     <v-col>
-                      <v-autocomplete
-                        clearable
-                        :search-input.sync="nodeTargetSuggestions"
-                        :disabled="suggestionType[1]===undefined || suggestionType[1]<0"
-                        :loading="suggestions.loading"
-                        :items="suggestions.data"
-                        v-model="suggestionTargetModel"
-                        label="by suggestions"
-                        class="mx-4"
-                        return-object
-                        auto-select-first
-                      >
-                        <template v-slot:item="{ item }">
-                          <SuggestionElement :data="item"></SuggestionElement>
-                        </template>
-                      </v-autocomplete>
+                      <SuggestionAutocomplete :suggestion-type="suggestionType[1]" :index="1" :target-node-type="this.nodeList[[[this.sourceTypeId, this.targetTypeId][1]]].value" @addToSelectionEvent="addToSelection"></SuggestionAutocomplete>
                     </v-col>
                   </v-row>
                   <v-card-subtitle>or</v-card-subtitle>
@@ -512,7 +480,7 @@
 
 <script>
 import Graph from "../graph/Graph";
-import SuggestionElement from "@/components/app/suggestions/SuggestionElement";
+import SuggestionAutocomplete from "@/components/app/suggestions/SuggestionAutocomplete";
 
 export default {
   name: "Guided",
@@ -546,12 +514,6 @@ export default {
       selectedPath: [],
 
       suggestionType: [undefined, undefined],
-      suggestions: {loading: false, data: []},
-      nodeSourceSuggestions: null,
-      nodeTargetSuggestions: null,
-      suggestionSourceModel: null,
-      suggestionTargetModel: null,
-
       pathModel: -1,
 
       gid: undefined,
@@ -587,19 +549,6 @@ export default {
 
   watch: {
 
-    nodeSourceSuggestions: function (val) {
-      this.getSuggestions(val, 0, false)
-    },
-    nodeTargetSuggestions: function (val) {
-      this.getSuggestions(val, 1, false)
-    },
-    suggestionSourceModel: function (val) {
-      this.applySuggestion(val, 0)
-    },
-    suggestionTargetModel: function (val) {
-      this.applySuggestion(val, 1)
-    },
-
     pathModel: function (val) {
       if (val < this.paths[0].length) {
         this.selectedPath = this.paths[0][val]
@@ -625,19 +574,10 @@ export default {
 
       this.sourceTypeId = undefined
       this.targetTypeId = undefined
-      //
-      //
       this.sources = []
       this.targets = []
       this.nodeOrigins = [{}, {}]
-      //
       this.suggestionType = [undefined, undefined]
-      this.suggestions = {loading: false, data: []}
-      this.nodeSourceSuggestions = null
-      this.nodeTargetSuggestions = null
-      this.suggestionSourceModel = null
-      this.suggestionTargetModel = null
-
 
       this.selectedPath = []
       this.pathModel = -1
@@ -676,25 +616,6 @@ export default {
       if (!selfAdded)
         typeList.push({value: type, text: this.nodeList[[this.sourceTypeId, this.targetTypeId][index]].text})
       return typeList
-    },
-
-    applySuggestion: function (val, index) {
-      if (val !== undefined && val != null) {
-        this.$http.post("getConnectedNodes", {
-          sourceType: this.suggestionType[index],
-          targetType: this.nodeList[[[this.sourceTypeId, this.targetTypeId][index]]].value,
-          sugId: val.sid,
-          noloop: this.nodeList[[[this.sourceTypeId, this.targetTypeId][index]]].value === this.suggestionType[index]
-        }).then(response => {
-          if (response.data !== undefined)
-            return response.data
-        }).then(data => {
-          this.addToSelection(data, index, "SUG:" + val.text + "[" + this.suggestionType + "]")
-        }).then(() => {
-          this[["suggestionSourceModel", "suggestionTargetModel"][index]] = undefined
-          this.sugQuery[index] = ""
-        }).catch(console.log)
-      }
     },
 
     generatePaths: function () {
@@ -746,43 +667,6 @@ export default {
         this.$refs.graph.show(this.gid)
         this.loadTargetTable(this.gid)
       }).catch(console.log)
-    },
-
-    getSuggestions: function (val, index, timeouted) {
-      if (!timeouted) {
-        this.sugQuery[index] = val
-        if (val == null || val.length < 3) {
-          this.suggestions.data = []
-          return
-        }
-        setTimeout(this.getSuggestions, 500, val, index, true)
-      } else {
-        if (val !== this.sugQuery[index]) {
-          return
-        }
-        let name = this.suggestionType[index]
-        if (this.suggestions.chosen !== undefined)
-          return
-        this.suggestions.loading = true;
-        this.suggestions.data = []
-        this.$http.post("getSuggestions", {
-          name: name,
-          query: val,
-        }).then(response => {
-          if (response.data !== undefined) {
-            return response.data
-          }
-        }).then(data => {
-          data.suggestions.sort((e1, e2) => {
-            return e2.size - e1.size
-          })
-          this.suggestions.data = data.suggestions;
-        }).catch(err =>
-          console.log(err)
-        ).finally(() =>
-          this.suggestions.loading = false
-        )
-      }
     },
 
     onSourceFileSelected: function (file) {
@@ -938,7 +822,7 @@ export default {
 
   },
   components: {
-    SuggestionElement,
+    SuggestionAutocomplete,
     Graph,
   }
 

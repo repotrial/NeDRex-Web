@@ -56,24 +56,7 @@
                                 placeholder="connected to" style="width: 100%"></v-select>
                     </v-col>
                     <v-col cols="6">
-                      <v-autocomplete
-                        clearable
-                        :search-input.sync="nodeSuggestions"
-                        :disabled="suggestionType===undefined || suggestionType<0"
-                        :loading="suggestions.loading"
-                        :items="suggestions.data"
-                        :filter="()=>{return true}"
-                        v-model="suggestionModel"
-                        label="by suggestions"
-                        class="mx-4"
-                        return-object
-                        auto-select-first
-                        style="width: 100%"
-                      >
-                        <template v-slot:item="{ item }">
-                          <SuggestionElement :data="item"></SuggestionElement>
-                        </template>
-                      </v-autocomplete>
+                      <SuggestionAutocomplete :suggestion-type="suggestionType" :target-node-type="['gene', 'protein'][this.seedTypeId]" @addToSelectionEvent="addToSelection"></SuggestionAutocomplete>
                     </v-col>
                   </v-row>
                   <v-card-subtitle>or</v-card-subtitle>
@@ -490,6 +473,7 @@
 import Graph from "../../graph/Graph";
 import * as CONFIG from "../../../../Config"
 import SuggestionElement from "@/components/app/suggestions/SuggestionElement";
+import SuggestionAutocomplete from "@/components/app/suggestions/SuggestionAutocomplete";
 
 export default {
   name: "DrugRepurposing",
@@ -905,7 +889,7 @@ export default {
   },
 
   components: {
-    SuggestionElement,
+    SuggestionAutocomplete,
     Graph
   }
 }
