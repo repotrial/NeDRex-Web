@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import de.exbio.reposcapeweb.db.entities.RepoTrialNode;
 import de.exbio.reposcapeweb.filter.FilterEntry;
-import de.exbio.reposcapeweb.filter.FilterKey;
 import de.exbio.reposcapeweb.filter.FilterType;
 import de.exbio.reposcapeweb.utils.StringUtils;
 import org.slf4j.Logger;
@@ -162,32 +161,32 @@ public class Pathway extends RepoTrialNode {
     }
 
     @Override
-    public EnumMap<FilterType, Map<FilterKey, FilterEntry>> toUniqueFilter() {
-        EnumMap<FilterType, Map<FilterKey, FilterEntry>> map = new EnumMap<>(FilterType.class);
+    public EnumMap<FilterType, Map<String, FilterEntry>> toUniqueFilter() {
+        EnumMap<FilterType, Map<String, FilterEntry>> map = new EnumMap<>(FilterType.class);
 
-        FilterEntry ids = new FilterEntry(displayName, FilterType.DOMAIN_ID, id);
+        FilterEntry ids = new FilterEntry(displayName, FilterType.ID, id);
 
 
-        map.put(FilterType.DOMAIN_ID, new HashMap<>());
+        map.put(FilterType.ID, new HashMap<>());
 
         if (!getDomainIds().contains(primaryDomainId))
             try {
                 primaryDomainId.charAt(0);
-                map.get(FilterType.DOMAIN_ID).put(new FilterKey(primaryDomainId), ids);
+                map.get(FilterType.ID).put(primaryDomainId, ids);
             } catch (NullPointerException | IndexOutOfBoundsException ignore) {
             }
 
-        getDomainIds().forEach(id -> map.get(FilterType.DOMAIN_ID).put(new FilterKey(id), ids));
+        getDomainIds().forEach(id -> map.get(FilterType.ID).put(id, ids));
 
-        map.put(FilterType.DISPLAY_NAME, new HashMap<>());
-        map.get(FilterType.DISPLAY_NAME).put(new FilterKey(displayName), new FilterEntry(displayName, FilterType.DISPLAY_NAME, id));
+        map.put(FilterType.NAME, new HashMap<>());
+        map.get(FilterType.NAME).put(displayName, new FilterEntry(displayName, FilterType.NAME, id));
 
 
         return map;
     }
 
     @Override
-    public EnumMap<FilterType, Map<FilterKey, FilterEntry>> toDistinctFilter() {
+    public EnumMap<FilterType, Map<String, FilterEntry>> toDistinctFilter() {
         return new EnumMap<>(FilterType.class);
     }
 

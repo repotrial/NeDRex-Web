@@ -76,6 +76,7 @@
                         :disabled="suggestionType===undefined || suggestionType<0"
                         :loading="suggestions.loading"
                         :items="suggestions.data"
+                        :filter="()=>{return true}"
                         v-model="suggestionModel"
                         label="by suggestions"
                         class="mx-4"
@@ -84,30 +85,7 @@
                         auto-select-first
                       >
                         <template v-slot:item="{ item }">
-                          <v-list-item-avatar
-                          >
-                            <v-icon v-if="item.type==='DOMAIN_ID'">fas fa-fingerprint</v-icon>
-                            <v-icon v-if="item.type==='DISPLAY_NAME' || item.type==='SYMBOLS'">fas fa-tv</v-icon>
-                            <v-icon v-if="item.type==='ICD10'">fas fa-disease</v-icon>
-                            <v-icon v-if="item.type==='SYNONYM'">fas fa-sync</v-icon>
-                            <v-icon v-if="item.type==='IUPAC'">mdi-molecule</v-icon>
-                            <v-icon v-if="item.type==='ORIGIN'">fas fa-dna</v-icon>
-                            <v-icon v-if="item.type==='DESCRIPTION' || item.type==='COMMENTS'">fas fa-info</v-icon>
-                            <v-icon v-if="item.type==='INDICATION'">fas fa-pills</v-icon>
-                            <v-icon v-if="item.type==='TYPE' || item.type==='GROUP' || item.type==='CATEGORY'">fas
-                              fa-layer-group
-                            </v-icon>
-                          </v-list-item-avatar>
-                          <v-list-item-content>
-                            <v-list-item-title v-text="item.text"></v-list-item-title>
-                            <v-list-item-subtitle
-                              v-text="item.type"></v-list-item-subtitle>
-                          </v-list-item-content>
-                          <v-list-item-action>
-                            <v-chip>
-                              {{ item.ids.length }}
-                            </v-chip>
-                          </v-list-item-action>
+                          <SuggestionElement :data="item"></SuggestionElement>
                         </template>
                       </v-autocomplete>
                     </v-col>
@@ -214,7 +192,7 @@
                                 style="flex-grow: 0"
                               </v-icon>
                             </template>
-                            <span>Restricts the edges in the {{['Gene', 'Protein'][seedTypeId]+'-'+['Gene', 'Protein'][seedTypeId]}} interaction network to experimentally validated ones.</span>
+                            <span>Restricts the edges in the {{ ['Gene', 'Protein'][seedTypeId] + '-' + ['Gene', 'Protein'][seedTypeId] }} interaction network to experimentally validated ones.</span>
                           </v-tooltip>
                         </template>
                       </v-switch>
@@ -553,7 +531,8 @@
                         <th class="text-center td-name">
                           Name
                         </th>
-                        <th v-for="val in methodScores()" :class="'text-center td-score'+val.name==='Rank' ? ' td-rank':''">
+                        <th v-for="val in methodScores()"
+                            :class="'text-center td-score'+val.name==='Rank' ? ' td-rank':''">
                           {{ val.name }}
                         </th>
                       </tr>
@@ -564,11 +543,14 @@
                           @click="focusNode(['gen_','pro_'][seedTypeId]+seed.id)"
                       >
                         <td class="td-result td-name">{{ $utils.adjustLabels(seed.displayName) }}</td>
-                        <td :class="'td-result td-score'+(val.id==='rank' ? ' td-rank':'')" v-for="val in methodScores()">{{ seed[val.id] }}</td>
+                        <td :class="'td-result td-score'+(val.id==='rank' ? ' td-rank':'')"
+                            v-for="val in methodScores()">{{ seed[val.id] }}
+                        </td>
                       </tr>
                       <tr v-for="seed in seeds" :key="seed.id" @click="focusNode(['gen_','pro_'][seedTypeId]+seed.id)">
-                        <td class="td-result td-name" > {{ $utils.adjustLabels(seed.displayName) }}</td>
-                        <td :class="'td-result td-score'+(val.id==='rank' ? ' td-rank':'')" v-for="val in methodScores()"></td>
+                        <td class="td-result td-name"> {{ $utils.adjustLabels(seed.displayName) }}</td>
+                        <td :class="'td-result td-score'+(val.id==='rank' ? ' td-rank':'')"
+                            v-for="val in methodScores()"></td>
                       </tr>
                       </tbody>
                     </template>
@@ -705,6 +687,7 @@
 <script>
 import Graph from "../../graph/Graph";
 import * as CONFIG from "../../../../Config"
+import SuggestionElement from "@/components/app/suggestions/SuggestionElement";
 
 export default {
   name: "ModuleIdentification",
@@ -740,7 +723,7 @@ export default {
       methods: [{
         id: "diamond",
         label: "DIAMOnD",
-        scores: [{id: "rank", name: "Rank"}, {id: "p_hyper", name: "P-Value", decimal:true}]
+        scores: [{id: "rank", name: "Rank"}, {id: "p_hyper", name: "P-Value", decimal: true}]
       }, {id: "bicon", label: "BiCoN", scores: []}, {id: "must", label: "MuST", scores: []}],
       graph: {physics: false},
       methodModel: undefined,
@@ -778,7 +761,7 @@ export default {
         this.$http.post("getConnectedNodes", {
           sourceType: this.suggestionType,
           targetType: ["gene", "protein"][this.seedTypeId],
-          sourceIds: val.ids,
+          sugId: val.id,
           noloop: ["gene", "protein"][this.seedTypeId] === this.suggestionType
         }).then(response => {
           if (response.data !== undefined)
@@ -904,7 +887,7 @@ export default {
           }
         }).then(data => {
           data.suggestions.sort((e1, e2) => {
-            return e2.ids.length - e1.ids.length
+            return e2.size - e1.size
           })
           this.suggestions.data = data.suggestions;
         }).catch(err =>
@@ -1010,9 +993,9 @@ export default {
       }
     }
     ,
-    getTargetCount: function(){
-      let seedids = this.seeds.map(s=>s.id)
-      return this.results.targets.filter(t=>seedids.indexOf(t.id)===-1).length
+    getTargetCount: function () {
+      let seedids = this.seeds.map(s => s.id)
+      return this.results.targets.filter(t => seedids.indexOf(t.id) === -1).length
     },
 
     addToSelection: function (list, nameFrom) {
@@ -1179,13 +1162,13 @@ export default {
   ,
 
   components: {
+    SuggestionElement,
     Graph
   }
 }
 </script>
 
 <style lang="sass">
-
 
 
 .td-name

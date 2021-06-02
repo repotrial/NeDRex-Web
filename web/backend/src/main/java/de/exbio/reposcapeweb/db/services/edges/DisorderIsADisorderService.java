@@ -6,7 +6,6 @@ import de.exbio.reposcapeweb.db.repositories.edges.DisorderIsADisorderRepository
 import de.exbio.reposcapeweb.db.services.nodes.DisorderService;
 import de.exbio.reposcapeweb.db.updates.UpdateOperation;
 import de.exbio.reposcapeweb.filter.FilterEntry;
-import de.exbio.reposcapeweb.filter.FilterKey;
 import de.exbio.reposcapeweb.filter.FilterType;
 import de.exbio.reposcapeweb.utils.Pair;
 import org.slf4j.Logger;
@@ -151,16 +150,16 @@ public class DisorderIsADisorderService {
 
         importEdges();
         disorderService.findAll().forEach(d -> {
-            entryMap.put(d.getId(), new FilterEntry(d.getDisplayName(), FilterType.GROUP, d.getId()));
+            entryMap.put(d.getId(), new FilterEntry(d.getDisplayName(), FilterType.UMBRELLA_DISORDER, d.getId()));
         });
 
         entryMap.keySet().forEach(d -> {
-            FilterKey key = new FilterKey(entryMap.get(d).getName());
+            String key = entryMap.get(d).getName();
             HashSet<Integer> children = getChildren(d);
             if (!children.isEmpty())
-                disorderService.getFilter().addDistinct(FilterType.GROUP, key, entryMap.get(d));
+                disorderService.getFilter().addDistinct(FilterType.UMBRELLA_DISORDER, key, entryMap.get(d));
             children.forEach(c -> {
-                disorderService.getFilter().addDistinct(FilterType.GROUP, key, entryMap.get(c));
+                disorderService.getFilter().addDistinct(FilterType.UMBRELLA_DISORDER, key, entryMap.get(c));
             });
         });
     }

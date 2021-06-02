@@ -203,35 +203,14 @@
                           v-show="filters.nodes.suggestions"
                           :loading="suggestions.nodes.loading"
                           :items="suggestions.nodes.data"
+                          :filter="()=>{return true}"
                           v-model="filterNodeModel"
-                          label="Query (case sensitive)"
+                          item-value="key"
+                          label="Query (case insensitive)"
                           class="mx-4"
                         >
-                          <template v-slot:item="{ item }" v-on:select="suggestions.nodes.chosen=item">
-                            <v-list-item-avatar
-                            >
-                              <v-icon v-if="item.type==='DOMAIN_ID'">fas fa-fingerprint</v-icon>
-                              <v-icon v-if="item.type==='DISPLAY_NAME' || item.type==='SYMBOLS'">fas fa-tv</v-icon>
-                              <v-icon v-if="item.type==='ICD10'">fas fa-disease</v-icon>
-                              <v-icon v-if="item.type==='SYNONYM'">fas fa-sync</v-icon>
-                              <v-icon v-if="item.type==='IUPAC'">mdi-molecule</v-icon>
-                              <v-icon v-if="item.type==='ORIGIN'">fas fa-dna</v-icon>
-                              <v-icon v-if="item.type==='DESCRIPTION' || item.type==='COMMENTS'">fas fa-info</v-icon>
-                              <v-icon v-if="item.type==='INDICATION'">fas fa-pills</v-icon>
-                              <v-icon v-if="item.type==='TYPE' || item.type==='GROUP' || item.type==='CATEGORY'">fas
-                                fa-layer-group
-                              </v-icon>
-                            </v-list-item-avatar>
-                            <v-list-item-content>
-                              <v-list-item-title v-text="item.text"></v-list-item-title>
-                              <v-list-item-subtitle
-                                v-text="item.type"></v-list-item-subtitle>
-                            </v-list-item-content>
-                            <v-list-item-action>
-                              <v-chip>
-                                {{ item.ids.length }}
-                              </v-chip>
-                            </v-list-item-action>
+                          <template v-slot:item="{ item }">
+                            <SuggestionElement :data="item"></SuggestionElement>
                           </template>
                         </v-autocomplete>
                       </v-col>
@@ -937,7 +916,9 @@
         <v-card-title class="headline">
           Regroup Selected Nodes
         </v-card-title>
-        <v-card-text>Create a temporary new group with a custom color and name for your node selection in the visualized graph. New groups are also visible in the legend and can be toggled equally to normal node-groups. This overrides the original group of any node selected!
+        <v-card-text>Create a temporary new group with a custom color and name for your node selection in the visualized
+          graph. New groups are also visible in the legend and can be toggled equally to normal node-groups. This
+          overrides the original group of any node selected!
         </v-card-text>
         <v-divider></v-divider>
         <v-list>
@@ -978,7 +959,14 @@
 
 <script>
 
+import SuggestionElement from "@/components/app/suggestions/SuggestionElement";
+
 export default {
+
+  components: {
+    SuggestionElement,
+  },
+
   props: {
     configuration: {
       showAll: Boolean,
@@ -990,6 +978,7 @@ export default {
   uid: undefined,
   suqQuery: "",
   prefixMap: undefined,
+
 
   data() {
     return {
@@ -1155,6 +1144,14 @@ export default {
         prefix = Object.keys(this.attributes.nodes)[this.nodeTab].substr(0, 3) + "_"
       this.$emit("focusInGraphEvent", type, prefix + item.id)
     },
+    loadSuggestionNodes: async function (item) {
+      if (item.sid.indexOf('_') > -1) {
+        let res = await this.$http.get("getSuggestionEntry?gid="+this.gid+"&nodeType="+Object.keys(this.nodes)[this.nodeTab]+"&sid="+item.sid)
+        return res.data
+      } else {
+        return [parseInt(item.sid)]
+      }
+    },
     getNodeSuggestions: function (val, timeouted) {
       if (!timeouted) {
         if (val == null || val.length < 2) {
@@ -1185,7 +1182,7 @@ export default {
             }
           }).then(data => {
             data.suggestions.sort((e1, e2) => {
-              return e2.ids.length - e1.ids.length
+              return e2.size - e1.size
             })
             this.suggestions[type].data = data.suggestions;
           }).catch(err =>
@@ -1251,13 +1248,13 @@ export default {
     getSelectedCount: function (type, name) {
       return this.configuration.countMap[type][name].selected
     },
-    applySuggestion: function (val) {
+    applySuggestion: async function (val) {
       this.nodeTabLoading = true
       if (val != null) {
         this.resetSuggestions()
         let nodes = this.nodes[Object.keys(this.nodes)[this.nodeTab]]
         this.backup.nodes[this.nodeTab] = nodes
-        this.suggestions.nodes.chosen = this.suggestions.nodes.data.filter(item => item.value === val).flatMap(item => item.ids);
+        this.suggestions.nodes.chosen = await this.loadSuggestionNodes(this.suggestions.nodes.data.filter(item => item.key === val)[0])
         this.nodes[Object.keys(this.nodes)[this.nodeTab]] = nodes.filter((i, k) => this.suggestions.nodes.chosen.indexOf(i.id) !== -1)
       } else {
         this.resetSuggestions(true)
@@ -1782,7 +1779,7 @@ export default {
       let items = this[type][name]
       let isDistinct = this.isDistinctAttribute(type, this.filters[type].attribute.name)
       if (isDistinct) {
-        this.distinctFilter(type, items,tab).forEach(item => {
+        this.distinctFilter(type, items, tab).forEach(item => {
           item.selected = true
         })
       } else {
@@ -1811,7 +1808,7 @@ export default {
       let data = {nodes: this.nodes, edges: this.edges}
       if (type === "all") {
         this.filterNodeModel = null
-        this.$nextTick(()=> Object.values(data).forEach(set => Object.values(set).forEach(type => type.forEach(n => this.$set(n,"selected",false)))))
+        this.$nextTick(() => Object.values(data).forEach(set => Object.values(set).forEach(type => type.forEach(n => this.$set(n, "selected", false)))))
       } else {
         let tab = (type === "nodes") ? this.nodeTab : this.edgeTab
         let items = data[type][Object.keys(data[type])[tab]]
@@ -2054,7 +2051,6 @@ export default {
       let nodes = this.$utils.getNodesExtended(this.configuration.entityGraph, name)
       if (not === undefined)
         return nodes;
-      console.log(name+" not="+not +" in "+(nodes[0]+"/"+nodes[1]))
       return nodes[0] === not ? nodes[1] : nodes[0]
     },
     getColoring: function (entity, name, style) {

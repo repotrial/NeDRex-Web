@@ -4,11 +4,12 @@ import java.util.Objects;
 
 public class FilterKey implements Comparable<FilterKey> {
     private String key;
+    private String name;
 
-    public FilterKey(String key) {
+    public FilterKey(String key, String name) {
         this.key = key;
+        this.name = name;
     }
-
 
     @Override
     public boolean equals(Object o) {
@@ -45,5 +46,13 @@ public class FilterKey implements Comparable<FilterKey> {
 
     public boolean matches(String m) {
         return key.matches(m);
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getKey() {
+        return key;
     }
 }

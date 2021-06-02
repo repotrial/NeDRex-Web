@@ -20,35 +20,37 @@ public class Suggestions {
     }
 
 
-    public void setDistinct(EnumMap<FilterType, TreeMap<FilterKey, List<FilterEntry>>> distinctMap, HashSet<Integer> idsList) {
+    public void setDistinct(EnumMap<FilterType, HashMap<Integer, List<FilterEntry>>> distinctMap, EnumMap<FilterType, HashMap<Integer, FilterKey>> keyMap, HashSet<Integer> idsList) {
         distinctMap.forEach((type, filters) ->
                 filters.forEach((key, entries) ->
-                        suggestions.add(new Suggestion(type.name(), key.toString(), entries.stream().map(FilterEntry::getNodeId).filter(idsList::contains).collect(Collectors.toSet())))
+                        suggestions.add(new Suggestion(type, true, keyMap.get(type).get(key).getName(), keyMap.get(type).get(key).getKey(), key, entries.size()))
                 )
         );
     }
 
-    public void setDistinct(EnumMap<FilterType, TreeMap<FilterKey, List<FilterEntry>>> distinctMap) {
-        distinctMap.forEach((type, filters) ->
-                filters.forEach((key, entries) ->
-                        suggestions.add(new Suggestion(type.name(), key.toString(), entries.stream().map(FilterEntry::getNodeId).collect(Collectors.toSet())))
-                )
+    public void setDistinct(EnumMap<FilterType, HashMap<Integer, List<FilterEntry>>> distinctMap, EnumMap<FilterType, HashMap<Integer, FilterKey>> keyMap) {
+        distinctMap.forEach((type, filters) -> {
+                    HashMap<Integer, FilterKey> keys = keyMap.get(type);
+                    if (keys != null)
+                        filters.forEach((key, entries) ->
+                                suggestions.add(new Suggestion(type, true, keys.get(key).getName(), keys.get(key).getKey(), key, entries.size()))
+                        );
+                }
         );
     }
 
-    public void setUnique(EnumMap<FilterType, TreeMap<FilterKey, FilterEntry>> uniqueMap, HashSet<Integer> idsList) {
+    public void setUnique(EnumMap<FilterType, HashMap<Integer, FilterEntry>> uniqueMap, EnumMap<FilterType, HashMap<Integer, FilterKey>> keyMap, HashSet<Integer> idsList) {
         uniqueMap.forEach((type, filters) ->
-                filters.forEach((key, entry) -> {
-                    if (idsList.contains(entry.getNodeId()))
-                        suggestions.add(new Suggestion(type.name(), key.toString(), entry.getNodeId()));
-                })
+                filters.forEach((key, entry) ->
+                        suggestions.add(new Suggestion(type, false, entry.getName(), keyMap.get(type).get(key).getKey(), entry.getNodeId(), 1)))
         );
     }
 
-    public void setUnique(EnumMap<FilterType, TreeMap<FilterKey, FilterEntry>> uniqueMap) {
-        uniqueMap.forEach((type, filters) ->
-                filters.forEach((key, entry) -> suggestions.add(new Suggestion(type.name(), key.toString(), entry.getNodeId())))
-        );
+    public void setUnique(EnumMap<FilterType, HashMap<Integer, FilterEntry>> uniqueMap, EnumMap<FilterType, HashMap<Integer, FilterKey>> keyMap) {
+        uniqueMap.forEach((type, filters) -> {
+            HashMap<Integer, FilterKey> keys = keyMap.get(type);
+            filters.forEach((key, entry) -> suggestions.add(new Suggestion(type, false, entry.getName(), keys.get(key).getKey(), entry.getNodeId(), 1)));
+        });
     }
 
     public String getGid() {
@@ -66,8 +68,11 @@ public class Suggestions {
     private class Suggestion {
         private String text;
         private String value;
-        private Integer[] ids;
+        private String sid;
         private String type;
+        private String matcher;
+        private boolean distinct;
+        private int size;
 
         public Suggestion(String type, String name) {
             this.type = type;
@@ -75,14 +80,11 @@ public class Suggestions {
             this.value = name + " [" + type + "]";
         }
 
-        public Suggestion(String type, String name, Collection<Integer> ids) {
-            this(type, name);
-            this.ids = ids.toArray(Integer[]::new);
-        }
-
-        public Suggestion(String type, String name, Integer id) {
-            this(type, name);
-            this.ids = new Integer[]{id};
+        public Suggestion(FilterType type, boolean distinct, String name, String key, int id, int size) {
+            this(type.name(), name);
+            this.matcher = key;
+            this.size = size;
+            this.sid = !distinct ? id + "" : type.ordinal() + "_" + id;
         }
 
         public String getText() {
@@ -93,12 +95,41 @@ public class Suggestions {
             return value;
         }
 
-        public Integer[] getIds() {
-            return ids;
-        }
-
         public String getType() {
             return type;
+        }
+
+        public String getKey() {
+            return matcher;
+        }
+
+        public String getSId() {
+            return sid;
+        }
+
+        public boolean isDistinct() {
+            return distinct;
+        }
+
+        public int getSize() {
+            return size;
+        }
+    }
+
+    private class SuggestionEntry {
+
+        private Integer[] ids;
+
+        public SuggestionEntry(Integer id) {
+            ids = new Integer[]{id};
+        }
+
+        public SuggestionEntry(Collection<Integer> ids) {
+            this.ids = ids.toArray(Integer[]::new);
+        }
+
+        public Integer[] getIds() {
+            return ids;
         }
     }
 

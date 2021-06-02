@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import de.exbio.reposcapeweb.db.entities.RepoTrialNode;
 import de.exbio.reposcapeweb.filter.FilterEntry;
-import de.exbio.reposcapeweb.filter.FilterKey;
 import de.exbio.reposcapeweb.filter.FilterType;
 import de.exbio.reposcapeweb.utils.StringUtils;
 import org.slf4j.Logger;
@@ -171,12 +170,12 @@ public class Disorder extends RepoTrialNode {
     }
 
     @Override
-    public EnumMap<FilterType, Map<FilterKey, FilterEntry>> toDistinctFilter() {
-        EnumMap<FilterType, Map<FilterKey, FilterEntry>> map = new EnumMap<>(FilterType.class);
+    public EnumMap<FilterType, Map<String, FilterEntry>> toDistinctFilter() {
+        EnumMap<FilterType, Map<String, FilterEntry>> map = new EnumMap<>(FilterType.class);
 
         map.put(FilterType.ICD10, new HashMap<>());
         FilterEntry icd10Entry = new FilterEntry(displayName, FilterType.ICD10, id);
-        getIcd10().forEach(icd-> map.get(FilterType.ICD10).put(new FilterKey(icd), icd10Entry));
+        getIcd10().forEach(icd-> map.get(FilterType.ICD10).put(icd, icd10Entry));
 
         return map;
     }
@@ -206,24 +205,24 @@ public class Disorder extends RepoTrialNode {
     }
 
     @Override
-    public EnumMap<FilterType, Map<FilterKey, FilterEntry>> toUniqueFilter() {
-        EnumMap<FilterType, Map<FilterKey, FilterEntry>> map = new EnumMap<>(FilterType.class);
+    public EnumMap<FilterType, Map<String, FilterEntry>> toUniqueFilter() {
+        EnumMap<FilterType, Map<String, FilterEntry>> map = new EnumMap<>(FilterType.class);
 
-        FilterEntry ids = new FilterEntry(displayName, FilterType.DOMAIN_ID, id);
+        FilterEntry ids = new FilterEntry(displayName, FilterType.ID, id);
 
-        map.put(FilterType.DOMAIN_ID, new HashMap<>());
+        map.put(FilterType.ID, new HashMap<>());
 
         if (!getDomainIds().contains(primaryDomainId))
             try {
                 primaryDomainId.charAt(0);
-                map.get(FilterType.DOMAIN_ID).put(new FilterKey(primaryDomainId), ids);
+                map.get(FilterType.ID).put(primaryDomainId, ids);
             } catch (NullPointerException | IndexOutOfBoundsException ignore) {
             }
-        getDomainIds().forEach(id -> map.get(FilterType.DOMAIN_ID).put(new FilterKey(id), ids));
+        getDomainIds().forEach(id -> map.get(FilterType.ID).put(id, ids));
 
 
-        map.put(FilterType.DISPLAY_NAME, new HashMap<>());
-        map.get(FilterType.DISPLAY_NAME).put(new FilterKey(displayName), new FilterEntry(displayName, FilterType.DISPLAY_NAME, id));
+        map.put(FilterType.NAME, new HashMap<>());
+        map.get(FilterType.NAME).put(displayName, new FilterEntry(displayName, FilterType.NAME, id));
 
 
         if (getSynonyms().size() > 0) {
@@ -231,7 +230,7 @@ public class Disorder extends RepoTrialNode {
             map.put(FilterType.SYNONYM, new HashMap<>());
             getSynonyms().forEach(syn -> {
                 if (!displayName.equals(syn))
-                    map.get(FilterType.SYNONYM).put(new FilterKey(syn), syns);
+                    map.get(FilterType.SYNONYM).put(syn, syns);
             });
         }
         return map;

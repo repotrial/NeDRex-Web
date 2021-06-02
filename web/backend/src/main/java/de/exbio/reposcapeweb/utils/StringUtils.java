@@ -63,6 +63,62 @@ public class StringUtils {
         return v;
     }
 
+    public static String normalize(String in) {
+        StringBuilder out = new StringBuilder();
+        String l = in.toLowerCase();
+        for (int i = 0; i < l.length(); ++i) {
+            char c = l.charAt(i);
+            switch (c) {
+                case 'á', 'ä', 'à' -> out.append('a');
+                case 'é', 'è','ê' -> out.append('e');
+                case 'ï', 'í', 'ì' -> out.append('i');
+                case 'ñ' -> out.append('n');
+                case 'ö', 'ó', 'ò', 'ø' -> out.append('o');
+                case 'ü', 'ú', 'ù' -> out.append('u');
+                case 'ç' -> out.append('c');
+                case 'α' -> out.append("alpha");
+                case 'β' -> out.append("beta");
+                case 'ω' -> out.append("omega");
+                case 'ε' -> out.append("epsilon");
+                case 'ψ' -> out.append("phi");
+                case 'λ' -> out.append("lambda");
+                case 'γ' -> out.append("gamma");
+                case 'δ' -> out.append("delta");
+                case 'ξ' -> out.append("chi");
+                case 'μ' -> out.append("mu");
+                case 'τ' -> out.append("tau");
+                case 'κ' -> out.append("kappa");
+                case 'ß' -> out.append("ss");
+                case '–' -> out.append("-");
+                case '⁰' -> out.append("0");
+                case '¹' -> out.append("1");
+                case '²' -> out.append("2");
+                case '³','₃' -> out.append("3");
+                case '⁴' -> out.append("4");
+                case '⁵' -> out.append("5");
+                case '⁶' -> out.append("6");
+                case '⁷' -> out.append("7");
+                case '⁸' -> out.append("8");
+                case '⁹' -> out.append("9");
+                case '/','*',';','&',':','<','>','$','+','�','_','?',' ',',','@','~','^','|','#','=','→','±','%' -> out.append(' ');
+                case '\"','’','′'-> out.append('\'');
+                case '-','(',')','\'','.','[',']','{','}' -> out.append(c);
+                case '−','\u00AD','—' -> out.append("-");
+                default -> {
+                    if (c >= 'a' && c <= 'z' || c >= '0' && c <= '9') {
+                        out.append(c);
+                    } else if(c==8202){
+                        out.append(' ');
+                    }
+//                    else{
+//                        System.err.println("Found illegal char at normalization: "+c+" char code = "+((int)c));
+//                    }
+                }
+            }
+        }
+        return out.toString();
+    }
+
     public static ArrayList<String> split(String line, char separator, int lineSize) {
         ArrayList<String> v = new ArrayList<String>(lineSize);
         char tab = separator;

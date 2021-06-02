@@ -69,37 +69,16 @@
                         :disabled="suggestionType[0]===undefined || suggestionType[0]<0"
                         :loading="suggestions.loading"
                         :items="suggestions.data"
+                        :filter="()=>{return true}"
                         v-model="suggestionSourceModel"
+                        item-value="key"
                         label="by suggestions"
                         class="mx-4"
                         return-object
                         auto-select-first
                       >
                         <template v-slot:item="{ item }">
-                          <v-list-item-avatar
-                          >
-                            <v-icon v-if="item.type==='DOMAIN_ID'">fas fa-fingerprint</v-icon>
-                            <v-icon v-if="item.type==='DISPLAY_NAME' || item.type==='SYMBOLS'">fas fa-tv</v-icon>
-                            <v-icon v-if="item.type==='ICD10'">fas fa-disease</v-icon>
-                            <v-icon v-if="item.type==='SYNONYM'">fas fa-sync</v-icon>
-                            <v-icon v-if="item.type==='IUPAC'">mdi-molecule</v-icon>
-                            <v-icon v-if="item.type==='ORIGIN'">fas fa-dna</v-icon>
-                            <v-icon v-if="item.type==='DESCRIPTION' || item.type==='COMMENTS'">fas fa-info</v-icon>
-                            <v-icon v-if="item.type==='INDICATION'">fas fa-pills</v-icon>
-                            <v-icon v-if="item.type==='TYPE' || item.type==='GROUP' || item.type==='CATEGORY'">fas
-                              fa-layer-group
-                            </v-icon>
-                          </v-list-item-avatar>
-                          <v-list-item-content>
-                            <v-list-item-title v-text="item.text"></v-list-item-title>
-                            <v-list-item-subtitle
-                              v-text="item.type"></v-list-item-subtitle>
-                          </v-list-item-content>
-                          <v-list-item-action>
-                            <v-chip>
-                              {{ item.ids.length }}
-                            </v-chip>
-                          </v-list-item-action>
+                         <SuggestionElement :data="item"></SuggestionElement>
                         </template>
                       </v-autocomplete>
                     </v-col>
@@ -122,7 +101,7 @@
                     <v-col>
                       <v-list max-height="20vh" height="20vh" class="overflow-y-auto">
                         <v-list-item v-for="(node,index) in sources" :key="node.id">
-                          <v-list-item-title>{{ node.displayName }}</v-list-item-title>
+                          <v-list-item-title>{{ $utils.adjustLabels(node.displayName) }}</v-list-item-title>
                           <v-list>
                             <template v-for="o in getOrigins(node.id,0)">
                               <v-list-item-subtitle :key="node.id+o">{{ o }}</v-list-item-subtitle>
@@ -189,30 +168,7 @@
                         auto-select-first
                       >
                         <template v-slot:item="{ item }">
-                          <v-list-item-avatar
-                          >
-                            <v-icon v-if="item.type==='DOMAIN_ID'">fas fa-fingerprint</v-icon>
-                            <v-icon v-if="item.type==='DISPLAY_NAME' || item.type==='SYMBOLS'">fas fa-tv</v-icon>
-                            <v-icon v-if="item.type==='ICD10'">fas fa-disease</v-icon>
-                            <v-icon v-if="item.type==='SYNONYM'">fas fa-sync</v-icon>
-                            <v-icon v-if="item.type==='IUPAC'">mdi-molecule</v-icon>
-                            <v-icon v-if="item.type==='ORIGIN'">fas fa-dna</v-icon>
-                            <v-icon v-if="item.type==='DESCRIPTION' || item.type==='COMMENTS'">fas fa-info</v-icon>
-                            <v-icon v-if="item.type==='INDICATION'">fas fa-pills</v-icon>
-                            <v-icon v-if="item.type==='TYPE' || item.type==='GROUP' || item.type==='CATEGORY'">fas
-                              fa-layer-group
-                            </v-icon>
-                          </v-list-item-avatar>
-                          <v-list-item-content>
-                            <v-list-item-title v-text="item.text"></v-list-item-title>
-                            <v-list-item-subtitle
-                              v-text="item.type"></v-list-item-subtitle>
-                          </v-list-item-content>
-                          <v-list-item-action>
-                            <v-chip>
-                              {{ item.ids.length }}
-                            </v-chip>
-                          </v-list-item-action>
+                          <SuggestionElement :data="item"></SuggestionElement>
                         </template>
                       </v-autocomplete>
                     </v-col>
@@ -447,7 +403,7 @@
             <v-col cols="2">
               <v-card-title class="subtitle-1">Sources ({{ sources.length }})
               </v-card-title>
-              <v-simple-table max-height="45vh" height="45vh" class="overflow-y-auto" fixed-header>
+              <v-simple-table max-height="45vh" height="45vh" class="overflow-y-auto" fixed-header dense>
                 <template v-slot:default>
                   <thead>
                   <tr>
@@ -460,7 +416,7 @@
                   <tr v-for="node in sources" :key="node.id"
                       @click="focusNode(nodeList[sourceTypeId].value.substring(0,3)+'_'+node.id)"
                       :style="{'background-color': metagraph.colorMap[nodeList[sourceTypeId].value].light}">
-                    <td>{{ node.displayName }}</td>
+                    <td>{{ $utils.adjustLabels(node.displayName) }}</td>
                   </tr>
                   </tbody>
                 </template>
@@ -498,7 +454,7 @@
                 </v-progress-circular>
               </v-card-title>
               <template v-if="targets.length>=0">
-                <v-simple-table max-height="45vh" height="45vh" class="overflow-y-auto" fixed-header>
+                <v-simple-table max-height="45vh" height="45vh" class="overflow-y-auto" fixed-header dense>
                   <template v-slot:default>
                     <thead>
                     <tr>
@@ -511,7 +467,7 @@
                     <tr v-for="target in targets" :key="target.id"
                         @click="focusNode(nodeList[targetTypeId].value.substring(0,3)+'_'+target.id)"
                         :style="{'background-color': metagraph.colorMap[nodeList[targetTypeId].value].light}">
-                      <td>{{ target.displayName }}</td>
+                      <td>{{ $utils.adjustLabels(target.displayName) }}</td>
                     </tr>
                     </tbody>
                   </template>
@@ -538,7 +494,6 @@
               <v-switch label="Physics" v-model="graph.physics" @click="$refs.graph.setPhysics(graph.physics)"
                         v-if="$refs.graph!==undefined && $refs.graph.isVisualized()">
               </v-switch>
-
             </v-col>
           </v-row>
         </v-card>
@@ -557,6 +512,7 @@
 
 <script>
 import Graph from "../graph/Graph";
+import SuggestionElement from "@/components/app/suggestions/SuggestionElement";
 
 export default {
   name: "Guided",
@@ -727,7 +683,7 @@ export default {
         this.$http.post("getConnectedNodes", {
           sourceType: this.suggestionType[index],
           targetType: this.nodeList[[[this.sourceTypeId, this.targetTypeId][index]]].value,
-          sourceIds: val.ids,
+          sugId: val.sid,
           noloop: this.nodeList[[[this.sourceTypeId, this.targetTypeId][index]]].value === this.suggestionType[index]
         }).then(response => {
           if (response.data !== undefined)
@@ -818,7 +774,7 @@ export default {
           }
         }).then(data => {
           data.suggestions.sort((e1, e2) => {
-            return e2.ids.length - e1.ids.length
+            return e2.size - e1.size
           })
           this.suggestions.data = data.suggestions;
         }).catch(err =>
@@ -883,7 +839,6 @@ export default {
         if (response.data !== undefined)
           return response.data
       }).then(data => {
-        console.log(data)
         this.targets = data.nodes[groupName].map(n => {
           return {id: n.id, displayName: n.displayName}
         })
@@ -983,6 +938,7 @@ export default {
 
   },
   components: {
+    SuggestionElement,
     Graph,
   }
 

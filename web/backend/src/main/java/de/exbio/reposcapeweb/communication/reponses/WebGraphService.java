@@ -21,6 +21,7 @@ import de.exbio.reposcapeweb.db.history.GraphHistory;
 import de.exbio.reposcapeweb.db.history.HistoryController;
 import de.exbio.reposcapeweb.db.services.controller.EdgeController;
 import de.exbio.reposcapeweb.db.services.controller.NodeController;
+import de.exbio.reposcapeweb.filter.FilterEntry;
 import de.exbio.reposcapeweb.filter.NodeFilter;
 import de.exbio.reposcapeweb.tools.ToolService;
 import de.exbio.reposcapeweb.utils.*;
@@ -446,24 +447,29 @@ public class WebGraphService {
     public Suggestions getSuggestions(SuggestionRequest request) {
         NodeFilter nf;
         Suggestions suggestions;
+        String query = StringUtils.normalize(request.query);
         if (request.gid == null) {
-            suggestions = new Suggestions(null, request.query);
-            nf = nodeController.getFilter(request.name).contains(request.query);
-            suggestions.setDistinct(nf.getDistinctMap());
-            suggestions.setUnique(nf.getUniqueMap());
+            suggestions = new Suggestions(null, query);
+            nf = nodeController.getFilter(request.name);
+            suggestions.setDistinct(nf.distinctContains(query),nf.getDistinctID2Keys());
+            suggestions.setUnique(nf.uniqueContains(query), nf.getUniqueID2Keys());
         } else {
-
             Graph graph = getCachedGraph(request.gid);
-            suggestions = new Suggestions(request.gid, request.query);
+            suggestions = new Suggestions(request.gid, query);
 
             if (request.type.equals("nodes")) {
-                nf = graph.getNodeFilter(request.name).contains(request.query);
+                nf = graph.getNodeFilter(request.name);
                 HashSet<Integer> ids = new HashSet<>(graph.getNodes().get(Graphs.getNode(request.name)).keySet());
-                suggestions.setDistinct(nf.getDistinctMap(), ids);
-                suggestions.setUnique(nf.getUniqueMap(), ids);
+                suggestions.setDistinct(nf.distinctContains(query),nf.getDistinctID2Keys(), ids);
+                suggestions.setUnique(nf.uniqueContains(query),nf.getUniqueID2Keys(), ids);
             }
         }
         return suggestions;
+    }
+
+    public Collection<Integer> getSuggestionEntry(String gid, String nodeName, String sid) {
+
+        return (gid==null? nodeController.getFilter(nodeName) :getCachedGraph(gid).getNodeFilter(nodeName)).getEntry(sid).stream().map(FilterEntry::getNodeId).collect(Collectors.toSet());
     }
 
     public SelectionResponse getSelection(SelectionRequest request) {
@@ -1272,7 +1278,7 @@ public class WebGraphService {
         return out;
     }
 
-    public LinkedList<Object> getConnectedNodes(String sourceType, String targetType, List<Integer> sourceIds) {
+    public LinkedList<Object> getConnectedNodes(String sourceType, String targetType, Collection<Integer> sourceIds) {
         LinkedList<Integer> edgeIds = Graphs.getEdgesfromNodes(Graphs.getNode(sourceType), Graphs.getNode(targetType));
         LinkedList<Object> out = new LinkedList<>();
         HashSet<Integer> addedNodes = new HashSet<>();
@@ -1353,4 +1359,6 @@ public class WebGraphService {
 
         return g.toInfo();
     }
+
+
 }

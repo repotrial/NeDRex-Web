@@ -57,7 +57,7 @@ public class RequestController {
     private final UpdateService updateService;
 
     @Autowired
-    public RequestController(UpdateService updateService, DbCommunicationService dbCommunicationService,ObjectMapper objectMapper, WebGraphService webGraphService, NodeController nodeController, HistoryController historyController, JobController jobController) {
+    public RequestController(UpdateService updateService, DbCommunicationService dbCommunicationService, ObjectMapper objectMapper, WebGraphService webGraphService, NodeController nodeController, HistoryController historyController, JobController jobController) {
         this.objectMapper = objectMapper;
         this.webGraphService = webGraphService;
         this.nodeController = nodeController;
@@ -104,6 +104,18 @@ public class RequestController {
     }
 
 
+    @RequestMapping(value = "/getSuggestionEntry", method = RequestMethod.GET)
+    @ResponseBody
+    public String getSuggestionEntry(@RequestParam("gid") String gid, @RequestParam("nodeType") String nodeName, @RequestParam("sid") String sid) {
+        try {
+            log.debug("Got request for SuggestionId="+sid);
+            return objectMapper.writeValueAsString(webGraphService.getSuggestionEntry(gid, nodeName, sid));
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     @RequestMapping(value = "/getSuggestions", method = RequestMethod.POST)
     @ResponseBody
     public String getSuggestions(@RequestBody SuggestionRequest request) {
@@ -118,26 +130,27 @@ public class RequestController {
     @RequestMapping(value = "/getConnectedNodes", method = RequestMethod.POST)
     @ResponseBody
     public String getConnectedNodes(@RequestBody HashMap<String, Object> request) {
+        Collection<Integer> ids = request.get("sugId").toString().indexOf('_')>-1 ? webGraphService.getSuggestionEntry(null, request.get("sourceType").toString(), request.get("sugId").toString()) : Collections.singletonList(Integer.parseInt(request.get("sugId").toString()));
         if ((boolean) request.get("noloop")) {
             String type = request.get("sourceType").toString();
             HashSet<Integer> addedIds = new HashSet<>();
             LinkedList<Object> nodes = new LinkedList<>();
-            ((List<Integer>) request.get("sourceIds")).forEach(n -> {
+            ids.forEach(n -> {
                 if (addedIds.add(n))
                     nodes.add(nodeController.getNode(type, n).getAsMap(new HashSet<>(Arrays.asList("id", "displayName", "primaryDomainId"))));
             });
             return toJson(nodes);
         }
-        return toJson(webGraphService.getConnectedNodes(request.get("sourceType").toString(), request.get("targetType").toString(), (List<Integer>) request.get("sourceIds")));
+        return toJson(webGraphService.getConnectedNodes(request.get("sourceType").toString(), request.get("targetType").toString(), ids));
     }
 
     @RequestMapping(value = "/mapToDomainIds", method = RequestMethod.POST)
     @ResponseBody
-    public String mapToDomainIds(@RequestBody HashMap<String,Object> request){
+    public String mapToDomainIds(@RequestBody HashMap<String, Object> request) {
         int type = Graphs.getNode(request.get("type").toString());
-        HashMap<Integer,String> map = new HashMap<>();
-        ((List<Integer>)request.get("ids")).forEach(id->map.put(id,nodeController.getDomainId(type,id)));
-       return toJson(map);
+        HashMap<Integer, String> map = new HashMap<>();
+        ((List<Integer>) request.get("ids")).forEach(id -> map.put(id, nodeController.getDomainId(type, id)));
+        return toJson(map);
     }
 
     @RequestMapping(value = "/getConnectedSelection", method = RequestMethod.POST)
@@ -179,9 +192,9 @@ public class RequestController {
         return toJson(webGraphService.getConnectionGraph(gid));
     }
 
-    @RequestMapping(value ="/getGuidedGraph", method=RequestMethod.POST)
+    @RequestMapping(value = "/getGuidedGraph", method = RequestMethod.POST)
     @ResponseBody
-    public String getGuidedGraph(@RequestBody GuidedRequest request){
+    public String getGuidedGraph(@RequestBody GuidedRequest request) {
         return toJson(webGraphService.getGuidedGraph(request));
 
     }
@@ -272,7 +285,7 @@ public class RequestController {
         if (userId == null)
             return "";
         userId = historyController.validateUser(userId);
-        HashMap<String, Pair<String,Pair<Job.JobState, ToolService.Tool>>> jobs = jobController.getJobGraphStatesAndTypes(userId);
+        HashMap<String, Pair<String, Pair<Job.JobState, ToolService.Tool>>> jobs = jobController.getJobGraphStatesAndTypes(userId);
         HashMap<String, Object> out = historyController.getUserHistory(userId, jobs);
 
         try {

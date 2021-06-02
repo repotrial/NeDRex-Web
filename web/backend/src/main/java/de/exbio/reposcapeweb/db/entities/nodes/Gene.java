@@ -5,13 +5,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import de.exbio.reposcapeweb.db.entities.RepoTrialNode;
 import de.exbio.reposcapeweb.filter.FilterEntry;
-import de.exbio.reposcapeweb.filter.FilterKey;
 import de.exbio.reposcapeweb.filter.FilterType;
 import de.exbio.reposcapeweb.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.processing.FilerException;
 import javax.persistence.*;
 import java.util.*;
 
@@ -219,41 +217,41 @@ public class Gene extends RepoTrialNode {
     private FilterEntry ids = null;
 
     public void createFilterEntry(){
-        ids =new FilterEntry(displayName, FilterType.DOMAIN_ID, id);
+        ids =new FilterEntry(displayName, FilterType.ID, id);
     }
 
     @Override
-    public EnumMap<FilterType, Map<FilterKey, FilterEntry>> toUniqueFilter() {
+    public EnumMap<FilterType, Map<String, FilterEntry>> toUniqueFilter() {
         if(ids ==null)
             createFilterEntry();
-        EnumMap<FilterType, Map<FilterKey, FilterEntry>> map = new EnumMap<>(FilterType.class);
+        EnumMap<FilterType, Map<String, FilterEntry>> map = new EnumMap<>(FilterType.class);
 
 
-        map.put(FilterType.DOMAIN_ID, new HashMap<>());
+        map.put(FilterType.ID, new HashMap<>());
 
         if (!getDomainIds().contains(primaryDomainId))
             try {
                 primaryDomainId.charAt(0);
-                map.get(FilterType.DOMAIN_ID).put(new FilterKey(primaryDomainId), ids);
+                map.get(FilterType.ID).put(primaryDomainId, ids);
             } catch (NullPointerException | IndexOutOfBoundsException ignore) {
             }
 
-        getDomainIds().forEach(id -> map.get(FilterType.DOMAIN_ID).put(new FilterKey(id), ids));
+        getDomainIds().forEach(id -> map.get(FilterType.ID).put(id, ids));
 
-        map.put(FilterType.DISPLAY_NAME, new HashMap<>());
-        map.get(FilterType.DISPLAY_NAME).put(new FilterKey(displayName), new FilterEntry(displayName, FilterType.DISPLAY_NAME, id));
+        map.put(FilterType.NAME, new HashMap<>());
+        map.get(FilterType.NAME).put(displayName, new FilterEntry(displayName, FilterType.NAME, id));
 
         if (!displayName.equals(approvedSymbol) & !getSymbols().contains(approvedSymbol) & symbols.length()<2) {
-            map.put(FilterType.SYMBOLS, new HashMap<>());
-            FilterEntry symbolEntry = new FilterEntry(displayName, FilterType.SYMBOLS, id);
-            getSymbols().stream().filter(s -> !s.equals(displayName) | !s.equals(approvedSymbol)).forEach(s -> map.get(FilterType.SYMBOLS).put(new FilterKey(s), symbolEntry));
+            map.put(FilterType.SYMBOL, new HashMap<>());
+            FilterEntry symbolEntry = new FilterEntry(displayName, FilterType.SYMBOL, id);
+            getSymbols().stream().filter(s -> (!s.equals(displayName) | !s.equals(approvedSymbol)) & s.length()>0 ).forEach(s -> map.get(FilterType.SYMBOL).put(s, symbolEntry));
         }
 
         FilterEntry syns = new FilterEntry(displayName, FilterType.SYNONYM, id);
         map.put(FilterType.SYNONYM, new HashMap<>());
         getSynonyms().forEach(syn -> {
-            if (!displayName.equals(syn))
-                map.get(FilterType.SYNONYM).put(new FilterKey(syn), syns);
+            if (!displayName.equals(syn) & syn.length()>0)
+                map.get(FilterType.SYNONYM).put(syn, syns);
         });
 
 
@@ -261,16 +259,16 @@ public class Gene extends RepoTrialNode {
     }
 
     @Override
-    public EnumMap<FilterType, Map<FilterKey, FilterEntry>> toDistinctFilter() {
+    public EnumMap<FilterType, Map<String, FilterEntry>> toDistinctFilter() {
         if(ids ==null)
             createFilterEntry();
-        EnumMap<FilterType,Map<FilterKey,FilterEntry>> filters = new EnumMap<>(FilterType.class);
-        HashMap<FilterKey,FilterEntry> geneType = new HashMap<>();
-        geneType.put(new FilterKey(this.geneType),new FilterEntry(displayName,FilterType.CATEGORY,id));
+        EnumMap<FilterType,Map<String,FilterEntry>> filters = new EnumMap<>(FilterType.class);
+        HashMap<String,FilterEntry> geneType = new HashMap<>();
+        geneType.put(this.geneType,new FilterEntry(displayName,FilterType.CATEGORY,id));
         filters.put(FilterType.CATEGORY,geneType);
-        HashMap<FilterKey, FilterEntry> chromType = new HashMap<>();
-        chromType.put(new FilterKey(this.chromosome), new FilterEntry(displayName, FilterType.GROUP,id));
-        filters.put(FilterType.GROUP, chromType);
+        HashMap<String, FilterEntry> chromType = new HashMap<>();
+        chromType.put(this.chromosome, new FilterEntry(displayName, FilterType.CHROMOSOME,id));
+        filters.put(FilterType.CHROMOSOME, chromType);
 
 
         return filters;

@@ -1,18 +1,12 @@
 package de.exbio.reposcapeweb;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import de.exbio.reposcapeweb.communication.jobs.JobController;
-import de.exbio.reposcapeweb.communication.reponses.WebGraphService;
 import de.exbio.reposcapeweb.db.DbCommunicationService;
 import de.exbio.reposcapeweb.db.io.ImportService;
 import de.exbio.reposcapeweb.db.services.controller.EdgeController;
 import de.exbio.reposcapeweb.db.services.controller.NodeController;
-import de.exbio.reposcapeweb.db.services.edges.ProteinInteractsWithProteinService;
-import de.exbio.reposcapeweb.db.services.nodes.DisorderService;
 import de.exbio.reposcapeweb.db.updates.UpdateService;
-import de.exbio.reposcapeweb.filter.FilterService;
 import de.exbio.reposcapeweb.tools.ToolService;
-import org.springframework.boot.autoconfigure.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,6 +63,7 @@ public class ReposcapewebApplication extends SpringBootServletInitializer {
         updateService.readMetadata();
         dbService.setImportInProgress(true);
         importService.importNodeData();
+
 
         //TODO maybe move importJOb and importHistory to after update?
         jobController.importJobsHistory();

@@ -62,6 +62,7 @@
                         :disabled="suggestionType===undefined || suggestionType<0"
                         :loading="suggestions.loading"
                         :items="suggestions.data"
+                        :filter="()=>{return true}"
                         v-model="suggestionModel"
                         label="by suggestions"
                         class="mx-4"
@@ -70,30 +71,7 @@
                         style="width: 100%"
                       >
                         <template v-slot:item="{ item }">
-                          <v-list-item-avatar
-                          >
-                            <v-icon v-if="item.type==='DOMAIN_ID'">fas fa-fingerprint</v-icon>
-                            <v-icon v-if="item.type==='DISPLAY_NAME' || item.type==='SYMBOLS'">fas fa-tv</v-icon>
-                            <v-icon v-if="item.type==='ICD10'">fas fa-disease</v-icon>
-                            <v-icon v-if="item.type==='SYNONYM'">fas fa-sync</v-icon>
-                            <v-icon v-if="item.type==='IUPAC'">mdi-molecule</v-icon>
-                            <v-icon v-if="item.type==='ORIGIN'">fas fa-dna</v-icon>
-                            <v-icon v-if="item.type==='DESCRIPTION' || item.type==='COMMENTS'">fas fa-info</v-icon>
-                            <v-icon v-if="item.type==='INDICATION'">fas fa-pills</v-icon>
-                            <v-icon v-if="item.type==='TYPE' || item.type==='GROUP' || item.type==='CATEGORY'">fas
-                              fa-layer-group
-                            </v-icon>
-                          </v-list-item-avatar>
-                          <v-list-item-content>
-                            <v-list-item-title v-text="item.text"></v-list-item-title>
-                            <v-list-item-subtitle
-                              v-text="item.type"></v-list-item-subtitle>
-                          </v-list-item-content>
-                          <v-list-item-action>
-                            <v-chip>
-                              {{ item.ids.length }}
-                            </v-chip>
-                          </v-list-item-action>
+                          <SuggestionElement :data="item"></SuggestionElement>
                         </template>
                       </v-autocomplete>
                     </v-col>
@@ -451,7 +429,8 @@
                       <tr v-for="drug in results.targets" :key="drug.id" :style="targetColorStyle"
                           @click="focusNode('dru_'+drug.id)">
                         <td class="td-result td-name">{{ drug.displayName }}</td>
-                        <td :class="'td-result td-score'+(val.id==='rank' ? ' td-rank':'')" v-for="val in methodScores()">
+                        <td :class="'td-result td-score'+(val.id==='rank' ? ' td-rank':'')"
+                            v-for="val in methodScores()">
                           {{ drug[val.id] }}
                         </td>
                       </tr>
@@ -510,6 +489,7 @@
 <script>
 import Graph from "../../graph/Graph";
 import * as CONFIG from "../../../../Config"
+import SuggestionElement from "@/components/app/suggestions/SuggestionElement";
 
 export default {
   name: "DrugRepurposing",
@@ -568,7 +548,7 @@ export default {
         this.$http.post("getConnectedNodes", {
           sourceType: this.suggestionType,
           targetType: ["gene", "protein"][this.seedTypeId],
-          sourceIds: val.ids,
+          sugId: val.id,
           noloop: ["gene", "protein"][this.seedTypeId] === this.suggestionType
         }).then(response => {
           if (response.data !== undefined)
@@ -691,7 +671,7 @@ export default {
           }
         }).then(data => {
           data.suggestions.sort((e1, e2) => {
-            return e2.ids.length - e1.ids.length
+            return e2.size - e1.size
           })
           this.suggestions.data = data.suggestions;
         }).catch(err =>
@@ -865,7 +845,6 @@ export default {
       }).catch(console.log)
     },
     roundScores: function (data) {
-      console.log(data)
       return data
     }
     ,
@@ -926,6 +905,7 @@ export default {
   },
 
   components: {
+    SuggestionElement,
     Graph
   }
 }
