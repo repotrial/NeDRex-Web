@@ -700,9 +700,6 @@ export default {
       sourceType: undefined,
       step: 1,
       suggestionType: undefined,
-      suggestions: {loading: false, data: []},
-      nodeSuggestions: null,
-      suggestionModel: null,
       fileInputModel: undefined,
       methods: [{
         id: "diamond",
@@ -734,30 +731,6 @@ export default {
       drugTargetPopup: false,
       rankingSelect: 1
     }
-  },
-  watch: {
-
-    nodeSuggestions: function (val) {
-      this.getSuggestions(val, false)
-    },
-    suggestionModel: function (val) {
-      if (val !== undefined && val != null) {
-        this.$http.post("getConnectedNodes", {
-          sourceType: this.suggestionType,
-          targetType: ["gene", "protein"][this.seedTypeId],
-          sugId: val.id,
-          noloop: ["gene", "protein"][this.seedTypeId] === this.suggestionType
-        }).then(response => {
-          if (response.data !== undefined)
-            return response.data
-        }).then(data => {
-          this.addToSelection(data, "SUG:" + val.text + "[" + this.suggestionType + "]")
-        }).then(() => {
-          this.suggestionModel = undefined
-        }).catch(console.log)
-      }
-    },
-
   },
 
   created() {
@@ -842,44 +815,6 @@ export default {
       }
       if (this.step === 3)
         this.submitAlgorithm()
-    },
-    getSuggestions: function (val, timeouted) {
-      if (!timeouted) {
-        this.sugQuery = val
-        if (val == null || val.length < 3) {
-          this.suggestions.data = []
-          return
-        }
-        setTimeout(function () {
-          this.getSuggestions(val, true)
-        }.bind(this), 500)
-      } else {
-        if (val !== this.sugQuery) {
-          return
-        }
-        let name = this.suggestionType
-        if (this.suggestions.chosen !== undefined)
-          return
-        this.suggestions.loading = true;
-        this.suggestions.data = []
-        this.$http.post("getSuggestions", {
-          name: name,
-          query: val,
-        }).then(response => {
-          if (response.data !== undefined) {
-            return response.data
-          }
-        }).then(data => {
-          data.suggestions.sort((e1, e2) => {
-            return e2.size - e1.size
-          })
-          this.suggestions.data = data.suggestions;
-        }).catch(err =>
-          console.log(err)
-        ).finally(() =>
-          this.suggestions.loading = false
-        )
-      }
     },
     loadDrugTargets: function () {
       this.rankingSelect = 1
