@@ -7,7 +7,7 @@
       <v-stepper-step step="1" :complete="step>1">
         Select Nodes
         <small v-if="sourceTypeId!==undefined & targetTypeId!==undefined">
-          <span>{{nodeList[sourceTypeId].text }}</span>
+          <span>{{ nodeList[sourceTypeId].text }}</span>
           ->
           <span>{{ nodeList[targetTypeId].text }}</span>
         </small>
@@ -39,10 +39,12 @@
         >
 
           <v-card-subtitle class="headline">Node Configuration</v-card-subtitle>
-          <v-card-subtitle style="margin-top: -25px">Select the starting node type (e.g. Disorder) and then a target of interest (e.g Drug or Gene/Protein).
+          <v-card-subtitle style="margin-top: -25px">Select the starting node type (e.g. Disorder) and then a target of
+            interest (e.g Drug or Gene/Protein).
             Select specific start nodes of the selected type by using the auto-complete system or list upload.
             Manually adjust the list. <i>Optional:</i> Also specify the target nodes in the same way in case only
-            specific connections might be of interest.</v-card-subtitle>
+            specific connections might be of interest.
+          </v-card-subtitle>
 
           <v-container style="height: 80%">
             <v-row style="height: 75vh">
@@ -63,7 +65,9 @@
                                 placeholder="connected to"></v-select>
                     </v-col>
                     <v-col>
-                      <SuggestionAutocomplete :suggestion-type="suggestionType[0]" :index="0" :target-node-type="this.nodeList[[[this.sourceTypeId, this.targetTypeId][0]]].value" @addToSelectionEvent="addToSelection"></SuggestionAutocomplete>
+                      <SuggestionAutocomplete :suggestion-type="suggestionType[0]" :index="0"
+                                              :target-node-type="this.nodeList[[[this.sourceTypeId, this.targetTypeId][0]]].value"
+                                              @addToSelectionEvent="addToSelection"></SuggestionAutocomplete>
                     </v-col>
                   </v-row>
                   <v-card-subtitle>or</v-card-subtitle>
@@ -138,7 +142,9 @@
                                 placeholder="connected to"></v-select>
                     </v-col>
                     <v-col>
-                      <SuggestionAutocomplete :suggestion-type="suggestionType[1]" :index="1" :target-node-type="this.nodeList[[[this.sourceTypeId, this.targetTypeId][1]]].value" @addToSelectionEvent="addToSelection"></SuggestionAutocomplete>
+                      <SuggestionAutocomplete :suggestion-type="suggestionType[1]" :index="1"
+                                              :target-node-type="this.nodeList[[[this.sourceTypeId, this.targetTypeId][1]]].value"
+                                              @addToSelectionEvent="addToSelection"></SuggestionAutocomplete>
                     </v-col>
                   </v-row>
                   <v-card-subtitle>or</v-card-subtitle>
@@ -215,7 +221,10 @@
           max-height="75vh"
         >
           <v-card-subtitle class="headline">Path Selection</v-card-subtitle>
-          <v-card-subtitle style="margin-top: -25px">Select a path connecting {{nodeList[sourceTypeId].text +' and '+ nodeList[targetTypeId].text }}. Further decide to keep the intermediate node (in case an indirect path is selected) or to create a new edge type given a user defined name. Additional path specific configuration may be available.
+          <v-card-subtitle style="margin-top: -25px">Select a path connecting
+            {{ nodeList[sourceTypeId].text + ' and ' + nodeList[targetTypeId].text }}. Further decide to keep the
+            intermediate node (in case an indirect path is selected) or to create a new edge type given a user defined
+            name. Additional path specific configuration may be available.
           </v-card-subtitle>
 
           <v-container style="height: 80%">
@@ -228,7 +237,8 @@
                       <v-list-item-title>
                         <v-tooltip top>
                           <template v-slot:activator="{on,attrs}">
-                            <v-icon v-on="on" v-bind="attrs" :color="getColoring('nodes',nodeList[sourceTypeId].value,'light')"
+                            <v-icon v-on="on" v-bind="attrs"
+                                    :color="getColoring('nodes',nodeList[sourceTypeId].value,'light')"
                                     size="30px">
                               fas fa-genderless
                             </v-icon>
@@ -368,33 +378,31 @@
           </v-card-subtitle>
 
           <v-row>
-            <v-col cols="2">
+            <v-col cols="2" style="padding: 0">
               <v-card-title class="subtitle-1">Sources ({{ sources.length }})
               </v-card-title>
-              <v-simple-table max-height="45vh" height="45vh" class="overflow-y-auto" fixed-header dense>
-                <template v-slot:default>
-                  <thead>
-                  <tr>
-                    <th class="text-left">
-                      Name
-                    </th>
-                  </tr>
-                  </thead>
-                  <tbody>
-                  <tr v-for="node in sources" :key="node.id"
-                      @click="focusNode(nodeList[sourceTypeId].value.substring(0,3)+'_'+node.id)"
-                      :style="{'background-color': metagraph.colorMap[nodeList[sourceTypeId].value].light}">
-                    <td>{{ $utils.adjustLabels(node.displayName) }}</td>
-                  </tr>
-                  </tbody>
+              <v-data-table max-height="45vh" height="45vh" class="overflow-y-auto" fixed-header dense item-key="id"
+                            :items="sources"
+                            :headers="getHeaders()"
+                            disable-pagination
+                            hide-default-footer @click:row="seedClicked">
+                <template v-slot:item.displayName="{item}">
+                  <v-tooltip v-if="item.displayName.length>30" right>
+                    <template v-slot:activator="{attr,on }">
+                          <span v-bind="attr" v-on="on"
+                                style="color: dimgray">{{ item.displayName.substr(0, 30) }}...</span>
+                    </template>
+                    <span>{{ item.displayName }}</span>
+                  </v-tooltip>
+                  <span v-else>{{ item.displayName }}</span>
                 </template>
-              </v-simple-table>
+              </v-data-table>
               <v-chip outlined style="margin-top:15px" @click="downloadList(0)">
                 <v-icon left>fas fa-download</v-icon>
                 Save Sources ({{ nodeList[sourceTypeId].text }})
               </v-chip>
             </v-col>
-            <v-col cols="7">
+            <v-col>
               <Graph ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle"
                      :legend="$refs.graph!==undefined && $refs.graph.isVisualized()" :meta="metagraph">
                 <template v-slot:legend>
@@ -414,7 +422,7 @@
                 </template>
               </Graph>
             </v-col>
-            <v-col cols="3">
+            <v-col cols="2" style="padding: 0 10px 0 0">
               <v-card-title class="subtitle-1"> Targets{{
                   (targets.length > 0 ? (" (" + (targets.length) + ")") : ": Processing")
                 }}
@@ -422,24 +430,22 @@
                 </v-progress-circular>
               </v-card-title>
               <template v-if="targets.length>=0">
-                <v-simple-table max-height="45vh" height="45vh" class="overflow-y-auto" fixed-header dense>
-                  <template v-slot:default>
-                    <thead>
-                    <tr>
-                      <th class="text-left">
-                        Name
-                      </th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr v-for="target in targets" :key="target.id"
-                        @click="focusNode(nodeList[targetTypeId].value.substring(0,3)+'_'+target.id)"
-                        :style="{'background-color': metagraph.colorMap[nodeList[targetTypeId].value].light}">
-                      <td>{{ $utils.adjustLabels(target.displayName) }}</td>
-                    </tr>
-                    </tbody>
+                <v-data-table max-height="45vh" height="45vh" class="overflow-y-auto" fixed-header dense item-key="id"
+                              :items="targets"
+                              :headers="getHeaders()"
+                              disable-pagination
+                              hide-default-footer @click:row="targetClicked">
+                  <template v-slot:item.displayName="{item}">
+                    <v-tooltip v-if="item.displayName.length>30" right>
+                      <template v-slot:activator="{attr,on }">
+                          <span v-bind="attr" v-on="on"
+                                style="color: dimgray">{{ item.displayName.substr(0, 30) }}...</span>
+                      </template>
+                      <span>{{ item.displayName }}</span>
+                    </v-tooltip>
+                    <span v-else>{{ item.displayName }}</span>
                   </template>
-                </v-simple-table>
+                </v-data-table>
                 <v-chip outlined style="margin-top:15px"
                         @click="downloadList(1)" v-if="targets.length>0">
                   <v-icon left>fas fa-download</v-icon>
@@ -466,7 +472,7 @@
           </v-row>
         </v-card>
         <v-btn style="margin-bottom: 10px"
-          @click="makeStep(3,'back')"
+               @click="makeStep(3,'back')"
         >
           Back
         </v-btn>
@@ -589,7 +595,7 @@ export default {
       this.info = undefined
 
     },
-    reset: function (){
+    reset: function () {
       this.init()
     },
 
@@ -784,7 +790,7 @@ export default {
 
     makeStep: function (s, button) {
       if (button === "continue") {
-        if(this.step===1)
+        if (this.step === 1)
           this.$emit("clearURLEvent")
         this.step++
         if (this.step === 2)
@@ -810,9 +816,18 @@ export default {
       if (this.step === 3)
         this.submitGraphGeneration()
     },
+    getHeaders: function () {
+      return [{text: "Name", align: "start", sortable: true, value: "displayName"}]
+    },
+    seedClicked: function (item) {
+      this.focusNode(this.nodeList[this.sourceTypeId].value.substring(0, 3) + '_' + item.id)
+    },
+    targetClicked: function (item) {
+      this.focusNode(this.nodeList[this.targetTypeId].value.substring(0, 3) + '_' + item.id)
+    },
 
-    getColoring: function (entity, name,style) {
-      return this.$utils.getColoring(this.metagraph, entity, name,style);
+    getColoring: function (entity, name, style) {
+      return this.$utils.getColoring(this.metagraph, entity, name, style);
     },
 
     getNodeLabel: function (name, idx) {
@@ -820,7 +835,8 @@ export default {
       return id.substring(0, 1).toUpperCase() + id.substring(1)
     }
 
-  },
+  }
+  ,
   components: {
     SuggestionAutocomplete,
     Graph,

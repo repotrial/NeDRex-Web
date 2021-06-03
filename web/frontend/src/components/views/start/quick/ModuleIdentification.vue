@@ -498,50 +498,33 @@
           class="mb-12"
           min-height="750px"
         >
-          <v-card-subtitle class="headline">3. Results</v-card-subtitle>
+          <v-card-subtitle class="headline">3. Module Identification Results</v-card-subtitle>
           <!--          <v-card-subtitle style="margin-top: -25px">-->
           <!--          </v-card-subtitle>-->
           <v-container>
             <v-row>
-              <v-col cols="3" style="padding: 0">
+              <v-col cols="3" style="padding: 0 50px 0 0; margin-right: -50px" >
                 <v-card-title class="subtitle-1">Seeds ({{ seeds.length }}) {{
                     (results.targets.length !== undefined && results.targets.length > 0 ? ("& Module (" + getTargetCount() + ")") : ": Processing")
                   }}
                   <v-progress-circular indeterminate v-if="this.results.targets.length===0" style="margin-left:15px">
                   </v-progress-circular>
                 </v-card-title>
-                <template v-if="results.targets.length>=0">
-                  <v-simple-table max-height="45vh" height="45vh" class="overflow-y-auto" fixed-header dense>
-                    <template v-slot:default>
-                      <thead>
-                      <tr>
-                        <th class="text-center td-name">
-                          Name
-                        </th>
-                        <th v-for="val in methodScores()"
-                            :class="'text-center td-score'+val.name==='Rank' ? ' td-rank':''">
-                          {{ val.name }}
-                        </th>
-                      </tr>
-                      </thead>
-                      <tbody>
-                      <tr v-if="seeds.map(s=>s.id).indexOf(seed.id)===-1"
-                          v-for="seed in results.targets" :key="seed.id" :style="targetColorStyle"
-                          @click="focusNode(['gen_','pro_'][seedTypeId]+seed.id)"
-                      >
-                        <td class="td-result td-name">{{ $utils.adjustLabels(seed.displayName) }}</td>
-                        <td :class="'td-result td-score'+(val.id==='rank' ? ' td-rank':'')"
-                            v-for="val in methodScores()">{{ seed[val.id] }}
-                        </td>
-                      </tr>
-                      <tr v-for="seed in seeds" :key="seed.id" @click="focusNode(['gen_','pro_'][seedTypeId]+seed.id)">
-                        <td class="td-result td-name"> {{ $utils.adjustLabels(seed.displayName) }}</td>
-                        <td :class="'td-result td-score'+(val.id==='rank' ? ' td-rank':'')"
-                            v-for="val in methodScores()"></td>
-                      </tr>
-                      </tbody>
+                <template v-if="!loadingResults">
+                  <v-data-table max-height="45vh" height="45vh" fixed-header dense item-key="id"
+                                :items="results.targets" :headers="getHeaders()" disable-pagination
+                                hide-default-footer @click:row="rowClicked">
+                    <template v-slot:item.displayName="{item}">
+                      <v-tooltip v-if="item.displayName.length>16" right>
+                        <template v-slot:activator="{attr,on }">
+                          <span v-bind="attr" v-on="on"
+                                style="color: dimgray">{{ item.displayName.substr(0, 16) }}...</span>
+                        </template>
+                        <span>{{item.displayName}}</span>
+                      </v-tooltip>
+                      <span v-else>{{ item.displayName }}</span>
                     </template>
-                  </v-simple-table>
+                  </v-data-table>
                   <v-chip outlined style="margin-top:15px" @click="downloadList">
                     <v-icon left>fas fa-download</v-icon>
                     Save Seeds
@@ -557,8 +540,11 @@
                     Save Raw Results
                   </v-chip>
                 </template>
+                <v-data-table v-else max-height="45vh" height="45vh" max-width="100%" fixed-header dense item-key="id"
+                              :items="seeds" :headers="getHeaders(true)" disable-pagination
+                              hide-default-footer @click:row="rowClicked"></v-data-table>
               </v-col>
-              <v-col cols="9">
+              <v-col>
                 <Graph ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle"
                        :legend="results.targets.length>0" :meta="metagraph">
                   <template v-slot:legend v-if="results.targets.length>0">
@@ -715,6 +701,7 @@ export default {
       rankingMethodModel: undefined,
       experimentalSwitch: true,
       results: {targets: [], drugs: []},
+      loadingResults: true,
       models: {
         diamond: {
           nModel: 200,
@@ -797,6 +784,7 @@ export default {
       })
       this.seeds = this.seeds.filter(s => remove.indexOf(s.id) === -1)
     },
+
     makeStep: function (s, button) {
       if (button === "continue") {
         this.step++
@@ -824,6 +812,10 @@ export default {
       this.rankingSelect = 1
       this.drugTargetPopup = true
     },
+    rowClicked: function (item) {
+      this.focusNode(['gen_', 'pro_'][this.seedTypeId] + item.id)
+
+    },
     resolveRankingDialog: function (apply) {
       this.drugTargetPopup = false;
       if (!apply)
@@ -847,6 +839,17 @@ export default {
       this.models.bicon.exprFile = file
     }
     ,
+    getHeaders: function (seeds) {
+      let headers = [{text: "Name", align: "start", sortable: true, value: "displayName"}]
+      if (!seeds)
+        this.methodScores().forEach(e => headers.push({
+          text: e.name,
+          align: e.decimal ? "start" : "end",
+          sortable: true,
+          value: e.id,
+        }))
+      return headers
+    },
     updateGraphPhysics: function () {
       this.$refs.graph.setPhysics(this.graph.physics)
     }
@@ -1041,15 +1044,16 @@ export default {
           return response.data
       }).then(data => this.$utils.roundScores(data, seedType, scoreAttr)).then(data => {
         if (this.methodModel === 0)
-          this.results.targets = data.nodes[seedType].sort((e1, e2) => {
+          this.$set(this.results, 'targets', data.nodes[seedType].sort((e1, e2) => {
             if (e1.rank && e2.rank)
               return e1.rank - e2.rank
             if (e1.rank)
               return -1
             return 1
-          })
+          }))
         else
-          this.results.targets = data.nodes[seedType]
+          this.$set(this.results, 'targets', data.nodes[seedType])
+        this.loadingResults = false;
       }).catch(console.log)
     },
 
@@ -1105,5 +1109,6 @@ export default {
 
 .td-result
   font-size: smaller !important
+
 
 </style>

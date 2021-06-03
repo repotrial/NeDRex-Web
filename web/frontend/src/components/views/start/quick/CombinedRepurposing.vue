@@ -75,7 +75,9 @@
                                 placeholder="connected to" style="width: 100%"></v-select>
                     </v-col>
                     <v-col cols="6">
-                      <SuggestionAutocomplete :suggestion-type="suggestionType" :target-node-type="['gene', 'protein'][this.seedTypeId]" @addToSelectionEvent="addToSelection"></SuggestionAutocomplete>
+                      <SuggestionAutocomplete :suggestion-type="suggestionType"
+                                              :target-node-type="['gene', 'protein'][this.seedTypeId]"
+                                              @addToSelectionEvent="addToSelection"></SuggestionAutocomplete>
                     </v-col>
                   </v-row>
                   <v-card-subtitle>or</v-card-subtitle>
@@ -706,53 +708,34 @@
           class="mb-12"
           height="80vh"
         >
-          <v-card-subtitle class="headline">4. Results</v-card-subtitle>
+          <v-card-subtitle class="headline">4. Drug Repurposing Results</v-card-subtitle>
           <v-container>
             <v-row>
-              <v-col cols="2" style="padding:0">
+              <v-col cols="3" style="padding: 0 50px 0 0; margin-right: -50px">
                 <v-card-title class="subtitle-1">Seeds ({{ seeds.length }}) {{
                     (results.targets.length !== undefined && results.targets.length > 0 ? ("& Module (" + getTargetCount() + ")") : ": Processing")
                   }}
                   <v-progress-circular indeterminate v-if="this.results.targets.length===0" style="margin-left:15px">
                   </v-progress-circular>
                 </v-card-title>
+                <v-data-table max-height="45vh" height="45vh" class="overflow-y-auto" fixed-header dense item-key="id"
+                              :items="(!results.targets ||results.targets.length ===0) ?seeds : results.targets"
+                              :headers="getHeaders(0)"
+                              disable-pagination
+                              hide-default-footer @click:row="seedClicked">
+                      <template v-slot:item.displayName="{item}">
+                        <v-tooltip v-if="item.displayName.length>16" right>
+                          <template v-slot:activator="{attr,on }">
+                          <span v-bind="attr" v-on="on"
+                                style="color: dimgray">{{ item.displayName.substr(0, 16) }}...</span>
+                          </template>
+                          <span>{{item.displayName}}</span>
+                        </v-tooltip>
+                        <span v-else>{{ item.displayName }}</span>
+                      </template>
+                </v-data-table>
                 <template v-if="results.targets.length>=0">
-                  <v-simple-table max-height="45vh" height="45vh" class="overflow-y-auto" fixed-header dense>
-                    <template v-slot:default>
-                      <thead>
-                      <tr>
-                        <th class="text-center td-name">
-                          Name
-                        </th>
-                        <th v-for="val in moduleMethodScores()"
-                            :class="'text-center td-score'+(val.name==='Rank' ? ' td-rank':'')">
-                          {{ val.name }}
-                        </th>
-                      </tr>
-                      </thead>
-                      <tbody>
-                      <tr v-for="seed in results.targets" v-if="seeds.map(s=>s.id).indexOf(seed.id)===-1" :key="seed.id"
-                          :style="targetColorStyle" @click="focusNode(['gen_','pro_'][seedTypeId]+seed.id)">
-                        <td class="td-result td-name" style="" :key="seed.id+'n'">
-                          {{ $utils.adjustLabels(seed.displayName) }}
-                        </td>
-                        <template v-for="val in moduleMethodScores()">
-                          <td :class="'td-result td-score'+(val.id==='rank' ? ' td-rank':'')" :key="seed.id+'v'+val.id">
-                            {{ seed[val.id] }}
-                          </td>
-                        </template>
-                      </tr>
-                      <tr v-for="seed in seeds" :key="seed.id" @click="focusNode(['gen_','pro_'][seedTypeId]+seed.id)">
-                        <td class="td-result td-name" :key="seed.id+'n'">{{
-                            $utils.adjustLabels(seed.displayName)
-                          }}
-                        </td>
-                        <td :class="'td-result td-score'+(val.id==='rank' ? ' td-rank':'')" :key="seed.id+'v'+val.id"
-                            v-for="val in moduleMethodScores()"></td>
-                      </tr>
-                      </tbody>
-                    </template>
-                  </v-simple-table>
+
                   <v-chip outlined style="margin-top:15px" @click="downloadSeedList">
                     <v-icon left>fas fa-download</v-icon>
                     Save Seeds
@@ -769,7 +752,7 @@
                   </v-chip>
                 </template>
               </v-col>
-              <v-col cols="8">
+              <v-col>
                 <Graph ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle"
                        :progress="resultProgress" :legend="resultProgress===100" :meta="metagraph">
                   <template v-slot:legend v-if="results.drugs.length>0">
@@ -824,30 +807,22 @@
                   </v-progress-circular>
                 </v-card-title>
                 <template v-if="results.drugs.length>0">
-                  <v-simple-table max-height="45vh" height="45vh" class="overflow-y-auto" fixed-header dense>
-                    <template v-slot:default>
-                      <thead>
-                      <tr>
-                        <th class="text-center td-name">
-                          Name
-                        </th>
-                        <th v-for="val in rankingMethodScores()"
-                            :class="'text-center td-score'+(val.name==='Rank' ? ' td-rank':'')">
-                          {{ val.name }}
-                        </th>
-                      </tr>
-                      </thead>
-                      <tbody>
-                      <tr v-for="drug in results.drugs" :style="drugColorStyle" :key="drug.id"
-                          @click="focusNode('dru_'+drug.id)">
-                        <td class="td-name">{{ drug.displayName }}</td>
-                        <td :class="'td-result td-score'+(val.id==='rank' ? ' td-rank':'')"
-                            v-for="val in rankingMethodScores()">{{ drug[val.id] }}
-                        </td>
-                      </tr>
-                      </tbody>
+                  <v-data-table max-height="45vh" height="45vh" class="overflow-y-auto" fixed-header dense item-key="id"
+                                :items="results.drugs"
+                                :headers="getHeaders(1)"
+                                disable-pagination
+                                hide-default-footer @click:row="drugClicked">
+                    <template v-slot:item.displayName="{item}">
+                      <v-tooltip v-if="item.displayName.length>16" right>
+                        <template v-slot:activator="{attr,on }">
+                          <span v-bind="attr" v-on="on"
+                                style="color: dimgray">{{ item.displayName.substr(0, 16) }}...</span>
+                        </template>
+                        <span>{{item.displayName}}</span>
+                      </v-tooltip>
+                      <span v-else>{{ item.displayName }}</span>
                     </template>
-                  </v-simple-table>
+                  </v-data-table>
                   <v-chip outlined style="margin-top:15px"
                           @click="downloadRankingResultList" v-if="results.drugs.length>0">
                     <v-icon left>fas fa-download</v-icon>
@@ -1433,6 +1408,28 @@ export default {
           this.resultProgress += 2
         })
       })
+    },
+    getHeaders: function (table) {
+      let headers = [{text: "Name", align: "start", sortable: true, value: "displayName"}]
+      let scores = []
+      if (table === 0)
+        scores = this.moduleMethodScores()
+      else
+        scores = this.rankingMethodScores();
+      scores.forEach(e => headers.push({
+        text: e.name,
+        align: e.decimal ? "start" : "end",
+        sortable: true,
+        value: e.id,
+      }))
+
+      return headers
+    },
+    seedClicked: function (item) {
+      this.focusNode(['gen_', 'pro_'][this.seedTypeId] + item.id)
+    },
+    drugClicked: function (item) {
+      this.focusNode(['dru_'] + item.id)
     },
     focus: function () {
       this.$emit("focusEvent")
