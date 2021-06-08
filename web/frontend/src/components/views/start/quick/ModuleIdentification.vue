@@ -824,9 +824,9 @@ export default {
       let drugSeeds = []
 
       if (this.rankingSelect === 0) {
-        drugSeeds = this.seeds.map(s => s.id)
+        drugSeeds = this.seeds.map(s => {return {id:s.id, displayName: s.displayName}})
       } else {
-        drugSeeds = this.results.targets.map(t => t.id)
+        drugSeeds = this.results.targets.map(t => {return{id:t.id, displayName:t.displayName}})
         if (this.rankingSelect === 2) {
           this.seeds.forEach(s => drugSeeds.splice(drugSeeds.indexOf(s.id), 1))
         }

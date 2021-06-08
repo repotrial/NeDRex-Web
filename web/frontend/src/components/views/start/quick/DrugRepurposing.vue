@@ -663,21 +663,22 @@ export default {
       return []
     },
 
-    setSeeds: function (seedIds, type) {
+    setSeeds: function (seeds, type) {
       this.seedTypeId = ["gene", "protein"].indexOf(type)
-      this.$http.post("getConnectedNodes", {
-        sourceType: type,
-        targetType: type,
-        sourceIds: seedIds,
-        noloop: true
-      }).then(response => {
-        if (response.data !== undefined)
-          return response.data
-      }).then(data => {
-        this.addToSelection(data, "METH: Module Ident")
-      }).then(() => {
-        this.suggestionModel = undefined
-      }).catch(console.log)
+      this.addToSelection(seeds, "METH: Module Ident")
+      // this.$http.post("getConnectedNodes", {
+      //   sourceType: type,
+      //   targetType: type,
+      //   sourceIds: seedIds,
+      //   noloop: true
+      // }).then(response => {
+      //   if (response.data !== undefined)
+      //     return response.data
+      // }).then(data => {
+      //
+      // }).then(() => {
+      //   this.suggestionModel = undefined
+      // }).catch(console.log)
     },
 
     getOrigins: function (id) {
