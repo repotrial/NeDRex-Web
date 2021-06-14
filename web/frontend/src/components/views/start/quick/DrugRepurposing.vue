@@ -24,14 +24,13 @@
         <v-card
           v-if="step===1"
           class="mb-12"
-          height="75vh"
+          height="80vh"
         >
 
           <v-card-subtitle class="headline">1. Seed Configuration</v-card-subtitle>
-          <v-card-subtitle style="margin-top: -25px">Add seeds to your
-            list. Use the autocomplete system or the id list upload to add seed entries. The list can be manually
-            adjusted or the intersection of multiple sources may be created.
+          <v-card-subtitle style="margin-top: -25px">Add seeds to your list.
           </v-card-subtitle>
+          <v-divider style="margin: 15px;"></v-divider>
           <v-row>
             <v-col>
               <v-list-item-subtitle class="title">Select the seed type</v-list-item-subtitle>
@@ -45,63 +44,183 @@
               </v-list-item-action>
             </v-col>
           </v-row>
-          <v-container style="height: 80%">
-            <v-row style="height: 50vh">
+          <v-container style="height: 55vh; margin: 15px;">
+            <v-row style="height: 100%">
               <v-col cols="6">
-                <v-container v-if="seedTypeId!==undefined">
-                  <v-card-title style="margin-left: -25px">Add seeds associated to</v-card-title>
-                  <v-row>
-                    <v-col cols="3">
+                <div style="height: 40vh; max-height: 40vh;">
+                  <template v-if="seedTypeId!==undefined">
+                    <v-card-title style="margin-left: -25px" class="subtitle-1">Add
+                      {{ ['genes', 'proteins'][this.seedTypeId] }} associated to
+                    </v-card-title>
+                    <div style="display: flex">
+
                       <v-select :items="getSuggestionSelection()" v-model="suggestionType"
-                                placeholder="connected to" style="width: 100%"></v-select>
-                    </v-col>
-                    <v-col cols="6">
-                      <SuggestionAutocomplete :suggestion-type="suggestionType" :target-node-type="['gene', 'protein'][this.seedTypeId]" @addToSelectionEvent="addToSelection"></SuggestionAutocomplete>
-                    </v-col>
-                  </v-row>
-                  <v-card-subtitle>or</v-card-subtitle>
-                  <v-file-input :label="'by '+['entrez','uniprot'][seedTypeId]+' ids'"
-                                v-on:change="onFileSelected"
-                                show-size
-                                prepend-icon="far fa-list-alt"
-                                v-model="fileInputModel"
-                                dense
-                                style="width: 75%"
-                  ></v-file-input>
-                </v-container>
+                                placeholder="connected to" style="width: 35%; justify-self: flex-start"></v-select>
+                      <SuggestionAutocomplete :suggestion-type="suggestionType"
+                                              :target-node-type="['gene', 'protein'][this.seedTypeId]"
+                                              @addToSelectionEvent="addToSelection"
+                                              style="justify-self: flex-end;margin-left: auto"></SuggestionAutocomplete>
+                    </div>
+                    <v-card-subtitle>or</v-card-subtitle>
+                    <div style="justify-content: center; display: flex; width: 100%">
+                      <v-file-input :label="'by '+['entrez','uniprot'][seedTypeId]+' ids'"
+                                    v-on:change="onFileSelected"
+                                    show-size
+                                    prepend-icon="far fa-list-alt"
+                                    v-model="fileInputModel"
+                                    dense
+                                    style="width: 75%; max-width: 75%"
+                      ></v-file-input>
+                    </div>
+                  </template>
+                </div>
               </v-col>
 
-              <v-divider vertical></v-divider>
-              <v-col cols="5">
-                <v-card-title class="subtitle-1">Selected Seeds ({{ seeds.length }})
-                </v-card-title>
-                <v-list max-height="40vh" height="40vh" class="overflow-y-auto" ref="seedList">
-                  <v-list-item v-for="(seed,index) in seeds" :key="seed.id">
-                    <v-list-item-title>{{ $utils.adjustLabels(seed.displayName) }}</v-list-item-title>
-                    <v-list>
-                      <template v-for="o in getOrigins(seed.id)">
-                        <v-list-item-subtitle :key="seed.id+o">{{ o }}</v-list-item-subtitle>
+              <v-divider vertical v-show="seedTypeId!==undefined"></v-divider>
+              <v-col cols="6">
+                <v-data-table max-height="40vh" height="40vh" class="overflow-y-auto overflow-x-hidden" fixed-header
+                              dense item-key="id"
+                              :items="seeds"
+                              :headers="[{text: 'Name', align: 'start', sortable: true, value: 'displayName'},{text: 'Origin', align: 'start',sortable: true, value: 'origin'},{text: 'Action', align: 'end', sortable: false, value: 'action'}]"
+                              disable-pagination
+                              hide-default-footer
+                              v-show="seedTypeId!==undefined">
+                  <template v-slot:top>
+                    <div style="display: flex">
+                      <v-card-title style="justify-self: flex-start" class="subtitle-1">Selected Seeds ({{
+                          seeds.length
+                        }})
+                      </v-card-title>
+                    </div>
+                  </template>
+                  <template v-slot:item.displayName="{item}">
+                    <v-tooltip v-if="item.displayName.length>16" right>
+                      <template v-slot:activator="{attr,on }">
+                          <span v-bind="attr" v-on="on"
+                                style="color: dimgray">{{ item.displayName.substr(0, 16) }}...</span>
                       </template>
-                    </v-list>
-                    <v-list-item-action>
-                      <v-btn icon @click="seeds.splice(index,1)" color="red">
-                        <v-icon>far fa-trash-alt</v-icon>
-                      </v-btn>
-                    </v-list-item-action>
-                  </v-list-item>
-                </v-list>
-                <v-chip outlined v-show="seeds.length>0" style="margin-top:15px" @click="downloadList">
-                  <v-icon left>fas fa-download</v-icon>
-                  Save
-                </v-chip>
-                <v-chip outlined v-show="seeds.length>0" style="margin-top:15px" @click="clearList">
-                  <v-icon left>fas fa-trash-alt</v-icon>
-                  Clear
-                </v-chip>
-                <v-chip outlined v-show="seeds.length>0" style="margin-top:15px" @click="removeNonIntersecting()">
-                  <v-icon left>fas fa-minus-square</v-icon>
-                  Remove non-intersecting
-                </v-chip>
+                      <span>{{ item.displayName }}</span>
+                    </v-tooltip>
+                    <span v-else>{{ item.displayName }}</span>
+                  </template>
+                  <template v-slot:item.origin="{item}">
+                    <template v-for="o in getOrigins(item.id)">
+                      <v-tooltip bottom :key="item.id+o">
+                        <template v-slot:activator="{attr,on }">
+                          <v-chip style="font-size: smaller; color: gray" pill v-on="on" v-bind="attr">{{
+                              o[0]
+                            }}
+                          </v-chip>
+                        </template>
+                        <span v-if="o[2]">Connected to <b>{{ o[2] }}</b>:<br><b>{{ o[1] }}</b></span>
+                        <span v-else-if="o[0]==='FILE'">Added from user file:<br><b>{{ o[1] }}</b></span>
+                        <span v-else>Returned by method:<br><b>{{ o[1] }}</b></span>
+                      </v-tooltip>
+                    </template>
+                  </template>
+                  <template v-slot:header.origin="{header}">
+                    <v-tooltip bottom>
+                      <template v-slot:activator="{attr,on }">
+                          <span v-bind="attr" v-on="on">
+                          Origin
+                          </span>
+
+                      </template>
+                      <span>Holds the sources the seed node was added by:<br><b>SUG=</b>Suggestion, <b>FILE</b>=File input or <b>METH</b>=Other method</span>
+                    </v-tooltip>
+                  </template>
+                  <template v-slot:header.displayName="{header}">
+                    <v-tooltip bottom>
+                      <template v-slot:activator="{attr,on }">
+                          <span v-bind="attr" v-on="on">
+                          Name
+                          </span>
+                      </template>
+                      <span>Holds the common name of the seed {{
+                          ["genes", "proteins"][seedTypeId]
+                        }} if available.</span>
+                    </v-tooltip>
+                  </template>
+                  <template v-slot:item.action="{item}">
+                    <v-tooltip right>
+                      <template v-slot:activator="{attr,on }">
+                        <v-btn icon @click="removeSeed(item.id)" color="red">
+                          <v-icon>far fa-trash-alt</v-icon>
+                        </v-btn>
+                      </template>
+                      <span>Remove the current entry from the seed selection!</span>
+                    </v-tooltip>
+                  </template>
+                  <template v-slot:footer>
+                    <div style="display: flex; justify-content: center;padding-top: 16px" v-if="seeds && seeds.length>0">
+                      <div >
+                        <v-menu top offset-y transition="slide-y-reverse-transition">
+                          <template v-slot:activator="{on,attrs}">
+                            <v-btn small outlined right v-bind="attrs" v-on="on">
+                              <v-icon left color="primary">
+                                fas fa-download
+                              </v-icon>
+                              Download
+                            </v-btn>
+                          </template>
+                          <v-list style="font-size: smaller; color: gray" dense>
+                            <v-list-item @click="downloadList()" style="cursor:pointer">
+                              <v-icon left size="1em">
+                                fas fa-download
+                              </v-icon>
+                              IDs only
+                            </v-list-item>
+                            <v-menu right offset-x transition="slide-x-transition" open-on-hover>
+                              <template v-slot:activator="{on,attrs}">
+                                <v-list-item v-bind="attrs" v-on="on">
+                                  With names
+                                  <v-icon right>fas fa-caret-right</v-icon>
+                                </v-list-item>
+                              </template>
+                              <v-list dense>
+                                <v-list-item @click="downloadList(true,'\t')"
+                                             style="cursor:pointer; font-size: smaller; color: gray">
+                                  <v-icon left size="1em">
+                                    fas fa-download
+                                  </v-icon>
+                                  As .tsv
+                                </v-list-item>
+                                <v-list-item @click="downloadList(true,',')"
+                                             style="cursor:pointer; font-size: smaller; color: gray">
+                                  <v-icon left size="1em">
+                                    fas fa-download
+                                  </v-icon>
+                                  As .csv
+
+                                </v-list-item>
+                              </v-list>
+                            </v-menu>
+                          </v-list>
+                        </v-menu>
+                      </div>
+                      <div style="margin-left: 5px;">
+                        <v-menu top offset-y transition="slide-y-reverse-transition">
+                          <template v-slot:activator="{on,attrs}">
+                            <v-btn small outlined right v-bind="attrs" v-on="on">
+                              <v-icon left color="primary">
+                                fas fa-trash-alt
+                              </v-icon>
+                              Remove
+                            </v-btn>
+                          </template>
+                          <v-list style="font-size: smaller; color: gray" dense>
+                            <v-list-item @click="clearList" style="cursor:pointer">
+                              All
+                            </v-list-item>
+                            <v-list-item @click="removeNonIntersecting" style="cursor:pointer">
+                              With one origin only
+                            </v-list-item>
+                          </v-list>
+                        </v-menu>
+                      </div>
+                    </div>
+                  </template>
+                </v-data-table>
               </v-col>
             </v-row>
           </v-container>
@@ -124,13 +243,14 @@
         <v-card
           v-if="step===2"
           class="mb-12"
-          height="700px"
+          height="80vh"
         >
           <v-card-subtitle class="headline">2. Algorithm Selection</v-card-subtitle>
           <v-card-subtitle style="margin-top: -25px">Select and adjust the algorithm you want to apply on the
             constructed module to
             identify and rank drug candidates.
           </v-card-subtitle>
+          <v-divider style="margin: 15px;"></v-divider>
           <v-container style="height: 80%">
             <v-row style="height: 100%">
               <v-col>
@@ -144,42 +264,40 @@
                 </v-radio-group>
                 <template v-if="methodModel!==undefined">
                   <v-card-title style="margin-left:-25px">Configure Parameters</v-card-title>
-                  <v-row>
-                    <v-col>
-                      <v-slider
-                        hide-details
-                        class="align-center"
-                        v-model="models.topX"
-                        step="1"
-                        min="1"
-                        max="2000"
-                      >
-                        <template v-slot:prepend>
-                          <v-text-field
-                            v-model="models.topX"
-                            class="mt-0 pt-0"
-                            type="integer"
-                            style="width: 100px"
-                            label="visualize topX"
-                          ></v-text-field>
-                        </template>
-                        <template v-slot:append>
-                          <v-tooltip left>
-                            <template v-slot:activator="{ on, attrs }">
-                              <v-icon
-                                v-bind="attrs"
-                                v-on="on"
-                                left> far fa-question-circle
-                              </v-icon>
-                            </template>
-                            <span>A integer X limiting the visualization to the top X drugs that were found.</span>
-                          </v-tooltip>
-                        </template>
-                      </v-slider>
-                    </v-col>
-                  </v-row>
-                  <v-row>
-                    <v-col>
+                  <div>
+                    <v-slider
+                      hide-details
+                      class="align-center"
+                      v-model="models.topX"
+                      step="1"
+                      min="1"
+                      max="2000"
+                    >
+                      <template v-slot:prepend>
+                        <v-text-field
+                          v-model="models.topX"
+                          class="mt-0 pt-0"
+                          type="integer"
+                          style="width: 100px"
+                          label="visualize topX"
+                        ></v-text-field>
+                      </template>
+                      <template v-slot:append>
+                        <v-tooltip left>
+                          <template v-slot:activator="{ on, attrs }">
+                            <v-icon
+                              v-bind="attrs"
+                              v-on="on"
+                              left> far fa-question-circle
+                            </v-icon>
+                          </template>
+                          <span>A integer X limiting the visualization to the top X drugs that were found.</span>
+                        </v-tooltip>
+                      </template>
+                    </v-slider>
+                  </div>
+                  <div style="display: flex">
+                    <div>
                       <v-switch
                         label="Only use experimentally validated interaction networks"
                         v-model="experimentalSwitch"
@@ -199,10 +317,10 @@
                           </v-tooltip>
                         </template>
                       </v-switch>
-                    </v-col>
-                  </v-row>
-                  <v-row>
-                    <v-col>
+                    </div>
+                  </div>
+                  <div style="display:flex; width: 100%">
+                    <div style="justify-self: flex-start">
                       <v-switch
                         label="Only direct Drugs"
                         v-model="models.onlyDirect"
@@ -221,8 +339,8 @@
                           </v-tooltip>
                         </template>
                       </v-switch>
-                    </v-col>
-                    <v-col>
+                    </div>
+                    <div style="justify-self: center; margin-left: auto">
                       <v-switch
                         label="Only approved Drugs"
                         v-model="models.onlyApproved"
@@ -241,8 +359,8 @@
                           </v-tooltip>
                         </template>
                       </v-switch>
-                    </v-col>
-                    <v-col>
+                    </div>
+                    <div style="justify-self: flex-end; margin-left: auto">
                       <v-switch
                         label="Filter Element 'Drugs'"
                         v-model="models.filterElements"
@@ -260,47 +378,41 @@
                           </v-tooltip>
                         </template>
                       </v-switch>
-                    </v-col>
-                  </v-row>
-                  <v-row>
-                    <v-col>
-                      <v-slider
-                        v-show="methodModel===0"
-                        hide-details
-                        class="align-center"
-                        v-model="models.damping"
-                        step="0.01"
-                        min="0"
-                        max="1"
-                      >
-                        <template v-slot:prepend>
-                          <v-text-field
-                            v-model="models.damping"
-                            class="mt-0 pt-0"
-                            type="float"
-                            style="width: 60px"
-                            label="damping-factor"
-                          ></v-text-field>
-                        </template>
-                        <template v-slot:append>
-                          <v-tooltip left>
-                            <template v-slot:activator="{ on, attrs }">
-                              <v-icon
-                                v-bind="attrs"
-                                v-on="on"
-                                left> far fa-question-circle
-                              </v-icon>
-                            </template>
-                            <span>A float value between 0-1 to be used as damping factor parameter.</span>
-                          </v-tooltip>
-                        </template>
-                      </v-slider>
-                    </v-col>
-                  </v-row>
-
-                  <v-row>
-                    <v-col></v-col>
-                  </v-row>
+                    </div>
+                  </div>
+                  <div>
+                    <v-slider
+                      v-show="methodModel===0"
+                      hide-details
+                      class="align-center"
+                      v-model="models.damping"
+                      step="0.01"
+                      min="0"
+                      max="1"
+                    >
+                      <template v-slot:prepend>
+                        <v-text-field
+                          v-model="models.damping"
+                          class="mt-0 pt-0"
+                          type="float"
+                          style="width: 60px"
+                          label="damping-factor"
+                        ></v-text-field>
+                      </template>
+                      <template v-slot:append>
+                        <v-tooltip left>
+                          <template v-slot:activator="{ on, attrs }">
+                            <v-icon
+                              v-bind="attrs"
+                              v-on="on"
+                              left> far fa-question-circle
+                            </v-icon>
+                          </template>
+                          <span>A float value between 0-1 to be used as damping factor parameter.</span>
+                        </v-tooltip>
+                      </template>
+                    </v-slider>
+                  </div>
                 </template>
               </v-col>
             </v-row>
@@ -328,33 +440,78 @@
         <v-card
           v-if="step===3"
           class="mb-12"
-          height="750px"
+          height="80vh"
         >
+          <v-card-subtitle class="headline">3. Drug Prioritization Result</v-card-subtitle>
+          <v-divider style="margin: 15px;"></v-divider>
           <v-container>
-            <v-card-subtitle class="headline">3. Drug Prioritization Results</v-card-subtitle>
             <v-row>
               <v-col cols="2" style="padding: 0 50px 0 0; margin-right: -50px">
                 <v-card-title class="subtitle-1">Seeds ({{ seeds.length }})
                 </v-card-title>
-                  <v-data-table max-height="45vh" height="45vh" class="overflow-y-auto" fixed-header dense item-key="id"
-                                :items="seeds" :headers="getHeaders(true)" disable-pagination
-                                hide-default-footer @click:row="seedClicked">
-                    <template v-slot:item.displayName="{item}">
-                      <v-tooltip v-if="item.displayName.length>16" right>
-                        <template v-slot:activator="{attr,on }">
+                <v-data-table max-height="50vh" height="50vh" class="overflow-y-auto" fixed-header dense item-key="id"
+                              :items="seeds" :headers="getHeaders(true)" disable-pagination
+                              hide-default-footer @click:row="seedClicked">
+                  <template v-slot:item.displayName="{item}">
+                    <v-tooltip v-if="item.displayName.length>16" right>
+                      <template v-slot:activator="{attr,on }">
                           <span v-bind="attr" v-on="on"
                                 style="color: dimgray">{{ item.displayName.substr(0, 16) }}...</span>
-                        </template>
-                        <span>{{item.displayName}}</span>
-                      </v-tooltip>
-                      <span v-else>{{ item.displayName }}</span>
-                    </template>
+                      </template>
+                      <span>{{ item.displayName }}</span>
+                    </v-tooltip>
+                    <span v-else>{{ item.displayName }}</span>
+                  </template>
+                  <template v-slot:footer>
+                    <div style="display: flex; justify-content: center">
+                      <div style="padding-top: 16px">
+                        <v-menu top offset-y transition="slide-y-reverse-transition" v-if="seeds && seeds.length>0">
+                          <template v-slot:activator="{on,attrs}">
+                            <v-btn small outlined right v-bind="attrs" v-on="on">
+                              <v-icon left color="primary">
+                                fas fa-download
+                              </v-icon>
+                              Download
+                            </v-btn>
+                          </template>
+                          <v-list style="font-size: smaller; color: gray" dense>
+                            <v-list-item @click="downloadList()" style="cursor:pointer">
+                              <v-icon left size="1em">
+                                fas fa-download
+                              </v-icon>
+                              IDs only
+                            </v-list-item>
+                            <v-menu right offset-x transition="slide-x-transition" open-on-hover>
+                              <template v-slot:activator="{on,attrs}">
+                                <v-list-item v-bind="attrs" v-on="on">
+                                  With names
+                                  <v-icon right>fas fa-caret-right</v-icon>
+                                </v-list-item>
+                              </template>
+                              <v-list dense>
+                                <v-list-item @click="downloadList(true,'\t')"
+                                             style="cursor:pointer; font-size: smaller; color: gray">
+                                  <v-icon left size="1em">
+                                    fas fa-download
+                                  </v-icon>
+                                  As .tsv
+                                </v-list-item>
+                                <v-list-item @click="downloadList(true,',')"
+                                             style="cursor:pointer; font-size: smaller; color: gray">
+                                  <v-icon left size="1em">
+                                    fas fa-download
+                                  </v-icon>
+                                  As .csv
 
-                  </v-data-table>
-                <v-chip outlined style="margin-top:15px" @click="downloadList">
-                  <v-icon left>fas fa-download</v-icon>
-                  Save Seeds
-                </v-chip>
+                                </v-list-item>
+                              </v-list>
+                            </v-menu>
+                          </v-list>
+                        </v-menu>
+                      </div>
+                    </div>
+                  </template>
+                </v-data-table>
               </v-col>
               <v-col>
                 <Graph ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle"
@@ -392,7 +549,7 @@
                   </v-progress-circular>
                 </v-card-title>
                 <template v-if="results.targets.length>=0">
-                  <v-data-table max-height="45vh" height="45vh" class="overflow-y-auto" fixed-header dense item-key="id"
+                  <v-data-table max-height="50vh" height="50vh" class="overflow-y-auto" fixed-header dense item-key="id"
                                 :items="results.targets" :headers="getHeaders()" disable-pagination
                                 hide-default-footer @click:row="drugClicked">
                     <template v-slot:item.displayName="{item}">
@@ -401,21 +558,59 @@
                           <span v-bind="attr" v-on="on"
                                 style="color: dimgray">{{ item.displayName.substr(0, 16) }}...</span>
                         </template>
-                        <span>{{item.displayName}}</span>
+                        <span>{{ item.displayName }}</span>
                       </v-tooltip>
                       <span v-else>{{ item.displayName }}</span>
                     </template>
+                    <template v-slot:footer>
+                      <div style="display: flex; justify-content: center" v-show="results.targets.length>0">
+                        <div style="padding-top: 16px">
+                          <v-menu top offset-y transition="slide-y-reverse-transition" v-if="seeds && seeds.length>0">
+                            <template v-slot:activator="{on,attrs}">
+                              <v-btn small outlined right v-bind="attrs" v-on="on">
+                                <v-icon left color="primary">
+                                  fas fa-download
+                                </v-icon>
+                                Download
+                              </v-btn>
+                            </template>
+                            <v-list style="font-size: smaller; color: gray" dense>
+                              <v-menu right offset-x transition="slide-x-transition" open-on-hover>
+                                <template v-slot:activator="{on,attrs}">
+                                  <v-list-item v-bind="attrs" v-on="on">
+                                    Top {{ models.topX }} ranked drugs
+                                    <v-icon right>fas fa-caret-right</v-icon>
+                                  </v-list-item>
+                                </template>
+                                <v-list dense>
+                                  <v-list-item @click="downloadResultList('\t')"
+                                               style="cursor:pointer; font-size: smaller; color: gray">
+                                    <v-icon left size="1em">
+                                      fas fa-download
+                                    </v-icon>
+                                    As .tsv
+                                  </v-list-item>
+                                  <v-list-item @click="downloadResultList(',')"
+                                               style="cursor:pointer; font-size: smaller; color: gray">
+                                    <v-icon left size="1em">
+                                      fas fa-download
+                                    </v-icon>
+                                    As .csv
+                                  </v-list-item>
+                                </v-list>
+                              </v-menu>
+                              <v-list-item @click="downloadFullResultList" style="cursor: pointer">
+                                <v-icon left size="1em">
+                                  fas fa-download
+                                </v-icon>
+                                All ranked drugs
+                              </v-list-item>
+                            </v-list>
+                          </v-menu>
+                        </div>
+                      </div>
+                    </template>
                   </v-data-table>
-                  <v-chip outlined style="margin-top:15px"
-                          @click="downloadResultList" v-if="results.targets.length>0">
-                    <v-icon left>fas fa-download</v-icon>
-                    Save Drug Ranking (Top {{ models.topX }})
-                  </v-chip>
-                  <v-chip outlined style="margin-top:15px"
-                          @click="downloadFullResultList" v-if="results.targets.length>0">
-                    <v-icon left>fas fa-download</v-icon>
-                    Save Complete Drug Ranking
-                  </v-chip>
                 </template>
               </v-col>
             </v-row>
@@ -566,20 +761,20 @@ export default {
     },
     getHeaders: function (seed) {
       let headers = [{text: "Name", align: "start", sortable: true, value: "displayName"}]
-      if(!seed)
-      this.methodScores().forEach(e => headers.push({
-        text: e.name,
-        align: e.decimal ?"start":"end",
-        sortable: true,
-        value: e.id,
-      }))
+      if (!seed)
+        this.methodScores().forEach(e => headers.push({
+          text: e.name,
+          align: e.decimal ? "start" : "end",
+          sortable: true,
+          value: e.id,
+        }))
       return headers
     },
-    seedClicked:function(item){
-      this.focusNode(['gen_','pro_'][this.seedTypeId]+item.id)
+    seedClicked: function (item) {
+      this.focusNode(['gen_', 'pro_'][this.seedTypeId] + item.id)
     },
-    drugClicked:function(item) {
-      this.focusNode(['dru_']+item.id)
+    drugClicked: function (item) {
+      this.focusNode(['dru_'] + item.id)
     },
     updateGraphPhysics: function () {
       this.$refs.graph.setPhysics(this.graph.physics)
@@ -685,7 +880,19 @@ export default {
       if (this.seedOrigin[id] === undefined)
         return ["?"]
       else
-        return this.seedOrigin[id]
+        return this.seedOrigin[id].map(item => {
+          let sp1 = item.split(":")
+          let out = []
+          out.push(sp1[0])
+          if (out[0] === 'SUG') {
+            let sp2 = sp1[1].split("[")
+            out.push(sp2[0])
+            out.push(sp2[1].substring(0, sp2[1].length - 1))
+          } else {
+            out.push(sp1[1])
+          }
+          return out;
+        })
     },
 
     onFileSelected: function (file) {
@@ -706,7 +913,7 @@ export default {
       }).catch(console.log)
     },
 
-    downloadList: function () {
+    downloadList: function (names, sep) {
       this.$http.post("mapToDomainIds", {
         type: ['gene', 'protein'][this.seedTypeId],
         ids: this.seeds.map(s => s.id)
@@ -714,15 +921,20 @@ export default {
         if (response.data !== undefined)
           return response.data
       }).then(data => {
-        let text = "";
-        Object.values(data).forEach(id => text += id + "\n")
-        this.download(["gene", "protein"][this.seedTypeId] + "_seeds.tsv", text)
+        let text = "#ID"+(names? sep+"Name":"")+"\n";
+        let dlName = ["gene", "protein"][this.seedTypeId] + "_seeds." + (!names ? "list" : (sep === '\t' ? "tsv" : "csv"))
+        if (!names) {
+          Object.values(data).forEach(id => text += id + "\n")
+        } else {
+          this.seeds.forEach(s => text += data[s.id] + sep + s.displayName + "\n")
+        }
+        this.download(dlName, text)
       }).catch(console.log)
     },
     downloadFullResultList: function () {
       window.open(CONFIG.HOST_URL + CONFIG.CONTEXT_PATH + '/api/downloadJobResult?jid=' + this.currentJid)
     },
-    downloadResultList: function () {
+    downloadResultList: function (sep) {
       this.$http.post("mapToDomainIds", {
         type: 'drug',
         ids: this.results.targets.map(l => l.id)
@@ -730,16 +942,16 @@ export default {
         if (response.data !== undefined)
           return response.data
       }).then(data => {
-        let text = "id";
-        this.methods[this.methodModel].scores.forEach(s => text += "\t" + s.name)
+        let text = "#ID"+sep+"Name"
+        this.methods[this.methodModel].scores.forEach(s => text += sep + s.name)
         text += "\n"
         this.results.targets.forEach(t => {
-            text += data[t.id]
-            this.methods[this.methodModel].scores.forEach(s => text += "\t" + t[s.id])
+            text += data[t.id] + sep + t.displayName
+            this.methods[this.methodModel].scores.forEach(s => text += sep + t[s.id])
             text += "\n"
           }
         )
-        this.download("drug_ranking-Top_" + this.models.topX + ".tsv", text)
+        this.download("drug_ranking-Top_" + this.models.topX + (sep==="\t" ?".tsv":".csv"), text)
       }).catch(console.log)
     },
     download: function (name, content) {
@@ -773,6 +985,11 @@ export default {
     clearList: function () {
       this.seeds = []
       this.seedOrigin = {}
+    },
+    removeSeed: function (id) {
+      let index = this.seeds.map(e => e.id).indexOf(id)
+      this.seeds.splice(index, 1)
+      delete this.seedOrigin[id]
     }
     ,
     removeNonIntersecting: function () {

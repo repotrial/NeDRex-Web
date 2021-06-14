@@ -25,7 +25,7 @@
                     <v-icon left>
                       fas fa-angle-double-right
                     </v-icon>
-                    Agile Drug Repurposing
+                    Drug Repurposing
                   </v-btn>
                 </v-list-item-content>
               </v-list-item>
@@ -67,7 +67,7 @@
                         <v-icon left>
                           fas fa-angle-double-right
                         </v-icon>
-                        Agile Module Identification
+                        Module Identification
                       </v-btn>
                     </v-list-item-content>
                   </v-list-item>
@@ -104,7 +104,7 @@
                         <v-icon left>
                           fas fa-angle-double-right
                         </v-icon>
-                        Agile Drug Prioritization
+                        Drug Prioritization
                       </v-btn>
                     </v-list-item-content>
                   </v-list-item>
@@ -151,8 +151,8 @@
     </v-row>
   </v-container>
 </template>
-
 <script>
+
 import ModuleIdentification from "./quick/ModuleIdentification";
 import DrugRepurposing from "./quick/DrugRepurposing";
 import CombinedRepurposing from "./quick/CombinedRepurposing";
