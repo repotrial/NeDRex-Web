@@ -24,6 +24,8 @@ Vue.prototype.$http = ApiService;
 import Socket from "./services/socket";
 Vue.prototype.$socket = Socket
 Vue.prototype.$utils = Utils
+Vue.prototype.$config = CONFIG
+
 
 
 new Vue({
