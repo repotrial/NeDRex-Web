@@ -88,7 +88,8 @@
                               :headers="[{text: 'Name', align: 'start', sortable: true, value: 'displayName'},{text: 'Origin', align: 'start',sortable: true, value: 'origin'},{text: 'Action', align: 'end', sortable: false, value: 'action'}]"
                               disable-pagination
                               hide-default-footer
-                              v-show="seedTypeId!==undefined">
+                              v-show="seedTypeId!==undefined"
+                style="margin-top: 16px">
                   <template v-slot:top>
                     <div style="display: flex">
                       <v-card-title style="justify-self: flex-start" class="subtitle-1">Selected Seeds ({{

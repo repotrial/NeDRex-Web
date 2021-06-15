@@ -84,7 +84,8 @@
                               :headers="[{text: 'Name', align: 'start', sortable: true, value: 'displayName'},{text: 'Origin', align: 'start',sortable: true, value: 'origin'},{text: 'Action', align: 'end', sortable: false, value: 'action'}]"
                               disable-pagination
                               hide-default-footer
-                              v-show="seedTypeId!==undefined">
+                              v-show="seedTypeId!==undefined"
+                style="margin-top: 16px">
                   <template v-slot:top>
                     <div style="display: flex">
                       <v-card-title style="justify-self: flex-start" class="subtitle-1">Selected Seeds ({{
@@ -551,7 +552,7 @@
                 <template v-if="results.targets.length>=0">
                   <v-data-table max-height="50vh" height="50vh" class="overflow-y-auto" fixed-header dense item-key="id"
                                 :items="results.targets" :headers="getHeaders()" disable-pagination
-                                hide-default-footer @click:row="drugClicked">
+                                hide-default-footer @click:row="drugClicked" >
                     <template v-slot:item.displayName="{item}">
                       <v-tooltip v-if="item.displayName.length>16" right>
                         <template v-slot:activator="{attr,on }">

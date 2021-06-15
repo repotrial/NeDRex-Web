@@ -47,159 +47,365 @@
           </v-card-subtitle>
 
           <v-container style="height: 80%">
-            <v-row style="height: 75vh">
-              <v-col cols="5">
-                <v-list-item-subtitle class="title">1a. Select the source node type:</v-list-item-subtitle>
-                <v-list-item-action>
+            <div style="height: 75vh; display: flex">
+              <div style="justify-self: flex-start; width: 48%;">
+                <div style="display: flex; justify-content: flex-start;">
+                  <div class="title" style="padding-top: 16px;">1a. Select the source node type:</div>
                   <v-select item-value="id" :items="nodeList" v-model="sourceTypeId"
                             placeholder="Select start Node"
-                            :disabled="sources!==undefined && sources.length>0">
-
+                            :disabled="sources!==undefined && sources.length>0"
+                            style="min-width: 9.5em; max-width: 11.2em; margin-left: 25px">
                   </v-select>
-                </v-list-item-action>
-                <v-container v-if="sourceTypeId!==undefined">
-                  <v-card-subtitle class="title">1b. Prefilter the nodes:</v-card-subtitle>
-                  <v-row>
-                    <v-col cols="3">
-                      <v-select :items="getSuggestionSelection(0)" v-model="suggestionType[0]"
-                                placeholder="connected to"></v-select>
-                    </v-col>
-                    <v-col>
-                      <SuggestionAutocomplete :suggestion-type="suggestionType[0]" :index="0"
-                                              :target-node-type="this.nodeList[[[this.sourceTypeId, this.targetTypeId][0]]].value"
-                                              @addToSelectionEvent="addToSelection"></SuggestionAutocomplete>
-                    </v-col>
-                  </v-row>
-                  <v-card-subtitle>or</v-card-subtitle>
-                  <v-file-input :label="'by '+nodeIdTypeList[sourceTypeId]+' ids'"
-                                v-on:change="onSourceFileSelected"
-                                show-size
-                                prepend-icon="far fa-list-alt"
-                                v-model="fileInputModel"
-                                dense
-                  ></v-file-input>
-                  <v-row>
-                    <v-col cols="6">
-                      <v-card-title>Source Nodes ({{ sources.length }})
-                      </v-card-title>
-                    </v-col>
-                  </v-row>
-                  <v-row>
-                    <v-col>
-                      <v-list max-height="20vh" height="20vh" class="overflow-y-auto">
-                        <v-list-item v-for="(node,index) in sources" :key="node.id">
-                          <v-list-item-title>{{ $utils.adjustLabels(node.displayName) }}</v-list-item-title>
-                          <v-list>
-                            <template v-for="o in getOrigins(node.id,0)">
-                              <v-list-item-subtitle :key="node.id+o">{{ o }}</v-list-item-subtitle>
+                </div>
+                <div v-if="sourceTypeId!==undefined" style="margin-top: 25px;">
+                  <div style="display: flex">
+                    <div class="title" style="padding-top: 16px;justify-self: flex-start">1b. Prefilter the sources:</div>
+                  </div>
+                  <div style="display: flex">
+
+                    <v-select :items="getSuggestionSelection(0)" v-model="suggestionType[0]"
+                              placeholder="connected to" style="width: 35%; justify-self: flex-start"></v-select>
+                    <SuggestionAutocomplete :suggestion-type="suggestionType[0]" :index="0"
+                                            :target-node-type="this.nodeList[[[this.sourceTypeId, this.targetTypeId][0]]].value"
+                                            @addToSelectionEvent="addToSelection"
+                                            style="justify-self: flex-end;margin-left: auto"></SuggestionAutocomplete>
+                  </div>
+                  <v-card-subtitle style="margin-left: -10px">or</v-card-subtitle>
+                  <div style="justify-content: center; display: flex; width: 100%; margin-bottom: 25px; margin-left: -10px">
+                    <v-file-input :label="'by '+nodeIdTypeList[sourceTypeId]+' ids'"
+                                  v-on:change="onSourceFileSelected"
+                                  show-size
+                                  prepend-icon="far fa-list-alt"
+                                  v-model="fileInputModel[0]"
+                                  dense
+                                  style="width: 97%; max-width: 97%"
+                    ></v-file-input>
+                  </div>
+                  <v-data-table max-height="30vh" height="30vh" class="overflow-y-auto overflow-x-hidden" fixed-header
+                                dense item-key="id"
+                                :items="sources"
+                                :headers="[{text: 'Name', align: 'start', sortable: true, value: 'displayName'},{text: 'Origin', align: 'start',sortable: true, value: 'origin'},{text: 'Action', align: 'end', sortable: false, value: 'action'}]"
+                                disable-pagination
+                                hide-default-footer
+                                v-show="sourceTypeId!==undefined">
+                    <template v-slot:top>
+                      <div style="display: flex">
+                        <v-card-title style="justify-self: flex-start" class="subtitle-1">Source Nodes
+                          ({{ sources.length }})
+                        </v-card-title>
+                      </div>
+                    </template>
+                    <template v-slot:item.displayName="{item}">
+                      <v-tooltip v-if="item.displayName.length>16" right>
+                        <template v-slot:activator="{attr,on }">
+                          <span v-bind="attr" v-on="on"
+                                style="color: dimgray">{{ item.displayName.substr(0, 16) }}...</span>
+                        </template>
+                        <span>{{ item.displayName }}</span>
+                      </v-tooltip>
+                      <span v-else>{{ item.displayName }}</span>
+                    </template>
+                    <template v-slot:item.origin="{item}">
+                      <template v-for="o in getOrigins(item.id,0)">
+                        <v-tooltip bottom :key="item.id+o">
+                          <template v-slot:activator="{attr,on }">
+                            <v-chip style="font-size: smaller; color: gray" pill v-on="on" v-bind="attr">{{
+                                o[0]
+                              }}
+                            </v-chip>
+                          </template>
+                          <span v-if="o[2]">Connected to <b>{{ o[2] }}</b>:<br><b>{{ o[1] }}</b></span>
+                          <span v-else-if="o[0]==='FILE'">Added from user file:<br><b>{{ o[1] }}</b></span>
+                          <span v-else>Returned by method:<br><b>{{ o[1] }}</b></span>
+                        </v-tooltip>
+                      </template>
+                    </template>
+                    <template v-slot:header.origin="{header}">
+                      <v-tooltip bottom>
+                        <template v-slot:activator="{attr,on }">
+                          <span v-bind="attr" v-on="on">
+                          Origin
+                          </span>
+
+                        </template>
+                        <span>Holds the sources the seed node was added by:<br><b>SUG=</b>Suggestion, <b>FILE</b>=File input or <b>METH</b>=Other method</span>
+                      </v-tooltip>
+                    </template>
+                    <template v-slot:header.displayName="{header}">
+                      <v-tooltip bottom>
+                        <template v-slot:activator="{attr,on }">
+                          <span v-bind="attr" v-on="on">
+                          Name
+                          </span>
+                        </template>
+                        <span>Holds the common name of the seed {{
+                            nodeList[sourceTypeId].text
+                          }} if available.</span>
+                      </v-tooltip>
+                    </template>
+                    <template v-slot:item.action="{item}">
+                      <v-tooltip right>
+                        <template v-slot:activator="{attr,on }">
+                          <v-btn icon @click="removeNode(item.id,0)" color="red">
+                            <v-icon>far fa-trash-alt</v-icon>
+                          </v-btn>
+                        </template>
+                        <span>Remove the current entry from the seed selection!</span>
+                      </v-tooltip>
+                    </template>
+                    <template v-slot:footer>
+                      <div style="display: flex; justify-content: center;padding-top: 16px"
+                           v-if="sources && sources.length>0">
+                        <div>
+                          <v-menu top offset-y transition="slide-y-reverse-transition">
+                            <template v-slot:activator="{on,attrs}">
+                              <v-btn small outlined right v-bind="attrs" v-on="on">
+                                <v-icon left color="primary">
+                                  fas fa-download
+                                </v-icon>
+                                Download
+                              </v-btn>
                             </template>
-                          </v-list>
-                          <v-list-item-action>
-                            <v-btn icon @click="removeNode(index,node.id,0)" color="red">
-                              <v-icon>far fa-trash-alt</v-icon>
-                            </v-btn>
-                          </v-list-item-action>
-                        </v-list-item>
-                      </v-list>
-                    </v-col>
-                  </v-row>
-                  <v-row>
-                    <v-col>
-                      <v-chip outlined v-show="sources.length>0" style="margin-top:15px"
-                              @click="removeNonIntersecting(0)">
-                        <v-icon left>fas fa-minus-square</v-icon>
-                        Keep Intersection
-                      </v-chip>
-                      <v-chip outlined v-show="sources.length>0" style="margin-top:15px" @click="removeAll(0)">
-                        <v-icon left>fas fa-trash-alt</v-icon>
-                        Clear
-                      </v-chip>
-                      <v-chip outlined v-show="sources.length>0" style="margin-top:15px" @click="downloadList(0)">
-                        <v-icon left>fas fa-download</v-icon>
-                        Save
-                      </v-chip>
-                    </v-col>
-                  </v-row>
-                </v-container>
-              </v-col>
-              <v-col cols="2">
+                            <v-list style="font-size: smaller; color: gray" dense>
+                              <v-list-item @click="downloadList(0)" style="cursor:pointer">
+                                <v-icon left size="1em">
+                                  fas fa-download
+                                </v-icon>
+                                IDs only
+                              </v-list-item>
+                              <v-menu right offset-x transition="slide-x-transition" open-on-hover>
+                                <template v-slot:activator="{on,attrs}">
+                                  <v-list-item v-bind="attrs" v-on="on">
+                                    With names
+                                    <v-icon right>fas fa-caret-right</v-icon>
+                                  </v-list-item>
+                                </template>
+                                <v-list dense>
+                                  <v-list-item @click="downloadList(0,true,'\t')"
+                                               style="cursor:pointer; font-size: smaller; color: gray">
+                                    <v-icon left size="1em">
+                                      fas fa-download
+                                    </v-icon>
+                                    As .tsv
+                                  </v-list-item>
+                                  <v-list-item @click="downloadList(0,true,',')"
+                                               style="cursor:pointer; font-size: smaller; color: gray">
+                                    <v-icon left size="1em">
+                                      fas fa-download
+                                    </v-icon>
+                                    As .csv
+                                  </v-list-item>
+                                </v-list>
+                              </v-menu>
+                            </v-list>
+                          </v-menu>
+                        </div>
+                        <div style="margin-left: 5px;">
+                          <v-menu top offset-y transition="slide-y-reverse-transition">
+                            <template v-slot:activator="{on,attrs}">
+                              <v-btn small outlined right v-bind="attrs" v-on="on">
+                                <v-icon left color="primary">
+                                  fas fa-trash-alt
+                                </v-icon>
+                                Remove
+                              </v-btn>
+                            </template>
+                            <v-list style="font-size: smaller; color: gray" dense>
+                              <v-list-item @click="removeAll(0)" style="cursor:pointer">
+                                All
+                              </v-list-item>
+                              <v-list-item @click="removeNonIntersecting(0)" style="cursor:pointer">
+                                With one origin only
+                              </v-list-item>
+                            </v-list>
+                          </v-menu>
+                        </div>
+                      </div>
+                    </template>
+                  </v-data-table>
+                </div>
+              </div>
+              <div style="justify-self: center; margin-left: auto">
                 <v-divider vertical></v-divider>
-              </v-col>
-              <v-col cols="5">
-                <v-list-item-subtitle class="title">2a. Select the target node type:</v-list-item-subtitle>
-                <v-list-item-action>
+              </div>
+              <div style="justify-self: flex-end; margin-left: auto; width: 48%;">
+                <div style="display: flex; justify-content: flex-start;">
+                  <div class="title" style="padding-top: 16px;">2a. Select the target node type:</div>
                   <v-select item-value="id" :items="nodeList" v-model="targetTypeId"
-                            placeholder="Select start Node"
-                            :disabled="targets!==undefined && targets.length>0">
-
+                            placeholder="Select target Node"
+                            :disabled="targets!==undefined && targets.length>0"
+                            style="min-width: 9.5em; max-width: 11.2em; margin-left: 25px">
                   </v-select>
-                </v-list-item-action>
-                <v-container v-if="targetTypeId!==undefined">
-                  <v-card-subtitle class="title">2b. Optional: Prefilter the nodes:</v-card-subtitle>
-                  <v-row>
-                    <v-col cols="3">
-                      <v-select :items="getSuggestionSelection(1)" v-model="suggestionType[1]"
-                                placeholder="connected to"></v-select>
-                    </v-col>
-                    <v-col>
-                      <SuggestionAutocomplete :suggestion-type="suggestionType[1]" :index="1"
-                                              :target-node-type="this.nodeList[[[this.sourceTypeId, this.targetTypeId][1]]].value"
-                                              @addToSelectionEvent="addToSelection"></SuggestionAutocomplete>
-                    </v-col>
-                  </v-row>
-                  <v-card-subtitle>or</v-card-subtitle>
-                  <v-file-input :label="'by '+nodeIdTypeList[targetTypeId]+' ids'"
-                                v-on:change="onTargetFileSelected"
-                                show-size
-                                prepend-icon="far fa-list-alt"
-                                v-model="fileInputModel"
-                                dense
-                  ></v-file-input>
-                  <v-row v-if="targets.length>0">
-                    <v-col cols="6">
-                      <v-card-title>Target Nodes ({{ targets.length }})
-                      </v-card-title>
-                    </v-col>
-                  </v-row>
-                  <v-row>
-                    <v-col>
-                      <v-list max-height="20vh" height="20vh" class="overflow-y-auto">
-                        <v-list-item v-for="(node,index) in targets" :key="node.id">
-                          <v-list-item-title>{{ node.displayName }}</v-list-item-title>
-                          <v-list>
-                            <template v-for="o in getOrigins(node.id,1)">
-                              <v-list-item-subtitle :key="node.id+o">{{ o }}</v-list-item-subtitle>
+                </div>
+                <div v-if="targetTypeId!==undefined" style="margin-top: 25px;">
+                  <div style="display: flex">
+                    <div class="title" style="padding-top: 16px;justify-self: flex-start">2b. Prefilter the targets (optional):</div>
+                  </div>
+                  <div style="display: flex">
+
+                    <v-select :items="getSuggestionSelection(1)" v-model="suggestionType[1]"
+                              placeholder="connected to" style="width: 35%; justify-self: flex-start"></v-select>
+                    <SuggestionAutocomplete :suggestion-type="suggestionType[1]" :index="1"
+                                            :target-node-type="this.nodeList[[this.targetTypeId]].value"
+                                            @addToSelectionEvent="addToSelection"
+                                            style="justify-self: flex-end;margin-left: auto"></SuggestionAutocomplete>
+                  </div>
+                  <v-card-subtitle style="margin-left: -10px">or</v-card-subtitle>
+                  <div style="justify-content: center; display: flex; width: 100%; margin-bottom: 25px; margin-left: -10px">
+                    <v-file-input :label="'by '+nodeIdTypeList[targetTypeId]+' ids'"
+                                  v-on:change="onTargetFileSelected"
+                                  show-size
+                                  prepend-icon="far fa-list-alt"
+                                  v-model="fileInputModel[1]"
+                                  dense
+                                  style="width: 97%; max-width: 97%"
+                    ></v-file-input>
+                  </div>
+                  <v-data-table max-height="30vh" height="30vh" class="overflow-y-auto overflow-x-hidden" fixed-header
+                                dense item-key="id"
+                                :items="targets"
+                                :headers="[{text: 'Name', align: 'start', sortable: true, value: 'displayName'},{text: 'Origin', align: 'start',sortable: true, value: 'origin'},{text: 'Action', align: 'end', sortable: false, value: 'action'}]"
+                                disable-pagination
+                                hide-default-footer
+                                v-show="targetTypeId!==undefined">
+                    <template v-slot:top>
+                      <div style="display: flex">
+                        <v-card-title style="justify-self: flex-start" class="subtitle-1">Source Nodes
+                          ({{ targets.length }})
+                        </v-card-title>
+                      </div>
+                    </template>
+                    <template v-slot:item.displayName="{item}">
+                      <v-tooltip v-if="item.displayName.length>16" right>
+                        <template v-slot:activator="{attr,on }">
+                          <span v-bind="attr" v-on="on"
+                                style="color: dimgray">{{ item.displayName.substr(0, 16) }}...</span>
+                        </template>
+                        <span>{{ item.displayName }}</span>
+                      </v-tooltip>
+                      <span v-else>{{ item.displayName }}</span>
+                    </template>
+                    <template v-slot:item.origin="{item}">
+                      <template v-for="o in getOrigins(item.id,1)">
+                        <v-tooltip bottom :key="item.id+o">
+                          <template v-slot:activator="{attr,on }">
+                            <v-chip style="font-size: smaller; color: gray" pill v-on="on" v-bind="attr">{{
+                                o[0]
+                              }}
+                            </v-chip>
+                          </template>
+                          <span v-if="o[2]">Connected to <b>{{ o[2] }}</b>:<br><b>{{ o[1] }}</b></span>
+                          <span v-else-if="o[0]==='FILE'">Added from user file:<br><b>{{ o[1] }}</b></span>
+                          <span v-else>Returned by method:<br><b>{{ o[1] }}</b></span>
+                        </v-tooltip>
+                      </template>
+                    </template>
+                    <template v-slot:header.origin="{header}">
+                      <v-tooltip bottom>
+                        <template v-slot:activator="{attr,on }">
+                          <span v-bind="attr" v-on="on">
+                          Origin
+                          </span>
+
+                        </template>
+                        <span>Holds the sources the seed node was added by:<br><b>SUG=</b>Suggestion, <b>FILE</b>=File input or <b>METH</b>=Other method</span>
+                      </v-tooltip>
+                    </template>
+                    <template v-slot:header.displayName="{header}">
+                      <v-tooltip bottom>
+                        <template v-slot:activator="{attr,on }">
+                          <span v-bind="attr" v-on="on">
+                          Name
+                          </span>
+                        </template>
+                        <span>Holds the common name of the seed {{
+                            nodeList[targetTypeId].text
+                          }} if available.</span>
+                      </v-tooltip>
+                    </template>
+                    <template v-slot:item.action="{item}">
+                      <v-tooltip right>
+                        <template v-slot:activator="{attr,on }">
+                          <v-btn icon @click="removeNode(item.id,1)" color="red">
+                            <v-icon>far fa-trash-alt</v-icon>
+                          </v-btn>
+                        </template>
+                        <span>Remove the current entry from the seed selection!</span>
+                      </v-tooltip>
+                    </template>
+                    <template v-slot:footer>
+                      <div style="display: flex; justify-content: center;padding-top: 16px"
+                           v-if="targets && targets.length>0">
+                        <div>
+                          <v-menu top offset-y transition="slide-y-reverse-transition">
+                            <template v-slot:activator="{on,attrs}">
+                              <v-btn small outlined right v-bind="attrs" v-on="on">
+                                <v-icon left color="primary">
+                                  fas fa-download
+                                </v-icon>
+                                Download
+                              </v-btn>
                             </template>
-                          </v-list>
-                          <v-list-item-action>
-                            <v-btn icon @click="removeNode(index,node.id,1)" color="red">
-                              <v-icon>far fa-trash-alt</v-icon>
-                            </v-btn>
-                          </v-list-item-action>
-                        </v-list-item>
-                      </v-list>
-                    </v-col>
-                  </v-row>
-                  <v-row>
-                    <v-col>
-                      <v-chip outlined v-show="targets.length>0" style="margin-top:15px"
-                              @click="removeNonIntersecting(1)">
-                        <v-icon left>fas fa-minus-square</v-icon>
-                        Keep Intersection
-                      </v-chip>
-                      <v-chip outlined v-show="targets.length>0" style="margin-top:15px" @click="removeAll(1)">
-                        <v-icon left>fas fa-trash-alt</v-icon>
-                        Clear
-                      </v-chip>
-                      <v-chip outlined v-show="targets.length>0" style="margin-top:15px" @click="downloadList(1)">
-                        <v-icon left>fas fa-download</v-icon>
-                        Save
-                      </v-chip>
-                    </v-col>
-                  </v-row>
-                </v-container>
-              </v-col>
-            </v-row>
+                            <v-list style="font-size: smaller; color: gray" dense>
+                              <v-list-item @click="downloadList(1)" style="cursor:pointer">
+                                <v-icon left size="1em">
+                                  fas fa-download
+                                </v-icon>
+                                IDs only
+                              </v-list-item>
+                              <v-menu right offset-x transition="slide-x-transition" open-on-hover>
+                                <template v-slot:activator="{on,attrs}">
+                                  <v-list-item v-bind="attrs" v-on="on">
+                                    With names
+                                    <v-icon right>fas fa-caret-right</v-icon>
+                                  </v-list-item>
+                                </template>
+                                <v-list dense>
+                                  <v-list-item @click="downloadList(1,true,'\t')"
+                                               style="cursor:pointer; font-size: smaller; color: gray">
+                                    <v-icon left size="1em">
+                                      fas fa-download
+                                    </v-icon>
+                                    As .tsv
+                                  </v-list-item>
+                                  <v-list-item @click="downloadList(1,true,',')"
+                                               style="cursor:pointer; font-size: smaller; color: gray">
+                                    <v-icon left size="1em">
+                                      fas fa-download
+                                    </v-icon>
+                                    As .csv
+                                  </v-list-item>
+                                </v-list>
+                              </v-menu>
+                            </v-list>
+                          </v-menu>
+                        </div>
+                        <div style="margin-left: 5px;">
+                          <v-menu top offset-y transition="slide-y-reverse-transition">
+                            <template v-slot:activator="{on,attrs}">
+                              <v-btn small outlined right v-bind="attrs" v-on="on">
+                                <v-icon left color="primary">
+                                  fas fa-trash-alt
+                                </v-icon>
+                                Remove
+                              </v-btn>
+                            </template>
+                            <v-list style="font-size: smaller; color: gray" dense>
+                              <v-list-item @click="removeAll(1)" style="cursor:pointer">
+                                All
+                              </v-list-item>
+                              <v-list-item @click="removeNonIntersecting(1)" style="cursor:pointer">
+                                With one origin only
+                              </v-list-item>
+                            </v-list>
+                          </v-menu>
+                        </div>
+                      </div>
+                    </template>
+                  </v-data-table>
+                </div>
+              </div>
+            </div>
           </v-container>
         </v-card>
         <v-btn
@@ -510,7 +716,7 @@ export default {
       sources: [],
       targets: [],
       nodeOrigins: [{}, {}],
-      fileInputModel: undefined,
+      fileInputModel: [undefined, undefined],
 
       sourceTypeId: undefined,
       targetTypeId: undefined,
@@ -688,7 +894,7 @@ export default {
         return
       this.$utils.readFile(file).then(content => {
         this.$http.post("mapFileListToItems", {
-          type: this.nodeList[[this.sourceTypeId, this.targetTypeId][index]],
+          type: this.nodeList[[this.sourceTypeId, this.targetTypeId][index]].value,
           file: content
         }).then(response => {
           if (response.data)
@@ -696,7 +902,7 @@ export default {
         }).then(data => {
           this.addToSelection(data, index, "FILE:" + file.name)
         }).then(() => {
-          this.fileInputModel = undefined
+          this.$set(this.fileInputModel, index, undefined)
         }).catch(console.log)
       }).catch(console.log)
     },
@@ -739,12 +945,25 @@ export default {
       if (this.nodeOrigins[index][id] === undefined)
         return ["?"]
       else
-        return this.nodeOrigins[index][id]
+        return this.nodeOrigins[index][id].map(item => {
+          let sp1 = item.split(":")
+          let out = []
+          out.push(sp1[0])
+          if (out[0] === 'SUG') {
+            let sp2 = sp1[1].split("[")
+            out.push(sp2[0])
+            out.push(sp2[1].substring(0, sp2[1].length - 1))
+          } else {
+            out.push(sp1[1])
+          }
+          return out;
+        })
     }
     ,
-    removeNode: function (lindex, id, index) {
-      this[["sources", "targets"][index]].splice(lindex, 1)
-      this.nodeOrigins[index][id] = undefined
+    removeNode: function (id, index) {
+      let idx = this[["sources", "targets"][index]].map(e => e.id).indexOf(id)
+      this[["sources", "targets"][index]].splice(idx, 1)
+      delete this.nodeOrigins[index][id]
     },
 
     removeAll: function (index) {
@@ -764,7 +983,7 @@ export default {
       this[["sources", "targets"][index]] = seeds.filter(s => remove.indexOf(s.id) === -1)
     }
     ,
-    downloadList: function (index) {
+    downloadList: function (index, names, sep) {
       let nodeType = this.nodeList[[this.sourceTypeId, this.targetTypeId][index]].value
       this.$http.post("mapToDomainIds", {
         type: nodeType,
@@ -773,9 +992,14 @@ export default {
         if (response.data !== undefined)
           return response.data
       }).then(data => {
-        let text = "";
-        Object.values(data).forEach(id => text += id + "\n")
-        this.download(nodeType + "_sources.tsv", text)
+        let text = "#ID" + (names ? sep + "Name" : "") + "\n";
+        let dlName = ["gene", "protein"][this.seedTypeId] + "_seeds." + (!names ? "list" : (sep === '\t' ? "tsv" : "csv"))
+        if (!names) {
+          Object.values(data).forEach(id => text += id + "\n")
+        } else {
+          [this.sources, this.targets][index].forEach(s => text += data[s.id] + sep + s.displayName + "\n")
+        }
+        this.download(dlName, text)
       }).catch(console.log)
     },
     download: function (name, content) {

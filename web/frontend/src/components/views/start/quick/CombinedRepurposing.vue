@@ -40,7 +40,7 @@
             </a>{{ ")." }}
           </v-card-subtitle>
           <v-divider style="margin: 15px;"></v-divider>
-          <v-row >
+          <v-row>
             <v-col>
               <v-list-item-subtitle class="title">Select the seed type</v-list-item-subtitle>
               <v-list-item-action>
@@ -93,7 +93,8 @@
                               :headers="[{text: 'Name', align: 'start', sortable: true, value: 'displayName'},{text: 'Origin', align: 'start',sortable: true, value: 'origin'},{text: 'Action', align: 'end', sortable: false, value: 'action'}]"
                               disable-pagination
                               hide-default-footer
-                              v-show="seedTypeId!==undefined">
+                              v-show="seedTypeId!==undefined"
+                              style="margin-top: 16px">
                   <template v-slot:top>
                     <div style="display: flex">
                       <v-card-title style="justify-self: flex-start" class="subtitle-1">Selected Seeds ({{
@@ -161,8 +162,9 @@
                     </v-tooltip>
                   </template>
                   <template v-slot:footer>
-                    <div style="display: flex; justify-content: center;padding-top: 16px" v-if="seeds && seeds.length>0">
-                      <div >
+                    <div style="display: flex; justify-content: center;padding-top: 16px"
+                         v-if="seeds && seeds.length>0">
+                      <div>
                         <v-menu top offset-y transition="slide-y-reverse-transition">
                           <template v-slot:activator="{on,attrs}">
                             <v-btn small outlined right v-bind="attrs" v-on="on">
@@ -815,7 +817,7 @@
                     <span v-else>{{ item.displayName }}</span>
                   </template>
                   <template v-slot:footer>
-                    <div style="display: flex; justify-content: center; margin-left: auto" >
+                    <div style="display: flex; justify-content: center; margin-left: auto">
                       <div style="padding-top: 16px">
                         <v-menu top offset-y transition="slide-y-reverse-transition" v-show="results.targets.length>0">
                           <template v-slot:activator="{on,attrs}">
@@ -1479,7 +1481,7 @@ export default {
         if (response.data !== undefined)
           return response.data
       }).then(data => {
-        let text = "#ID"+ (names ? sep + "Name" : "")+"\n";
+        let text = "#ID" + (names ? sep + "Name" : "") + "\n";
         let dlName = ["gene", "protein"][this.seedTypeId] + "_seeds." + (!names ? "list" : (sep === '\t' ? "tsv" : "csv"))
         if (!names) {
           Object.values(data).forEach(id => text += id + "\n")
@@ -1509,7 +1511,7 @@ export default {
             text += "\n"
           }
         )
-        this.download(["gene", "protein"][this.seedTypeId] + "_module."+(sep==="\t"?"tsv":"csv"), text)
+        this.download(["gene", "protein"][this.seedTypeId] + "_module." + (sep === "\t" ? "tsv" : "csv"), text)
       }).catch(console.log)
     },
     downloadRankingResultList: function (sep) {
@@ -1520,7 +1522,7 @@ export default {
         if (response.data !== undefined)
           return response.data
       }).then(data => {
-        let text = "#ID"+sep+"Name";
+        let text = "#ID" + sep + "Name";
         this.rankingMethods[this.rankingMethodModel].scores.forEach(s => text += sep + s.name)
         text += "\n"
         this.results.drugs.forEach(t => {
@@ -1529,7 +1531,7 @@ export default {
             text += "\n"
           }
         )
-        this.download("drug_ranking-Top_" + this.rankingModels.topX + (sep==="\t" ?".tsv":".csv"), text)
+        this.download("drug_ranking-Top_" + this.rankingModels.topX + (sep === "\t" ? ".tsv" : ".csv"), text)
       }).catch(console.log)
     },
 
