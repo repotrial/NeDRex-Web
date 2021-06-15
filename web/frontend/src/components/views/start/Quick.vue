@@ -207,11 +207,11 @@ export default {
     loadGraph: function (gid) {
       this.$emit("graphLoadEvent", gid)
     },
-    loadDrugTarget: function (blitz, seeds, type) {
+    loadDrugTarget: function (blitz, seeds, type,origin) {
       this.blitz = blitz;
       this.modus = 2
       setTimeout(function () {
-        this.$refs.drugRanking.setSeeds(seeds, type)
+        this.$refs.drugRanking.setSeeds(seeds, type,origin)
       }.bind(this), 500)
 
     },

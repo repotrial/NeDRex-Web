@@ -35,7 +35,8 @@
         <v-card
           v-if="step===1"
           class="mb-12"
-          max-height="90vh"
+          max-height="95vh"
+          height="95vh"
         >
 
           <v-card-subtitle class="headline">Node Configuration</v-card-subtitle>
@@ -53,7 +54,7 @@
                   <div class="title" style="padding-top: 16px;">1a. Select the source node type:</div>
                   <v-select item-value="id" :items="nodeList" v-model="sourceTypeId"
                             placeholder="Select start Node"
-                            :disabled="sources!==undefined && sources.length>0"
+                            :disabled="$refs.sourceTable!=null && $refs.sourceTable.getSeeds().length>0"
                             style="min-width: 9.5em; max-width: 11.2em; margin-left: 25px">
                   </v-select>
                 </div>
@@ -81,148 +82,11 @@
                                   style="width: 97%; max-width: 97%"
                     ></v-file-input>
                   </div>
-                  <v-data-table max-height="30vh" height="30vh" class="overflow-y-auto overflow-x-hidden" fixed-header
-                                dense item-key="id"
-                                :items="sources"
-                                :headers="[{text: 'Name', align: 'start', sortable: true, value: 'displayName'},{text: 'Origin', align: 'start',sortable: true, value: 'origin'},{text: 'Action', align: 'end', sortable: false, value: 'action'}]"
-                                disable-pagination
-                                hide-default-footer
-                                v-show="sourceTypeId!==undefined">
-                    <template v-slot:top>
-                      <div style="display: flex">
-                        <v-card-title style="justify-self: flex-start" class="subtitle-1">Source Nodes
-                          ({{ sources.length }})
-                        </v-card-title>
-                      </div>
-                    </template>
-                    <template v-slot:item.displayName="{item}">
-                      <v-tooltip v-if="item.displayName.length>16" right>
-                        <template v-slot:activator="{attr,on }">
-                          <span v-bind="attr" v-on="on"
-                                style="color: dimgray">{{ item.displayName.substr(0, 16) }}...</span>
-                        </template>
-                        <span>{{ item.displayName }}</span>
-                      </v-tooltip>
-                      <span v-else>{{ item.displayName }}</span>
-                    </template>
-                    <template v-slot:item.origin="{item}">
-                      <template v-for="o in getOrigins(item.id,0)">
-                        <v-tooltip bottom :key="item.id+o">
-                          <template v-slot:activator="{attr,on }">
-                            <v-chip style="font-size: smaller; color: gray" pill v-on="on" v-bind="attr">{{
-                                o[0]
-                              }}
-                            </v-chip>
-                          </template>
-                          <span v-if="o[2]">Connected to <b>{{ o[2] }}</b>:<br><b>{{ o[1] }}</b></span>
-                          <span v-else-if="o[0]==='FILE'">Added from user file:<br><b>{{ o[1] }}</b></span>
-                          <span v-else>Returned by method:<br><b>{{ o[1] }}</b></span>
-                        </v-tooltip>
-                      </template>
-                    </template>
-                    <template v-slot:header.origin="{header}">
-                      <v-tooltip bottom>
-                        <template v-slot:activator="{attr,on }">
-                          <span v-bind="attr" v-on="on">
-                          Origin
-                          </span>
-
-                        </template>
-                        <span>Holds the sources the seed node was added by:<br><b>SUG=</b>Suggestion, <b>FILE</b>=File input or <b>METH</b>=Other method</span>
-                      </v-tooltip>
-                    </template>
-                    <template v-slot:header.displayName="{header}">
-                      <v-tooltip bottom>
-                        <template v-slot:activator="{attr,on }">
-                          <span v-bind="attr" v-on="on">
-                          Name
-                          </span>
-                        </template>
-                        <span>Holds the common name of the seed {{
-                            nodeList[sourceTypeId].text
-                          }} if available.</span>
-                      </v-tooltip>
-                    </template>
-                    <template v-slot:item.action="{item}">
-                      <v-tooltip right>
-                        <template v-slot:activator="{attr,on }">
-                          <v-btn icon @click="removeNode(item.id,0)" color="red">
-                            <v-icon>far fa-trash-alt</v-icon>
-                          </v-btn>
-                        </template>
-                        <span>Remove the current entry from the seed selection!</span>
-                      </v-tooltip>
-                    </template>
-                    <template v-slot:footer>
-                      <div style="display: flex; justify-content: center;padding-top: 16px"
-                           v-if="sources && sources.length>0">
-                        <div>
-                          <v-menu top offset-y transition="slide-y-reverse-transition">
-                            <template v-slot:activator="{on,attrs}">
-                              <v-btn small outlined right v-bind="attrs" v-on="on">
-                                <v-icon left color="primary">
-                                  fas fa-download
-                                </v-icon>
-                                Download
-                              </v-btn>
-                            </template>
-                            <v-list style="font-size: smaller; color: gray" dense>
-                              <v-list-item @click="downloadList(0)" style="cursor:pointer">
-                                <v-icon left size="1em">
-                                  fas fa-download
-                                </v-icon>
-                                IDs only
-                              </v-list-item>
-                              <v-menu right offset-x transition="slide-x-transition" open-on-hover>
-                                <template v-slot:activator="{on,attrs}">
-                                  <v-list-item v-bind="attrs" v-on="on">
-                                    With names
-                                    <v-icon right>fas fa-caret-right</v-icon>
-                                  </v-list-item>
-                                </template>
-                                <v-list dense>
-                                  <v-list-item @click="downloadList(0,true,'\t')"
-                                               style="cursor:pointer; font-size: smaller; color: gray">
-                                    <v-icon left size="1em">
-                                      fas fa-download
-                                    </v-icon>
-                                    As .tsv
-                                  </v-list-item>
-                                  <v-list-item @click="downloadList(0,true,',')"
-                                               style="cursor:pointer; font-size: smaller; color: gray">
-                                    <v-icon left size="1em">
-                                      fas fa-download
-                                    </v-icon>
-                                    As .csv
-                                  </v-list-item>
-                                </v-list>
-                              </v-menu>
-                            </v-list>
-                          </v-menu>
-                        </div>
-                        <div style="margin-left: 5px;">
-                          <v-menu top offset-y transition="slide-y-reverse-transition">
-                            <template v-slot:activator="{on,attrs}">
-                              <v-btn small outlined right v-bind="attrs" v-on="on">
-                                <v-icon left color="primary">
-                                  fas fa-trash-alt
-                                </v-icon>
-                                Remove
-                              </v-btn>
-                            </template>
-                            <v-list style="font-size: smaller; color: gray" dense>
-                              <v-list-item @click="removeAll(0)" style="cursor:pointer">
-                                All
-                              </v-list-item>
-                              <v-list-item @click="removeNonIntersecting(0)" style="cursor:pointer">
-                                With one origin only
-                              </v-list-item>
-                            </v-list>
-                          </v-menu>
-                        </div>
-                      </div>
-                    </template>
-                  </v-data-table>
+                  <SeedTable ref="sourceTable" v-if="sourceTypeId!==undefined" :download="true" :remove="true"
+                             @printNotificationEvent="printNotification"
+                             height="30vh"
+                             :title="'Source nodes ('+($refs.sourceTable ? $refs.sourceTable.getSeeds().length : 0)+')'"
+                             :nodeName="nodeList[sourceTypeId].value"></SeedTable>
                 </div>
               </div>
               <div style="justify-self: center; margin-left: auto">
@@ -233,7 +97,7 @@
                   <div class="title" style="padding-top: 16px;">2a. Select the target node type:</div>
                   <v-select item-value="id" :items="nodeList" v-model="targetTypeId"
                             placeholder="Select target Node"
-                            :disabled="targets!==undefined && targets.length>0"
+                            :disabled="$refs.targetTable!=null && $refs.targetTable.getSeeds().length>0"
                             style="min-width: 9.5em; max-width: 11.2em; margin-left: 25px">
                   </v-select>
                 </div>
@@ -261,148 +125,11 @@
                                   style="width: 97%; max-width: 97%"
                     ></v-file-input>
                   </div>
-                  <v-data-table max-height="30vh" height="30vh" class="overflow-y-auto overflow-x-hidden" fixed-header
-                                dense item-key="id"
-                                :items="targets"
-                                :headers="[{text: 'Name', align: 'start', sortable: true, value: 'displayName'},{text: 'Origin', align: 'start',sortable: true, value: 'origin'},{text: 'Action', align: 'end', sortable: false, value: 'action'}]"
-                                disable-pagination
-                                hide-default-footer
-                                v-show="targetTypeId!==undefined">
-                    <template v-slot:top>
-                      <div style="display: flex">
-                        <v-card-title style="justify-self: flex-start" class="subtitle-1">Source Nodes
-                          ({{ targets.length }})
-                        </v-card-title>
-                      </div>
-                    </template>
-                    <template v-slot:item.displayName="{item}">
-                      <v-tooltip v-if="item.displayName.length>16" right>
-                        <template v-slot:activator="{attr,on }">
-                          <span v-bind="attr" v-on="on"
-                                style="color: dimgray">{{ item.displayName.substr(0, 16) }}...</span>
-                        </template>
-                        <span>{{ item.displayName }}</span>
-                      </v-tooltip>
-                      <span v-else>{{ item.displayName }}</span>
-                    </template>
-                    <template v-slot:item.origin="{item}">
-                      <template v-for="o in getOrigins(item.id,1)">
-                        <v-tooltip bottom :key="item.id+o">
-                          <template v-slot:activator="{attr,on }">
-                            <v-chip style="font-size: smaller; color: gray" pill v-on="on" v-bind="attr">{{
-                                o[0]
-                              }}
-                            </v-chip>
-                          </template>
-                          <span v-if="o[2]">Connected to <b>{{ o[2] }}</b>:<br><b>{{ o[1] }}</b></span>
-                          <span v-else-if="o[0]==='FILE'">Added from user file:<br><b>{{ o[1] }}</b></span>
-                          <span v-else>Returned by method:<br><b>{{ o[1] }}</b></span>
-                        </v-tooltip>
-                      </template>
-                    </template>
-                    <template v-slot:header.origin="{header}">
-                      <v-tooltip bottom>
-                        <template v-slot:activator="{attr,on }">
-                          <span v-bind="attr" v-on="on">
-                          Origin
-                          </span>
-
-                        </template>
-                        <span>Holds the sources the seed node was added by:<br><b>SUG=</b>Suggestion, <b>FILE</b>=File input or <b>METH</b>=Other method</span>
-                      </v-tooltip>
-                    </template>
-                    <template v-slot:header.displayName="{header}">
-                      <v-tooltip bottom>
-                        <template v-slot:activator="{attr,on }">
-                          <span v-bind="attr" v-on="on">
-                          Name
-                          </span>
-                        </template>
-                        <span>Holds the common name of the seed {{
-                            nodeList[targetTypeId].text
-                          }} if available.</span>
-                      </v-tooltip>
-                    </template>
-                    <template v-slot:item.action="{item}">
-                      <v-tooltip right>
-                        <template v-slot:activator="{attr,on }">
-                          <v-btn icon @click="removeNode(item.id,1)" color="red">
-                            <v-icon>far fa-trash-alt</v-icon>
-                          </v-btn>
-                        </template>
-                        <span>Remove the current entry from the seed selection!</span>
-                      </v-tooltip>
-                    </template>
-                    <template v-slot:footer>
-                      <div style="display: flex; justify-content: center;padding-top: 16px"
-                           v-if="targets && targets.length>0">
-                        <div>
-                          <v-menu top offset-y transition="slide-y-reverse-transition">
-                            <template v-slot:activator="{on,attrs}">
-                              <v-btn small outlined right v-bind="attrs" v-on="on">
-                                <v-icon left color="primary">
-                                  fas fa-download
-                                </v-icon>
-                                Download
-                              </v-btn>
-                            </template>
-                            <v-list style="font-size: smaller; color: gray" dense>
-                              <v-list-item @click="downloadList(1)" style="cursor:pointer">
-                                <v-icon left size="1em">
-                                  fas fa-download
-                                </v-icon>
-                                IDs only
-                              </v-list-item>
-                              <v-menu right offset-x transition="slide-x-transition" open-on-hover>
-                                <template v-slot:activator="{on,attrs}">
-                                  <v-list-item v-bind="attrs" v-on="on">
-                                    With names
-                                    <v-icon right>fas fa-caret-right</v-icon>
-                                  </v-list-item>
-                                </template>
-                                <v-list dense>
-                                  <v-list-item @click="downloadList(1,true,'\t')"
-                                               style="cursor:pointer; font-size: smaller; color: gray">
-                                    <v-icon left size="1em">
-                                      fas fa-download
-                                    </v-icon>
-                                    As .tsv
-                                  </v-list-item>
-                                  <v-list-item @click="downloadList(1,true,',')"
-                                               style="cursor:pointer; font-size: smaller; color: gray">
-                                    <v-icon left size="1em">
-                                      fas fa-download
-                                    </v-icon>
-                                    As .csv
-                                  </v-list-item>
-                                </v-list>
-                              </v-menu>
-                            </v-list>
-                          </v-menu>
-                        </div>
-                        <div style="margin-left: 5px;">
-                          <v-menu top offset-y transition="slide-y-reverse-transition">
-                            <template v-slot:activator="{on,attrs}">
-                              <v-btn small outlined right v-bind="attrs" v-on="on">
-                                <v-icon left color="primary">
-                                  fas fa-trash-alt
-                                </v-icon>
-                                Remove
-                              </v-btn>
-                            </template>
-                            <v-list style="font-size: smaller; color: gray" dense>
-                              <v-list-item @click="removeAll(1)" style="cursor:pointer">
-                                All
-                              </v-list-item>
-                              <v-list-item @click="removeNonIntersecting(1)" style="cursor:pointer">
-                                With one origin only
-                              </v-list-item>
-                            </v-list>
-                          </v-menu>
-                        </div>
-                      </div>
-                    </template>
-                  </v-data-table>
+                  <SeedTable ref="targetTable" v-if="targetTypeId!==undefined" :download="true" :remove="true"
+                             @printNotificationEvent="printNotification"
+                             height="30vh"
+                             :title="'Target nodes ('+($refs.targetTable ? $refs.targetTable.getSeeds().length : 0)+')'"
+                             :nodeName="nodeList[targetTypeId].value"></SeedTable>
                 </div>
               </div>
             </div>
@@ -411,7 +138,7 @@
         <v-btn
           color="primary"
           @click="makeStep(1,'continue')"
-          :disabled="sourceTypeId===undefined || targetTypeId===undefined  ||  sources.length<1"
+          :disabled="sourceTypeId===undefined || targetTypeId===undefined  ||  ($refs.sourceTable &&$refs.sourceTable.getSeeds().length<1)"
         >
           Continue
         </v-btn>
@@ -587,7 +314,7 @@
             <v-col cols="2" style="padding: 0">
               <v-card-title class="subtitle-1">Sources ({{ sources.length }})
               </v-card-title>
-              <v-data-table max-height="45vh" height="45vh" class="overflow-y-auto" fixed-header dense item-key="id"
+              <v-data-table max-height="50vh" height="50vh" class="overflow-y-auto" fixed-header dense item-key="id"
                             :items="sources"
                             :headers="getHeaders()"
                             disable-pagination
@@ -602,11 +329,15 @@
                   </v-tooltip>
                   <span v-else>{{ item.displayName }}</span>
                 </template>
+                <template v-slot:footer>
+                  <div style="display: flex; justify-content: center; margin-left: auto">
+                    <div style="padding-top: 16px">
+                  <ResultDownload v-show="sources !=null && sources.length>0" seeds
+                                  @downloadEvent="downloadSourceList"></ResultDownload>
+                    </div>
+                  </div>
+                </template>
               </v-data-table>
-              <v-chip outlined style="margin-top:15px" @click="downloadList(0)">
-                <v-icon left>fas fa-download</v-icon>
-                Save Sources ({{ nodeList[sourceTypeId].text }})
-              </v-chip>
             </v-col>
             <v-col>
               <Graph ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle"
@@ -636,7 +367,7 @@
                 </v-progress-circular>
               </v-card-title>
               <template v-if="targets.length>=0">
-                <v-data-table max-height="45vh" height="45vh" class="overflow-y-auto" fixed-header dense item-key="id"
+                <v-data-table max-height="50vh" height="50vh" class="overflow-y-auto" fixed-header dense item-key="id"
                               :items="targets"
                               :headers="getHeaders()"
                               disable-pagination
@@ -651,12 +382,15 @@
                     </v-tooltip>
                     <span v-else>{{ item.displayName }}</span>
                   </template>
+                  <template v-slot:footer>
+                    <div style="display: flex; justify-content: center; margin-left: auto">
+                      <div style="padding-top: 16px">
+                        <ResultDownload v-show="targets !=null && targets.length>0" seeds
+                                        @downloadEvent="downloadTargetList"></ResultDownload>
+                      </div>
+                    </div>
+                  </template>
                 </v-data-table>
-                <v-chip outlined style="margin-top:15px"
-                        @click="downloadList(1)" v-if="targets.length>0">
-                  <v-icon left>fas fa-download</v-icon>
-                  Save Targets ({{ nodeList[targetTypeId].text }})
-                </v-chip>
               </template>
             </v-col>
           </v-row>
@@ -693,6 +427,9 @@
 <script>
 import Graph from "../graph/Graph";
 import SuggestionAutocomplete from "@/components/app/suggestions/SuggestionAutocomplete";
+import SeedTable from "@/components/app/tables/SeedTable";
+import ResultDownload from "@/components/app/tables/menus/ResultDownload";
+
 
 export default {
   name: "Guided",
@@ -908,25 +645,26 @@ export default {
     },
 
     addToSelection: function (list, index, nameFrom) {
-      let table = this[["sources", "targets"][index]]
-      let ids = table.map(n => n.id)
-      let count = 0
-      let origins = this.nodeOrigins[index]
-      list.forEach(e => {
-        if (ids.indexOf(e.id) === -1) {
-          count++
-          table.push(e)
-        }
-
-
-        if (origins[e.id] !== undefined) {
-          if (origins[e.id].indexOf(nameFrom) === -1)
-            origins[e.id].push(nameFrom)
-        } else
-          origins[e.id] = [nameFrom]
-
-      })
-      this.$emit("printNotificationEvent", "Added " + list.length + "from " + nameFrom + " (" + count + " new) nodes!", 1)
+      this.$refs[["sourceTable","targetTable"][index]].addSeeds(list, nameFrom)
+      // let table = this[["sources", "targets"][index]]
+      // let ids = table.map(n => n.id)
+      // let count = 0
+      // let origins = this.nodeOrigins[index]
+      // list.forEach(e => {
+      //   if (ids.indexOf(e.id) === -1) {
+      //     count++
+      //     table.push(e)
+      //   }
+      //
+      //
+      //   if (origins[e.id] !== undefined) {
+      //     if (origins[e.id].indexOf(nameFrom) === -1)
+      //       origins[e.id].push(nameFrom)
+      //   } else
+      //     origins[e.id] = [nameFrom]
+      //
+      // })
+      // this.$emit("printNotificationEvent", "Added " + list.length + "from " + nameFrom + " (" + count + " new) nodes!", 1)
     }
     ,
     loadTargetTable: function (gid) {
@@ -958,6 +696,9 @@ export default {
           }
           return out;
         })
+    },
+    printNotification: function (message, type) {
+      this.$emit("printNotificationEvent", message, type)
     }
     ,
     removeNode: function (id, index) {
@@ -983,6 +724,13 @@ export default {
       this[["sources", "targets"][index]] = seeds.filter(s => remove.indexOf(s.id) === -1)
     }
     ,
+
+    downloadSourceList: function(names,sep){
+      this.downloadList(0,names,sep)
+    },
+    downloadTargetList: function(names,sep){
+      this.downloadList(1,names,sep)
+    },
     downloadList: function (index, names, sep) {
       let nodeType = this.nodeList[[this.sourceTypeId, this.targetTypeId][index]].value
       this.$http.post("mapToDomainIds", {
@@ -1012,10 +760,15 @@ export default {
       document.body.removeChild(dl)
     },
 
-    makeStep: function (s, button) {
+    makeStep: async function (s, button) {
       if (button === "continue") {
-        if (this.step === 1)
+        if (this.step === 1) {
           this.$emit("clearURLEvent")
+          await this.$nextTick(()=>{
+            this.sources = this.$refs.sourceTable.getSeeds()
+            this.targets = this.$refs.targetTable.getSeeds()
+          })
+        }
         this.step++
         if (this.step === 2)
           this.generatePaths()
@@ -1064,6 +817,8 @@ export default {
   components: {
     SuggestionAutocomplete,
     Graph,
+    SeedTable,
+    ResultDownload,
   }
 
 }
