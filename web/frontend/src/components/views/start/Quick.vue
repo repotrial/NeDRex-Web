@@ -5,22 +5,24 @@
         <v-col cols="3"></v-col>
         <v-col cols="6">
           <v-card @mouseenter="hoverModuleIdent=true" @mouseleave="hoverModuleIdent=false" width="25vw">
-            <v-card-title>Drug Repurposing<v-icon right v-show="!hoverModuleIdent" size=".7em">fas fa-play</v-icon></v-card-title>
+            <v-card-title>Drug Repurposing</v-card-title>
             <v-img
               :gradient="hoverModuleIdent ? 'to top, rgba(56,56,56,1), rgba(37,255,234,.01)':''"
               :src="getConfig().STATIC_PATH+'/assets/module_ident.png'" width="25vw"
             >
+              <div v-show="!hoverModuleIdent" style="height: 100%; width: 25vw; display: flex; align-content: center; justify-content: center">
+                <v-icon right  size="6em" color="rgba(0,0,0,.1)">fas fa-play</v-icon>
+              </div>
+
               <div style="height: 100%; width: 25vw; display: flex; align-content: flex-end" v-show="hoverModuleIdent">
                 <div style="margin-top: auto; width: 100%">
                   <div style="width: 100%; justify-self: center; margin-left: auto">
-                    <!--                  <div style="">-->
                     <v-btn plain @click="start(0,false)" dark>
                       <v-icon left>
                         fas fa-angle-double-right
                       </v-icon>
                       Drug Repurposing
                     </v-btn>
-                    <!--                  </div>-->
                   </div>
                   <div style="width: 100%; margin-top: auto;">
                     <v-btn plain @click="start(0,true)" dark style="justify-self: center; margin-left: auto">
