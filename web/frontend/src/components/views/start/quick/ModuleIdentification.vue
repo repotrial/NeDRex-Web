@@ -39,7 +39,8 @@
             <v-col>
               <v-list-item-subtitle class="title">Select the seed type</v-list-item-subtitle>
               <v-list-item-action>
-                <v-radio-group row v-model="seedTypeId" :disabled="seeds!==undefined && seeds.length>0">
+                <v-radio-group row v-model="seedTypeId"
+                               :disabled="(this.seedTypeId !=null && $refs.seedTable !=null && $refs.seedTable.getSeeds()!=null && $refs.seedTable.getSeeds().length>0)">
                   <v-radio label="Gene">
                   </v-radio>
                   <v-radio label="Protein">
@@ -82,150 +83,91 @@
 
               <v-divider vertical v-show="seedTypeId!==undefined"></v-divider>
               <v-col cols="6">
-                <v-data-table max-height="40vh" height="40vh" class="overflow-y-auto overflow-x-hidden" fixed-header
-                              dense item-key="id"
-                              :items="seeds"
-                              :headers="[{text: 'Name', align: 'start', sortable: true, value: 'displayName'},{text: 'Origin', align: 'start',sortable: true, value: 'origin'},{text: 'Action', align: 'end', sortable: false, value: 'action'}]"
-                              disable-pagination
-                              hide-default-footer
-                              v-show="seedTypeId!==undefined"
-                style="margin-top: 16px">
-                  <template v-slot:top>
-                    <div style="display: flex">
-                      <v-card-title style="justify-self: flex-start" class="subtitle-1">Selected Seeds ({{
-                          seeds.length
-                        }})
-                      </v-card-title>
-                    </div>
-                  </template>
-                  <template v-slot:item.displayName="{item}">
-                    <v-tooltip v-if="item.displayName.length>16" right>
-                      <template v-slot:activator="{attr,on }">
-                          <span v-bind="attr" v-on="on"
-                                style="color: dimgray">{{ item.displayName.substr(0, 16) }}...</span>
-                      </template>
-                      <span>{{ item.displayName }}</span>
-                    </v-tooltip>
-                    <span v-else>{{ item.displayName }}</span>
-                  </template>
-                  <template v-slot:item.origin="{item}">
-                    <template v-for="o in getOrigins(item.id)">
-                      <v-tooltip bottom :key="item.id+o">
-                        <template v-slot:activator="{attr,on }">
-                          <v-chip style="font-size: smaller; color: gray" pill v-on="on" v-bind="attr">{{
-                              o[0]
-                            }}
-                          </v-chip>
-                        </template>
-                        <span v-if="o[2]">Connected to <b>{{ o[2] }}</b>:<br><b>{{ o[1] }}</b></span>
-                        <span v-else-if="o[0]==='FILE'">Added from user file:<br><b>{{ o[1] }}</b></span>
-                        <span v-else>Returned by method:<br><b>{{ o[1] }}</b></span>
-                      </v-tooltip>
-                    </template>
-                  </template>
-                  <template v-slot:header.origin="{header}">
-                    <v-tooltip bottom>
-                      <template v-slot:activator="{attr,on }">
-                          <span v-bind="attr" v-on="on">
-                          Origin
-                          </span>
+                <SeedTable ref="seedTable" v-if="seedTypeId!==undefined" :download="true" :remove="true" @printNotificationEvent="printNotification"
+                           height="40vh"
+                           :title="'Selected Seeds ('+($refs.seedTable ? $refs.seedTable.getSeeds().length : 0)+')'"
+                           :nodeName="['gene','protein'][seedTypeId]"></SeedTable>
+                <!--                <v-data-table max-height="40vh" height="40vh" class="overflow-y-auto overflow-x-hidden" fixed-header-->
+                <!--                              dense item-key="id"-->
+                <!--                              :items="seeds"-->
+                <!--                              :headers="[{text: 'Name', align: 'start', sortable: true, value: 'displayName'},{text: 'Origin', align: 'start',sortable: true, value: 'origin'},{text: 'Action', align: 'end', sortable: false, value: 'action'}]"-->
+                <!--                              disable-pagination-->
+                <!--                              hide-default-footer-->
+                <!--                              v-show="seedTypeId!==undefined"-->
+                <!--                style="margin-top: 16px">-->
+                <!--                  <template v-slot:top>-->
+                <!--                    <div style="display: flex">-->
+                <!--                      <v-card-title style="justify-self: flex-start" class="subtitle-1">Selected Seeds ({{-->
+                <!--                          seeds.length-->
+                <!--                        }})-->
+                <!--                      </v-card-title>-->
+                <!--                    </div>-->
+                <!--                  </template>-->
+                <!--                  <template v-slot:item.displayName="{item}">-->
+                <!--                    <v-tooltip v-if="item.displayName.length>16" right>-->
+                <!--                      <template v-slot:activator="{attr,on }">-->
+                <!--                          <span v-bind="attr" v-on="on"-->
+                <!--                                style="color: dimgray">{{ item.displayName.substr(0, 16) }}...</span>-->
+                <!--                      </template>-->
+                <!--                      <span>{{ item.displayName }}</span>-->
+                <!--                    </v-tooltip>-->
+                <!--                    <span v-else>{{ item.displayName }}</span>-->
+                <!--                  </template>-->
+                <!--                  <template v-slot:item.origin="{item}">-->
+                <!--                    <template v-for="o in getOrigins(item.id)">-->
+                <!--                      <v-tooltip bottom :key="item.id+o">-->
+                <!--                        <template v-slot:activator="{attr,on }">-->
+                <!--                          <v-chip style="font-size: smaller; color: gray" pill v-on="on" v-bind="attr">{{-->
+                <!--                              o[0]-->
+                <!--                            }}-->
+                <!--                          </v-chip>-->
+                <!--                        </template>-->
+                <!--                        <span v-if="o[2]">Connected to <b>{{ o[2] }}</b>:<br><b>{{ o[1] }}</b></span>-->
+                <!--                        <span v-else-if="o[0]==='FILE'">Added from user file:<br><b>{{ o[1] }}</b></span>-->
+                <!--                        <span v-else>Returned by method:<br><b>{{ o[1] }}</b></span>-->
+                <!--                      </v-tooltip>-->
+                <!--                    </template>-->
+                <!--                  </template>-->
+                <!--                  <template v-slot:header.origin="{header}">-->
+                <!--                    <v-tooltip bottom>-->
+                <!--                      <template v-slot:activator="{attr,on }">-->
+                <!--                          <span v-bind="attr" v-on="on">-->
+                <!--                          Origin-->
+                <!--                          </span>-->
 
-                      </template>
-                      <span>Holds the sources the seed node was added by:<br><b>SUG=</b>Suggestion, <b>FILE</b>=File input or <b>METH</b>=Other method</span>
-                    </v-tooltip>
-                  </template>
-                  <template v-slot:header.displayName="{header}">
-                    <v-tooltip bottom>
-                      <template v-slot:activator="{attr,on }">
-                          <span v-bind="attr" v-on="on">
-                          Name
-                          </span>
-                      </template>
-                      <span>Holds the common name of the seed {{
-                          ["genes", "proteins"][seedTypeId]
-                        }} if available.</span>
-                    </v-tooltip>
-                  </template>
-                  <template v-slot:item.action="{item}">
-                    <v-tooltip right>
-                      <template v-slot:activator="{attr,on }">
-                        <v-btn icon @click="removeSeed(item.id)" color="red">
-                          <v-icon>far fa-trash-alt</v-icon>
-                        </v-btn>
-                      </template>
-                      <span>Remove the current entry from the seed selection!</span>
-                    </v-tooltip>
-                  </template>
-                  <template v-slot:footer>
-                    <div style="display: flex; justify-content: center;padding-top: 16px" v-if="seeds && seeds.length>0">
-                      <div >
-                        <v-menu top offset-y transition="slide-y-reverse-transition">
-                          <template v-slot:activator="{on,attrs}">
-                            <v-btn small outlined right v-bind="attrs" v-on="on">
-                              <v-icon left color="primary">
-                                fas fa-download
-                              </v-icon>
-                              Download
-                            </v-btn>
-                          </template>
-                          <v-list style="font-size: smaller; color: gray" dense>
-                            <v-list-item @click="downloadList()" style="cursor:pointer">
-                              <v-icon left size="1em">
-                                fas fa-download
-                              </v-icon>
-                              IDs only
-                            </v-list-item>
-                            <v-menu right offset-x transition="slide-x-transition" open-on-hover>
-                              <template v-slot:activator="{on,attrs}">
-                                <v-list-item v-bind="attrs" v-on="on">
-                                  With names
-                                  <v-icon right>fas fa-caret-right</v-icon>
-                                </v-list-item>
-                              </template>
-                              <v-list dense>
-                                <v-list-item @click="downloadList(true,'\t')"
-                                             style="cursor:pointer; font-size: smaller; color: gray">
-                                  <v-icon left size="1em">
-                                    fas fa-download
-                                  </v-icon>
-                                  As .tsv
-                                </v-list-item>
-                                <v-list-item @click="downloadList(true,',')"
-                                             style="cursor:pointer; font-size: smaller; color: gray">
-                                  <v-icon left size="1em">
-                                    fas fa-download
-                                  </v-icon>
-                                  As .csv
-
-                                </v-list-item>
-                              </v-list>
-                            </v-menu>
-                          </v-list>
-                        </v-menu>
-                      </div>
-                      <div style="margin-left: 5px;">
-                        <v-menu top offset-y transition="slide-y-reverse-transition">
-                          <template v-slot:activator="{on,attrs}">
-                            <v-btn small outlined right v-bind="attrs" v-on="on">
-                              <v-icon left color="primary">
-                                fas fa-trash-alt
-                              </v-icon>
-                              Remove
-                            </v-btn>
-                          </template>
-                          <v-list style="font-size: smaller; color: gray" dense>
-                            <v-list-item @click="clearList" style="cursor:pointer">
-                              All
-                            </v-list-item>
-                            <v-list-item @click="removeNonIntersecting" style="cursor:pointer">
-                              With one origin only
-                            </v-list-item>
-                          </v-list>
-                        </v-menu>
-                      </div>
-                    </div>
-                  </template>
-                </v-data-table>
+                <!--                      </template>-->
+                <!--                      <span>Holds the sources the seed node was added by:<br><b>SUG=</b>Suggestion, <b>FILE</b>=File input or <b>METH</b>=Other method</span>-->
+                <!--                    </v-tooltip>-->
+                <!--                  </template>-->
+                <!--                  <template v-slot:header.displayName="{header}">-->
+                <!--                    <v-tooltip bottom>-->
+                <!--                      <template v-slot:activator="{attr,on }">-->
+                <!--                          <span v-bind="attr" v-on="on">-->
+                <!--                          Name-->
+                <!--                          </span>-->
+                <!--                      </template>-->
+                <!--                      <span>Holds the common name of the seed {{-->
+                <!--                          ["genes", "proteins"][seedTypeId]-->
+                <!--                        }} if available.</span>-->
+                <!--                    </v-tooltip>-->
+                <!--                  </template>-->
+                <!--                  <template v-slot:item.action="{item}">-->
+                <!--                    <v-tooltip right>-->
+                <!--                      <template v-slot:activator="{attr,on }">-->
+                <!--                        <v-btn icon @click="removeSeed(item.id)" color="red">-->
+                <!--                          <v-icon>far fa-trash-alt</v-icon>-->
+                <!--                        </v-btn>-->
+                <!--                      </template>-->
+                <!--                      <span>Remove the current entry from the seed selection!</span>-->
+                <!--                    </v-tooltip>-->
+                <!--                  </template>-->
+                <!--                  <template v-slot:footer>-->
+                <!--                    <div style="display: flex; justify-content: center;padding-top: 16px" v-if="seeds && seeds.length>0">-->
+                <!--                      <SeedDownload @downloadListEvent="downloadList"></SeedDownload>-->
+                <!--                      <SeedRemove @clearEvent="clearList" @intersectionEvent="removeNonIntersecting"></SeedRemove>-->
+                <!--                    </div>-->
+                <!--                  </template>-->
+                <!--                </v-data-table>-->
               </v-col>
             </v-row>
           </v-container>
@@ -808,8 +750,10 @@
 <script>
 import Graph from "../../graph/Graph";
 import * as CONFIG from "../../../../Config"
-import SuggestionElement from "@/components/app/suggestions/SuggestionElement";
 import SuggestionAutocomplete from "@/components/app/suggestions/SuggestionAutocomplete";
+import SeedDownload from "@/components/app/tables/menus/SeedDownload";
+import SeedRemove from "@/components/app/tables/menus/SeedRemove";
+import SeedTable from "@/components/app/tables/SeedTable";
 
 export default {
   name: "ModuleIdentification",
@@ -918,25 +862,27 @@ export default {
       this.$refs.graph.setSelection([id])
       this.$refs.graph.zoomToNode(id)
     },
-    clearList: function () {
-      this.seeds = []
-      this.seedOrigin = {}
-    },
-    removeNonIntersecting: function () {
-      let remove = []
-      Object.keys(this.seedOrigin).forEach(seed => {
-        if (this.seedOrigin[seed].length < 2) {
-          delete this.seedOrigin[seed]
-          remove.push(parseInt(seed))
-        }
-      })
-      this.seeds = this.seeds.filter(s => remove.indexOf(s.id) === -1)
-    },
+    // clearList: function () {
+    //   this.seeds = []
+    //   this.seedOrigin = {}
+    // },
+    // removeNonIntersecting: function () {
+    //   let remove = []
+    //   Object.keys(this.seedOrigin).forEach(seed => {
+    //     if (this.seedOrigin[seed].length < 2) {
+    //       delete this.seedOrigin[seed]
+    //       remove.push(parseInt(seed))
+    //     }
+    //   })
+    //   this.seeds = this.seeds.filter(s => remove.indexOf(s.id) === -1)
+    // },
 
     makeStep: function (s, button) {
       if (button === "continue") {
         this.step++
-        if (this.step === 2 && this.blitz)
+        if (this.step === 2)
+          this.seeds = this.$refs.seedTable.getSeeds()
+        if (this.blitz)
           this.step++
       }
       if (button === "back") {
@@ -1077,21 +1023,21 @@ export default {
     },
 
     addToSelection: function (list, nameFrom) {
-      let ids = this.seeds.map(seed => seed.id)
-      let count = 0
-      list.forEach(e => {
-        if (ids.indexOf(e.id) === -1) {
-          count++
-          this.seeds.push(e)
-        }
-        if (this.seedOrigin[e.id] !== undefined) {
-          if (this.seedOrigin[e.id].indexOf(nameFrom) === -1)
-            this.seedOrigin[e.id].push(nameFrom)
-        } else
-          this.seedOrigin[e.id] = [nameFrom]
-
-      })
-      this.$emit("printNotificationEvent", "Added " + list.length + "from " + nameFrom + " (" + count + " new) seeds!", 1)
+      this.$refs.seedTable.addSeeds(list, nameFrom)
+      // let ids = this.seeds.map(seed => seed.id)
+      // let count = 0
+      // list.forEach(e => {
+      //   if (ids.indexOf(e.id) === -1) {
+      //     count++
+      //     this.seeds.push(e)
+      //   }
+      //   if (this.seedOrigin[e.id] !== undefined) {
+      //     if (this.seedOrigin[e.id].indexOf(nameFrom) === -1)
+      //       this.seedOrigin[e.id].push(nameFrom)
+      //   } else
+      //     this.seedOrigin[e.id] = [nameFrom]
+      // })
+      // this.$emit("printNotificationEvent", "Added " + list.length + "from " + nameFrom + " (" + count + " new) seeds!", 1)
     }
     ,
     methodScores: function () {
@@ -1235,6 +1181,9 @@ export default {
       else
         resolve()
     },
+    printNotification: function (message, type) {
+      this.$emit("printNotificationEvent", message, type)
+    },
     getGraph: function () {
       return new Promise(resolve => this.waitForGraph(resolve)).then(() => {
         return this.$refs.graph;
@@ -1262,6 +1211,9 @@ export default {
 
   components: {
     SuggestionAutocomplete,
+    SeedDownload,
+    SeedRemove,
+    SeedTable,
     Graph
   }
 }
