@@ -1,181 +1,110 @@
 <template>
   <v-container>
     <template v-if="modus===-1">
-      <v-row>
-        <v-col cols="3"></v-col>
-        <v-col cols="6">
-          <v-card @mouseenter="hoverModuleIdent=true" @mouseleave="hoverModuleIdent=false" width="25vw">
-            <v-card-title>Drug Repurposing</v-card-title>
-            <v-img
-              :gradient="hoverModuleIdent ? 'to top, rgba(56,56,56,1), rgba(37,255,234,.01)':''"
-              :src="getConfig().STATIC_PATH+'/assets/module_ident.png'" width="25vw"
-            >
-              <div v-show="!hoverModuleIdent" style="height: 100%; width: 25vw; display: flex; align-content: center; justify-content: center">
-                <v-icon right  size="6em" color="rgba(0,0,0,.1)">fas fa-play</v-icon>
-              </div>
+      <div style="display:flex; justify-content: center">
+        <div style="justify-content: center; justify-self: flex-start;">
+          <PipelineCard :image="getConfig().STATIC_PATH+'/assets/module_ident.png'" title="Module Identification">
 
-              <div style="height: 100%; width: 25vw; display: flex; align-content: flex-end" v-show="hoverModuleIdent">
-                <div style="margin-top: auto; width: 100%">
-                  <div style="width: 100%; justify-self: center; margin-left: auto">
-                    <v-btn plain @click="start(0,false)" dark>
-                      <v-icon left>
-                        fas fa-angle-double-right
-                      </v-icon>
-                      Drug Repurposing
-                    </v-btn>
-                  </div>
-                  <div style="width: 100%; margin-top: auto;">
-                    <v-btn plain @click="start(0,true)" dark style="justify-self: center; margin-left: auto">
-                      <v-icon left>
-                        fas fa-bolt
-                      </v-icon>
-                      Quick Drug Repurposing
-                    </v-btn>
-                  </div>
-                </div>
+            <template slot="description">
+              <div>
+                Identify disease modules by selecting seed genes or proteins by hand, suggestions using
+                information
+                about e.g. association to disorders or by uploading a list. Tune the parameters of the algorithms
+                (Agile) or just use the default for even less necessary input work (Quick).
               </div>
-            </v-img>
-            <div v-show="hoverModuleIdent" style="background-color: rgba(56,56,56,1); color: white; width: 25vw">
-              <div style="padding: 25px">
+            </template>
+            <template slot="actions">
+              <div>
+                <v-btn plain @click="start(1,false)" dark>
+                  <v-icon left>
+                    fas fa-angle-double-right
+                  </v-icon>
+                  Module Identification
+                </v-btn>
+              </div>
+              <div>
+                <v-btn plain @click="start(1,true)" dark>
+                  <v-icon left>
+                    fas fa-bolt
+                  </v-icon>
+                  Quick Mode
+                </v-btn>
+              </div>
+            </template>
+          </PipelineCard>
+        </div>
+        <div v-show="hoverDrugRep" style="display: flex; align-content: center">
+          <v-icon>
+            fas fa-plus
+          </v-icon>
+        </div>
+        <div style="display: flex; justify-content: center; justify-self: flex-end">
+          <PipelineCard :image="getConfig().STATIC_PATH+'/assets/drug_prio.png'" title="Drug Prioritization">
+
+            <template slot="description">
+              <div>
+                Based on a set of given input genes or proteins drug candidates can be identified through the
+                application of ranking algorithms in combination with the protein or gene interaction network and
+                their known drug associations.
+              </div>
+            </template>
+            <template slot="actions">
+              <div>
+                <v-btn plain @click="start(2,false)" dark>
+                  <v-icon left>
+                    fas fa-angle-double-right
+                  </v-icon>
+                  Drug Prioritization
+                </v-btn>
+              </div>
+              <div>
+                <v-btn plain @click="start(2,true)" dark>
+                  <v-icon left>
+                    fas fa-bolt
+                  </v-icon>
+                  Quick Mode
+                </v-btn>
+              </div>
+            </template>
+          </PipelineCard>
+        </div>
+      </div>
+<!--/*      <div style="display: flex; justify-content: center">*/-->
+        <v-divider style="margin: 16px 30vw 16px 30vw"></v-divider>
+<!--      </div>-->
+      <div style="display: flex; justify-content: center;">
+        <div @mouseenter="hoverDrugRep=true" @mouseleave="hoverDrugRep=false">
+          <PipelineCard :image="getConfig().STATIC_PATH+'/assets/drug_rep.png'" title="Drug Repurposing">
+            <template slot="description">
+              <div>
                 Identify disease modules as in the standalone mode (Agile/Quick Module Identification) but with
                 direct
                 use in a subsequent
                 drug prioritization analysis. Using the Quick mode will use default values for the algorithmic
                 choices, limiting the users decisions to identifying the starting genes.
               </div>
-            </div>
-            <!--            <v-list v-show="!hoverModuleIdent">-->
-            <!--              <v-list-item>-->
-            <!--                <v-list-item-content>-->
-            <!--                  <v-btn plain @click="start(0,false)">-->
-            <!--                    <v-icon left>-->
-            <!--                      fas fa-angle-double-right-->
-            <!--                    </v-icon>-->
-            <!--                    Drug Repurposing-->
-            <!--                  </v-btn>-->
-            <!--                </v-list-item-content>-->
-            <!--              </v-list-item>-->
-            <!--              <v-list-item>-->
-            <!--                <v-list-item-content>-->
-            <!--                  <v-btn plain @click="start(0,true)">-->
-            <!--                    <v-icon left>-->
-            <!--                      fas fa-bolt-->
-            <!--                    </v-icon>-->
-            <!--                    Quick Drug Repurposing-->
-            <!--                  </v-btn>-->
-            <!--                </v-list-item-content>-->
-            <!--              </v-list-item>-->
-            <!--            </v-list>-->
-            <!--                        <v-list v-show="hoverModuleIdent" style="background-color: rgba(65,65,65,1)">-->
-            <!--                          <v-list-item>-->
-            <!--                            <v-list-item-content>-->
-            <!--                              <v-btn plain @click="start(0,false)" dark>-->
-            <!--                                <v-icon left>-->
-            <!--                                  fas fa-angle-double-right-->
-            <!--                                </v-icon>-->
-            <!--                                Drug Repurposing-->
-            <!--                              </v-btn>-->
-            <!--                            </v-list-item-content>-->
-            <!--                          </v-list-item>-->
-            <!--                          <v-list-item>-->
-            <!--                            <v-list-item-content>-->
-            <!--                              <v-btn plain @click="start(0,true)" dark>-->
-            <!--                                <v-icon left>-->
-            <!--                                  fas fa-bolt-->
-            <!--                                </v-icon>-->
-            <!--                                Quick Drug Repurposing-->
-            <!--                              </v-btn>-->
-            <!--                            </v-list-item-content>-->
-            <!--                          </v-list-item>-->
-            <!--                        </v-list>-->
-
-          </v-card>
-        </v-col>
-      </v-row>
-      <v-row>
-        <v-card class="mx-auto">
-          <v-container>
-            <v-row>
-              <v-col cols="5">
-                <v-list>
-                  <v-list-item>
-                    <v-list-item-title class="title">
-                      Disease Modules
-                    </v-list-item-title>
-                  </v-list-item>
-                  <v-list-item>
-                    <v-list-item-content>
-                      Identify disease modules by selecting seed genes or proteins by hand, suggestions using
-                      information
-                      about e.g. association to disorders or by uploading a list. Tune the parameters of the algorithms
-                      (Agile) or just use the default for even less necessary input work (Quick).
-                    </v-list-item-content>
-                  </v-list-item>
-                  <v-list-item>
-                    <v-list-item-content>
-                      <v-btn plain @click="start(1,false)">
-                        <v-icon left>
-                          fas fa-angle-double-right
-                        </v-icon>
-                        Module Identification
-                      </v-btn>
-                    </v-list-item-content>
-                  </v-list-item>
-                  <v-list-item>
-                    <v-list-item-content>
-                      <v-btn plain @click="start(1,true)">
-                        <v-icon left>
-                          fas fa-bolt
-                        </v-icon>
-                        Quick Module Identification
-                      </v-btn>
-                    </v-list-item-content>
-                  </v-list-item>
-                </v-list>
-              </v-col>
-              <v-col cols="2">
-                <v-divider vertical></v-divider>
-              </v-col>
-              <v-col cols="5">
-                <v-list>
-                  <v-list-item>
-                    <v-list-item-title class="title">
-                      Drug Prioritization
-                    </v-list-item-title>
-                  </v-list-item>
-                  <v-list-item>
-                    <v-list-item-content>
-                      Based on a set of given input genes or proteins drug candidates can be identified through the
-                      application of ranking algorithms in combination with the protein or gene interaction network and
-                      their known drug associations.
-                    </v-list-item-content>
-                  </v-list-item>
-                  <v-list-item>
-                    <v-list-item-content>
-                      <v-btn plain @click="start(2,false)">
-                        <v-icon left>
-                          fas fa-angle-double-right
-                        </v-icon>
-                        Drug Prioritization
-                      </v-btn>
-                    </v-list-item-content>
-                  </v-list-item>
-                  <v-list-item>
-                    <v-list-item-content>
-                      <v-btn plain @click="start(2,true)">
-                        <v-icon left>
-                          fas fa-bolt
-                        </v-icon>
-                        Quick Drug Repurposing
-                      </v-btn>
-                    </v-list-item-content>
-                  </v-list-item>
-                </v-list>
-              </v-col>
-            </v-row>
-          </v-container>
-        </v-card>
-      </v-row>
+            </template>
+            <template slot="actions">
+              <div>
+                <v-btn plain @click="start(0,false)" dark>
+                  <v-icon left>
+                    fas fa-angle-double-right
+                  </v-icon>
+                  Drug Repurposing
+                </v-btn>
+              </div>
+              <div>
+                <v-btn plain @click="start(0,true)" dark>
+                  <v-icon left>
+                    fas fa-bolt
+                  </v-icon>
+                  Quick Mode
+                </v-btn>
+              </div>
+            </template>
+          </PipelineCard>
+        </div>
+      </div>
     </template>
     <v-row>
       <v-col>
@@ -208,6 +137,7 @@
 import ModuleIdentification from "./quick/ModuleIdentification";
 import DrugRepurposing from "./quick/DrugRepurposing";
 import CombinedRepurposing from "./quick/CombinedRepurposing";
+import PipelineCard from "@/components/app/start/PipelineCard";
 
 export default {
   name: "Quick",
@@ -218,7 +148,7 @@ export default {
     return {
       modus: -1,
       blitz: false,
-      hoverModuleIdent: false,
+      hoverDrugRep: false,
     }
   },
   created() {
@@ -276,6 +206,7 @@ export default {
 
 
   components: {
+    PipelineCard,
     DrugRepurposing,
     ModuleIdentification,
     CombinedRepurposing

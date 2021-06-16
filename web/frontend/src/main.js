@@ -14,7 +14,7 @@ import Utils from "./scripts/Utils"
 
 Vue.component('font-awesome-icon', FontAwesomeIcon)
 Vue.use(VueCookies);
-
+Vue.$cookies.config("10000d")
 import ApiService from "./services/api.service";
 
 ApiService.init(CONFIG.HOST_URL+CONFIG.CONTEXT_PATH+"/api/")
