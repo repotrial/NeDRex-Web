@@ -14,7 +14,7 @@
           All
         </v-list-item>
         <v-list-item @click="$emit('intersectionEvent')" style="cursor:pointer">
-          With one origin only
+          With single origin
         </v-list-item>
       </v-list>
     </v-menu>

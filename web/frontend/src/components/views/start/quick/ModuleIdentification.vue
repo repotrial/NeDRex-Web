@@ -1,5 +1,5 @@
 <template>
-  <v-card>
+  <v-card style="margin-bottom: 25px">
     <div style="display: flex; justify-content: flex-end; margin-left: auto; ">
       <v-tooltip left>
         <template v-slot:activator="{on, attrs}">
@@ -41,7 +41,7 @@
         <v-stepper-content step="1">
           <v-card
             v-if="step===1"
-            class="mb-12"
+            class="mb-4"
             min-height="80vh"
           >
 
@@ -150,7 +150,7 @@
           <v-btn
             color="primary"
             @click="makeStep(1,'continue')"
-            :disabled="seedTypeId<0"
+            :disabled="seedTypeId<0 || $refs.seedTable == null || $refs.seedTable.getSeeds().length===0"
           >
             Continue
           </v-btn>
@@ -163,7 +163,7 @@
         <v-stepper-content step="2">
           <v-card
             v-if="step===2"
-            class="mb-12"
+            class="mb-4"
             min-height="80vh"
           >
             <v-card-subtitle class="headline">2. Module Identification Algorithm Selection</v-card-subtitle>
@@ -501,7 +501,7 @@
         <v-stepper-content step="3">
           <v-card
             v-if="step===3"
-            class="mb-12"
+            class="mb-4"
             min-height="80vh"
           >
             <v-card-subtitle class="headline">3. Module Identification Results</v-card-subtitle>

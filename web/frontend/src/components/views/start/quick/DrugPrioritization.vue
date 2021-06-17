@@ -1,5 +1,5 @@
 <template>
-  <v-card>
+  <v-card style="margin-bottom: 25px">
     <div style="display: flex; justify-content: flex-end; margin-left: auto; ">
       <v-tooltip left>
         <template v-slot:activator="{on, attrs}">
@@ -41,7 +41,7 @@
       <v-stepper-content step="1">
         <v-card
           v-if="step===1"
-          class="mb-12"
+          class="mb-4"
           height="80vh"
         >
 
@@ -127,7 +127,6 @@
                   </template>
                 </div>
               </v-col>
-
               <v-divider vertical v-show="seedTypeId!==undefined"></v-divider>
               <v-col cols="6">
                 <SeedTable ref="seedTable" v-if="seedTypeId!==undefined" :download="true" :remove="true"
@@ -138,12 +137,11 @@
               </v-col>
             </v-row>
           </v-container>
-
         </v-card>
         <v-btn
           color="primary"
           @click="makeStep(1,'continue')"
-          :disabled="seedTypeId<0"
+          :disabled="seedTypeId<0 || $refs.seedTable ==null || $refs.seedTable.getSeeds().length===0"
         >
           Continue
         </v-btn>
@@ -156,7 +154,7 @@
       <v-stepper-content step="2">
         <v-card
           v-if="step===2"
-          class="mb-12"
+          class="mb-4"
           height="80vh"
         >
           <v-card-subtitle class="headline">2. Algorithm Selection</v-card-subtitle>
@@ -353,7 +351,7 @@
       <v-stepper-content step="3">
         <v-card
           v-if="step===3"
-          class="mb-12"
+          class="mb-4"
           height="80vh"
         >
           <v-card-subtitle class="headline">3. Drug Prioritization Result</v-card-subtitle>

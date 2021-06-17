@@ -159,6 +159,9 @@ export default {
     modus: function (val) {
       if (val > -1) {
         this.focusTop()
+        this.$emit("showStartSelectionEvent",false)
+      }else{
+        this.$emit("showStartSelectionEvent",true)
       }
     }
 

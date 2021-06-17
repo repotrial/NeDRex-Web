@@ -1,6 +1,6 @@
 <template>
   <div style="margin-top:20px">
-    <v-card>
+    <v-card v-show="showStartSelection">
       <v-list>
         <v-list-item>
           <v-list-item-title class="title">Select your exploration path</v-list-item-title>
@@ -42,7 +42,7 @@
     </v-container>
     <Quick v-if="startTab===0" :metagraph="metagraph" @printNotificationEvent="printNotification"
            @graphLoadEvent="loadGraphNewTab" @focusEvent="focusTop" @clearURLEvent="$emit('clearURLEvent','quick')"
-           ref="quick"></Quick>
+           ref="quick" @showStartSelectionEvent="toggleStartSelection"></Quick>
     <Guided v-if="startTab===1" :metagraph="metagraph" @printNotificationEvent="printNotification"
             @graphLoadEvent="loadGraphNewTab" @clearURLEvent="$emit('clearURLEvent', 'guided')" ref="guided"></Guided>
 
@@ -74,6 +74,7 @@ export default {
   data() {
     return {
       startTab: 0,
+      showStartSelection: true,
     }
   },
   watch: {
@@ -125,6 +126,10 @@ export default {
     loadGraphNewTab: function (data) {
       this.$emit("graphLoadNewTabEvent", data)
       // this.reset()
+    },
+
+    toggleStartSelection: function(bool){
+      this.showStartSelection=bool
     },
 
     direction: function (edge) {
