@@ -510,7 +510,7 @@
               <v-row>
                 <v-col cols="3" style="padding: 0 50px 0 0; margin-right: -50px">
                   <v-card-title class="subtitle-1">Seeds ({{ seeds.length }}) {{
-                      (results.targets.length !== undefined && results.targets.length > 0 ? ("& Module (" + getTargetCount() + ")") : ": Processing")
+                      (results.targets.length !== undefined && results.targets.length > 0 ? ("& Module (" + getTargetCount() + ") "+["Genes","Proteins"][seedTypeId]) : ": Processing")
                     }}
                     <v-progress-circular indeterminate v-if="this.results.targets.length===0" style="margin-left:15px">
                     </v-progress-circular>
