@@ -7,10 +7,9 @@
 
             <template slot="description">
               <div>
-                Identify disease modules by selecting seed genes or proteins by hand, suggestions using
-                information
-                about e.g. association to disorders or by uploading a list. Tune the parameters of the algorithms
-                (Agile) or just use the default for even less necessary input work (Quick).
+                Identify disease modules by selecting <b><i>seed genes</i></b> or <b><i>proteins</i></b> by hand, suggestions using
+                information about e.g. <b><i>association to disorders</i></b> or by uploading a <b><i>list of ids</i></b>. Tune the parameters of the algorithms
+                (<b>Basic Mode</b>) or just use defaults for even less necessary input work (<b>Quick Mode</b>).
               </div>
             </template>
             <template slot="actions">
@@ -43,9 +42,9 @@
 
             <template slot="description">
               <div>
-                Based on a set of given input genes or proteins drug candidates can be identified through the
-                application of ranking algorithms in combination with the protein or gene interaction network and
-                their known drug associations.
+                Based on a set of given <b><i>seed genes</i></b> or <b><i>proteins</i></b> <b>drug candidates</b> can be identified through the
+                application of <b>ranking</b> algorithms in combination with the <b><i>protein or gene interaction network</i></b> and
+                their known <b>drug associations</b>.
               </div>
             </template>
             <template slot="actions">
@@ -77,10 +76,9 @@
           <PipelineCard :image="getConfig().STATIC_PATH+'/assets/drug_rep.png'" title="Drug Repurposing" subtitle="Module Identification + Drug Prioritization">
             <template slot="description">
               <div>
-                Identify disease modules as in the standalone mode (Agile/Quick Module Identification) but with
-                direct
-                use in a subsequent
-                drug prioritization analysis. Using the Quick mode will use default values for the algorithmic
+                Identify disease modules as in the standalone mode (<b>Module Identification</b>) but with
+                direct use in a subsequent
+                <b>drug prioritization</b> analysis. Using the <b>Quick Mode</b> will use default values for the algorithmic
                 choices, limiting the users decisions to identifying the starting genes.
               </div>
             </template>
