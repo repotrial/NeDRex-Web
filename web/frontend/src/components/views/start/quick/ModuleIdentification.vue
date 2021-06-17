@@ -69,8 +69,10 @@
                                       @click="suggestionType = advancedOptions ? suggestionType : 'disorder'"></v-switch>
                           </div>
                         </template>
-                        <div style="width: 300px"><b>Limited Mode:</b><br>The options are limited to the most interesting and generally used ones to not overcomplicate the user interface <br>
-                        <b>Full Mode:</b><br> The full mode provides a wider list of options to select from for more specific queries.
+                        <div style="width: 300px"><b>Limited Mode:</b><br>The options are limited to the most
+                          interesting and generally used ones to not overcomplicate the user interface <br>
+                          <b>Full Mode:</b><br> The full mode provides a wider list of options to select from for more
+                          specific queries.
                         </div>
                       </v-tooltip>
                     </div>
@@ -1046,6 +1048,7 @@ export default {
     },
     loadGraph: function (graphId) {
       this.getGraph().then(graph => {
+        graph.setWaiting(false)
         graph.setLoading(true)
         graph.show(graphId).then(() => {
           graph.showLoops(false)

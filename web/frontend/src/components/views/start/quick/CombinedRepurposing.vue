@@ -1330,6 +1330,7 @@ export default {
     loadGraph: function (graphId) {
       this.getGraph().then(graph => {
         this.resultProgress += 5
+        graph.setWaiting(false)
         graph.setLoading(true)
         graph.show(graphId).then(() => {
           this.resultProgress += 15

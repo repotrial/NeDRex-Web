@@ -797,6 +797,7 @@ export default {
     ,
     loadGraph: function (graphId) {
       this.getGraph().then(graph => {
+        graph.setWaiting(false)
         graph.setLoading(true)
         graph.show(graphId).then(() => {
           graph.showLoops(false)

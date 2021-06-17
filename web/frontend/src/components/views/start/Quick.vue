@@ -69,9 +69,7 @@
           </PipelineCard>
         </div>
       </div>
-<!--/*      <div style="display: flex; justify-content: center">*/-->
         <v-divider style="margin: 16px 30vw 16px 30vw"></v-divider>
-<!--      </div>-->
       <div style="display: flex; justify-content: center;">
         <div @mouseenter="hoverDrugRep=true" @mouseleave="hoverDrugRep=false">
           <PipelineCard :image="getConfig().STATIC_PATH+'/assets/drug_rep.png'" title="Drug Repurposing">

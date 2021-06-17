@@ -2,7 +2,7 @@
   <v-data-table :max-height="height" :height="height" class="overflow-y-auto overflow-x-hidden" fixed-header
                 dense item-key="id"
                 :items="nodes"
-                :headers="[{text: 'Name', align: 'start', sortable: true, value: 'displayName'},{text: 'Origin', align: 'start',sortable: true, value: 'origin'},{text: 'Action', align: 'end', sortable: false, value: 'action'}]"
+                :headers="headers"
                 disable-pagination
                 hide-default-footer
                 style="margin-top: 16px">
@@ -46,6 +46,17 @@
 
         </template>
         <span>Holds the sources the seed node was added by:<br><b>SUG=</b>Suggestion, <b>FILE</b>=File input or <b>METH</b>=Other method</span>
+      </v-tooltip>
+    </template>
+    <template v-slot:header.sourcedb="{header}">
+      <v-tooltip bottom>
+        <template v-slot:activator="{attr,on }">
+                          <span v-bind="attr" v-on="on">
+                          SourceDB
+                          </span>
+
+        </template>
+        <span>Holds the source which provided information about the used association.</span>
       </v-tooltip>
     </template>
     <template v-slot:header.displayName="{header}">
@@ -96,6 +107,11 @@ export default {
   data() {
     return {
       nodes: [],
+      headers: [
+        {text: 'Name', align: 'start', sortable: true, value: 'displayName'},
+        {text: 'Origin', align: 'start', sortable: true, value: 'origin'},
+        // {text: 'sourceDB', align: 'start', sortable: true, value: 'sourcedb'},
+        {text: 'Action', align: 'end', sortable: false, value: 'action'}]
     }
   },
 
@@ -104,7 +120,6 @@ export default {
   },
 
   methods: {
-
 
 
     getOrigins: function (id) {
@@ -196,9 +211,6 @@ export default {
       this.nodes = this.nodes.filter(s => remove.indexOf(s.id) === -1)
     },
   },
-
-
-
 
 
   components: {

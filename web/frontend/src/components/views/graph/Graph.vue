@@ -223,6 +223,9 @@ export default {
     setLoading: function (val) {
       this.loading = val
     },
+    setWaiting: function(val){
+      this.waiting=val
+    },
     prepareUnconnectedList: function () {
       this.unconnected = this.nodeSet.getIds()
       this.edgeSet.get().forEach(item => {
@@ -857,7 +860,7 @@ export default {
 
     getStartToEnd: function (start, theLen) {
       return theLen > 0 ? {start: start, end: start + theLen} : {start: start + theLen, end: start};
-    }
+    },
 
 
   },
