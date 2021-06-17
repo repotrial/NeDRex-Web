@@ -60,13 +60,46 @@
               <v-col cols="6">
                 <div style="height: 40vh; max-height: 40vh;">
                   <template v-if="seedTypeId!==undefined">
-                    <v-card-title style="margin-left: -25px" class="subtitle-1">Add
-                      {{ ['genes', 'proteins'][this.seedTypeId] }} associated to
-                    </v-card-title>
+                    <div style="display: flex">
+                      <div style="justify-content: flex-start">
+                        <v-card-title style="margin-left: -25px;" class="subtitle-1">Add
+                          {{ ['genes', 'proteins'][this.seedTypeId] }} associated to
+                        </v-card-title>
+                      </div>
+                      <v-tooltip top>
+                        <template v-slot:activator="{on,attrs}">
+                          <div v-on="on" v-bind="attrs" style="justify-content: flex-end; margin-left: auto">
+                            <v-switch :label="advancedOptions ? 'Full' :'Limited'"
+                                      v-model="advancedOptions"
+                                      @click="suggestionType = advancedOptions ? suggestionType : 'disorder'"></v-switch>
+                          </div>
+                        </template>
+                        <div style="width: 300px"><b>Limited Mode:</b><br>The options are limited to the most interesting and generally used ones to not overcomplicate the user interface <br>
+                          <b>Full Mode:</b><br> The full mode provides a wider list of options to select from for more specific queries.
+                        </div>
+                      </v-tooltip>
+                    </div>
                     <div style="display: flex">
 
-                      <v-select :items="getSuggestionSelection()" v-model="suggestionType"
-                                placeholder="connected to" style="width: 35%; justify-self: flex-start"></v-select>
+                      <v-tooltip top>
+                        <template v-slot:activator="{on, attrs}">
+                          <div v-on="on" v-bind="attrs" style="width: 35%;justify-self: flex-start">
+                            <v-select :items="getSuggestionSelection()" v-model="suggestionType"
+                                      placeholder="connected to" style="width: 100%"
+                                      :disabled="!advancedOptions"></v-select>
+                          </div>
+                        </template>
+                        <div v-if="advancedOptions" style="width: 300px"><b>Full Mode:</b><br>A node type with
+                          direct association to {{
+                            ['gene', 'protein'][this.seedTypeId]
+                          }} nodes can freely be selected and are to add additional seeds.
+                        </div>
+                        <div v-else style="width: 300px"><b>Limited Mode:</b><br>Disorders can be used to add known {{
+                            ['gene', 'protein'][this.seedTypeId]
+                          }} associations as seed nodes. For the use of all available node types for the selection
+                          through association the 'Limited' switch has to be toggled.
+                        </div>
+                      </v-tooltip>
                       <SuggestionAutocomplete :suggestion-type="suggestionType"
                                               :target-node-type="['gene', 'protein'][this.seedTypeId]"
                                               @addToSelectionEvent="addToSelection"
@@ -846,6 +879,7 @@ export default {
       step: 1,
       suggestionType: undefined,
       fileInputModel: undefined,
+      advancedOptions: false,
       moduleMethods: [{
         id: "diamond",
         label: "DIAMOnD",
@@ -936,10 +970,21 @@ export default {
     getSuggestionSelection: function () {
       let type = ["gene", "protein"][this.seedTypeId]
       let nodeId = this.metagraph.nodes.filter(n => n.group === type)[0].id
-      return this.metagraph.edges.filter(e => e.from !== e.to && e.from === nodeId || e.to === nodeId).map(e => e.to === nodeId ? e.from : e.to).map(nid => {
+      let disorderIdx = -1
+      let out = this.metagraph.edges.filter(e => e.from !== e.to && e.from === nodeId || e.to === nodeId).map(e => e.to === nodeId ? e.from : e.to).map(nid => {
         let node = this.metagraph.nodes.filter(n => n.id === nid)[0]
+        if (node.label === "Disorder") {
+          disorderIdx = -(disorderIdx + 1)
+        } else {
+          if (disorderIdx < 0)
+            disorderIdx--;
+        }
         return {value: node.group, text: node.label}
       })
+      if (!this.advancedOptions) {
+        this.suggestionType = out[disorderIdx].value;
+      }
+      return out
     },
     makeStep: function (s, button) {
       if (button === "continue") {
