@@ -19,7 +19,7 @@
                   <v-icon left>
                     fas fa-angle-double-right
                   </v-icon>
-                  Module Identification
+                 Run Module Identification
                 </v-btn>
               </div>
               <div>
@@ -34,7 +34,7 @@
           </PipelineCard>
         </div>
         <div v-show="hoverDrugRep" style="display: flex; align-content: center">
-          <v-icon>
+          <v-icon size="2vw">
             fas fa-plus
           </v-icon>
         </div>
@@ -54,7 +54,7 @@
                   <v-icon left>
                     fas fa-angle-double-right
                   </v-icon>
-                  Drug Prioritization
+                  Run Drug Prioritization
                 </v-btn>
               </div>
               <div>
@@ -69,10 +69,12 @@
           </PipelineCard>
         </div>
       </div>
-        <v-divider style="margin: 16px 30vw 16px 30vw"></v-divider>
+      <div style="display: flex; justify-content: center">
+        <v-icon size="4vw">fas fa-chevron-down</v-icon>
+      </div>
       <div style="display: flex; justify-content: center;">
         <div @mouseenter="hoverDrugRep=true" @mouseleave="hoverDrugRep=false">
-          <PipelineCard :image="getConfig().STATIC_PATH+'/assets/drug_rep.png'" title="Drug Repurposing">
+          <PipelineCard :image="getConfig().STATIC_PATH+'/assets/drug_rep.png'" title="Drug Repurposing" subtitle="Module Identification + Drug Prioritization">
             <template slot="description">
               <div>
                 Identify disease modules as in the standalone mode (Agile/Quick Module Identification) but with
@@ -88,7 +90,7 @@
                   <v-icon left>
                     fas fa-angle-double-right
                   </v-icon>
-                  Drug Repurposing
+                  Run Drug Repurposing
                 </v-btn>
               </div>
               <div>
@@ -133,8 +135,8 @@
 <script>
 
 import ModuleIdentification from "./quick/ModuleIdentification";
-import DrugRepurposing from "./quick/DrugRepurposing";
-import CombinedRepurposing from "./quick/CombinedRepurposing";
+import DrugRepurposing from "./quick/DrugPrioritization";
+import CombinedRepurposing from "./quick/DrugRepurposing";
 import PipelineCard from "@/components/app/start/PipelineCard";
 
 export default {

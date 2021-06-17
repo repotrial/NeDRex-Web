@@ -1,643 +1,662 @@
 <template>
-  <v-stepper
-    alt-labels
-    v-model="step"
-  >
-    <v-stepper-header ref="head">
-      <v-stepper-step step="1" :complete="step>1">
-        Select Seeds
-        <small v-if="seedTypeId!==undefined">{{ ["Gene", "Protein"][seedTypeId] }}
-          ({{ $refs.seedTable ? $refs.seedTable.getSeeds().length : 0 }})</small>
-      </v-stepper-step>
-      <v-divider></v-divider>
-      <v-stepper-step step="2" :complete="step>2 || blitz">
-        Select Method
-        <small v-if=" methodModel>-1">{{ methods[methodModel].label }}</small>
-      </v-stepper-step>
-      <v-divider></v-divider>
-      <v-stepper-step step="3">
-        Results
-      </v-stepper-step>
-    </v-stepper-header>
-
-    <v-stepper-items>
-      <v-stepper-content step="1">
-        <v-card
-          v-if="step===1"
-          class="mb-12"
-          min-height="80vh"
-        >
-
-          <v-card-subtitle class="headline">1. Seed Configuration</v-card-subtitle>
-          <v-card-subtitle style="margin-top: -25px">Add seeds to your
-            list{{ blitz ? "." : " or use an expression data based algorithm (" }}<a
-              @click="seedTypeId=0; methodModel=1; makeStep(1,'continue')">BiCoN
-              <v-icon right size="1em" style="margin-left: 0">fas fa-caret-right</v-icon>
-            </a>{{ ")." }}
-          </v-card-subtitle>
-          <v-divider style="margin: 15px;"></v-divider>
-          <v-row>
-            <v-col>
-              <v-list-item-subtitle class="title">Select the seed type</v-list-item-subtitle>
-              <v-list-item-action>
-                <v-radio-group row v-model="seedTypeId"
-                               :disabled="(this.seedTypeId !=null && $refs.seedTable !=null && $refs.seedTable.getSeeds()!=null && $refs.seedTable.getSeeds().length>0)">
-                  <v-radio label="Gene">
-                  </v-radio>
-                  <v-radio label="Protein">
-                  </v-radio>
-                </v-radio-group>
-              </v-list-item-action>
-            </v-col>
-          </v-row>
-          <v-container style="height: 55vh; margin-top: 15px">
-            <v-row style="height: 100%">
-              <v-col cols="6">
-                <div style="height: 40vh; max-height: 40vh;">
-                  <template v-if="seedTypeId!==undefined">
-                    <div style="display: flex">
-                      <div style="justify-content: flex-start">
-                        <v-card-title style="margin-left: -25px;" class="subtitle-1">Add
-                          {{ ['genes', 'proteins'][this.seedTypeId] }} associated to
-                        </v-card-title>
-                      </div>
-                      <v-tooltip top>
-                        <template v-slot:activator="{on,attrs}">
-                          <div v-on="on" v-bind="attrs" style="justify-content: flex-end; margin-left: auto">
-                            <v-switch :label="advancedOptions ? 'Full' :'Limited'"
-                                      v-model="advancedOptions"
-                                      @click="suggestionType = advancedOptions ? suggestionType : 'disorder'"></v-switch>
-                          </div>
-                        </template>
-                        <div style="width: 300px"><b>Limited Mode:</b><br>The options are limited to the most
-                          interesting and generally used ones to not overcomplicate the user interface <br>
-                          <b>Full Mode:</b><br> The full mode provides a wider list of options to select from for more
-                          specific queries.
-                        </div>
-                      </v-tooltip>
-                    </div>
-
-                    <div style="display: flex">
-                      <v-tooltip top>
-                        <template v-slot:activator="{on, attrs}">
-                          <div v-on="on" v-bind="attrs" style="width: 35%;justify-self: flex-start">
-                            <v-select :items="getSuggestionSelection()" v-model="suggestionType"
-                                      placeholder="connected to" style="width: 100%"
-                                      :disabled="!advancedOptions"></v-select>
-                          </div>
-                        </template>
-                        <div v-if="advancedOptions" style="width: 300px"><b>Full Mode:</b><br>A node type with
-                          direct association to {{
-                            ['gene', 'protein'][this.seedTypeId]
-                          }} nodes can freely be selected and are to add additional seeds.
-                        </div>
-                        <div v-else style="width: 300px"><b>Limited Mode:</b><br>Disorders can be used to add known {{
-                            ['gene', 'protein'][this.seedTypeId]
-                          }} associations as seed nodes. For the use of all available node types for the selection
-                          through association the 'Limited' switch has to be toggled.
-                        </div>
-                      </v-tooltip>
-                      <SuggestionAutocomplete :suggestion-type="suggestionType"
-                                              :target-node-type="['gene', 'protein'][this.seedTypeId]"
-                                              @addToSelectionEvent="addToSelection"
-                                              style="justify-self: flex-end;margin-left: auto"></SuggestionAutocomplete>
-                    </div>
-                    <v-card-subtitle>or</v-card-subtitle>
-                    <div style="justify-content: center; display: flex; width: 100%">
-                      <v-file-input :label="'by '+['entrez','uniprot'][seedTypeId]+' ids'"
-                                    v-on:change="onFileSelected"
-                                    show-size
-                                    prepend-icon="far fa-list-alt"
-                                    v-model="fileInputModel"
-                                    dense
-                                    style="width: 75%; max-width: 75%"
-                      ></v-file-input>
-                    </div>
-                  </template>
-                </div>
-              </v-col>
-
-              <v-divider vertical v-show="seedTypeId!==undefined"></v-divider>
-              <v-col cols="6">
-                <SeedTable ref="seedTable" v-if="seedTypeId!==undefined" :download="true" :remove="true"
-                           @printNotificationEvent="printNotification"
-                           height="40vh"
-                           :title="'Selected Seeds ('+($refs.seedTable ? $refs.seedTable.getSeeds().length : 0)+')'"
-                           :nodeName="['gene','protein'][seedTypeId]"></SeedTable>
-              </v-col>
-            </v-row>
-          </v-container>
-
-
-        </v-card>
-        <v-btn
-          color="primary"
-          @click="makeStep(1,'continue')"
-          :disabled="seedTypeId<0"
-        >
-          Continue
-        </v-btn>
-
-        <v-btn text @click="makeStep(1,'cancel')">
-          Cancel
-        </v-btn>
-      </v-stepper-content>
-
-      <v-stepper-content step="2">
-        <v-card
-          v-if="step===2"
-          class="mb-12"
-          min-height="80vh"
-        >
-          <v-card-subtitle class="headline">2. Module Identification Algorithm Selection</v-card-subtitle>
-          <v-card-subtitle style="margin-top: -25px">Select and adjust the algorithm you want to apply on your seeds to
-            construct a disease module.
-          </v-card-subtitle>
-          <v-divider style="margin: 15px;"></v-divider>
-          <v-container style="height: 80%">
-            <v-row style="height: 100%">
-              <v-col>
-                <v-card-title style="margin-left: -25px">Select the Base-Algorithm</v-card-title>
-                <v-radio-group v-model="methodModel" row>
-                  <v-radio v-for="method in methods"
-                           :label="method.label"
-                           :key="method.label"
-                           :disabled="method.id!=='bicon'&&seeds.length===0"
-                  >
-                  </v-radio>
-                </v-radio-group>
-                <template v-if="methodModel!==undefined">
-                  <v-card-title style="margin-left:-25px">Configure Parameters</v-card-title>
-                  <div style="display: flex; justify-content: flex-start">
-                    <v-switch
-                      label="Only use experimentally validated interaction networks"
-                      v-model="experimentalSwitch"
-                    >
-                      <template v-slot:append>
-                        <v-tooltip left>
-                          <template v-slot:activator="{ on, attrs }">
-                            <v-icon
-                              v-bind="attrs"
-                              v-on="on"
-                              left> far fa-question-circle
-                              style="flex-grow: 0"
-                            </v-icon>
-                          </template>
-                          <span>Restricts the edges in the {{
-                              ['Gene', 'Protein'][seedTypeId] + '-' + ['Gene', 'Protein'][seedTypeId]
-                            }} interaction network to experimentally validated ones.</span>
-                        </v-tooltip>
-                      </template>
-                    </v-switch>
-                  </div>
-                  <div>
-
-                    <template v-if="methods[methodModel].id==='bicon'">
-                      <div style="justify-self: flex-end">
-                        <v-file-input
-                          v-on:change="biconFile"
-                          show-size
-                          prepend-icon="fas fa-file-medical"
-                          label="Expression File"
-                          dense
-                        >
-                        </v-file-input>
-                      </div>
-
-                      <div>
-                        <v-range-slider
-                          hide-details
-                          class="align-center"
-                          v-model="models.bicon.lg"
-                          min="1"
-                          max="1000"
-                        >
-                          <template v-slot:prepend>
-                            <v-text-field
-                              v-model="models.bicon.lg[0]"
-                              class="mt-0 pt-0"
-                              type="number"
-                              style="width: 60px"
-                              label="min"
-                            ></v-text-field>
-                          </template>
-                          <template v-slot:append>
-                            <v-text-field
-                              v-model="models.bicon.lg[1]"
-                              class="mt-0 pt-0"
-                              type="number"
-                              style="width: 60px"
-                              label="max"
-                            ></v-text-field>
-                            <v-tooltip left>
-                              <template v-slot:activator="{ on, attrs }">
-                                <v-icon
-                                  v-bind="attrs"
-                                  v-on="on"
-                                  left> far fa-question-circle
-                                </v-icon>
-                              </template>
-                              <span>Maximal solution subnetwork size.</span>
-                            </v-tooltip>
-                          </template>
-                        </v-range-slider>
-                      </div>
-                    </template>
-                    <template v-if="methods[methodModel].id==='diamond'">
-                      <div>
-                        <v-slider
-                          hide-details
-                          class="align-center"
-                          v-model="models.diamond.nModel"
-                          min="1"
-                          max="1000"
-                        >
-                          <template v-slot:prepend>
-                            <v-text-field
-                              v-model="models.diamond.nModel"
-                              class="mt-0 pt-0"
-                              type="number"
-                              style="width: 60px"
-                              label="n"
-                            ></v-text-field>
-                          </template>
-                          <template v-slot:append>
-                            <v-tooltip left>
-                              <template v-slot:activator="{ on, attrs }">
-                                <v-icon
-                                  v-bind="attrs"
-                                  v-on="on"
-                                  left> far fa-question-circle
-                                </v-icon>
-                              </template>
-                              <span>Desired number of DIAMOnD genes, 200 is a reasonable
-                       starting point.</span>
-                            </v-tooltip>
-                          </template>
-                        </v-slider>
-                      </div>
-                      <div>
-                        <v-slider
-                          hide-details
-                          class="align-center"
-                          v-model="models.diamond.alphaModel"
-                          min="1"
-                          max="100"
-                        >
-                          <template v-slot:prepend>
-                            <v-text-field
-                              v-model="models.diamond.alphaModel"
-                              class="mt-0 pt-0"
-                              type="number"
-                              style="width: 60px"
-                              label="alpha"
-                            ></v-text-field>
-                          </template>
-                          <template v-slot:append>
-                            <v-tooltip left>
-                              <template v-slot:activator="{ on, attrs }">
-                                <v-icon
-                                  v-bind="attrs"
-                                  v-on="on"
-                                  left> far fa-question-circle
-                                </v-icon>
-                              </template>
-                              <span>an integer representing weight of the seeds,default
-                       value is set to 1.</span>
-                            </v-tooltip>
-                          </template>
-                        </v-slider>
-                      </div>
-                      <div>
-                        <v-slider
-                          hide-details
-                          class="align-center"
-                          v-model="models.diamond.pModel"
-                          min="-100"
-                          max="0"
-                        >
-                          <template v-slot:prepend>
-                            <v-text-field
-                              prefix="10^"
-                              v-model="models.diamond.pModel"
-                              class="mt-0 pt-0"
-                              type="number"
-                              style="width: 80px"
-                              label="p-cutoff"
-                            ></v-text-field>
-                          </template>
-                          <template v-slot:append>
-                            <v-tooltip left>
-                              <template v-slot:activator="{ on, attrs }">
-                                <v-icon
-                                  v-bind="attrs"
-                                  v-on="on"
-                                  left> far fa-question-circle
-                                </v-icon>
-                              </template>
-                              <span>Choose a cutoff for the resulting p_hyper scores.</span>
-                            </v-tooltip>
-                          </template>
-                        </v-slider>
-                      </div>
-                    </template>
-                    <template v-if="methods[methodModel].id==='must'">
-                      <div>
-                        <v-slider
-                          hide-details
-                          class="align-center"
-                          v-model="models.must.hubpenalty"
-                          min="0"
-                          max="1"
-                          step="0.01"
-                        >
-                          <template v-slot:prepend>
-                            <v-text-field
-                              v-model="models.must.hubpenalty"
-                              class="mt-0 pt-0"
-                              type="number"
-                              style="width: 70px"
-                              label="hub-penalty"
-                            ></v-text-field>
-                          </template>
-                          <template v-slot:append>
-                            <v-tooltip left>
-                              <template v-slot:activator="{ on, attrs }">
-                                <v-icon
-                                  v-bind="attrs"
-                                  v-on="on"
-                                  left> far fa-question-circle
-                                </v-icon>
-                              </template>
-                              <span>Choose this option if you want to return multiple results.</span>
-                            </v-tooltip>
-                          </template>
-                        </v-slider>
-                      </div>
-                      <div>
-                        <v-switch
-                          label="Multiple"
-                          v-model="models.must.multiple"
-                        >
-                          <template v-slot:append>
-                            <v-tooltip left>
-                              <template v-slot:activator="{ on, attrs }">
-                                <v-icon
-                                  v-bind="attrs"
-                                  v-on="on"
-                                  left> far fa-question-circle
-                                </v-icon>
-                              </template>
-                              <span>Specify hub penalty between 0.0 and 1.0. If none is specified, there will be no hub penalty.</span>
-                            </v-tooltip>
-                          </template>
-                        </v-switch>
-                      </div>
-                      <div v-show="models.must.multiple">
-                        <v-slider
-                          hide-details
-                          class="align-center"
-                          v-model="models.must.trees"
-                          min="2"
-                          max="50"
-                        >
-                          <template v-slot:prepend>
-                            <v-text-field
-                              v-model="models.must.trees"
-                              class="mt-0 pt-0"
-                              type="number"
-                              style="width: 70px"
-                              label="trees"
-                            ></v-text-field>
-                          </template>
-                          <template v-slot:append>
-                            <v-tooltip left>
-                              <template v-slot:activator="{ on, attrs }">
-                                <v-icon
-                                  v-bind="attrs"
-                                  v-on="on"
-                                  left> far fa-question-circle
-                                </v-icon>
-                              </template>
-                              <span>Number of Trees to be returned (Integer).</span>
-                            </v-tooltip>
-                          </template>
-                        </v-slider>
-                      </div>
-                      <div>
-                        <v-slider
-                          hide-details
-                          class="align-center"
-                          v-model="models.must.maxit"
-                          min="0"
-                          max="20"
-                        >
-                          <template v-slot:prepend>
-                            <v-text-field
-                              v-model="models.must.maxit"
-                              class="mt-0 pt-0"
-                              type="number"
-                              style="width: 70px"
-                              label="iterations"
-                            ></v-text-field>
-                          </template>
-                          <template v-slot:append>
-                            <v-tooltip left>
-                              <template v-slot:activator="{ on, attrs }">
-                                <v-icon
-                                  v-bind="attrs"
-                                  v-on="on"
-                                  left> far fa-question-circle
-                                </v-icon>
-                              </template>
-                              <span>The maximum number of iterations is defined as trees + iterations.</span>
-                            </v-tooltip>
-                          </template>
-                        </v-slider>
-                      </div>
-                    </template>
-                  </div>
-                </template>
-              </v-col>
-            </v-row>
-          </v-container>
-        </v-card>
-
-        <v-btn text @click="makeStep(2,'back')">
-          Back
-        </v-btn>
-
-        <v-btn
-          @click="makeStep(2,'continue')"
-          color="primary"
-          :disabled="methodModel===undefined ||(methodModel===1 && models.bicon.exprFile ===undefined)"
-        >
-          Run
-        </v-btn>
-
-        <v-btn text @click="makeStep(2,'cancel')">
-          Cancel
-        </v-btn>
-      </v-stepper-content>
-
-      <v-stepper-content step="3">
-        <v-card
-          v-if="step===3"
-          class="mb-12"
-          min-height="80vh"
-        >
-          <v-card-subtitle class="headline">3. Module Identification Results</v-card-subtitle>
-          <v-divider style="margin: 15px;"></v-divider>
-          <v-container>
-            <v-row>
-              <v-col cols="3" style="padding: 0 50px 0 0; margin-right: -50px">
-                <v-card-title class="subtitle-1">Seeds ({{ seeds.length }}) {{
-                    (results.targets.length !== undefined && results.targets.length > 0 ? ("& Module (" + getTargetCount() + ")") : ": Processing")
-                  }}
-                  <v-progress-circular indeterminate v-if="this.results.targets.length===0" style="margin-left:15px">
-                  </v-progress-circular>
-                </v-card-title>
-                <template v-if="!loadingResults">
-                  <v-data-table max-height="50vh" height="50vh" fixed-header dense item-key="id"
-                                :items="results.targets" :headers="getHeaders()" disable-pagination
-                                hide-default-footer @click:row="rowClicked">
-                    <template v-slot:item.displayName="{item}">
-                      <v-tooltip v-if="item.displayName.length>16" right>
-                        <template v-slot:activator="{attr,on }">
-                          <span v-bind="attr" v-on="on"
-                                style="color: dimgray">{{ item.displayName.substr(0, 16) }}...</span>
-                        </template>
-                        <span>{{ item.displayName }}</span>
-                      </v-tooltip>
-                      <span v-else>{{ item.displayName }}</span>
-                    </template>
-                    <template v-slot:footer>
-                      <div style="display: flex; justify-content: center; margin-left: auto">
-                        <div style="padding-top: 16px">
-                          <ResultDownload v-show="seeds && seeds.length>0" raw results seeds
-                                          @downloadEvent="downloadList" @downloadResultsEvent="downloadResultList"
-                                          @downloadRawEvent="downloadFullResultList"></ResultDownload>
-                        </div>
-                      </div>
-                    </template>
-                  </v-data-table>
-
-                </template>
-                <v-data-table v-else max-height="45vh" height="45vh" max-width="100%" fixed-header dense item-key="id"
-                              :items="seeds" :headers="getHeaders(true)" disable-pagination
-                              hide-default-footer @click:row="rowClicked"></v-data-table>
-              </v-col>
-              <v-col>
-                <Graph ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle"
-                       :legend="results.targets.length>0" :meta="metagraph">
-                  <template v-slot:legend v-if="results.targets.length>0">
-                    <v-card style="width: 15vw; max-width: 17vw; padding-top: 35px">
-                      <v-list>
-                        <v-list-item>
-                          <v-list-item-icon>
-                            <v-icon left :color="getColoring('nodes',['gene','protein'][seedTypeId],'light')"
-                                    size="43px">fas fa-genderless
-                            </v-icon>
-                          </v-list-item-icon>
-                          <v-list-item-title style="margin-left: -25px">Seed {{ ['Gene', 'Protein'][seedTypeId] }}
-                          </v-list-item-title>
-                          <v-list-item-subtitle>{{ seeds.length }}</v-list-item-subtitle>
-                        </v-list-item>
-                        <v-list-item>
-                          <v-list-item-icon>
-                            <v-icon left :color="getColoring('nodes',['gene','protein'][seedTypeId],'light')">fas
-                              fa-circle
-                            </v-icon>
-                          </v-list-item-icon>
-                          <v-list-item-title style="margin-left: -25px">Module {{ ['Gene', 'Protein'][seedTypeId] }}
-                          </v-list-item-title>
-                          <v-list-item-subtitle>{{ results.targets.length - seeds.length }}</v-list-item-subtitle>
-                        </v-list-item>
-                      </v-list>
-                    </v-card>
-                  </template>
-
-                </Graph>
-              </v-col>
-            </v-row>
-            <v-divider style="margin-top:10px; margin-bottom: 10px"></v-divider>
-            <v-row>
-              <v-col>
-                <v-chip outlined v-if="currentGid"
-                        style="margin-top:15px"
-                        @click="$emit('graphLoadEvent',{post: {id: currentGid}})">
-                  <v-icon left>fas fa-angle-double-right</v-icon>
-                  Load Result into Advanced View
-                </v-chip>
-              </v-col>
-              <v-col>
-                <v-switch label="Physics" v-model="graph.physics" @click="updateGraphPhysics()"
-                          v-if="results.targets.length>0">
-                </v-switch>
-
-              </v-col>
-              <v-col>
-                <v-chip outlined v-show="results.targets.length>0" style="margin-top:15px" @click="loadDrugTargets">
-                  <v-icon left>fas fa-angle-double-right</v-icon>
-                  Continue to Drug-Ranking
-                </v-chip>
-              </v-col>
-            </v-row>
-          </v-container>
-        </v-card>
-        <v-btn
-          color="primary"
-          @click="makeStep(3,'back')"
-        >
-          Back
-        </v-btn>
-
-        <v-btn text @click="makeStep(3,'cancel')">
-          Restart
-        </v-btn>
-      </v-stepper-content>
-    </v-stepper-items>
-    <v-dialog
-      v-model="drugTargetPopup"
-      persistent
-      max-width="500"
+  <v-card>
+    <div style="display: flex; justify-content: flex-end; margin-left: auto; ">
+      <v-tooltip left>
+        <template v-slot:activator="{on, attrs}">
+          <v-btn icon style="padding:1em" color="red darker" @click="makeStep(0,'cancel')" v-on="on" v-bind="attrs">
+            <v-icon size="2em">far fa-times-circle</v-icon>
+          </v-btn>
+        </template>
+        <div>Close <b>Module Identification</b> and return to the <b>Quick Start</b> menu</div>
+      </v-tooltip>
+    </div>
+    <div style="display: flex; color: dimgray; padding-bottom: 8px">
+      <v-card-title style="font-size: 2.5em; justify-content: center; margin-left: auto; margin-right: auto">
+        Module
+        Identification
+      </v-card-title>
+    </div>
+    <v-stepper
+      alt-labels
+      v-model="step"
+      flat
     >
-      <v-card>
-        <v-card-title>Continue to Drug-Ranking</v-card-title>
-        <v-card-text>Do you want to use the whole module as input for the drug ranking or just a subset?
-        </v-card-text>
-        <v-card-actions>
-          <v-radio-group v-model="rankingSelect" row>
-            <v-radio :label="'Original seeds ('+seeds.length+')'">
-
-            </v-radio>
-            <v-radio :label="'whole Module ('+(getTargetCount()+seeds.length)+')'">
-            </v-radio>
-            <v-radio :label="'non-seeds only ('+getTargetCount()+')'">
-            </v-radio>
-          </v-radio-group>
-        </v-card-actions>
+      <v-stepper-header ref="head">
+        <v-stepper-step step="1" :complete="step>1">
+          Select Seeds
+          <small v-if="seedTypeId!==undefined">{{ ["Gene", "Protein"][seedTypeId] }}
+            ({{ $refs.seedTable ? $refs.seedTable.getSeeds().length : 0 }})</small>
+        </v-stepper-step>
         <v-divider></v-divider>
-
-        <v-card-actions>
-          <v-btn
-            text
-            @click="resolveRankingDialog(false)"
+        <v-stepper-step step="2" :complete="step>2 || blitz">
+          Select Method
+          <small v-if=" methodModel>-1">{{ methods[methodModel].label }}</small>
+        </v-stepper-step>
+        <v-divider></v-divider>
+        <v-stepper-step step="3">
+          Results
+        </v-stepper-step>
+      </v-stepper-header>
+      <v-stepper-items>
+        <v-stepper-content step="1">
+          <v-card
+            v-if="step===1"
+            class="mb-12"
+            min-height="80vh"
           >
+
+            <v-card-subtitle class="headline">1. Seed Configuration</v-card-subtitle>
+            <v-card-subtitle style="margin-top: -25px">Add seeds to your
+              list{{ blitz ? "." : " or use an expression data based algorithm (" }}<a
+                @click="seedTypeId=0; methodModel=1; makeStep(1,'continue')">BiCoN
+                <v-icon right size="1em" style="margin-left: 0">fas fa-caret-right</v-icon>
+              </a>{{ ")." }}
+            </v-card-subtitle>
+            <v-divider style="margin: 15px;"></v-divider>
+            <v-row>
+              <v-col>
+                <v-list-item-subtitle class="title">Select the seed type</v-list-item-subtitle>
+                <v-list-item-action>
+                  <v-radio-group row v-model="seedTypeId"
+                                 :disabled="(this.seedTypeId !=null && $refs.seedTable !=null && $refs.seedTable.getSeeds()!=null && $refs.seedTable.getSeeds().length>0)">
+                    <v-radio label="Gene">
+                    </v-radio>
+                    <v-radio label="Protein">
+                    </v-radio>
+                  </v-radio-group>
+                </v-list-item-action>
+              </v-col>
+            </v-row>
+            <v-container style="height: 55vh; margin-top: 15px">
+              <v-row style="height: 100%">
+                <v-col cols="6">
+                  <div style="height: 40vh; max-height: 40vh;">
+                    <template v-if="seedTypeId!==undefined">
+                      <div style="display: flex">
+                        <div style="justify-content: flex-start">
+                          <v-card-title style="margin-left: -25px;" class="subtitle-1">Add
+                            {{ ['genes', 'proteins'][this.seedTypeId] }} associated to
+                          </v-card-title>
+                        </div>
+                        <v-tooltip top>
+                          <template v-slot:activator="{on,attrs}">
+                            <div v-on="on" v-bind="attrs" style="justify-content: flex-end; margin-left: auto">
+                              <v-switch :label="advancedOptions ? 'Full' :'Limited'"
+                                        v-model="advancedOptions"
+                                        @click="suggestionType = advancedOptions ? suggestionType : 'disorder'"></v-switch>
+                            </div>
+                          </template>
+                          <div style="width: 300px"><b>Limited Mode:</b><br>The options are limited to the most
+                            interesting and generally used ones to not overcomplicate the user interface <br>
+                            <b>Full Mode:</b><br> The full mode provides a wider list of options to select from for more
+                            specific queries.
+                          </div>
+                        </v-tooltip>
+                      </div>
+
+                      <div style="display: flex">
+                        <v-tooltip top>
+                          <template v-slot:activator="{on, attrs}">
+                            <div v-on="on" v-bind="attrs" style="width: 35%;justify-self: flex-start">
+                              <v-select :items="getSuggestionSelection()" v-model="suggestionType"
+                                        placeholder="connected to" style="width: 100%"
+                                        :disabled="!advancedOptions"></v-select>
+                            </div>
+                          </template>
+                          <div v-if="advancedOptions" style="width: 300px"><b>Full Mode:</b><br>A node type with
+                            direct association to {{
+                              ['gene', 'protein'][this.seedTypeId]
+                            }} nodes can freely be selected and are to add additional seeds.
+                          </div>
+                          <div v-else style="width: 300px"><b>Limited Mode:</b><br>Disorders can be used to add known {{
+                              ['gene', 'protein'][this.seedTypeId]
+                            }} associations as seed nodes. For the use of all available node types for the selection
+                            through association the 'Limited' switch has to be toggled.
+                          </div>
+                        </v-tooltip>
+                        <SuggestionAutocomplete :suggestion-type="suggestionType"
+                                                :target-node-type="['gene', 'protein'][this.seedTypeId]"
+                                                @addToSelectionEvent="addToSelection"
+                                                style="justify-self: flex-end;margin-left: auto"></SuggestionAutocomplete>
+                      </div>
+                      <v-card-subtitle>or</v-card-subtitle>
+                      <div style="justify-content: center; display: flex; width: 100%">
+                        <v-file-input :label="'by '+['entrez','uniprot'][seedTypeId]+' ids'"
+                                      v-on:change="onFileSelected"
+                                      show-size
+                                      prepend-icon="far fa-list-alt"
+                                      v-model="fileInputModel"
+                                      dense
+                                      style="width: 75%; max-width: 75%"
+                        ></v-file-input>
+                      </div>
+                    </template>
+                  </div>
+                </v-col>
+
+                <v-divider vertical v-show="seedTypeId!==undefined"></v-divider>
+                <v-col cols="6">
+                  <SeedTable ref="seedTable" v-if="seedTypeId!==undefined" :download="true" :remove="true"
+                             @printNotificationEvent="printNotification"
+                             height="40vh"
+                             :title="'Selected Seeds ('+($refs.seedTable ? $refs.seedTable.getSeeds().length : 0)+')'"
+                             :nodeName="['gene','protein'][seedTypeId]"></SeedTable>
+                </v-col>
+              </v-row>
+            </v-container>
+
+
+          </v-card>
+          <v-btn
+            color="primary"
+            @click="makeStep(1,'continue')"
+            :disabled="seedTypeId<0"
+          >
+            Continue
+          </v-btn>
+
+          <v-btn text @click="makeStep(1,'cancel')">
             Cancel
           </v-btn>
-          <v-btn
-            color="green darken-1"
-            text
-            @click="resolveRankingDialog(true)"
-          >
-            Accept
-          </v-btn>
-        </v-card-actions>
-      </v-card>
+        </v-stepper-content>
 
-    </v-dialog>
-  </v-stepper>
+        <v-stepper-content step="2">
+          <v-card
+            v-if="step===2"
+            class="mb-12"
+            min-height="80vh"
+          >
+            <v-card-subtitle class="headline">2. Module Identification Algorithm Selection</v-card-subtitle>
+            <v-card-subtitle style="margin-top: -25px">Select and adjust the algorithm you want to apply on your seeds
+              to
+              construct a disease module.
+            </v-card-subtitle>
+            <v-divider style="margin: 15px;"></v-divider>
+            <v-container style="height: 80%">
+              <v-row style="height: 100%">
+                <v-col>
+                  <v-card-title style="margin-left: -25px">Select the Base-Algorithm</v-card-title>
+                  <v-radio-group v-model="methodModel" row>
+                    <v-radio v-for="method in methods"
+                             :label="method.label"
+                             :key="method.label"
+                             :disabled="method.id!=='bicon'&&seeds.length===0"
+                    >
+                    </v-radio>
+                  </v-radio-group>
+                  <template v-if="methodModel!==undefined">
+                    <v-card-title style="margin-left:-25px">Configure Parameters</v-card-title>
+                    <div style="display: flex; justify-content: flex-start">
+                      <v-switch
+                        label="Only use experimentally validated interaction networks"
+                        v-model="experimentalSwitch"
+                      >
+                        <template v-slot:append>
+                          <v-tooltip left>
+                            <template v-slot:activator="{ on, attrs }">
+                              <v-icon
+                                v-bind="attrs"
+                                v-on="on"
+                                left> far fa-question-circle
+                                style="flex-grow: 0"
+                              </v-icon>
+                            </template>
+                            <span>Restricts the edges in the {{
+                                ['Gene', 'Protein'][seedTypeId] + '-' + ['Gene', 'Protein'][seedTypeId]
+                              }} interaction network to experimentally validated ones.</span>
+                          </v-tooltip>
+                        </template>
+                      </v-switch>
+                    </div>
+                    <div>
+
+                      <template v-if="methods[methodModel].id==='bicon'">
+                        <div style="justify-self: flex-end">
+                          <v-file-input
+                            v-on:change="biconFile"
+                            show-size
+                            prepend-icon="fas fa-file-medical"
+                            label="Expression File"
+                            dense
+                          >
+                          </v-file-input>
+                        </div>
+
+                        <div>
+                          <v-range-slider
+                            hide-details
+                            class="align-center"
+                            v-model="models.bicon.lg"
+                            min="1"
+                            max="1000"
+                          >
+                            <template v-slot:prepend>
+                              <v-text-field
+                                v-model="models.bicon.lg[0]"
+                                class="mt-0 pt-0"
+                                type="number"
+                                style="width: 60px"
+                                label="min"
+                              ></v-text-field>
+                            </template>
+                            <template v-slot:append>
+                              <v-text-field
+                                v-model="models.bicon.lg[1]"
+                                class="mt-0 pt-0"
+                                type="number"
+                                style="width: 60px"
+                                label="max"
+                              ></v-text-field>
+                              <v-tooltip left>
+                                <template v-slot:activator="{ on, attrs }">
+                                  <v-icon
+                                    v-bind="attrs"
+                                    v-on="on"
+                                    left> far fa-question-circle
+                                  </v-icon>
+                                </template>
+                                <span>Maximal solution subnetwork size.</span>
+                              </v-tooltip>
+                            </template>
+                          </v-range-slider>
+                        </div>
+                      </template>
+                      <template v-if="methods[methodModel].id==='diamond'">
+                        <div>
+                          <v-slider
+                            hide-details
+                            class="align-center"
+                            v-model="models.diamond.nModel"
+                            min="1"
+                            max="1000"
+                          >
+                            <template v-slot:prepend>
+                              <v-text-field
+                                v-model="models.diamond.nModel"
+                                class="mt-0 pt-0"
+                                type="number"
+                                style="width: 60px"
+                                label="n"
+                              ></v-text-field>
+                            </template>
+                            <template v-slot:append>
+                              <v-tooltip left>
+                                <template v-slot:activator="{ on, attrs }">
+                                  <v-icon
+                                    v-bind="attrs"
+                                    v-on="on"
+                                    left> far fa-question-circle
+                                  </v-icon>
+                                </template>
+                                <span>Desired number of DIAMOnD genes, 200 is a reasonable
+                       starting point.</span>
+                              </v-tooltip>
+                            </template>
+                          </v-slider>
+                        </div>
+                        <div>
+                          <v-slider
+                            hide-details
+                            class="align-center"
+                            v-model="models.diamond.alphaModel"
+                            min="1"
+                            max="100"
+                          >
+                            <template v-slot:prepend>
+                              <v-text-field
+                                v-model="models.diamond.alphaModel"
+                                class="mt-0 pt-0"
+                                type="number"
+                                style="width: 60px"
+                                label="alpha"
+                              ></v-text-field>
+                            </template>
+                            <template v-slot:append>
+                              <v-tooltip left>
+                                <template v-slot:activator="{ on, attrs }">
+                                  <v-icon
+                                    v-bind="attrs"
+                                    v-on="on"
+                                    left> far fa-question-circle
+                                  </v-icon>
+                                </template>
+                                <span>an integer representing weight of the seeds,default
+                       value is set to 1.</span>
+                              </v-tooltip>
+                            </template>
+                          </v-slider>
+                        </div>
+                        <div>
+                          <v-slider
+                            hide-details
+                            class="align-center"
+                            v-model="models.diamond.pModel"
+                            min="-100"
+                            max="0"
+                          >
+                            <template v-slot:prepend>
+                              <v-text-field
+                                prefix="10^"
+                                v-model="models.diamond.pModel"
+                                class="mt-0 pt-0"
+                                type="number"
+                                style="width: 80px"
+                                label="p-cutoff"
+                              ></v-text-field>
+                            </template>
+                            <template v-slot:append>
+                              <v-tooltip left>
+                                <template v-slot:activator="{ on, attrs }">
+                                  <v-icon
+                                    v-bind="attrs"
+                                    v-on="on"
+                                    left> far fa-question-circle
+                                  </v-icon>
+                                </template>
+                                <span>Choose a cutoff for the resulting p_hyper scores.</span>
+                              </v-tooltip>
+                            </template>
+                          </v-slider>
+                        </div>
+                      </template>
+                      <template v-if="methods[methodModel].id==='must'">
+                        <div>
+                          <v-slider
+                            hide-details
+                            class="align-center"
+                            v-model="models.must.hubpenalty"
+                            min="0"
+                            max="1"
+                            step="0.01"
+                          >
+                            <template v-slot:prepend>
+                              <v-text-field
+                                v-model="models.must.hubpenalty"
+                                class="mt-0 pt-0"
+                                type="number"
+                                style="width: 70px"
+                                label="hub-penalty"
+                              ></v-text-field>
+                            </template>
+                            <template v-slot:append>
+                              <v-tooltip left>
+                                <template v-slot:activator="{ on, attrs }">
+                                  <v-icon
+                                    v-bind="attrs"
+                                    v-on="on"
+                                    left> far fa-question-circle
+                                  </v-icon>
+                                </template>
+                                <span>Choose this option if you want to return multiple results.</span>
+                              </v-tooltip>
+                            </template>
+                          </v-slider>
+                        </div>
+                        <div>
+                          <v-switch
+                            label="Multiple"
+                            v-model="models.must.multiple"
+                          >
+                            <template v-slot:append>
+                              <v-tooltip left>
+                                <template v-slot:activator="{ on, attrs }">
+                                  <v-icon
+                                    v-bind="attrs"
+                                    v-on="on"
+                                    left> far fa-question-circle
+                                  </v-icon>
+                                </template>
+                                <span>Specify hub penalty between 0.0 and 1.0. If none is specified, there will be no hub penalty.</span>
+                              </v-tooltip>
+                            </template>
+                          </v-switch>
+                        </div>
+                        <div v-show="models.must.multiple">
+                          <v-slider
+                            hide-details
+                            class="align-center"
+                            v-model="models.must.trees"
+                            min="2"
+                            max="50"
+                          >
+                            <template v-slot:prepend>
+                              <v-text-field
+                                v-model="models.must.trees"
+                                class="mt-0 pt-0"
+                                type="number"
+                                style="width: 70px"
+                                label="trees"
+                              ></v-text-field>
+                            </template>
+                            <template v-slot:append>
+                              <v-tooltip left>
+                                <template v-slot:activator="{ on, attrs }">
+                                  <v-icon
+                                    v-bind="attrs"
+                                    v-on="on"
+                                    left> far fa-question-circle
+                                  </v-icon>
+                                </template>
+                                <span>Number of Trees to be returned (Integer).</span>
+                              </v-tooltip>
+                            </template>
+                          </v-slider>
+                        </div>
+                        <div>
+                          <v-slider
+                            hide-details
+                            class="align-center"
+                            v-model="models.must.maxit"
+                            min="0"
+                            max="20"
+                          >
+                            <template v-slot:prepend>
+                              <v-text-field
+                                v-model="models.must.maxit"
+                                class="mt-0 pt-0"
+                                type="number"
+                                style="width: 70px"
+                                label="iterations"
+                              ></v-text-field>
+                            </template>
+                            <template v-slot:append>
+                              <v-tooltip left>
+                                <template v-slot:activator="{ on, attrs }">
+                                  <v-icon
+                                    v-bind="attrs"
+                                    v-on="on"
+                                    left> far fa-question-circle
+                                  </v-icon>
+                                </template>
+                                <span>The maximum number of iterations is defined as trees + iterations.</span>
+                              </v-tooltip>
+                            </template>
+                          </v-slider>
+                        </div>
+                      </template>
+                    </div>
+                  </template>
+                </v-col>
+              </v-row>
+            </v-container>
+          </v-card>
+
+          <v-btn text @click="makeStep(2,'back')">
+            Back
+          </v-btn>
+
+          <v-btn
+            @click="makeStep(2,'continue')"
+            color="primary"
+            :disabled="methodModel===undefined ||(methodModel===1 && models.bicon.exprFile ===undefined)"
+          >
+            Run
+          </v-btn>
+
+          <v-btn text @click="makeStep(2,'cancel')">
+            Cancel
+          </v-btn>
+        </v-stepper-content>
+
+        <v-stepper-content step="3">
+          <v-card
+            v-if="step===3"
+            class="mb-12"
+            min-height="80vh"
+          >
+            <v-card-subtitle class="headline">3. Module Identification Results</v-card-subtitle>
+            <v-divider style="margin: 15px;"></v-divider>
+            <v-container>
+              <v-row>
+                <v-col cols="3" style="padding: 0 50px 0 0; margin-right: -50px">
+                  <v-card-title class="subtitle-1">Seeds ({{ seeds.length }}) {{
+                      (results.targets.length !== undefined && results.targets.length > 0 ? ("& Module (" + getTargetCount() + ")") : ": Processing")
+                    }}
+                    <v-progress-circular indeterminate v-if="this.results.targets.length===0" style="margin-left:15px">
+                    </v-progress-circular>
+                  </v-card-title>
+                  <template v-if="!loadingResults">
+                    <v-data-table max-height="50vh" height="50vh" fixed-header dense item-key="id"
+                                  :items="results.targets" :headers="getHeaders()" disable-pagination
+                                  hide-default-footer @click:row="rowClicked">
+                      <template v-slot:item.displayName="{item}">
+                        <v-tooltip v-if="item.displayName.length>16" right>
+                          <template v-slot:activator="{attr,on }">
+                          <span v-bind="attr" v-on="on"
+                                style="color: dimgray">{{ item.displayName.substr(0, 16) }}...</span>
+                          </template>
+                          <span>{{ item.displayName }}</span>
+                        </v-tooltip>
+                        <span v-else>{{ item.displayName }}</span>
+                      </template>
+                      <template v-slot:footer>
+                        <div style="display: flex; justify-content: center; margin-left: auto">
+                          <div style="padding-top: 16px">
+                            <ResultDownload v-show="seeds && seeds.length>0" raw results seeds
+                                            @downloadEvent="downloadList" @downloadResultsEvent="downloadResultList"
+                                            @downloadRawEvent="downloadFullResultList"></ResultDownload>
+                          </div>
+                        </div>
+                      </template>
+                    </v-data-table>
+
+                  </template>
+                  <v-data-table v-else max-height="45vh" height="45vh" max-width="100%" fixed-header dense item-key="id"
+                                :items="seeds" :headers="getHeaders(true)" disable-pagination
+                                hide-default-footer @click:row="rowClicked"></v-data-table>
+                </v-col>
+                <v-col>
+                  <Graph ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle"
+                         :legend="results.targets.length>0" :meta="metagraph">
+                    <template v-slot:legend v-if="results.targets.length>0">
+                      <v-card style="width: 15vw; max-width: 17vw; padding-top: 35px">
+                        <v-list>
+                          <v-list-item>
+                            <v-list-item-icon>
+                              <v-icon left :color="getColoring('nodes',['gene','protein'][seedTypeId],'light')"
+                                      size="43px">fas fa-genderless
+                              </v-icon>
+                            </v-list-item-icon>
+                            <v-list-item-title style="margin-left: -25px">Seed {{ ['Gene', 'Protein'][seedTypeId] }}
+                            </v-list-item-title>
+                            <v-list-item-subtitle>{{ seeds.length }}</v-list-item-subtitle>
+                          </v-list-item>
+                          <v-list-item>
+                            <v-list-item-icon>
+                              <v-icon left :color="getColoring('nodes',['gene','protein'][seedTypeId],'light')">fas
+                                fa-circle
+                              </v-icon>
+                            </v-list-item-icon>
+                            <v-list-item-title style="margin-left: -25px">Module {{ ['Gene', 'Protein'][seedTypeId] }}
+                            </v-list-item-title>
+                            <v-list-item-subtitle>{{ results.targets.length - seeds.length }}</v-list-item-subtitle>
+                          </v-list-item>
+                        </v-list>
+                      </v-card>
+                    </template>
+
+                  </Graph>
+                </v-col>
+              </v-row>
+              <v-divider style="margin-top:10px; margin-bottom: 10px"></v-divider>
+              <v-row>
+                <v-col>
+                  <v-chip outlined v-if="currentGid"
+                          style="margin-top:15px"
+                          @click="$emit('graphLoadEvent',{post: {id: currentGid}})">
+                    <v-icon left>fas fa-angle-double-right</v-icon>
+                    Load Result into Advanced View
+                  </v-chip>
+                </v-col>
+                <v-col>
+                  <v-switch label="Physics" v-model="graph.physics" @click="updateGraphPhysics()"
+                            v-if="results.targets.length>0">
+                  </v-switch>
+
+                </v-col>
+                <v-col>
+                  <v-chip outlined v-show="results.targets.length>0" style="margin-top:15px" @click="loadDrugTargets">
+                    <v-icon left>fas fa-angle-double-right</v-icon>
+                    Continue to Drug-Ranking
+                  </v-chip>
+                </v-col>
+              </v-row>
+            </v-container>
+          </v-card>
+          <v-btn
+            color="primary"
+            @click="makeStep(3,'back')"
+          >
+            Back
+          </v-btn>
+
+          <v-btn text @click="makeStep(3,'cancel')">
+            Restart
+          </v-btn>
+        </v-stepper-content>
+      </v-stepper-items>
+      <v-dialog
+        v-model="drugTargetPopup"
+        persistent
+        max-width="500"
+      >
+        <v-card>
+          <v-card-title>Continue to Drug-Ranking</v-card-title>
+          <v-card-text>Do you want to use the whole module as input for the drug ranking or just a subset?
+          </v-card-text>
+          <v-card-actions>
+            <v-radio-group v-model="rankingSelect" row>
+              <v-radio :label="'Original seeds ('+seeds.length+')'">
+
+              </v-radio>
+              <v-radio :label="'whole Module ('+(getTargetCount()+seeds.length)+')'">
+              </v-radio>
+              <v-radio :label="'non-seeds only ('+getTargetCount()+')'">
+              </v-radio>
+            </v-radio-group>
+          </v-card-actions>
+          <v-divider></v-divider>
+
+          <v-card-actions>
+            <v-btn
+              text
+              @click="resolveRankingDialog(false)"
+            >
+              Cancel
+            </v-btn>
+            <v-btn
+              color="green darken-1"
+              text
+              @click="resolveRankingDialog(true)"
+            >
+              Accept
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+
+      </v-dialog>
+    </v-stepper>
+  </v-card>
 </template>
 
 <script>
@@ -648,6 +667,7 @@ import SeedDownload from "@/components/app/tables/menus/SeedDownload";
 import SeedRemove from "@/components/app/tables/menus/SeedRemove";
 import SeedTable from "@/components/app/tables/SeedTable";
 import ResultDownload from "@/components/app/tables/menus/ResultDownload";
+import HeaderBar from "@/components/app/Header";
 
 export default {
   name: "ModuleIdentification",
@@ -1062,6 +1082,7 @@ export default {
   ,
 
   components: {
+    HeaderBar,
     SuggestionAutocomplete,
     SeedDownload,
     SeedRemove,

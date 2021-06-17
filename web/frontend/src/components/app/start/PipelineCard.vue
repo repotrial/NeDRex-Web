@@ -1,10 +1,13 @@
 <template>
   <v-card @mouseenter="cardHover=true" @mouseleave="cardHover=false" width="25vw"
-          style="margin: 15px">
-    <v-card-title :class="cardHover ? 'content':''"
+          style="margin: 15px" elevation="4">
+    <div :class="cardHover ? 'content':''">
+    <v-card-title
                   style="display: flex; justify-content: center; margin-right: auto; font-size: x-large">{{ title }}
-    </v-card-title>
-    <v-img ref='img' :class="cardHover ? 'blur': ''"
+    </v-card-title >
+    <v-card-subtitle :style="{color:cardHover?'white':''}">{{subtitle}}</v-card-subtitle>
+    </div>
+      <v-img ref='img' :class="cardHover ? 'blur': ''"
            :src="image" width="25vw" contain
     >
       <div v-show="!cardHover"
@@ -40,6 +43,7 @@ export default {
   props: {
     image: String,
     title: String,
+    subtitle: String,
   },
 
   data() {

@@ -1,9 +1,7 @@
 package de.exbio.reposcapeweb.db.services.controller;
 
-import de.exbio.reposcapeweb.communication.cache.Graph;
 import de.exbio.reposcapeweb.communication.cache.Graphs;
 import de.exbio.reposcapeweb.db.entities.RepoTrialEntity;
-import de.exbio.reposcapeweb.db.entities.edges.ProteinAssociatedWithDisorder;
 import de.exbio.reposcapeweb.db.entities.nodes.*;
 import de.exbio.reposcapeweb.db.services.nodes.*;
 import de.exbio.reposcapeweb.filter.NodeFilter;
