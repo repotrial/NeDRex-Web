@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.util.*;
 
 @Service
@@ -32,12 +33,15 @@ public class JobController {
     private final ProteinService proteinService;
     private final DrugService drugService;
     private final HistoryController historyController;
+    private final JobCache jobCache;
 
     private HashMap<String, Job> jobs = new HashMap<>();
+    private HashMap<String, LinkedList<String>> jobWaitingForResults = new HashMap<>();
     private Logger log = LoggerFactory.getLogger(JobController.class);
 
     @Autowired
-    public JobController(HistoryController historyController, DrugService drugService, ProteinService proteinService, GeneService geneService, WebGraphService graphService, ToolService toolService, JobQueue jobQueue, JobRepository jobRepository, SocketController socketController) {
+    public JobController(HistoryController historyController, DrugService drugService, ProteinService proteinService, GeneService geneService, WebGraphService graphService, ToolService toolService, JobQueue jobQueue, JobRepository jobRepository, SocketController socketController, JobCache jobCache) {
+        this.jobCache = jobCache;
         this.graphService = graphService;
         this.toolService = toolService;
         this.jobQueue = jobQueue;
@@ -69,7 +73,7 @@ public class JobController {
 
         j.addParam("experimentalOnly", req.experimentalOnly);
 
-        String[] params = new String[]{"nodesOnly", "addInteractions"};
+        String[] params = new String[]{"nodesOnly", "addInteractions", "n", "alpha", "type", "approved", "direct"};
         for (String param : params)
             if (req.getParams().containsKey(param))
                 j.addParam(param, req.getParams().get(param));
@@ -86,7 +90,10 @@ public class JobController {
             e.printStackTrace();
             return j;
         }
-        queue(j);
+        if (!j.getState().equals(Job.JobState.DONE) && !j.getState().equals(Job.JobState.WAITING))
+            queue(j);
+        else
+            jobRepository.save(j);
         return j;
     }
 
@@ -107,8 +114,31 @@ public class JobController {
         }
         if (j.getMethod().equals(ToolService.Tool.BICON))
             prepareExpressionFile(req);
+
         String command = createCommand(j, req);
         j.setCommand(command);
+
+        if (!j.getMethod().equals(ToolService.Tool.BICON) && req.nodes != null && req.nodes.size() > 0) {
+            j.setSeeds(req.nodes);
+            try {
+                Job sameJob = jobs.get(jobCache.getCached(j));
+                switch (sameJob.getState()) {
+                    case DONE -> {
+                        copyResults(j.getJobId(), sameJob, false);
+                        return;
+                    }
+                    case EXECUTING, INITIALIZED, QUEUED, NOCHANGE -> {
+                        if (!this.jobWaitingForResults.containsKey(sameJob.getJobId()))
+                            this.jobWaitingForResults.put(sameJob.getJobId(), new LinkedList<>());
+                        this.jobWaitingForResults.get(sameJob.getJobId()).add(j.getJobId());
+                        j.setStatus(Job.JobState.WAITING);
+                        return;
+                    }
+                }
+            } catch (NullPointerException ignore) {
+            }
+        }
+
         prepareFiles(j, req, g);
     }
 
@@ -189,7 +219,30 @@ public class JobController {
         }
         save(j);
         socketController.setJobUpdate(j);
+        checkWaitingJobs(j);
     }
+
+    private void checkWaitingJobs(Job j) {
+        if (jobWaitingForResults.containsKey(j.getJobId()))
+            jobWaitingForResults.get(j.getJobId()).forEach(jid -> copyResults(jid, j, true));
+    }
+
+    private void copyResults(String cloneJid, Job j, boolean notify) {
+        Job dependent = jobs.get(cloneJid);
+        dependent.setStatus(Job.JobState.DONE);
+        log.info("Finished " + dependent.getMethod().name() + " job " + dependent.getJobId() + "of user " + dependent.getUserId() + "! (Cloned from " + j.getJobId() + " to finish)");
+        dependent.setDerivedGraph(graphService.cloneGraph(j.getDerivedGraph(), dependent.getUserId(), dependent.getBasisGraph()));
+        dependent.setResultFile(true);
+        try {
+            Files.copy(historyController.getJobPath(j).toPath(), historyController.getJobPath(dependent).toPath());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        dependent.setUpdate(j.getUpdate());
+        if (notify)
+            socketController.setJobUpdate(dependent);
+    }
+
 
     public File getDownload(String id) {
         return historyController.getJobPath(jobs.get(id));

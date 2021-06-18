@@ -17,6 +17,10 @@ import org.springframework.boot.web.servlet.support.SpringBootServletInitializer
 import org.springframework.context.event.EventListener;
 import org.springframework.core.env.Environment;
 
+import java.util.Arrays;
+import java.util.Objects;
+import java.util.TreeSet;
+
 @SpringBootApplication
 public class ReposcapewebApplication extends SpringBootServletInitializer {
 
@@ -57,8 +61,14 @@ public class ReposcapewebApplication extends SpringBootServletInitializer {
 //
 //    }
 
+    public int hash(String params, TreeSet<Integer> ids, String method){
+        return Objects.hash(params, Arrays.hashCode(ids.toArray()), method);
+    }
+
+
     @EventListener(ApplicationReadyEvent.class)
     public void postConstruct() {
+
         long start = System.currentTimeMillis();
         updateService.readMetadata();
         dbService.setImportInProgress(true);

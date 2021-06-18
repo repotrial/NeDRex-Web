@@ -510,7 +510,7 @@
               <v-row>
                 <v-col cols="3" style="padding: 0 50px 0 0; margin-right: -50px">
                   <v-card-title class="subtitle-1">Seeds ({{ seeds.length }}) {{
-                      (results.targets.length !== undefined && results.targets.length > 0 ? ("& Module (" + getTargetCount() + ") "+["Genes","Proteins"][seedTypeId]) : ": Processing")
+                      (results.targets.length !== undefined && results.targets.length > 0 ? ("& Module (" + getTargetCount() + ") " + ["Genes", "Proteins"][seedTypeId]) : ": Processing")
                     }}
                     <v-progress-circular indeterminate v-if="this.results.targets.length===0" style="margin-left:15px">
                     </v-progress-circular>
@@ -910,17 +910,22 @@ export default {
         if (response.data !== undefined)
           return response.data
       }).then(data => {
-        this.$socket.subscribeJob(data.jid, "quickFinishedEvent");
-        this.readJob(data)
+        if (data.state === "DONE") {
+          this.readJob(data, true)
+        } else {
+          this.$socket.subscribeJob(data.jid, "quickFinishedEvent");
+          this.readJob(data)
+        }
       }).catch(console.log)
     }
     ,
-    readJob: function (data) {
+    readJob: function (data, notSubbed) {
       let jid = data.jid
       this.currentJid = jid
       this.currentGid = data.gid
       if (this.currentGid != null && data.state === "DONE") {
-        this.$socket.unsubscribeJob(jid)
+        if (!notSubbed)
+          this.$socket.unsubscribeJob(jid)
         this.loadTargetTable(this.currentGid).then(() => {
           this.loadGraph(this.currentGid)
         })

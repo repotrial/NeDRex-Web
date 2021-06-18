@@ -711,7 +711,7 @@
               <v-row>
                 <v-col cols="3" style="padding: 0 50px 0 0; margin-right: -50px">
                   <v-card-title class="subtitle-1">Seeds ({{ seeds.length }}) {{
-                      (results.targets.length !== undefined && results.targets.length > 0 ? ("& Module (" + getTargetCount() + ") "+["Genes","Proteins"][seedTypeId]) : ": Processing")
+                      (results.targets.length !== undefined && results.targets.length > 0 ? ("& Module (" + getTargetCount() + ") " + ["Genes", "Proteins"][seedTypeId]) : ": Processing")
                     }}
                     <v-progress-circular indeterminate v-if="this.results.targets.length===0" style="margin-left:15px">
                     </v-progress-circular>
@@ -1153,8 +1153,12 @@ export default {
         if (response.data !== undefined)
           return response.data
       }).then(data => {
-        this.$socket.subscribeJob(data.jid, "quickModuleFinishedEvent");
-        this.readModuleJob(data, true)
+        if (data.state === 'DONE')
+          this.readModuleJob(data, true, true)
+        else {
+          this.$socket.subscribeJob(data.jid, "quickModuleFinishedEvent");
+          this.readModuleJob(data, true)
+        }
       }).catch(console.log)
     }
     ,
@@ -1166,17 +1170,22 @@ export default {
         if (response.data !== undefined)
           return response.data
       }).then(data => {
-        this.$socket.subscribeJob(data.jid, "quickRankingFinishedEvent");
-        this.readRankingJob(data, true)
+        if (data.state === 'DONE') {
+          this.readRankingJob(data, true, true)
+        } else {
+          this.$socket.subscribeJob(data.jid, "quickRankingFinishedEvent");
+          this.readRankingJob(data, true)
+        }
       }).catch(console.log)
     },
-    readModuleJob: function (result, clean) {
+    readModuleJob: function (result, clean, unsubscribed) {
       this.resultProgress += 5
       let data = clean ? result : JSON.parse(result)
       this.moduleJid = data.jid
       this.moduleGid = data.gid
       if (this.moduleGid != null && data.state === "DONE") {
-        this.$socket.unsubscribeJob(this.moduleJid)
+        if (!unsubscribed)
+          this.$socket.unsubscribeJob(this.moduleJid)
         this.loadModuleTargetTable().then(() => {
           this.resultProgress = 25
           this.loadGraph(this.moduleGid)
@@ -1184,14 +1193,15 @@ export default {
       }
     }
     ,
-    readRankingJob: function (result, clean) {
+    readRankingJob: function (result, clean, unsubscribed) {
       this.resultProgress += 5
       let data = clean ? result : JSON.parse(result)
       this.rankingJid = data.jid
       this.rankingGid = data.gid
       if (this.rankingGid != null && data.state === "DONE") {
         this.resultProgress = 75
-        this.$socket.unsubscribeJob(this.rankingJid)
+        if (!unsubscribed)
+          this.$socket.unsubscribeJob(this.rankingJid)
         this.loadRankingTargetTable(this.rankingGid).then(() => {
           this.loadGraph(this.rankingGid)
         })

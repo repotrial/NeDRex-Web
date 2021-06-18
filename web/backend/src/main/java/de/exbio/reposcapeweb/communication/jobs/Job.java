@@ -7,18 +7,16 @@ import de.exbio.reposcapeweb.utils.StringUtils;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.*;
 
 @Entity
 @Table(name = "jobs")
 public class Job {
 
+
     public enum JobState {
-        INITIALIZED, QUEUED, EXECUTING, DONE, NOCHANGE, ERROR, TIMEOUT,LIMITED
+        INITIALIZED, QUEUED, EXECUTING, DONE, NOCHANGE, ERROR, TIMEOUT,LIMITED, WAITING
     }
-
-
 
     @Id
     private String jobId;
@@ -27,6 +25,8 @@ public class Job {
     private String basisGraph;
     private String derivedGraph;
     private String params;
+    @Transient
+    private TreeSet<Integer> seeds;
 
     @Enumerated(EnumType.ORDINAL)
     private ToolService.Tool method = null;
@@ -37,6 +37,9 @@ public class Job {
 //    @Transient
 //    private JobRequest request;
 
+    public void setSeeds(Collection<Integer> list) {
+        this.seeds= new TreeSet<>(list);
+    }
 
     private LocalDateTime created;
 
@@ -220,5 +223,18 @@ public class Job {
 
     public JobResult getResult() {
         return result;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Job job = (Job) o;
+        return params.equals(job.params) && seeds.equals(job.seeds) && method == job.method;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(params, Arrays.hashCode(seeds.toArray()));
     }
 }

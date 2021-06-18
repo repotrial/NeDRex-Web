@@ -391,7 +391,6 @@ public class WebGraphService {
                                         try {
                                             if ((!loop | internalOnly) && ((request.connectedOnly & connectedNodes.contains(nodeJ[0]) & !nodeIds.get(nodeJ[0]).get(id.getId2()).hasEdge()) | (experimental && !edgeController.isExperimental(edgeId, id.getId1(), id.getId2()))))
                                                 return;
-//                                            System.out.println(nodeIds.get(nodeJ[0]).containsKey(id.getId2())+"=id2 & "+ nodeIds.get(nodeJ[0]).containsKey(id.getId1())+" = id1");
                                             if (!loop || (internalOnly && nodeIds.get(nodeJ[0]).containsKey(id.getId2()) && nodeIds.get(nodeJ[0]).containsKey(id.getId1()))) {
                                                 nodeIds.get(nodeJ[0]).get(v1.getId() == id.getId1() ? id.getId2() : id.getId1()).setHasEdge(true);
                                                 v1.setHasEdge(true);
@@ -451,7 +450,7 @@ public class WebGraphService {
         if (request.gid == null) {
             suggestions = new Suggestions(null, query);
             nf = nodeController.getFilter(request.name);
-            suggestions.setDistinct(nf.distinctContains(query),nf.getDistinctID2Keys());
+            suggestions.setDistinct(nf.distinctContains(query), nf.getDistinctID2Keys());
             suggestions.setUnique(nf.uniqueContains(query), nf.getUniqueID2Keys());
         } else {
             Graph graph = getCachedGraph(request.gid);
@@ -460,8 +459,8 @@ public class WebGraphService {
             if (request.type.equals("nodes")) {
                 nf = graph.getNodeFilter(request.name);
                 HashSet<Integer> ids = new HashSet<>(graph.getNodes().get(Graphs.getNode(request.name)).keySet());
-                suggestions.setDistinct(nf.distinctContains(query),nf.getDistinctID2Keys(), ids);
-                suggestions.setUnique(nf.uniqueContains(query),nf.getUniqueID2Keys(), ids);
+                suggestions.setDistinct(nf.distinctContains(query), nf.getDistinctID2Keys(), ids);
+                suggestions.setUnique(nf.uniqueContains(query), nf.getUniqueID2Keys(), ids);
             }
         }
         return suggestions;
@@ -469,7 +468,7 @@ public class WebGraphService {
 
     public Collection<Integer> getSuggestionEntry(String gid, String nodeName, String sid) {
 
-        return (gid==null? nodeController.getFilter(nodeName) :getCachedGraph(gid).getNodeFilter(nodeName)).getEntry(sid).stream().map(FilterEntry::getNodeId).collect(Collectors.toSet());
+        return (gid == null ? nodeController.getFilter(nodeName) : getCachedGraph(gid).getNodeFilter(nodeName)).getEntry(sid).stream().map(FilterEntry::getNodeId).collect(Collectors.toSet());
     }
 
     public SelectionResponse getSelection(SelectionRequest request) {
@@ -1361,4 +1360,13 @@ public class WebGraphService {
     }
 
 
+    public String cloneGraph(String gid, String uid, String parent) {
+        Graph g = getCachedGraph(gid);
+        String cloneId = historyController.getGraphId();
+        Graph clone = g.clone(cloneId);
+        clone.setParent(parent);
+        cache.put(cloneId, clone);
+        addGraphToHistory(uid, cloneId);
+        return cloneId;
+    }
 }
