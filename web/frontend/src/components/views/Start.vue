@@ -7,10 +7,10 @@
         </v-list-item>
         <a ref="top"></a>
         <div class="v-card__subtitle">
-          Select the method to start exploring the NeDRex graph. For immediate and easy algorithmic discovery
+          Select the method to start exploring the NeDRex network. For immediate and easy algorithmic discovery
           pipelines use the <i>Quick Start</i> page. <i>Guided Exploration</i> may be used for the creation of
-          graphs based on some specific path through the metagraph and the derivation of induced graphs. In the <i>Advanced
-          Exploration</i> graphs can be freely constructed.
+          networks based on some specific path through the metagraph and the derivation of induced graphs. In the <i>Advanced
+          Exploration</i> networks can be freely constructed.
         </div>
         <v-divider></v-divider>
         <v-list-item>
@@ -40,15 +40,14 @@
 <!--        </v-list>-->
 <!--      </v-card>-->
 <!--    </v-container>-->
-    <Quick v-if="startTab===0" :metagraph="metagraph" @printNotificationEvent="printNotification"
+    <Quick v-if="startTab===0" @printNotificationEvent="printNotification"
            @graphLoadEvent="loadGraphNewTab" @focusEvent="focusTop" @clearURLEvent="$emit('clearURLEvent','quick')"
            ref="quick" @showStartSelectionEvent="toggleStartSelection"></Quick>
-    <Guided v-if="startTab===1" :metagraph="metagraph" @printNotificationEvent="printNotification"
+    <Guided v-if="startTab===1" @printNotificationEvent="printNotification"
             @graphLoadEvent="loadGraphNewTab" @clearURLEvent="$emit('clearURLEvent', 'guided')" ref="guided"></Guided>
 
 
-    <Advanced ref="advanced" v-if="startTab===2"
-              :metagraph="metagraph" :options="options" :colors="colors" :filters="filters"
+    <Advanced ref="advanced" v-if="startTab===2" :options="options" :colors="colors" :filters="filters"
               @printNotificationEvent="printNotification"
               @graphLoadEvent="loadGraph"
     />
@@ -65,7 +64,6 @@ export default {
   name: "Start",
   props: {
     options: Object,
-    metagraph: Object,
     filters: Object,
     colors: {
       type: Object
@@ -133,12 +131,12 @@ export default {
     },
 
     direction: function (edge) {
-      if (this.$utils.isEdgeDirected(this.metagraph, edge))
+      if (this.$utils.isEdgeDirected(this.$global.metagraph, edge))
         return 1
       return 0
     },
     getColoring: function (entity, name) {
-      return this.$utils.getColoring(this.metagraph, entity, name)
+      return this.$utils.getColoring(this.$global.metagraph, entity, name)
     },
     getStartType: function () {
       return this.startTab;

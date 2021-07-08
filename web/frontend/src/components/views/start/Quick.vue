@@ -106,21 +106,21 @@
     </template>
     <v-row>
       <v-col>
-        <CombinedRepurposing v-if="modus===0" :blitz="blitz" @resetEvent="modus=-1" :metagraph="metagraph"
+        <CombinedRepurposing v-if="modus===0" :blitz="blitz" @resetEvent="modus=-1"
                              @printNotificationEvent="printNotification"
                              @graphLoadEvent="loadGraph"
                              @focusEvent="focusTop"
                              ref="drugRepurposing">
 
         </CombinedRepurposing>
-        <ModuleIdentification v-if="modus===1" :blitz="blitz" @resetEvent="modus=-1" :metagraph="metagraph"
+        <ModuleIdentification v-if="modus===1" :blitz="blitz" @resetEvent="modus=-1"
                               @printNotificationEvent="printNotification"
                               @graphLoadEvent="loadGraph"
                               @loadDrugTargetEvent="loadDrugTarget"
                               @focusEvent="focusTop"
                               ref="moduleIdentification"
         ></ModuleIdentification>
-        <DrugRepurposing v-if="modus===2" :blitz="blitz" @resetEvent="modus=-1" :metagraph="metagraph"
+        <DrugRepurposing v-if="modus===2" :blitz="blitz" @resetEvent="modus=-1"
                          @printNotificationEvent="printNotification"
                          @graphLoadEvent="loadGraph"
                          @focusEvent="focusTop"
@@ -139,9 +139,6 @@ import PipelineCard from "@/components/app/start/PipelineCard";
 
 export default {
   name: "Quick",
-  props: {
-    metagraph: Object,
-  },
   data() {
     return {
       modus: -1,

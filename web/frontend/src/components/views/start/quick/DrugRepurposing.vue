@@ -51,10 +51,74 @@
 
             <v-card-subtitle class="headline">1. Seed Configuration</v-card-subtitle>
             <v-card-subtitle style="margin-top: -25px">Add seeds to your
-              list{{ blitz ? "." : " or use an expression data based algorithm (" }}<a
+              list
+              <span v-if="!blitz">{{ blitz ? "." : " or use an expression data based algorithm (" }}<a
                 @click="seedTypeId=0; moduleMethodModel=1; makeStep(1,'continue')">BiCoN
                 <v-icon right size="1em" style="margin-left: 0">fas fa-caret-right</v-icon>
               </a>{{ ")." }}
+              </span>
+              <span v-else> In Quick Drug Repurposing a
+                <v-tooltip bottom>
+                <template v-slot:activator="{on, attrs}">
+                  <span v-on="on" v-bind="attrs">
+                    <a>default configuration <v-icon color="primary" size="1em">far fa-question-circle</v-icon></a>
+                  </span>
+                </template>
+                <span>
+                  <v-container>
+                    <v-row>
+                      <v-col>
+                        <i>
+                         Default MI Algorithm:
+                        </i>
+                      </v-col>
+                      <v-col>
+                        <b>{{ moduleMethods[moduleMethodModel].label }}</b>
+                      </v-col>
+                    </v-row>
+                    <v-row>
+                      <v-col>
+                        <i>Default MI parameters:</i>
+                      </v-col>
+                          <v-col style="text-align: start">
+                          <b>n = 200</b> (number of additions)
+                          <br>
+                          <b>alpha = 1</b> (seed weight)
+                          <br>
+                          <b>p-cutoff = 1</b> (max allowed p-value)
+                          <br>
+                          Only uses <b>experimentally validated interactions</b>
+                        </v-col>
+                      </v-row>
+                    <v-row>
+                      <v-col>
+                        <i>
+                         Default DP Algorithm:
+                        </i>
+                      </v-col>
+                      <v-col>
+                        <b>{{ rankingMethods[rankingMethodModel].label }}</b>
+                      </v-col>
+                    </v-row>
+                    <v-row>
+                      <v-col>
+                        <i>Default DP parameters:</i>
+                      </v-col>
+                          <v-col style="text-align: start">
+                          <b>topX = 100</b> (return best X results)
+                          <br>
+                          Only uses <b>experimentally validated interactions</b>
+                          <br>
+                          Only uses <b>directly connected drugs</b>
+                          <br>
+                            Only uses <b>approved drugs</b>
+                            <br>
+                            Filters chemical elements (e.g. Gold, Zinc,...)
+                        </v-col>
+                      </v-row>
+                    </v-container>
+                </span>
+              </v-tooltip> is used.</span>
             </v-card-subtitle>
             <v-divider style="margin: 15px;"></v-divider>
             <v-row>
@@ -745,8 +809,8 @@
                   </v-data-table>
                 </v-col>
                 <v-col>
-                  <Graph ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle"
-                         :progress="resultProgress" :legend="resultProgress===100" :meta="metagraph">
+                  <Network ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle"
+                         :progress="resultProgress" :legend="resultProgress===100" :secondaryViewer="true">
                     <template v-slot:legend v-if="results.drugs.length>0">
                       <v-card style="width: 11vw; max-width: 20vw; padding-top: 35px">
                         <v-list dense>
@@ -789,7 +853,7 @@
                       </v-card>
                     </template>
 
-                  </Graph>
+                  </Network>
                 </v-col>
                 <v-col cols="2" style="padding:0">
                   <v-card-title class="subtitle-1"> Drugs{{
@@ -866,7 +930,7 @@
 </template>
 
 <script>
-import Graph from "../../graph/Graph";
+import Network from "../../graph/Network";
 import * as CONFIG from "../../../../Config"
 import SuggestionAutocomplete from "@/components/app/suggestions/SuggestionAutocomplete";
 import SeedTable from "@/components/app/tables/SeedTable";
@@ -876,8 +940,6 @@ export default {
   name: "CombinedRepurposing",
   props: {
     blitz: Boolean,
-    metagraph: Object,
-
   },
 
   sugQuery: undefined,
@@ -992,10 +1054,10 @@ export default {
     },
     getSuggestionSelection: function () {
       let type = ["gene", "protein"][this.seedTypeId]
-      let nodeId = this.metagraph.nodes.filter(n => n.group === type)[0].id
+      let nodeId = this.$global.metagraph.nodes.filter(n => n.group === type)[0].id
       let disorderIdx = -1
-      let out = this.metagraph.edges.filter(e => e.from !== e.to && e.from === nodeId || e.to === nodeId).map(e => e.to === nodeId ? e.from : e.to).map(nid => {
-        let node = this.metagraph.nodes.filter(n => n.id === nid)[0]
+      let out = this.$global.metagraph.edges.filter(e => e.from !== e.to && e.from === nodeId || e.to === nodeId).map(e => e.to === nodeId ? e.from : e.to).map(nid => {
+        let node = this.$global.metagraph.nodes.filter(n => n.id === nid)[0]
         if (node.label === "Disorder") {
           disorderIdx = -(disorderIdx + 1)
         } else {
@@ -1322,7 +1384,7 @@ export default {
     loadModuleTargetTable: function () {
       let seedType = ['gene', 'protein'][this.seedTypeId]
       let scoreAttr = this.moduleMethods[this.moduleMethodModel].scores.filter(s => s.decimal)
-      this.targetColorStyle = {'background-color': this.metagraph.colorMap[seedType].light}
+      this.targetColorStyle = {'background-color': this.$global.metagraph.colorMap[seedType].light}
       return this.$http.get("/getGraphList?id=" + this.moduleGid).then(response => {
         if (response.data !== undefined)
           return response.data
@@ -1341,7 +1403,7 @@ export default {
     },
     loadRankingTargetTable: function () {
       let scoreAttr = this.rankingMethods[this.rankingMethodModel].scores.filter(s => s.decimal)
-      this.drugColorStyle = {'background-color': this.metagraph.colorMap['drug'].light}
+      this.drugColorStyle = {'background-color': this.$global.metagraph.colorMap['drug'].light}
       return this.$http.get("/getGraphList?id=" + this.rankingGid).then(response => {
         if (response.data !== undefined)
           return response.data
@@ -1363,15 +1425,12 @@ export default {
     loadGraph: function (graphId) {
       this.getGraph().then(graph => {
         this.resultProgress += 5
-        graph.setWaiting(false)
-        graph.setLoading(true)
-        graph.show(graphId).then(() => {
+        graph.loadNetworkById(graphId).then(() => {
           this.resultProgress += 15
           graph.showLoops(false)
           let seedIds = this.seeds.map(s => s.id)
           this.resultProgress += 3
           graph.modifyGroups(this.results.targets.filter(n => seedIds.indexOf(n.id) === -1).map(n => ["gen_", "pro_"][this.seedTypeId] + n.id), ["geneModule", "proteinModule"][this.seedTypeId])
-          graph.setLoading(false)
           this.resultProgress += 2
         })
       })
@@ -1405,13 +1464,13 @@ export default {
       this.$emit("focusEvent")
     },
     getColoring: function (entity, name, style) {
-      return this.$utils.getColoring(this.metagraph, entity, name, style);
+      return this.$utils.getColoring(this.$global.metagraph, entity, name, style);
     },
 
   },
 
   components: {
-    Graph,
+    Network,
     SuggestionAutocomplete,
     SeedTable,
     ResultDownload,

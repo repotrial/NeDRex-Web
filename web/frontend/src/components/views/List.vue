@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-container v-if="metagraph!==undefined">
+    <v-container>
       <v-card style="margin:5px;padding-bottom:15px" :loading="loading" ref="info">
         <template slot="progress">
           <v-card-title>General Information</v-card-title>
@@ -147,10 +147,10 @@
                         </v-list-item>
                       </v-col>
                     </v-row>
-                    <v-row>
-                      <v-col
-                        cols="2"
+                    <div style="display: flex;width: 100%">
+                      <div
                         v-show="!filters.nodes.suggestions"
+                        style="justify-self: flex-start; margin-left: 16px; margin-right: 8px"
                       >
                         <v-select
                           :items="headerNames('nodes',Object.keys(nodes)[nodeTab])"
@@ -158,12 +158,12 @@
                           v-model="filters.nodes.attribute.name"
                           @change="resetFilter('nodes')"
                           outlined
-                          style="width: 100%"
+                          style="width: 20%; min-width: 150px;"
                         ></v-select>
-                      </v-col>
-                      <v-col
-                        cols="2"
+                      </div>
+                      <div
                         v-if="!filters.nodes.suggestions"
+                        style="justify-self: flex-start; width: 20%; margin-left: 8px; margin-right: 8px"
                       >
                         <v-select
                           v-if="filters.nodes.attribute.name === undefined || filters.nodes.attribute.name == null || !isDistinctAttribute('nodes',filters.nodes.attribute.name)"
@@ -172,7 +172,7 @@
                           :items="operatorNames('nodes',Object.keys(nodes)[nodeTab],filters.nodes.attribute.name)"
                           label="Operator"
                           outlined
-                          style="width: 100%"
+                          style="min-width: 150px"
                         ></v-select>
                         <v-select
                           v-else
@@ -181,13 +181,12 @@
                           :items="attributes.nodes[Object.keys(nodes)[nodeTab]].filter(a=>a.label===filters.nodes.attribute.name)[0].values"
                           label="Value"
                           outlined
-                          style="width: 100%"
+                          style="min-width: 100px"
                         >
                         </v-select>
-                      </v-col>
-                      <v-col
-                        :cols="(filters.nodes.suggestions)?12:8"
-                        style="display: flex; justify-content: center"
+                      </div>
+                      <div
+                        style="display: flex; justify-self: flex-start; justify-content: center; width: 100%; margin-left: 8px; margin-right: 16px"
                       >
                         <v-text-field
                           :disabled="filters.nodes.attribute.name == null || filters.nodes.attribute.name.length ===0 || filters.nodes.attribute.operator == null|| filters.nodes.attribute.dist"
@@ -208,15 +207,14 @@
                           item-value="key"
                           label="Query (case insensitive)"
                           class="mx-4"
+                          style="max-width: 500px"
                         >
                           <template v-slot:item="{ item }">
                             <SuggestionElement :data="item"></SuggestionElement>
                           </template>
                         </v-autocomplete>
-                      </v-col>
-
-                    </v-row>
-
+                      </div>
+                    </div>
                   </v-container>
                 </template>
                 <template v-slot:item.selected="{item}">
@@ -268,7 +266,7 @@
                             fas fa-project-diagram
                           </v-icon>
                         </template>
-                        <span>Focus in graph</span>
+                        <span>Focus in network</span>
                       </v-tooltip>
                     </v-col>
                     <v-col cols="1">
@@ -527,7 +525,7 @@
     >
       <v-card v-if="extension.show">
         <v-card-title class="headline">
-          Add more edges to your current graph
+          Add more edges to your current network
         </v-card-title>
         <v-card-text>Select edge types to be added to the current network. Additional options may be displayed on
           selection.
@@ -810,7 +808,7 @@
         <v-list>
           <v-list-item>
             <v-list-item-title class="text-h4">
-              Select induced graph
+              Select induced network
             </v-list-item-title>
           </v-list-item>
           <v-list-item>
@@ -917,7 +915,7 @@
           Regroup Selected Nodes
         </v-card-title>
         <v-card-text>Create a temporary new group with a custom color and name for your node selection in the visualized
-          graph. New groups are also visible in the legend and can be toggled equally to normal node-groups. This
+          network. New groups are also visible in the legend and can be toggled equally to normal node-groups. This
           overrides the original group of any node selected!
         </v-card-text>
         <v-divider></v-divider>
@@ -994,7 +992,6 @@ export default {
       nodeOptionHover: false,
       edgeOptionHover: false,
       optionDialog: false,
-      metagraph: undefined,
       waiting: true,
       selectionDialog: {
         show: false,
@@ -1050,9 +1047,8 @@ export default {
     this.configuration.countMap = this.countMap
     this.backup = {nodes: {}, edges: {}}
     this.gid = this.$route.params["gid"]
-    this.reloadMetagraph()
     if (this.gid !== undefined)
-      this.getList(this.gid, this.metagraph)
+      this.getList(this.gid)
   },
 
   watch: {
@@ -1076,7 +1072,7 @@ export default {
       this.backup = {nodes: {}, edges: {}}
       this.gid = this.$route.params["gid"]
       if (this.gid !== undefined)
-        this.getList(this.gid, this.metagraph)
+        this.getList(this.gid)
     },
     init: function () {
       if (this.gid === undefined)
@@ -1092,9 +1088,6 @@ export default {
       })
         .catch(err => console.log(err))
     },
-    setMetagraph: function (metagraph) {
-      this.metagraph = metagraph;
-    },
     filterSelected(items) {
       return items.filter(item => item.selected)
     },
@@ -1106,7 +1099,7 @@ export default {
     applyMultiSelect: function (selection) {
       if (this.prefixMap === undefined) {
         this.prefixMap = {}
-        Object.values(this.metagraph.nodes).forEach(n => this.prefixMap[n.group.substring(0, 3)] = n.group)
+        Object.values(this.$global.metagraph.nodes).forEach(n => this.prefixMap[n.group.substring(0, 3)] = n.group)
       }
       let selectionMap = {}
       selection.forEach(node => {
@@ -1146,7 +1139,7 @@ export default {
     },
     loadSuggestionNodes: async function (item) {
       if (item.sid.indexOf('_') > -1) {
-        let res = await this.$http.get("getSuggestionEntry?gid="+this.gid+"&nodeType="+Object.keys(this.nodes)[this.nodeTab]+"&sid="+item.sid)
+        let res = await this.$http.get("getSuggestionEntry?gid=" + this.gid + "&nodeType=" + Object.keys(this.nodes)[this.nodeTab] + "&sid=" + item.sid)
         return res.data
       } else {
         return [parseInt(item.sid)]
@@ -1585,7 +1578,7 @@ export default {
         this.$nextTick()
         return
       }
-      if (this.metagraph.edges.flatMap(e => [e.label, e.title]).indexOf(this.collapse.edgeName) > -1) {
+      if (this.$global.metagraph.edges.flatMap(e => [e.label, e.title]).indexOf(this.collapse.edgeName) > -1) {
         this.printNotification("Edge-Name is already Taken. Please choose another one", 2)
         return
       }
@@ -1972,9 +1965,9 @@ export default {
     extendGraph: function () {
       this.filterNodeModel = null
       this.extension.edges = []
-      this.metagraph.edges.map(e => e.label).map(e => {
-        let idx1 = Object.keys(this.attributes.nodes).indexOf(this.$utils.getNodes(this.metagraph, e)[0])
-        let idx2 = Object.keys(this.attributes.nodes).indexOf(this.$utils.getNodes(this.metagraph, e)[1])
+      this.$global.metagraph.edges.map(e => e.label).map(e => {
+        let idx1 = Object.keys(this.attributes.nodes).indexOf(this.$utils.getNodes(this.$global.metagraph, e)[0])
+        let idx2 = Object.keys(this.attributes.nodes).indexOf(this.$utils.getNodes(this.$global.metagraph, e)[1])
 
         if ((Object.keys(this.attributes.edges).indexOf(e) === -1 || idx1 === idx2) && idx1 + idx2 > -2)
           this.extension.edges.push({name: e, both: idx1 > -1 && idx2 > -1, induced: false, switch: false})
@@ -1983,17 +1976,8 @@ export default {
       this.$refs.extensionDialog.$forceUpdate()
 
     },
-    reloadMetagraph: function () {
-      this.$http.get("/getMetagraph").then(response => {
-        if (response.data !== undefined)
-          return response.data
-      }).then(response => {
-        this.setMetagraph(response)
-      }).catch(err => console.log(err))
-    },
-    getList: function (gid, metagraph) {
+    getList: function (gid) {
       this.waiting = false
-      this.setMetagraph(metagraph)
       this.clearLists()
       this.$http.get("/getGraphList?id=" + gid + "&cached=true").then(response => {
         if (response.data === null) {
@@ -2040,12 +2024,7 @@ export default {
       return out
     },
     getExtendedColoring: function (entity, name, style) {
-      if (this.metagraph === undefined) {
-        return this.reloadMetagraph().then(function () {
-          return this.getExtendedColoring(entity, name, style)
-        })
-      }
-      return this.$utils.getColoringExtended(this.metagraph, this.configuration.entityGraph, entity, name, style)
+      return this.$utils.getColoringExtended(this.$global.metagraph, this.configuration.entityGraph, entity, name, style)
     },
     getExtendedNodes: function (name, not) {
       let nodes = this.$utils.getNodesExtended(this.configuration.entityGraph, name)
@@ -2054,12 +2033,7 @@ export default {
       return nodes[0] === not ? nodes[1] : nodes[0]
     },
     getColoring: function (entity, name, style) {
-      if (this.metagraph === undefined) {
-        return this.reloadMetagraph().then(function () {
-          return this.getColoring(entity, name, style)
-        })
-      }
-      return this.$utils.getColoring(this.metagraph, entity, name, style)
+      return this.$utils.getColoring(this.$global.metagraph, entity, name, style)
     },
     executeAlgorithm: function (algorithm, params) {
       this.filterNodeModel = null
@@ -2088,7 +2062,7 @@ export default {
       return e.directed ? 1 : 2
     },
     direction: function (edge) {
-      let e = Object.values(this.metagraph.edges).filter(e => e.label === edge)[0];
+      let e = Object.values(this.$global.metagraph.edges).filter(e => e.label === edge)[0];
       if (e.from === e.to)
         return 0
       return e.directed ? 1 : 2

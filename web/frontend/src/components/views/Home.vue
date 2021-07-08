@@ -11,7 +11,7 @@
         <v-expansion-panel-content>
           <v-card elevation="0">
             <v-card-text>
-              Apply available algorithms on the NeDRex-Web graph to derive gene modules, prioritize drugs given a set of
+              Apply available algorithms on the NeDRex-Web network to derive gene modules, prioritize drugs given a set of
               genes
               or directly identify reusable drugs. Purpose built step-by-step pipelines assist you in your research.
             </v-card-text>
@@ -34,7 +34,7 @@
         <v-expansion-panel-content>
           <v-card elevation="0">
             <v-card-text>
-              Derive a sub-graph by defining start and target nodes. Also the connections may be direct or indirect
+              Derive a subnetwork by defining start and target nodes. Also the connections may be direct or indirect
               ones,
               allowing the creation of induced edges.
             </v-card-text>
@@ -58,7 +58,7 @@
         <v-expansion-panel-content>
           <v-card elevation="0">
             <v-card-text>
-              Freely define the nodes and edges a target sub-graph should contain. Also specify some node filters and
+              Freely define the nodes and edges a target subnetwork should contain. Also specify some node filters and
               additional parameters to further control the network generation.
             </v-card-text>
             <v-card-actions>
@@ -79,7 +79,7 @@
         <v-expansion-panel-content>
           <v-card elevation="0">
             <v-card-text>
-              Browse the list of graphs linked with your user
+              Browse the list of networks linked with your user
             </v-card-text>
             <v-card-actions>
               <v-btn>
@@ -94,12 +94,12 @@
         <v-expansion-panel-header>
         <span>
           <v-icon left>fas fa-cloud-download-alt</v-icon>
-          Load GraphID
+          Load NetworkID
         </span></v-expansion-panel-header>
         <v-expansion-panel-content>
           <v-card elevation="0">
             <v-card-text>
-              Load an already created graph using its unique graph id:
+              Load an already created network using its unique network id:
             </v-card-text>
             <v-card-actions>
               <v-text-field label="GraphID">
@@ -123,7 +123,7 @@
         <v-expansion-panel-content>
           <v-card elevation="0">
             <v-card-text>
-              Copy all the graphs created under another userid (maybe in another browser or on another machine) and shows
+              Copy all the network created under another userid (maybe in another browser or on another machine) and shows
               the
               newly merged history!
               NIY

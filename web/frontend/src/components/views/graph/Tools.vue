@@ -1,5 +1,5 @@
 <template>
-  <v-card ref="tools" elevation="3" v-if="metagraph!==undefined && entityGraph!==undefined">
+  <v-card ref="tools" elevation="3" v-if="entityGraph!==undefined">
     <v-container v-show="show">
       <v-list ref="list">
         <v-list-item>
@@ -15,7 +15,6 @@
 
 export default {
   props: {
-    metagraph: undefined,
     countMap: undefined,
     entityGraph: undefined,
     options: Object,

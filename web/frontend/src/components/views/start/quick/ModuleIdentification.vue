@@ -47,10 +47,48 @@
 
             <v-card-subtitle class="headline">1. Seed Configuration</v-card-subtitle>
             <v-card-subtitle style="margin-top: -25px">Add seeds to your
-              list{{ blitz ? "." : " or use an expression data based algorithm (" }}<a
+              list
+              <span v-if="!blitz">{{ blitz ? "." : " or use an expression data based algorithm (" }}<a
                 @click="seedTypeId=0; methodModel=1; makeStep(1,'continue')">BiCoN
                 <v-icon right size="1em" style="margin-left: 0">fas fa-caret-right</v-icon>
               </a>{{ ")." }}
+              </span>
+              <span v-else> In Quick Module Identification a
+                <v-tooltip bottom>
+                <template v-slot:activator="{on, attrs}">
+                  <span v-on="on" v-bind="attrs">
+                    <a>default configuration <v-icon color="primary" size="1em">far fa-question-circle</v-icon></a>
+                  </span>
+                </template>
+                <span>
+                  <v-container>
+                    <v-row>
+                      <v-col>
+                  <i>
+                   Default MI Algorithm:
+                    </i>
+                        </v-col>
+                      <v-col>
+                  <b>{{ methods[methodModel].label }}</b>
+                  </v-col>
+                      </v-row>
+                      <v-row>
+                        <v-col>
+                          <i>Default MI parameters:</i>
+                        </v-col>
+                          <v-col style="text-align: start">
+                            <b>n = 200</b> (number of additions)
+                            <br>
+                            <b>alpha = 1</b> (seed weight)
+                            <br>
+                            <b>p-cutoff = 1</b> (max allowed p-value)
+                            <br>
+                            Only uses <b>experimentally validated interactions</b>
+                          </v-col>
+                      </v-row>
+                    </v-container>
+                </span>
+              </v-tooltip> is used.</span>
             </v-card-subtitle>
             <v-divider style="margin: 15px;"></v-divider>
             <v-row>
@@ -546,8 +584,8 @@
                                 hide-default-footer @click:row="rowClicked"></v-data-table>
                 </v-col>
                 <v-col>
-                  <Graph ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle"
-                         :legend="results.targets.length>0" :meta="metagraph">
+                  <Network ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle"
+                         :legend="results.targets.length>0" :secondaryViewer="true" >
                     <template v-slot:legend v-if="results.targets.length>0">
                       <v-card style="width: 15vw; max-width: 17vw; padding-top: 35px">
                         <v-list>
@@ -575,7 +613,7 @@
                       </v-card>
                     </template>
 
-                  </Graph>
+                  </Network>
                 </v-col>
               </v-row>
               <v-divider style="margin-top:10px; margin-bottom: 10px"></v-divider>
@@ -660,7 +698,7 @@
 </template>
 
 <script>
-import Graph from "../../graph/Graph";
+import Network from "../../graph/Network";
 import * as CONFIG from "../../../../Config"
 import SuggestionAutocomplete from "@/components/app/suggestions/SuggestionAutocomplete";
 import SeedDownload from "@/components/app/tables/menus/SeedDownload";
@@ -674,7 +712,6 @@ export default {
 
   props: {
     blitz: Boolean,
-    metagraph: Object,
   },
   sugQuery: undefined,
 
@@ -764,10 +801,10 @@ export default {
 
     getSuggestionSelection: function () {
       let type = ["gene", "protein"][this.seedTypeId]
-      let nodeId = this.metagraph.nodes.filter(n => n.group === type)[0].id
+      let nodeId = this.$global.metagraph.nodes.filter(n => n.group === type)[0].id
       let disorderIdx = -1
-      let out = this.metagraph.edges.filter(e => e.from !== e.to && e.from === nodeId || e.to === nodeId).map(e => e.to === nodeId ? e.from : e.to).map(nid => {
-        let node = this.metagraph.nodes.filter(n => n.id === nid)[0]
+      let out = this.$global.metagraph.edges.filter(e => e.from !== e.to && e.from === nodeId || e.to === nodeId).map(e => e.to === nodeId ? e.from : e.to).map(nid => {
+        let node = this.$global.metagraph.nodes.filter(n => n.id === nid)[0]
         if (node.label === "Disorder") {
           disorderIdx = -(disorderIdx + 1)
         } else {
@@ -1032,7 +1069,7 @@ export default {
     loadTargetTable: function (gid) {
       let seedType = [["gene", "protein"][this.seedTypeId]]
       let scoreAttr = this.methods[this.methodModel].scores.filter(s => s.decimal)
-      this.targetColorStyle = {'background-color': this.metagraph.colorMap[seedType].light}
+      this.targetColorStyle = {'background-color': this.$global.metagraph.colorMap[seedType].light}
       return this.$http.get("/getGraphList?id=" + gid).then(response => {
         if (response.data !== undefined)
           return response.data
@@ -1066,23 +1103,20 @@ export default {
       })
     },
     getColoring: function (entity, name) {
-      return this.$utils.getColoring(this.metagraph, entity, name);
+      return this.$utils.getColoring(this.$global.metagraph, entity, name);
     },
     focus: function () {
       this.$emit("focusEvent")
     },
     loadGraph: function (graphId) {
       this.getGraph().then(graph => {
-        graph.setWaiting(false)
-        graph.setLoading(true)
-        graph.show(graphId).then(() => {
+        graph.loadNetworkById(graphId).then(() => {
           graph.showLoops(false)
           let seedIds = this.seeds.map(s => s.id)
           graph.modifyGroups(this.results.targets.filter(n => seedIds.indexOf(n.id) === -1).map(n => ["gen_", "pro_"][this.seedTypeId] + n.id), ["geneModule", "proteinModule"][this.seedTypeId])
-          graph.setLoading(false)
         })
       })
-    }
+    },
   }
   ,
 
@@ -1093,7 +1127,7 @@ export default {
     SeedRemove,
     SeedTable,
     ResultDownload,
-    Graph
+    Network
   }
 }
 </script>

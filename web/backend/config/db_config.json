@@ -4,7 +4,7 @@
       "id": 0,
       "name": "disorder",
       "label": "Disorder",
-      "sourceId": "omim",
+      "sourceId": "MONDO",
       "colors": {
         "main": "#b2248f",
         "light": "#ff33cc"
@@ -20,20 +20,20 @@
           "label": "ID"
         },
         {
+          "name": "primaryDomainId",
+          "source": true,
+          "list": true,
+          "detail": true,
+          "id": true,
+          "label": "SourceID"
+        },
+        {
           "name": "displayName",
           "source": true,
           "list": true,
           "detail": true,
           "id": false,
           "label": "Name"
-        },
-        {
-          "name": "primaryDomainId",
-          "source": true,
-          "list": false,
-          "detail": true,
-          "id": true,
-          "label": "SourceID"
         },
         {
           "name": "domainIds",
@@ -100,20 +100,20 @@
           "label": "ID"
         },
         {
+          "name": "primaryDomainId",
+          "source": true,
+          "list": true,
+          "detail": true,
+          "id": true,
+          "label": "SourceID"
+        },
+        {
           "name": "displayName",
           "source": true,
           "list": true,
           "detail": true,
           "id": false,
           "label": "Name"
-        },
-        {
-          "name": "primaryDomainId",
-          "source": true,
-          "list": false,
-          "detail": true,
-          "id": true,
-          "label": "SourceID"
         },
         {
           "name": "domainIds",
@@ -275,20 +275,20 @@
           "label": "ID"
         },
         {
+          "name": "primaryDomainId",
+          "source": true,
+          "list": true,
+          "detail": true,
+          "id": true,
+          "label": "SourceID"
+        },
+        {
           "name": "displayName",
           "source": true,
           "list": true,
           "detail": true,
           "id": false,
           "label": "Name"
-        },
-        {
-          "name": "primaryDomainId",
-          "source": true,
-          "list": false,
-          "detail": true,
-          "id": true,
-          "label": "SourceID"
         },
         {
           "name": "domainIds",
@@ -389,20 +389,20 @@
           "label": "ID"
         },
         {
-          "name": "displayName",
-          "source": true,
-          "list": true,
-          "detail": true,
-          "id": false,
-          "label": "Name"
-        },
-        {
           "name": "primaryDomainId",
           "source": true,
           "list": true,
           "detail": true,
           "id": true,
           "label": "SourceID"
+        },
+        {
+          "name": "displayName",
+          "source": true,
+          "list": true,
+          "detail": true,
+          "id": false,
+          "label": "Name"
         },
         {
           "name": "domainIds",
@@ -451,20 +451,20 @@
           "label": "ID"
         },
         {
-          "name": "displayName",
-          "source": true,
-          "list": true,
-          "detail": true,
-          "id": false,
-          "label": "Name"
-        },
-        {
           "name": "primaryDomainId",
           "source": true,
           "list": true,
           "detail": true,
           "id": true,
           "label": "SourceID"
+        },
+        {
+          "name": "displayName",
+          "source": true,
+          "list": true,
+          "detail": true,
+          "id": false,
+          "label": "Name"
         },
         {
           "name": "domainIds",

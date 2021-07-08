@@ -103,7 +103,7 @@
                         left> far fa-question-circle
                       </v-icon>
                     </template>
-                    <span>If deactivated the resulting graph will consist of the currently loaded graph extended by the algorithmic results.</span>
+                    <span>If deactivated the resulting network will consist of the currently loaded network extended by the algorithmic results.</span>
                   </v-tooltip>
                 </template>
               </v-switch>
@@ -603,10 +603,10 @@ export default {
 
 
     getColoring: function (type, name) {
-      return this.$utils.getColoring(this.metagraph, type, name)
+      return this.$utils.getColoring(this.$global.metagraph, type, name)
     },
     getNodeNames: function (type) {
-      return this.$utils.getNodes(this.metagraph, type)
+      return this.$utils.getNodes(this.$global.metagraph, type)
     },
     isDisabled: function () {
       if (this.methodModel === undefined || this.methodModel.length === 0)

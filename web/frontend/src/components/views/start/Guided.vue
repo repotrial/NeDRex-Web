@@ -5,7 +5,7 @@
         Guided Exploration
       </v-card-title>
     </div>
-    <v-card-subtitle> Use the <b>Guided Exploration</b> to create a graph based on specific <b><i>start</i></b> and <b><i>target</i></b> nodes types.
+    <v-card-subtitle> Use the <b>Guided Exploration</b> to create a network based on specific <b><i>start</i></b> and <b><i>target</i></b> nodes types.
       Select a <b><i>path</i></b> connecting these metanodes and control the result through additional parameters.
     </v-card-subtitle>
     <v-stepper
@@ -36,7 +36,7 @@
         </v-stepper-step>
         <v-divider></v-divider>
         <v-stepper-step step="3">
-          Graph
+          Network
         </v-stepper-step>
       </v-stepper-header>
 
@@ -288,7 +288,7 @@
                     <v-col cols="5">
                       <v-text-field v-model="options.general.name" v-show="!options.general.keep"
                                     label="Combined Edge Name"
-                                    :rules="[value => !!value || 'Required!',value=>metagraph.edges.map(e=>e.label).indexOf(value)===-1 || 'Existing names are not possible!']"></v-text-field>
+                                    :rules="[value => !!value || 'Required!',value=>$global.metagraph.edges.map(e=>e.label).indexOf(value)===-1 || 'Existing names are not possible!']"></v-text-field>
                     </v-col>
                   </v-row>
                   <v-divider></v-divider>
@@ -322,7 +322,7 @@
             class="mb-4"
             max-height="80vh"
           >
-            <v-card-subtitle class="headline">3. Graph</v-card-subtitle>
+            <v-card-subtitle class="headline">3. Network</v-card-subtitle>
             <v-card-subtitle style="margin-top: -25px">The network you created
             </v-card-subtitle>
 
@@ -356,8 +356,8 @@
                 </v-data-table>
               </v-col>
               <v-col>
-                <Graph ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle"
-                       :legend="$refs.graph!==undefined && $refs.graph.isVisualized()" :meta="metagraph">
+                <Network ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle"
+                       :legend="$refs.graph!==undefined && $refs.graph.isVisualized()" secondaryViewer="true">
                   <template v-slot:legend>
                     <v-card style="width: 11vw; max-width: 11vw; padding-top: 35px" v-if="info!==undefined">
                       <v-list>
@@ -373,7 +373,7 @@
                       </v-list>
                     </v-card>
                   </template>
-                </Graph>
+                </Network>
               </v-col>
               <v-col cols="2" style="padding: 0 10px 0 0">
                 <v-card-title class="subtitle-1"> Targets{{
@@ -442,7 +442,7 @@
 </template>
 
 <script>
-import Graph from "../graph/Graph";
+import Network from "../graph/Network";
 import SuggestionAutocomplete from "@/components/app/suggestions/SuggestionAutocomplete";
 import SeedTable from "@/components/app/tables/SeedTable";
 import ResultDownload from "@/components/app/tables/menus/ResultDownload";
@@ -450,10 +450,6 @@ import ResultDownload from "@/components/app/tables/menus/ResultDownload";
 
 export default {
   name: "Guided",
-
-  props: {
-    metagraph: Object,
-  },
 
   uid: undefined,
 
@@ -506,9 +502,9 @@ export default {
 
   created() {
     this.uid = this.$cookies.get("uid")
-    this.metagraph.nodes.forEach((n, index) => {
+    this.$global.metagraph.nodes.forEach((n, index) => {
       this.nodeList.push({id: index, value: n.group, text: n.label})
-      this.nodeIdTypeList.push(this.metagraph.data[n.label])
+      this.nodeIdTypeList.push(this.$global.metagraph.data[n.label])
     })
     this.init()
   },
@@ -572,9 +568,9 @@ export default {
     getSuggestionSelection: function (index) {
       let type = this.nodeList[[this.sourceTypeId, this.targetTypeId][index]].value
       let selfAdded = false;
-      let nodeId = this.metagraph.nodes.filter(n => n.group === type)[0].id
-      let typeList = this.metagraph.edges.filter(e => e.from !== e.to && e.from === nodeId || e.to === nodeId).map(e => e.to === nodeId ? e.from : e.to).map(nid => {
-        let node = this.metagraph.nodes.filter(n => n.id === nid)[0]
+      let nodeId = this.$global.metagraph.nodes.filter(n => n.group === type)[0].id
+      let typeList = this.$global.metagraph.edges.filter(e => e.from !== e.to && e.from === nodeId || e.to === nodeId).map(e => e.to === nodeId ? e.from : e.to).map(nid => {
+        let node = this.$global.metagraph.nodes.filter(n => n.id === nid)[0]
         if (node.group === type)
           selfAdded = true
         return {value: node.group, text: node.label}
@@ -585,15 +581,15 @@ export default {
     },
 
     generatePaths: function () {
-      let sourceId = this.metagraph.nodes[this.sourceTypeId].id + ""
-      let targetId = this.metagraph.nodes[this.targetTypeId].id + ""
-      this.metagraph.edges.forEach(e1 => {
+      let sourceId = this.$global.metagraph.nodes[this.sourceTypeId].id + ""
+      let targetId = this.$global.metagraph.nodes[this.targetTypeId].id + ""
+      this.$global.metagraph.edges.forEach(e1 => {
         if (e1.to === sourceId || e1.from === sourceId) {
           let i1 = (e1.to === sourceId) ? e1.from : e1.to
           if (i1 === targetId)
             this.paths[0].push([{label: e1.label, direction: e1.from === sourceId}])
           else
-            this.metagraph.edges.forEach(e2 => {
+            this.$global.metagraph.edges.forEach(e2 => {
               if (e2.to === i1 || e2.from === i1) {
                 let i2 = (e2.to === i1) ? e2.from : e2.to
                 if (i2 === targetId)
@@ -630,7 +626,7 @@ export default {
       }).then(data => {
         this.info = data;
         this.gid = data.id
-        this.$refs.graph.show(this.gid)
+        this.$refs.graph.loadNetworkById(this.gid)
         this.loadTargetTable(this.gid)
       }).catch(console.log)
     },
@@ -821,11 +817,11 @@ export default {
     },
 
     getColoring: function (entity, name, style) {
-      return this.$utils.getColoring(this.metagraph, entity, name, style);
+      return this.$utils.getColoring(this.$global.metagraph, entity, name, style);
     },
 
     getNodeLabel: function (name, idx) {
-      let id = this.$utils.getNodes(this.metagraph, name)[idx]
+      let id = this.$utils.getNodes(this.$global.metagraph, name)[idx]
       return id.substring(0, 1).toUpperCase() + id.substring(1)
     }
 
@@ -833,7 +829,7 @@ export default {
   ,
   components: {
     SuggestionAutocomplete,
-    Graph,
+    Network,
     SeedTable,
     ResultDownload,
   }

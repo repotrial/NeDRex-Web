@@ -46,7 +46,46 @@
           >
 
             <v-card-subtitle class="headline">1. Seed Configuration</v-card-subtitle>
-            <v-card-subtitle style="margin-top: -25px">Add seeds to your list.
+            <v-card-subtitle style="margin-top: -25px">Add seeds to your
+              list.
+              <span v-if="blitz"> In Quick Drug Prioritization a
+                <v-tooltip bottom>
+                <template v-slot:activator="{on, attrs}">
+                  <span v-on="on" v-bind="attrs">
+                    <a>default configuration <v-icon color="primary" size="1em">far fa-question-circle</v-icon></a>
+                  </span>
+                </template>
+                <span>
+                  <v-container>
+                    <v-row>
+                      <v-col>
+                        <i>
+                         Default DP Algorithm:
+                        </i>
+                      </v-col>
+                      <v-col>
+                        <b>{{ methods[methodModel].label }}</b>
+                      </v-col>
+                    </v-row>
+                    <v-row>
+                      <v-col>
+                        <i>Default DP parameters:</i>
+                      </v-col>
+                          <v-col style="text-align: start">
+                          <b>topX = 100</b> (return best X results)
+                          <br>
+                          Only uses <b>experimentally validated interactions</b>
+                          <br>
+                          Only uses <b>directly connected drugs</b>
+                          <br>
+                            Only uses <b>approved drugs</b>
+                            <br>
+                            Filters chemical elements (e.g. Gold, Zinc,...)
+                        </v-col>
+                      </v-row>
+                    </v-container>
+                </span>
+              </v-tooltip> is used.</span>
             </v-card-subtitle>
             <v-divider style="margin: 15px;"></v-divider>
             <v-row>
@@ -386,8 +425,8 @@
                   </v-data-table>
                 </v-col>
                 <v-col>
-                  <Graph ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle"
-                         :legend="results.targets.length>0" :meta="metagraph">
+                  <Network ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle"
+                         :legend="results.targets.length>0" :secondaryViewer="true" >
                     <template v-slot:legend v-if="results.targets.length>0">
                       <v-card style="width: 8vw; max-width: 10vw;padding-top: 35px">
                         <v-list>
@@ -411,10 +450,10 @@
                         </v-list>
                       </v-card>
                     </template>
-                  </Graph>
+                  </Network>
                 </v-col>
                 <v-col cols="2" style="padding: 0">
-                  <v-card-title class="subtitle-1"> Targets{{
+                  <v-card-title class="subtitle-1"> Drugs{{
                       (results.targets.length !== undefined && results.targets.length > 0 ? (" (" + (results.targets.length) + ")") : ": Processing")
                     }}
                     <v-progress-circular indeterminate v-if="this.results.targets.length===0" style="margin-left:15px">
@@ -485,7 +524,7 @@
 </template>
 
 <script>
-import Graph from "../../graph/Graph";
+import Network from "../../graph/Network";
 import * as CONFIG from "../../../../Config"
 import SuggestionAutocomplete from "@/components/app/suggestions/SuggestionAutocomplete";
 import SeedTable from "@/components/app/tables/SeedTable";
@@ -497,7 +536,6 @@ export default {
 
   props: {
     blitz: Boolean,
-    metagraph: Object,
   },
   sugQuery: "",
 
@@ -566,10 +604,10 @@ export default {
     },
     getSuggestionSelection: function () {
       let type = ["gene", "protein"][this.seedTypeId]
-      let nodeId = this.metagraph.nodes.filter(n => n.group === type)[0].id
+      let nodeId = this.$global.metagraph.nodes.filter(n => n.group === type)[0].id
       let disorderIdx = -1
-      let out = this.metagraph.edges.filter(e => e.from !== e.to && e.from === nodeId || e.to === nodeId).map(e => e.to === nodeId ? e.from : e.to).map(nid => {
-        let node = this.metagraph.nodes.filter(n => n.id === nid)[0]
+      let out = this.$global.metagraph.edges.filter(e => e.from !== e.to && e.from === nodeId || e.to === nodeId).map(e => e.to === nodeId ? e.from : e.to).map(nid => {
+        let node = this.$global.metagraph.nodes.filter(n => n.id === nid)[0]
         if (node.label === "Disorder") {
           disorderIdx = -(disorderIdx + 1)
         } else {
@@ -782,7 +820,7 @@ export default {
     },
     loadTargetTable: function (gid) {
       let scoreAttrs = this.methods[this.methodModel].scores.filter(s => s.decimal)
-      this.targetColorStyle = {'background-color': this.metagraph.colorMap['drug'].light}
+      this.targetColorStyle = {'background-color': this.$global.metagraph.colorMap['drug'].light}
       return this.$http.get("/getGraphList?id=" + gid).then(response => {
         if (response.data !== undefined)
           return response.data
@@ -821,11 +859,8 @@ export default {
     ,
     loadGraph: function (graphId) {
       this.getGraph().then(graph => {
-        graph.setWaiting(false)
-        graph.setLoading(true)
-        graph.show(graphId).then(() => {
+        graph.loadNetworkById(graphId).then(() => {
           graph.showLoops(false)
-          graph.setLoading(false)
         })
       })
     }
@@ -835,7 +870,7 @@ export default {
     }
     ,
     getColoring: function (entity, name) {
-      return this.$utils.getColoring(this.metagraph, entity, name);
+      return this.$utils.getColoring(this.$global.metagraph, entity, name);
     }
     ,
     printNotification: function (message, type) {
@@ -846,7 +881,7 @@ export default {
   components: {
     SeedDownload,
     SuggestionAutocomplete,
-    Graph,
+    Network,
     SeedTable,
     ResultDownload,
   }

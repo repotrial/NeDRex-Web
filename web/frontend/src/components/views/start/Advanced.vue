@@ -9,15 +9,14 @@
         </v-list-item>
         <v-list-item>
           <div class="v-card__subtitle">
-            Create a specified starting graph by selecting the nodes and edge types it should contain.
-            Apply filters or set options in the "TOOLS" panel by clicking onto the meta-entities in the graph.
+            Create a specified starting network by selecting the nodes and edge types it should contain.
+            Apply filters or set options in the "TOOLS" panel by clicking onto the meta-entities in the network.
           </div>
         </v-list-item>
       </v-list>
       <v-divider></v-divider>
-      <v-container v-if="metagraph !== undefined">
+      <v-container>
         <v-row>
-
           <v-col cols="2">
             <v-list v-model="nodeModel" ref="nodeSelector">
               <v-card-title>Nodes</v-card-title>
@@ -30,7 +29,7 @@
                   {{ item.label }}
                   <span style="color: gray; margin-left: 3pt"
                         v-show="nodeModel.indexOf(item.index)>-1">({{
-                      metagraph.weights.nodes[item.label.toLowerCase()]
+                      $global.metagraph.weights.nodes[item.label.toLowerCase()]
                     }})</span>
                 </v-chip>
               </v-list-item>
@@ -57,7 +56,7 @@
                     </template>
                     {{ item.label }}
                     <span style="color: gray; margin-left: 3pt"
-                          v-show="edgeModel.indexOf(item.index)>-1">({{ metagraph.weights.edges[item.label] }})</span>
+                          v-show="edgeModel.indexOf(item.index)>-1">({{ $global.metagraph.weights.edges[item.label] }})</span>
                   </v-chip>
                 </v-list-item>
                 <v-list-item
@@ -78,9 +77,8 @@
             </v-list>
           </v-col>
           <v-col cols="6">
-            <Graph ref="startgraph" @selectionEvent="graphSelection" :initgraph="{graph:metagraph,name:'metagraph'}"
-                   :startGraph="true" tools
-                   :configuration="{visualized:true}" :window-style="windowStyle">
+            <Network ref="startgraph" @selectionEvent="graphSelection"
+                   :startGraph="true" tools :configuration="{visualized:true}" :window-style="windowStyle">
               <template v-slot:tools>
                 <v-card elevation="3">
                   <v-container v-if="tools.general">
@@ -143,7 +141,7 @@
 
 
               </template>
-            </Graph>
+            </Network>
           </v-col>
         </v-row>
       </v-container>
@@ -152,13 +150,12 @@
 </template>
 
 <script>
-import Graph from "../graph/Graph";
+import Network from "@/components/views/graph/Network";
 
 export default {
   name: "Advanced",
   props: {
     options: Object,
-    metagraph: Object,
     filters: Object,
     colors: {
       type: Object
@@ -203,7 +200,7 @@ export default {
     this.$refs.startgraph.showAllNodes(false)
     this.$refs.startgraph.hideAllEdges(true)
     this.$refs.startgraph.setPhysics(true)
-    this.initLists(this.metagraph)
+    this.initLists(this.$global.metagraph)
   },
   methods: {
     reset: function () {
@@ -270,10 +267,10 @@ export default {
       }
       if (params.nodes.length > 0) {
         this.$set(this.tools, "filter", true)
-        let node = this.metagraph.nodes.filter(n => n.id === params.nodes[0])[0]
+        let node = this.$global.metagraph.nodes.filter(n => n.id === params.nodes[0])[0]
         this.setFilter(node.label)
       } else {
-        let edge = this.metagraph.edges.filter(m => params.edges[0] === m.id)[0]
+        let edge = this.$global.metagraph.edges.filter(m => params.edges[0] === m.id)[0]
         this.selectedEdge = edge
         if (edge.from === edge.to) {
           if (!this.filters[edge.label])
@@ -324,6 +321,19 @@ export default {
         this.$refs.startgraph.focusNode()
         this.$refs.nodeSelector.$forceUpdate()
       })
+    },
+
+    graphViewEvent: function (data) {
+      if (data.event === "toggle") {
+        let params = data.params;
+        if (params.type === "nodes")
+          this.hideGroupVisibility(params.name, params.state, true)
+        else if (params.type === "edges")
+          this.toggleEdgeVisible(params.name)
+      }
+      if (data.event === "isolate") {
+        this.showOnlyComponent(data.selected, data.state)
+      }
     },
     saveFilter: function () {
       let data = {type: this.filterTypeModel, expression: this.filterModel};
@@ -383,17 +393,17 @@ export default {
       })
     },
     direction: function (edge) {
-      if (this.$utils.isEdgeDirected(this.metagraph, edge))
+      if (this.$utils.isEdgeDirected(this.$global.metagraph, edge))
         return 1
       return 0
     },
     getColoring: function (entity, name) {
-      let colors = this.$utils.getColoring(this.metagraph, entity, name, "light")
+      let colors = this.$utils.getColoring(this.$global.metagraph, entity, name, "light")
       return colors;
     },
   },
   components: {
-    Graph,
+    Network,
   },
 }
 </script>

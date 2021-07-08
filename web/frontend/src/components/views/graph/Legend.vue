@@ -1,5 +1,5 @@
 <template>
-  <v-card ref="legend" elevation="3" v-if="metagraph!==undefined && entityGraph!==undefined">
+  <v-card ref="legend" elevation="3" v-if="entityGraph!==undefined">
     <v-container v-show="show">
       <v-card-title>Nodes</v-card-title>
       <v-list ref="list">
@@ -42,7 +42,6 @@
 
 export default {
   props: {
-    metagraph: undefined,
     countMap: undefined,
     entityGraph: undefined,
     options: Object,
@@ -84,7 +83,7 @@ export default {
         this.options.toggled[entity][name] = true;
       if (!this.options.toggled[entity][name])
         return "gray";
-      return this.$utils.getColoringExtended(this.metagraph, this.entityGraph, entity, name,style);
+      return this.$utils.getColoringExtended(this.$global.metagraph, this.entityGraph, entity, name,style);
     },
     direction: function (edge) {
       return this.$utils.directionExtended(this.entityGraph, edge)

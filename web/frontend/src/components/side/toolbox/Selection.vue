@@ -23,7 +23,7 @@
       <v-divider></v-divider>
       <v-container>
         <v-card-title>Current Manual Selection ({{ selection.length }})</v-card-title>
-        <v-card-text>Current selection in Graph which can be used to apply this selection on the lists!
+        <v-card-text>Current selection in Network which can be used to apply this selection on the lists!
         </v-card-text>
         <v-simple-table fixed-header height="300px" dense v-if="selection.length>0">
           <template v-slot:default>

@@ -28,43 +28,44 @@
         </template>
       </v-toolbar>
     </v-card>
-    <v-container align-self="start">
+    <v-container align-self="start" v-if="$global.metagraph!=null">
       <v-row>
         <v-col :cols="sideHidden ? 12:10">
           <v-main app style="padding-top: 0">
             <v-container fluid>
 
-              <Start v-show="selectedTabId===0" v-if="metagraph !== undefined" ref="start"
+              <Start v-show="selectedTabId===0" ref="start"
                      v-on:graphLoadEvent="loadGraph"
                      @graphLoadNewTabEvent="loadGraphNewTab"
                      v-on:printNotificationEvent="printNotification"
                      @showSideEvent="setSideVisible"
                      @clearURLEvent="clearURL"
-                     :colors="colors" :metagraph="metagraph" :options="options.start" :filters="startFilters"></Start>
-              <Graph v-show="selectedTabId===1"
-                     ref="graph"
-                     style="position: sticky; "
-                     v-on:selectionEvent="loadSelection"
-                     v-on:finishedEvent="setTabNotification(1)"
-                     v-on:visualisationEvent="visualisationEvent"
-                     v-on:printNotificationEvent="printNotification"
-                     v-on:graphLoadedEvent="loadList"
-                     v-on:multiSelectionEvent="setMultiSelection"
-                     v-on:setMetagraphEvent="setMetagraph"
-                     :configuration="options.graph"
-                     :window-style="graphWindowStyle"
-                     :legend="showLegend"
-                     :meta="metagraph"
+                     :colors="colors" :options="options.start" :filters="startFilters"></Start>
+              <Network
+                v-show="selectedTabId===1"
+                ref="graph"
+                :configuration="options.graph"
+                :window-style="graphWindowStyle"
+                :legend="showLegend"
+                style="position: sticky; "
+                @finishedEvent="setTabNotification(1)"
+                @multiSelectionEvent="setMultiSelection"
+                @printNotificationEvent="printNotification"
+                @selectionEvent="loadSelection"
+                @sizeWarnEvent="sizeWarning"
+                @setGlobalGidEvent="setGlobalGid"
+                @visualizationEvent="visualizationEvent"
+                @disableLoadingEvent="disableLoadingEvent(1)"
               >
                 <template v-slot:legend>
-                  <Legend v-if="showLegend" :metagraph="metagraph" :countMap="options.list.countMap" ref="legend"
+                  <Legend v-if="showLegend" :countMap="options.list.countMap" ref="legend"
                           :entityGraph="options.list.entityGraph"
                           :options="options.graph.legend"
                           @graphViewEvent="graphViewEvent"></Legend>
 
                 </template>
-
-              </Graph>
+              </Network>
+              <!--              </Graph>-->
 
               <List ref="list"
                     v-show="selectedTabId===2"
@@ -107,7 +108,7 @@
                 <v-card-title class="headline">
                   List loading warning!
                 </v-card-title>
-                <v-card-text>The selected graph consists of the following number of elements:
+                <v-card-text>The selected network consists of the following number of elements:
                 </v-card-text>
                 <v-divider></v-divider>
                 <v-card-subtitle style="font-size: 15pt; margin-top: 10px;">Nodes:</v-card-subtitle>
@@ -183,7 +184,6 @@
                     :options="options"
                     :selected-tab="selectedTabId"
                     :filters="startFilters"
-                    :metagraph="metagraph"
           ></SideCard>
         </v-col>
       </v-row>
@@ -194,7 +194,7 @@
       >
         <v-card>
           <v-card-title>This page uses cookies</v-card-title>
-          <v-card-text>This graph browser uses cookies to store an identification for your user. This is used to show
+          <v-card-text>This network browser uses cookies to store an identification for your user. This is used to show
             you
             your previous explorations.
           </v-card-text>
@@ -227,7 +227,6 @@
 </template>
 
 <script>
-import Graph from './components/views/graph/Graph.vue';
 import Start from './components/views/Start.vue';
 import History from "./components/views/History";
 import List from './components/views/List.vue'
@@ -236,10 +235,11 @@ import Home from './components/views/Home.vue'
 import headerBar from './components/app/Header.vue'
 import Legend from "./components/views/graph/Legend";
 import Footer from "@/components/app/Footer";
-import * as CONFIG from "./Config"
 import BugSheet from "@/components/app/sheets/BugSheet";
 import HelpSheet from "@/components/app/sheets/HelpSheet";
 import VersionSheet from "@/components/app/sheets/VersionSheet";
+import Network from "@/components/views/graph/Network";
+import Vue from "vue";
 
 export default {
   name: 'app',
@@ -257,7 +257,6 @@ export default {
       tabslist: {},
       selectedTabId: 0,
       colors: {},
-      metagraph: undefined,
       listWarnObject: undefined,
       listDialog: false,
       notifications: {
@@ -281,21 +280,7 @@ export default {
   },
   created() {
     this.loadUser()
-    this.colors = {
-      main: {bg1: '#383838', primary: '#35d0d4'},
-      buttons: {graphs: {active: "deep-purple accent-2", inactive: undefined}},
-      tabs: {active: "#35d0d4", inactive: "white"}
-    }
-    this.tabslist = [
-      {id: 0, label: "Start", icon: "fas fa-filter", color: this.colors.tabs.active, note: false},
-      {id: 1, label: "Graph", icon: "fas fa-project-diagram", color: this.colors.tabs.inactive, note: false},
-      {id: 2, label: "List", icon: "fas fa-list-ul", color: this.colors.tabs.inactive, note: false},
-      {id: 3, label: "History", icon: "fas fa-history", color: this.colors.tabs.inactive, note: false},
-    ]
-    this.loadMetadata()
-    this.initGraphs()
-    this.sideHidden = false
-    this.setView()
+    this.init()
   },
   watch: {
     '$route'(to, from) {
@@ -316,6 +301,25 @@ export default {
     }
   },
   methods: {
+    init: async function () {
+      this.colors = {
+        main: {bg1: '#383838', primary: '#35d0d4'},
+        buttons: {graphs: {active: "deep-purple accent-2", inactive: undefined}},
+        tabs: {active: "#35d0d4", inactive: "white"}
+      }
+      this.tabslist = [
+        {id: 0, label: "Start", icon: "fas fa-filter", color: this.colors.tabs.active, note: false},
+        {id: 1, label: "Graph", icon: "fas fa-project-diagram", color: this.colors.tabs.inactive, note: false},
+        {id: 2, label: "List", icon: "fas fa-list-ul", color: this.colors.tabs.inactive, note: false},
+        {id: 3, label: "History", icon: "fas fa-history", color: this.colors.tabs.inactive, note: false},
+      ]
+      this.initComponents()
+      this.$global.metagraph = await this.$http.getMetagraph()
+      this.loadMetadata()
+      this.initGraphs()
+      this.sideHidden = false
+      this.setView()
+    },
     closeCookiePopup: function () {
       this.cookiesPopup = false
       this.$http.get("/initUser").then(response => {
@@ -375,7 +379,7 @@ export default {
     ,
     selectionColorSelect: function () {
       this.$refs.list.selectColor()
-      this.$refs.graph.visualizeNow()
+      this.$refs.graph.visualize()
     }
     ,
     setTabId: function (tab, skipReroute) {
@@ -392,32 +396,34 @@ export default {
     ,
     initGraphs: function () {
       this.gid = this.$route.params["gid"]
-      this.initComponents()
-      this.$http.get("/getMetagraph").then(response => {
-        this.metagraph = response.data;
-        this.$refs.list.setMetagraph(this.metagraph)
-        this.$refs.history.setMetagraph(this.metagraph)
-      }).then(() => {
+      if(this.gid !=null) {
+        this.scheduleVisualization(this.gid)
         this.applyUrlTab(true)
-      }).catch(err => {
-        console.log(err)
-      })
-    }
-    ,
+      }
+    },
+
+    scheduleVisualization: function(id){
+      if(this.$refs.graph ==null)
+        setTimeout(this.scheduleVisualization,100,id)
+      else
+        this.$refs.graph.loadNetworkById(id)
+    },
+
     setSideVisible: function (bool) {
       this.sideHidden = !bool
     }
     ,
-    visualisationEvent: function () {
+    visualizationEvent: function () {
       this.reloadSide()
-    }
-    ,
+      this.setSideVisible(true)
+      this.tabslist[1].icon = "fas fa-project-diagram"
+    },
+
+    disableLoadingEvent: function(tab){
+      this.tabslist[tab].icon = "fas fa-project-diagram"
+    },
     reloadSide: function () {
       this.$refs.side.$forceUpdate()
-    }
-    ,
-    setMetagraph: function () {
-      this.$refs.graph.setMetagraph(this.metagraph)
     }
     ,
     toggleGraphSelectMode: function (select) {
@@ -427,7 +433,7 @@ export default {
     focusInGraph: function (type, id) {
       if (!this.$refs.graph.isVisualized || !this.$refs.graph.graphExists()) {
         this.printNotification("Graph must be visualized first!", 2)
-        this.$refs.graph.visualizeNow()
+        this.$refs.graph.visualize()
         return
       }
       this.setTabId("graph", false)
@@ -440,10 +446,10 @@ export default {
       })
     }
     ,
-    redirect: function (route,reload) {
+    redirect: function (route, reload) {
       if (this.$route.fullPath !== route) {
         this.$router.push(route)
-        if(reload)
+        if (reload)
           this.$router.go()
       }
     }
@@ -493,33 +499,47 @@ export default {
         this.listWarnObject = info;
         this.listDialog = true;
       }
-    }
-    ,
+      this.tabslist[1].icon = "fas fa-project-diagram"
+      this.tabslist[2].icon = "fas fa-list-ul"
+      this.$refs.list.setLoading(false)
+    },
+
+    setGlobalGid: function (gid) {
+      this.gid = gid
+      let tab = (this.tab !== undefined && this.tab !== "start" && this.tab !== "history") ? this.tab : "list"
+      this.loadGraphURL(gid, tab)
+    },
     loadGraph: function (graph) {
       this.tabslist[1].icon = "fas fa-circle-notch fa-spin"
       this.tabslist[2].icon = "fas fa-circle-notch fa-spin"
-      this.options.graph.visualized = false
-      this.$refs.side.reload()
-      if (this.options.graph.physics) {
-        this.options.graph.physics = false;
-        this.updatePhysics()
-      }
-      this.$http.get("/isReady").then(response => {
-        if (response.data)
-          this.printNotification("Request successfully sent!", 1)
-        else
-          this.printNotification("Request scheduled: Server is currently busy! please wait.", 2)
-        this.$http.post("/getGraphInfo", graph.post).then(response => {
-          return response.data
-        }).then(info => {
-          if (!graph.post.id)
-            this.evalPostInfo(info, graph.post.tab)
-          else
-            this.loadGraphURL(graph.post.id, "list")
-        }).catch(err => {
-          console.log(err)
-        })
-      }).catch(console.log)
+      if(graph.post.id)
+        this.loadGraphURL(graph.post.id, "list")
+      else
+        this.$refs.graph.loadNewNetwork(graph.post)
+
+      // this.$refs.graph.setWaiting(false)
+      // this.options.graph.visualized = false
+
+      // if (this.options.graph.physics) {
+      //   this.options.graph.physics = false;
+      //   this.updatePhysics()
+      // }
+      // this.$http.get("/isReady").then(response => {
+      //   if (response.data)
+      //     this.printNotification("Request successfully sent!", 1)
+      //   else
+      //     this.printNotification("Request scheduled: Server is currently busy! please wait.", 2)
+      //   this.$http.post("/getGraphInfo", graph.post).then(response => {
+      //     return response.data
+      //   }).then(info => {
+      //     if (!graph.post.id)
+      //       this.evalPostInfo(info, graph.post.tab)
+      //     else
+
+      //   }).catch(err => {
+      //     console.log(err)
+      //   })
+      // }).catch(console.log)
     }
     ,
     loadGraphNewTab: function (graph) {
@@ -543,17 +563,13 @@ export default {
         this.$refs.list.selectEdges()
     }
     ,
-    loadList: function (gid) {
-      this.$refs.list.getList(gid, this.metagraph)
-    }
-    ,
     evalPostInfo: function (info, tab) {
       //TODO move to graph view
       let sum = 0
       for (let n in info.nodes)
         sum += info.nodes[n];
-      if(sum===0){
-        this.printNotification("Resulting graph contains no node!",2)
+      if (sum === 0) {
+        this.printNotification("Resulting graph contains no node!", 2)
         return
       }
       for (let e in info.edges)
@@ -576,10 +592,11 @@ export default {
     ,
     loadGraphURL: function (id, tab) {
       this.$router.push({path: "/explore/advanced/" + tab + "/" + id})
-      this.$refs.graph.reload()
+      this.$refs.graph.loadNetworkById(id)
       this.$refs.list.reload()
       this.$refs.history.reload()
       this.$refs.side.reload()
+      this.setSideVisible(true)
     }
     ,
     registerJob: function (data) {
@@ -598,7 +615,7 @@ export default {
       if (this.selectedTabId === 0)
         this.$refs.start.executeGraphLoad(bool)
       if (this.selectedTabId === 1)
-        this.$refs.graph.visualizeNow()
+        this.$refs.graph.visualize()
     }
     ,
     listModification: function (event) {
@@ -615,7 +632,7 @@ export default {
     ,
     nodeDetails: function (data) {
       let type = ""
-      this.metagraph.nodes.forEach(n => {
+      this.$global.metagraph.nodes.forEach(n => {
         if (n.group.startsWith(data.prefix))
           type = n.group;
       })
@@ -747,7 +764,7 @@ export default {
   ,
   components: {
     headerBar,
-    Graph,
+    Network,
     SideCard,
     Start,
     List,
@@ -760,6 +777,7 @@ export default {
     VersionSheet
   }
   ,
+
 
 }
 

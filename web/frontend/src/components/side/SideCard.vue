@@ -46,7 +46,7 @@
                     <v-row>
                       <v-col>
                         <v-chip outlined color="green" @click="$emit('applyEvent',true); $emit('applyEvent',false)">
-                          Apply Subgraph
+                          Apply Subnetwork
                           <v-icon right>far fa-check-circle</v-icon>
                         </v-chip>
                       </v-col>
@@ -107,12 +107,12 @@
                   </v-switch>
                 </v-list-item>
               </template>
-              <template v-else>
-                <v-chip outlined @click="visualizeGraph">
-                  <v-icon left>fas fa-check</v-icon>
-                  Visualize Graph
-                </v-chip>
-              </template>
+<!--              <template v-else>-->
+<!--                <v-chip outlined @click="visualizeGraph">-->
+<!--                  <v-icon left>fas fa-check</v-icon>-->
+<!--                  Create view of Network-->
+<!--                </v-chip>-->
+<!--              </template>-->
             </template>
             <template v-if="selectedTab===2">
               <v-list-item>
@@ -162,7 +162,7 @@
                     outlined
                   >
                     <v-icon left>fas fa-plus-circle</v-icon>
-                    Extend Graph
+                    Extend Network
                   </v-chip>
                 </v-list-item>
                 <v-list-item>
@@ -409,7 +409,7 @@
 
 
         <v-card ref="detail" elevation="3" style="margin:15px" v-if="detailedObject !== undefined"
-                :loading="metagraph===undefined">
+                :loading="$global.metagraph==null">
 
           <v-list-item @click="show.detail=!show.detail">
             <v-list-item-title>
@@ -563,7 +563,6 @@ export default {
     options: Object,
     selectedTab: Number,
     filters: Object,
-    metagraph: Object,
   },
   name: "SideCard",
   title: "",
@@ -922,33 +921,33 @@ export default {
     getColoring: function (type, name) {
       // if (name.endsWith("Drug"))
       //   name = "drug"
-      return this.$utils.getColoring(this.metagraph, type, name)
+      return this.$utils.getColoring(this.$global.metagraph, type, name)
     },
 
     getExtendedColoring: function (type, name) {
       // if (name.endsWith("Drug"))
       //   name = "drug"
-      return this.$utils.getColoringExtended(this.metagraph, this.options.list.entityGraph, type, name)
+      return this.$utils.getColoringExtended(this.$global.metagraph, this.options.list.entityGraph, type, name)
     },
     getNodeNames: function (type) {
-      return this.$utils.getNodes(this.metagraph, type)
+      return this.$utils.getNodes(this.$global.metagraph, type)
     },
     getExtendedNodeNames: function (type) {
       return this.$utils.getNodesExtended(this.options.list.entityGraph, type)
     },
 
-    visualizeGraph: function () {
-      // this.options.graph.visualized = true;
-      this.$emit('applyEvent');
-      this.show.options = false;
-      this.options.graph.physics = false;
-      this.options.graph.loops = true;
-      this.options.graph.single = true;
-      this.$nextTick(() => {
-        this.show.options = true;
-      })
-
-    },
+    // visualizeGraph: function () {
+    //   // this.options.graph.visualized = true;
+    //   this.$emit('applyEvent');
+    //   this.show.options = false;
+    //   this.options.graph.physics = false;
+    //   this.options.graph.loops = true;
+    //   this.options.graph.single = true;
+    //   this.$nextTick(() => {
+    //     this.show.options = true;
+    //   })
+    //
+    // },
     toggleSelectMode: function (select) {
       this.$emit('selectModeEvent', select)
     }

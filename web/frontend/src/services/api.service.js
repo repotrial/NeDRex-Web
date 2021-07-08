@@ -10,7 +10,7 @@ const ApiService = {
     return axios.get(resource)
   },
 
-  post(resource, data,callback) {
+  post(resource, data, callback) {
     return axios.post(resource, data, callback);
   },
 
@@ -22,6 +22,32 @@ const ApiService = {
     return axios.delete(resource)
   },
 
+  isReady() {
+    return this.get("/isReady").then(response=>{
+      return response.data
+    })
+  },
+
+  getGraph(gid) {
+    return this.get("/getGraph?id=" + gid).then(response=>{
+      if(response.data)
+        return response.data
+    })
+  },
+
+  getMetagraph() {
+    return this.get("/getMetagraph").then(response =>{
+      return response.data
+    })
+  },
+
+  requestGraph(payload) {
+    return this.post("/getGraphInfo", payload)
+  },
+
+  saveGraph(gid, uid) {
+    return this.get("/archiveHistory?uid=" + uid + "&gid=" + gid)
+  },
   /**
    * Perform a custom Axios request.
    *

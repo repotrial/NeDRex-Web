@@ -19,7 +19,7 @@ import ApiService from "./services/api.service";
 
 ApiService.init(CONFIG.HOST_URL+CONFIG.CONTEXT_PATH+"/api/")
 Vue.prototype.$http = ApiService;
-
+Vue.prototype.$global = {metagraph:undefined, metadata: undefined}
 
 import Socket from "./services/socket";
 Vue.prototype.$socket = Socket

@@ -168,7 +168,7 @@
                     </v-chip>
 
                   </v-row>
-                  <v-row v-if="metagraph!==undefined &&selected!==undefined">
+                  <v-row v-if="$global.metagraph!=null &&selected!==undefined">
                     <v-container>
                       <!--                      <v-card-title>General Information</v-card-title>-->
                       <v-row>
@@ -260,7 +260,7 @@
     >
       <v-card>
         <v-card-title>Confirm Deletion</v-card-title>
-        <v-card-text>Do you really want to delete the selected Graph?
+        <v-card-text>Do you really want to delete the selected Network?
         </v-card-text>
         <v-divider></v-divider>
 
@@ -310,7 +310,6 @@ export default {
       hover: {star: false, timeline: {parent: false, children: {}}},
       edit: false,
       deletePopup: false,
-      metagraph: undefined,
     }
   },
 
@@ -375,13 +374,7 @@ export default {
       this.$socket.unsubscribeThumbnail(params.gid)
     },
     getExtendedColoring: function (entity, name) {
-      if (this.metagraph === undefined) {
-        let context = this
-        return this.reloadMetagraph().then(function () {
-          return context.getExtendedColoring(entity, name)
-        }).catch(console.log)
-      }
-      return this.$utils.getColoringExtended(this.metagraph, this.selected.entityGraph, entity, name)
+      return this.$utils.getColoringExtended(this.$global.metagraph, this.selected.entityGraph, entity, name)
     },
     handleSelection: function (selected) {
       if (selected[0] === undefined || this.selectedId === selected[0])
@@ -400,17 +393,6 @@ export default {
           this.$socket.subscribeThumbnail(this.selectedId, "thumbnailReady")
         }
       }).catch(console.log)
-    },
-    setMetagraph: function (metagraph) {
-      this.metagraph = metagraph;
-    },
-    reloadMetagraph: function () {
-      this.$http.get("/getMetagraph").then(response => {
-        if (response.data !== undefined)
-          return response.data
-      }).then(response => {
-        this.setMetagraph(response)
-      }).catch(err => console.log(err))
     },
     closeDeletePop: function (apply) {
       this.deletePopup = false

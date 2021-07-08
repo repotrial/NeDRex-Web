@@ -115,6 +115,10 @@ const Utils =
       if(label.endsWith("_HUMAN"))
         label = label.substring(0,label.length - 6)
       return label
+    },
+
+    clone: function(object){
+      return JSON.parse(JSON.stringify(object))
     }
   }
 export default Utils
