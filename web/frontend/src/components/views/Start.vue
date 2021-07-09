@@ -23,30 +23,11 @@
         </v-list-item>
       </v-list>
     </v-card>
-<!--    <v-container v-show="startTab===1">-->
-<!--      <v-card class="mx-auto">-->
-<!--        <v-list>-->
-<!--          <v-list-item>-->
-<!--            <v-list-item-title class="title">-->
-<!--              Guided exploration-->
-<!--            </v-list-item-title>-->
-<!--          </v-list-item>-->
-<!--          <v-list-item>-->
-<!--            <div class="v-card__subtitle">-->
-<!--              Use the Guided Exploration Start to create a graph based on specific start and target nodes types. Select-->
-<!--              a path connecting these metanodes and control the result through additional parameters.-->
-<!--            </div>-->
-<!--          </v-list-item>-->
-<!--        </v-list>-->
-<!--      </v-card>-->
-<!--    </v-container>-->
     <Quick v-if="startTab===0" @printNotificationEvent="printNotification"
-           @graphLoadEvent="loadGraphNewTab" @focusEvent="focusTop" @clearURLEvent="$emit('clearURLEvent','quick')"
+           @graphLoadNewTabEvent="loadGraphNewTab" @graphLoadEvent="loadGraph" @focusEvent="focusTop" @clearURLEvent="$emit('clearURLEvent','quick')"
            ref="quick" @showStartSelectionEvent="toggleStartSelection"></Quick>
     <Guided v-if="startTab===1" @printNotificationEvent="printNotification"
-            @graphLoadEvent="loadGraphNewTab" @clearURLEvent="$emit('clearURLEvent', 'guided')" ref="guided"></Guided>
-
-
+            @graphLoadEvent="loadGraph" @graphLoadNewTabEvent="loadGraphNewTab" @clearURLEvent="$emit('clearURLEvent', 'guided')" ref="guided"></Guided>
     <Advanced ref="advanced" v-if="startTab===2" :options="options" :colors="colors" :filters="filters"
               @printNotificationEvent="printNotification"
               @graphLoadEvent="loadGraph"
@@ -82,7 +63,8 @@ export default {
     }
   },
   created() {
-    this.$emit("showSideEvent", this.startTab === 2)
+    if (this.$route.path.split("/").indexOf("start") > -1)
+      this.$emit("showSideEvent", this.startTab === 2)
     this.setView()
   },
   mounted() {
@@ -126,8 +108,8 @@ export default {
       // this.reset()
     },
 
-    toggleStartSelection: function(bool){
-      this.showStartSelection=bool
+    toggleStartSelection: function (bool) {
+      this.showStartSelection = bool
     },
 
     direction: function (edge) {

@@ -23,26 +23,37 @@ const ApiService = {
   },
 
   isReady() {
-    return this.get("/isReady").then(response=>{
+    return this.get("/isReady").then(response => {
       return response.data
     })
   },
 
   getGraph(gid) {
-    return this.get("/getGraph?id=" + gid).then(response=>{
-      if(response.data)
+    return this.get("/getGraph?id=" + gid).then(response => {
+      if (response.data)
         return response.data
     })
   },
 
   getMetagraph() {
-    return this.get("/getMetagraph").then(response =>{
+    return this.get("/getMetagraph").then(response => {
       return response.data
     })
   },
 
+  getMetadata() {
+    return this.get("getMetadata").then(response => {
+      return response.data
+    })
+  }
+  ,
+
   requestGraph(payload) {
     return this.post("/getGraphInfo", payload)
+  },
+
+  removeGraph(id) {
+    this.get("/removeGraph?gid=" + id).catch(console.error)
   },
 
   saveGraph(gid, uid) {
@@ -61,7 +72,8 @@ const ApiService = {
    **/
   customRequest(data) {
     return axios(data)
-  }
+  },
+
 }
 
 export default ApiService

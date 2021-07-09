@@ -23,6 +23,7 @@ public class Job {
 
     private String userId;
     private String basisGraph;
+    private String dbVersion;
     private String derivedGraph;
     private String params;
     @Transient
@@ -69,16 +70,17 @@ public class Job {
     }
 
     public Job(String id, JobRequest job) {
-        this(id, job.userId, job.graphId, job.algorithm, job.params.get("type"));
+        this(id, job.userId, job.graphId, job.algorithm, job.params.get("type"), job.dbVersion);
 //        this.request=job;
     }
 
-    public Job(String jobId, String userId, String graphId, String algorithm, String target) {
+    public Job(String jobId, String userId, String graphId, String algorithm, String target, String dbVersion) {
         this.userId = userId;
         this.basisGraph = graphId;
         this.jobId = jobId;
         this.method = ToolService.Tool.valueOf(algorithm.toUpperCase());
         this.target = target;
+        this.dbVersion = dbVersion;
         created = LocalDateTime.now();
     }
 
@@ -230,11 +232,11 @@ public class Job {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Job job = (Job) o;
-        return params.equals(job.params) && seeds.equals(job.seeds) && method == job.method;
+        return params.equals(job.params) && seeds.equals(job.seeds) && method == job.method && dbVersion.equals(job.dbVersion);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(params, Arrays.hashCode(seeds.toArray()));
+        return Objects.hash(params, Arrays.hashCode(seeds.toArray()),dbVersion);
     }
 }

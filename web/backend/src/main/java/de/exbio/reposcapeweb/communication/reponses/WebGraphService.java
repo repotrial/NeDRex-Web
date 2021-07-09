@@ -1192,7 +1192,7 @@ public class WebGraphService {
         if (user.get() != null)
             userGraph.remove(user.get());
         File thumb = historyController.getThumbnailPath(gid);
-        if (thumb.exists())
+        if (thumb!=null &&thumb.exists())
             thumb.delete();
         historyController.remove(gid);
     }

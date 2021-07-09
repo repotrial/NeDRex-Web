@@ -28,7 +28,7 @@
         </template>
       </v-toolbar>
     </v-card>
-    <v-container align-self="start" v-if="$global.metagraph!=null">
+    <v-container align-self="start" v-if="metaLoaded" style="width: 100%; margin-left: 1%; margin-right: 1%">
       <v-row>
         <v-col :cols="sideHidden ? 12:10">
           <v-main app style="padding-top: 0">
@@ -143,14 +143,17 @@
                 <v-divider></v-divider>
                 <v-card-text>
                   This exceeds the limit of elements that can handled by the browser, so please apply a more strict
-                  filter!
+                  filter! You can still save the Network in graphml format and analyze it yourself.
                 </v-card-text>
                 <v-card-actions>
                   <v-spacer></v-spacer>
+                  <v-btn color="green darken-1" text @click="resolveWarning(listWarnObject.id,true)">
+                    Download
+                  </v-btn>
                   <v-btn
                     color="green darken-1"
                     text
-                    @click="listDialog=false"
+                    @click="resolveWarning(listWarnObject.id, false)"
                   >
                     Dismiss
                   </v-btn>
@@ -220,7 +223,7 @@
       <HelpSheet :color="colors.main.bg1"></HelpSheet>
     </v-bottom-sheet>
     <v-bottom-sheet inset v-model="showVersionInfo" width="60vw" :overlay-color="colors.main.bg1">
-      <VersionSheet :color="colors.main.bg1" :metadata="metadata"></VersionSheet>
+      <VersionSheet :color="colors.main.bg1"></VersionSheet>
     </v-bottom-sheet>
     <Footer :color="colors.main.bg1"></Footer>
   </v-app>
@@ -240,6 +243,7 @@ import HelpSheet from "@/components/app/sheets/HelpSheet";
 import VersionSheet from "@/components/app/sheets/VersionSheet";
 import Network from "@/components/views/graph/Network";
 import Vue from "vue";
+import * as CONFIG from "@/Config";
 
 export default {
   name: 'app',
@@ -259,6 +263,7 @@ export default {
       colors: {},
       listWarnObject: undefined,
       listDialog: false,
+      metaLoaded: false,
       notifications: {
         style1: {show: false, message: "", timeout: 2000},
         style2: {show: false, message: "", timeout: 4000}
@@ -269,7 +274,6 @@ export default {
       showVersionInfo: false,
       showBugInfo: false,
       showHelp: false,
-      metadata: {},
       sideHidden: true,
       graphWindowStyle: {
         height: '75vh',
@@ -292,13 +296,6 @@ export default {
         this.reloadAll()
       }
     },
-
-    selectedTabId: function (val) {
-      if (val > 0 && this.gid !== undefined)
-        this.sideHidden = false
-      if (val === 0 && this.$refs.start.getStartType() < 2)
-        this.sideHidden = true
-    }
   },
   methods: {
     init: async function () {
@@ -314,10 +311,10 @@ export default {
         {id: 3, label: "History", icon: "fas fa-history", color: this.colors.tabs.inactive, note: false},
       ]
       this.initComponents()
+      this.$global.metadata = await this.$http.getMetadata()
       this.$global.metagraph = await this.$http.getMetagraph()
-      this.loadMetadata()
+      this.metaLoaded = true;
       this.initGraphs()
-      this.sideHidden = false
       this.setView()
     },
     closeCookiePopup: function () {
@@ -372,7 +369,20 @@ export default {
     setView: function () {
       let path = this.$route.path.split("/")
       let start = path.indexOf('start') > -1
+      let home = path.indexOf('home') > -1
+      let history = path.indexOf('history') > -1
       let mode = path.length > 1 ? path[2] : undefined
+      if ((path[4] != null && path[3] === "list")) {
+        this.setSideVisible(true);
+      }
+      if (start || home)
+        this.setSideVisible(false);
+
+      if (history) {
+        this.selectTab(3, true)
+      }
+
+      console.log(path)
 
       //TODO set start graph based on params
     }
@@ -396,21 +406,22 @@ export default {
     ,
     initGraphs: function () {
       this.gid = this.$route.params["gid"]
-      if(this.gid !=null) {
+      if (this.gid != null) {
         this.scheduleVisualization(this.gid)
         this.applyUrlTab(true)
       }
     },
 
-    scheduleVisualization: function(id){
-      if(this.$refs.graph ==null)
-        setTimeout(this.scheduleVisualization,100,id)
+    scheduleVisualization: function (id) {
+      if (this.$refs.graph == null)
+        setTimeout(this.scheduleVisualization, 100, id)
       else
         this.$refs.graph.loadNetworkById(id)
     },
 
     setSideVisible: function (bool) {
       this.sideHidden = !bool
+      console.log("Side=" + bool)
     }
     ,
     visualizationEvent: function () {
@@ -419,7 +430,7 @@ export default {
       this.tabslist[1].icon = "fas fa-project-diagram"
     },
 
-    disableLoadingEvent: function(tab){
+    disableLoadingEvent: function (tab) {
       this.tabslist[tab].icon = "fas fa-project-diagram"
     },
     reloadSide: function () {
@@ -495,6 +506,8 @@ export default {
     }
     ,
     sizeWarning: function (info) {
+      console.log("warn")
+      console.log(info)
       if (!this.$cookies.get("override-limit")) {
         this.listWarnObject = info;
         this.listDialog = true;
@@ -512,7 +525,7 @@ export default {
     loadGraph: function (graph) {
       this.tabslist[1].icon = "fas fa-circle-notch fa-spin"
       this.tabslist[2].icon = "fas fa-circle-notch fa-spin"
-      if(graph.post.id)
+      if (graph.post.id)
         this.loadGraphURL(graph.post.id, "list")
       else
         this.$refs.graph.loadNewNetwork(graph.post)
@@ -596,7 +609,6 @@ export default {
       this.$refs.list.reload()
       this.$refs.history.reload()
       this.$refs.side.reload()
-      this.setSideVisible(true)
     }
     ,
     registerJob: function (data) {
@@ -700,9 +712,15 @@ export default {
           this.tabslist[idx].color = colInactive
       }
       this.selectedTabId = tabid;
-      if (!skipReroute && this.gid !== undefined)
-        this.$router.push("/explore/advanced/" + ['start', 'graph', 'list', 'history'][tabid] + "/" + this.gid)
-
+      if (!skipReroute) {
+        let route = ""
+        if (this.gid !== undefined)
+          route = ("/explore/advanced/" + ['start', 'graph', 'list', 'history'][tabid] + "/" + this.gid)
+        if (this.gid === undefined)
+          route = ("/" + ['home', 'home', 'home', 'history'][tabid])
+        if (this.$route.path !== route)
+          this.$router.push(route)
+      }
       this.adaptSidecard()
     }
     ,
@@ -718,12 +736,24 @@ export default {
           this.$refs.side.loadFilter(undefined)
         }
       }
+      if (this.selectedTabId === 3)
+        this.setSideVisible(true)
+      if (this.selectedTabId === 2 && this.gid == null)
+        this.setSideVisible(false)
+      if (this.selectedTabId === 1 && ((this.$refs.graph != null && !this.$refs.graph.isVisualized()) || this.gid == null))
+        this.setSideVisible(false)
     }
     ,
     loadDetails: function (params) {
       this.$refs.side.loadDetails(params)
     }
     ,
+    resolveWarning: async function (id, download) {
+      if (download)
+        await window.open(CONFIG.HOST_URL + CONFIG.CONTEXT_PATH + '/api/downloadGraph?gid=' + this.gid)
+      this.$http.removeGraph(id)
+      this.listDialog = false;
+    },
     printNotification: function (message, style) {
       if (style === 1) {
         this.setNotification(this.notifications.style1, message)
@@ -748,15 +778,7 @@ export default {
     }
     ,
 
-    loadMetadata() {
-      this.$http.get("getMetadata").then(response => {
-        if (response.data !== undefined)
-          return response.data
-      }).then(meta => {
-        this.metadata = meta
-      }).catch(console.log)
-    }
-    ,
+
     formatTimestamp(ts) {
       return this.$utils.formatTime(ts)
     }

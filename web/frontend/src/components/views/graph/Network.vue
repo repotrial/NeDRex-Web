@@ -6,14 +6,18 @@
     <v-progress-linear v-else v-show="progress <100" :value="progress" :color=loadingColor></v-progress-linear>
     <div :style="{position:'relative', height:'100%',width:'100%',display: 'flex', justifyContent:'flex-end'}">
       <div style="justify-self: center; align-self: center; margin: auto" v-if="!configuration.visualized">
-        <template v-if="nodeSet===undefined && loading && waiting && !show">
+        <template v-if="nodeSet==null && (loading || waiting) && progressText !=null">
+          <i>{{ progressText }}</i>
+          <v-progress-circular color="primary" indeterminate size="40"></v-progress-circular>
+        </template>
+        <template v-if="nodeSet==null && loading && waiting && !show">
           <div v-if="secondaryViewer">
             <i>Generating Network...</i>
             <v-progress-circular color="primary" indeterminate size="40"></v-progress-circular>
           </div>
           <i v-else>No network has been selected yet!</i>
         </template>
-        <div v-show="!show && !secondaryViewer">
+        <div v-else-if="!show && !loading && !secondaryViewer">
           <i>Create a View for the Network</i>
           <v-btn icon @click="visualize();">
             <v-icon>fas fa-play</v-icon>
@@ -26,7 +30,6 @@
       </div>
       <VisNetwork v-if="nodeSet !== undefined && show" class="wrapper" ref="network"
                   :style="{width: '100%',cursor:canvasCursor}"
-                  :key="key"
                   :nodes="nodeSet"
                   :edges="edgeSet"
                   :options="options"
@@ -40,24 +43,24 @@
            v-if=" !waiting && show">
         <div v-if="legend">
           <v-btn @click="showLegend= !showLegend" :title="showLegend ? 'Hide':'Show'" plain
-                 style="display: flex; justify-content: flex-end; margin-left: auto;">
+                 style="display: flex; justify-content: flex-end; margin-left: auto; z-index: 201">
             <v-icon left>fas fa-scroll</v-icon>
             Legend
             <v-icon right>{{ showLegend ? "fas fa-angle-up" : "fas fa-angle-down" }}</v-icon>
           </v-btn>
-          <div v-show="showLegend">
+          <div v-show="showLegend" style="margin-top: -35px;z-index: 600">
             <slot name="legend"></slot>
           </div>
         </div>
         <template v-if="tools">
           <div style="display: flex; justify-content: flex-end;">
-            <v-btn @click="showTools= !showTools" :title="showTools ? 'Hide':'Show'" plain>
+            <v-btn @click="showTools= !showTools" :title="showTools ? 'Hide':'Show'" plain style="z-index: 201">
               <v-icon left>fas fa-tools</v-icon>
               Tools
               <v-icon right>{{ showTools ? "fas fa-angle-up" : "fas fa-angle-down" }}</v-icon>
             </v-btn>
           </div>
-          <div v-show="showTools" style="margin-top:-35px">
+          <div v-show="showTools" style="margin-top:-35px; z-index: 200">
             <slot name="tools"></slot>
           </div>
         </template>
@@ -68,8 +71,8 @@
         v-if="configuration.sizeWarning && nodeSet !== undefined"
         v-model="sizeDialog"
         persistent
-        max-width="290"
-        style="z-index: 1000"
+        max-width="350"
+        style="z-index: 202"
       >
         <v-card>
           <v-card-title class="headline">
@@ -79,6 +82,7 @@
             {{ edgeSet.getIds().length }} edges. Visualization and especially physics simulation could take a long
             time
             and cause freezes. Do you want to visualize the network or skip it for now?
+            <span v-if="secondaryViewer">There is also the option to directly load the results in the Advanced View, to use the subselection tools provided in the <i>List</i> tab for more filtering.</span>
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
@@ -89,6 +93,7 @@
             >
               Skip
             </v-btn>
+            <v-btn v-if="secondaryViewer" color="green darken-1" text @click="dialogResolve(false);$emit('loadIntoAdvancedEvent')" :disabled="disableAdvancedLoading">Advanced</v-btn>
             <v-btn
               color="green darken-1"
               text
@@ -126,6 +131,7 @@ export default {
   extractedDefaults: false,
   colors: Object,
   unconnected: [],
+
   data() {
     return {
       showLegend: true,
@@ -142,7 +148,8 @@ export default {
       loadingColor: 'primary',
       canvasCursor: "default",
       sizeDialog: false,
-      key: 0,
+      progressText: undefined,
+      disableAdvancedLoading: false,
     }
   },
 
@@ -151,7 +158,7 @@ export default {
     this.colors = {bar: {backend: "#6db33f", vis: 'primary', error: 'red darken-2'}}
     // this.hideEdges = false
     // this.dialog = false
-    this.configuration.visualized = true
+    this.configuration.visualized = false
     this.init()
     if (this.startGraph)
       this.initStartGraph()
@@ -198,6 +205,10 @@ export default {
       if (!this.extractedDefaults) {
         let defaults = this.$utils.clone(this.$global.metagraph.options);
         this.options = defaults.options;
+        if (this.startGraph) {
+          this.options['interaction']['hideEdgesOnDrag'] = false;
+          this.options['interaction']['hideEdgesOnZoom'] = false;
+        }
         this.layout = defaults.layout;
         this.physics = defaults.physics;
         this.extractedDefaults = true;
@@ -222,10 +233,13 @@ export default {
       this.loading = bool;
     },
 
-    loadNetworkById: function (gid) {
+    loadNetworkById: function (gid, disableAdvancedLoading) {
+      this.disableAdvancedLoading = !!disableAdvancedLoading
       if (gid === this.gid)
         return
       this.reset()
+      this.setLoading(false)
+      this.setWaiting(true)
       return this.$http.getGraph(gid).then(this.setGraph).catch(err => {
         this.loadingColor = this.colors.bar.error;
         console.error(err)
@@ -255,9 +269,6 @@ export default {
     },
 
     setGraph: function (graph) {
-      console.log(this.secondaryViewer)
-      if (this.secondaryViewer)
-        this.visualize()
       this.setWaiting(false)
       this.loadingColor = this.colors.bar.vis
       this.setVisualized(false)
@@ -265,20 +276,17 @@ export default {
         this.setDirected(graph.directed)
         this.setEdges(graph.edges);
         this.setNodes(graph.nodes);
-        this.setOptions(this.startGraph ? graph.options.options : graph.options)
+        this.setOptions(this.startGraph ? null : graph.options)
         this.checkSizeWarning(graph)
       }
-      this.dialog = false;
       this.setLoading(false)
-      if (this.show)
+      if (this.show || this.secondaryViewer)
         this.visualize()
       else
         this.$emit("disableLoadingEvent")
-      // this.visualize()
-      // this.drawGraph();
     },
     checkSizeWarning: function () {
-      this.configuration.sizeWarning = (this.nodeSet !== undefined && this.nodeSet.getIds().length > 1000) || (this.edgeSet !== undefined && this.edgeSet.getIds().length > 1000)
+      this.$set(this.configuration, "sizeWarning", (this.nodeSet !== undefined && this.nodeSet.getIds().length > 1000) || (this.edgeSet !== undefined && this.edgeSet.getIds().length > 1000))
     },
     showLoops: function (state) {
       let updates = Object.values(this.edgeSet.get({
@@ -317,6 +325,8 @@ export default {
         else
           this.printNotification("Request scheduled: Server is currently busy! please wait.", 2)
       })
+      this.setLoading(false)
+      this.setWaiting(true)
       this.$http.requestGraph(graph).then(response => {
         return response.data
       }).then(info => {
@@ -340,10 +350,10 @@ export default {
       }
       for (let e in info.edges)
         sum += info.edges[e]
-      if (sum >= 100000 && !this.$cookies.get("override-limit")) {
-        this.$emit("sizeWarnEvent")
+      if (sum >= 50000 && !this.$cookies.get("override-limit")) {
+        this.$emit("sizeWarnEvent", info)
       } else {
-        this.preventPhysics = sum > 50000
+        this.preventPhysics = sum > 25000
         this.$http.saveGraph(info.id, this.$cookies.get("uid")).then(() => {
           this.$emit("setGlobalGidEvent", info.id)
           this.loadNetworkById(info.id)
@@ -352,10 +362,15 @@ export default {
     }
     ,
     visualize: function () {
-      this.show = true
-      if (this.nodeSet != null) {
-        this.setVisualized(true)
-        this.$emit("visualizationEvent")
+      if (this.configuration.sizeWarning)
+        this.sizeDialog = true
+      else {
+        this.prepare()
+        this.show = true
+        if (this.nodeSet != null) {
+          this.setVisualized(true)
+          this.$emit("visualizationEvent")
+        }
       }
     },
     readGIDfromRoute: function () {
@@ -373,6 +388,10 @@ export default {
       this.saveLayout()
       this.options.physics.enabled = bool
       this.reloadOptions()
+    },
+
+    showUnconnected: function (state) {
+      this.toggleNodesVisible(this.unconnected, state)
     },
 
     hasPhysicsEnabled: function () {
@@ -576,6 +595,10 @@ export default {
       }
     },
 
+    setProgressText: function (text) {
+      this.progressText = text
+    },
+
 
     /* Rectengular overlay selection methods */
 
@@ -698,8 +721,8 @@ export default {
     ,
 
     dialogResolve: function (vis) {
-      this.dialog = false;
-      this.configuration.visualized = vis;
+      this.sizeDialog = false;
+      this.configuration.sizeWarning = !vis;
       if (vis) {
         this.visualize()
       }

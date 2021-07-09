@@ -6,7 +6,7 @@
           <PipelineCard :image="getConfig().STATIC_PATH+'/assets/module_ident.png'" title="Module Identification">
 
             <template slot="description">
-              <div>
+              <div style="font-size: 0.9em">
                 Identify disease modules by selecting <b><i>seed genes</i></b> or <b><i>proteins</i></b> by hand, suggestions using
                 information about e.g. <b><i>association to disorders</i></b> or by uploading a <b><i>list of ids</i></b>. Tune the parameters of the algorithms
                 (<b>Basic Mode</b>) or just use defaults for even less necessary input work (<b>Quick Mode</b>).
@@ -41,7 +41,7 @@
           <PipelineCard :image="getConfig().STATIC_PATH+'/assets/drug_prio.png'" title="Drug Prioritization">
 
             <template slot="description">
-              <div>
+              <div style="font-size:0.9em">
                 Based on a set of given <b><i>seed genes</i></b> or <b><i>proteins</i></b> <b>drug candidates</b> can be identified through the
                 application of <b>ranking</b> algorithms in combination with the <b><i>protein or gene interaction network</i></b> and
                 their known <b>drug associations</b>.
@@ -75,7 +75,7 @@
         <div @mouseenter="hoverDrugRep=true" @mouseleave="hoverDrugRep=false">
           <PipelineCard :image="getConfig().STATIC_PATH+'/assets/drug_rep.png'" title="Drug Repurposing" subtitle="Module Identification + Drug Prioritization">
             <template slot="description">
-              <div>
+              <div style="font-size: 0.9em">
                 Identify disease modules as in the standalone mode (<b>Module Identification</b>) but with
                 direct use in a subsequent
                 <b>drug prioritization</b> analysis. Using the <b>Quick Mode</b> will use default values for the algorithmic
@@ -109,6 +109,7 @@
         <CombinedRepurposing v-if="modus===0" :blitz="blitz" @resetEvent="modus=-1"
                              @printNotificationEvent="printNotification"
                              @graphLoadEvent="loadGraph"
+                             @graphLoadNewTabEvent="loadGraphNewTab"
                              @focusEvent="focusTop"
                              ref="drugRepurposing">
 
@@ -116,6 +117,7 @@
         <ModuleIdentification v-if="modus===1" :blitz="blitz" @resetEvent="modus=-1"
                               @printNotificationEvent="printNotification"
                               @graphLoadEvent="loadGraph"
+                              @graphLoadNewTabEvent="loadGraphNewTab"
                               @loadDrugTargetEvent="loadDrugTarget"
                               @focusEvent="focusTop"
                               ref="moduleIdentification"
@@ -123,6 +125,7 @@
         <DrugRepurposing v-if="modus===2" :blitz="blitz" @resetEvent="modus=-1"
                          @printNotificationEvent="printNotification"
                          @graphLoadEvent="loadGraph"
+                         @graphLoadNewTabEvent="loadGraphNewTab"
                          @focusEvent="focusTop"
                          ref="drugRanking"
         ></DrugRepurposing>
@@ -188,6 +191,9 @@ export default {
 
     loadGraph: function (gid) {
       this.$emit("graphLoadEvent", gid)
+    },
+    loadGraphNewTab: function (gid) {
+      this.$emit("graphLoadNewTabEvent", gid)
     },
     loadDrugTarget: function (blitz, seeds, type, origin) {
       this.blitz = blitz;

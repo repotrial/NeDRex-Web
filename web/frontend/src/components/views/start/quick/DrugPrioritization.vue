@@ -426,7 +426,8 @@
                 </v-col>
                 <v-col>
                   <Network ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle"
-                         :legend="results.targets.length>0" :secondaryViewer="true" >
+                         :legend="results.targets.length>0" :secondaryViewer="true"
+                  @loadIntoAdvancedEvent="$emit('graphLoadEvent',{post: {id: jobs[currentJid].result}})">
                     <template v-slot:legend v-if="results.targets.length>0">
                       <v-card style="width: 8vw; max-width: 10vw;padding-top: 35px">
                         <v-list>
@@ -491,7 +492,7 @@
                 <v-col>
                   <v-chip outlined v-if="jobs[currentJid] && jobs[currentJid].result"
                           style="margin-top:15px"
-                          @click="$emit('graphLoadEvent',{post: {id: jobs[currentJid].result}})">
+                          @click="$emit('graphLoadNewTabEvent',{post: {id: jobs[currentJid].result}})">
                     <v-icon left>fas fa-angle-double-right</v-icon>
                     Load Result into Advanced View
                   </v-chip>
@@ -687,7 +688,7 @@ export default {
       this.executeJob(method, params)
     },
     executeJob: function (algorithm, params) {
-      let payload = {userId: this.uid, algorithm: algorithm, params: params}
+      let payload = {userId: this.uid, dbVersion: this.$global.metadata.repotrial.version, algorithm: algorithm, params: params}
       payload.selection = true
       payload.experimentalOnly = params.experimentalOnly
       payload["nodes"] = this.seeds.map(n => n.id)

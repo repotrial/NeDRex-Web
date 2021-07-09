@@ -357,7 +357,7 @@
               </v-col>
               <v-col>
                 <Network ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle"
-                       :legend="$refs.graph!==undefined && $refs.graph.isVisualized()" secondaryViewer="true">
+                       :legend="$refs.graph!==undefined && $refs.graph.isVisualized()" secondaryViewer="true" @loadIntoAdvancedEvent="$emit('graphLoadEvent',{post: {id: gid}})">
                   <template v-slot:legend>
                     <v-card style="width: 11vw; max-width: 11vw; padding-top: 35px" v-if="info!==undefined">
                       <v-list>
@@ -415,7 +415,7 @@
               <v-col>
                 <v-chip outlined v-if="gid!==undefined"
                         style="margin-top:10px"
-                        @click="$emit('graphLoadEvent',{post: {id: gid}})">
+                        @click="$emit('graphLoadNewTabEvent',{post: {id: gid}})">
                   <v-icon left>fas fa-angle-double-right</v-icon>
                   Load Result into Advanced View
                 </v-chip>

@@ -94,7 +94,7 @@ public class HistoryController {
         return uid;
     }
 
-    public HashMap<String, Object> getUserHistory(String uid, HashMap<String, Pair<String,Pair<Job.JobState, ToolService.Tool>>> jobs) {
+    public HashMap<String, Object> getUserHistory(String uid, HashMap<String, Pair<String, Pair<Job.JobState, ToolService.Tool>>> jobs) {
         HashMap<String, Object> out = new HashMap<>();
         out.put("uid", uid);
         if (!userMap.containsKey(uid))
@@ -115,9 +115,9 @@ public class HistoryController {
             }
         });
 
-        out.put("history", getHistoryTree(map.values(),uid));
+        out.put("history", getHistoryTree(map.values(), uid));
 
-        LinkedList<HashMap<String, Object>> list = map.values().stream().map(h -> h.toMap(false,uid)).sorted((history, t1) -> {
+        LinkedList<HashMap<String, Object>> list = map.values().stream().map(h -> h.toMap(false, uid)).sorted((history, t1) -> {
             long h1 = (long) history.get("created");
             long h2 = (long) t1.get("created");
             if (h1 == h2)
@@ -135,7 +135,7 @@ public class HistoryController {
 
         historyList.forEach(v -> {
             if (v.getParent() == null)
-                history.add(v.toMap(true,uid));
+                history.add(v.toMap(true, uid));
         });
         return history;
     }
@@ -203,7 +203,7 @@ public class HistoryController {
         return userId;
     }
 
-    public GraphHistoryDetail getDetailedHistory(String uid, Graph g, ConnectionGraph connectionGraph, HashMap<String, Pair<String,Pair<Job.JobState, ToolService.Tool>>> jobs, File thumbnail) {
+    public GraphHistoryDetail getDetailedHistory(String uid, Graph g, ConnectionGraph connectionGraph, HashMap<String, Pair<String, Pair<Job.JobState, ToolService.Tool>>> jobs, File thumbnail) {
         GraphHistoryDetail details = new GraphHistoryDetail();
         GraphHistory history = getHistory(g.getId());
         details.name = history.getName();
@@ -218,7 +218,7 @@ public class HistoryController {
 
         if (jobs.containsKey(g.getId())) {
             details.method = jobs.get(g.getId()).getSecond().getSecond().name();
-            details.jobid=jobs.get(g.getId()).getFirst();
+            details.jobid = jobs.get(g.getId()).getFirst();
         }
 
         GraphHistory parent = history.getParent();
@@ -265,27 +265,30 @@ public class HistoryController {
 
     public void remove(String gid) {
         GraphHistory g = graphMap.get(gid);
-        int idx = -1;
-        if(g.getParent()!=null) {
-            for (int i = 0; i < g.getParent().getDerived().size(); i++) {
-                if (g.getParent().getDerived().get(i).getGraphId().equals(gid))
-                    idx = i;
+        if (g != null) {
+            int idx = -1;
+            if (g.getParent() != null) {
+                for (int i = 0; i < g.getParent().getDerived().size(); i++) {
+                    if (g.getParent().getDerived().get(i).getGraphId().equals(gid))
+                        idx = i;
+                }
+                g.getParent().getDerived().remove(idx);
             }
-            g.getParent().getDerived().remove(idx);
+            g.getDerived().forEach(child -> {
+                g.getParent().addDerivate(child);
+                child.setParent(g.getParent());
+            });
+            historyRepository.saveAll(g.getDerived());
         }
-        g.getDerived().forEach(child -> {
-            g.getParent().addDerivate(child);
-            child.setParent(g.getParent());
-        });
-        historyRepository.saveAll(g.getDerived());
-
         File cached = getGraphPath(gid);
-        cached.delete();
-        if (Arrays.asList(cached.getParentFile().list()).isEmpty())
-            FileUtils.deleteDirectory(cached.getParentFile());
-
+        if (cached != null) {
+            cached.delete();
+            if (Arrays.asList(cached.getParentFile().list()).isEmpty())
+                FileUtils.deleteDirectory(cached.getParentFile());
+        }
         userMap.forEach((u, m) -> m.remove(gid));
-        historyRepository.delete(g);
+        if (g != null)
+            historyRepository.delete(g);
         graphMap.remove(gid);
     }
 }

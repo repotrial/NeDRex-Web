@@ -810,7 +810,8 @@
                 </v-col>
                 <v-col>
                   <Network ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle"
-                         :progress="resultProgress" :legend="resultProgress===100" :secondaryViewer="true">
+                         :progress="resultProgress" :legend="resultProgress===100" :secondaryViewer="true"
+                  @loadIntoAdvancedEvent="$emit('graphLoadEvent',{post: {id: rankingGid}})">
                     <template v-slot:legend v-if="results.drugs.length>0">
                       <v-card style="width: 11vw; max-width: 20vw; padding-top: 35px">
                         <v-list dense>
@@ -897,7 +898,7 @@
                 <v-col>
                   <v-chip outlined v-if="rankingJid!=null && rankingGid !=null"
                           style="margin-top:15px"
-                          @click="$emit('graphLoadEvent',{post: {id: rankingGid}})">
+                          @click="$emit('graphLoadNewTabEvent',{post: {id: rankingGid}})">
                     <v-icon left>fas fa-angle-double-right</v-icon>
                     Load Result into Advanced View
                   </v-chip>
@@ -1207,7 +1208,7 @@ export default {
 
     executeModuleJob: function (algorithm, params) {
       this.resultProgress = 0
-      let payload = {userId: this.uid, algorithm: algorithm, params: params}
+      let payload = {userId: this.uid,dbVersion: this.$global.metadata.repotrial.version, algorithm: algorithm, params: params}
       payload.selection = true
       payload.experimentalOnly = params.experimentalOnly
       payload["nodes"] = this.seeds.map(n => n.id)
@@ -1225,7 +1226,7 @@ export default {
     }
     ,
     executeRankingJob: function (algorithm, params) {
-      let payload = {userId: this.uid, graphId: this.moduleGid, algorithm: algorithm, params: params}
+      let payload = {userId: this.uid,dbVersion: this.$global.metadata.repotrial.version, graphId: this.moduleGid, algorithm: algorithm, params: params}
       payload.selection = false
       payload.experimentalOnly = params.experimentalOnly
       this.$http.post("/submitJob", payload).then(response => {
@@ -1250,7 +1251,7 @@ export default {
           this.$socket.unsubscribeJob(this.moduleJid)
         this.loadModuleTargetTable().then(() => {
           this.resultProgress = 25
-          this.loadGraph(this.moduleGid)
+          this.loadGraph(this.moduleGid,true)
         })
       }
     }
@@ -1422,10 +1423,10 @@ export default {
         return this.$refs.graph;
       })
     },
-    loadGraph: function (graphId) {
+    loadGraph: function (graphId,disableSkipToAdvanced) {
       this.getGraph().then(graph => {
         this.resultProgress += 5
-        graph.loadNetworkById(graphId).then(() => {
+        graph.loadNetworkById(graphId,disableSkipToAdvanced).then(() => {
           this.resultProgress += 15
           graph.showLoops(false)
           let seedIds = this.seeds.map(s => s.id)

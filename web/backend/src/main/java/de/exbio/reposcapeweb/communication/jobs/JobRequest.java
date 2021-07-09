@@ -10,6 +10,7 @@ public class JobRequest {
 
     public String userId;
     public String graphId;
+    public String dbVersion;
     public String algorithm;
     public HashMap<String, String> params;
     public boolean selection;

@@ -2037,7 +2037,7 @@ export default {
     },
     executeAlgorithm: function (algorithm, params) {
       this.filterNodeModel = null
-      let payload = {userId: this.uid, graphId: this.gid, algorithm: algorithm, params: params}
+      let payload = {userId: this.uid,dbVersion: this.$global.metadata.repotrial.version, graphId: this.gid, algorithm: algorithm, params: params}
       payload.selection = params.selection
       payload.experimentalOnly = params.experimentalOnly
       if (params.selection)
