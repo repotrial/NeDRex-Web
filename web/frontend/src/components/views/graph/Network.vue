@@ -93,7 +93,10 @@
             >
               Skip
             </v-btn>
-            <v-btn v-if="secondaryViewer" color="green darken-1" text @click="dialogResolve(false);$emit('loadIntoAdvancedEvent')" :disabled="disableAdvancedLoading">Advanced</v-btn>
+            <v-btn v-if="secondaryViewer" color="green darken-1" text
+                   @click="dialogResolve(false);$emit('loadIntoAdvancedEvent')" :disabled="disableAdvancedLoading">
+              Advanced
+            </v-btn>
             <v-btn
               color="green darken-1"
               text
@@ -286,7 +289,9 @@ export default {
         this.$emit("disableLoadingEvent")
     },
     checkSizeWarning: function () {
-      this.$set(this.configuration, "sizeWarning", (this.nodeSet !== undefined && this.nodeSet.getIds().length > 1000) || (this.edgeSet !== undefined && this.edgeSet.getIds().length > 1000))
+      let sum = (this.nodeSet != null ? this.nodeSet.length : 0) + (this.edgeSet != null ? this.edgeSet.length : 0);
+      this.$emit("disablePhysicsEvent", sum > 20000)
+      this.$set(this.configuration, "sizeWarning", (this.nodeSet !== undefined && this.nodeSet.length > 1000) || (this.edgeSet !== undefined && this.edgeSet.length > 1000))
     },
     showLoops: function (state) {
       let updates = Object.values(this.edgeSet.get({
@@ -353,7 +358,6 @@ export default {
       if (sum >= 50000 && !this.$cookies.get("override-limit")) {
         this.$emit("sizeWarnEvent", info)
       } else {
-        this.preventPhysics = sum > 25000
         this.$http.saveGraph(info.id, this.$cookies.get("uid")).then(() => {
           this.$emit("setGlobalGidEvent", info.id)
           this.loadNetworkById(info.id)
@@ -368,6 +372,7 @@ export default {
         this.prepare()
         this.show = true
         if (this.nodeSet != null) {
+          this.showLoops(false)
           this.setVisualized(true)
           this.$emit("visualizationEvent")
         }
@@ -401,6 +406,8 @@ export default {
     onClick: function (params) {
       let selection = params.nodes.length > 0 || params.edges.length > 0;
       if (selection) {
+        if(params.edges.length>0)
+          params.edges = params.edges.map(id=>this.$refs.network.getEdge(id))
         this.$emit('selectionEvent', params)
       } else {
         this.$emit('selectionEvent')

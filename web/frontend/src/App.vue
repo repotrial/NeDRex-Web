@@ -47,6 +47,7 @@
                 :configuration="options.graph"
                 :window-style="graphWindowStyle"
                 :legend="showLegend"
+                :tools="showLegend"
                 style="position: sticky; "
                 @finishedEvent="setTabNotification(1)"
                 @multiSelectionEvent="setMultiSelection"
@@ -56,6 +57,7 @@
                 @setGlobalGidEvent="setGlobalGid"
                 @visualizationEvent="visualizationEvent"
                 @disableLoadingEvent="disableLoadingEvent(1)"
+                @disablePhysicsEvent="disablePhysics"
               >
                 <template v-slot:legend>
                   <Legend v-if="showLegend" :countMap="options.list.countMap" ref="legend"
@@ -63,6 +65,10 @@
                           :options="options.graph.legend"
                           @graphViewEvent="graphViewEvent"></Legend>
 
+                </template>
+                <template v-slot:tools>
+                  <Tools v-if="showLegend" :physics="true" :physicsDisabled="physicsDisabled" ref="tools"
+                         @toggleOptionEvent="toggleToolOption" @clickOptionEvent="clickToolOption"></Tools>
                 </template>
               </Network>
               <!--              </Graph>-->
@@ -244,6 +250,7 @@ import VersionSheet from "@/components/app/sheets/VersionSheet";
 import Network from "@/components/views/graph/Network";
 import Vue from "vue";
 import * as CONFIG from "@/Config";
+import Tools from "@/components/views/graph/Tools";
 
 export default {
   name: 'app',
@@ -280,6 +287,7 @@ export default {
         'min-height': '75vh',
       },
       showLegend: false,
+      physicsDisabled: false,
     }
   },
   created() {
@@ -316,6 +324,11 @@ export default {
       this.metaLoaded = true;
       this.initGraphs()
       this.setView()
+    },
+
+    disablePhysics: function (bool) {
+      this.physicsDisabled = bool
+      console.log(this.physicsDisabled)
     },
     closeCookiePopup: function () {
       this.cookiesPopup = false
@@ -517,6 +530,22 @@ export default {
       this.$refs.list.setLoading(false)
     },
 
+    toggleToolOption: function (option, value) {
+      if (option === "physics")
+        this.$refs.graph.setPhysics(value);
+      if(option ==="loops")
+        this.$refs.graph.showLoops(value)
+      if(option ==="unconnected")
+        this.$refs.graph.showUnconnected(value)
+      if(option ==="isolation")
+        this.$refs.graph.graphViewEvent(value)
+    },
+
+    clickToolOption: function(option){
+      if(option ==="fit")
+        this.$refs.graph.setSelection()
+    },
+
     setGlobalGid: function (gid) {
       this.gid = gid
       let tab = (this.tab !== undefined && this.tab !== "start" && this.tab !== "history") ? this.tab : "list"
@@ -676,10 +705,19 @@ export default {
     }
     ,
     loadSelection: function (params) {
-      if (params !== undefined)
+      console.log(params)
+      if (params != null && params.nodes != null && params.nodes.length >0) {
+        this.$refs.tools.setSelectedNodeId(params.nodes[0])
         this.$refs.side.loadSelection(this.$refs.graph.identifyNeighbors(params.nodes[0]))
+        this.$refs.side.loadDetails({type:"node",name:["gene","protein","pathway","disorder","drug"][["gen","pro","pat","dis","dru"].indexOf(params.nodes[0].substring(0,3))],id:params.nodes[0].substring(4)})
+
+      }
+      else if (params != null && params.edges != null && params.edges.length >0) {
+        this.$refs.side.loadDetails({type:"edge",name:params.edges[0].title,id1:params.edges[0].from.substring(4), id2: params.edges[0].to.substring(4)})
+      }
       else {
         this.$refs.side.loadSelection(this.$refs.graph.getAllNodes())
+        this.$refs.side.loadDetails()
       }
     }
     ,
@@ -792,6 +830,7 @@ export default {
     List,
     History,
     Legend,
+    Tools,
     Home,
     Footer,
     BugSheet,

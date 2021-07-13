@@ -18,7 +18,7 @@
         </v-chip>
       </v-card-title>
 
-      <v-card ref="options" elevation="3" style="margin:15px">
+      <v-card ref="options" elevation="3" style="margin:15px" v-if="selectedTab !==1">
         <v-list-item @click="show.options=!show.options">
           <v-list-item-title>
             <v-icon left>{{ show.options ? "far fa-minus-square" : "far fa-plus-square" }}</v-icon>
@@ -63,57 +63,48 @@
               <v-progress-circular v-else>
               </v-progress-circular>
             </template>
-            <template v-if="selectedTab===1">
-              <template v-if="options.graph.visualized">
-                <v-list-item>
-                  <v-chip outlined v-on:click="setAllSelected()">
-                    <v-icon left>fas fa-globe</v-icon>
-                    Overview
-                  </v-chip>
-                </v-list-item>
-                <v-list-item>
-                  <v-switch
-                    v-model="options.graph.physics"
-                    @click="$emit('updatePhysicsEvent')"
-                    label="Enable physics"
-                    :disabled="options.graph.noPhysics"
-                  >
-                  </v-switch>
-                </v-list-item>
-                <v-list-item>
-                  <v-switch
-                    v-model="options.graph.loops"
-                    @click="$emit('showLoopsEvent',options.graph.loops)"
-                    label="Show loops"
-                  >
-                  </v-switch>
-                </v-list-item>
-                <v-list-item>
-                  <v-switch
-                    v-model="options.graph.single"
-                    :disabled="options.graph.physics"
-                    @click="$emit('showUnconnectedEvent',options.graph.single)"
-                    label="Show Unconnected"
-                  >
-                  </v-switch>
-                </v-list-item>
-                <v-list-item>
-                  <v-switch
-                    v-model="options.graph.component"
-                    :disabled="selectedNode===undefined && !options.graph.component"
-                    @click="$emit('graphViewEvent',{event:'isolate',selected:selectedNode.id, state:options.graph.component})"
-                    label="Isolate Component"
-                  >
-                  </v-switch>
-                </v-list-item>
-              </template>
+<!--            <template v-if="selectedTab===1">-->
+<!--              <template v-if="options.graph.visualized">-->
+<!--                <v-list-item>-->
+<!--                  <v-chip outlined v-on:click="setAllSelected()">-->
+<!--                    <v-icon left>fas fa-globe</v-icon>-->
+<!--                    Overview-->
+<!--                  </v-chip>-->
+<!--                </v-list-item>-->
+<!--                <v-list-item>-->
+<!--                  <v-switch-->
+<!--                    v-model="options.graph.loops"-->
+<!--                    @click="$emit('showLoopsEvent',options.graph.loops)"-->
+<!--                    label="Show loops"-->
+<!--                  >-->
+<!--                  </v-switch>-->
+<!--                </v-list-item>-->
+<!--                <v-list-item>-->
+<!--                  <v-switch-->
+<!--                    v-model="options.graph.single"-->
+<!--                    :disabled="options.graph.physics"-->
+<!--                    @click="$emit('showUnconnectedEvent',options.graph.single)"-->
+<!--                    label="Show Unconnected"-->
+<!--                  >-->
+<!--                  </v-switch>-->
+<!--                </v-list-item>-->
+<!--                <v-list-item>-->
+<!--                  <v-switch-->
+<!--                    v-model="options.graph.component"-->
+<!--                    :disabled="selectedNode===undefined && !options.graph.component"-->
+<!--                    @click="$emit('graphViewEvent',{event:'isolate',selected:selectedNode.id, state:options.graph.component})"-->
+<!--                    label="Isolate Component"-->
+<!--                  >-->
+<!--                  </v-switch>-->
+<!--                </v-list-item>-->
+<!--              </template>-->
 <!--              <template v-else>-->
 <!--                <v-chip outlined @click="visualizeGraph">-->
 <!--                  <v-icon left>fas fa-check</v-icon>-->
 <!--                  Create view of Network-->
 <!--                </v-chip>-->
 <!--              </template>-->
-            </template>
+<!--            </template>-->
             <template v-if="selectedTab===2">
               <v-list-item>
                 <v-switch
@@ -400,15 +391,13 @@
           <i v-else>no selection available</i>
         </v-container>
       </v-card>
-
-      <template v-if="selectedTab===2">
+      <template v-if="selectedTab===2" >
         <Algorithms ref="algorithms" @executeAlgorithmEvent="submitAlgorithm"></Algorithms>
         <Jobs ref="jobs" @graphLoadEvent="graphLoadEvent" @printNotificationEvent="printNotification"
-              @reloadHistoryEvent="reloadHistory"
-        ></Jobs>
-
-
-        <v-card ref="detail" elevation="3" style="margin:15px" v-if="detailedObject !== undefined"
+              @reloadHistoryEvent="reloadHistory"></Jobs>
+      </template>
+      <template v-if="selectedTab===2 || selectedTab ===1">
+       <v-card ref="detail" elevation="3" style="margin:15px" v-if="detailedObject !== undefined"
                 :loading="$global.metagraph==null">
 
           <v-list-item @click="show.detail=!show.detail">
@@ -981,6 +970,11 @@ export default {
     }
     ,
     loadDetails: function (data, redirect) {
+      if(data ==null){
+        this.detailedObject=undefined;
+        this.show.detail=false;
+        return;
+      }
       this.details.redirected = false;
       if (redirect)
         this.details.redirected = redirect

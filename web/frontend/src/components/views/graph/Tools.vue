@@ -1,10 +1,67 @@
 <template>
-  <v-card ref="tools" elevation="3" v-if="entityGraph!==undefined">
+  <v-card ref="tools" elevation="3">
     <v-container v-show="show">
-      <v-list ref="list">
-        <v-list-item>
-          TODO
-        </v-list-item>
+      <v-list ref="list" style="margin-top: 30px;">
+        <v-tooltip left>
+          <template v-slot:activator="{on, attrs}">
+            <v-list-item v-on="on" v-bind="attrs">
+              <v-list-item-action>
+                <v-chip outlined v-on:click="$emit('clickOptionEvent','fit')">
+                  <v-icon left>fas fa-globe</v-icon>
+                  Overview
+                </v-chip>
+              </v-list-item-action>
+            </v-list-item>
+          </template>
+          <span>This option enables a physics based layouting where nodes and <br>edges interact with each other. Be careful on large graphs.</span>
+        </v-tooltip>
+        <v-tooltip left>
+          <template v-slot:activator="{on, attrs}">
+            <v-list-item v-on="on" v-bind="attrs">
+              <v-list-item-action-text>Enable node interactions</v-list-item-action-text>
+              <v-list-item-action>
+                <v-switch v-model="physicsOn" :disabled="physicsDisabled"
+                          @click="$emit('toggleOptionEvent','physics',physicsOn)"></v-switch>
+              </v-list-item-action>
+            </v-list-item>
+          </template>
+          <span v-if="physicsDisabled">This option is disabled because there are too many <br>entities in the graph. As a result your browser might crash.</span>
+          <span v-else>This option enables a physics based layouting where nodes and <br>edges interact with each other. Be careful on large graphs.</span>
+        </v-tooltip>
+        <v-tooltip left>
+          <template v-slot:activator="{on, attrs}">
+            <v-list-item v-on="on" v-bind="attrs">
+              <v-list-item-action-text>Show Self-loops</v-list-item-action-text>
+              <v-list-item-action>
+                <v-switch v-model="loopsOn" @click="$emit('toggleOptionEvent','loops',loopsOn)"></v-switch>
+              </v-list-item-action>
+            </v-list-item>
+          </template>
+          <span>This option is disabled because there are too many <br>entities in the graph. As a result your browser might crash.</span>
+        </v-tooltip>
+        <v-tooltip left>
+          <template v-slot:activator="{on, attrs}">
+            <v-list-item v-on="on" v-bind="attrs">
+              <v-list-item-action-text>Show Unconnected Nodes</v-list-item-action-text>
+              <v-list-item-action>
+                <v-switch v-model="unconnectedOn"
+                          @click="$emit('toggleOptionEvent','unconnected',unconnectedOn)"></v-switch>
+              </v-list-item-action>
+            </v-list-item>
+          </template>
+          <span>This option is disabled because there are too many <br>entities in the graph. As a result your browser might crash.</span>
+        </v-tooltip>
+        <v-tooltip left>
+          <template v-slot:activator="{on, attrs}">
+            <v-list-item v-on="on" v-bind="attrs">
+              <v-list-item-action-text>Show Unconnected Nodes</v-list-item-action-text>
+              <v-list-item-action>
+                <v-switch :disabled="selectedNodeId==null" v-model="isolationOn" @click="emitIsolation()"></v-switch>
+              </v-list-item-action>
+            </v-list-item>
+          </template>
+          <span>This option is disabled because there are too many <br>entities in the graph. As a result your browser might crash.</span>
+        </v-tooltip>
       </v-list>
     </v-container>
   </v-card>
@@ -17,25 +74,34 @@ export default {
   props: {
     countMap: undefined,
     entityGraph: undefined,
+    physicsDisabled: Boolean,
     options: Object,
   },
   name: "Tools",
-
   data() {
     return {
       show: true,
       tabModel: 0,
-      nodeMap: {}
+      physicsOn: false,
+      loopsOn: false,
+      unconnectedOn: true,
+      isolationOn: false,
+      selectedNodeId: undefined,
     }
   },
   created() {
-    if (this.options.toggled === undefined) {
-      this.options.toggled = {}
-    }
   },
   methods: {
-
-
+    setSelectedNodeId: function (nodeID) {
+      this.selectedNodeId = nodeID;
+    },
+    emitIsolation: function () {
+      this.$emit('toggleOptionEvent', 'isolation', {
+        event: 'isolate',
+        selected: this.selectedNodeId,
+        state: this.isolationOn
+      })
+    }
   }
 }
 </script>
