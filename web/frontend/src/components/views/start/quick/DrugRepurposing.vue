@@ -810,10 +810,10 @@
                 </v-col>
                 <v-col>
                   <Network ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle"
-                         :progress="resultProgress" :legend="resultProgress===100" :secondaryViewer="true"
+                         :progress="resultProgress" :legend="resultProgress===100" :tools="resultProgress===100" :secondaryViewer="true"
                   @loadIntoAdvancedEvent="$emit('graphLoadEvent',{post: {id: rankingGid}})">
                     <template v-slot:legend v-if="results.drugs.length>0">
-                      <v-card style="width: 11vw; max-width: 20vw; padding-top: 35px">
+                      <v-card style="width: 15vw; max-width: 20vw; padding-top: 35px">
                         <v-list dense>
                           <v-list-item>
                             <v-list-item-icon>
@@ -853,7 +853,54 @@
                         </v-list>
                       </v-card>
                     </template>
-
+                    <template v-slot:tools v-if="results.targets.length>0">
+                      <v-card elevation="3" style="width: 15vw; max-width: 17vw; padding-top: 35px">
+                        <v-container>
+                          <v-list ref="list" style="margin-top: 10px;">
+                            <v-tooltip left>
+                              <template v-slot:activator="{on, attrs}">
+                                <v-list-item v-on="on" v-bind="attrs">
+                                  <v-list-item-action>
+                                    <v-chip outlined v-on:click="$refs.graph.setSelection()">
+                                      <v-icon left>fas fa-globe</v-icon>
+                                      Overview
+                                    </v-chip>
+                                  </v-list-item-action>
+                                </v-list-item>
+                              </template>
+                              <span>Fits the view to the whole network.</span>
+                            </v-tooltip>
+                            <v-tooltip left>
+                              <template v-slot:activator="{on, attrs}">
+                                <v-list-item v-on="on" v-bind="attrs">
+                                  <v-list-item-action-text>Enable node interactions</v-list-item-action-text>
+                                  <v-list-item-action>
+                                    <v-switch v-model="physicsOn"
+                                              @click="$refs.graph.setPhysics(physicsOn)"></v-switch>
+                                  </v-list-item-action>
+                                </v-list-item>
+                              </template>
+                              <span>This option enables a physics based layouting where nodes and <br>edges interact with each other. Be careful on large graphs.</span>
+                            </v-tooltip>
+                            <v-tooltip left>
+                              <template v-slot:activator="{on, attrs}">
+                                <v-list-item v-on="on" v-bind="attrs">
+                                  <v-list-item-action>
+                                    <v-chip outlined v-if="rankingJid!=null && rankingGid !=null"
+                                            style="margin-top:15px"
+                                            @click="$emit('graphLoadNewTabEvent',{post: {id: rankingGid}})">
+                                      <v-icon left>fas fa-angle-double-right</v-icon>
+                                      To Advanced View
+                                    </v-chip>
+                                  </v-list-item-action>
+                                </v-list-item>
+                              </template>
+                              <span>Opens a new tab with an advanced view of the current network.</span>
+                            </v-tooltip>
+                          </v-list>
+                        </v-container>
+                      </v-card>
+                    </template>
                   </Network>
                 </v-col>
                 <v-col cols="2" style="padding:0">
@@ -891,23 +938,6 @@
                       </template>
                     </v-data-table>
                   </template>
-                </v-col>
-              </v-row>
-              <v-divider style="margin-top:10px"></v-divider>
-              <v-row>
-                <v-col>
-                  <v-chip outlined v-if="rankingJid!=null && rankingGid !=null"
-                          style="margin-top:15px"
-                          @click="$emit('graphLoadNewTabEvent',{post: {id: rankingGid}})">
-                    <v-icon left>fas fa-angle-double-right</v-icon>
-                    Load Result into Advanced View
-                  </v-chip>
-                </v-col>
-                <v-col>
-                  <v-switch label="Physics" v-model="graph.physics" @click="updateGraphPhysics()"
-                            v-if="resultProgress===100">
-                  </v-switch>
-
                 </v-col>
               </v-row>
             </v-container>
@@ -966,6 +996,7 @@ export default {
       suggestionType: undefined,
       fileInputModel: undefined,
       advancedOptions: false,
+      physicsOn: false,
       moduleMethods: [{
         id: "diamond",
         label: "DIAMOnD",

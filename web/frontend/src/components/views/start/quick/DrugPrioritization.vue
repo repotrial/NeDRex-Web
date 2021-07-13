@@ -426,10 +426,10 @@
                 </v-col>
                 <v-col>
                   <Network ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle"
-                         :legend="results.targets.length>0" :secondaryViewer="true"
-                  @loadIntoAdvancedEvent="$emit('graphLoadEvent',{post: {id: jobs[currentJid].result}})">
+                           :legend="results.targets.length>0" :tools="results.targets.length>0" :secondaryViewer="true"
+                           @loadIntoAdvancedEvent="$emit('graphLoadEvent',{post: {id: jobs[currentJid].result}})">
                     <template v-slot:legend v-if="results.targets.length>0">
-                      <v-card style="width: 8vw; max-width: 10vw;padding-top: 35px">
+                      <v-card style="width: 13vw; max-width: 13vw;padding-top: 35px">
                         <v-list>
                           <v-list-item>
                             <v-list-item-icon>
@@ -451,6 +451,55 @@
                         </v-list>
                       </v-card>
                     </template>
+                    <template v-slot:tools v-if="results.targets.length>0">
+                      <v-card elevation="3" style="width: 13vw; max-width: 13vw; padding-top: 35px">
+                        <v-container>
+                          <v-list ref="list" style="margin-top: 10px;">
+                            <v-tooltip left>
+                              <template v-slot:activator="{on, attrs}">
+                                <v-list-item v-on="on" v-bind="attrs">
+                                  <v-list-item-action>
+                                    <v-chip outlined v-on:click="$refs.graph.setSelection()">
+                                      <v-icon left>fas fa-globe</v-icon>
+                                      Overview
+                                    </v-chip>
+                                  </v-list-item-action>
+                                </v-list-item>
+                              </template>
+                              <span>Fits the view to the whole network.</span>
+                            </v-tooltip>
+                            <v-tooltip left>
+                              <template v-slot:activator="{on, attrs}">
+                                <v-list-item v-on="on" v-bind="attrs">
+                                  <v-list-item-action-text>Enable node interactions</v-list-item-action-text>
+                                  <v-list-item-action>
+                                    <v-switch v-model="physicsOn"
+                                              @click="$refs.graph.setPhysics(physicsOn)"></v-switch>
+                                  </v-list-item-action>
+                                </v-list-item>
+                              </template>
+                              <span>This option enables a physics based layouting where nodes and <br>edges interact with each other. Be careful on large graphs.</span>
+                            </v-tooltip>
+                            <v-tooltip left>
+                              <template v-slot:activator="{on, attrs}">
+                                <v-list-item v-on="on" v-bind="attrs">
+                                  <v-list-item-action>
+                                    <v-chip outlined v-if="jobs[currentJid] && jobs[currentJid].result"
+                                            style="margin-top:15px"
+                                            @click="$emit('graphLoadNewTabEvent',{post: {id: jobs[currentJid].result}})">
+                                      <v-icon left>fas fa-angle-double-right</v-icon>
+                                      To Advanced View
+                                    </v-chip>
+                                  </v-list-item-action>
+                                </v-list-item>
+                              </template>
+                              <span>Opens a new tab with an advanced view of the current network.</span>
+                            </v-tooltip>
+                          </v-list>
+                        </v-container>
+                      </v-card>
+                    </template>
+
                   </Network>
                 </v-col>
                 <v-col cols="2" style="padding: 0">
@@ -485,23 +534,6 @@
                       </template>
                     </v-data-table>
                   </template>
-                </v-col>
-              </v-row>
-              <v-divider style="margin-top:10px"></v-divider>
-              <v-row>
-                <v-col>
-                  <v-chip outlined v-if="jobs[currentJid] && jobs[currentJid].result"
-                          style="margin-top:15px"
-                          @click="$emit('graphLoadNewTabEvent',{post: {id: jobs[currentJid].result}})">
-                    <v-icon left>fas fa-angle-double-right</v-icon>
-                    Load Result into Advanced View
-                  </v-chip>
-                </v-col>
-                <v-col>
-                  <v-switch label="Physics" v-model="graph.physics" @click="updateGraphPhysics()"
-                            v-if="results.targets.length>0">
-                  </v-switch>
-
                 </v-col>
               </v-row>
             </v-container>
@@ -558,6 +590,7 @@ export default {
       step: 1,
       suggestionType: undefined,
       fileInputModel: undefined,
+      physicsOn: false,
       methods: [
         {id: "trustrank", label: "TrustRank", scores: [{id: "score", name: "Score", decimal: true}]},
         {id: "centrality", label: "Closeness Centrality", scores: [{id: "score", name: "Score", decimal: true}]}],
@@ -688,7 +721,12 @@ export default {
       this.executeJob(method, params)
     },
     executeJob: function (algorithm, params) {
-      let payload = {userId: this.uid, dbVersion: this.$global.metadata.repotrial.version, algorithm: algorithm, params: params}
+      let payload = {
+        userId: this.uid,
+        dbVersion: this.$global.metadata.repotrial.version,
+        algorithm: algorithm,
+        params: params
+      }
       payload.selection = true
       payload.experimentalOnly = params.experimentalOnly
       payload["nodes"] = this.seeds.map(n => n.id)

@@ -13,7 +13,7 @@
               </v-list-item-action>
             </v-list-item>
           </template>
-          <span>This option enables a physics based layouting where nodes and <br>edges interact with each other. Be careful on large graphs.</span>
+          <span>Fits the view to the whole network.</span>
         </v-tooltip>
         <v-tooltip left>
           <template v-slot:activator="{on, attrs}">
@@ -37,7 +37,7 @@
               </v-list-item-action>
             </v-list-item>
           </template>
-          <span>This option is disabled because there are too many <br>entities in the graph. As a result your browser might crash.</span>
+          <span>Enable or disable the visibility of edges having the same source and target node.</span>
         </v-tooltip>
         <v-tooltip left>
           <template v-slot:activator="{on, attrs}">
@@ -49,18 +49,18 @@
               </v-list-item-action>
             </v-list-item>
           </template>
-          <span>This option is disabled because there are too many <br>entities in the graph. As a result your browser might crash.</span>
+          <span>Enable or disable the visualization of unconnected nodes.</span>
         </v-tooltip>
         <v-tooltip left>
           <template v-slot:activator="{on, attrs}">
             <v-list-item v-on="on" v-bind="attrs">
-              <v-list-item-action-text>Show Unconnected Nodes</v-list-item-action-text>
+              <v-list-item-action-text>Isolate Connected component</v-list-item-action-text>
               <v-list-item-action>
                 <v-switch :disabled="selectedNodeId==null" v-model="isolationOn" @click="emitIsolation()"></v-switch>
               </v-list-item-action>
             </v-list-item>
           </template>
-          <span>This option is disabled because there are too many <br>entities in the graph. As a result your browser might crash.</span>
+          <span>Reduce the visibility to the connected component of the currently selected node only.<br> If no node is selected this option is disabled.</span>
         </v-tooltip>
       </v-list>
     </v-container>

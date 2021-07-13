@@ -257,8 +257,12 @@ export default {
         this.edgeSet = new DataSet(edges);
     },
     setNodes: function (nodes) {
-      if (nodes != null)
+      if (nodes != null) {
+        for (let i = 0; i < nodes.length; i++) {
+          nodes[i].title=nodes[i].label
+        }
         this.nodeSet = new DataSet(nodes);
+      }
     },
     setOptions: function (options) {
       if (options != null) {
