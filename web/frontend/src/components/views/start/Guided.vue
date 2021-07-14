@@ -5,7 +5,8 @@
         Guided Exploration
       </v-card-title>
     </div>
-    <v-card-subtitle> Use the <b>Guided Exploration</b> to create a network based on specific <b><i>start</i></b> and <b><i>target</i></b> nodes types.
+    <v-card-subtitle> Use the <b>Guided Exploration</b> to create a network based on specific <b><i>start</i></b> and
+      <b><i>target</i></b> nodes types.
       Select a <b><i>path</i></b> connecting these metanodes and control the result through additional parameters.
     </v-card-subtitle>
     <v-stepper
@@ -357,9 +358,10 @@
               </v-col>
               <v-col>
                 <Network ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle"
-                       :legend="$refs.graph!==undefined && $refs.graph.isVisualized()" secondaryViewer="true" @loadIntoAdvancedEvent="$emit('graphLoadEvent',{post: {id: gid}})">
+                         :legend="$refs.graph!==undefined" :tools="$refs.graph!==undefined" secondaryViewer="true"
+                         @loadIntoAdvancedEvent="$emit('graphLoadEvent',{post: {id: gid}})">
                   <template v-slot:legend>
-                    <v-card style="width: 11vw; max-width: 11vw; padding-top: 35px" v-if="info!==undefined">
+                    <v-card style="width: 13vw; max-width: 13vw; padding-top: 35px" v-if="info!==undefined">
                       <v-list>
                         <v-list-item v-for="node in Object.keys(info.nodes)" :key="node">
                           <v-list-item-icon>
@@ -373,6 +375,55 @@
                       </v-list>
                     </v-card>
                   </template>
+                  <template v-slot:tools v-if="$refs.graph!==undefined">
+                    <v-card elevation="3" style="width: 13vw; max-width: 13vw; padding-top: 35px">
+                      <v-container>
+                        <v-list ref="list" style="margin-top: 10px;">
+                          <v-tooltip left>
+                            <template v-slot:activator="{on, attrs}">
+                              <v-list-item v-on="on" v-bind="attrs">
+                                <v-list-item-action>
+                                  <v-chip outlined v-on:click="$refs.graph.setSelection()">
+                                    <v-icon left>fas fa-globe</v-icon>
+                                    Overview
+                                  </v-chip>
+                                </v-list-item-action>
+                              </v-list-item>
+                            </template>
+                            <span>Fits the view to the whole network.</span>
+                          </v-tooltip>
+                          <v-tooltip left>
+                            <template v-slot:activator="{on, attrs}">
+                              <v-list-item v-on="on" v-bind="attrs">
+                                <v-list-item-action-text>Enable node interactions</v-list-item-action-text>
+                                <v-list-item-action>
+                                  <v-switch v-model="physicsOn"
+                                            @click="$refs.graph.setPhysics(physicsOn)"></v-switch>
+                                </v-list-item-action>
+                              </v-list-item>
+                            </template>
+                            <span>This option enables a physics based layouting where nodes and <br>edges interact with each other. Be careful on large graphs.</span>
+                          </v-tooltip>
+                          <v-tooltip left>
+                            <template v-slot:activator="{on, attrs}">
+                              <v-list-item v-on="on" v-bind="attrs">
+                                <v-list-item-action>
+                                  <v-chip outlined v-if="gid!==undefined"
+                                          style="margin-top:10px"
+                                          @click="$emit('graphLoadNewTabEvent',{post: {id: gid}})">
+                                    <v-icon left>fas fa-angle-double-right</v-icon>
+                                    To Advanced View
+                                  </v-chip>
+                                </v-list-item-action>
+                              </v-list-item>
+                            </template>
+                            <span>Opens a new tab with an advanced view of the current network.</span>
+                          </v-tooltip>
+                        </v-list>
+                      </v-container>
+                    </v-card>
+                  </template>
+
                 </Network>
               </v-col>
               <v-col cols="2" style="padding: 0 10px 0 0">
@@ -408,22 +459,6 @@
                     </template>
                   </v-data-table>
                 </template>
-              </v-col>
-            </v-row>
-            <v-divider style="margin-top:10px"></v-divider>
-            <v-row>
-              <v-col>
-                <v-chip outlined v-if="gid!==undefined"
-                        style="margin-top:10px"
-                        @click="$emit('graphLoadNewTabEvent',{post: {id: gid}})">
-                  <v-icon left>fas fa-angle-double-right</v-icon>
-                  Load Result into Advanced View
-                </v-chip>
-              </v-col>
-              <v-col>
-                <v-switch label="Physics" v-model="graph.physics" @click="$refs.graph.setPhysics(graph.physics)"
-                          v-if="$refs.graph!==undefined && $refs.graph.isVisualized()">
-                </v-switch>
               </v-col>
             </v-row>
           </v-card>
@@ -474,6 +509,7 @@ export default {
       nodeList: [],
       nodeIdTypeList: [],
       selectedPath: [],
+      physicsOn: false,
 
       suggestionType: [undefined, undefined],
       pathModel: -1,
@@ -801,7 +837,7 @@ export default {
         if (this.$refs.graph !== undefined)
           this.$refs.graph.reload()
         this.init()
-        this.$emit('printNotificationEvent',"Reset of the Guided Exploration pipeline successfull!",1)
+        this.$emit('printNotificationEvent', "Reset of the Guided Exploration pipeline successfull!", 1)
       }
       if (this.step === 3)
         this.submitGraphGeneration()
