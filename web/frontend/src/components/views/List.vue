@@ -2037,7 +2037,13 @@ export default {
     },
     executeAlgorithm: function (algorithm, params) {
       this.filterNodeModel = null
-      let payload = {userId: this.uid,dbVersion: this.$global.metadata.repotrial.version, graphId: this.gid, algorithm: algorithm, params: params}
+      let payload = {
+        userId: this.uid,
+        dbVersion: this.$global.metadata.repotrial.version,
+        graphId: this.gid,
+        algorithm: algorithm,
+        params: params
+      }
       payload.selection = params.selection
       payload.experimentalOnly = params.experimentalOnly
       if (params.selection)
@@ -2083,6 +2089,7 @@ export default {
         this.selectDependentNodes(name, [item])
       this.$emit("reloadSide")
     },
+
     focus: function (entity, tabId) {
       if (entity === "nodes") {
         this.nodeTab = tabId;
@@ -2095,6 +2102,21 @@ export default {
     scrollFocus: function (refName) {
       let element = this.$refs[refName];
       element.scrollIntoView()
+    },
+    toggleNodes: function (nodeList) {
+      this.printNotification("Rewrite selection system!",2)
+      // let inactive = false;
+      // let nodes = []
+      // nodeList.forEach(n => {
+      //   let node = this.nodes[n.group].filter(n2 => n2.id === n.id)[0]
+      //   if (!node.selected) {
+      //     inactive = true
+      //   }
+      //   nodes.push(node);
+      // })
+      // nodes.forEach(n => this.$set(n,"selected",!inactive))
+      // // this.nodes.map(id=>{id:id.substring(4), nodeType:["gene","protein";""]})
+      // console.log(this.nodes)
     }
   }
 }

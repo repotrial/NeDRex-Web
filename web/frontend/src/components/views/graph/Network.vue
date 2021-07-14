@@ -153,6 +153,7 @@ export default {
       sizeDialog: false,
       progressText: undefined,
       disableAdvancedLoading: false,
+      clickParams: {t0: 0, threshold: 250},
     }
   },
 
@@ -259,7 +260,7 @@ export default {
     setNodes: function (nodes) {
       if (nodes != null) {
         for (let i = 0; i < nodes.length; i++) {
-          nodes[i].title=nodes[i].label
+          nodes[i].title = nodes[i].label
         }
         this.nodeSet = new DataSet(nodes);
       }
@@ -380,6 +381,9 @@ export default {
           this.setVisualized(true)
           this.$emit("visualizationEvent")
         }
+        if (this.$refs.network != null) {
+          console.log(this.$refs.network)
+        }
       }
     },
     readGIDfromRoute: function () {
@@ -407,11 +411,26 @@ export default {
       return this.options.physics.enabled;
     },
 
+    onDoubleClick: function (params) {
+      if(params==null)
+        return
+      if(params.nodes.length>0){
+        this.$emit("toggleNodeSelectEvent",params.nodes.map(id=>this.$refs.network.getNode(id)).map(n=>{ return {id:parseInt(n.id.substring(4)),group:n.group}}))
+      }else if(params.edges.length>0){
+        console.log(params)
+      }
+    },
+
     onClick: function (params) {
+      let t = new Date().getTime()
+      if ((t-this.clickParams.t0) < this.clickParams.threshold) {
+        this.onDoubleClick(params)
+      }
+      this.clickParams.t0 = t;
       let selection = params.nodes.length > 0 || params.edges.length > 0;
       if (selection) {
-        if(params.edges.length>0)
-          params.edges = params.edges.map(id=>this.$refs.network.getEdge(id))
+        if (params.edges.length > 0)
+          params.edges = params.edges.map(id => this.$refs.network.getEdge(id))
         this.$emit('selectionEvent', params)
       } else {
         this.$emit('selectionEvent')

@@ -356,7 +356,7 @@
         <v-list-item @click="show.info=!show.info">
           <v-list-item-title>
             <v-icon left>{{ show.info ? "far fa-minus-square" : "far fa-plus-square" }}</v-icon>
-            Information
+            Neighborhood
           </v-list-item-title>
         </v-list-item>
         <v-divider></v-divider>

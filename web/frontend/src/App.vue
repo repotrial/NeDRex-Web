@@ -58,6 +58,7 @@
                 @visualizationEvent="visualizationEvent"
                 @disableLoadingEvent="disableLoadingEvent(1)"
                 @disablePhysicsEvent="disablePhysics"
+                @toggleNodeSelectEvent="toggleNodeSelection"
               >
                 <template v-slot:legend>
                   <Legend v-if="showLegend" :countMap="options.list.countMap" ref="legend"
@@ -603,10 +604,12 @@ export default {
         this.$refs.list.deselectAll(type)
       if (operation === "induced")
         this.$refs.list.selectEdges()
+    },
+    toggleNodeSelection: function(nodes){
+     this.$refs.list.toggleNodes(nodes)
     }
     ,
-    evalPostInfo: function (info, tab) {
-      //TODO move to graph view
+    evalPostInfo: function (info) {
       let sum = 0
       for (let n in info.nodes)
         sum += info.nodes[n];
