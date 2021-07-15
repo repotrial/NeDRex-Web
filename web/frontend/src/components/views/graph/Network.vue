@@ -160,20 +160,10 @@ export default {
   created() {
     this.physics = false
     this.colors = {bar: {backend: "#6db33f", vis: 'primary', error: 'red darken-2'}}
-    // this.hideEdges = false
-    // this.dialog = false
     this.configuration.visualized = false
     this.init()
     if (this.startGraph)
       this.initStartGraph()
-    // this.skipVis = true
-    // if (!this.startGraph) {
-    //   this.gid = this.$route.params["gid"]
-    //   if (this.gid !== undefined)
-    //     this.init()
-    // } else {
-    //   this.waiting = false
-    // }
   },
 
   methods: {
@@ -562,6 +552,22 @@ export default {
       this.edgeSet.update(updates)
     },
 
+    setEdgeVisible: function(name,state, loops){
+      let updates = Object.values(this.edgeSet.get({
+          filter: function (item) {
+            return item.title === name
+          }
+        }
+      )).map(item => {
+        return {id: item.id, hidden: !state, physics: state}
+      })
+      this.edgeSet.update(updates)
+      if(state && !loops){
+        console.log("disabling loops")
+        this.showLoops(false)
+      }
+    },
+
     identifyNeighbors: function (selected) {
       let neighbors = []
       this.getConnectedNodes(selected).forEach(n => {
@@ -577,12 +583,13 @@ export default {
     ,
 
     graphViewEvent: function (data) {
+      console.log(data)
       if (data.event === "toggle") {
         let params = data.params;
         if (params.type === "nodes")
           this.hideGroupVisibility(params.name, params.state, true)
         else if (params.type === "edges")
-          this.toggleEdgeVisible(params.name)
+          this.setEdgeVisible(params.name, !params.state,params.loops)
       }
       if (data.event === "isolate") {
         this.showOnlyComponent(data.selected, data.state)

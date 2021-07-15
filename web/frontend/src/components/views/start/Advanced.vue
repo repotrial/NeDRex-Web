@@ -208,7 +208,7 @@ export default {
         if (e.type === "node") {
           this.$refs.startgraph.hideGroupVisibility(this.nodes[e.index].label.toLowerCase(), true)
         } else
-          this.$refs.startgraph.toggleEdgeVisible(this.edges[e.index].label)
+          this.$refs.startgraph.setEdgeVisible(this.edges[e.index].label,false)
       })
       this.nodeModel = []
       this.edgeModel = []
@@ -329,7 +329,7 @@ export default {
         if (params.type === "nodes")
           this.hideGroupVisibility(params.name, params.state, true)
         else if (params.type === "edges")
-          this.toggleEdgeVisible(params.name)
+          this.setEdgeVisible(params.name,true)
       }
       if (data.event === "isolate") {
         this.showOnlyComponent(data.selected, data.state)
@@ -358,7 +358,7 @@ export default {
     },
     toggleEdge: function (edgeIndex) {
       let index = this.edgeModel.indexOf(edgeIndex)
-      this.$refs.startgraph.toggleEdgeVisible(this.edges[edgeIndex].label)
+      this.$refs.startgraph.setEdgeVisible(this.edges[edgeIndex].label,!this.edges[edgeIndex].hidden,true)
       if (index >= 0) {
         let remove = -1;
         let restDepending = []

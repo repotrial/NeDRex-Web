@@ -814,6 +814,8 @@ export default {
     }
     ,
     graphViewEvent: function (data) {
+      if(this.$refs.tools!=null && data.params!=null)
+        data.params.loops=this.$refs.tools.isLoops()
       this.$refs.graph.graphViewEvent(data)
     }
     ,

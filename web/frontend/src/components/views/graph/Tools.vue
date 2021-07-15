@@ -101,6 +101,9 @@ export default {
         selected: this.selectedNodeId,
         state: this.isolationOn
       })
+    },
+    isLoops: function(){
+      return this.loopsOn;
     }
   }
 }
