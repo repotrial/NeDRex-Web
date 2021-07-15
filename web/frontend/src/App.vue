@@ -433,7 +433,6 @@ export default {
 
     setSideVisible: function (bool) {
       this.sideHidden = !bool
-      console.log("Side=" + bool)
     }
     ,
     visualizationEvent: function () {
