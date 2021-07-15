@@ -1082,7 +1082,7 @@ export default {
           return response.data
       }).then(data => {
         this.configuration.entityGraph = data
-        this.reloadCountMap()
+        this.reloadCountMap(true)
         this.loading = false
         this.$emit("loadLegendEvent", true)
       })
@@ -1229,8 +1229,8 @@ export default {
         tmp = this.edgeTab
         this.edgeTab = -1
         this.edgeTab = tmp
-        this.$refs.nodeTab.$forceUpdate()
-        this.$refs.edgeTab.$forceUpdate()
+        // this.$refs.nodeTab.$forceUpdate()
+        // this.$refs.edgeTab.$forceUpdate()
       })
     },
     countSelected: function (type, name) {
@@ -1727,12 +1727,6 @@ export default {
           }
         })
       }
-      this.$nextTick().then(() => {
-        if ("nodes" === type)
-          this.$refs.nodeTab.$forceUpdate()
-        else
-          this.$refs.edgeTab.$forceUpdate()
-      })
     },
 
     unselect: function (type, name, ids) {
@@ -1751,41 +1745,10 @@ export default {
           }
         })
       }
-      this.$nextTick().then(() => {
-        if ("nodes" === type)
-          this.$refs.nodeTab.$forceUpdate()
-        else
-          this.$refs.edgeTab.$forceUpdate()
-      })
     },
 
     selectDependentNodes: function (type, edges) {
       this.setDependentNodeSelection(type, edges, true)
-      // let nodes = this.$utils.getNodesExtended(this.configuration.entityGraph, type)
-      // let nodeName1 = nodes[0];
-      // let nodeName2 = nodes[1];
-      // let nodeTab1 = Object.keys(this.attributes.nodes).indexOf(nodeName1)
-      // let nodeTab2 = Object.keys(this.attributes.nodes).indexOf(nodeName2)
-      // let nodeIds1 = []
-      // let nodeIds2 = []
-      // edges.forEach(edge => {
-      //   let ids = (edge.id !== undefined ? edge.id : edge.ID).split("-");
-      //   nodeIds1.push(parseInt(ids[0]))
-      //   nodeIds2.push(parseInt(ids[1]))
-      // })
-      // this.nodes[nodeName1].filter(n => nodeIds1.indexOf(n.id) > -1 && !n.selected).forEach(n => {
-      //   if (!n.selected) {
-      //     n.selected = true
-      //     this.countClick('nodes', nodeTab1, true)
-      //   }
-      // })
-      //
-      // this.nodes[nodeName2].filter(n => nodeIds2.indexOf(n.id) > -1 && !n.selected).forEach(n => {
-      //   if (!n.selected) {
-      //     n.selected = true
-      //     this.countClick('nodes', nodeTab2, true)
-      //   }
-      // })
     },
 
     setDependentNodeSelection: function (type, edges, state) {
@@ -1819,35 +1782,35 @@ export default {
       let isDistinct = this.isDistinctAttribute(type, this.filters[type].attribute.name)
       if (isDistinct) {
         this.distinctFilter(type, items, tab).forEach(item => {
-          item.selected = true
+          this.$set(item, "selected", true)
+          // item.selected = true
         })
       } else {
         let filterActive = this.filters[type].attribute.name !== undefined && this.filters[type].attribute.name.length > 0 && this.filters[type].query !== null && this.filters[type].query.length > 0 && this.filters[type].attribute.operator !== undefined && this.filters[type].attribute.operator.length > 0
         items.forEach(item => {
             if (type === "nodes") {
               if (!filterActive || (filterActive && this.filterNode(undefined, this.filters[type].query, item)))
-                item.selected = true;
+                this.$set(item, "selected", true)
+              // item.selected = true;
             } else if (!filterActive || (filterActive && this.filterEdge(undefined, this.filters[type].query, item)))
-              item.selected = true
+              this.$set(item, "selected", true)
+            // item.selected = true
           }
         )
       }
       if (type === "edges")
         this.selectDependentNodes(name, items)
-      this.$nextTick().then(() => {
-        this.reloadCountMap()
-      }).then(() => {
-        if ("edges" === type)
-          this.$refs.edgeTab.$forceUpdate()
-        this.$refs.nodeTab.$forceUpdate()
-      })
+      this.reloadCountMap()
+      this.$refs.nodeTab.$forceUpdate();
+      if (type !== "nodes")
+        this.$refs.edgeTab.$forceUpdate();
     }
     ,
     deselectAll: function (type) {
       let data = {nodes: this.nodes, edges: this.edges}
       if (type === "all") {
         this.filterNodeModel = null
-        this.$nextTick(() => Object.values(data).forEach(set => Object.values(set).forEach(type => type.forEach(n => this.$set(n, "selected", false)))))
+        Object.values(data).forEach(set => Object.values(set).forEach(type => type.forEach(n => this.$set(n,"selected",false))))
       } else {
         let tab = (type === "nodes") ? this.nodeTab : this.edgeTab
         let items = data[type][Object.keys(data[type])[tab]]
@@ -1867,14 +1830,10 @@ export default {
           })
         }
       }
-
-      this.$nextTick().then(() => {
-        this.reloadCountMap()
-        if ("nodes" === type)
-          this.$refs.nodeTab.$forceUpdate()
-        else
-          this.$refs.edgeTab.$forceUpdate()
-      })
+      this.reloadCountMap()
+      this.$refs.nodeTab.$forceUpdate();
+      if (type !== "nodes")
+        this.$refs.edgeTab.$forceUpdate();
     }
     ,
     nodeDetails: function (nodeId) {
@@ -2045,27 +2004,27 @@ export default {
       let objects = Object.values(this[entity]);
       return objects === undefined || objects.length === 0 ? 0 : objects.map(e => e !== undefined ? e.length : 0).reduce((i, j) => i + j)
     },
-    reloadCountMap: function () {
+    reloadCountMap: function (full) {
       this.configuration.countMap.nodes = this.getCountMap("nodes")
       this.configuration.countMap.edges = this.getCountMap("edges");
 
       if (Object.values(this.configuration.countMap.nodes).length > 0) {
-        this.configuration.total = Object.values(this.configuration.countMap.nodes).map(o => o.total).reduce((i, s) => i + s)
+        if (full)
+          this.configuration.total = Object.values(this.configuration.countMap.nodes).map(o => o.total).reduce((i, s) => i + s)
         this.configuration.selected = Object.values(this.configuration.countMap.nodes).map(o => o.selected).reduce((i, s) => i + s)
       }
       if (Object.values(this.configuration.countMap.edges).length > 0) {
+        if (full)
+          this.configuration.total += Object.values(this.configuration.countMap.edges).map(o => o.total).reduce((i, s) => i + s)
         this.configuration.selected += Object.values(this.configuration.countMap.edges).map(o => o.selected).reduce((i, s) => i + s)
-        this.configuration.total += Object.values(this.configuration.countMap.edges).map(o => o.total).reduce((i, s) => i + s)
       }
       this.$emit("reloadSide")
-      if (this.$refs.info !== undefined) {
-        this.$refs.info.$forceUpdate()
-      }
     },
     getCountMap: function (entity) {
       let out = {}
-      Object.keys(this[entity]).forEach(k =>
-        out[k] = {name: k, total: this[entity][k].length, selected: this.filterSelected(this[entity][k]).length}
+      Object.keys(this[entity]).forEach(k => {
+          out[k] = {name: k, total: this[entity][k].length, selected: this.filterSelected(this[entity][k]).length}
+        }
       )
       return out
     },
@@ -2175,7 +2134,6 @@ export default {
         } else {
           this.unselect("edges", group, edges[group])
         }
-        //TODO inactive===false does not work
         this.setDependentNodeSelection(group, combinedIds[group], inactive)
       })
       this.reloadCountMap()
