@@ -122,7 +122,7 @@
                       v-on:click="$emit('selectionEvent','all','none')"
                     >
                       <v-icon left color="red">fas fa-trash</v-icon>
-                      Unselect All
+                      Deselect All
                     </v-chip>
                   </v-col>
                   <v-col>
@@ -205,7 +205,7 @@
                     v-on:click="$emit('selectionEvent','nodes','none')"
                   >
                     <v-icon left>fas fa-ban</v-icon>
-                    Unselect All Nodes
+                    Deselect All Nodes
                   </v-chip>
                 </v-list-item>
               </template>
@@ -227,7 +227,7 @@
                     v-on:click="$emit('selectionEvent','edges','none')"
                   >
                     <v-icon left>fas fa-ban</v-icon>
-                    Unselect All Edges
+                    Deselect All Edges
                   </v-chip>
                 </v-list-item>
               </template>
@@ -235,13 +235,13 @@
             <template v-if="selectedTab===3">
               <v-list-item>
                 <v-switch v-model="options.history.favos" label="Favourites Only"
-                          @click="$forceUpdate; $emit('historyReloadEvent')">
+                          @click="$emit('historyReloadEvent')">
                 </v-switch>
 
               </v-list-item>
               <v-list-item>
                 <v-switch v-model="options.history.chronological" label="Show Chronological"
-                          @click="$forceUpdate(); $emit('historyReloadEvent')"></v-switch>
+                          @click="$emit('historyReloadEvent')"></v-switch>
               </v-list-item>
               <v-list v-show="options.history.chronological">
                 <v-list-item>

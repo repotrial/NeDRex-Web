@@ -108,7 +108,7 @@
                   </v-row>
                   <v-row dense>
                     <v-col cols="1">
-                      <v-btn icon :color="this.selected.method!=null ? 'green':'primary'" x-large
+                      <v-btn icon :color="selected.method!=null ? 'green':'primary'" x-large
                              style="background-color: white; margin-top: 5px;" @click="loadGraph(selectedId)">
                         <v-icon>far fa-play-circle</v-icon>
                       </v-btn>
@@ -452,7 +452,8 @@ export default {
     },
 
     toggleStar: function () {
-      this.selected.starred = !this.selected.starred;
+      this.$set(this.selected,"starred",!this.selected.starred);
+      this.$set(this.list.filter(e=>e.id===this.selectedId)[0],"starred",this.selected.starred)
       this.$http.get("toggleStarred?uid=" + this.$cookies.get("uid") + "&gid=" + this.selectedId).catch(console.log)
     },
 
