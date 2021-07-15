@@ -18,7 +18,7 @@
             <v-col>
               <v-list v-if="attributes.nodes !=null">
                 <v-list-item>
-                  <b>Nodes ({{ getCounts('nodes') }})</b>
+                  <b>Nodes ({{ getTotalCounts('nodes') }})</b>
                 </v-list-item>
                 <v-list-item v-for="node in Object.values(configuration.countMap.nodes)"
                              :key="node.name">
@@ -33,7 +33,7 @@
             <v-col>
               <v-list v-if="attributes.edges!=null">
                 <v-list-item>
-                  <b>Edges ({{ getCounts('edges') }})</b>
+                  <b>Edges ({{ getTotalCounts('edges') }})</b>
                 </v-list-item>
                 <v-list-item v-for="edge in Object.values(configuration.countMap.edges)" :key="edge.name">
                   <v-chip outlined @click="focus('edges',Object.keys(attributes.edges).indexOf(edge.name))">
@@ -1115,9 +1115,7 @@ export default {
         this.select("nodes", group, selectionMap[group])
       })
       this.reloadCountMap()
-
-    }
-    ,
+    },
     receiveEvent: function (event) {
       switch (event) {
         case "collapse":
@@ -1712,10 +1710,8 @@ export default {
       }).catch(err => {
         console.log(err)
       })
-    }
-    ,
+    },
     select: function (type, name, ids) {
-      // let data = {nodes: this.nodes, edges: this.edges}
       let items = this[type][name]
       if (type === "nodes")
         items.forEach(item => {
@@ -1738,7 +1734,61 @@ export default {
           this.$refs.edgeTab.$forceUpdate()
       })
     },
+
+    unselect: function (type, name, ids) {
+      let items = this[type][name]
+      if (type === "nodes")
+        items.forEach(item => {
+          if (ids.indexOf(item.id) !== -1)
+            item.selected = false;
+        })
+      else {
+        items.forEach(item => {
+          let id = item.id.split("-")
+          let node2s = ids[parseInt(id[0])]
+          if (node2s !== undefined && node2s.indexOf(parseInt(id[1])) !== -1) {
+            item.selected = false;
+          }
+        })
+      }
+      this.$nextTick().then(() => {
+        if ("nodes" === type)
+          this.$refs.nodeTab.$forceUpdate()
+        else
+          this.$refs.edgeTab.$forceUpdate()
+      })
+    },
+
     selectDependentNodes: function (type, edges) {
+      this.setDependentNodeSelection(type, edges, true)
+      // let nodes = this.$utils.getNodesExtended(this.configuration.entityGraph, type)
+      // let nodeName1 = nodes[0];
+      // let nodeName2 = nodes[1];
+      // let nodeTab1 = Object.keys(this.attributes.nodes).indexOf(nodeName1)
+      // let nodeTab2 = Object.keys(this.attributes.nodes).indexOf(nodeName2)
+      // let nodeIds1 = []
+      // let nodeIds2 = []
+      // edges.forEach(edge => {
+      //   let ids = (edge.id !== undefined ? edge.id : edge.ID).split("-");
+      //   nodeIds1.push(parseInt(ids[0]))
+      //   nodeIds2.push(parseInt(ids[1]))
+      // })
+      // this.nodes[nodeName1].filter(n => nodeIds1.indexOf(n.id) > -1 && !n.selected).forEach(n => {
+      //   if (!n.selected) {
+      //     n.selected = true
+      //     this.countClick('nodes', nodeTab1, true)
+      //   }
+      // })
+      //
+      // this.nodes[nodeName2].filter(n => nodeIds2.indexOf(n.id) > -1 && !n.selected).forEach(n => {
+      //   if (!n.selected) {
+      //     n.selected = true
+      //     this.countClick('nodes', nodeTab2, true)
+      //   }
+      // })
+    },
+
+    setDependentNodeSelection: function (type, edges, state) {
       let nodes = this.$utils.getNodesExtended(this.configuration.entityGraph, type)
       let nodeName1 = nodes[0];
       let nodeName2 = nodes[1];
@@ -1751,18 +1801,14 @@ export default {
         nodeIds1.push(parseInt(ids[0]))
         nodeIds2.push(parseInt(ids[1]))
       })
-      this.nodes[nodeName1].filter(n => nodeIds1.indexOf(n.id) > -1 && !n.selected).forEach(n => {
-        if (!n.selected) {
-          n.selected = true
-          this.countClick('nodes', nodeTab1, true)
-        }
+      this.nodes[nodeName1].filter(n => nodeIds1.indexOf(n.id) > -1 && n.selected !== state).forEach(n => {
+        n.selected = state
+        this.countClick('nodes', nodeTab1, state)
       })
 
-      this.nodes[nodeName2].filter(n => nodeIds2.indexOf(n.id) > -1 && !n.selected).forEach(n => {
-        if (!n.selected) {
-          n.selected = true
-          this.countClick('nodes', nodeTab2, true)
-        }
+      this.nodes[nodeName2].filter(n => nodeIds2.indexOf(n.id) > -1 && n.selected !== state).forEach(n => {
+        n.selected = state
+        this.countClick('nodes', nodeTab2, state)
       })
     },
 
@@ -1995,7 +2041,7 @@ export default {
         console.log(err)
       })
     },
-    getCounts: function (entity) {
+    getTotalCounts: function (entity) {
       let objects = Object.values(this[entity]);
       return objects === undefined || objects.length === 0 ? 0 : objects.map(e => e !== undefined ? e.length : 0).reduce((i, j) => i + j)
     },
@@ -2103,21 +2149,57 @@ export default {
       let element = this.$refs[refName];
       element.scrollIntoView()
     },
+    toggleEdges: function (edgeList) {
+      this.printNotification("Rewrite selection system!", 2)
+      let inactive = false;
+      let edges = {};
+      let combinedIds = {};
+      edgeList.forEach(e => {
+        let id1 = parseInt(e.from.substring(4))
+        let id2 = parseInt(e.to.substring(4))
+        let combid = id1 + "-" + id2
+        if (edges[e.group] === undefined) {
+          edges[e.group] = {}
+          combinedIds[e.group] = []
+        }
+        combinedIds[e.group].push({id: combid})
+        if (edges[e.group][id1] === undefined)
+          edges[e.group][id1] = []
+        edges[e.group][id1].push(id2)
+        if (!this.edges[e.group].filter(e2 => e2.id === combid)[0].selected)
+          inactive = true;
+      })
+      Object.keys(edges).forEach(group => {
+        if (inactive) {
+          this.select("edges", group, edges[group])
+        } else {
+          this.unselect("edges", group, edges[group])
+        }
+        //TODO inactive===false does not work
+        this.setDependentNodeSelection(group, combinedIds[group], inactive)
+      })
+      this.reloadCountMap()
+    },
     toggleNodes: function (nodeList) {
-      this.printNotification("Rewrite selection system!",2)
-      // let inactive = false;
-      // let nodes = []
-      // nodeList.forEach(n => {
-      //   let node = this.nodes[n.group].filter(n2 => n2.id === n.id)[0]
-      //   if (!node.selected) {
-      //     inactive = true
-      //   }
-      //   nodes.push(node);
-      // })
-      // nodes.forEach(n => this.$set(n,"selected",!inactive))
-      // // this.nodes.map(id=>{id:id.substring(4), nodeType:["gene","protein";""]})
-      // console.log(this.nodes)
-    }
+      let inactive = false;
+      let nodes = {}
+      nodeList.forEach(n => {
+        if (nodes[n.group] == null)
+          nodes[n.group] = []
+        nodes[n.group].push(n.id);
+        if (!this.nodes[n.group].filter(n2 => n2.id === n.id)[0].selected) {
+          inactive = true
+        }
+      })
+      Object.keys(nodes).forEach(group => {
+        if (inactive) {
+          this.select("nodes", group, nodes[group])
+        } else {
+          this.unselect("nodes", group, nodes[group])
+        }
+        this.reloadCountMap()
+      })
+    },
   }
 }
 </script>

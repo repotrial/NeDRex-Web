@@ -59,6 +59,7 @@
                 @disableLoadingEvent="disableLoadingEvent(1)"
                 @disablePhysicsEvent="disablePhysics"
                 @toggleNodeSelectEvent="toggleNodeSelection"
+                @toggleedgeSelectEvent="toggleEdgeSelection"
               >
                 <template v-slot:legend>
                   <Legend v-if="showLegend" :countMap="options.list.countMap" ref="legend"
@@ -396,9 +397,6 @@ export default {
         this.selectTab(3, true)
       }
 
-      console.log(path)
-
-      //TODO set start graph based on params
     }
     ,
     selectionColorSelect: function () {
@@ -607,6 +605,9 @@ export default {
     },
     toggleNodeSelection: function(nodes){
      this.$refs.list.toggleNodes(nodes)
+    },
+    toggleEdgeSelection: function(edges){
+      this.$refs.list.toggleEdges(edges)
     }
     ,
     evalPostInfo: function (info) {
@@ -708,7 +709,6 @@ export default {
     }
     ,
     loadSelection: function (params) {
-      console.log(params)
       if (params != null && params.nodes != null && params.nodes.length >0) {
         this.$refs.tools.setSelectedNodeId(params.nodes[0])
         this.$refs.side.loadSelection(this.$refs.graph.identifyNeighbors(params.nodes[0]))

@@ -417,7 +417,7 @@ export default {
       if(params.nodes.length>0){
         this.$emit("toggleNodeSelectEvent",params.nodes.map(id=>this.$refs.network.getNode(id)).map(n=>{ return {id:parseInt(n.id.substring(4)),group:n.group}}))
       }else if(params.edges.length>0){
-        console.log(params)
+        this.$emit("toggleedgeSelectEvent",params.edges.map(id=>this.$refs.network.getEdge(id)).map(e=>{return {from:e.from, to:e.to, group: e.title}}))
       }
     },
 
