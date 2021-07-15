@@ -249,7 +249,7 @@
                   </v-row>
 
                 </template>
-                <template v-slot:item.actions="{item}">
+                <template v-slot:item.info="{item}">
                   <v-row>
                     <v-col cols="1">
                       <v-tooltip right>
@@ -471,26 +471,8 @@
                     {{ item.idTwo }}
                   </template>
                 </template>
-                <template v-slot:item.actions="{item}">
+                <template v-slot:item.info="{item}">
                   <v-row>
-                    <!--                    <v-col cols="1">-->
-                    <!--                      <v-tooltip right>-->
-                    <!--                        <template v-slot:activator="{ on, attrs }">-->
-                    <!--                          <v-icon-->
-                    <!--                            small-->
-                    <!--                            left-->
-                    <!--                            color="primary"-->
-                    <!--                            dark-->
-                    <!--                            v-bind="attrs"-->
-                    <!--                            v-on="on"-->
-                    <!--                            v-on:click="showInGraph('node',item)"-->
-                    <!--                          >-->
-                    <!--                            fas fa-project-diagram-->
-                    <!--                          </v-icon>-->
-                    <!--                        </template>-->
-                    <!--                        <span>Focus in graph</span>-->
-                    <!--                      </v-tooltip>-->
-                    <!--                    </v-col>-->
                     <v-col cols="1">
                       <v-tooltip right>
                         <template v-slot:activator="{ on, attrs }">
@@ -1890,7 +1872,7 @@ export default {
         })
       })
       this.update[entity] = false;
-      out.push({text: "actions", align: 'start', sortable: false, value: "actions"})
+      out.push({text: "Info", align: 'start', sortable: false, value: "info"})
       return out
     }
     ,
@@ -1901,7 +1883,7 @@ export default {
       let idx = out.indexOf("Select")
       if (idx > -1)
         out.splice(idx, 1)
-      idx = out.indexOf("actions")
+      idx = out.indexOf("info")
       if (idx > -1)
         out.splice(idx, 1)
       return out;
