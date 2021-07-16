@@ -122,7 +122,10 @@ export default {
   },
   methods: {
     reload: function () {
-      this.gid = this.$route.params["gid"]
+      let newGid = this.$route.params["gid"]
+      if(this.gid===newGid)
+        return
+      this.gid = newGid
       this.loadJobs()
     },
     loadJobs: function () {
@@ -141,6 +144,7 @@ export default {
         })
         this.graphjobs.sort(this.sortJobs)
         this.jobs.sort(this.sortJobs)
+        console.log(this.jobs)
       }).catch(console.log)
 
     },

@@ -1080,8 +1080,9 @@ public class WebGraphService {
                     } catch (NullPointerException ignore) {
                     }
                 });
+                //Remove duplicates
                 g.getEdges().get(edgeId).forEach(e -> {
-                    if (edges.containsKey(e.getId1()) && edges.get(e.getId2()).contains(e.getId2()))
+                    if (edges.containsKey(e.getId1()))
                         edges.get(e.getId1()).remove(e.getId2());
                 });
                 edges.forEach((id1, l) -> l.forEach(id2 -> g.getEdges().get(edgeId).add(new Edge(id1, id2))));
