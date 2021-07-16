@@ -14,9 +14,7 @@ import de.exbio.reposcapeweb.configs.VisConfig;
 import de.exbio.reposcapeweb.db.DbCommunicationService;
 import de.exbio.reposcapeweb.db.entities.RepoTrialNode;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
-import de.exbio.reposcapeweb.db.entities.nodes.Drug;
-import de.exbio.reposcapeweb.db.entities.nodes.Gene;
-import de.exbio.reposcapeweb.db.entities.nodes.Protein;
+import de.exbio.reposcapeweb.db.entities.nodes.*;
 import de.exbio.reposcapeweb.db.history.GraphHistory;
 import de.exbio.reposcapeweb.db.history.HistoryController;
 import de.exbio.reposcapeweb.db.services.controller.EdgeController;
@@ -1193,7 +1191,7 @@ public class WebGraphService {
         if (user.get() != null)
             userGraph.remove(user.get());
         File thumb = historyController.getThumbnailPath(gid);
-        if (thumb!=null &&thumb.exists())
+        if (thumb != null && thumb.exists())
             thumb.delete();
         historyController.remove(gid);
     }
@@ -1252,7 +1250,7 @@ public class WebGraphService {
         file.forEach(id -> {
             try {
                 if (!id.contains("."))
-                    id = type.equals("gene") ? "entrez." : "uniprot." + id;
+                    id = DBConfig.getConfig().nodes.get(Graphs.getNode(type)).sourceId.toLowerCase() + "."+id;
                 ids.add(nodeController.getId(type, id));
             } catch (NullPointerException ignore) {
                 try {
@@ -1268,11 +1266,14 @@ public class WebGraphService {
             }
         });
         nodeController.findByIds(type, ids).forEach(o -> {
-            RepoTrialNode n;
-            if (type.equals("gene"))
-                n = (Gene) o;
-            else n = (Protein) o;
-
+            RepoTrialNode n = null;
+            switch (type) {
+                case "gene" -> n = (Gene) o;
+                case "protein" -> n = (Protein) o;
+                case "pathway" -> n = (Pathway) o;
+                case "disorder" -> n = (Disorder) o;
+                case "drug" -> n = (Drug) o;
+            }
             out.add(n.getAsMap(new HashSet<>(Arrays.asList("id", "displayName", "primaryDomainId"))));
         });
         return out;

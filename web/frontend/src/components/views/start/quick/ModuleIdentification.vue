@@ -157,17 +157,7 @@
                                                 @addToSelectionEvent="addToSelection"
                                                 style="justify-self: flex-end;margin-left: auto"></SuggestionAutocomplete>
                       </div>
-                      <v-card-subtitle>or</v-card-subtitle>
-                      <div style="justify-content: center; display: flex; width: 100%">
-                        <v-file-input :label="'by '+['entrez','uniprot'][seedTypeId]+' ids'"
-                                      v-on:change="onFileSelected"
-                                      show-size
-                                      prepend-icon="far fa-list-alt"
-                                      v-model="fileInputModel"
-                                      dense
-                                      style="width: 75%; max-width: 75%"
-                        ></v-file-input>
-                      </div>
+                     <NodeInput text="or provide Seed IDs by" @addToSelectionEvent="addToSelection" :idName="['entrez','uniprot'][seedTypeId]" :nodeType="['gene', 'protein'][this.seedTypeId]" @printNotificationEvent="printNotification"></NodeInput>
                     </template>
                   </div>
                 </v-col>
@@ -585,8 +575,8 @@
                 </v-col>
                 <v-col>
                   <Network ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle"
-                         :legend="results.targets.length>0" :tools="results.targets.length>0" :secondaryViewer="true"
-                  @loadIntoAdvancedEvent="$emit('graphLoadEvent',{post: {id: currentGid}})">
+                           :legend="results.targets.length>0" :tools="results.targets.length>0" :secondaryViewer="true"
+                           @loadIntoAdvancedEvent="$emit('graphLoadEvent',{post: {id: currentGid}})">
                     <template v-slot:legend v-if="results.targets.length>0">
                       <v-card style="width: 15vw; max-width: 17vw; padding-top: 35px">
                         <v-list>
@@ -661,7 +651,8 @@
                               <template v-slot:activator="{on, attrs}">
                                 <v-list-item v-on="on" v-bind="attrs">
                                   <v-list-item-action>
-                                    <v-chip outlined v-show="results.targets.length>0" style="margin-top:15px" @click="loadDrugTargets">
+                                    <v-chip outlined v-show="results.targets.length>0" style="margin-top:15px"
+                                            @click="loadDrugTargets">
                                       <v-icon left>fas fa-angle-double-right</v-icon>
                                       Continue to Drug-Ranking
                                     </v-chip>
@@ -744,6 +735,7 @@ import SeedRemove from "@/components/app/tables/menus/SeedRemove";
 import SeedTable from "@/components/app/tables/SeedTable";
 import ResultDownload from "@/components/app/tables/menus/ResultDownload";
 import HeaderBar from "@/components/app/Header";
+import NodeInput from "@/components/app/input/NodeInput";
 
 export default {
   name: "ModuleIdentification",
@@ -772,6 +764,7 @@ export default {
       step: 1,
       suggestionType: undefined,
       fileInputModel: undefined,
+      seedInput: false,
       methods: [{
         id: "diamond",
         label: "DIAMOnD",
@@ -971,7 +964,12 @@ export default {
     }
     ,
     executeJob: function (algorithm, params) {
-      let payload = {userId: this.uid,dbVersion: this.$global.metadata.repotrial.version, algorithm: algorithm, params: params}
+      let payload = {
+        userId: this.uid,
+        dbVersion: this.$global.metadata.repotrial.version,
+        algorithm: algorithm,
+        params: params
+      }
       payload.selection = true
       payload.experimentalOnly = params.experimentalOnly
       payload["nodes"] = this.seeds.map(n => n.id)
@@ -1021,26 +1019,6 @@ export default {
       if (this.methodModel !== undefined && this.methodModel > -1)
         return this.methods[this.methodModel].scores;
       return []
-    }
-    ,
-
-
-    onFileSelected: function (file) {
-      if (file == null)
-        return
-      this.$utils.readFile(file).then(content => {
-        this.$http.post("mapFileListToItems", {
-          type: ['gene', 'protein'][this.seedTypeId],
-          file: content
-        }).then(response => {
-          if (response.data)
-            return response.data
-        }).then(data => {
-          this.addToSelection(data, "FILE:" + file.name)
-        }).then(() => {
-          this.fileInputModel = undefined
-        }).catch(console.log)
-      }).catch(console.log)
     }
     ,
 
@@ -1161,6 +1139,7 @@ export default {
   components: {
     HeaderBar,
     SuggestionAutocomplete,
+    NodeInput,
     SeedDownload,
     SeedRemove,
     SeedTable,

@@ -154,17 +154,7 @@
                                                 @addToSelectionEvent="addToSelection"
                                                 style="justify-self: flex-end;margin-left: auto"></SuggestionAutocomplete>
                       </div>
-                      <v-card-subtitle>or</v-card-subtitle>
-                      <div style="justify-content: center; display: flex; width: 100%">
-                        <v-file-input :label="'by '+['entrez','uniprot'][seedTypeId]+' ids'"
-                                      v-on:change="onFileSelected"
-                                      show-size
-                                      prepend-icon="far fa-list-alt"
-                                      v-model="fileInputModel"
-                                      dense
-                                      style="width: 75%; max-width: 75%"
-                        ></v-file-input>
-                      </div>
+                      <NodeInput text="or provide Seed IDs by" @addToSelectionEvent="addToSelection" :idName="['entrez','uniprot'][seedTypeId]" :nodeType="['gene', 'protein'][this.seedTypeId]" @printNotificationEvent="printNotification"></NodeInput>
                     </template>
                   </div>
                 </v-col>
@@ -563,6 +553,7 @@ import SuggestionAutocomplete from "@/components/app/suggestions/SuggestionAutoc
 import SeedTable from "@/components/app/tables/SeedTable";
 import ResultDownload from "@/components/app/tables/menus/ResultDownload";
 import SeedDownload from "@/components/app/tables/menus/SeedDownload";
+import NodeInput from "@/components/app/input/NodeInput";
 
 export default {
   name: "DrugRepurposing",
@@ -919,6 +910,7 @@ export default {
 
   components: {
     SeedDownload,
+    NodeInput,
     SuggestionAutocomplete,
     Network,
     SeedTable,

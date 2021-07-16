@@ -119,6 +119,20 @@ const Utils =
 
     clone: function(object){
       return JSON.parse(JSON.stringify(object))
+    },
+
+    checkSeparator: function(data,seps){
+     let sep = seps[0]
+      let min = 1;
+      seps.forEach(s=>{
+        let spl = data.split(s)
+        if(spl.length>min){
+          sep = s;
+          min = spl.length
+        }
+      })
+      return sep;
     }
+
   }
 export default Utils

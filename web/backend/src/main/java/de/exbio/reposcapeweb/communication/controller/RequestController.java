@@ -300,16 +300,19 @@ public class RequestController {
     @ResponseBody
     public String getFileListToItems(@RequestBody HashMap<String, String> request) {
         return toJson(webGraphService.mapIdsToItemList(request.get("type"), StringUtils.convertBase64(request.get("file"))));
-
-
     }
 
+    @RequestMapping(value = "/mapListToItems", method = RequestMethod.POST)
+    @ResponseBody
+    public String getListToItems(@RequestBody MapListRequest request) {
+        log.debug("Got mapping request for node type: "+request.type+" and list "+toJson(request.list));
+        return toJson(webGraphService.mapIdsToItemList(request.type, new LinkedList(Arrays.asList(request.list))));
+    }
 
     @RequestMapping(value = "/removeGraph", method = RequestMethod.GET)
     @ResponseBody
     public void removeGraph(@RequestParam("gid") String gid) {
         webGraphService.remove(gid);
-
     }
 
     @RequestMapping(value = "/initUser", method = RequestMethod.GET)

@@ -84,18 +84,20 @@
                                               @addToSelectionEvent="addToSelection"
                                               style="justify-self: flex-end;margin-left: auto"></SuggestionAutocomplete>
                     </div>
-                    <v-card-subtitle style="margin-left: -10px">or</v-card-subtitle>
-                    <div
-                      style="justify-content: center; display: flex; width: 100%; margin-bottom: 25px; margin-left: -10px">
-                      <v-file-input :label="'by '+nodeIdTypeList[sourceTypeId]+' ids'"
-                                    v-on:change="onSourceFileSelected"
-                                    show-size
-                                    prepend-icon="far fa-list-alt"
-                                    v-model="fileInputModel[0]"
-                                    dense
-                                    style="width: 97%; max-width: 97%"
-                      ></v-file-input>
-                    </div>
+                    <NodeInput text="or provide Node IDs by" @addToSelectionEvent="addToSourceSelection" :idName="nodeIdTypeList[sourceTypeId]" :nodeType="nodeList[sourceTypeId].value" @printNotificationEvent="printNotification"></NodeInput>
+
+<!--                    <v-card-subtitle style="margin-left: -10px">or</v-card-subtitle>-->
+<!--                    <div-->
+<!--                      style="justify-content: center; display: flex; width: 100%; margin-bottom: 25px; margin-left: -10px">-->
+<!--                      <v-file-input :label="'by '+nodeIdTypeList[sourceTypeId]+' ids'"-->
+<!--                                    v-on:change="onSourceFileSelected"-->
+<!--                                    show-size-->
+<!--                                    prepend-icon="far fa-list-alt"-->
+<!--                                    v-model="fileInputModel[0]"-->
+<!--                                    dense-->
+<!--                                    style="width: 97%; max-width: 97%"-->
+<!--                      ></v-file-input>-->
+<!--                    </div>-->
                     <SeedTable ref="sourceTable" v-if="sourceTypeId!==undefined" :download="true" :remove="true"
                                @printNotificationEvent="printNotification"
                                height="30vh"
@@ -130,18 +132,20 @@
                                               @addToSelectionEvent="addToSelection"
                                               style="justify-self: flex-end;margin-left: auto"></SuggestionAutocomplete>
                     </div>
-                    <v-card-subtitle style="margin-left: -10px">or</v-card-subtitle>
-                    <div
-                      style="justify-content: center; display: flex; width: 100%; margin-bottom: 25px; margin-left: -10px">
-                      <v-file-input :label="'by '+nodeIdTypeList[targetTypeId]+' ids'"
-                                    v-on:change="onTargetFileSelected"
-                                    show-size
-                                    prepend-icon="far fa-list-alt"
-                                    v-model="fileInputModel[1]"
-                                    dense
-                                    style="width: 97%; max-width: 97%"
-                      ></v-file-input>
-                    </div>
+                    <NodeInput text="or provide Node IDs by" @addToSelectionEvent="addToTargetSelection" :idName="nodeIdTypeList[targetTypeId]" :nodeType="nodeList[targetTypeId].value" @printNotificationEvent="printNotification"></NodeInput>
+
+                    <!--                    <v-card-subtitle style="margin-left: -10px">or</v-card-subtitle>-->
+<!--                    <div-->
+<!--                      style="justify-content: center; display: flex; width: 100%; margin-bottom: 25px; margin-left: -10px">-->
+<!--                      <v-file-input :label="'by '+nodeIdTypeList[targetTypeId]+' ids'"-->
+<!--                                    v-on:change="onTargetFileSelected"-->
+<!--                                    show-size-->
+<!--                                    prepend-icon="far fa-list-alt"-->
+<!--                                    v-model="fileInputModel[1]"-->
+<!--                                    dense-->
+<!--                                    style="width: 97%; max-width: 97%"-->
+<!--                      ></v-file-input>-->
+<!--                    </div>-->
                     <SeedTable ref="targetTable" v-if="targetTypeId!==undefined" :download="true" :remove="true"
                                @printNotificationEvent="printNotification"
                                height="30vh"
@@ -481,6 +485,7 @@ import Network from "../graph/Network";
 import SuggestionAutocomplete from "@/components/app/suggestions/SuggestionAutocomplete";
 import SeedTable from "@/components/app/tables/SeedTable";
 import ResultDownload from "@/components/app/tables/menus/ResultDownload";
+import NodeInput from "@/components/app/input/NodeInput";
 
 
 export default {
@@ -667,30 +672,38 @@ export default {
       }).catch(console.log)
     },
 
-    onSourceFileSelected: function (file) {
-      this.onFileSelected(file, 0)
+    // onSourceFileSelected: function (file) {
+    //   this.onFileSelected(file, 0)
+    // },
+    //
+    // onTargetFileSelected: function (file) {
+    //   this.onFileSelected(file, 1)
+    // },
+
+    // onFileSelected: function (file, index) {
+    //   if (file == null)
+    //     return
+    //   this.$utils.readFile(file).then(content => {
+    //     this.$http.post("mapFileListToItems", {
+    //       type: this.nodeList[[this.sourceTypeId, this.targetTypeId][index]].value,
+    //       file: content
+    //     }).then(response => {
+    //       if (response.data)
+    //         return response.data
+    //     }).then(data => {
+    //       this.addToSelection(data, index, "FILE:" + file.name)
+    //     }).then(() => {
+    //       this.$set(this.fileInputModel, index, undefined)
+    //     }).catch(console.log)
+    //   }).catch(console.log)
+    // },
+
+    addToSourceSelection: function(list,name){
+      this.addToSelection(list,0,name)
     },
 
-    onTargetFileSelected: function (file) {
-      this.onFileSelected(file, 1)
-    },
-
-    onFileSelected: function (file, index) {
-      if (file == null)
-        return
-      this.$utils.readFile(file).then(content => {
-        this.$http.post("mapFileListToItems", {
-          type: this.nodeList[[this.sourceTypeId, this.targetTypeId][index]].value,
-          file: content
-        }).then(response => {
-          if (response.data)
-            return response.data
-        }).then(data => {
-          this.addToSelection(data, index, "FILE:" + file.name)
-        }).then(() => {
-          this.$set(this.fileInputModel, index, undefined)
-        }).catch(console.log)
-      }).catch(console.log)
+    addToTargetSelection: function(list,name){
+      this.addToSelection(list,1,name)
     },
 
     addToSelection: function (list, index, nameFrom) {
@@ -860,11 +873,11 @@ export default {
       let id = this.$utils.getNodes(this.$global.metagraph, name)[idx]
       return id.substring(0, 1).toUpperCase() + id.substring(1)
     }
-
   }
   ,
   components: {
     SuggestionAutocomplete,
+    NodeInput,
     Network,
     SeedTable,
     ResultDownload,
