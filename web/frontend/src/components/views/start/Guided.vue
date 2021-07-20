@@ -65,7 +65,7 @@
                   <div style="display: flex; justify-content: flex-start;">
                     <div class="title" style="padding-top: 16px;">1a. Select the source node type:</div>
                     <v-select item-value="id" :items="nodeList" v-model="sourceTypeId"
-                              placeholder="Select start Node"
+                              placeholder="Select start type"
                               :disabled="$refs.sourceTable!=null && $refs.sourceTable.getSeeds().length>0"
                               style="min-width: 9.5em; max-width: 11.2em; margin-left: 25px">
                     </v-select>
@@ -112,7 +112,7 @@
                   <div style="display: flex; justify-content: flex-start;">
                     <div class="title" style="padding-top: 16px;">2a. Select the target node type:</div>
                     <v-select item-value="id" :items="nodeList" v-model="targetTypeId"
-                              placeholder="Select target Node"
+                              placeholder="Select target type"
                               :disabled="$refs.targetTable!=null && $refs.targetTable.getSeeds().length>0"
                               style="min-width: 9.5em; max-width: 11.2em; margin-left: 25px">
                     </v-select>
@@ -574,7 +574,6 @@ export default {
       this.step = 1
       this.sugQuery = [undefined, undefined]
 
-
       this.sourceTypeId = undefined
       this.targetTypeId = undefined
       this.sources = []
@@ -590,6 +589,10 @@ export default {
       this.options.general.name = undefined
 
       this.info = undefined
+      if(this.$refs.sourceTable!=null)
+        this.$refs.sourceTable.clear()
+      if(this.$refs.targetTable!=null)
+        this.$refs.targetTable.clear()
 
     },
     reset: function () {
@@ -846,7 +849,6 @@ export default {
           this.clearPaths()
       }
       if (button === "cancel") {
-        this.step = 1
         if (this.$refs.graph !== undefined)
           this.$refs.graph.reload()
         this.init()

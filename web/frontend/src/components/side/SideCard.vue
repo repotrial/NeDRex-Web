@@ -122,7 +122,7 @@
                       v-on:click="$emit('selectionEvent','all','none')"
                     >
                       <v-icon left color="red">fas fa-trash</v-icon>
-                      Deselect All
+                      Unselect All
                     </v-chip>
                   </v-col>
                   <v-col>
@@ -205,7 +205,7 @@
                     v-on:click="$emit('selectionEvent','nodes','none')"
                   >
                     <v-icon left>fas fa-ban</v-icon>
-                    Deselect All Nodes
+                    Unselect All Nodes
                   </v-chip>
                 </v-list-item>
               </template>
@@ -227,7 +227,7 @@
                     v-on:click="$emit('selectionEvent','edges','none')"
                   >
                     <v-icon left>fas fa-ban</v-icon>
-                    Deselect All Edges
+                    Unselect All Edges
                   </v-chip>
                 </v-list-item>
               </template>
@@ -596,18 +596,12 @@ export default {
       neighborNodes: this.neighborNodes,
       title: this.title,
       description: this.description,
-      // filterLabel: this.filterLabel,
-      // filterTypes: this.filterTypes,
-      // filterTypeModel: this.filterTypeModel,
-      // filterModel: this.filterModel,
-      // filterEntity: "",
       detailedObject: this.detailedObject,
       hover: {arrow: false,},
       details: {redirected: false},
     }
   },
   created() {
-    // this.filterTypes = ['startsWith', 'contain', 'match']
     this.gid = this.$route.params["gid"]
   },
 
@@ -625,7 +619,6 @@ export default {
     },
     setOptions: function (name, options) {
       this.options[name] = options;
-      // this.$refs.options.$forceUpdate()
     },
     setSelectedNode: function (nodeId) {
       this.$emit("nodeSelectionEvent", nodeId)

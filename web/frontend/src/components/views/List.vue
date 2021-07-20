@@ -1513,7 +1513,6 @@ export default {
       let selected = this.extension.edges.filter(e => e.selected)
       let payload = {
         gid: this.gid,
-        // nodes: this.extension.nodes.filter(n => n.selected).map(n => n.name),
         edges: selected.map(e => e.name),
         induced: selected.filter(e => e.induced).map(e => e.name),
         switchDirection: selected.filter(e => e.switch).map(e => e.name)
