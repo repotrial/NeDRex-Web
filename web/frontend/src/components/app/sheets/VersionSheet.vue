@@ -12,7 +12,7 @@
                 <v-list-item-icon>
                   <v-icon left>fas fa-server</v-icon>
                 </v-list-item-icon>
-                <v-list-item-title>RepoTrialDB-version:</v-list-item-title>
+                <v-list-item-title>NeDRexDB-version:</v-list-item-title>
                 <span>{{
                     $global.metadata.repotrial && $global.metadata.repotrial.version ? $global.metadata.repotrial.version : "?"
                   }}</span>

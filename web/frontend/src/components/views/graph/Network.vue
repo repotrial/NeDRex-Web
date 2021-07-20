@@ -402,18 +402,22 @@ export default {
     },
 
     onDoubleClick: function (params) {
-      if(params==null)
+      if (params == null)
         return
-      if(params.nodes.length>0){
-        this.$emit("toggleNodeSelectEvent",params.nodes.map(id=>this.$refs.network.getNode(id)).map(n=>{ return {id:parseInt(n.id.substring(4)),group:n.group}}))
-      }else if(params.edges.length>0){
-        this.$emit("toggleedgeSelectEvent",params.edges.map(id=>this.$refs.network.getEdge(id)).map(e=>{return {from:e.from, to:e.to, group: e.title}}))
+      if (params.nodes.length > 0) {
+        this.$emit("toggleNodeSelectEvent", params.nodes.map(id => this.$refs.network.getNode(id)).map(n => {
+          return {id: parseInt(n.id.substring(4)), group: n.group}
+        }))
+      } else if (params.edges.length > 0) {
+        this.$emit("toggleedgeSelectEvent", params.edges.map(id => this.$refs.network.getEdge(id)).map(e => {
+          return {from: e.from, to: e.to, group: e.title}
+        }))
       }
     },
 
     onClick: function (params) {
       let t = new Date().getTime()
-      if ((t-this.clickParams.t0) < this.clickParams.threshold) {
+      if ((t - this.clickParams.t0) < this.clickParams.threshold) {
         this.onDoubleClick(params)
       }
       this.clickParams.t0 = t;
@@ -484,7 +488,6 @@ export default {
       })
       return neighbors
     },
-
     setSelection: function (nodes) {
       if (nodes !== undefined && nodes[0] !== undefined) {
         this.$refs.network.selectNodes(nodes)
@@ -552,7 +555,7 @@ export default {
       this.edgeSet.update(updates)
     },
 
-    setEdgeVisible: function(name,state, loops){
+    setEdgeVisible: function (name, state, loops) {
       let updates = Object.values(this.edgeSet.get({
           filter: function (item) {
             return item.title === name
@@ -562,7 +565,7 @@ export default {
         return {id: item.id, hidden: !state, physics: state}
       })
       this.edgeSet.update(updates)
-      if(state && !loops){
+      if (state && !loops) {
         console.log("disabling loops")
         this.showLoops(false)
       }
@@ -589,7 +592,7 @@ export default {
         if (params.type === "nodes")
           this.hideGroupVisibility(params.name, params.state, true)
         else if (params.type === "edges")
-          this.setEdgeVisible(params.name, !params.state,params.loops)
+          this.setEdgeVisible(params.name, !params.state, params.loops)
       }
       if (data.event === "isolate") {
         this.showOnlyComponent(data.selected, data.state)

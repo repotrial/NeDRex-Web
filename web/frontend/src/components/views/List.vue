@@ -124,7 +124,7 @@
                 fixed-header
                 class="elevation-1"
                 :headers="headers('nodes',Object.keys(nodes)[nodeTab])"
-                :items="configuration.showAll ? (filters.nodes.attribute.dist ? distinctFilter('nodes',nodes[Object.keys(nodes)[nodeTab]],nodeTab): nodes[Object.keys(nodes)[nodeTab]]) : filterSelected(nodes[Object.keys(nodes)[nodeTab]])"
+                :items="configuration.showAll ? (suggestion ? nodes[Object.keys(nodes)[nodeTab]].filter(n=>n.suggested) :filters.nodes.attribute.dist ? distinctFilter('nodes',nodes[Object.keys(nodes)[nodeTab]],nodeTab): nodes[Object.keys(nodes)[nodeTab]]) : filterSelected(nodes[Object.keys(nodes)[nodeTab]])"
                 item-key="id"
                 :loading="nodeTabLoading"
                 loading-text="Loading... Please wait"
@@ -141,8 +141,7 @@
                           <v-switch
                             label="Suggestions"
                             v-model="filters.nodes.suggestions"
-                            v-on:click="toggleSuggestions('nodes')"
-                          >
+                            v-on:click="toggleSuggestions('nodes')">
                           </v-switch>
                         </v-list-item>
                       </v-col>
@@ -975,6 +974,7 @@ export default {
       edgeOptionHover: false,
       optionDialog: false,
       waiting: true,
+      suggestion: false,
       selectionDialog: {
         show: false,
         type: "",
@@ -1068,7 +1068,7 @@ export default {
         this.loading = false
         this.$emit("loadLegendEvent", true)
       })
-        .catch(err => console.log(err))
+        .catch(err => console.error(err))
     },
     filterSelected(items) {
       return items.filter(item => item.selected)
@@ -1159,12 +1159,12 @@ export default {
             })
             this.suggestions[type].data = data.suggestions;
           }).catch(err =>
-            console.log(err)
+            console.error(err)
           ).finally(() =>
             this.suggestions[type].loading = false
           )
         }).catch(err =>
-          console.log(err))
+          console.error(err))
       }
     },
     loadList: function (data) {
@@ -1223,23 +1223,24 @@ export default {
     },
     applySuggestion: async function (val) {
       this.nodeTabLoading = true
+      this.suggestion = true;
       if (val != null) {
-        this.resetSuggestions()
         let nodes = this.nodes[Object.keys(this.nodes)[this.nodeTab]]
-        this.backup.nodes[this.nodeTab] = nodes
         this.suggestions.nodes.chosen = await this.loadSuggestionNodes(this.suggestions.nodes.data.filter(item => item.key === val)[0])
-        this.nodes[Object.keys(this.nodes)[this.nodeTab]] = nodes.filter((i, k) => this.suggestions.nodes.chosen.indexOf(i.id) !== -1)
+        nodes.forEach(n => n.suggested = this.suggestions.nodes.chosen.indexOf(n.id) > -1)
       } else {
         this.resetSuggestions(true)
       }
       this.nodeTabLoading = false
     },
     resetSuggestions: function (full) {
+      this.suggestion = false;
       if (full) {
         this.suggestions.nodes.chosen = undefined
       }
       if (this.backup.nodes[this.nodeTab])
-        this.nodes[Object.keys(this.nodes)[this.nodeTab]] = this.backup.nodes[this.nodeTab]
+        this.nodes[Object.keys(this.nodes)[this.nodeTab]].forEach(n => n.suggested = false)
+      // this.nodes[Object.keys(this.nodes)[this.nodeTab]] = this.backup.nodes[this.nodeTab]
     },
     toggleSuggestions: function (type) {
       this.filterNodeModel = null
@@ -1501,7 +1502,7 @@ export default {
             }
           }
         ).catch(err => {
-          console.log(err)
+          console.error(err)
         })
       } else {
         this.update.nodes = true;
@@ -1529,7 +1530,7 @@ export default {
           return response.data
       }).then(info => {
         this.$emit("updateInfo", info)
-      }).catch(err => console.log(err))
+      }).catch(err => console.error(err))
     },
     resetCollapseDialog: function () {
       this.collapse.nodes = [];
@@ -1580,7 +1581,7 @@ export default {
           return response.data
       }).then(info => {
         this.$emit("updateInfo", info)
-      }).catch(err => console.log(err))
+      }).catch(err => console.error(err))
     },
     setLoading: function (boolean) {
       this.loading = boolean
@@ -1658,7 +1659,7 @@ export default {
         }
         this.reloadCountMap()
       }).catch(err => {
-        console.log(err)
+        console.error(err)
       })
     }
     ,
@@ -1690,7 +1691,7 @@ export default {
       }).then(info => {
         this.$emit("updateInfo", info)
       }).catch(err => {
-        console.log(err)
+        console.error(err)
       })
     },
     select: function (type, name, ids) {
@@ -1771,7 +1772,10 @@ export default {
         let filterActive = this.filters[type].attribute.name !== undefined && this.filters[type].attribute.name.length > 0 && this.filters[type].query !== null && this.filters[type].query.length > 0 && this.filters[type].attribute.operator !== undefined && this.filters[type].attribute.operator.length > 0
         items.forEach(item => {
             if (type === "nodes") {
-              if (!filterActive || (filterActive && this.filterNode(undefined, this.filters[type].query, item)))
+              if (this.suggestion) {
+                if (item.suggested)
+                  this.$set(item, "selected", true)
+              } else if (!filterActive || (filterActive && this.filterNode(undefined, this.filters[type].query, item)))
                 this.$set(item, "selected", true)
               // item.selected = true;
             } else if (!filterActive || (filterActive && this.filterEdge(undefined, this.filters[type].query, item)))
@@ -1792,7 +1796,7 @@ export default {
       let data = {nodes: this.nodes, edges: this.edges}
       if (type === "all") {
         this.filterNodeModel = null
-        Object.values(data).forEach(set => Object.values(set).forEach(type => type.forEach(n => this.$set(n,"selected",false))))
+        Object.values(data).forEach(set => Object.values(set).forEach(type => type.forEach(n => this.$set(n, "selected", false))))
       } else {
         let tab = (type === "nodes") ? this.nodeTab : this.edgeTab
         let items = data[type][Object.keys(data[type])[tab]]
@@ -1805,7 +1809,11 @@ export default {
           let filterActive = this.filters[type].attribute.name !== undefined && this.filters[type].attribute.name.length > 0 && this.filters[type].query !== null && this.filters[type].query.length > 0 && this.filters[type].attribute.operator !== undefined && this.filters[type].attribute.operator.length > 0
           items.forEach(item => {
             if (type === "nodes") {
-              if (!filterActive || (filterActive && this.filterNode(undefined, this.filters[type].query, item)))
+              if (this.suggestion) {
+                if (item.suggested)
+                  item.selected = false;
+              }
+              else if (!filterActive || (filterActive && this.filterNode(undefined, this.filters[type].query, item)))
                 item.selected = false;
             } else if (!filterActive || (filterActive && this.filterEdge(undefined, this.filters[type].query, item)))
               item.selected = false;
@@ -1979,7 +1987,7 @@ export default {
       }).then(() => {
         this.$emit("finishedEvent")
       }).catch(err => {
-        console.log(err)
+        console.error(err)
       })
     },
     getTotalCounts: function (entity) {
@@ -2046,7 +2054,7 @@ export default {
           return response.data
       }).then(data => {
         this.$emit("addJobEvent", data)
-      }).catch(console.log)
+      }).catch(console.error)
     },
     directionExtended: function (edge) {
       let e = Object.values(this.configuration.entityGraph.edges).filter(e => e.name === edge)[0];
