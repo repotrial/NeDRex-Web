@@ -20,6 +20,14 @@ public class WriterUtils {
 
 
     public static BufferedWriter getBasicWriter(File outFile){
+        if(!outFile.exists()) {
+            try {
+                outFile.getParentFile().mkdirs();
+                outFile.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
         try {
             return new BufferedWriter(new FileWriter(outFile));
         } catch (IOException e) {
