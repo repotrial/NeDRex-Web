@@ -63,7 +63,7 @@ export default {
             this.$emit("addToSelectionEvent", data, "SUG:" + val.text + "[" + this.suggestionType + "]")
         }).then(() => {
           this.suggestionModel = undefined
-        }).catch(console.log)
+        }).catch(console.error)
       }
     },
 
@@ -101,7 +101,7 @@ export default {
           })
           this.$set(this.suggestions, "data", data.suggestions)
         }).catch(err =>
-          console.log(err)
+          console.error(err)
         ).finally(() =>
           this.suggestions.loading = false
         )

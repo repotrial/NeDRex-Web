@@ -1244,7 +1244,7 @@ export default {
           this.$socket.subscribeJob(data.jid, "quickModuleFinishedEvent");
           this.readModuleJob(data, true)
         }
-      }).catch(console.log)
+      }).catch(console.error)
     }
     ,
     executeRankingJob: function (algorithm, params) {
@@ -1261,7 +1261,7 @@ export default {
           this.$socket.subscribeJob(data.jid, "quickRankingFinishedEvent");
           this.readRankingJob(data, true)
         }
-      }).catch(console.log)
+      }).catch(console.error)
     },
     readModuleJob: function (result, clean, unsubscribed) {
       this.resultProgress += 5
@@ -1309,24 +1309,6 @@ export default {
         return this.rankingMethods[this.rankingMethodModel].scores;
       return []
     },
-    // onFileSelected: function (file) {
-    //   if (file == null)
-    //     return
-    //   this.$utils.readFile(file).then(content => {
-    //     this.$http.post("mapFileListToItems", {
-    //       type: ['gene', 'protein'][this.seedTypeId],
-    //       file: content
-    //     }).then(response => {
-    //       if (response.data)
-    //         return response.data
-    //     }).then(data => {
-    //       this.addToSelection(data, "FILE:" + file.name)
-    //     }).then(() => {
-    //       this.fileInputModel = undefined
-    //     }).catch(console.log)
-    //   }).catch(console.log)
-    // }
-    // ,
 
     downloadSeedList: function (names, sep) {
       this.$http.post("mapToDomainIds", {
@@ -1344,7 +1326,7 @@ export default {
           this.seeds.forEach(s => text += data[s.id] + sep + s.displayName + "\n")
         }
         this.download(dlName, text)
-      }).catch(console.log)
+      }).catch(console.error)
     }
     ,
     downloadModuleResultList: function (s, names) {
@@ -1367,7 +1349,7 @@ export default {
           }
         )
         this.download(["gene", "protein"][this.seedTypeId] + "_module." + (sep === "\t" ? "tsv" : "csv"), text)
-      }).catch(console.log)
+      }).catch(console.error)
     },
     downloadRankingResultList: function (sep) {
       this.$http.post("mapToDomainIds", {
@@ -1387,7 +1369,7 @@ export default {
           }
         )
         this.download("drug_ranking-Top_" + this.rankingModels.topX + (sep === "\t" ? ".tsv" : ".csv"), text)
-      }).catch(console.log)
+      }).catch(console.error)
     },
 
     downloadFullResultList: function (jid) {
@@ -1422,7 +1404,7 @@ export default {
           })
         else
           this.results.targets = data.nodes[seedType]
-      }).catch(console.log)
+      }).catch(console.error)
     },
     loadRankingTargetTable: function () {
       let scoreAttr = this.rankingMethods[this.rankingMethodModel].scores.filter(s => s.decimal)
@@ -1432,7 +1414,7 @@ export default {
           return response.data
       }).then(data => this.$utils.roundScores(data, 'drug', scoreAttr)).then(data => {
         this.results.drugs = data.nodes.drug.sort((e1, e2) => e2.score - e1.score)
-      }).catch(console.log)
+      }).catch(console.error)
     },
     waitForGraph: function (resolve) {
       if (this.$refs.graph === undefined)

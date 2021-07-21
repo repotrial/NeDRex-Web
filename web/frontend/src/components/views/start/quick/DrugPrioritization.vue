@@ -671,7 +671,6 @@ export default {
       }
       if (this.step === 3)
         this.submitAlgorithm()
-      console.log(this.seeds)
     },
     getHeaders: function (seed) {
       let headers = [{text: "Name", align: "start", sortable: true, value: "displayName"}]
@@ -735,7 +734,7 @@ export default {
           this.$socket.subscribeJob(data.jid, "quickFinishedEvent");
           this.readJob(data)
         }
-      }).catch(console.log)
+      }).catch(console.error)
     },
     readJob: function (data, notSubbed) {
       let jid = data.jid
@@ -790,8 +789,8 @@ export default {
           this.addToSelection(data, "FILE:" + file.name)
         }).then(() => {
           this.fileInputModel = undefined
-        }).catch(console.log)
-      }).catch(console.log)
+        }).catch(console.error)
+      }).catch(console.error)
     },
 
     downloadList: function (names, sep) {
@@ -810,7 +809,7 @@ export default {
           this.seeds.forEach(s => text += data[s.id] + sep + s.displayName + "\n")
         }
         this.download(dlName, text)
-      }).catch(console.log)
+      }).catch(console.error)
     },
     downloadFullResultList: function () {
       window.open(CONFIG.HOST_URL + CONFIG.CONTEXT_PATH + '/api/downloadJobResult?jid=' + this.currentJid)
@@ -833,7 +832,7 @@ export default {
           }
         )
         this.download("drug_ranking-Top_" + this.models.topX + (sep === "\t" ? ".tsv" : ".csv"), text)
-      }).catch(console.log)
+      }).catch(console.error)
     },
     download: function (name, content) {
       let dl = document.createElement('a')
@@ -857,7 +856,7 @@ export default {
       }).then(data => this.$utils.roundScores(data, 'drug', scoreAttrs)
       ).then(data => {
         this.results.targets = data.nodes.drug.sort((e1, e2) => e2.score - e1.score)
-      }).catch(console.log)
+      }).catch(console.error)
     },
     roundScores: function (data) {
       return data

@@ -989,7 +989,7 @@ export default {
           this.$socket.subscribeJob(data.jid, "quickFinishedEvent");
           this.readJob(data)
         }
-      }).catch(console.log)
+      }).catch(console.error)
     }
     ,
     readJob: function (data, notSubbed) {
@@ -1038,7 +1038,7 @@ export default {
           this.seeds.forEach(s => text += data[s.id] + sep + s.displayName + "\n")
         }
         this.download(dlName, text)
-      }).catch(console.log)
+      }).catch(console.error)
     },
     downloadFullResultList: function () {
       window.open(CONFIG.HOST_URL + CONFIG.CONTEXT_PATH + '/api/downloadJobResult?jid=' + this.currentJid)
@@ -1064,7 +1064,7 @@ export default {
           }
         )
         this.download(["gene", "protein"][this.seedTypeId] + "_module." + (sep === "\t" ? "tsv" : "csv"), text)
-      }).catch(console.log)
+      }).catch(console.error)
     },
 
     download: function (name, content) {
@@ -1101,7 +1101,7 @@ export default {
         else
           this.$set(this.results, 'targets', data.nodes[seedType])
         this.loadingResults = false;
-      }).catch(console.log)
+      }).catch(console.error)
     },
 
     waitForGraph: function (resolve) {

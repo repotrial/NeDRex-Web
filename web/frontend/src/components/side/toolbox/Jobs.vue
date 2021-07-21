@@ -144,8 +144,7 @@ export default {
         })
         this.graphjobs.sort(this.sortJobs)
         this.jobs.sort(this.sortJobs)
-        console.log(this.jobs)
-      }).catch(console.log)
+      }).catch(console.error)
 
     },
     sortJobs: function (j1, j2) {
@@ -180,7 +179,6 @@ export default {
         }
       })
       if (params.state === 'DONE' || params.state==='TIMEOUT'||params.state==='LIMITED'||params.state==='ERROR') {
-        console.log("job finished")
         this.$socket.unsubscribeJob(params.jid)
         this.$emit("reloadHistoryEvent")
       }

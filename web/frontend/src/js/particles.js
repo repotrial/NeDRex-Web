@@ -1283,7 +1283,7 @@ var pJS = function(tag_id, params){
               pJS.tmp.source_svg = data.currentTarget.response;
               pJS.fn.vendors.checkBeforeDraw();
             }else{
-              console.log('Error pJS - Image not found');
+              console.error('Error pJS - Image not found');
               pJS.tmp.img_error = true;
             }
           }
@@ -1302,7 +1302,7 @@ var pJS = function(tag_id, params){
       }
 
     }else{
-      console.log('Error pJS - No image.src');
+      console.error('Error pJS - No image.src');
       pJS.tmp.img_error = true;
     }
 
@@ -1353,15 +1353,12 @@ var pJS = function(tag_id, params){
       if(pJS.tmp.img_type == 'svg' && pJS.tmp.source_svg == undefined){
         pJS.tmp.checkAnimFrame = requestAnimFrame(check);
       }else{
-        //console.log('images loaded! cancel check');
         cancelRequestAnimFrame(pJS.tmp.checkAnimFrame);
         if(!pJS.tmp.img_error){
           pJS.fn.vendors.init();
           pJS.fn.vendors.draw();
         }
-
       }
-
     }else{
       pJS.fn.vendors.init();
       pJS.fn.vendors.draw();
@@ -1531,8 +1528,8 @@ window.particlesJS.load = function(tag_id, path_config_json, callback){
         window.particlesJS(tag_id, params);
         if(callback) callback();
       }else{
-        console.log('Error pJS - XMLHttpRequest status: '+xhr.status);
-        console.log('Error pJS - File config not found');
+        console.error('Error pJS - XMLHttpRequest status: '+xhr.status);
+        console.error('Error pJS - File config not found');
       }
     }
   };

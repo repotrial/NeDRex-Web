@@ -24,8 +24,8 @@ const emitter = new Vue({
         this.isConnected = false;
       },
       onStompError: function (frame) {
-        console.log("ERROR!");
-        console.log(frame);
+        console.error("ERROR!");
+        console.error(frame);
       }
     });
     this.client.activate();

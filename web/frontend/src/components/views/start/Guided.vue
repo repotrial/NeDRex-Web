@@ -672,34 +672,8 @@ export default {
         this.gid = data.id
         this.$refs.graph.loadNetworkById(this.gid)
         this.loadTargetTable(this.gid)
-      }).catch(console.log)
+      }).catch(console.error)
     },
-
-    // onSourceFileSelected: function (file) {
-    //   this.onFileSelected(file, 0)
-    // },
-    //
-    // onTargetFileSelected: function (file) {
-    //   this.onFileSelected(file, 1)
-    // },
-
-    // onFileSelected: function (file, index) {
-    //   if (file == null)
-    //     return
-    //   this.$utils.readFile(file).then(content => {
-    //     this.$http.post("mapFileListToItems", {
-    //       type: this.nodeList[[this.sourceTypeId, this.targetTypeId][index]].value,
-    //       file: content
-    //     }).then(response => {
-    //       if (response.data)
-    //         return response.data
-    //     }).then(data => {
-    //       this.addToSelection(data, index, "FILE:" + file.name)
-    //     }).then(() => {
-    //       this.$set(this.fileInputModel, index, undefined)
-    //     }).catch(console.log)
-    //   }).catch(console.log)
-    // },
 
     addToSourceSelection: function(list,name){
       this.addToSelection(list,0,name)
@@ -741,7 +715,7 @@ export default {
         this.targets = data.nodes[groupName].map(n => {
           return {id: n.id, displayName: n.displayName}
         })
-      }).catch(console.log)
+      }).catch(console.error)
     },
 
     getOrigins: function (id, index) {
@@ -813,7 +787,7 @@ export default {
           [this.sources, this.targets][index].forEach(s => text += data[s.id] + sep + s.displayName + "\n")
         }
         this.download(dlName, text)
-      }).catch(console.log)
+      }).catch(console.error)
     },
     download: function (name, content) {
       let dl = document.createElement('a')

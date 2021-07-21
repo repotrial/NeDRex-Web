@@ -341,7 +341,7 @@ export default {
           this.list = data.chronology;
         }).then(() => {
           this.handleSelection([this.current])
-        }).catch(err => console.log(err))
+        }).catch(err => console.error(err))
     },
     loadGraph: function (graphid) {
       this.$emit("graphLoadEvent", {post: {id: graphid}})
@@ -392,7 +392,7 @@ export default {
         if (!this.selected.thumbnailReady) {
           this.$socket.subscribeThumbnail(this.selectedId, "thumbnailReady")
         }
-      }).catch(console.log)
+      }).catch(console.error)
     },
     closeDeletePop: function (apply) {
       this.deletePopup = false
@@ -454,13 +454,13 @@ export default {
     toggleStar: function () {
       this.$set(this.selected,"starred",!this.selected.starred);
       this.$set(this.list.filter(e=>e.id===this.selectedId)[0],"starred",this.selected.starred)
-      this.$http.get("toggleStarred?uid=" + this.$cookies.get("uid") + "&gid=" + this.selectedId).catch(console.log)
+      this.$http.get("toggleStarred?uid=" + this.$cookies.get("uid") + "&gid=" + this.selectedId).catch(console.error)
     },
 
     saveName: function () {
       this.getGraphsWithId(this.selectedId, this.history)[0].name = this.selected.name
       this.getGraphsWithId(this.selectedId, this.list)[0].name = this.selected.name
-      this.$http.post("setGraphName", {gid: this.selectedId, name: this.selected.name}).catch(console.log)
+      this.$http.post("setGraphName", {gid: this.selectedId, name: this.selected.name}).catch(console.error)
     },
 
     getGraphsWithId: function (id, list) {

@@ -371,9 +371,6 @@ export default {
           this.setVisualized(true)
           this.$emit("visualizationEvent")
         }
-        if (this.$refs.network != null) {
-          console.log(this.$refs.network)
-        }
       }
     },
     readGIDfromRoute: function () {
@@ -436,12 +433,14 @@ export default {
 
     saveLayout: function () {
       try {
+        if (this.$refs.network == null)
+          return
         let updates = Object.entries(this.$refs.network.getPositions()).map(e => {
           return {id: e[0], x: e[1].x, y: e[1].y}
         })
         this.updateNodes(updates)
       } catch (e) {
-        console.error("Error on saving the layout. Network may not have been visualized yet!")
+        console.warn("Error on saving the layout. Network may not have been visualized yet!")
       }
     },
     showAllNodes: function (boolean) {
@@ -566,7 +565,6 @@ export default {
       })
       this.edgeSet.update(updates)
       if (state && !loops) {
-        console.log("disabling loops")
         this.showLoops(false)
       }
     },
@@ -586,7 +584,6 @@ export default {
     ,
 
     graphViewEvent: function (data) {
-      console.log(data)
       if (data.event === "toggle") {
         let params = data.params;
         if (params.type === "nodes")

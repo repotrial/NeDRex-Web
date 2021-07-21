@@ -979,7 +979,7 @@ export default {
             this.description = "for " + data["Type"] + " " + this.detailedObject["Name"] + " (id:" + this.detailedObject["ID"] + ")"
           }
         }).catch(err => {
-          console.log(err)
+          console.error(err)
         })
       } else if (data.type === "edge") {
         this.$http.get("getEdgeDetails?name=" + data.name + "&id1=" + data.id1 + "&id2=" + data.id2 + "&gid=" + this.gid).then(response => {
@@ -993,7 +993,7 @@ export default {
               this.description = "for " + data.name + " id:" + this.detailedObject['IDOne'] + "<->" + this.detailedObject['IDTwo']
           }
         }).catch(err => {
-          console.log(err)
+          console.error(err)
         })
       }
       this.show.detail = true

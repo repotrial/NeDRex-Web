@@ -135,7 +135,6 @@ export default {
       Object.keys(this.sepModel).forEach(s => {
         this.$set(this.sepModel, s, false)
       })
-      console.log(this.sepModel)
     },
 
     onFileSelected: function (file) {
@@ -152,8 +151,8 @@ export default {
           this.$emit("addToSelectionEvent", data, "FILE:" + file.name)
         }).then(() => {
           this.fileInputModel = undefined
-        }).catch(console.log)
-      }).catch(console.log)
+        }).catch(console.error)
+      }).catch(console.error)
     },
     setSep: function (sep, state) {
       if (state)

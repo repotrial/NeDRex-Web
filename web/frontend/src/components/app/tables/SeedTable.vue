@@ -168,7 +168,7 @@ export default {
           this.nodes.forEach(s => text += data[s.id] + sep + s.displayName + "\n")
         }
         this.execDownload(dlName, text)
-      }).catch(console.log)
+      }).catch(console.error)
     },
 
     execDownload: function (name, content) {
