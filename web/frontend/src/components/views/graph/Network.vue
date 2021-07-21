@@ -28,6 +28,7 @@
           <v-progress-circular color="primary" indeterminate size="40"></v-progress-circular>
         </div>
       </div>
+      <v-snackbar :value="selectMode" :timeout="-1" absolute top centered color="rgba(0,0,0,0.7)">Zooming and moving are disabled while selection mode is active!</v-snackbar>
       <VisNetwork v-if="nodeSet !== undefined && show" class="wrapper" ref="network"
                   :style="{width: '100%',cursor:canvasCursor}"
                   :nodes="nodeSet"
@@ -154,6 +155,7 @@ export default {
       progressText: undefined,
       disableAdvancedLoading: false,
       clickParams: {t0: 0, threshold: 250},
+      selectMode: false,
     }
   },
 
@@ -640,6 +642,7 @@ export default {
     /* Rectengular overlay selection methods */
 
     toggleSelectMode: function (select) {
+      this.selectMode=select;
       if (select) {
         this.options.interaction.zoomView = false;
         this.options.interaction.dragView = false;
