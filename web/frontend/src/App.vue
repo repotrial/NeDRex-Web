@@ -40,6 +40,7 @@
                      v-on:printNotificationEvent="printNotification"
                      @showSideEvent="setSideVisible"
                      @clearURLEvent="clearURL"
+                     @modifyURLEvent="modifyURL"
                      :colors="colors" :options="options.start" :filters="startFilters"></Start>
               <Network
                 v-show="selectedTabId===1"
@@ -330,7 +331,6 @@ export default {
 
     disablePhysics: function (bool) {
       this.physicsDisabled = bool
-      console.log(this.physicsDisabled)
     },
     closeCookiePopup: function () {
       this.cookiesPopup = false
@@ -341,7 +341,7 @@ export default {
       }).then(userId => {
         this.$cookies.set("uid", userId);
         this.$router.go()
-      }).catch(err => console.log)
+      }).catch(console.error)
     },
     loadUser: function () {
       if (this.$cookies.get("uid") === null) {
@@ -352,8 +352,13 @@ export default {
             return response.data
         }).then(data => {
           this.$cookies.set("uid", data.uid);
-        }).catch(err => console.log(err))
+        }).catch(err => console.error(err))
       }
+    },
+    modifyURL: function (view) {
+      let path = "/explore/" + view + "/start/" + this.gid
+      if (this.$route.fullPath !== path)
+        this.$router.push(path)
     },
     clearURL: function (view) {
       this.gid = undefined
@@ -517,8 +522,6 @@ export default {
     }
     ,
     sizeWarning: function (info) {
-      console.log("warn")
-      console.log(info)
       if (!this.$cookies.get("override-limit")) {
         this.listWarnObject = info;
         this.listDialog = true;
@@ -531,16 +534,16 @@ export default {
     toggleToolOption: function (option, value) {
       if (option === "physics")
         this.$refs.graph.setPhysics(value);
-      if(option ==="loops")
+      if (option === "loops")
         this.$refs.graph.showLoops(value)
-      if(option ==="unconnected")
+      if (option === "unconnected")
         this.$refs.graph.showUnconnected(value)
-      if(option ==="isolation")
+      if (option === "isolation")
         this.$refs.graph.graphViewEvent(value)
     },
 
-    clickToolOption: function(option){
-      if(option ==="fit")
+    clickToolOption: function (option) {
+      if (option === "fit")
         this.$refs.graph.setSelection()
     },
 
@@ -556,30 +559,6 @@ export default {
         this.loadGraphURL(graph.post.id, "list")
       else
         this.$refs.graph.loadNewNetwork(graph.post)
-
-      // this.$refs.graph.setWaiting(false)
-      // this.options.graph.visualized = false
-
-      // if (this.options.graph.physics) {
-      //   this.options.graph.physics = false;
-      //   this.updatePhysics()
-      // }
-      // this.$http.get("/isReady").then(response => {
-      //   if (response.data)
-      //     this.printNotification("Request successfully sent!", 1)
-      //   else
-      //     this.printNotification("Request scheduled: Server is currently busy! please wait.", 2)
-      //   this.$http.post("/getGraphInfo", graph.post).then(response => {
-      //     return response.data
-      //   }).then(info => {
-      //     if (!graph.post.id)
-      //       this.evalPostInfo(info, graph.post.tab)
-      //     else
-
-      //   }).catch(err => {
-      //     console.log(err)
-      //   })
-      // }).catch(console.log)
     }
     ,
     loadGraphNewTab: function (graph) {
@@ -602,10 +581,10 @@ export default {
       if (operation === "induced")
         this.$refs.list.selectEdges()
     },
-    toggleNodeSelection: function(nodes){
-     this.$refs.list.toggleNodes(nodes)
+    toggleNodeSelection: function (nodes) {
+      this.$refs.list.toggleNodes(nodes)
     },
-    toggleEdgeSelection: function(edges){
+    toggleEdgeSelection: function (edges) {
       this.$refs.list.toggleEdges(edges)
     }
     ,
@@ -630,7 +609,7 @@ export default {
         let tab = (this.tab !== undefined && this.tab !== "start" && this.tab !== "history") ? this.tab : "list"
         this.$http.get("/archiveHistory?uid=" + this.$cookies.get("uid") + "&gid=" + info.id).then(() => {
           this.loadGraphURL(info.id, tab)
-        }).catch(err => console.log(err))
+        }).catch(err => console.error(err))
 
       }
     }
@@ -708,16 +687,23 @@ export default {
     }
     ,
     loadSelection: function (params) {
-      if (params != null && params.nodes != null && params.nodes.length >0) {
+      if (params != null && params.nodes != null && params.nodes.length > 0) {
         this.$refs.tools.setSelectedNodeId(params.nodes[0])
         this.$refs.side.loadSelection(this.$refs.graph.identifyNeighbors(params.nodes[0]))
-        this.$refs.side.loadDetails({type:"node",name:["gene","protein","pathway","disorder","drug"][["gen","pro","pat","dis","dru"].indexOf(params.nodes[0].substring(0,3))],id:params.nodes[0].substring(4)})
+        this.$refs.side.loadDetails({
+          type: "node",
+          name: ["gene", "protein", "pathway", "disorder", "drug"][["gen", "pro", "pat", "dis", "dru"].indexOf(params.nodes[0].substring(0, 3))],
+          id: params.nodes[0].substring(4)
+        })
 
-      }
-      else if (params != null && params.edges != null && params.edges.length >0) {
-        this.$refs.side.loadDetails({type:"edge",name:params.edges[0].title,id1:params.edges[0].from.substring(4), id2: params.edges[0].to.substring(4)})
-      }
-      else {
+      } else if (params != null && params.edges != null && params.edges.length > 0) {
+        this.$refs.side.loadDetails({
+          type: "edge",
+          name: params.edges[0].title,
+          id1: params.edges[0].from.substring(4),
+          id2: params.edges[0].to.substring(4)
+        })
+      } else {
         this.$refs.side.loadSelection(this.$refs.graph.getAllNodes())
         this.$refs.side.loadDetails()
       }
@@ -745,7 +731,7 @@ export default {
       let colInactive = this.colors.tabs.inactive;
       let colActive = this.colors.tabs.active;
       for (let idx in this.tabslist) {
-        if (idx == tabid) {
+        if (parseInt(idx) === tabid) {
           this.tabslist[idx].color = colActive
           this.tabslist[idx].note = false
         } else
@@ -755,7 +741,7 @@ export default {
       if (!skipReroute) {
         let route = ""
         if (this.gid !== undefined)
-          route = ("/explore/advanced/" + ['start', 'graph', 'list', 'history'][tabid] + "/" + this.gid)
+          route = ("/explore/" + ['quick/start', 'advanced/graph', 'advanced/list', 'advanced/history'][tabid] + "/" + this.gid)
         if (this.gid === undefined)
           route = ("/" + ['home', 'home', 'home', 'history'][tabid])
         if (this.$route.path !== route)
@@ -814,8 +800,8 @@ export default {
     }
     ,
     graphViewEvent: function (data) {
-      if(this.$refs.tools!=null && data.params!=null)
-        data.params.loops=this.$refs.tools.isLoops()
+      if (this.$refs.tools != null && data.params != null)
+        data.params.loops = this.$refs.tools.isLoops()
       this.$refs.graph.graphViewEvent(data)
     }
     ,

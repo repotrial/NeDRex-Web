@@ -92,6 +92,8 @@ export default {
     checkURLclear: function (view) {
       if (!this.$route.params.gid)
         this.$emit("clearURLEvent", view)
+      else
+        this.$emit("modifyURLEvent",view)
     },
 
     executeGraphLoad: function (bool) {
