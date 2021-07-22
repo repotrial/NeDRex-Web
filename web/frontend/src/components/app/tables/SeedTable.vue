@@ -37,6 +37,28 @@
         </v-tooltip>
       </template>
     </template>
+    <template v-slot:item.sourceDBs="{item}">
+      <template v-for="o in item.sourceDBs">
+        <v-tooltip bottom :key="item.id+o" v-if="o==='omim'">
+          <template v-slot:activator="{attrs,on}">
+            <v-chip style="font-size: smaller; color: gray" pill v-on="on" v-bind="attrs">OMIM</v-chip>
+          </template>
+          <span>The association between this <b>{{nodeName}}</b> and <br> one of the selected <b>disorders</b> was asserted by <b><i>OMIM (Online Mendelian Inheritance in Man)</i></b></span>
+        </v-tooltip>
+        <v-tooltip bottom :key="item.id+o" v-else-if="o==='disgenet'">
+          <template v-slot:activator="{attrs,on}">
+            <v-chip style="font-size: smaller; color: gray" pill v-on="on" v-bind="attrs">DisGeNET</v-chip>
+          </template>
+          <span>The association between this <b>{{nodeName}}</b> and <br> one of the selected <b>disorders</b> was asserted by <b><i>DisGeNET</i></b></span>
+        </v-tooltip>
+        <v-tooltip bottom :key="item.id+o" v-else>
+          <template v-slot:activator="{attrs,on}">
+            <v-chip style="font-size: smaller; color: gray" pill v-on="on" v-bind="attrs">{{o}}</v-chip>
+          </template>
+          <span>TODO SOURCE_DB TOOLTIP</span>
+        </v-tooltip>
+      </template>
+    </template>
     <template v-slot:header.origin="{header}">
       <v-tooltip bottom>
         <template v-slot:activator="{attr,on }">
@@ -244,6 +266,7 @@ export default {
     getSeeds() {
       return this.nodes;
     },
+
     keepIntersection: function () {
       let remove = []
       Object.keys(this.origins).forEach(seed => {
