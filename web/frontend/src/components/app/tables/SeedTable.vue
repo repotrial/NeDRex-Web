@@ -27,7 +27,7 @@
         <v-tooltip bottom :key="item.id+o">
           <template v-slot:activator="{attr,on }">
             <v-chip style="font-size: smaller; color: gray" pill v-on="on" v-bind="attr">{{
-                o[0]
+                o[0] + (o[2]!=null ? ":" + o[2].substring(0, 3).toUpperCase():"")
               }}
             </v-chip>
           </template>
@@ -48,13 +48,12 @@
         <span>Holds the sources the seed node was added by:<br><b>SUG=</b>Suggestion, <b>FILE</b>=File input or <b>METH</b>=Other method</span>
       </v-tooltip>
     </template>
-    <template v-slot:header.sourcedb="{header}">
+    <template v-slot:header.sourceDBs="{header}">
       <v-tooltip bottom>
         <template v-slot:activator="{attr,on }">
                           <span v-bind="attr" v-on="on">
-                          SourceDB
+                          SourceDBs
                           </span>
-
         </template>
         <span>Holds the source which provided information about the used association.</span>
       </v-tooltip>
@@ -82,7 +81,9 @@
     <template v-slot:footer>
       <div style="display: flex; justify-content: center;padding-top: 16px" v-if="nodes !=null && nodes.length>0">
         <SeedDownload v-show="download" @downloadListEvent="downloadNodes"></SeedDownload>
-        <SeedRemove v-show="remove" @clearEvent="clear" @intersectionEvent="keepIntersection"></SeedRemove>
+        <SeedRemove v-show="remove" @clearEvent="clear" @intersectionEvent="keepIntersection"
+                    :attributes="attributes" @removeEvent="removeNodes"></SeedRemove>
+        <SeedFilter v-show="filter" :attributes="attributes" @filterEvent="filterNodes"></SeedFilter>
       </div>
     </template>
   </v-data-table>
@@ -91,6 +92,7 @@
 <script>
 import SeedDownload from "@/components/app/tables/menus/SeedDownload";
 import SeedRemove from "@/components/app/tables/menus/SeedRemove";
+import SeedFilter from "@/components/app/tables/menus/SeedFilter";
 
 export default {
   name: "SeedTable",
@@ -101,16 +103,18 @@ export default {
     nodeName: String,
     download: Boolean,
     remove: Boolean,
+    filter: Boolean,
   },
 
   origins: Object,
   data() {
     return {
       nodes: [],
+      attributes: undefined,
       headers: [
         {text: 'Name', align: 'start', sortable: true, value: 'displayName'},
+        {text: 'SourceDB', align: 'start', sortable: true, value: 'sourceDBs'},
         {text: 'Origin', align: 'start', sortable: true, value: 'origin'},
-        // {text: 'sourceDB', align: 'start', sortable: true, value: 'sourcedb'},
         {text: 'Action', align: 'end', sortable: false, value: 'action'}]
     }
   },
@@ -147,6 +151,36 @@ export default {
       delete this.origins[id]
     },
 
+    removeNodes: function(data){
+      let all = data.all;
+      let attribute = data.attribute;
+      let value= data.value;
+      this.nodes.filter(n=>(n[attribute]!=null && (n[attribute].indexOf(value)>-1 && (n[attribute].length===1 || all)))).map(n=>n.id).forEach(this.removeNode)
+      this.updateAttributes()
+    },
+
+    filterNodes: function(data){
+      let all = data.all;
+      let attribute = data.attribute;
+      let value= data.value;
+      this.nodes.filter(n=> !(n[attribute]!=null && n[attribute].indexOf(value)>-1 && (n[attribute].length===1 || all))).map(n=>n.id).forEach(this.removeNode)
+      this.updateAttributes()
+    },
+
+    updateAttributes: function(){
+      let attributes = undefined
+      this.nodes.forEach(n=>{
+        if(n.sourceDBs !=null){
+          if(attributes==null)
+            attributes = {}
+          if(attributes.sourceDBs ==null)
+            attributes.sourceDBs=[]
+          n.sourceDBs.filter(s=>attributes.sourceDBs.indexOf(s)===-1).forEach(s=>attributes.sourceDBs.push(s))
+        }
+      })
+      this.$set(this,"attributes",attributes)
+    },
+
     clear: function () {
       this.nodes = []
       this.origins = {}
@@ -180,21 +214,31 @@ export default {
       dl.click()
       document.body.removeChild(dl)
     },
-    addSeeds(list, nameFrom) {
-      let ids = this.nodes.map(seed => seed.id)
+    addSeeds(entries) {
+      let ids = {}
+      this.nodes.forEach(seed => ids[seed.id]=seed)
       let count = 0
-      list.forEach(e => {
-        if (ids.indexOf(e.id) === -1) {
+      entries.data.forEach(e => {
+        let exists = e.id in ids
+        if (!exists) {
           count++
           this.nodes.push(e)
+        } else {
+          if (e.sourceDBs != null) {
+            let node = ids[e.id]
+            if (node.sourceDBs != null)
+              node.sourceDBs.concat(entries.sourceDBs)
+            else node.sourceDBs = [].concat(e.sourceDBs)
+          }
         }
         if (this.origins[e.id] !== undefined) {
-          if (this.origins[e.id].indexOf(nameFrom) === -1)
-            this.origins[e.id].push(nameFrom)
+          if (this.origins[e.id].indexOf(entries.origin) === -1)
+            this.origins[e.id].push(entries.origin)
         } else
-          this.origins[e.id] = [nameFrom]
+          this.origins[e.id] = [entries.origin]
       })
-      this.$emit("printNotificationEvent", "Added " + list.length + "from " + nameFrom + " (" + count + " new) seeds!", 1)
+      this.updateAttributes()
+      this.$emit("printNotificationEvent", "Added " + entries.data.length + "from " + entries.origin + " (" + count + " new) seeds!", 1)
     },
 
     getSeeds() {
@@ -215,7 +259,8 @@ export default {
 
   components: {
     SeedDownload,
-    SeedRemove
+    SeedRemove,
+    SeedFilter,
   }
 }
 

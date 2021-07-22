@@ -58,9 +58,9 @@ export default {
             return response.data
         }).then(data => {
           if (this.index!==undefined)
-            this.$emit("addToSelectionEvent", data, this.index, "SUG:" + val.text + "[" + this.suggestionType + "]")
+            this.$emit("addToSelectionEvent", {data:data, origin:"SUG:" + val.text + "[" + this.suggestionType + "]", source:this.suggestionType}, this.index)
           else
-            this.$emit("addToSelectionEvent", data, "SUG:" + val.text + "[" + this.suggestionType + "]")
+            this.$emit("addToSelectionEvent", {data:data, origin:"SUG:" + val.text + "[" + this.suggestionType + "]", source:this.suggestionType},)
         }).then(() => {
           this.suggestionModel = undefined
         }).catch(console.error)

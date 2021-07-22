@@ -98,7 +98,7 @@
 <!--                                    style="width: 97%; max-width: 97%"-->
 <!--                      ></v-file-input>-->
 <!--                    </div>-->
-                    <SeedTable ref="sourceTable" v-if="sourceTypeId!==undefined" :download="true" :remove="true"
+                    <SeedTable ref="sourceTable" v-if="sourceTypeId!==undefined" :download="true" :remove="true" :filter="true"
                                @printNotificationEvent="printNotification"
                                height="30vh"
                                :title="'Source nodes ('+($refs.sourceTable ? $refs.sourceTable.getSeeds().length : 0)+')'"

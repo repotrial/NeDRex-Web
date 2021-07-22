@@ -148,7 +148,7 @@ export default {
           if (response.data)
             return response.data
         }).then(data => {
-          this.$emit("addToSelectionEvent", data, "FILE:" + file.name)
+          this.$emit("addToSelectionEvent", {data:data,origin: "FILE:" + file.name})
         }).then(() => {
           this.fileInputModel = undefined
         }).catch(console.error)
@@ -174,7 +174,7 @@ export default {
         if (response.data)
           return response.data
       }).then(data => {
-        this.$emit("addToSelectionEvent", data, "PASTED")
+        this.$emit("addToSelectionEvent", {data:data, origin: "PASTED"})
       }).then(() => {
         this.clear()
       }).catch(error=>{

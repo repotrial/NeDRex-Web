@@ -160,7 +160,7 @@
                 </v-col>
                 <v-divider vertical v-show="seedTypeId!==undefined"></v-divider>
                 <v-col cols="6">
-                  <SeedTable ref="seedTable" v-if="seedTypeId!==undefined" :download="true" :remove="true"
+                  <SeedTable ref="seedTable" v-if="seedTypeId!==undefined" :download="true" :remove="true" :filter="true"
                              @printNotificationEvent="printNotification"
                              height="40vh"
                              :title="'Selected Seeds ('+($refs.seedTable ? $refs.seedTable.getSeeds().length : 0)+')'"
@@ -759,8 +759,8 @@ export default {
       }
     },
 
-    addToSelection: function (list, nameFrom) {
-      this.$refs.seedTable.addSeeds(list, nameFrom)
+    addToSelection: function (data) {
+      this.$refs.seedTable.addSeeds(data)
     },
     methodScores: function () {
       if (this.methodModel !== undefined && this.methodModel > -1)

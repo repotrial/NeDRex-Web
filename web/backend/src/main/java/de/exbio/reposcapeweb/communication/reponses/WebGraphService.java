@@ -1250,7 +1250,7 @@ public class WebGraphService {
         file.forEach(id -> {
             try {
                 if (!id.contains("."))
-                    id = DBConfig.getConfig().nodes.get(Graphs.getNode(type)).sourceId.toLowerCase() + "."+id;
+                    id = DBConfig.getConfig().nodes.get(Graphs.getNode(type)).sourceId.toLowerCase() + "." + id;
                 ids.add(nodeController.getId(type, id));
             } catch (NullPointerException ignore) {
                 try {
@@ -1281,23 +1281,37 @@ public class WebGraphService {
 
     public LinkedList<Object> getConnectedNodes(String sourceType, String targetType, Collection<Integer> sourceIds) {
         LinkedList<Integer> edgeIds = Graphs.getEdgesfromNodes(Graphs.getNode(sourceType), Graphs.getNode(targetType));
-        LinkedList<Object> out = new LinkedList<>();
-        HashSet<Integer> addedNodes = new HashSet<>();
+        HashMap<Integer, HashMap<String, Object>> out = new HashMap<>();
         int edgeId = edgeIds.getFirst();
         sourceIds.forEach(sourceId -> {
             try {
                 edgeController.getEdges(edgeId, Graphs.getNode(sourceType), sourceId, false).forEach(e -> {
                     int n = Graphs.getNode(sourceType) == Graphs.getNodesfromEdge(edgeId).first ? e.getId2() : e.getId1();
                     try {
-                        if (addedNodes.add(n))
-                            out.add(nodeController.getNode(targetType, n).getAsMap(new HashSet<>(Arrays.asList("id", "displayName", "primaryDomainId"))));
+                        HashMap<String, Object> edgeEntries = edgeController.edgeToAttributeList(edgeId, e);
+                        HashSet<String> sources = new HashSet<>();
+                        if (edgeEntries.containsKey("databases"))
+                            sources.addAll((List<String>) edgeEntries.get("databases"));
+                        else if (edgeEntries.containsKey("assertedBy"))
+                            sources.addAll((List<String>) edgeEntries.get("assertedBy"));
+
+                        if (!out.containsKey(n)) {
+                            HashMap<String, Object> nodeEntries = nodeController.getNode(targetType, n).getAsMap(new HashSet<>(Arrays.asList("id", "displayName", "primaryDomainId")));
+                            nodeEntries.put("sourceDBs", sources);
+                            out.put(n, nodeEntries);
+                        } else {
+                            sources.addAll((HashSet<String>) out.get(n).get("sources"));
+                            out.get(n).put("sourceDBs",sources);
+                        }
+
+
                     } catch (NullPointerException ignore) {
                     }
                 });
             } catch (NullPointerException ignore) {
             }
         });
-        return out;
+        return new LinkedList<>(out.values());
 
     }
 
