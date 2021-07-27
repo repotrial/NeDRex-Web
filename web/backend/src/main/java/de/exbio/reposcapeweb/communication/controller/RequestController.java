@@ -127,6 +127,13 @@ public class RequestController {
         return null;
     }
 
+    @RequestMapping(value="/getTableDownload",method=RequestMethod.POST)
+    @ResponseBody
+    public String getTableDownload(@RequestBody TableDownloadRequest req){
+         return webGraphService.getTableDownload(req.gid, req.type, req.name, req.attributes);
+
+    }
+
     @RequestMapping(value = "/getConnectedNodes", method = RequestMethod.POST)
     @ResponseBody
     public String getConnectedNodes(@RequestBody HashMap<String, Object> request) {

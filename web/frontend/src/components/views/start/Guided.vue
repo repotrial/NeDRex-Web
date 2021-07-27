@@ -84,21 +84,11 @@
                                               @addToSelectionEvent="addToSelection"
                                               style="justify-self: flex-end;margin-left: auto"></SuggestionAutocomplete>
                     </div>
-                    <NodeInput text="or provide Node IDs by" @addToSelectionEvent="addToSourceSelection" :idName="nodeIdTypeList[sourceTypeId]" :nodeType="nodeList[sourceTypeId].value" @printNotificationEvent="printNotification"></NodeInput>
-
-<!--                    <v-card-subtitle style="margin-left: -10px">or</v-card-subtitle>-->
-<!--                    <div-->
-<!--                      style="justify-content: center; display: flex; width: 100%; margin-bottom: 25px; margin-left: -10px">-->
-<!--                      <v-file-input :label="'by '+nodeIdTypeList[sourceTypeId]+' ids'"-->
-<!--                                    v-on:change="onSourceFileSelected"-->
-<!--                                    show-size-->
-<!--                                    prepend-icon="far fa-list-alt"-->
-<!--                                    v-model="fileInputModel[0]"-->
-<!--                                    dense-->
-<!--                                    style="width: 97%; max-width: 97%"-->
-<!--                      ></v-file-input>-->
-<!--                    </div>-->
-                    <SeedTable ref="sourceTable" v-if="sourceTypeId!==undefined" :download="true" :remove="true" :filter="true"
+                    <NodeInput text="or provide Node IDs by" @addToSelectionEvent="addToSourceSelection"
+                               :idName="nodeIdTypeList[sourceTypeId]" :nodeType="nodeList[sourceTypeId].value"
+                               @printNotificationEvent="printNotification"></NodeInput>
+                    <SeedTable ref="sourceTable" v-if="sourceTypeId!==undefined" :download="true" :remove="true"
+                               :filter="true"
                                @printNotificationEvent="printNotification"
                                height="30vh"
                                :title="'Source nodes ('+($refs.sourceTable ? $refs.sourceTable.getSeeds().length : 0)+')'"
@@ -132,20 +122,10 @@
                                               @addToSelectionEvent="addToSelection"
                                               style="justify-self: flex-end;margin-left: auto"></SuggestionAutocomplete>
                     </div>
-                    <NodeInput text="or provide Node IDs by" @addToSelectionEvent="addToTargetSelection" :idName="nodeIdTypeList[targetTypeId]" :nodeType="nodeList[targetTypeId].value" @printNotificationEvent="printNotification"></NodeInput>
+                    <NodeInput text="or provide Node IDs by" @addToSelectionEvent="addToTargetSelection"
+                               :idName="nodeIdTypeList[targetTypeId]" :nodeType="nodeList[targetTypeId].value"
+                               @printNotificationEvent="printNotification"></NodeInput>
 
-                    <!--                    <v-card-subtitle style="margin-left: -10px">or</v-card-subtitle>-->
-<!--                    <div-->
-<!--                      style="justify-content: center; display: flex; width: 100%; margin-bottom: 25px; margin-left: -10px">-->
-<!--                      <v-file-input :label="'by '+nodeIdTypeList[targetTypeId]+' ids'"-->
-<!--                                    v-on:change="onTargetFileSelected"-->
-<!--                                    show-size-->
-<!--                                    prepend-icon="far fa-list-alt"-->
-<!--                                    v-model="fileInputModel[1]"-->
-<!--                                    dense-->
-<!--                                    style="width: 97%; max-width: 97%"-->
-<!--                      ></v-file-input>-->
-<!--                    </div>-->
                     <SeedTable ref="targetTable" v-if="targetTypeId!==undefined" :download="true" :remove="true"
                                @printNotificationEvent="printNotification"
                                height="30vh"
@@ -163,7 +143,6 @@
           >
             Continue
           </v-btn>
-
           <v-btn text @click="makeStep(1,'cancel')">
             Reset
           </v-btn>
@@ -180,7 +159,6 @@
               intermediate node (in case an indirect path is selected) or to create a new edge type given a user defined
               name. Additional path specific configuration may be available.
             </v-card-subtitle>
-
             <v-container style="height: 80%">
               <v-row style="min-height: 35vh; margin-bottom: 15px">
                 <v-col cols="3">
@@ -264,7 +242,6 @@
                         </v-list-item-title>
                         <v-list-item-action>
                           <v-radio>
-
                           </v-radio>
                         </v-list-item-action>
                       </v-list-item>
@@ -284,7 +261,6 @@
                             <v-switch v-model="options.general.keep" style="margin-left: 5px"
                                       @click=" print(options.general.name) "></v-switch>
                             <span>Keep Intermediate Nodes</span>
-
                           </v-list-item>
                         </template>
                         <span>Decide if you want to keep all edges or replace the created paths by generating one connecting your source and target nodes directly.</span>
@@ -365,22 +341,13 @@
                          :legend="$refs.graph!==undefined" :tools="$refs.graph!==undefined" secondaryViewer="true"
                          @loadIntoAdvancedEvent="$emit('graphLoadEvent',{post: {id: gid}})">
                   <template v-slot:legend>
-                    <v-card style="width: 13vw; max-width: 13vw; padding-top: 35px" v-if="info!==undefined">
-                      <v-list>
-                        <v-list-item v-for="node in Object.keys(info.nodes)" :key="node">
-                          <v-list-item-icon>
-                            <v-icon left :color="getColoring('nodes',node,'light')">fas fa-genderless</v-icon>
-                          </v-list-item-icon>
-                          <v-list-item-title style="margin-left: -25px">
-                            {{ node.substr(0, 1).toUpperCase() + node.substr(1) }}
-                          </v-list-item-title>
-                          <v-list-item-subtitle>{{ info.nodes[node] }}</v-list-item-subtitle>
-                        </v-list-item>
-                      </v-list>
-                    </v-card>
+                    <Legend :countMap="legend.countMap" :entityGraph="legend.entityGraph" :options="legend.options"
+                            @graphViewEvent="toggleGraphElement"
+                            @downloadEntries="downloadfromLegend">
+                    </Legend>
                   </template>
                   <template v-slot:tools v-if="$refs.graph!==undefined">
-                    <v-card elevation="3" style="width: 13vw; max-width: 13vw; padding-top: 35px">
+                    <v-card elevation="3" style="width: 13vw; max-width: 13vw; padding-top: 35px; display:flex; justify-self: flex-end;margin-left: auto">
                       <v-container>
                         <v-list ref="list" style="margin-top: 10px;">
                           <v-tooltip left>
@@ -486,6 +453,7 @@ import SuggestionAutocomplete from "@/components/app/suggestions/SuggestionAutoc
 import SeedTable from "@/components/app/tables/SeedTable";
 import ResultDownload from "@/components/app/tables/menus/ResultDownload";
 import NodeInput from "@/components/app/input/NodeInput";
+import Legend from "@/components/views/graph/Legend";
 
 
 export default {
@@ -537,7 +505,13 @@ export default {
         },
         nodes: {},
         edges: {}
+      },
+      legend: {
+        countMap: {},
+        entityGraph: {},
+        options: {}
       }
+
     }
   },
 
@@ -589,10 +563,15 @@ export default {
       this.options.general.name = undefined
 
       this.info = undefined
-      if(this.$refs.sourceTable!=null)
+      if (this.$refs.sourceTable != null)
         this.$refs.sourceTable.clear()
-      if(this.$refs.targetTable!=null)
+      if (this.$refs.targetTable != null)
         this.$refs.targetTable.clear()
+      this.legend = {
+        countMap: {},
+        entityGraph: {},
+        options: {}
+      }
 
     },
     reset: function () {
@@ -670,40 +649,47 @@ export default {
       }).then(data => {
         this.info = data;
         this.gid = data.id
+        this.prepareLegend()
         this.$refs.graph.loadNetworkById(this.gid)
         this.loadTargetTable(this.gid)
       }).catch(console.error)
     },
 
-    addToSourceSelection: function(list,name){
-      this.addToSelection(list,0,name)
+    prepareLegend: function () {
+      ["nodes", "edges"].forEach(entity => {
+        this.legend.countMap[entity] = {}
+        this.legend.entityGraph[entity] = {}
+        Object.keys(this.info[entity]).forEach(name => {
+          this.legend.countMap[entity][name] = {name: name, selected: 0, total: this.info[entity][name]}
+          for (let k = 0; k < this.$global.metagraph[entity].length; k++) {
+            let el = this.$global.metagraph[entity][k]
+            if (el.label.toLowerCase() === name.toLowerCase()) {
+              if (entity === "edges")
+                this.legend.entityGraph[entity][k] = {
+                  id: k,
+                  name: name,
+                  node1: parseInt(el.to),
+                  node2: parseInt(el.from),
+                  directed: el.arrows != null
+                }
+              else
+                this.legend.entityGraph[entity][parseInt(el.id)] = {id: parseInt(el.id), name: name}
+            }
+          }
+        })
+      })
     },
 
-    addToTargetSelection: function(list,name){
-      this.addToSelection(list,1,name)
+    addToSourceSelection: function (list, name) {
+      this.addToSelection(list, 0, name)
+    },
+
+    addToTargetSelection: function (list, name) {
+      this.addToSelection(list, 1, name)
     },
 
     addToSelection: function (list, index, nameFrom) {
       this.$refs[["sourceTable", "targetTable"][index]].addSeeds(list, nameFrom)
-      // let table = this[["sources", "targets"][index]]
-      // let ids = table.map(n => n.id)
-      // let count = 0
-      // let origins = this.nodeOrigins[index]
-      // list.forEach(e => {
-      //   if (ids.indexOf(e.id) === -1) {
-      //     count++
-      //     table.push(e)
-      //   }
-      //
-      //
-      //   if (origins[e.id] !== undefined) {
-      //     if (origins[e.id].indexOf(nameFrom) === -1)
-      //       origins[e.id].push(nameFrom)
-      //   } else
-      //     origins[e.id] = [nameFrom]
-      //
-      // })
-      // this.$emit("printNotificationEvent", "Added " + list.length + "from " + nameFrom + " (" + count + " new) nodes!", 1)
     }
     ,
     loadTargetTable: function (gid) {
@@ -848,7 +834,23 @@ export default {
     getNodeLabel: function (name, idx) {
       let id = this.$utils.getNodes(this.$global.metagraph, name)[idx]
       return id.substring(0, 1).toUpperCase() + id.substring(1)
-    }
+    },
+
+    toggleGraphElement: function (event) {
+      this.$refs.graph.graphViewEvent(event)
+    },
+    downloadfromLegend: async function (entity, name) {
+      let table = await this.$http.getTableDownload(this.gid, entity, name, ["primaryDomainId", "displayName"])
+      this.download(this.gid+"_"+name+"-"+entity+".tsv",table)
+
+    },
+
+    getExtendedNodes: function (name, not) {
+      let nodes = this.$utils.getNodesExtended(this.configuration.entityGraph, name)
+      if (not === undefined)
+        return nodes;
+      return nodes[0] === not ? nodes[1] : nodes[0]
+    },
   }
   ,
   components: {
@@ -857,6 +859,7 @@ export default {
     Network,
     SeedTable,
     ResultDownload,
+    Legend,
   }
 
 }

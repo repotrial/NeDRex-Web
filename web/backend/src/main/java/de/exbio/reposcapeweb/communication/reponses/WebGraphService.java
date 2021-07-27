@@ -40,6 +40,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.toCollection;
+
 @Service
 public class WebGraphService {
     private Logger log = LoggerFactory.getLogger(WebGraphService.class);
@@ -215,7 +217,7 @@ public class WebGraphService {
                     String[] attributeArray = g.getCustomListAttributes(type);
                     finalList.addAttributes("edges", stringType, attributeArray, edgeController.getAttributeLabelMap(stringType));
 
-                    LinkedList<HashMap<String, Object>> attrMaps = edges.stream().map(p -> getCustomEdgeAttributeList(g, type, p)).collect(Collectors.toCollection(LinkedList::new));
+                    LinkedList<HashMap<String, Object>> attrMaps = edges.stream().map(p -> getCustomEdgeAttributeList(g, type, p)).collect(toCollection(LinkedList::new));
                     finalList.addEdges(stringType, attrMaps);
                     finalList.setTypes("edges", stringType, attributeArray, g.getCustomListAttributeTypes(type), g.areCustomListAttributeIds(type), g.getCustomEdgeAttributeTypes().get(type));
                 } else {
@@ -288,12 +290,12 @@ public class WebGraphService {
             HashSet<String> edgeIds = new HashSet<>(Arrays.asList(ids));
             if (typeId < 0) {
                 Pair<Integer, Integer> nodeIds = basis.getNodesfromEdge(typeId);
-                g.addCustomEdge(nodeIds.getFirst(), nodeIds.getSecond(), type, basis.getEdges().get(typeId).stream().filter(e -> edgeIds.contains(e.getId1() + "-" + e.getId2())).collect(Collectors.toCollection(LinkedList::new)));
+                g.addCustomEdge(nodeIds.getFirst(), nodeIds.getSecond(), type, basis.getEdges().get(typeId).stream().filter(e -> edgeIds.contains(e.getId1() + "-" + e.getId2())).collect(toCollection(LinkedList::new)));
                 int newId = g.getEdge(basis.getEdge(typeId));
                 g.addCustomEdgeAttributeTypes(newId, basis.getCustomAttributeTypes(typeId));
                 g.addCustomEdgeAttribute(newId, basis.getCustomAttributes(typeId));
             } else {
-                g.addEdges(typeId, basis.getEdges().get(typeId).stream().filter(e -> edgeIds.contains(e.getId1() + "-" + e.getId2())).collect(Collectors.toCollection(LinkedList::new)));
+                g.addEdges(typeId, basis.getEdges().get(typeId).stream().filter(e -> edgeIds.contains(e.getId1() + "-" + e.getId2())).collect(toCollection(LinkedList::new)));
             }
         });
 
@@ -1301,7 +1303,7 @@ public class WebGraphService {
                             out.put(n, nodeEntries);
                         } else {
                             sources.addAll((HashSet<String>) out.get(n).get("sources"));
-                            out.get(n).put("sourceDBs",sources);
+                            out.get(n).put("sourceDBs", sources);
                         }
 
 
@@ -1384,5 +1386,42 @@ public class WebGraphService {
         cache.put(cloneId, clone);
         addGraphToHistory(uid, cloneId);
         return cloneId;
+    }
+
+    public String getTableDownload(String gid, String type, String name, LinkedList<String> attributes) {
+        Graph g = getCachedGraph(gid);
+        return type.equals("nodes") ? getNodeTableDownload(g, name, attributes) : getEdgeTableDownload(g, name, attributes);
+    }
+
+    private String getEdgeTableDownload(Graph g, String name, LinkedList<String> attributes){
+        StringBuilder table = new StringBuilder();
+        for (String a : attributes)
+            table.append(table.length() == 0 ? "#" : "\t").append(a).append(1).append("\t").append(a).append(2);
+        table.append("\n");
+        Pair<Integer,Integer> ids = g.getNodesfromEdge(g.getEdge(name));
+        g.getEdges().get(g.getEdge(name)).forEach(e->{
+            HashMap<String,Object> node1 = nodeController.nodeToAttributeList(ids.first,e.getId1());
+            HashMap<String,Object> node2 = nodeController.nodeToAttributeList(ids.second,e.getId2());
+            StringBuilder line = new StringBuilder();
+            attributes.forEach(a->line.append(line.length() == 0 ? "" : "\t").append(node1.get(a)).append("\t").append(node2.get(a)).append(2));
+            table.append(line).append("\n");
+        });
+        return table.toString();
+    }
+
+    private String getNodeTableDownload(Graph g, String name, LinkedList<String> attributes) {
+        StringBuilder table = new StringBuilder();
+        for (String a : attributes)
+            table.append(table.length() == 0 ? "#" : "\t").append(a);
+        table.append("\n");
+        HashSet<Integer> ids = g.getNodes().get(Graphs.getNode(name)).values().stream().map(Node::getId).collect(toCollection(HashSet::new));
+        nodeController.nodesToAttributeList(Graphs.getNode(name),ids,new HashSet<>(attributes),null).forEach(n->{
+            StringBuilder line = new StringBuilder();
+            attributes.forEach(a->{
+                line.append(line.length()==0 ? "":"\t").append(n.get(a));
+            });
+            table.append(line).append("\n");
+        });
+        return table.toString();
     }
 }

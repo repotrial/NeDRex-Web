@@ -28,9 +28,11 @@
           <v-progress-circular color="primary" indeterminate size="40"></v-progress-circular>
         </div>
       </div>
-      <v-snackbar :value="selectMode" :timeout="-1" absolute top centered color="rgba(0,0,0,0.7)">Zooming and moving are disabled while selection mode is active!</v-snackbar>
+      <v-snackbar :value="selectMode" :timeout="-1" absolute top centered color="rgba(0,0,0,0.7)">Zooming and moving are
+        disabled while selection mode is active!
+      </v-snackbar>
       <VisNetwork v-if="nodeSet !== undefined && show" class="wrapper" ref="network"
-                  :style="{width: '100%',cursor:canvasCursor}"
+                  :style="{width: '100%',cursor:canvasCursor, border: 'lightgray 1px solid'}"
                   :nodes="nodeSet"
                   :edges="edgeSet"
                   :options="options"
@@ -49,7 +51,7 @@
             Legend
             <v-icon right>{{ showLegend ? "fas fa-angle-up" : "fas fa-angle-down" }}</v-icon>
           </v-btn>
-          <div v-show="showLegend" style="margin-top: -35px;z-index: 600">
+          <div v-show="showLegend" style="margin-top: -35px; margin-right:1px; z-index: 600">
             <slot name="legend"></slot>
           </div>
         </div>
@@ -61,7 +63,7 @@
               <v-icon right>{{ showTools ? "fas fa-angle-up" : "fas fa-angle-down" }}</v-icon>
             </v-btn>
           </div>
-          <div v-show="showTools" style="margin-top:-35px; z-index: 200">
+          <div v-show="showTools" style="margin-top:-35px; margin-right:1px;  z-index: 200">
             <slot name="tools"></slot>
           </div>
         </template>
@@ -612,6 +614,21 @@ export default {
     updateNodes: function (updates) {
       this.nodeSet.update(updates)
     },
+    getGroupNodes: function (groupName) {
+      return this.nodeSet.get({
+        filter: function (item) {
+          return item.group === groupName
+        }
+      })
+    },
+
+    getGroupEdges: function(groupName){
+      return this.edgeSet.get({
+        filter: function (item) {
+          return item.title === groupName
+        }
+      })
+    },
 
     recolorGraph: function (request) {
       let group = {
@@ -642,7 +659,7 @@ export default {
     /* Rectengular overlay selection methods */
 
     toggleSelectMode: function (select) {
-      this.selectMode=select;
+      this.selectMode = select;
       if (select) {
         this.options.interaction.zoomView = false;
         this.options.interaction.dragView = false;

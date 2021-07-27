@@ -74,6 +74,11 @@ const ApiService = {
     return axios(data)
   },
 
+  getTableDownload(gid, type, name, attributes) {
+    return this.post("/getTableDownload",{gid: gid, type:type, name:name, attributes:attributes}).then(response=>{
+      return response.data
+    })
+  }
 }
 
 export default ApiService

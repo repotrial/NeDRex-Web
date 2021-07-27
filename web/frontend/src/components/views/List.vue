@@ -1531,6 +1531,39 @@ export default {
         this.$emit("updateInfo", info)
       }).catch(err => console.error(err))
     },
+    downloadFromLegend: function (entity, name) {
+      //TODO resolve custom groups
+      if (entity === "nodes") {
+        let out = "#ID\tName\n"
+        this.nodes[name].forEach(node => out += node.primaryDomainId + "\t" + node.displayName + "\n")
+        this.download(name + "_nodes_" + this.gid + ".tsv", out)
+      }
+      if (entity === "edges") {
+        let out = "#ID1\tID2\tName1\tName2\n"
+        let edgeType = this.getExtendedNodes(name)
+        let nodeMap1 = {}
+        this.nodes[edgeType[0]].forEach(n=>nodeMap1[n.id]=n.primaryDomainId)
+        let nodeMap2 = {}
+        if(edgeType[0]===edgeType[1])
+          nodeMap2 = nodeMap1
+        else
+          this.nodes[edgeType[1]].forEach(n=>nodeMap2[n.id]=n.primaryDomainId)
+        this.edges[name].forEach(e => {
+          let ids = e.id.split('-')
+          out += nodeMap1[parseInt(ids[0])] + "\t" + nodeMap2[parseInt(ids[1])] + "\t" + e.node1 + "\t" + e.node2 + "\n"
+        })
+        this.download(name + "_edges_" + edgeType[0] + "-" + edgeType[1] + "_" + this.gid + ".tsv", out)
+      }
+    },
+    download: function (name, content) {
+      let dl = document.createElement('a')
+      dl.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(content))
+      dl.setAttribute('download', name)
+      dl.style.direction = 'none'
+      document.body.appendChild(dl)
+      dl.click()
+      document.body.removeChild(dl)
+    },
     resetCollapseDialog: function () {
       this.collapse.nodes = [];
       this.collapse.edges = []
@@ -1811,8 +1844,7 @@ export default {
               if (this.suggestion) {
                 if (item.suggested)
                   item.selected = false;
-              }
-              else if (!filterActive || (filterActive && this.filterNode(undefined, this.filters[type].query, item)))
+              } else if (!filterActive || (filterActive && this.filterNode(undefined, this.filters[type].query, item)))
                 item.selected = false;
             } else if (!filterActive || (filterActive && this.filterEdge(undefined, this.filters[type].query, item)))
               item.selected = false;

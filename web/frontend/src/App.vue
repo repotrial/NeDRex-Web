@@ -66,7 +66,9 @@
                   <Legend v-if="showLegend" :countMap="options.list.countMap" ref="legend"
                           :entityGraph="options.list.entityGraph"
                           :options="options.graph.legend"
-                          @graphViewEvent="graphViewEvent"></Legend>
+                          @graphViewEvent="graphViewEvent"
+                          @downloadEntries="downloadEntries"
+                  ></Legend>
 
                 </template>
                 <template v-slot:tools>
@@ -74,7 +76,6 @@
                          @toggleOptionEvent="toggleToolOption" @clickOptionEvent="clickToolOption"></Tools>
                 </template>
               </Network>
-              <!--              </Graph>-->
 
               <List ref="list"
                     v-show="selectedTabId===2"
@@ -481,6 +482,10 @@ export default {
       }
     }
     ,
+    downloadEntries: function (entity, name) {
+      if (this.$refs.list != null)
+        this.$refs.list.downloadFromLegend(entity, name)
+    },
     initComponents: function () {
       this.options.start = {skipVis: true, onlyConnected: true, selectedElements: []}
       this.options.graph = {
@@ -756,18 +761,14 @@ export default {
     ,
     adaptSidecard: function (param) {
       if (this.selectedTabId === 0) {
-        if (param !== undefined) {
-          this.$refs.side.loadFilter(param)
-        } else {
-          this.$refs.side.loadFilter(undefined)
-        }
+        this.$refs.side.loadFilter(param)
       }
       if (this.selectedTabId === 3)
         this.setSideVisible(true)
       if (this.selectedTabId === 2 && this.gid == null)
         this.setSideVisible(false)
-      if (this.selectedTabId === 1 && ((this.$refs.graph != null && !this.$refs.graph.isVisualized()) || this.gid == null))
-        this.setSideVisible(false)
+      if (this.selectedTabId === 1)
+        this.setSideVisible(this.$refs.graph != null && this.$refs.graph.isVisualized())
     }
     ,
     loadDetails: function (params) {
