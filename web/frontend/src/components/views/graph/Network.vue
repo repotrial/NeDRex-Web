@@ -1,6 +1,5 @@
 <template>
   <div class="graph-window" :style="windowStyle">
-    <!--    <i>{{ text }}</i>-->
     <v-progress-linear v-if="progress ===undefined" v-show="loading && !waiting" indeterminate
                        :color=loadingColor></v-progress-linear>
     <v-progress-linear v-else v-show="progress <100" :value="progress" :color=loadingColor></v-progress-linear>
@@ -51,7 +50,7 @@
             Legend
             <v-icon right>{{ showLegend ? "fas fa-angle-up" : "fas fa-angle-down" }}</v-icon>
           </v-btn>
-          <div v-show="showLegend" style="margin-top: -35px; margin-right:1px; z-index: 600">
+          <div v-show="showLegend" style="margin-top: -35px; margin-right:1px; z-index: 600; display: flex; justify-content: flex-end;margin-left: auto">
             <slot name="legend"></slot>
           </div>
         </div>

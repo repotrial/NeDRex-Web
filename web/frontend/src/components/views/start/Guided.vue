@@ -347,7 +347,8 @@
                     </Legend>
                   </template>
                   <template v-slot:tools v-if="$refs.graph!==undefined">
-                    <v-card elevation="3" style="width: 13vw; max-width: 13vw; padding-top: 35px; display:flex; justify-self: flex-end;margin-left: auto">
+                    <v-card elevation="3"
+                            style="width: 13vw; max-width: 13vw; min-width: 250px; padding-top: 35px; display:flex; justify-self: flex-end;margin-left: auto">
                       <v-container>
                         <v-list ref="list" style="margin-top: 10px;">
                           <v-tooltip left>
@@ -656,37 +657,32 @@ export default {
     },
 
     prepareLegend: function () {
-      ["nodes", "edges"].forEach(entity => {
-        this.legend.countMap[entity] = {}
-        this.legend.entityGraph[entity] = {}
-        Object.keys(this.info[entity]).forEach(name => {
-          this.legend.countMap[entity][name] = {name: name, selected: 0, total: this.info[entity][name]}
-          for (let k = 0; k < this.$global.metagraph[entity].length; k++) {
-            let el = this.$global.metagraph[entity][k]
-            if (el.label.toLowerCase() === name.toLowerCase()) {
-              if (entity === "edges")
-                this.legend.entityGraph[entity][k] = {
-                  id: k,
-                  name: name,
-                  node1: parseInt(el.to),
-                  node2: parseInt(el.from),
-                  directed: el.arrows != null
-                }
-              else
-                this.legend.entityGraph[entity][parseInt(el.id)] = {id: parseInt(el.id), name: name}
-            }
-          }
+      this.$http.get("/getConnectionGraph?gid=" + this.gid).then(response => {
+        if (response.data !== undefined)
+          return response.data
+      }).then(data => {
+        this.legend.entityGraph = data;
+      }).then(() => {
+        Object.keys(this.legend.entityGraph).forEach(entity => {
+          this.legend.countMap[entity] = {}
+          Object.keys(this.info[entity]).forEach(name => {
+            this.legend.countMap[entity][name] = {name: name, selected: 0, total: this.info[entity][name]}
+          })
         })
-      })
+      }).catch(console.error)
+
     },
 
     addToSourceSelection: function (list, name) {
       this.addToSelection(list, 0, name)
-    },
+    }
+
+    ,
 
     addToTargetSelection: function (list, name) {
       this.addToSelection(list, 1, name)
-    },
+    }
+    ,
 
     addToSelection: function (list, index, nameFrom) {
       this.$refs[["sourceTable", "targetTable"][index]].addSeeds(list, nameFrom)
@@ -702,7 +698,8 @@ export default {
           return {id: n.id, displayName: n.displayName}
         })
       }).catch(console.error)
-    },
+    }
+    ,
 
     getOrigins: function (id, index) {
       if (this.nodeOrigins[index][id] === undefined)
@@ -721,7 +718,8 @@ export default {
           }
           return out;
         })
-    },
+    }
+    ,
     printNotification: function (message, type) {
       this.$emit("printNotificationEvent", message, type)
     }
@@ -730,12 +728,14 @@ export default {
       let idx = this[["sources", "targets"][index]].map(e => e.id).indexOf(id)
       this[["sources", "targets"][index]].splice(idx, 1)
       delete this.nodeOrigins[index][id]
-    },
+    }
+    ,
 
     removeAll: function (index) {
       this[["sources", "targets"][index]] = []
       this.nodeOrigins[index] = {}
-    },
+    }
+    ,
     removeNonIntersecting: function (index) {
       let remove = []
       let seedOrigin = this.nodeOrigins[index]
@@ -752,10 +752,12 @@ export default {
 
     downloadSourceList: function (names, sep) {
       this.downloadList(0, names, sep)
-    },
+    }
+    ,
     downloadTargetList: function (names, sep) {
       this.downloadList(1, names, sep)
-    },
+    }
+    ,
     downloadList: function (index, names, sep) {
       let nodeType = this.nodeList[[this.sourceTypeId, this.targetTypeId][index]].value
       this.$http.post("mapToDomainIds", {
@@ -774,7 +776,8 @@ export default {
         }
         this.download(dlName, text)
       }).catch(console.error)
-    },
+    }
+    ,
     download: function (name, content) {
       let dl = document.createElement('a')
       dl.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(content))
@@ -783,7 +786,8 @@ export default {
       document.body.appendChild(dl)
       dl.click()
       document.body.removeChild(dl)
-    },
+    }
+    ,
 
     makeStep: async function (s, button) {
       if (button === "continue") {
@@ -816,51 +820,62 @@ export default {
       }
       if (this.step === 3)
         this.submitGraphGeneration()
-    },
+    }
+    ,
     getHeaders: function () {
       return [{text: "Name", align: "start", sortable: true, value: "displayName"}]
-    },
+    }
+    ,
     seedClicked: function (item) {
       this.focusNode(this.nodeList[this.sourceTypeId].value.substring(0, 3) + '_' + item.id)
-    },
+    }
+    ,
     targetClicked: function (item) {
       this.focusNode(this.nodeList[this.targetTypeId].value.substring(0, 3) + '_' + item.id)
-    },
+    }
+    ,
 
     getColoring: function (entity, name, style) {
       return this.$utils.getColoring(this.$global.metagraph, entity, name, style);
-    },
+    }
+    ,
 
     getNodeLabel: function (name, idx) {
       let id = this.$utils.getNodes(this.$global.metagraph, name)[idx]
       return id.substring(0, 1).toUpperCase() + id.substring(1)
-    },
+    }
+    ,
 
     toggleGraphElement: function (event) {
       this.$refs.graph.graphViewEvent(event)
-    },
+    }
+    ,
     downloadfromLegend: async function (entity, name) {
       let table = await this.$http.getTableDownload(this.gid, entity, name, ["primaryDomainId", "displayName"])
-      this.download(this.gid+"_"+name+"-"+entity+".tsv",table)
+      this.download(this.gid + "_" + name + "-" + entity + ".tsv", table)
 
-    },
+    }
+    ,
 
     getExtendedNodes: function (name, not) {
       let nodes = this.$utils.getNodesExtended(this.configuration.entityGraph, name)
       if (not === undefined)
         return nodes;
       return nodes[0] === not ? nodes[1] : nodes[0]
-    },
+    }
+    ,
   }
   ,
-  components: {
-    SuggestionAutocomplete,
+  components
+:
+{
+  SuggestionAutocomplete,
     NodeInput,
     Network,
     SeedTable,
     ResultDownload,
     Legend,
-  }
+}
 
 }
 </script>
