@@ -49,6 +49,7 @@
                 :window-style="graphWindowStyle"
                 :legend="showLegend"
                 :tools="showLegend"
+                :styles="showLegend"
                 style="position: sticky; "
                 @finishedEvent="setTabNotification(1)"
                 @multiSelectionEvent="setMultiSelection"
@@ -74,6 +75,11 @@
                 <template v-slot:tools>
                   <Tools v-if="showLegend" :physics="true" :physicsDisabled="physicsDisabled" ref="tools"
                          @toggleOptionEvent="toggleToolOption" @clickOptionEvent="clickToolOption"></Tools>
+                </template>
+                <template v-slot:styles>
+                  <VisualizationOptions v-if="showLegend" ref="styles"
+                                        @toggleOptionEvent="toggleToolOption" @clickOptionEvent="clickToolOption"
+                                        @switchOptionEvent="switchToolOption"></VisualizationOptions>
                 </template>
               </Network>
 
@@ -252,7 +258,7 @@ import BugSheet from "@/components/app/sheets/BugSheet";
 import HelpSheet from "@/components/app/sheets/HelpSheet";
 import VersionSheet from "@/components/app/sheets/VersionSheet";
 import Network from "@/components/views/graph/Network";
-import Vue from "vue";
+import VisualizationOptions from "@/components/views/graph/VisualizationOptions";
 import * as CONFIG from "@/Config";
 import Tools from "@/components/views/graph/Tools";
 
@@ -536,6 +542,12 @@ export default {
       this.$refs.list.setLoading(false)
     },
 
+    switchToolOption: function (option, value) {
+      if (option === "nodeStyle") {
+        this.$refs.graph.switchNodeStyle(value)
+      }
+    },
+
     toggleToolOption: function (option, value) {
       if (option === "physics")
         this.$refs.graph.setPhysics(value);
@@ -545,6 +557,8 @@ export default {
         this.$refs.graph.showUnconnected(value)
       if (option === "isolation")
         this.$refs.graph.graphViewEvent(value)
+      if (option === 'shadow')
+        this.$refs.graph.setShadow(value)
     },
 
     clickToolOption: function (option) {
@@ -692,6 +706,7 @@ export default {
     }
     ,
     loadSelection: function (params) {
+      console.log(params)
       if (params != null && params.nodes != null && params.nodes.length > 0) {
         this.$refs.tools.setSelectedNodeId(params.nodes[0])
         this.$refs.side.loadSelection(this.$refs.graph.identifyNeighbors(params.nodes[0]))
@@ -826,7 +841,8 @@ export default {
     Footer,
     BugSheet,
     HelpSheet,
-    VersionSheet
+    VersionSheet,
+    VisualizationOptions,
   }
   ,
 

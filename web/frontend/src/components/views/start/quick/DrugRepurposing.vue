@@ -807,9 +807,14 @@
                         <v-list dense>
                           <v-list-item>
                             <v-list-item-icon>
-                              <v-icon left :color="getColoring('nodes',['gene','protein'][seedTypeId],'light')"
-                                      size="43px">fas fa-genderless
-                              </v-icon>
+                              <div style="display: flex; align-content: center; justify-content: center;margin-left: 12px;margin-top:2px">
+                                <v-icon color="black" style="position: absolute;margin-top:-11px;"
+                                        size="42" >fas fa-genderless
+                                </v-icon>
+                                <v-icon size="18" style="position: absolute;margin-top:1px;" :color="getColoring('nodes',['gene','protein'][seedTypeId],'light')">fas
+                                  fa-circle
+                                </v-icon>
+                              </div>
                             </v-list-item-icon>
                             <v-list-item-title style="margin-left:-25px">{{ ['Gene', 'Protein'][seedTypeId] }} (Seed)
                             </v-list-item-title>
@@ -819,11 +824,12 @@
                             </v-list-item-subtitle>
                           </v-list-item>
                           <v-list-item>
-                            <v-list-item-icon>
-                              <v-icon left :color="getColoring('nodes',['gene','protein'][seedTypeId],'light')">fas
-                                fa-circle
-                              </v-icon>
-                            </v-list-item-icon>
+                              <v-list-item-icon>
+                                <v-icon left :color="getColoring('nodes',['gene','protein'][seedTypeId],'light')"
+                                        size="43px">fas fa-genderless
+                                </v-icon>
+
+                              </v-list-item-icon>
                             <v-list-item-title style="margin-left:-25px">{{ ['Gene', 'Protein'][seedTypeId] }} (Module)
                             </v-list-item-title>
                             <v-list-item-subtitle style="margin-right:-25px; margin-left:-25px">
@@ -1435,7 +1441,7 @@ export default {
           graph.showLoops(false)
           let seedIds = this.seeds.map(s => s.id)
           this.resultProgress += 3
-          graph.modifyGroups(this.results.targets.filter(n => seedIds.indexOf(n.id) === -1).map(n => ["gen_", "pro_"][this.seedTypeId] + n.id), ["geneModule", "proteinModule"][this.seedTypeId])
+          graph.modifyGroups(this.results.targets.filter(n => seedIds.indexOf(n.id) > -1).map(n => ["gen_", "pro_"][this.seedTypeId] + n.id), ["seedGene", "seedProtein"][this.seedTypeId])
           this.resultProgress += 2
         })
       })

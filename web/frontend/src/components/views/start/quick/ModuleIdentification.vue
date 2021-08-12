@@ -157,14 +157,18 @@
                                                 @addToSelectionEvent="addToSelection"
                                                 style="justify-self: flex-end;margin-left: auto"></SuggestionAutocomplete>
                       </div>
-                     <NodeInput text="or provide Seed IDs by" @addToSelectionEvent="addToSelection" :idName="['entrez','uniprot'][seedTypeId]" :nodeType="['gene', 'protein'][this.seedTypeId]" @printNotificationEvent="printNotification"></NodeInput>
+                      <NodeInput text="or provide Seed IDs by" @addToSelectionEvent="addToSelection"
+                                 :idName="['entrez','uniprot'][seedTypeId]"
+                                 :nodeType="['gene', 'protein'][this.seedTypeId]"
+                                 @printNotificationEvent="printNotification"></NodeInput>
                     </template>
                   </div>
                 </v-col>
 
                 <v-divider vertical v-show="seedTypeId!==undefined"></v-divider>
                 <v-col cols="6">
-                  <SeedTable ref="seedTable" v-if="seedTypeId!==undefined" :download="true" :remove="true" :filter="true"
+                  <SeedTable ref="seedTable" v-if="seedTypeId!==undefined" :download="true" :remove="true"
+                             :filter="true"
                              @printNotificationEvent="printNotification"
                              height="40vh"
                              :title="'Selected Seeds ('+($refs.seedTable ? $refs.seedTable.getSeeds().length : 0)+')'"
@@ -582,18 +586,26 @@
                         <v-list>
                           <v-list-item>
                             <v-list-item-icon>
-                              <v-icon left :color="getColoring('nodes',['gene','protein'][seedTypeId],'light')"
-                                      size="43px">fas fa-genderless
-                              </v-icon>
+                                <div
+                                  style="display: flex; align-content: center; justify-content: center;margin-left: 12px;margin-top: -2px">
+                                  <v-icon color="black" style="position: absolute;margin-top:-11px;"
+                                          size="42">fas fa-genderless
+                                  </v-icon>
+                                  <v-icon size="18" style="position: absolute;margin-top:1px;"
+                                          :color="getColoring('nodes',['gene','protein'][seedTypeId],'light')">fas
+                                    fa-circle
+                                  </v-icon>
+                                </div>
                             </v-list-item-icon>
                             <v-list-item-title style="margin-left: -25px">Seed {{ ['Gene', 'Protein'][seedTypeId] }}
                             </v-list-item-title>
                             <v-list-item-subtitle>{{ seeds.length }}</v-list-item-subtitle>
                           </v-list-item>
-                          <v-list-item>
+                          <v-list-item style="margin-top: -15px">
                             <v-list-item-icon>
-                              <v-icon left :color="getColoring('nodes',['gene','protein'][seedTypeId],'light')">fas
-                                fa-circle
+                              <v-icon size="42" left
+                                      :color="getColoring('nodes',['gene','protein'][seedTypeId],'light')"
+                              >fas fa-genderless
                               </v-icon>
                             </v-list-item-icon>
                             <v-list-item-title style="margin-left: -25px">Module {{ ['Gene', 'Protein'][seedTypeId] }}
@@ -1118,8 +1130,8 @@ export default {
         return this.$refs.graph;
       })
     },
-    getColoring: function (entity, name) {
-      return this.$utils.getColoring(this.$global.metagraph, entity, name);
+    getColoring: function (entity, name, style) {
+      return this.$utils.getColoring(this.$global.metagraph, entity, name, style);
     },
     focus: function () {
       this.$emit("focusEvent")
@@ -1129,7 +1141,7 @@ export default {
         graph.loadNetworkById(graphId).then(() => {
           graph.showLoops(false)
           let seedIds = this.seeds.map(s => s.id)
-          graph.modifyGroups(this.results.targets.filter(n => seedIds.indexOf(n.id) === -1).map(n => ["gen_", "pro_"][this.seedTypeId] + n.id), ["geneModule", "proteinModule"][this.seedTypeId])
+          graph.modifyGroups(this.results.targets.filter(n => seedIds.indexOf(n.id) > -1).map(n => ["gen_", "pro_"][this.seedTypeId] + n.id), ["seedGene", "seedProtein"][this.seedTypeId])
         })
       })
     },

@@ -17,10 +17,20 @@
           <i v-else>No network has been selected yet!</i>
         </template>
         <div v-else-if="!show && !loading && !secondaryViewer">
-          <i>Create a View for the Network</i>
-          <v-btn icon @click="visualize();">
-            <v-icon>fas fa-play</v-icon>
-          </v-btn>
+          <v-card v-if="nodeSet !== undefined" :img="getThumbnail()" height="20vh">
+            <v-card-title>
+              <i>Create a View for the Network</i>
+              <v-btn icon @click="visualize();">
+                <v-icon>fas fa-play</v-icon>
+              </v-btn>
+            </v-card-title>
+          </v-card>
+          <div v-else>
+            <i>Create a View for the Network</i>
+            <v-btn icon @click="visualize();">
+              <v-icon>fas fa-play</v-icon>
+            </v-btn>
+          </div>
         </div>
         <div v-show="show">
           <i>Generating Network Layout...</i>
@@ -42,28 +52,41 @@
                   v-on:mousedown.right="dragMouseDown"
       ></VisNetwork>
       <div style="position: absolute;"
-           v-if=" !waiting && show">
+           v-if=" (!waiting && show )|| keepLegends">
         <div v-if="legend">
-          <v-btn @click="showLegend= !showLegend" :title="showLegend ? 'Hide':'Show'" plain
+          <v-btn @click="togglePanel(0)" :title="this.showPanels[0] ? 'Hide':'Show'" plain
                  style="display: flex; justify-content: flex-end; margin-left: auto; z-index: 201">
             <v-icon left>fas fa-scroll</v-icon>
             Legend
-            <v-icon right>{{ showLegend ? "fas fa-angle-up" : "fas fa-angle-down" }}</v-icon>
+            <v-icon right>{{ this.showPanels[0] ? "fas fa-angle-up" : "fas fa-angle-down" }}</v-icon>
           </v-btn>
-          <div v-show="showLegend" style="margin-top: -35px; margin-right:1px; z-index: 600; display: flex; justify-content: flex-end;margin-left: auto">
+          <div v-show="this.showPanels[0]"
+               style="margin-top: -35px; margin-right:1px; z-index: 600; display: flex; justify-content: flex-end;margin-left: auto">
             <slot name="legend"></slot>
           </div>
         </div>
         <template v-if="tools">
           <div style="display: flex; justify-content: flex-end;">
-            <v-btn @click="showTools= !showTools" :title="showTools ? 'Hide':'Show'" plain style="z-index: 201">
+            <v-btn @click="togglePanel(1)" :title="this.showPanels[1] ? 'Hide':'Show'" plain style="z-index: 201">
               <v-icon left>fas fa-tools</v-icon>
               Tools
-              <v-icon right>{{ showTools ? "fas fa-angle-up" : "fas fa-angle-down" }}</v-icon>
+              <v-icon right>{{ this.showPanels[1] ? "fas fa-angle-up" : "fas fa-angle-down" }}</v-icon>
             </v-btn>
           </div>
-          <div v-show="showTools" style="margin-top:-35px; margin-right:1px;  z-index: 200">
+          <div v-show="this.showPanels[1]" style="margin-top:-35px; margin-right:1px;  z-index: 200">
             <slot name="tools"></slot>
+          </div>
+        </template>
+        <template v-if="styles">
+          <div style="display: flex; justify-content: flex-end;">
+            <v-btn @click="togglePanel(2)" :title="this.showPanels[2] ? 'Hide':'Show'" plain style="z-index: 201">
+              <v-icon left>fas fa-palette</v-icon>
+              Styling
+              <v-icon right>{{ this.showPanels[2] ? "fas fa-angle-up" : "fas fa-angle-down" }}</v-icon>
+            </v-btn>
+          </div>
+          <div v-show="this.showPanels[2]" style="margin-top:-35px; margin-right:1px;  z-index: 200">
+            <slot name="styles"></slot>
           </div>
         </template>
       </div>
@@ -116,6 +139,7 @@
 
 import {DataSet} from 'vue-vis-network'
 import {Network} from "vue-vis-network";
+import * as CONFIG from "@/Config";
 
 export default {
   name: "Network",
@@ -123,6 +147,7 @@ export default {
   props: {
     legend: Boolean,
     tools: Boolean,
+    styles: Boolean,
     configuration: Object,
     startGraph: false,
     progress: Number,
@@ -135,12 +160,11 @@ export default {
 
   extractedDefaults: false,
   colors: Object,
-  unconnected: [],
+  groups: Object,
 
   data() {
     return {
-      showLegend: true,
-      showTools: true,
+      showPanels: [true, false, false],
       edgeSet: Object,
       nodeSet: undefined,
       options: Object,
@@ -157,6 +181,7 @@ export default {
       disableAdvancedLoading: false,
       clickParams: {t0: 0, threshold: 250},
       selectMode: false,
+      keepLegends: false,
     }
   },
 
@@ -209,6 +234,8 @@ export default {
         this.layout = defaults.layout;
         this.physics = defaults.physics;
         this.extractedDefaults = true;
+        this.groups = this.$utils.clone(this.options.groups)
+        console.log(this.groups)
         this.reloadOptions()
       }
     },
@@ -377,9 +404,18 @@ export default {
       }
     },
     readGIDfromRoute: function () {
-      this.gid = this.$route.params["gid"]
+      return this.$route.params["gid"]
     }
     ,
+    togglePanel: function (index) {
+      let state = !this.showPanels[index]
+      if (state) {
+        for (let idx = 0; idx < this.showPanels.length; idx++) {
+          this.$set(this.showPanels, idx, false)
+        }
+      }
+      this.$set(this.showPanels, index, state)
+    },
 
     modifyGroups: function (nodeIds, group) {
       let updates = this.nodeSet.get().filter(n => nodeIds.indexOf(n.id) > -1).map(n => {
@@ -389,8 +425,9 @@ export default {
     },
     setPhysics: function (bool) {
       this.saveLayout()
-      this.options.physics.enabled = bool
+      this.$set(this.options.physics, 'enabled', bool)
       this.reloadOptions()
+      return bool
     },
 
     showUnconnected: function (state) {
@@ -433,6 +470,12 @@ export default {
       this.saveLayout()
     }
     ,
+
+    setShadow: function (state) {
+      this.saveLayout()
+      this.options.nodes.shadow.enabled = state;
+      this.reloadOptions()
+    },
 
     saveLayout: function () {
       try {
@@ -502,6 +545,9 @@ export default {
       }
     }
     ,
+    getThumbnail: function () {
+      return CONFIG.HOST_URL + CONFIG.CONTEXT_PATH + "/api/getThumbnailPath?gid=" + this.readGIDfromRoute()
+    },
 
     getAllNodes: function () {
       let nodes = []
@@ -621,7 +667,36 @@ export default {
       })
     },
 
-    getGroupEdges: function(groupName){
+    switchNodeStyle: async function (style) {
+      let physicsEnabled = this.hasPhysicsEnabled()
+      if (physicsEnabled)
+        await this.setPhysics(false)
+      if (style === 'shapes') {
+        Object.keys(this.options.groups).forEach(g => this.options.groups[g].shape = this.groups[g].shape)
+      } else {
+        Object.values(this.options.groups).forEach(g => g.shape = style)
+      }
+      this.reloadOptions();
+      this.redraw(physicsEnabled, true);
+    },
+
+    redraw: function (enablePhysics, keepLegends) {
+      if (this.isVisualized()) {
+        this.keepLegends = keepLegends
+        this.$nextTick().then(() => {
+          this.show = false
+        }).then(() => this.show = true).then(() => this.keepLegends = false)
+      }
+    },
+
+    // execWhenVisualized: function (callback) {
+    //   if (!this.isVisualized)
+    //     setTimeout(this.execWhenVisualized, 500, callback)
+    //   else
+    //     setTimeout(callback(),50)
+    // },
+
+    getGroupEdges: function (groupName) {
       return this.edgeSet.get({
         filter: function (item) {
           return item.title === groupName

@@ -5,6 +5,7 @@ import de.exbio.reposcapeweb.configs.schema.ColorConfig;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.Locale;
 
 public class VisConfig {
 
@@ -25,21 +26,21 @@ public class VisConfig {
         groups.forEach((name,vals)->{
             if(name.equals("other"))
                 return;
-            String moduleName = "";
-            boolean module = name.endsWith("Module");
-            if(module){
-                moduleName = name;
-                name = name.substring(0,name.length()-6);
+            String seedName = "";
+            boolean seed = name.startsWith("seed");
+            if(seed){
+                seedName = name;
+                name = name.substring(4).toLowerCase();
             }
             ColorConfig colors = DBConfig.getConfig().nodes.get(Graphs.getNode(name)).colors;
             HashMap<String,Object> colorMap = new HashMap<>();
-            colorMap.put("border", module? colors.light : colors.main);
+            colorMap.put("border", seed? "black" : colors.light);
             colorMap.put("background",colors.light);
             HashMap<String,Object> highlight = new HashMap<>();
-            highlight.put("border", module? colors.light : colors.main);
+            highlight.put("border", seed? "black" : colors.main);
             highlight.put("background",colors.light);
             colorMap.put("highlight",highlight);
-            ((HashMap<String,Object>) groups.get(module ? moduleName: name)).put("color",colorMap);
+            ((HashMap<String,Object>) groups.get(seed ? seedName: name)).put("color",colorMap);
         });
     }
 

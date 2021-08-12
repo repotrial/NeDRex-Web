@@ -359,6 +359,7 @@ export default {
     toggleEdge: function (edgeIndex) {
       let index = this.edgeModel.indexOf(edgeIndex)
       this.$refs.startgraph.setEdgeVisible(this.edges[edgeIndex].label,!this.edges[edgeIndex].hidden,true)
+      this.edges[edgeIndex].hidden = !this.edges[edgeIndex].hidden
       if (index >= 0) {
         let remove = -1;
         let restDepending = []

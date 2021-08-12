@@ -16,7 +16,7 @@
           <span>Fits the view to the whole network.</span>
         </v-tooltip>
         <ToolSwitch v-model="physicsOn" :disabled="physicsDisabled" icon="fas fa-exchange-alt" label="Node interactions"
-                    @click="$emit('toggleOptionEvent','physics',physicsOn)">
+                    @click="$emit('toggleOptionEvent','physics',physicsOn)" ref="physicsSwitch">
           <template v-slot:tooltip:disabled>
             <span>This option is disabled because there are too many <br>entities in the graph. As a result your browser might crash.</span>
           </template>
@@ -38,7 +38,10 @@
         </ToolSwitch>
         <ToolSwitch v-model="isolationOn" :disabled="selectedNodeId==null" label="Isolate Component" icon="fas fa-link" @click="emitIsolation()">
           <template v-slot:tooltip>
-            <span>Reduce the visibility to the connected component of the currently selected node only.<br> If no node is selected this option is disabled.</span>
+            <span>Reduce the visibility to the connected component of the currently selected node only. <br> If no node is selected this option is disabled.</span>
+          </template>
+          <template v-slot:tooltip:disabled>
+            <span>This option is disabled because no node is selected to define a connected component on.</span>
           </template>
         </ToolSwitch>
       </v-list>
@@ -85,6 +88,10 @@ export default {
     },
     isLoops: function () {
       return this.loopsOn;
+    },
+
+    setPhysics:function(state){
+      this.$set(this,"physicsOn",state)
     }
   }
 

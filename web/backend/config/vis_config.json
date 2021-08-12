@@ -10,34 +10,42 @@
     },
     "groups": {
       "drug": {
+        "shape": "star",
         "color": {
         }
       },
       "disorder": {
+        "shape": "hexagon",
         "color": {
         }
       },
       "gene": {
+        "shape": "triangle",
         "color": {
         }
       },
-      "geneModule": {
+      "seedGene": {
+        "shape": "triangle",
         "color": {
         }
       },
       "protein": {
+        "shape": "triangleDown",
         "color": {
         }
       },
-      "proteinModule": {
+      "seedProtein": {
+        "shape": "triangleDown",
         "color": {
         }
       },
       "pathway": {
+        "shape": "square",
         "color": {
         }
       },
       "other": {
+        "shape": "dot",
         "color": {
         }
       }
@@ -45,7 +53,10 @@
     "nodes": {
       "fixed": false,
       "physics": true,
-      "borderWidth": 2,
+      "shadow": {
+        "enabled": true
+      },
+      "borderWidth": 1,
       "font": {
         "color": "black"
       }
