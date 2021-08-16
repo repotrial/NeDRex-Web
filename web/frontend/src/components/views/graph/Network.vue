@@ -853,6 +853,10 @@ export default {
 
     dialogResolve: function (vis) {
       this.sizeDialog = false;
+      if(this.secondaryViewer && !this.disableAdvancedLoading && !vis) {
+        this.keepLegends = true;
+        this.togglePanel(1);
+      }
       this.configuration.sizeWarning = !vis;
       if (vis) {
         this.visualize()
