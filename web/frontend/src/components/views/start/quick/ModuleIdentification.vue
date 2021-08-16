@@ -588,7 +588,7 @@
                             <v-list-item-icon>
                                 <div
                                   style="display: flex; align-content: center; justify-content: center;margin-left: 12px;margin-top: -2px">
-                                  <v-icon color="black" style="position: absolute;margin-top:-11px;"
+                                  <v-icon color="#fbe223" style="position: absolute;margin-top:-11px;"
                                           size="42">fas fa-genderless
                                   </v-icon>
                                   <v-icon size="18" style="position: absolute;margin-top:1px;"

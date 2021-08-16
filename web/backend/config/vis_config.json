@@ -56,7 +56,7 @@
       "shadow": {
         "enabled": true
       },
-      "borderWidth": 1,
+      "borderWidth": 2,
       "font": {
         "color": "black"
       }

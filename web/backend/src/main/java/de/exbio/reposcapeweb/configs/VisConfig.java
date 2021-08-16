@@ -34,10 +34,10 @@ public class VisConfig {
             }
             ColorConfig colors = DBConfig.getConfig().nodes.get(Graphs.getNode(name)).colors;
             HashMap<String,Object> colorMap = new HashMap<>();
-            colorMap.put("border", seed? "black" : colors.light);
+            colorMap.put("border", seed? "#fbe223" : colors.light);
             colorMap.put("background",colors.light);
             HashMap<String,Object> highlight = new HashMap<>();
-            highlight.put("border", seed? "black" : colors.main);
+            highlight.put("border", seed? "#fbe223" : colors.main);
             highlight.put("background",colors.light);
             colorMap.put("highlight",highlight);
             ((HashMap<String,Object>) groups.get(seed ? seedName: name)).put("color",colorMap);
