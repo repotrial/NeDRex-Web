@@ -6,6 +6,8 @@ import de.exbio.reposcapeweb.db.io.ImportService;
 import de.exbio.reposcapeweb.db.services.controller.EdgeController;
 import de.exbio.reposcapeweb.db.services.controller.NodeController;
 import de.exbio.reposcapeweb.db.updates.UpdateService;
+import de.exbio.reposcapeweb.filter.FilterEntry;
+import de.exbio.reposcapeweb.filter.FilterType;
 import de.exbio.reposcapeweb.tools.ToolService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,9 +19,8 @@ import org.springframework.boot.web.servlet.support.SpringBootServletInitializer
 import org.springframework.context.event.EventListener;
 import org.springframework.core.env.Environment;
 
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.TreeSet;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @SpringBootApplication
 public class ReposcapewebApplication extends SpringBootServletInitializer {
@@ -61,7 +62,7 @@ public class ReposcapewebApplication extends SpringBootServletInitializer {
 //
 //    }
 
-    public int hash(String params, TreeSet<Integer> ids, String method){
+    public int hash(String params, TreeSet<Integer> ids, String method) {
         return Objects.hash(params, Arrays.hashCode(ids.toArray()), method);
     }
 
@@ -74,8 +75,7 @@ public class ReposcapewebApplication extends SpringBootServletInitializer {
         dbService.setImportInProgress(true);
         importService.importNodeData();
 
-
-        //TODO maybe move importJOb and importHistory to after update?
+        //TODO maybe move importJob and importHistory to after update?
         jobController.importJobsHistory();
         importService.importHistory();
 
@@ -91,7 +91,7 @@ public class ReposcapewebApplication extends SpringBootServletInitializer {
         }
         if (env.getProperty("update.db-dump").equals("true"))
             updateService.renewDBDumps();
-        log.info("Startup took "+(int)((System.currentTimeMillis()-start)/1000)+"s");
+        log.info("Startup took " + (int) ((System.currentTimeMillis() - start) / 1000) + "s");
         log.debug("Current RAM usage: " + (int) ((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024)
                 + "MB");
         log.info("Loaded " + nodeController.getCount() + " nodes and " + edgeController.getSize() + " edges!");

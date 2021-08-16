@@ -102,6 +102,7 @@
                 </v-list-item-action>
               </v-col>
             </v-row>
+            <ExampleSeeds :seedTypeId="seedTypeId" @addSeedsEvent="addToSelection"></ExampleSeeds>
             <v-container style="height: 55vh; margin: 15px;">
               <v-row style="height: 100%">
                 <v-col cols="6">
@@ -554,6 +555,7 @@ import SeedTable from "@/components/app/tables/SeedTable";
 import ResultDownload from "@/components/app/tables/menus/ResultDownload";
 import SeedDownload from "@/components/app/tables/menus/SeedDownload";
 import NodeInput from "@/components/app/input/NodeInput";
+import ExampleSeeds from "@/components/start/quick/ExampleSeeds";
 
 export default {
   name: "DrugRepurposing",
@@ -914,6 +916,7 @@ export default {
     Network,
     SeedTable,
     ResultDownload,
+    ExampleSeeds,
   }
 }
 </script>

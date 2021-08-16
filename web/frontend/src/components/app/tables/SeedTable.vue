@@ -265,6 +265,7 @@ export default {
       document.body.removeChild(dl)
     },
     addSeeds(entries) {
+      console.log(entries)
       let ids = {}
       this.nodes.forEach(seed => ids[seed.id] = seed)
       let count = 0

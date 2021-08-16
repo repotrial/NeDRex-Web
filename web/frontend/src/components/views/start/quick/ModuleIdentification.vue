@@ -44,7 +44,6 @@
             class="mb-4"
             min-height="80vh"
           >
-
             <v-card-subtitle class="headline">1. Seed Configuration</v-card-subtitle>
             <v-card-subtitle style="margin-top: -25px">Add seeds to your
               list
@@ -105,6 +104,7 @@
                 </v-list-item-action>
               </v-col>
             </v-row>
+            <ExampleSeeds :seedTypeId="seedTypeId" @addSeedsEvent="addToSelection"></ExampleSeeds>
             <v-container style="height: 55vh; margin-top: 15px">
               <v-row style="height: 100%">
                 <v-col cols="6">
@@ -586,16 +586,16 @@
                         <v-list>
                           <v-list-item>
                             <v-list-item-icon>
-                                <div
-                                  style="display: flex; align-content: center; justify-content: center;margin-left: 12px;margin-top: -2px">
-                                  <v-icon color="#fbe223" style="position: absolute;margin-top:-11px;"
-                                          size="42">fas fa-genderless
-                                  </v-icon>
-                                  <v-icon size="18" style="position: absolute;margin-top:1px;"
-                                          :color="getColoring('nodes',['gene','protein'][seedTypeId],'light')">fas
-                                    fa-circle
-                                  </v-icon>
-                                </div>
+                              <div
+                                style="display: flex; align-content: center; justify-content: center;margin-left: 12px;margin-top: -2px">
+                                <v-icon color="#fbe223" style="position: absolute;margin-top:-11px;"
+                                        size="42">fas fa-genderless
+                                </v-icon>
+                                <v-icon size="18" style="position: absolute;margin-top:1px;"
+                                        :color="getColoring('nodes',['gene','protein'][seedTypeId],'light')">fas
+                                  fa-circle
+                                </v-icon>
+                              </div>
                             </v-list-item-icon>
                             <v-list-item-title style="margin-left: -25px">Seed {{ ['Gene', 'Protein'][seedTypeId] }}
                             </v-list-item-title>
@@ -748,6 +748,7 @@ import SeedTable from "@/components/app/tables/SeedTable";
 import ResultDownload from "@/components/app/tables/menus/ResultDownload";
 import HeaderBar from "@/components/app/Header";
 import NodeInput from "@/components/app/input/NodeInput";
+import ExampleSeeds from "@/components/start/quick/ExampleSeeds";
 
 export default {
   name: "ModuleIdentification",
@@ -943,6 +944,19 @@ export default {
       this.$refs.graph.setPhysics(this.graph.physics)
     }
     ,
+
+    loadExample: async function(nr){
+      let example = await this.$http.getQuickExample(nr, ["gene","protein"][this.seedTypeId])
+      let origin = "Example "+(nr+1)+": ("
+      switch (nr){
+        case 0: origin+="Alzheimer)"; break;
+        case 1: origin+="Somatostatine and Analogues"; break;
+        case 2: origin+="Cancer Genes"; break;
+      }
+      origin+=")"
+      this.addToSelection({data:example, origin:origin})
+    },
+
     submitAlgorithm: function () {
       let params = {}
       let method = this.methods[this.methodModel].id
@@ -1156,7 +1170,8 @@ export default {
     SeedRemove,
     SeedTable,
     ResultDownload,
-    Network
+    Network,
+    ExampleSeeds
   }
 }
 </script>

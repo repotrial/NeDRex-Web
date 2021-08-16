@@ -20,6 +20,7 @@ import de.exbio.reposcapeweb.db.history.HistoryController;
 import de.exbio.reposcapeweb.db.services.controller.EdgeController;
 import de.exbio.reposcapeweb.db.services.controller.NodeController;
 import de.exbio.reposcapeweb.filter.FilterEntry;
+import de.exbio.reposcapeweb.filter.FilterType;
 import de.exbio.reposcapeweb.filter.NodeFilter;
 import de.exbio.reposcapeweb.tools.ToolService;
 import de.exbio.reposcapeweb.utils.*;
@@ -464,6 +465,16 @@ public class WebGraphService {
             }
         }
         return suggestions;
+    }
+
+    public LinkedList<Integer> getQuickExample(String nodeName, int nr){
+        HashSet<Integer> ids = new HashSet<>();
+        switch (nr){
+            case 0 -> ids.addAll(nodeController.filterDisorder().distinctMatches(FilterType.UMBRELLA_DISORDER,"alzheimer disease").entrySet().stream().findFirst().get().getValue().stream().map(FilterEntry::getNodeId).collect(Collectors.toSet()));
+            case 1 -> ids.addAll(nodeController.filterDrugs().distinctMatches(FilterType.CATEGORY,"breast cancer resistance protein inhibitors").entrySet().stream().findFirst().get().getValue().stream().map(FilterEntry::getNodeId).collect(Collectors.toSet()));
+            case 2-> ids.addAll(nodeController.filterGenes().matches("(pten|brca1|brca2)").toList(-1).stream().filter(i->!i.getName().startsWith("entrez")).map(FilterEntry::getNodeId).collect(Collectors.toSet()));
+        }
+        return new LinkedList(ids);
     }
 
     public Collection<Integer> getSuggestionEntry(String gid, String nodeName, String sid) {

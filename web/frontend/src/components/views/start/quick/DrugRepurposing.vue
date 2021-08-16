@@ -135,6 +135,7 @@
                 </v-list-item-action>
               </v-col>
             </v-row>
+            <ExampleSeeds :seedTypeId="seedTypeId" @addSeedsEvent="addToSelection"></ExampleSeeds>
             <v-container style="height: 55vh;margin: 15px;">
               <v-row style="height: 100%">
                 <v-col cols="6">
@@ -963,6 +964,7 @@ import SuggestionAutocomplete from "@/components/app/suggestions/SuggestionAutoc
 import SeedTable from "@/components/app/tables/SeedTable";
 import ResultDownload from "@/components/app/tables/menus/ResultDownload";
 import NodeInput from "@/components/app/input/NodeInput";
+import ExampleSeeds from "@/components/start/quick/ExampleSeeds";
 
 export default {
   name: "CombinedRepurposing",
@@ -1486,6 +1488,7 @@ export default {
     NodeInput,
     SeedTable,
     ResultDownload,
+    ExampleSeeds,
   }
 }
 </script>

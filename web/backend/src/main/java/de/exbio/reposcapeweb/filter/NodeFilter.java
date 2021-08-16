@@ -330,6 +330,15 @@ public class NodeFilter {
         return out;
     }
 
+    public EnumMap<FilterType, HashMap<Integer, List<FilterEntry>>> distinctMatches(String key) {
+        EnumMap<FilterType, HashMap<Integer, List<FilterEntry>>> out = new EnumMap<>(FilterType.class);
+        try {
+            distinctID2Keys.keySet().forEach(t -> out.put(t, distinctMatches(t, key)));
+        } catch (NullPointerException ignore) {
+        }
+        return out;
+    }
+
 
     public HashMap<Integer, List<FilterEntry>> distinctMatches(FilterType type, String key) {
         HashMap<Integer, List<FilterEntry>> out = new HashMap<>();

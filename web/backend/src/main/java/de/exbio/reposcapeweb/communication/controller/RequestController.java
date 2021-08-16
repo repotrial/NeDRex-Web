@@ -80,6 +80,7 @@ public class RequestController {
         return null;
     }
 
+
     @RequestMapping(value = "/getNodeDetails", method = RequestMethod.GET)
     @ResponseBody
     public String getDetails(@RequestParam("name") String name, @RequestParam("id") int id) {
@@ -103,12 +104,26 @@ public class RequestController {
         return toJson(webGraphService.getEdgeDetails(gid, name, new PairId(id1, id2)));
     }
 
+    @RequestMapping(value = "/getQuickExample", method = RequestMethod.GET)
+    @ResponseBody
+    public String getQuickExample(@RequestParam("nr") int nr, @RequestParam("nodeType") String nodeName) {
+        LinkedList<Object> nodes = new LinkedList<>();
+        if (nr == 2) {
+            webGraphService.getQuickExample(nodeName, nr).forEach(n -> {
+                nodes.add(nodeController.getNode(nodeName, n).getAsMap(new HashSet<>(Arrays.asList("id", "displayName", "primaryDomainId"))));
+            });
+            return toJson(nodes);
+        }else{
+            return toJson(webGraphService.getConnectedNodes(nr==0?"disorder":"drug", nodeName, webGraphService.getQuickExample(nodeName, nr)));
+        }
+
+    }
 
     @RequestMapping(value = "/getSuggestionEntry", method = RequestMethod.GET)
     @ResponseBody
     public String getSuggestionEntry(@RequestParam("gid") String gid, @RequestParam("nodeType") String nodeName, @RequestParam("sid") String sid) {
         try {
-            log.debug("Got request for SuggestionId="+sid);
+            log.debug("Got request for SuggestionId=" + sid);
             return objectMapper.writeValueAsString(webGraphService.getSuggestionEntry(gid, nodeName, sid));
         } catch (JsonProcessingException e) {
             e.printStackTrace();
@@ -127,17 +142,17 @@ public class RequestController {
         return null;
     }
 
-    @RequestMapping(value="/getTableDownload",method=RequestMethod.POST)
+    @RequestMapping(value = "/getTableDownload", method = RequestMethod.POST)
     @ResponseBody
-    public String getTableDownload(@RequestBody TableDownloadRequest req){
-         return webGraphService.getTableDownload(req.gid, req.type, req.name, req.attributes);
+    public String getTableDownload(@RequestBody TableDownloadRequest req) {
+        return webGraphService.getTableDownload(req.gid, req.type, req.name, req.attributes);
 
     }
 
     @RequestMapping(value = "/getConnectedNodes", method = RequestMethod.POST)
     @ResponseBody
     public String getConnectedNodes(@RequestBody HashMap<String, Object> request) {
-        Collection<Integer> ids = request.get("sugId").toString().indexOf('_')>-1 ? webGraphService.getSuggestionEntry(null, request.get("sourceType").toString(), request.get("sugId").toString()) : Collections.singletonList(Integer.parseInt(request.get("sugId").toString()));
+        Collection<Integer> ids = request.get("sugId").toString().indexOf('_') > -1 ? webGraphService.getSuggestionEntry(null, request.get("sourceType").toString(), request.get("sugId").toString()) : Collections.singletonList(Integer.parseInt(request.get("sugId").toString()));
         if ((boolean) request.get("noloop")) {
             String type = request.get("sourceType").toString();
             HashSet<Integer> addedIds = new HashSet<>();
@@ -312,7 +327,7 @@ public class RequestController {
     @RequestMapping(value = "/mapListToItems", method = RequestMethod.POST)
     @ResponseBody
     public String getListToItems(@RequestBody MapListRequest request) {
-        log.debug("Got mapping request for node type: "+request.type+" and list "+toJson(request.list));
+        log.debug("Got mapping request for node type: " + request.type + " and list " + toJson(request.list));
         return toJson(webGraphService.mapIdsToItemList(request.type, new LinkedList(Arrays.asList(request.list))));
     }
 

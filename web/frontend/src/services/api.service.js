@@ -78,6 +78,11 @@ const ApiService = {
     return this.post("/getTableDownload",{gid: gid, type:type, name:name, attributes:attributes}).then(response=>{
       return response.data
     })
+  },
+  getQuickExample(nr,type) {
+    return this.get("/getQuickExample?nr="+nr+"&nodeType="+type).then(response=>{
+      return response.data
+    })
   }
 }
 
