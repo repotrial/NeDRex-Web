@@ -44,7 +44,7 @@
       <v-stepper-items>
         <v-stepper-content step="1">
           <v-card
-            v-if="step===1"
+            v-show="step===1"
             class="mb-4"
             max-height="85vh"
           >
@@ -195,7 +195,7 @@
 
                 <v-divider vertical v-show="seedTypeId!==undefined"></v-divider>
                 <v-col cols="6">
-                  <SeedTable ref="seedTable" v-if="seedTypeId!==undefined" :download="true" :remove="true" :filter="true"
+                  <SeedTable ref="seedTable" v-show="seedTypeId!==undefined" :download="true" :remove="true" :filter="true"
                              @printNotificationEvent="printNotification"
                              height="40vh"
                              :title="'Selected Seeds ('+($refs.seedTable ? $refs.seedTable.getSeeds().length : 0)+')'"

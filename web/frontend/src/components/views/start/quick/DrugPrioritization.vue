@@ -40,7 +40,7 @@
       <v-stepper-items>
         <v-stepper-content step="1">
           <v-card
-            v-if="step===1"
+            v-show="step===1"
             class="mb-4"
             height="80vh"
           >
@@ -155,13 +155,17 @@
                                                 @addToSelectionEvent="addToSelection"
                                                 style="justify-self: flex-end;margin-left: auto"></SuggestionAutocomplete>
                       </div>
-                      <NodeInput text="or provide Seed IDs by" @addToSelectionEvent="addToSelection" :idName="['entrez','uniprot'][seedTypeId]" :nodeType="['gene', 'protein'][this.seedTypeId]" @printNotificationEvent="printNotification"></NodeInput>
+                      <NodeInput text="or provide Seed IDs by" @addToSelectionEvent="addToSelection"
+                                 :idName="['entrez','uniprot'][seedTypeId]"
+                                 :nodeType="['gene', 'protein'][this.seedTypeId]"
+                                 @printNotificationEvent="printNotification"></NodeInput>
                     </template>
                   </div>
                 </v-col>
                 <v-divider vertical v-show="seedTypeId!==undefined"></v-divider>
                 <v-col cols="6">
-                  <SeedTable ref="seedTable" v-if="seedTypeId!==undefined" :download="true" :remove="true" :filter="true"
+                  <SeedTable ref="seedTable" v-show="seedTypeId!==undefined" :download="true" :remove="true"
+                             :filter="true"
                              @printNotificationEvent="printNotification"
                              height="40vh"
                              :title="'Selected Seeds ('+($refs.seedTable ? $refs.seedTable.getSeeds().length : 0)+')'"
@@ -765,7 +769,7 @@ export default {
       this.$refs.seedTable.addSeeds(data)
     },
     methodScores: function () {
-      if (this.methodModel !== undefined && this.methodModel > -1)
+      if (this.methodModel !== undefined && this.methodModel > -1 && this.methods[this.methodModel] != null)
         return this.methods[this.methodModel].scores;
       return []
     },
@@ -773,7 +777,7 @@ export default {
     setSeeds: function (seeds, type, origin) {
       this.seedTypeId = ["gene", "protein"].indexOf(type)
       this.$nextTick(() => {
-        this.addToSelection(seeds, origin)
+        this.addToSelection({data: seeds, origin: origin})
       })
     },
 

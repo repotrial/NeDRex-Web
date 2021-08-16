@@ -44,7 +44,7 @@
       <v-stepper-items>
         <v-stepper-content step="1">
           <v-card
-            v-if="step===1"
+            v-show="step===1"
             class="mb-4"
             max-height="95vh"
             height="95vh"
@@ -87,7 +87,7 @@
                     <NodeInput text="or provide Node IDs by" @addToSelectionEvent="addToSourceSelection"
                                :idName="nodeIdTypeList[sourceTypeId]" :nodeType="nodeList[sourceTypeId].value"
                                @printNotificationEvent="printNotification"></NodeInput>
-                    <SeedTable ref="sourceTable" v-if="sourceTypeId!==undefined" :download="true" :remove="true"
+                    <SeedTable ref="sourceTable" v-show="sourceTypeId!==undefined" :download="true" :remove="true"
                                :filter="true"
                                @printNotificationEvent="printNotification"
                                height="30vh"
@@ -126,7 +126,7 @@
                                :idName="nodeIdTypeList[targetTypeId]" :nodeType="nodeList[targetTypeId].value"
                                @printNotificationEvent="printNotification"></NodeInput>
 
-                    <SeedTable ref="targetTable" v-if="targetTypeId!==undefined" :download="true" :remove="true"
+                    <SeedTable ref="targetTable" v-show="targetTypeId!==undefined" :download="true" :remove="true"
                                @printNotificationEvent="printNotification"
                                height="30vh"
                                :title="'Target nodes ('+($refs.targetTable ? $refs.targetTable.getSeeds().length : 0)+')'"

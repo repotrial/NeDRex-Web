@@ -40,7 +40,7 @@
       <v-stepper-items>
         <v-stepper-content step="1">
           <v-card
-            v-if="step===1"
+            v-show="step===1"
             class="mb-4"
             min-height="80vh"
           >
@@ -167,7 +167,7 @@
 
                 <v-divider vertical v-show="seedTypeId!==undefined"></v-divider>
                 <v-col cols="6">
-                  <SeedTable ref="seedTable" v-if="seedTypeId!==undefined" :download="true" :remove="true"
+                  <SeedTable ref="seedTable" v-show="seedTypeId!==undefined" :download="true" :remove="true"
                              :filter="true"
                              @printNotificationEvent="printNotification"
                              height="40vh"
@@ -921,7 +921,7 @@ export default {
           this.seeds.forEach(s => drugSeeds.splice(drugSeeds.indexOf(s.id), 1))
         }
       }
-      this.$emit("loadDrugTargetEvent", this.blitz, drugSeeds, ["gene", "protein"][this.seedTypeId], "METH: Module Identification with " + this.methods[this.methodModel].label)
+      this.$emit("loadDrugTargetEvent", this.blitz, drugSeeds, ["gene", "protein"][this.seedTypeId], "Module Identification: " + this.methods[this.methodModel].label)
       this.init()
     }
     ,

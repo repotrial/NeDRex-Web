@@ -65,7 +65,12 @@ const emitter = new Vue({
       this.subscribe(route, event)
     },
     unsubscribeJob: function (id) {
-      this.unsubscribe("/graph/status-job" + id)
+      try {
+        this.unsubscribe("/graph/status-job" + id)
+      }catch (e){
+        console.warn("Not subscribed to "+id)
+      }
+
     },
 
     subscribeThumbnail: function(id,event){
