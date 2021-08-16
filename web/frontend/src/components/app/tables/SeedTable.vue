@@ -26,14 +26,42 @@
       <template v-for="o in getOrigins(item.id)">
         <v-tooltip bottom :key="item.id+o">
           <template v-slot:activator="{attr,on }">
-            <v-chip style="font-size: smaller; color: gray" pill v-on="on" v-bind="attr">{{
-                o[0] + (o[2]!=null ? ":" + o[2].substring(0, 3).toUpperCase():"")
-              }}
+            <v-chip style="font-size: smaller; color: gray; margin:1px; max-width: 8rem" pill v-on="on" v-bind="attr">
+              <div v-if="o[2]" style="background-color: transparent; border:none; box-shadow: none;">
+                <div style="font-size: 0.6rem; margin:0; margin-top:-5px; padding:0; max-height: 0.8rem">
+                  <b>{{ o[0] + (o[2] ? ":" + o[2].substring(0, 3).toUpperCase() : "") }}</b></div>
+                <div style="font-size: 0.7rem; margin:0; padding:0; max-height: 1rem; white-space: nowrap;">
+                  <span
+                    :style="{color: o[1].length>15 ? 'gray':'black'}">{{
+                      o[1].length > 15 ? (o[1].substring(0, 15).trim() + "...") : o[1]
+                    }}</span>
+                </div>
+              </div>
+              <div v-else-if="o[0]==='FILE'">
+                <div style="font-size: 0.6rem; margin:0; margin-top:-5px; padding:0; max-height: 0.8rem">
+                  <b>{{ o[0] }}</b></div>
+                <div style="font-size: 0.7rem; margin:0; padding:0; max-height: 1rem; white-space: nowrap;">
+                  <span
+                    :style="{color: o[1].length>15 ? 'gray':'black'}">{{
+                      o[1].length > 15 ? (o[1].substring(0, 15).trim() + "...") : o[1]
+                    }}</span>
+                </div>
+              </div>
+              <div v-else>
+                <div style="font-size: 0.6rem; margin:0; margin-top:-5px; padding:0; max-height: 0.8rem">
+                  <b>FUNCTION</b></div>
+                <div style="font-size: 0.7rem; margin:0; padding:0; max-height: 1rem; white-space: nowrap;">
+                  <span
+                    :style="{color: o[0].length>15 ? 'gray':'black'}">{{
+                      o[0].length > 15 ? (o[0].substring(0, 15).trim() + "...") : o[0]
+                    }}</span>
+                </div>
+              </div>
             </v-chip>
           </template>
           <span v-if="o[2]">Connected to <b>{{ o[2] }}</b>:<br><b>{{ o[1] }}</b></span>
           <span v-else-if="o[0]==='FILE'">Added from user file:<br><b>{{ o[1] }}</b></span>
-          <span v-else>Returned by method:<br><b>{{ o[1] }}</b></span>
+          <span v-else>Returned by method:<br><b>{{ o[1] != null ? o[1] : o[0] }}</b></span>
         </v-tooltip>
       </template>
     </template>
@@ -41,19 +69,19 @@
       <template v-for="o in item.sourceDBs">
         <v-tooltip bottom :key="item.id+o" v-if="o==='omim'">
           <template v-slot:activator="{attrs,on}">
-            <v-chip style="font-size: smaller; color: gray" pill v-on="on" v-bind="attrs">OMIM</v-chip>
+            <v-chip style="font-size: smaller; color: gray;" pill v-on="on" v-bind="attrs">OMIM</v-chip>
           </template>
-          <span>The association between this <b>{{nodeName}}</b> and <br> one of the selected <b>disorders</b> was asserted by <b><i>OMIM (Online Mendelian Inheritance in Man)</i></b></span>
+          <span>The association between this <b>{{ nodeName }}</b> and <br> one of the selected <b>disorders</b> was asserted by <b><i>OMIM (Online Mendelian Inheritance in Man)</i></b></span>
         </v-tooltip>
         <v-tooltip bottom :key="item.id+o" v-else-if="o==='disgenet'">
           <template v-slot:activator="{attrs,on}">
             <v-chip style="font-size: smaller; color: gray" pill v-on="on" v-bind="attrs">DisGeNET</v-chip>
           </template>
-          <span>The association between this <b>{{nodeName}}</b> and <br> one of the selected <b>disorders</b> was asserted by <b><i>DisGeNET</i></b></span>
+          <span>The association between this <b>{{ nodeName }}</b> and <br> one of the selected <b>disorders</b> was asserted by <b><i>DisGeNET</i></b></span>
         </v-tooltip>
         <v-tooltip bottom :key="item.id+o" v-else>
           <template v-slot:activator="{attrs,on}">
-            <v-chip style="font-size: smaller; color: gray" pill v-on="on" v-bind="attrs">{{o}}</v-chip>
+            <v-chip style="font-size: smaller; color: gray" pill v-on="on" v-bind="attrs">{{ o }}</v-chip>
           </template>
           <span>TODO SOURCE_DB TOOLTIP</span>
         </v-tooltip>
@@ -173,34 +201,34 @@ export default {
       delete this.origins[id]
     },
 
-    removeNodes: function(data){
+    removeNodes: function (data) {
       let all = data.all;
       let attribute = data.attribute;
-      let value= data.value;
-      this.nodes.filter(n=>(n[attribute]!=null && (n[attribute].indexOf(value)>-1 && (n[attribute].length===1 || all)))).map(n=>n.id).forEach(this.removeNode)
+      let value = data.value;
+      this.nodes.filter(n => (n[attribute] != null && (n[attribute].indexOf(value) > -1 && (n[attribute].length === 1 || all)))).map(n => n.id).forEach(this.removeNode)
       this.updateAttributes()
     },
 
-    filterNodes: function(data){
+    filterNodes: function (data) {
       let all = data.all;
       let attribute = data.attribute;
-      let value= data.value;
-      this.nodes.filter(n=> !(n[attribute]!=null && n[attribute].indexOf(value)>-1 && (n[attribute].length===1 || all))).map(n=>n.id).forEach(this.removeNode)
+      let value = data.value;
+      this.nodes.filter(n => !(n[attribute] != null && n[attribute].indexOf(value) > -1 && (n[attribute].length === 1 || all))).map(n => n.id).forEach(this.removeNode)
       this.updateAttributes()
     },
 
-    updateAttributes: function(){
+    updateAttributes: function () {
       let attributes = undefined
-      this.nodes.forEach(n=>{
-        if(n.sourceDBs !=null){
-          if(attributes==null)
+      this.nodes.forEach(n => {
+        if (n.sourceDBs != null) {
+          if (attributes == null)
             attributes = {}
-          if(attributes.sourceDBs ==null)
-            attributes.sourceDBs=[]
-          n.sourceDBs.filter(s=>attributes.sourceDBs.indexOf(s)===-1).forEach(s=>attributes.sourceDBs.push(s))
+          if (attributes.sourceDBs == null)
+            attributes.sourceDBs = []
+          n.sourceDBs.filter(s => attributes.sourceDBs.indexOf(s) === -1).forEach(s => attributes.sourceDBs.push(s))
         }
       })
-      this.$set(this,"attributes",attributes)
+      this.$set(this, "attributes", attributes)
     },
 
     clear: function () {
@@ -238,7 +266,7 @@ export default {
     },
     addSeeds(entries) {
       let ids = {}
-      this.nodes.forEach(seed => ids[seed.id]=seed)
+      this.nodes.forEach(seed => ids[seed.id] = seed)
       let count = 0
       entries.data.forEach(e => {
         let exists = e.id in ids
@@ -291,5 +319,9 @@ export default {
 </script>
 
 <style scoped>
+
+.v-chip {
+  margin: 1px;
+}
 
 </style>
