@@ -1402,6 +1402,7 @@ export default {
         if (response.data !== undefined)
           return response.data
       }).then(data => this.$utils.roundScores(data, seedType, scoreAttr)).then(data => {
+        data.nodes[seedType].forEach(n=>n.displayName=this.$utils.adjustLabels(n.displayName))
         if (this.moduleMethodModel === 0)
           this.results.targets = data.nodes[seedType].sort((e1, e2) => {
             if (e1.rank && e2.rank)

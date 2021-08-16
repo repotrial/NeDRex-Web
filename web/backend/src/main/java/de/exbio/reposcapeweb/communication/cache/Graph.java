@@ -78,7 +78,8 @@ public class Graph {
                 HashMap<Integer, Point2D> coords = layout.get(typeId);
                 String prefix = Graphs.getPrefix(typeId);
                 String group = Graphs.getNode(typeId);
-                webgraph.addNodes(nodeMap.values().stream().map(node -> node.toWebNode().setPrefix(prefix).setGroup(group).setPosition(coords.get(node.getId()))).collect(Collectors.toSet()));
+                boolean adjustment = group.equals("protein");
+                webgraph.addNodes(nodeMap.values().stream().map(node -> node.toWebNode().setPrefix(prefix).setGroup(group).adjustLabel(adjustment).setPosition(coords.get(node.getId()))).collect(Collectors.toSet()));
             });
             edges.forEach((typeId, edges) -> {
                 String name = getEdge(typeId);

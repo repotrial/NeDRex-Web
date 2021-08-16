@@ -1,5 +1,7 @@
 package de.exbio.reposcapeweb.communication.reponses;
 
+import de.exbio.reposcapeweb.utils.RepoTrialUtils;
+
 import java.awt.geom.Point2D;
 import java.util.Objects;
 
@@ -120,5 +122,13 @@ public class WebNode {
     @Override
     public int hashCode() {
         return Objects.hash(id);
+    }
+
+    public WebNode adjustLabel(boolean adjustment) {
+        if(adjustment) {
+            this.label = RepoTrialUtils.adjustLabels(this.label);
+            this.title = RepoTrialUtils.adjustLabels(this.title);
+        }
+        return this;
     }
 }

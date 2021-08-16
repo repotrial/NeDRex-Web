@@ -860,10 +860,6 @@ export default {
         this.results.targets = data.nodes.drug.sort((e1, e2) => e2.score - e1.score)
       }).catch(console.error)
     },
-    roundScores: function (data) {
-      return data
-    }
-    ,
     clearList: function () {
       this.seeds = []
       this.seedOrigin = {}

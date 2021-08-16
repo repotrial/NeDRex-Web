@@ -265,13 +265,13 @@ export default {
       document.body.removeChild(dl)
     },
     addSeeds(entries) {
-      console.log(entries)
       let ids = {}
       this.nodes.forEach(seed => ids[seed.id] = seed)
       let count = 0
       entries.data.forEach(e => {
         let exists = e.id in ids
         if (!exists) {
+          e.displayName = this.$utils.adjustLabels(e.displayName)
           count++
           this.nodes.push(e)
         } else {

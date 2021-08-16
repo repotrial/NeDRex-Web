@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import de.exbio.reposcapeweb.db.entities.RepoTrialNode;
 import de.exbio.reposcapeweb.filter.FilterEntry;
 import de.exbio.reposcapeweb.filter.FilterType;
+import de.exbio.reposcapeweb.utils.RepoTrialUtils;
 import de.exbio.reposcapeweb.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -133,7 +134,7 @@ public class Protein extends RepoTrialNode {
     }
 
     public String getDisplayName() {
-        return displayName;
+        return RepoTrialUtils.adjustLabels(displayName);
     }
 
     @JsonGetter

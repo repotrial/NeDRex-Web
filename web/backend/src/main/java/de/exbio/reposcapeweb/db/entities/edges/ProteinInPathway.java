@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
 import de.exbio.reposcapeweb.db.entities.RepoTrialEdge;
 import de.exbio.reposcapeweb.utils.Pair;
+import de.exbio.reposcapeweb.utils.RepoTrialUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -92,7 +93,7 @@ public class ProteinInPathway extends RepoTrialEdge implements Serializable {
         values.put("sourceDomainId",getSourceDomainId());
         values.put("sourceId",id.getId1());
         values.put("targetId",id.getId2());
-        values.put("node1",nodeOne);
+        values.put("node1", RepoTrialUtils.adjustLabels(nodeOne));
         values.put("node2",nodeTwo);
         values.put("type",getType());
         values.put("id",id.getId1()+"-"+id.getId2());

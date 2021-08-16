@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import de.exbio.reposcapeweb.db.entities.RepoTrialEdge;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
 import de.exbio.reposcapeweb.utils.Pair;
+import de.exbio.reposcapeweb.utils.RepoTrialUtils;
 import de.exbio.reposcapeweb.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -98,7 +99,7 @@ public class ProteinAssociatedWithDisorder extends RepoTrialEdge implements Seri
         values.put("sourceDomainId",sourceDomainId);
         values.put("sourceId",id.getId1());
         values.put("targetId",id.getId2());
-        values.put("node1",nodeOne);
+        values.put("node1", RepoTrialUtils.adjustLabels(nodeOne));
         values.put("node2",nodeTwo);
         values.put("score",score);
         values.put("assertedBy",getAssertedBy());

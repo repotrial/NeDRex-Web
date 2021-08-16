@@ -440,7 +440,6 @@ public class WebGraphService {
             });
         } else
             nodeIds.forEach((type, nodeMap) -> nodeMap.forEach((key, value) -> finalG.addNode(type, value)));
-
         return g;
     }
 

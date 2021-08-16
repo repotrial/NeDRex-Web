@@ -54,4 +54,12 @@ public class RepoTrialUtils {
         }
     }
 
+    public static String adjustLabels(String label) {
+        try {
+            if (label.endsWith("_HUMAN")) {
+                return label.substring(0, label.length() - 6);
+            }
+        }catch (NullPointerException ignore){}
+        return label;
+    }
 }
