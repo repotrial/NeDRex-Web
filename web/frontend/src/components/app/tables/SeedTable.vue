@@ -26,14 +26,14 @@
       <template v-for="o in getOrigins(item.id)">
         <v-tooltip bottom :key="item.id+o">
           <template v-slot:activator="{attr,on }">
-            <v-chip style="font-size: smaller; color: gray; margin:1px; max-width: 8rem" pill v-on="on" v-bind="attr">
+            <v-chip style="font-size: smaller; color: gray; margin:1px; max-width: 9rem" pill v-on="on" v-bind="attr">
               <div v-if="o[2]" style="background-color: transparent; border:none; box-shadow: none;">
                 <div style="font-size: 0.6rem; margin:0; margin-top:-5px; padding:0; max-height: 0.8rem">
-                  <b>{{ o[0] + (o[2] ? ":" + o[2].substring(0, 3).toUpperCase() : "") }}</b></div>
+                  <b>{{o[2].toUpperCase() }}</b></div>
                 <div style="font-size: 0.7rem; margin:0; padding:0; max-height: 1rem; white-space: nowrap;">
                   <span
-                    :style="{color: o[1].length>15 ? 'gray':'black'}">{{
-                      o[1].length > 15 ? (o[1].substring(0, 15).trim() + "...") : o[1]
+                    :style="{color: o[1].length>20 ? 'gray':'black'}">{{
+                      o[1].length > 20 ? (o[1].substring(0, 20).trim() + "...") : o[1]
                     }}</span>
                 </div>
               </div>
@@ -42,8 +42,8 @@
                   <b>{{ o[0] }}</b></div>
                 <div style="font-size: 0.7rem; margin:0; padding:0; max-height: 1rem; white-space: nowrap;">
                   <span
-                    :style="{color: o[1].length>15 ? 'gray':'black'}">{{
-                      o[1].length > 15 ? (o[1].substring(0, 15).trim() + "...") : o[1]
+                    :style="{color: o[1].length>20 ? 'gray':'black'}">{{
+                      o[1].length > 20 ? (o[1].substring(0, 20).trim() + "...") : o[1]
                     }}</span>
                 </div>
               </div>
@@ -52,8 +52,8 @@
                   <b>FUNCTION</b></div>
                 <div style="font-size: 0.7rem; margin:0; padding:0; max-height: 1rem; white-space: nowrap;">
                   <span
-                    :style="{color: o[0].length>15 ? 'gray':'black'}">{{
-                      o[0].length > 15 ? (o[0].substring(0, 15).trim() + "...") : o[0]
+                    :style="{color: o[0].length>20 ? 'gray':'black'}">{{
+                      o[0].length > 20 ? (o[0].substring(0, 20).trim() + "...") : o[0]
                     }}</span>
                 </div>
               </div>
