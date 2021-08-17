@@ -42,7 +42,7 @@ export default {
       let example = await this.$http.getQuickExample(nr, ["gene","protein"][this.seedTypeId])
       let origin = "Example "+(nr+1)+": ("
       switch (nr){
-        case 0: origin+="Alzheimer)"; break;
+        case 0: origin+="Alzheimer"; break;
         case 1: origin+="Breast Cancer Resistance Protein Inhibitors"; break;
         case 2: origin+="Cancer Genes"; break;
       }

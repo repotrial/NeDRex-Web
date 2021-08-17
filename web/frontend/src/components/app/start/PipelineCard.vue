@@ -1,6 +1,6 @@
 <template>
   <v-card @mouseenter="cardHover=true" @mouseleave="cardHover=false" width="25vw"
-          style="margin: 15px" elevation="4">
+          :style="{margin: '15px', elevation:'4', minWidth:minWidth, minHeight:minHeight}">
     <div :class="cardHover ? 'content':''">
       <v-card-title
                     style="display: flex; justify-content: center; margin-right: auto; font-size: x-large">{{ title }}
@@ -8,14 +8,14 @@
       <v-card-subtitle :style="{color:cardHover?'white':''}">{{subtitle}}</v-card-subtitle>
     </div>
     <v-img ref='img' :class="cardHover ? 'blur': ''"
-         :src="image" width="25vw" contain>
+         :src="image" width="25vw" contain :style="{minWidth:minWidth}">
       <div v-show="!cardHover"
            style="height: 100%; width: 100%; display: flex; align-content: center; justify-content: center">
-        <v-icon right size="10em" color="rgba(0,0,0,.05)">fas fa-cogs</v-icon>
+        <v-icon right :size="'calc(0.5*'+imgHeight+')'" color="rgba(0,0,0,.05)">fas fa-cogs</v-icon>
       </div>
     </v-img>
-    <div class="content" v-show="cardHover"
-         :style="{marginTop: '-'+imgHeight, minHeight: imgHeight,maxHeight: imgHeight , fontSize: 'medium',height: imgHeight}">
+    <div v-if="imgHeight!=='0'" class="content" v-show="cardHover"
+         :style="{marginTop: 'calc(-1*'+imgHeight+')', minHeight: imgHeight,maxHeight: imgHeight , fontSize: 'medium',height: imgHeight}">
       <div style="padding: 15px; height: 70%; width:100%; display: flex">
         <div style="align-content: center; margin:auto">
           <slot name="description">
@@ -48,7 +48,9 @@ export default {
   data() {
     return {
       cardHover: false,
-      imgHeight: "0px",
+      imgHeight: "0",
+      minHeight: "316px",
+      minWidth:"360px",
     }
   },
 
@@ -60,7 +62,7 @@ export default {
 
     getImgHeight: async function () {
       if (this.$refs.img != null) {
-        this.imgHeight = this.$refs.img.$el.clientHeight + "px"
+        this.imgHeight = "calc(max(25vw,"+this.minWidth+")/"+(this.$refs.img.$el.clientWidth/this.$refs.img.$el.clientHeight)+")"
       } else
         setTimeout(this.getImgHeight, 500)
     }
@@ -86,7 +88,7 @@ export default {
 .content {
   background-color: rgba(56, 56, 56, .6);
   color: white;
-  width: 25vw;
+  width: max(25vw,360px);
   position: relative;
   z-index: 100;
 }
