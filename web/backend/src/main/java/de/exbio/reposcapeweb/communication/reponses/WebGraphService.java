@@ -466,12 +466,12 @@ public class WebGraphService {
         return suggestions;
     }
 
-    public LinkedList<Integer> getQuickExample(String nodeName, int nr){
+    public LinkedList<Integer> getQuickExample(String nodeName, int nr) {
         HashSet<Integer> ids = new HashSet<>();
-        switch (nr){
-            case 0 -> ids.addAll(nodeController.filterDisorder().distinctMatches(FilterType.UMBRELLA_DISORDER,"alzheimer disease").entrySet().stream().findFirst().get().getValue().stream().map(FilterEntry::getNodeId).collect(Collectors.toSet()));
-            case 1 -> ids.addAll(nodeController.filterDrugs().distinctMatches(FilterType.CATEGORY,"breast cancer resistance protein inhibitors").entrySet().stream().findFirst().get().getValue().stream().map(FilterEntry::getNodeId).collect(Collectors.toSet()));
-            case 2-> ids.addAll(nodeController.filterGenes().matches("(pten|brca1|brca2)").toList(-1).stream().filter(i->!i.getName().startsWith("entrez")).map(FilterEntry::getNodeId).collect(Collectors.toSet()));
+        switch (nr) {
+            case 0 -> ids.addAll(nodeController.filterDisorder().distinctMatches(FilterType.UMBRELLA_DISORDER, "alzheimer disease").entrySet().stream().findFirst().get().getValue().stream().map(FilterEntry::getNodeId).collect(Collectors.toSet()));
+            case 1 -> ids.addAll(nodeController.filterDrugs().distinctMatches(FilterType.CATEGORY, "breast cancer resistance protein inhibitors").entrySet().stream().findFirst().get().getValue().stream().map(FilterEntry::getNodeId).collect(Collectors.toSet()));
+            case 2 -> ids.addAll(nodeController.filterGenes().matches("(pten|brca1|brca2)").toList(-1).stream().filter(i -> !i.getName().startsWith("entrez")).map(FilterEntry::getNodeId).collect(Collectors.toSet()));
         }
         return new LinkedList(ids);
     }
@@ -1030,7 +1030,8 @@ public class WebGraphService {
         newNodes.clear();
         Collections.reverse(sortedEntries);
         for (Map.Entry<Integer, HashMap<String, Object>> e : sortedEntries) {
-            if (!elements && ((Drug) nodeController.getNode(Graphs.getNode(nodeTypeId), e.getKey())).getDrugCategories().contains("Elements"))
+            HashSet<String> cats = new HashSet<>(((Drug) nodeController.getNode(Graphs.getNode(nodeTypeId), e.getKey())).getDrugCategories());
+            if (!elements && (cats.contains("Elements") | cats.contains("Metal Cations") | cats.contains("Zinc Compounds") | cats.contains("Metals") | cats.contains("Mineral Supplements") | cats.contains("Minerals")))
                 continue;
             newNodes.put(e.getKey(), e.getValue());
             if (newNodes.size() >= topX)
@@ -1403,17 +1404,17 @@ public class WebGraphService {
         return type.equals("nodes") ? getNodeTableDownload(g, name, attributes) : getEdgeTableDownload(g, name, attributes);
     }
 
-    private String getEdgeTableDownload(Graph g, String name, LinkedList<String> attributes){
+    private String getEdgeTableDownload(Graph g, String name, LinkedList<String> attributes) {
         StringBuilder table = new StringBuilder();
         for (String a : attributes)
             table.append(table.length() == 0 ? "#" : "\t").append(a).append(1).append("\t").append(a).append(2);
         table.append("\n");
-        Pair<Integer,Integer> ids = g.getNodesfromEdge(g.getEdge(name));
-        g.getEdges().get(g.getEdge(name)).forEach(e->{
-            HashMap<String,Object> node1 = nodeController.nodeToAttributeList(ids.first,e.getId1());
-            HashMap<String,Object> node2 = nodeController.nodeToAttributeList(ids.second,e.getId2());
+        Pair<Integer, Integer> ids = g.getNodesfromEdge(g.getEdge(name));
+        g.getEdges().get(g.getEdge(name)).forEach(e -> {
+            HashMap<String, Object> node1 = nodeController.nodeToAttributeList(ids.first, e.getId1());
+            HashMap<String, Object> node2 = nodeController.nodeToAttributeList(ids.second, e.getId2());
             StringBuilder line = new StringBuilder();
-            attributes.forEach(a->line.append(line.length() == 0 ? "" : "\t").append(node1.get(a)).append("\t").append(node2.get(a)).append(2));
+            attributes.forEach(a -> line.append(line.length() == 0 ? "" : "\t").append(node1.get(a)).append("\t").append(node2.get(a)).append(2));
             table.append(line).append("\n");
         });
         return table.toString();
@@ -1425,10 +1426,10 @@ public class WebGraphService {
             table.append(table.length() == 0 ? "#" : "\t").append(a);
         table.append("\n");
         HashSet<Integer> ids = g.getNodes().get(Graphs.getNode(name)).values().stream().map(Node::getId).collect(toCollection(HashSet::new));
-        nodeController.nodesToAttributeList(Graphs.getNode(name),ids,new HashSet<>(attributes),null).forEach(n->{
+        nodeController.nodesToAttributeList(Graphs.getNode(name), ids, new HashSet<>(attributes), null).forEach(n -> {
             StringBuilder line = new StringBuilder();
-            attributes.forEach(a->{
-                line.append(line.length()==0 ? "":"\t").append(n.get(a));
+            attributes.forEach(a -> {
+                line.append(line.length() == 0 ? "" : "\t").append(n.get(a));
             });
             table.append(line).append("\n");
         });

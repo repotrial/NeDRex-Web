@@ -80,7 +80,7 @@
                           <br>
                             Only uses <b>approved drugs</b>
                             <br>
-                            Filters chemical elements (e.g. Gold, Zinc,...)
+                            Filters atoms (Gold, Zinc...) and basic chemical compounds (Cupric Chloride, Sodium chloride)
                         </v-col>
                       </v-row>
                     </v-container>
@@ -322,7 +322,7 @@
                                   left> far fa-question-circle
                                 </v-icon>
                               </template>
-                              <span>Filter often used drugs like Zinc, Gold, Copper,....</span>
+                              <span>Filters:<br><b>chemical elements:</b> <i>Gold</i>, <i>Zinc</i>, ...<br><b>metals and metal cations:</b> <i>Cupric Chloride</i>, <i>Aluminium acetoacetate</i>, ...<br><b>minerals and mineral supplements:</b> <i>Calcium silicate</i>, <i>Sodium chloride</i>, ...</span>
                             </v-tooltip>
                           </template>
                         </v-switch>
