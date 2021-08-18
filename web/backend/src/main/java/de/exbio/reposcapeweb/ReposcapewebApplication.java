@@ -1,10 +1,14 @@
 package de.exbio.reposcapeweb;
 
+import de.exbio.reposcapeweb.communication.cache.Graphs;
 import de.exbio.reposcapeweb.communication.jobs.JobController;
 import de.exbio.reposcapeweb.db.DbCommunicationService;
+import de.exbio.reposcapeweb.db.entities.edges.GeneInteractsWithGene;
+import de.exbio.reposcapeweb.db.entities.edges.ProteinInteractsWithProtein;
 import de.exbio.reposcapeweb.db.io.ImportService;
 import de.exbio.reposcapeweb.db.services.controller.EdgeController;
 import de.exbio.reposcapeweb.db.services.controller.NodeController;
+import de.exbio.reposcapeweb.db.services.edges.ProteinInteractsWithProteinService;
 import de.exbio.reposcapeweb.db.updates.UpdateService;
 import de.exbio.reposcapeweb.filter.FilterEntry;
 import de.exbio.reposcapeweb.filter.FilterType;
@@ -19,6 +23,10 @@ import org.springframework.boot.web.servlet.support.SpringBootServletInitializer
 import org.springframework.context.event.EventListener;
 import org.springframework.core.env.Environment;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -48,6 +56,9 @@ public class ReposcapewebApplication extends SpringBootServletInitializer {
     @Autowired
     private DbCommunicationService dbService;
 
+    @Autowired
+    private ProteinInteractsWithProteinService ppiService;
+
 //    @Autowired
 //    public ReposcapewebApplication(DbCommunicationService dbService, ProteinInteractsWithProteinService proteinInteractsWithProteinService, JobController jobController, NodeController nodeController, ObjectMapper objectMapper, EdgeController edgeController, DisorderService disorderService, UpdateService updateService, Environment environment, ImportService importService, FilterService filterService, ToolService toolService, WebGraphService graphService) {
 //        this.updateService = updateService;
@@ -75,6 +86,7 @@ public class ReposcapewebApplication extends SpringBootServletInitializer {
         dbService.setImportInProgress(true);
         importService.importNodeData();
 
+
         //TODO maybe move importJob and importHistory to after update?
         jobController.importJobsHistory();
         importService.importHistory();
@@ -89,6 +101,7 @@ public class ReposcapewebApplication extends SpringBootServletInitializer {
             importService.importEdges(false);
             log.warn("Startup Database update is deactivated! Activate it by setting 'update.onstartup=true' in the application.properties.");
         }
+
         if (env.getProperty("update.db-dump").equals("true"))
             updateService.renewDBDumps();
         log.info("Startup took " + (int) ((System.currentTimeMillis() - start) / 1000) + "s");

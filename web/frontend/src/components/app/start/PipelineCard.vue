@@ -59,9 +59,8 @@ export default {
   },
 
   methods: {
-
     getImgHeight: async function () {
-      if (this.$refs.img != null) {
+      if (this.$refs.img != null && this.$refs.img.$el.clientHeight>0 && this.$refs.img.$el.clientWidth>0) {
         this.imgHeight = "calc(max(25vw,"+this.minWidth+")/"+(this.$refs.img.$el.clientWidth/this.$refs.img.$el.clientHeight)+")"
       } else
         setTimeout(this.getImgHeight, 500)
@@ -92,13 +91,4 @@ export default {
   position: relative;
   z-index: 100;
 }
-
-/*.blur {*/
-/*  -webkit-filter: blur(0px);*/
-/*  -moz-filter: blur(0px);*/
-/*  -o-filter: blur(0px);*/
-/*  -ms-filter: blur(0px);*/
-/*  filter: progid:DXImageTransform.Microsoft.Blur(PixelRadius='0');*/
-/*  filter: blur(0px);*/
-/*}*/
 </style>

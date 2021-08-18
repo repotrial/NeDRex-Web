@@ -586,16 +586,8 @@
                         <v-list>
                           <v-list-item>
                             <v-list-item-icon>
-                              <div
-                                style="display: flex; align-content: center; justify-content: center;margin-left: 12px;margin-top: -2px">
-                                <v-icon color="#fbe223" style="position: absolute;margin-top:-11px;"
-                                        size="42">fas fa-genderless
+                                <v-icon left color="#fbe223" size="42">fas fa-genderless
                                 </v-icon>
-                                <v-icon size="18" style="position: absolute;margin-top:1px;"
-                                        :color="getColoring('nodes',['gene','protein'][seedTypeId],'light')">fas
-                                  fa-circle
-                                </v-icon>
-                              </div>
                             </v-list-item-icon>
                             <v-list-item-title style="margin-left: -25px">Seed {{ ['Gene', 'Protein'][seedTypeId] }}
                             </v-list-item-title>

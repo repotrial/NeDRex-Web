@@ -10,37 +10,37 @@
     },
     "groups": {
       "drug": {
-        "shape": "star",
-        "color": {
-        }
-      },
-      "disorder": {
         "shape": "hexagon",
         "color": {
         }
       },
+      "disorder": {
+        "shape": "diamond",
+        "color": {
+        }
+      },
       "gene": {
-        "shape": "triangle",
+        "shape": "square",
         "color": {
         }
       },
       "seedGene": {
-        "shape": "triangle",
+        "shape": "square",
         "color": {
         }
       },
       "protein": {
-        "shape": "triangleDown",
+        "shape": "dot",
         "color": {
         }
       },
       "seedProtein": {
-        "shape": "triangleDown",
+        "shape": "dot",
         "color": {
         }
       },
       "pathway": {
-        "shape": "square",
+        "shape": "ellipse",
         "color": {
         }
       },
@@ -72,13 +72,14 @@
     },
     "physics": {
       "barnesHut": {
-        "gravitationalConstant": -10000,
-        "centralGravity": 0.20,
-        "springLength": 200,
-        "springConstant": 0.04,
-        "damping": 0.5,
-        "avoidOverlap": 0.8
+        "gravitationalConstant": -5000,
+        "centralGravity": 0.1,
+        "springLength": 300,
+        "springConstant": 0.02,
+        "damping": 0.8,
+        "avoidOverlap": 1
       },
+      "minVelocity": 0.5,
       "enabled": false
     }
   }

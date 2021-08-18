@@ -22,25 +22,25 @@ public class VisConfig {
 
     private static void setColors() {
         Object options = ((HashMap<String, Object>) config).get("options");
-        HashMap<String,Object> groups = (HashMap<String,Object>) ((HashMap<String, Object>) options).get("groups");
-        groups.forEach((name,vals)->{
-            if(name.equals("other"))
+        HashMap<String, Object> groups = (HashMap<String, Object>) ((HashMap<String, Object>) options).get("groups");
+        groups.forEach((name, vals) -> {
+            if (name.equals("other"))
                 return;
             String seedName = "";
             boolean seed = name.startsWith("seed");
-            if(seed){
+            if (seed) {
                 seedName = name;
                 name = name.substring(4).toLowerCase();
             }
             ColorConfig colors = DBConfig.getConfig().nodes.get(Graphs.getNode(name)).colors;
-            HashMap<String,Object> colorMap = new HashMap<>();
-            colorMap.put("border", seed? "#fbe223" : colors.light);
-            colorMap.put("background",colors.light);
-            HashMap<String,Object> highlight = new HashMap<>();
-            highlight.put("border", seed? "#fbe223" : colors.main);
-            highlight.put("background",colors.light);
-            colorMap.put("highlight",highlight);
-            ((HashMap<String,Object>) groups.get(seed ? seedName: name)).put("color",colorMap);
+            HashMap<String, Object> colorMap = new HashMap<>();
+            colorMap.put("border", seed ? "#e4ca02" : colors.main);
+            colorMap.put("background", seed ? "#fbe223" : colors.light);
+            HashMap<String, Object> highlight = new HashMap<>();
+            highlight.put("border", seed ? colors.main : "#fbe223");
+            highlight.put("background", seed ? "#fbe223" : colors.light);
+            colorMap.put("highlight", highlight);
+            ((HashMap<String, Object>) groups.get(seed ? seedName : name)).put("color", colorMap);
         });
     }
 

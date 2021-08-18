@@ -235,7 +235,6 @@ export default {
         this.physics = defaults.physics;
         this.extractedDefaults = true;
         this.groups = this.$utils.clone(this.options.groups)
-        console.log(this.groups)
         this.reloadOptions()
       }
     },
@@ -853,7 +852,7 @@ export default {
 
     dialogResolve: function (vis) {
       this.sizeDialog = false;
-      if(this.secondaryViewer && !this.disableAdvancedLoading && !vis) {
+      if (this.secondaryViewer && !this.disableAdvancedLoading && !vis) {
         this.keepLegends = true;
         this.togglePanel(1);
       }
