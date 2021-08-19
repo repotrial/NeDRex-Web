@@ -706,7 +706,6 @@ export default {
     }
     ,
     loadSelection: function (params) {
-      console.log(params)
       if (params != null && params.nodes != null && params.nodes.length > 0) {
         this.$refs.tools.setSelectedNodeId(params.nodes[0])
         this.$refs.side.loadSelection(this.$refs.graph.identifyNeighbors(params.nodes[0]))
