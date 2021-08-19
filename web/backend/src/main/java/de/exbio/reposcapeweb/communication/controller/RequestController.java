@@ -8,6 +8,7 @@ import de.exbio.reposcapeweb.communication.jobs.JobController;
 import de.exbio.reposcapeweb.communication.jobs.JobRequest;
 import de.exbio.reposcapeweb.communication.reponses.*;
 import de.exbio.reposcapeweb.communication.requests.*;
+import de.exbio.reposcapeweb.configs.DBConfig;
 import de.exbio.reposcapeweb.db.DbCommunicationService;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
 import de.exbio.reposcapeweb.db.history.HistoryController;
@@ -154,13 +155,7 @@ public class RequestController {
     public String getConnectedNodes(@RequestBody HashMap<String, Object> request) {
         Collection<Integer> ids = request.get("sugId").toString().indexOf('_') > -1 ? webGraphService.getSuggestionEntry(null, request.get("sourceType").toString(), request.get("sugId").toString()) : Collections.singletonList(Integer.parseInt(request.get("sugId").toString()));
         if ((boolean) request.get("noloop")) {
-            String type = request.get("sourceType").toString();
-            HashSet<Integer> addedIds = new HashSet<>();
-            LinkedList<Object> nodes = new LinkedList<>();
-            ids.forEach(n -> {
-                if (addedIds.add(n))
-                    nodes.add(nodeController.getNode(type, n).getAsMap(new HashSet<>(Arrays.asList("id", "displayName", "primaryDomainId"))));
-            });
+           LinkedList<Object> nodes= webGraphService.getDirectNodes(ids,request);
             return toJson(nodes);
         }
         return toJson(webGraphService.getConnectedNodes(request.get("sourceType").toString(), request.get("targetType").toString(), ids));

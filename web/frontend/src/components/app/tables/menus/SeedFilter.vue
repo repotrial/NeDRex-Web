@@ -25,13 +25,13 @@
                   <v-icon left size="1em">
                     fas fa-filter
                   </v-icon>
-                  keep only {{ value }}
+                  keep only {{ getLabel(value) }}
                 </v-list-item>
                 <v-list-item style="cursor:pointer; font-size: smaller; color: gray" :key="'all_'+attribute+'-'+value" @click="$emit('filterEvent',{all:true,attribute:attribute, value:value})">
                   <v-icon left size="1em">
                     fas fa-filter
                   </v-icon>
-                   keep all with {{ value }}
+                   keep all with {{ getLabel(value) }}
                 </v-list-item>
               </template>
             </v-list>
@@ -47,6 +47,16 @@ export default {
   name: "SeedFilter",
   props: {
     attributes: Object,
+  },
+
+  methods: {
+
+    getLabel: function (attr) {
+      if (attr.indexOf(":") === -1)
+        return attr;
+      let sp = attr.split(":")
+      return sp[1] + " (" + sp[0] + " connection)"
+    }
   }
 }
 </script>

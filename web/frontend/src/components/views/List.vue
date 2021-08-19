@@ -1,63 +1,63 @@
 <template>
   <div>
     <v-container>
-      <v-card style="margin:5px;padding-bottom:15px" :loading="loading" ref="info">
-        <template slot="progress">
-          <v-card-title>General Information</v-card-title>
-          <v-progress-circular v-if="!waiting"
-                               color="primary"
-                               size="50"
-                               width="5"
-                               indeterminate
-          ></v-progress-circular>
-          <i v-else>No data available!</i>
-        </template>
-        <v-container v-if="!loading">
-          <v-card-title>General Information</v-card-title>
-          <v-row>
-            <v-col>
-              <v-list v-if="attributes.nodes !=null">
-                <v-list-item>
-                  <b>Nodes ({{ getTotalCounts('nodes') }})</b>
-                </v-list-item>
-                <v-list-item v-for="node in Object.values(configuration.countMap.nodes)"
-                             :key="node.name">
-                  <v-chip outlined @click="focus('nodes',Object.keys(attributes.nodes).indexOf(node.name))">
-                    <v-icon left :color="getExtendedColoring('nodes',node.name,'light')">fas fa-genderless</v-icon>
-                    {{ node.name }} ({{ node.selected }}/{{ node.total }})
-                  </v-chip>
-                </v-list-item>
+<!--      <v-card style="margin:5px;padding-bottom:15px" :loading="loading" ref="info">-->
+<!--        <template slot="progress">-->
+<!--          <v-card-title>General Information</v-card-title>-->
+<!--          <v-progress-circular v-if="!waiting"-->
+<!--                               color="primary"-->
+<!--                               size="50"-->
+<!--                               width="5"-->
+<!--                               indeterminate-->
+<!--          ></v-progress-circular>-->
+<!--          <i v-else>No data available!</i>-->
+<!--        </template>-->
+<!--        <v-container v-if="!loading">-->
+<!--          <v-card-title>General Information</v-card-title>-->
+<!--          <v-row>-->
+<!--            <v-col>-->
+<!--              <v-list v-if="attributes.nodes !=null">-->
+<!--                <v-list-item>-->
+<!--                  <b>Nodes ({{ getTotalCounts('nodes') }})</b>-->
+<!--                </v-list-item>-->
+<!--                <v-list-item v-for="node in Object.values(configuration.countMap.nodes)"-->
+<!--                             :key="node.name">-->
+<!--                  <v-chip outlined @click="focus('nodes',Object.keys(attributes.nodes).indexOf(node.name))">-->
+<!--                    <v-icon left :color="getExtendedColoring('nodes',node.name,'light')">fas fa-genderless</v-icon>-->
+<!--                    {{ node.name }} ({{ node.selected }}/{{ node.total }})-->
+<!--                  </v-chip>-->
+<!--                </v-list-item>-->
 
-              </v-list>
-            </v-col>
-            <v-col>
-              <v-list v-if="attributes.edges!=null">
-                <v-list-item>
-                  <b>Edges ({{ getTotalCounts('edges') }})</b>
-                </v-list-item>
-                <v-list-item v-for="edge in Object.values(configuration.countMap.edges)" :key="edge.name">
-                  <v-chip outlined @click="focus('edges',Object.keys(attributes.edges).indexOf(edge.name))">
-                    <v-icon left :color="getExtendedColoring('edges',edge.name,'light')[0]">fas fa-genderless</v-icon>
-                    <template v-if="directionExtended(edge.name)===0">
-                      <v-icon left>fas fa-undo-alt</v-icon>
-                    </template>
-                    <template v-else>
-                      <v-icon v-if="directionExtended(edge.name)===1" left>fas fa-long-arrow-alt-right</v-icon>
-                      <v-icon v-else left>fas fa-arrows-alt-h</v-icon>
-                      <v-icon left :color="getExtendedColoring('edges',edge.name,'light')[1]">fas fa-genderless</v-icon>
-                    </template>
-                    {{ edge.name }} ({{ edge.selected }}/{{ edge.total }})
+<!--              </v-list>-->
+<!--            </v-col>-->
+<!--            <v-col>-->
+<!--              <v-list v-if="attributes.edges!=null">-->
+<!--                <v-list-item>-->
+<!--                  <b>Edges ({{ getTotalCounts('edges') }})</b>-->
+<!--                </v-list-item>-->
+<!--                <v-list-item v-for="edge in Object.values(configuration.countMap.edges)" :key="edge.name">-->
+<!--                  <v-chip outlined @click="focus('edges',Object.keys(attributes.edges).indexOf(edge.name))">-->
+<!--                    <v-icon left :color="getExtendedColoring('edges',edge.name,'light')[0]">fas fa-genderless</v-icon>-->
+<!--                    <template v-if="directionExtended(edge.name)===0">-->
+<!--                      <v-icon left>fas fa-undo-alt</v-icon>-->
+<!--                    </template>-->
+<!--                    <template v-else>-->
+<!--                      <v-icon v-if="directionExtended(edge.name)===1" left>fas fa-long-arrow-alt-right</v-icon>-->
+<!--                      <v-icon v-else left>fas fa-arrows-alt-h</v-icon>-->
+<!--                      <v-icon left :color="getExtendedColoring('edges',edge.name,'light')[1]">fas fa-genderless</v-icon>-->
+<!--                    </template>-->
+<!--                    {{ edge.name }} ({{ edge.selected }}/{{ edge.total }})-->
 
-                  </v-chip>
+<!--                  </v-chip>-->
 
-                </v-list-item>
-              </v-list>
-            </v-col>
-          </v-row>
+<!--                </v-list-item>-->
+<!--              </v-list>-->
+<!--            </v-col>-->
+<!--          </v-row>-->
 
 
-        </v-container>
-      </v-card>
+<!--        </v-container>-->
+<!--      </v-card>-->
       <!--      <v-card style="margin:5px">-->
       <!--        <v-card-title>General Options</v-card-title>-->
       <!--        <v-container>-->

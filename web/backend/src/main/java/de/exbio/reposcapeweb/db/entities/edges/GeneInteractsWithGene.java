@@ -42,6 +42,7 @@ public class GeneInteractsWithGene extends RepoTrialEdge implements Serializable
     private String nodeTwo;
 
     private String evidenceTypes;
+    private String sourceDatabases;
 
 //    private String conservativeEvidences;
 //    @Column(columnDefinition = "TEXT")
@@ -79,11 +80,11 @@ public class GeneInteractsWithGene extends RepoTrialEdge implements Serializable
 
     @Transient
     @JsonIgnore
-    public static HashMap<String,String> name2labelMap;
+    public static HashMap<String, String> name2labelMap;
 
     @Transient
     @JsonIgnore
-    public static HashMap<String,String> label2NameMap;
+    public static HashMap<String, String> label2NameMap;
 
     @Transient
     @JsonIgnore
@@ -104,6 +105,7 @@ public class GeneInteractsWithGene extends RepoTrialEdge implements Serializable
         values.put("node1", nodeOne);
         values.put("node2", nodeTwo);
         values.put("type", getType());
+        values.put("databases", getDatabases());
         values.put("evidenceTypes", getEvidenceTypes());
         values.put("id", id.getId1() + "-" + id.getId2());
         return values;
@@ -124,6 +126,15 @@ public class GeneInteractsWithGene extends RepoTrialEdge implements Serializable
         return values;
     }
 
+
+    public List<String> getDatabases() {
+        return StringUtils.stringToList(sourceDatabases);
+    }
+
+    public void setDatabases(List<String> databases) {
+        this.sourceDatabases = StringUtils.listToString(databases);
+    }
+
     public List<String> getEvidenceTypes() {
         return StringUtils.stringToList(evidenceTypes);
     }
@@ -142,10 +153,10 @@ public class GeneInteractsWithGene extends RepoTrialEdge implements Serializable
 
 
     public static void setUpNameMaps() {
-        label2NameMap=new HashMap<>();
+        label2NameMap = new HashMap<>();
         name2labelMap = new HashMap<>();
         for (int i = 0; i < allAttributes.length; i++) {
-            label2NameMap.put(allAttributes[i],attributeLabels[i]);
+            label2NameMap.put(allAttributes[i], attributeLabels[i]);
             name2labelMap.put(attributeLabels[i], allAttributes[i]);
         }
     }
@@ -222,19 +233,30 @@ public class GeneInteractsWithGene extends RepoTrialEdge implements Serializable
     }
 
     public void addEvidenceTypes(List<String> evidenceTypes) {
-        List<String> all = this.evidenceTypes == null ? new LinkedList<>(evidenceTypes) : getEvidenceTypes();
-//        List<String> conservative = this.conservativeEvidences == null ? new LinkedList<>(evidenceTypes) : getConservativeEvidences();
-        evidenceTypes.forEach(t -> {
-            if (!all.contains(t))
-                all.add(t);
-        });
-//        LinkedList<String> rem = new LinkedList<>();
-//        conservative.forEach(t -> {
-//            if (!evidenceTypes.contains(t))
-//                rem.add(t);
-//        });
-//        conservative.removeAll(rem);
+        List<String> all;
+        if (this.evidenceTypes == null) {
+            all = new LinkedList<>(evidenceTypes);
+        } else {
+            all = getEvidenceTypes();
+            for (String t : evidenceTypes) {
+                if (!all.contains(t))
+                    all.add(t);
+            }
+        }
         setEvidenceTypes(all);
-//        setConservativeEvidences(conservative);
+    }
+
+    public void addDatabases(List<String> databases) {
+        List<String> all;
+        if (this.sourceDatabases == null) {
+            all = new LinkedList<>(databases);
+        } else {
+            all = getDatabases();
+            for (String t : databases) {
+                if (!all.contains(t))
+                    all.add(t);
+            }
+        }
+        setDatabases(all);
     }
 }

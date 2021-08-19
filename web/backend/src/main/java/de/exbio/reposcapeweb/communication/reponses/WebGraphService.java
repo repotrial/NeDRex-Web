@@ -279,7 +279,7 @@ public class WebGraphService {
                             .get(typeId)
                             .entrySet()
                             .stream().filter(e ->
-                            nodeIds.contains(e.getKey()))
+                                    nodeIds.contains(e.getKey()))
                             .map(Map.Entry::getValue)
                             .collect(Collectors.toList()));
             g.saveNodeFilter(type, new NodeFilter(basis.getNodeFilter(type), Arrays.asList(ids)));
@@ -1304,9 +1304,11 @@ public class WebGraphService {
                         HashMap<String, Object> edgeEntries = edgeController.edgeToAttributeList(edgeId, e);
                         HashSet<String> sources = new HashSet<>();
                         if (edgeEntries.containsKey("databases"))
-                            sources.addAll((List<String>) edgeEntries.get("databases"));
+                            ((List<String>) edgeEntries.get("databases")).forEach(s -> sources.add(sourceType + ":" + s));
                         else if (edgeEntries.containsKey("assertedBy"))
-                            sources.addAll((List<String>) edgeEntries.get("assertedBy"));
+                            ((List<String>) edgeEntries.get("assertedBy")).forEach(s -> sources.add(sourceType + ":" + s));
+                        else
+                            DBConfig.getConfig().getEdge(edgeId).databases.forEach(s -> sources.add(sourceType + ":" + s));
 
                         if (!out.containsKey(n)) {
                             HashMap<String, Object> nodeEntries = nodeController.getNode(targetType, n).getAsMap(new HashSet<>(Arrays.asList("id", "displayName", "primaryDomainId")));
@@ -1434,5 +1436,33 @@ public class WebGraphService {
             table.append(line).append("\n");
         });
         return table.toString();
+    }
+
+    public LinkedList<Object> getDirectNodes(Collection<Integer> ids, HashMap<String, Object> request) {
+        String sourceType = request.get("sourceType").toString();
+        HashSet<Integer> addedIds = new HashSet<>();
+        LinkedList<Object> nodes = new LinkedList<>();
+        AtomicReference<LinkedList<String>> edgeSource = new AtomicReference<>(null);
+        ids.forEach(n -> {
+            if (addedIds.add(n)) {
+                HashMap<String, Object> attrs = nodeController.getNode(sourceType, n).getAsMap();
+                HashMap<String, Object> node = new HashMap<>();
+                node.put("id", attrs.get("id"));
+                node.put("displayName", attrs.get("displayName"));
+                node.put("primaryDomainId", attrs.get("primaryDomainId"));
+                if (sourceType.equals("disorder")) {
+
+                    if (edgeSource.get() != null)
+                        node.put("sourceDBs", edgeSource);
+                    else {
+                        edgeSource.set(new LinkedList<>());
+                        DBConfig.getConfig().getEdge(Graphs.getEdge("DisorderHierarchy")).databases.forEach(s -> edgeSource.get().add(sourceType + ":" + s));
+                        node.put("sourceDBs", edgeSource);
+                    }
+                }
+                nodes.add(node);
+            }
+        });
+        return nodes;
     }
 }

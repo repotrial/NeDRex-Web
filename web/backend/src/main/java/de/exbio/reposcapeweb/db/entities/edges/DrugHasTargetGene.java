@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import de.exbio.reposcapeweb.db.entities.RepoTrialEdge;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
 import de.exbio.reposcapeweb.utils.Pair;
+import de.exbio.reposcapeweb.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,9 +15,7 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 
 
 /**
@@ -51,6 +50,10 @@ public class DrugHasTargetGene extends RepoTrialEdge implements Serializable {
     private String nodeTwo;
 
     public DrugHasTargetGene() {
+    }
+
+    public DrugHasTargetGene(int drugId, int geneId) {
+        this.id=new PairId(drugId,geneId);
     }
 
     public String getTargetDomainId() {
@@ -89,6 +92,11 @@ public class DrugHasTargetGene extends RepoTrialEdge implements Serializable {
     @JsonIgnore
     public static String[] listAttributes;
 
+    private String sourceDatabases;
+
+    private String actions;
+
+
     public static String[] getListAttributes() {
         return listAttributes;
     }
@@ -112,6 +120,8 @@ public class DrugHasTargetGene extends RepoTrialEdge implements Serializable {
         values.put("targetId",id.getId2());
         values.put("node1",nodeOne);
         values.put("node2",nodeTwo);
+        values.put("databases",getDatabases());
+        values.put("actions",getActions());
         values.put("type",getType());
         values.put("id",id.getId1()+"-"+id.getId2());
         return values;
@@ -127,6 +137,15 @@ public class DrugHasTargetGene extends RepoTrialEdge implements Serializable {
         return values;
     }
 
+    public List<String> getDatabases() {
+        return StringUtils.stringToList(sourceDatabases);
+    }
+
+    public void setDatabases(List<String> databases) {
+        this.sourceDatabases = StringUtils.listToString(databases);
+    }
+
+
     public static void setUpNameMaps() {
         label2NameMap=new HashMap<>();
         name2labelMap = new HashMap<>();
@@ -141,10 +160,47 @@ public class DrugHasTargetGene extends RepoTrialEdge implements Serializable {
         nodeTwo=node2;
     }
 
+    public List<String> getActions() {
+        return StringUtils.stringToList(actions);
+    }
+
+    public void setActions(List<String> actions) {
+        this.actions = StringUtils.listToString(actions);
+    }
 
     public void setValues(DrugHasTargetGene other) {
         this.sourceDomainId = other.sourceDomainId;
         this.targetDomainId = other.targetDomainId;
+        this.actions = other.actions;
+        this.sourceDatabases = other.sourceDatabases;
+    }
+
+    public void addActions(Collection<String> actions){
+        List<String> all;
+        if (this.actions == null) {
+            all = new LinkedList<>(actions);
+        } else {
+            all = getActions();
+            for (String t : actions) {
+                if (!all.contains(t))
+                    all.add(t);
+            }
+        }
+        setActions(all);
+    }
+
+    public void addDatabases(List<String> databases) {
+        List<String> all;
+        if (this.sourceDatabases == null) {
+            all = new LinkedList<>(databases);
+        } else {
+            all = getDatabases();
+            for (String t : databases) {
+                if (!all.contains(t))
+                    all.add(t);
+            }
+        }
+        setDatabases(all);
     }
 
     @Override

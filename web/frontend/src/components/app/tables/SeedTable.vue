@@ -29,7 +29,7 @@
             <v-chip style="font-size: smaller; color: gray; margin:1px; max-width: 9rem" pill v-on="on" v-bind="attr">
               <div v-if="o[2]" style="background-color: transparent; border:none; box-shadow: none;">
                 <div style="font-size: 0.6rem; margin:0; margin-top:-5px; padding:0; max-height: 0.8rem">
-                  <b>{{o[2].toUpperCase() }}</b></div>
+                  <b>{{ o[2].toUpperCase() }}</b></div>
                 <div style="font-size: 0.7rem; margin:0; padding:0; max-height: 1rem; white-space: nowrap;">
                   <span
                     :style="{color: o[1].length>20 ? 'gray':'black'}">{{
@@ -67,24 +67,7 @@
     </template>
     <template v-slot:item.sourceDBs="{item}">
       <template v-for="o in item.sourceDBs">
-        <v-tooltip bottom :key="item.id+o" v-if="o==='omim'">
-          <template v-slot:activator="{attrs,on}">
-            <v-chip style="font-size: smaller; color: gray;" pill v-on="on" v-bind="attrs">OMIM</v-chip>
-          </template>
-          <span>The association between this <b>{{ nodeName }}</b> and <br> one of the selected <b>disorders</b> was asserted by <b><i>OMIM (Online Mendelian Inheritance in Man)</i></b></span>
-        </v-tooltip>
-        <v-tooltip bottom :key="item.id+o" v-else-if="o==='disgenet'">
-          <template v-slot:activator="{attrs,on}">
-            <v-chip style="font-size: smaller; color: gray" pill v-on="on" v-bind="attrs">DisGeNET</v-chip>
-          </template>
-          <span>The association between this <b>{{ nodeName }}</b> and <br> one of the selected <b>disorders</b> was asserted by <b><i>DisGeNET</i></b></span>
-        </v-tooltip>
-        <v-tooltip bottom :key="item.id+o" v-else>
-          <template v-slot:activator="{attrs,on}">
-            <v-chip style="font-size: smaller; color: gray" pill v-on="on" v-bind="attrs">{{ o }}</v-chip>
-          </template>
-          <span>TODO SOURCE_DB TOOLTIP</span>
-        </v-tooltip>
+        <SeedTableSourceChip :key="item.id+o" :source="o" :nodeName="nodeName"></SeedTableSourceChip>
       </template>
     </template>
     <template v-slot:header.origin="{header}">
@@ -143,6 +126,7 @@
 import SeedDownload from "@/components/app/tables/menus/SeedDownload";
 import SeedRemove from "@/components/app/tables/menus/SeedRemove";
 import SeedFilter from "@/components/app/tables/menus/SeedFilter";
+import SeedTableSourceChip from "@/components/app/tables/SeedTableSourceChip";
 
 export default {
   name: "SeedTable",
@@ -278,7 +262,7 @@ export default {
           if (e.sourceDBs != null) {
             let node = ids[e.id]
             if (node.sourceDBs != null)
-              node.sourceDBs.concat(entries.sourceDBs)
+              node.sourceDBs = node.sourceDBs.concat(e.sourceDBs)
             else node.sourceDBs = [].concat(e.sourceDBs)
           }
         }
@@ -313,6 +297,7 @@ export default {
     SeedDownload,
     SeedRemove,
     SeedFilter,
+    SeedTableSourceChip,
   }
 }
 

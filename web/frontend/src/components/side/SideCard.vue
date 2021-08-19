@@ -2,21 +2,96 @@
   <v-container style="position: fixed; width: 20%">
 
     <v-card elevation="3" style="padding-top: 15px; overflow-y: auto; max-height: 80vh">
-      <v-card-title>Toolbox</v-card-title>
+      <v-card elevation="3" style="margin:15px"
+              v-if="gid!==undefined && graphInfo !=null && Object.keys(options.list.entityGraph).length >0">
 
-      <v-card-title v-show="gid!==undefined">
-        <v-chip
-          outlined
-          @click="requestGraphDownload"
-        >
-          <v-icon
-            left
-          >
-            far fa-arrow-alt-circle-down
-          </v-icon>
-          Download
-        </v-chip>
-      </v-card-title>
+        <v-list-item @click="show.summary=!show.summary">
+          <v-list-item-title>
+            <v-icon left>{{ show.summary ? "far fa-minus-square" : "far fa-plus-square" }}</v-icon>
+            Summary
+          </v-list-item-title>
+        </v-list-item>
+        <v-divider></v-divider>
+        <template v-if="show.summary">
+
+          <v-card-title>Summary</v-card-title>
+          <v-list>
+            <v-list-item class="nedrex-list-item">
+              <v-list-item-title class="nedrex-list-item-title">Name</v-list-item-title>
+              <v-list-item-subtitle>{{ graphInfo.name }}</v-list-item-subtitle>
+            </v-list-item>
+            <v-list-item class="nedrex-list-item">
+              <v-list-item-title class="nedrex-list-item-title">ID</v-list-item-title>
+              <v-list-item-subtitle style="font-size: .6rem">{{ gid }}</v-list-item-subtitle>
+            </v-list-item>
+            <v-list-item>
+              <v-list-item-title>Nodes
+                ({{
+                  Object.values(options.list.countMap.nodes).map(s => s.selected).reduce((s, v) => s + v)
+                }}/{{ Object.values(graphInfo.counts.nodes).reduce((s, v) => s + v) }})
+              </v-list-item-title>
+            </v-list-item>
+            <v-list-item v-for="(count,name) in graphInfo.counts.nodes" :id="name" class="nedrex-list-item">
+              <v-list-item-avatar>
+                <v-icon left :color="getExtendedColoring('nodes',name,'light')">fas fa-genderless</v-icon>
+              </v-list-item-avatar>
+              <v-list-item-subtitle>{{ name }}</v-list-item-subtitle>
+              <v-list-item-subtitle style="min-width: 2rem; max-width: 3rem">{{
+                  options.list.countMap.nodes[name] != null ? options.list.countMap.nodes[name].selected : 0
+                }}/{{ count }}
+              </v-list-item-subtitle>
+            </v-list-item>
+            <v-list-item>
+              <v-list-item-title>Edges
+                ({{
+                  Object.values(options.list.countMap.edges).map(s => s.selected).reduce((s, v) => s + v)
+                }}/{{ Object.values(graphInfo.counts.edges).reduce((s, v) => s + v) }})
+              </v-list-item-title>
+            </v-list-item>
+            <v-list-item v-for="(count,name) in graphInfo.counts.edges" :id="name" class="nedrex-list-item">
+              <v-list-item-avatar>
+                <v-icon class="nedrex-list-icon" size="15" :color="getExtendedColoring('edges',name,'light')[0]">fas
+                  fa-genderless
+                </v-icon>
+                <template v-if="directionExtended(name)===0">
+                  <v-icon class="nedrex-list-icon" size="15">fas fa-undo-alt</v-icon>
+                </template>
+                <template v-else>
+                  <v-icon class="nedrex-list-icon" size="15" v-if="directionExtended(name)===1">fas
+                    fa-long-arrow-alt-right
+                  </v-icon>
+                  <v-icon class="nedrex-list-icon" size="15" v-else>fas fa-arrows-alt-h</v-icon>
+                  <v-icon class="nedrex-list-icon" size="15" :color="getExtendedColoring('edges',name,'light')[1]">fas
+                    fa-genderless
+                  </v-icon>
+                </template>
+              </v-list-item-avatar>
+              <v-list-item-subtitle>{{ name }}</v-list-item-subtitle>
+              <v-list-item-subtitle style="min-width: 2rem; max-width: 3rem">{{
+                  options.list.countMap.nodes[name] != null ? options.list.countMap.edges[name].selected : 0
+                }}/{{ count }}
+              </v-list-item-subtitle>
+            </v-list-item>
+            <v-list-item>
+              <v-list-item-action>
+                <v-chip
+                  outlined
+                  @click="requestGraphDownload"
+                >
+                  <v-icon
+                    left
+                  >
+                    far fa-arrow-alt-circle-down
+                  </v-icon>
+                  Download
+                </v-chip>
+              </v-list-item-action>
+            </v-list-item>
+          </v-list>
+        </template>
+      </v-card>
+
+      <v-card-title>Toolbox</v-card-title>
 
       <v-card ref="options" elevation="3" style="margin:15px" v-if="selectedTab !==1">
         <v-list-item @click="show.options=!show.options">
@@ -63,48 +138,48 @@
               <v-progress-circular v-else>
               </v-progress-circular>
             </template>
-<!--            <template v-if="selectedTab===1">-->
-<!--              <template v-if="options.graph.visualized">-->
-<!--                <v-list-item>-->
-<!--                  <v-chip outlined v-on:click="setAllSelected()">-->
-<!--                    <v-icon left>fas fa-globe</v-icon>-->
-<!--                    Overview-->
-<!--                  </v-chip>-->
-<!--                </v-list-item>-->
-<!--                <v-list-item>-->
-<!--                  <v-switch-->
-<!--                    v-model="options.graph.loops"-->
-<!--                    @click="$emit('showLoopsEvent',options.graph.loops)"-->
-<!--                    label="Show loops"-->
-<!--                  >-->
-<!--                  </v-switch>-->
-<!--                </v-list-item>-->
-<!--                <v-list-item>-->
-<!--                  <v-switch-->
-<!--                    v-model="options.graph.single"-->
-<!--                    :disabled="options.graph.physics"-->
-<!--                    @click="$emit('showUnconnectedEvent',options.graph.single)"-->
-<!--                    label="Show Unconnected"-->
-<!--                  >-->
-<!--                  </v-switch>-->
-<!--                </v-list-item>-->
-<!--                <v-list-item>-->
-<!--                  <v-switch-->
-<!--                    v-model="options.graph.component"-->
-<!--                    :disabled="selectedNode===undefined && !options.graph.component"-->
-<!--                    @click="$emit('graphViewEvent',{event:'isolate',selected:selectedNode.id, state:options.graph.component})"-->
-<!--                    label="Isolate Component"-->
-<!--                  >-->
-<!--                  </v-switch>-->
-<!--                </v-list-item>-->
-<!--              </template>-->
-<!--              <template v-else>-->
-<!--                <v-chip outlined @click="visualizeGraph">-->
-<!--                  <v-icon left>fas fa-check</v-icon>-->
-<!--                  Create view of Network-->
-<!--                </v-chip>-->
-<!--              </template>-->
-<!--            </template>-->
+            <!--            <template v-if="selectedTab===1">-->
+            <!--              <template v-if="options.graph.visualized">-->
+            <!--                <v-list-item>-->
+            <!--                  <v-chip outlined v-on:click="setAllSelected()">-->
+            <!--                    <v-icon left>fas fa-globe</v-icon>-->
+            <!--                    Overview-->
+            <!--                  </v-chip>-->
+            <!--                </v-list-item>-->
+            <!--                <v-list-item>-->
+            <!--                  <v-switch-->
+            <!--                    v-model="options.graph.loops"-->
+            <!--                    @click="$emit('showLoopsEvent',options.graph.loops)"-->
+            <!--                    label="Show loops"-->
+            <!--                  >-->
+            <!--                  </v-switch>-->
+            <!--                </v-list-item>-->
+            <!--                <v-list-item>-->
+            <!--                  <v-switch-->
+            <!--                    v-model="options.graph.single"-->
+            <!--                    :disabled="options.graph.physics"-->
+            <!--                    @click="$emit('showUnconnectedEvent',options.graph.single)"-->
+            <!--                    label="Show Unconnected"-->
+            <!--                  >-->
+            <!--                  </v-switch>-->
+            <!--                </v-list-item>-->
+            <!--                <v-list-item>-->
+            <!--                  <v-switch-->
+            <!--                    v-model="options.graph.component"-->
+            <!--                    :disabled="selectedNode===undefined && !options.graph.component"-->
+            <!--                    @click="$emit('graphViewEvent',{event:'isolate',selected:selectedNode.id, state:options.graph.component})"-->
+            <!--                    label="Isolate Component"-->
+            <!--                  >-->
+            <!--                  </v-switch>-->
+            <!--                </v-list-item>-->
+            <!--              </template>-->
+            <!--              <template v-else>-->
+            <!--                <v-chip outlined @click="visualizeGraph">-->
+            <!--                  <v-icon left>fas fa-check</v-icon>-->
+            <!--                  Create view of Network-->
+            <!--                </v-chip>-->
+            <!--              </template>-->
+            <!--            </template>-->
             <template v-if="selectedTab===2">
               <v-list-item>
                 <v-switch
@@ -257,92 +332,92 @@
         </v-list>
       </v-card>
 
-<!--      <v-card ref="filters" elevation="3" style="margin:15px" v-if="selectedTab===0">-->
+      <!--      <v-card ref="filters" elevation="3" style="margin:15px" v-if="selectedTab===0">-->
 
-<!--        <v-list-item @click="show.filters=!show.filters">-->
-<!--          <v-list-item-title>-->
-<!--            <v-icon left>{{ show.filters ? "far fa-minus-square" : "far fa-plus-square" }}</v-icon>-->
-<!--            Filters-->
-<!--          </v-list-item-title>-->
-<!--        </v-list-item>-->
-<!--        <v-divider></v-divider>-->
+      <!--        <v-list-item @click="show.filters=!show.filters">-->
+      <!--          <v-list-item-title>-->
+      <!--            <v-icon left>{{ show.filters ? "far fa-minus-square" : "far fa-plus-square" }}</v-icon>-->
+      <!--            Filters-->
+      <!--          </v-list-item-title>-->
+      <!--        </v-list-item>-->
+      <!--        <v-divider></v-divider>-->
 
-<!--        <v-container v-show="show.filters">-->
-<!--          <v-row>-->
-<!--            <v-col>-->
-<!--              <v-list-item>-->
-<!--                <v-chip outlined-->
-<!--                        @click="show.filterAdd=!show.filterAdd; show.filterSelectDisabled=false; filterEntity=''">-->
-<!--                  <v-icon left>{{ show.filterAdd ? "fas fa-check" : "fas fa-filter" }}</v-icon>-->
-<!--                  {{ show.filterAdd ? "Done" : "Edit Filters" }}-->
-<!--                </v-chip>-->
-<!--              </v-list-item>-->
-<!--            </v-col>-->
-<!--            <v-col>-->
-<!--              <v-select v-if="show.filterAdd "-->
-<!--                        v-model="filterEntity"-->
-<!--                        :items="options.start.selectedElements.filter(e=>e.type==='node')"-->
-<!--                        :autofocus="show.filterAdd"-->
-<!--                        item-text="name"-->
-<!--                        item-value="name"-->
-<!--                        @focusout="show.filterSelectDisabled=true"-->
-<!--                        :disabled="show.filterSelectDisabled"-->
-<!--                        @change="setFiltering"-->
-<!--              >Select Entity-->
-<!--              </v-select>-->
-<!--            </v-col>-->
-<!--          </v-row>-->
-<!--          <v-simple-table fixed-header ref="filterTable" v-if="filterEntity.length>0">-->
-<!--            <template v-slot:default>-->
-<!--              <thead>-->
-<!--              <tr>-->
-<!--                <th class="text-center">Type</th>-->
-<!--                <th class="text-center">Filter</th>-->
-<!--                <th class="text-center">Operation</th>-->
-<!--              </tr>-->
-<!--              </thead>-->
-<!--              <tbody>-->
-<!--              <tr v-for="(item,index) in filters[filterEntity]" :key="item.type+item.expression">-->
-<!--                <td>{{ item.type }}</td>-->
-<!--                <td>{{ item.expression }}</td>-->
-<!--                <td>-->
-<!--                  <v-chip outlined v-on:click="removeFilter(index)">-->
-<!--                    <v-icon dense>fas fa-trash</v-icon>-->
-<!--                  </v-chip>-->
-<!--                </td>-->
-<!--              </tr>-->
-<!--              <tr v-if="show.filterAdding">-->
-<!--                <td>-->
-<!--                  <v-select-->
-<!--                    v-model="filterTypeModel"-->
-<!--                    :items="filterTypes"-->
-<!--                    label="type"-->
-<!--                  ></v-select>-->
-<!--                </td>-->
-<!--                <td>-->
-<!--                  <v-text-field-->
-<!--                    v-model="filterModel"-->
-<!--                    :label="filterLabel"-->
-<!--                    placeholder="Pattern"-->
-<!--                  ></v-text-field>-->
-<!--                </td>-->
-<!--                <td>-->
-<!--                  <v-chip outlined v-on:click="saveFilter"-->
-<!--                          :disabled="filterModel ===undefined|| filterModel.length ===0 ||filterTypeModel ===undefined">-->
-<!--                    <v-icon dense>fas fa-plus</v-icon>-->
-<!--                  </v-chip>-->
-<!--                </td>-->
-<!--              </tr>-->
-<!--              </tbody>-->
-<!--            </template>-->
-<!--          </v-simple-table>-->
-<!--        </v-container>-->
-<!--      </v-card>-->
+      <!--        <v-container v-show="show.filters">-->
+      <!--          <v-row>-->
+      <!--            <v-col>-->
+      <!--              <v-list-item>-->
+      <!--                <v-chip outlined-->
+      <!--                        @click="show.filterAdd=!show.filterAdd; show.filterSelectDisabled=false; filterEntity=''">-->
+      <!--                  <v-icon left>{{ show.filterAdd ? "fas fa-check" : "fas fa-filter" }}</v-icon>-->
+      <!--                  {{ show.filterAdd ? "Done" : "Edit Filters" }}-->
+      <!--                </v-chip>-->
+      <!--              </v-list-item>-->
+      <!--            </v-col>-->
+      <!--            <v-col>-->
+      <!--              <v-select v-if="show.filterAdd "-->
+      <!--                        v-model="filterEntity"-->
+      <!--                        :items="options.start.selectedElements.filter(e=>e.type==='node')"-->
+      <!--                        :autofocus="show.filterAdd"-->
+      <!--                        item-text="name"-->
+      <!--                        item-value="name"-->
+      <!--                        @focusout="show.filterSelectDisabled=true"-->
+      <!--                        :disabled="show.filterSelectDisabled"-->
+      <!--                        @change="setFiltering"-->
+      <!--              >Select Entity-->
+      <!--              </v-select>-->
+      <!--            </v-col>-->
+      <!--          </v-row>-->
+      <!--          <v-simple-table fixed-header ref="filterTable" v-if="filterEntity.length>0">-->
+      <!--            <template v-slot:default>-->
+      <!--              <thead>-->
+      <!--              <tr>-->
+      <!--                <th class="text-center">Type</th>-->
+      <!--                <th class="text-center">Filter</th>-->
+      <!--                <th class="text-center">Operation</th>-->
+      <!--              </tr>-->
+      <!--              </thead>-->
+      <!--              <tbody>-->
+      <!--              <tr v-for="(item,index) in filters[filterEntity]" :key="item.type+item.expression">-->
+      <!--                <td>{{ item.type }}</td>-->
+      <!--                <td>{{ item.expression }}</td>-->
+      <!--                <td>-->
+      <!--                  <v-chip outlined v-on:click="removeFilter(index)">-->
+      <!--                    <v-icon dense>fas fa-trash</v-icon>-->
+      <!--                  </v-chip>-->
+      <!--                </td>-->
+      <!--              </tr>-->
+      <!--              <tr v-if="show.filterAdding">-->
+      <!--                <td>-->
+      <!--                  <v-select-->
+      <!--                    v-model="filterTypeModel"-->
+      <!--                    :items="filterTypes"-->
+      <!--                    label="type"-->
+      <!--                  ></v-select>-->
+      <!--                </td>-->
+      <!--                <td>-->
+      <!--                  <v-text-field-->
+      <!--                    v-model="filterModel"-->
+      <!--                    :label="filterLabel"-->
+      <!--                    placeholder="Pattern"-->
+      <!--                  ></v-text-field>-->
+      <!--                </td>-->
+      <!--                <td>-->
+      <!--                  <v-chip outlined v-on:click="saveFilter"-->
+      <!--                          :disabled="filterModel ===undefined|| filterModel.length ===0 ||filterTypeModel ===undefined">-->
+      <!--                    <v-icon dense>fas fa-plus</v-icon>-->
+      <!--                  </v-chip>-->
+      <!--                </td>-->
+      <!--              </tr>-->
+      <!--              </tbody>-->
+      <!--            </template>-->
+      <!--          </v-simple-table>-->
+      <!--        </v-container>-->
+      <!--      </v-card>-->
       <template v-if="(selectedTab===1 && options.graph.visualized)" :options="options.graph.selection">
         <Selection ref="selection" :options="options.graph.selection"
                    @selectModeEvent="toggleSelectMode"
                    @nodeSelectionEvent="loadSelection"
-                  @applyMultiSelect="applyMultiSelect"
+                   @applyMultiSelect="applyMultiSelect"
         >
         </Selection>
 
@@ -391,13 +466,13 @@
           <i v-else>no selection available</i>
         </v-container>
       </v-card>
-      <template v-if="selectedTab===2" >
+      <template v-if="selectedTab===2">
         <Algorithms ref="algorithms" @executeAlgorithmEvent="submitAlgorithm"></Algorithms>
         <Jobs ref="jobs" @graphLoadEvent="graphLoadEvent" @printNotificationEvent="printNotification"
               @reloadHistoryEvent="reloadHistory"></Jobs>
       </template>
       <template v-if="selectedTab===2 || selectedTab ===1">
-       <v-card ref="detail" elevation="3" style="margin:15px" v-if="detailedObject !== undefined"
+        <v-card ref="detail" elevation="3" style="margin:15px" v-if="detailedObject !== undefined"
                 :loading="$global.metagraph==null">
 
           <v-list-item @click="show.detail=!show.detail">
@@ -570,8 +645,10 @@ export default {
   data() {
     return {
       gid: undefined,
+      graphInfo: undefined,
       show: {
         options: true,
+        summary: true,
         // filters: false,
         // filterAdd: false,
         // filterAdding: false,
@@ -602,12 +679,24 @@ export default {
     }
   },
   created() {
-    this.gid = this.$route.params["gid"]
+    this.init()
   },
 
   methods: {
-    reload: function () {
+
+    init: function(){
       this.gid = this.$route.params["gid"]
+      if (this.gid != null)
+        this.$http.get("getGraphHistory?gid=" + this.gid + "&uid=" + this.$cookies.get("uid")).then(response => {
+          if (response.data !== undefined)
+            return response.data
+        }).then(data => {
+          this.graphInfo = data
+        }).catch(console.error)
+    },
+
+    reload: function () {
+      this.init()
       if (this.$refs.algorithms !== undefined)
         this.$refs.algorithms.resetAlgorithms()
       if (this.$refs.jobs !== undefined)
@@ -906,10 +995,16 @@ export default {
       return this.$utils.getColoring(this.$global.metagraph, type, name)
     },
 
-    getExtendedColoring: function (type, name) {
+    getExtendedColoring: function (type, name, style) {
       // if (name.endsWith("Drug"))
       //   name = "drug"
-      return this.$utils.getColoringExtended(this.$global.metagraph, this.options.list.entityGraph, type, name)
+      return this.$utils.getColoringExtended(this.$global.metagraph, this.options.list.entityGraph, type, name, style)
+    },
+    directionExtended: function (edge) {
+      let e = Object.values(this.options.list.entityGraph.edges).filter(e => e.name === edge)[0];
+      if (e.node1 === e.node2)
+        return 0
+      return e.directed ? 1 : 2
     },
     getNodeNames: function (type) {
       return this.$utils.getNodes(this.$global.metagraph, type)
@@ -948,10 +1043,10 @@ export default {
       }
     }
     ,
-    applyMultiSelect: function(selection){
-      this.$emit("applyMultiSelect",selection);
+    applyMultiSelect: function (selection) {
+      this.$emit("applyMultiSelect", selection);
     },
-    setMultiSelect: function(selection){
+    setMultiSelect: function (selection) {
       this.$refs.selection.setSelection(selection)
     },
     nodeDetails: function (id) {
@@ -963,9 +1058,9 @@ export default {
     }
     ,
     loadDetails: function (data, redirect) {
-      if(data ==null){
-        this.detailedObject=undefined;
-        this.show.detail=false;
+      if (data == null) {
+        this.detailedObject = undefined;
+        this.show.detail = false;
         return;
       }
       this.details.redirected = false;
@@ -1050,7 +1145,7 @@ export default {
       this.$utils.formatTime(timestamp)
     },
     requestGraphDownload: function () {
-      window.open(CONFIG.HOST_URL+CONFIG.CONTEXT_PATH+'/api/downloadGraph?gid=' + this.gid)
+      window.open(CONFIG.HOST_URL + CONFIG.CONTEXT_PATH + '/api/downloadGraph?gid=' + this.gid)
     }
   }
   ,
@@ -1075,5 +1170,16 @@ export default {
   -ms-overflow-style: none
   scrollbar-width: none
 
+.nedrex-list-item
+  max-height: 1rem
+  min-height: 2rem !important
 
+.nedrex-list-icon
+  padding: 0 !important
+  margin: 0 !important
+  max-width: 15px !important
+  min-width: 15px !important
+
+.nedrex-list-item-title
+  max-width: 3rem
 </style>

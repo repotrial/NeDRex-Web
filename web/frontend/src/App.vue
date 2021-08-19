@@ -330,7 +330,7 @@ export default {
       ]
       this.initComponents()
       this.$global.metadata = await this.$http.getMetadata()
-      this.$global.metagraph = await this.$http.getMetagraph()
+      this.$global.metagraph = this.$utils.adjustMetaOptions(await this.$http.getMetagraph())
       this.metaLoaded = true;
       this.initGraphs()
       this.setView()

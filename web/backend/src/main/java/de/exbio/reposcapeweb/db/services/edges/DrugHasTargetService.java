@@ -2,10 +2,7 @@ package de.exbio.reposcapeweb.db.services.edges;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.exbio.reposcapeweb.db.entities.edges.DisorderIsADisorder;
-import de.exbio.reposcapeweb.db.entities.edges.DrugHasIndication;
-import de.exbio.reposcapeweb.db.entities.edges.DrugHasTargetGene;
-import de.exbio.reposcapeweb.db.entities.edges.DrugHasTargetProtein;
+import de.exbio.reposcapeweb.db.entities.edges.*;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
 import de.exbio.reposcapeweb.db.repositories.edges.DrugHasTargetGeneRepository;
 import de.exbio.reposcapeweb.db.repositories.edges.DrugHasTargetProteinRepository;
@@ -33,6 +30,7 @@ public class DrugHasTargetService {
     private final DrugHasTargetProteinRepository drugHasTargetProteinRepository;
     private final DrugHasTargetGeneRepository drugHasTargetGeneRepository;
 
+    private final ProteinEncodedByService proteinEncodedByService;
     private final DrugService drugService;
     private final GeneService geneService;
     private final ProteinService proteinService;
@@ -45,18 +43,19 @@ public class DrugHasTargetService {
 
     private final DataSource dataSource;
     private final String clearQuery = "DELETE FROM drug_has_target_gene";
-    private final String generationQuery = "INSERT IGNORE INTO drug_has_target_gene SELECT drug_has_target_protein.id_1, protein_encoded_by.id_2 FROM protein_encoded_by INNER JOIN drug_has_target_protein ON protein_encoded_by.id_1=drug_has_target_protein.id_2;";
+//    private final String generationQuery = "INSERT IGNORE INTO drug_has_target_gene SELECT drug_has_target_protein.id_1, protein_encoded_by.id_2 FROM protein_encoded_by INNER JOIN drug_has_target_protein ON protein_encoded_by.id_1=drug_has_target_protein.id_2;";
     private PreparedStatement clearPs = null;
     private PreparedStatement generationPs = null;
 
     @Autowired
-    public DrugHasTargetService(DrugService drugService, ProteinService proteinService, DrugHasTargetProteinRepository drugHasTargetProteinRepository, DrugHasTargetGeneRepository drugHasTargetGeneRepository, DataSource dataSource, GeneService geneService) {
+    public DrugHasTargetService(ProteinEncodedByService proteinEncodedByService, DrugService drugService, ProteinService proteinService, DrugHasTargetProteinRepository drugHasTargetProteinRepository, DrugHasTargetGeneRepository drugHasTargetGeneRepository, DataSource dataSource, GeneService geneService) {
         this.drugService = drugService;
         this.drugHasTargetProteinRepository = drugHasTargetProteinRepository;
         this.drugHasTargetGeneRepository = drugHasTargetGeneRepository;
         this.proteinService = proteinService;
         this.dataSource = dataSource;
         this.geneService = geneService;
+        this.proteinEncodedByService = proteinEncodedByService;
     }
 
 
@@ -89,15 +88,43 @@ public class DrugHasTargetService {
 
     public boolean generateGeneEntries() {
         log.debug("Generating entries for drug_has_target_gene from drug_has_target(_protein).");
+
+        HashMap<Integer, HashSet<Integer>> geneProteinMap = new HashMap<>();
+        HashMap<Integer, Integer> proteinGeneMap = new HashMap<>();
+        proteinEncodedByService.findAll().forEach(e -> {
+            if (!geneProteinMap.containsKey(e.getPrimaryIds().getId1()))
+                geneProteinMap.put(e.getPrimaryIds().getId1(), new HashSet<>());
+            geneProteinMap.get(e.getPrimaryIds().getId1()).add(e.getPrimaryIds().getId2());
+            proteinGeneMap.put(e.getPrimaryIds().getId1(), e.getPrimaryIds().getId2());
+        });
+
+
         try (Connection con = dataSource.getConnection()) {
             clearPs = con.prepareCall(clearQuery);
-            generationPs = con.prepareStatement(generationQuery);
             clearPs.executeUpdate();
-            generationPs.executeUpdate();
         } catch (SQLException throwables) {
             throwables.printStackTrace();
             return false;
         }
+
+        HashMap<Integer, HashMap<Integer, DrugHasTargetGene>> dts = new HashMap<>();
+        LinkedList<DrugHasTargetGene> dtList = new LinkedList<>();
+
+        findAllProteins().forEach(dtp -> {
+            try {
+                int did = dtp.getPrimaryIds().getId1();
+                int gid = proteinGeneMap.get(dtp.getPrimaryIds().getId2());
+                DrugHasTargetGene dtg = new DrugHasTargetGene(did, gid);
+                dtg.addDatabases(dtp.getDatabases());
+                dtg.addActions(dtp.getActions());
+                if (!dts.containsKey(did))
+                    dts.put(did, new HashMap<>());
+                dts.get(did).put(gid, dtg);
+                dtList.add(dtg);
+            } catch (NullPointerException ignore) {
+            }
+        });
+        drugHasTargetGeneRepository.saveAll(dtList);
         return true;
     }
 

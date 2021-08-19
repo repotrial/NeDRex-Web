@@ -28,13 +28,13 @@
                   <v-icon left size="1em">
                     fas fa-trash-alt
                   </v-icon>
-                  with only {{ value }}
+                  with only {{ getLabel(value) }}
                 </v-list-item>
                 <v-list-item style="cursor:pointer; font-size: smaller; color: gray" :key="'all_'+attribute+'-'+value" @click="$emit('removeEvent',{all:true,attribute:attribute, value:value})">
                   <v-icon left size="1em">
                     fas fa-trash-alt
                   </v-icon>
-                  all with {{ value }}
+                  all with {{ getLabel(value) }}
                 </v-list-item>
               </template>
             </v-list>
@@ -53,6 +53,16 @@ export default {
   name: "seedRemove",
   props: {
     attributes: Object,
+  },
+
+
+  methods:{
+    getLabel: function(attr){
+     if(attr.indexOf(":")===-1)
+       return attr;
+     let sp = attr.split(":")
+      return sp[1]+" ("+sp[0]+" connection)"
+    }
   }
 }
 </script>

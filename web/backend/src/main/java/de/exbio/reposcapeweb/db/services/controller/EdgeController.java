@@ -1,6 +1,7 @@
 package de.exbio.reposcapeweb.db.services.controller;
 
 import de.exbio.reposcapeweb.communication.cache.Graphs;
+import de.exbio.reposcapeweb.configs.DBConfig;
 import de.exbio.reposcapeweb.db.entities.edges.*;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
 import de.exbio.reposcapeweb.db.services.edges.*;

@@ -132,7 +132,34 @@ const Utils =
         }
       })
       return sep;
-    }
+    },
 
+    adjustMetaOptions(metagraph) {
+      function drawEllipse({ ctx, id, x, y, state: { selected, hover }, style, label }){
+        console.log(style)
+        return {
+          // bellow arrows
+          // primarily meant for nodes and the labels inside of their boundaries
+          drawNode() {
+            ctx.fillStyle="black"
+            ctx.beginPath()
+            ctx.ellipse(x,y,50,25,0,0,Math.PI*2);
+            ctx.fill();
+          },
+          // above arrows
+          // primarily meant for labels outside of the node
+          drawExternalLabel() {
+            ctx.fillText(label,20,100)
+          },
+          // node dimensions defined by node drawing
+          nodeDimensions: { width:50, height:25 },
+        };
+      }
+      metagraph.options.options.groups.pathway["shape"]="triangle";
+      metagraph.options.options.groups.pathway["ctxRenderer"]=drawEllipse;
+      console.log(metagraph)
+
+      return metagraph;
+    }
   }
 export default Utils
