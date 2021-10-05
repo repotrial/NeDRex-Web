@@ -1,18 +1,16 @@
 package de.exbio.reposcapeweb;
 
-import de.exbio.reposcapeweb.communication.cache.Graphs;
 import de.exbio.reposcapeweb.communication.jobs.JobController;
 import de.exbio.reposcapeweb.db.DbCommunicationService;
-import de.exbio.reposcapeweb.db.entities.edges.GeneInteractsWithGene;
-import de.exbio.reposcapeweb.db.entities.edges.ProteinInteractsWithProtein;
+import de.exbio.reposcapeweb.db.entities.edges.DrugHasIndication;
+import de.exbio.reposcapeweb.db.entities.edges.ProteinAssociatedWithDisorder;
 import de.exbio.reposcapeweb.db.io.ImportService;
 import de.exbio.reposcapeweb.db.services.controller.EdgeController;
 import de.exbio.reposcapeweb.db.services.controller.NodeController;
 import de.exbio.reposcapeweb.db.services.edges.ProteinInteractsWithProteinService;
 import de.exbio.reposcapeweb.db.updates.UpdateService;
-import de.exbio.reposcapeweb.filter.FilterEntry;
-import de.exbio.reposcapeweb.filter.FilterType;
 import de.exbio.reposcapeweb.tools.ToolService;
+import de.exbio.reposcapeweb.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +26,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @SpringBootApplication
 public class ReposcapewebApplication extends SpringBootServletInitializer {
@@ -79,13 +77,12 @@ public class ReposcapewebApplication extends SpringBootServletInitializer {
 
 
     @EventListener(ApplicationReadyEvent.class)
-    public void postConstruct() {
+    public void postConstruct() throws IOException {
 
         long start = System.currentTimeMillis();
         updateService.readMetadata();
         dbService.setImportInProgress(true);
         importService.importNodeData();
-
 
         //TODO maybe move importJob and importHistory to after update?
         jobController.importJobsHistory();
@@ -110,5 +107,87 @@ public class ReposcapewebApplication extends SpringBootServletInitializer {
         log.info("Loaded " + nodeController.getCount() + " nodes and " + edgeController.getSize() + " edges!");
         log.info("Service can be used!");
 
+
+//        drugstoneFileCreation();
+
     }
+
+    private void drugstoneFileCreation() throws IOException {
+        System.out.println("Creating Drugstone files");
+        HashMap<Integer,String> disorders = new HashMap<>();
+        HashMap<Integer,String> proteins = new HashMap<>();
+        HashMap<Integer,String>drugs = new HashMap<>();
+
+        edgeController.findAll(5).forEach(e -> {
+            ProteinAssociatedWithDisorder pad = (ProteinAssociatedWithDisorder) e;
+            if (pad.getAssertedBy().contains("disgenet")) {
+                proteins.put(pad.getPrimaryIds().getId1(), null);
+                disorders.put(pad.getPrimaryIds().getId2(),null);
+            }
+        });
+
+        edgeController.findAll(10).forEach(e->{
+            DrugHasIndication di = (DrugHasIndication) e;
+            drugs.put(di.getPrimaryIds().getId1(),null);
+            disorders.put(di.getPrimaryIds().getId2(),null);
+        });
+
+
+        BufferedWriter bw = new BufferedWriter(new FileWriter("/home/andim/projects/drugstone/backend/data-NetExpander/Disorders/disorders.tsv"));
+        bw.write("mondo_id\tlabel\ticd10\n");
+        BufferedWriter finalBw = bw;
+        nodeController.findDisorders(disorders.keySet()).forEach(disorder->{
+            try {
+                String domainId = StringUtils.split(disorder.getPrimaryDomainId(),'.').get(1);
+                disorders.put(disorder.getId(),domainId);
+                finalBw.write(domainId+"\t"+disorder.getDisplayName()+"\t"+StringUtils.listToString(disorder.getIcd10())+"\n");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+        bw.close();
+
+        nodeController.findProteins(proteins.keySet()).forEach(protein->{
+            proteins.put(protein.getId(),StringUtils.split(protein.getPrimaryDomainId(),'.').get(1));
+        });
+
+
+        bw = new BufferedWriter(new FileWriter("/home/andim/projects/drugstone/backend/data-NetExpander/PDi/disgenet-protein_disorder_association.tsv"));
+        bw.write("protein_name\tdisorder_name\tscore\n");
+        BufferedWriter finalBw1 = bw;
+        edgeController.findAll(5).forEach(e -> {
+            ProteinAssociatedWithDisorder pad = (ProteinAssociatedWithDisorder) e;
+            if (pad.getAssertedBy().contains("disgenet")) {
+                try {
+                    finalBw1.write(proteins.get(pad.getPrimaryIds().getId1()) + "\t" + disorders.get(pad.getPrimaryIds().getId2()) + "\t" + pad.getScore() + "\n");
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
+        bw.close();
+
+        proteins.clear();
+
+        nodeController.findDrugs(drugs.keySet()).forEach(drug->{
+            drugs.put(drug.getId(),StringUtils.split(drug.getPrimaryDomainId(),'.').get(1));
+        });
+
+
+        bw = new BufferedWriter(new FileWriter("/home/andim/projects/drugstone/backend/data-NetExpander/DrDi/drugbank-drug_disorder_indication.tsv"));
+        bw.write("drugbank_id\tmondo_id\n");
+        BufferedWriter finalBw2 = bw;
+        edgeController.findAll(10).forEach(e -> {
+            DrugHasIndication di = (DrugHasIndication) e;
+                try {
+                    finalBw2.write(drugs.get(di.getPrimaryIds().getId1()) + "\t" + disorders.get(di.getPrimaryIds().getId2()) + "\n");
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+        });
+        bw.close();
+        System.out.println("Done creating Drugstone files");
+    }
+
+
 }

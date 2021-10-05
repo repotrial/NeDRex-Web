@@ -5,6 +5,7 @@ import networkx as nx  # read_graphml from repotrial networks works with network
 
 # Autor: Sepideh Sadegh
 
+
 apiNetwork_path = sys.argv[2]
 inputFiles = sys.argv[1]
 os.chdir(apiNetwork_path)
