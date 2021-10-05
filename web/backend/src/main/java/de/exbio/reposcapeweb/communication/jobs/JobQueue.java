@@ -2,6 +2,7 @@ package de.exbio.reposcapeweb.communication.jobs;
 
 import de.exbio.reposcapeweb.communication.controller.SocketController;
 import de.exbio.reposcapeweb.tools.ToolService;
+import de.exbio.reposcapeweb.tools.algorithms.Algorithm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,7 +67,8 @@ public class JobQueue {
 
     private void startNext() {
         Job j = queue.pop();
-        j.setThreads(Math.max(1, Math.min(maxThreadsPerJob, (simultaniousExecutes - running.size()) / 2)));
+        Algorithm algorithm = toolService.getAlgorithms().get(j.getMethod());
+        algorithm.setTreads(j,Math.max(1, Math.min(maxThreadsPerJob, (simultaniousExecutes - running.size()) / 2)));
         running.put(j.getJobId(), j);
         executeJob(j);
         j.setStarted();

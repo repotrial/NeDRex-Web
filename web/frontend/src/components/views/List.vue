@@ -1189,8 +1189,16 @@ export default {
         this.nodes = data.nodes;
         this.marks = data.marks;
         Object.keys(this.nodes).forEach(node => {
+          let columns = this.attributes.nodes[node].map(n=>n.name)
+          let p_hyper = columns.indexOf("p_hyper")!=-1
+          let rank = columns.indexOf("rank")!=-1
           for (let idx in this.nodes[node]) {
-            this.nodes[node][idx]["selected"] = false;
+            let n = this.nodes[node][idx]
+            n["selected"] = false;
+            if(p_hyper && n.p_hyper ==null)
+              n.p_hyper=0
+            if(rank && n.rank == null)
+              n.rank=0;
           }
         })
         Object.keys(this.edges).forEach(edge => {

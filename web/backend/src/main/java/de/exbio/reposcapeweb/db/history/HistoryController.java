@@ -31,15 +31,17 @@ public class HistoryController {
     private final HistoryRepository historyRepository;
     private final ObjectMapper objectMapper;
     private final Environment env;
+    private final ToolService toolService;
 
     private HashMap<String, GraphHistory> graphMap;
     private HashMap<String, HashSet<String>> userMap;
 
 
     @Autowired
-    public HistoryController(HistoryRepository historyRepository, ObjectMapper objectMapper, Environment env) {
+    public HistoryController(HistoryRepository historyRepository, ObjectMapper objectMapper, Environment env, ToolService toolService) {
         this.historyRepository = historyRepository;
         this.objectMapper = objectMapper;
+        this.toolService=toolService;
         this.env = env;
     }
 
@@ -190,7 +192,7 @@ public class HistoryController {
 
     public File getJobPath(Job j) {
         String cachedir = env.getProperty("path.usr.cache");
-        if (j.getMethod().equals(ToolService.Tool.MUST))
+        if (toolService.getAlgorithms().get(j.getMethod()).hasMultipleResultFiles())
             return new File(cachedir, "users/" + j.getUserId() + "/jobs/" + j.getJobId() + "_result.zip");
         else
             return new File(cachedir, "users/" + j.getUserId() + "/jobs/" + j.getJobId() + "_result.txt");

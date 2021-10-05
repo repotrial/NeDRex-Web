@@ -157,11 +157,6 @@ public class Job {
         return process;
     }
 
-    public void setThreads(int threads) {
-        if (this.method.equals(ToolService.Tool.MUST))
-            this.command += " " + threads;
-    }
-
     public void setUserId(String userId) {
         this.userId = userId;
     }

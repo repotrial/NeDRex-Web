@@ -10,6 +10,7 @@ import de.exbio.reposcapeweb.db.services.nodes.GeneService;
 import de.exbio.reposcapeweb.db.services.nodes.ProteinService;
 import de.exbio.reposcapeweb.filter.NodeFilter;
 import de.exbio.reposcapeweb.tools.ToolService;
+import de.exbio.reposcapeweb.tools.algorithms.Algorithm;
 import de.exbio.reposcapeweb.utils.Pair;
 import de.exbio.reposcapeweb.utils.StringUtils;
 import org.slf4j.Logger;
@@ -38,6 +39,7 @@ public class JobController {
     private HashMap<String, Job> jobs = new HashMap<>();
     private HashMap<String, LinkedList<String>> jobWaitingForResults = new HashMap<>();
     private Logger log = LoggerFactory.getLogger(JobController.class);
+    private EnumMap<ToolService.Tool,Algorithm> algorithms;
 
     @Autowired
     public JobController(HistoryController historyController, DrugService drugService, ProteinService proteinService, GeneService geneService, WebGraphService graphService, ToolService toolService, JobQueue jobQueue, JobRepository jobRepository, SocketController socketController, JobCache jobCache) {
@@ -51,6 +53,7 @@ public class JobController {
         this.proteinService = proteinService;
         this.drugService = drugService;
         this.historyController = historyController;
+        this.algorithms = toolService.getAlgorithms();
     }
 
 
@@ -112,13 +115,15 @@ public class JobController {
             req.graphId = g.getId();
             j.setBasisGraph(g.getId());
         }
-        if (j.getMethod().equals(ToolService.Tool.BICON))
+
+        Algorithm algorithm = algorithms.get(j.getMethod());
+        if (algorithm.usesExpressionInput())
             prepareExpressionFile(req);
 
         String command = createCommand(j, req);
         j.setCommand(command);
 
-        if (!j.getMethod().equals(ToolService.Tool.BICON) && req.nodes != null && req.nodes.size() > 0) {
+        if (algorithm.usesSeedInput() && req.nodes != null && req.nodes.size() > 0) {
             j.setSeeds(req.nodes);
             try {
                 Job sameJob = jobs.get(jobCache.getCached(j));

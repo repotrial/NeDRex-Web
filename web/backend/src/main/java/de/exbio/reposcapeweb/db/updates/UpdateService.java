@@ -149,14 +149,17 @@ public class UpdateService {
         if (dir.exists())
             dir.delete();
         dir.mkdirs();
+        String sifHead = "#node1\tedgetype\tnode2\n";
         File ppiFile = new File(dir, "proteinInteractsWithProtein.tsv");
         File ppiSif_all = new File(dir, "proteinInteractsWithProtein_all.sif");
         File ppiSif_exp = new File(dir, "proteinInteractsWithProtein_exp.sif");
         try (BufferedWriter bw = WriterUtils.getBasicWriter(ppiFile); BufferedWriter bwSifa = WriterUtils.getBasicWriter(ppiSif_all); BufferedWriter bwSife = WriterUtils.getBasicWriter(ppiSif_exp)) {
+            bwSifa.write(sifHead);
+            bwSife.write(sifHead);
             proteinInteractsWithProteinService.getProteins().forEach((id1, map) -> map.forEach((id, vals) -> {
                 try {
                     bw.write(proteinService.map(id1) + "\t" + proteinService.map(id.getId2()) + "\t" + vals.second + "\n");
-                    String sifLine = id1+"\tpp\t"+id.getId2()+"\n";
+                    String sifLine = "_"+id1+"\tpp\t_"+id.getId2()+"\n";
                     bwSifa.write(sifLine);
                     if(vals.second)
                         bwSife.write(sifLine);
@@ -173,10 +176,12 @@ public class UpdateService {
         File ggiSif_all = new File(dir, "geneInteractsWithGene_all.sif");
         File ggiSif_exp = new File(dir, "geneInteractsWithGene_exp.sif");
         try (BufferedWriter bw = WriterUtils.getBasicWriter(ggiFile); BufferedWriter bwSifa = WriterUtils.getBasicWriter(ggiSif_all); BufferedWriter bwSife = WriterUtils.getBasicWriter(ggiSif_exp)) {
+            bwSifa.write(sifHead);
+            bwSife.write(sifHead);
             proteinInteractsWithProteinService.getGenes().forEach((id1, map) -> map.forEach((id, vals) -> {
                 try {
                     bw.write(geneService.map(id1) + "\t" + geneService.map(id.getId2()) + "\t" + vals.second + "\n");
-                    String sifLine = id1+"\tgg\t"+id.getId2()+"\n";
+                    String sifLine = "_"+id1+"\tgg\t_"+id.getId2()+"\n";
                     bwSifa.write(sifLine);
                     if(vals.second)
                         bwSife.write(sifLine);

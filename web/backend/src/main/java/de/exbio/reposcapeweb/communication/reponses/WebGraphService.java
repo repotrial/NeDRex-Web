@@ -23,6 +23,7 @@ import de.exbio.reposcapeweb.filter.FilterEntry;
 import de.exbio.reposcapeweb.filter.FilterType;
 import de.exbio.reposcapeweb.filter.NodeFilter;
 import de.exbio.reposcapeweb.tools.ToolService;
+import de.exbio.reposcapeweb.tools.algorithms.*;
 import de.exbio.reposcapeweb.utils.*;
 import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.slf4j.Logger;
@@ -61,17 +62,18 @@ public class WebGraphService {
     private HashSet<String> layoutGenerating = new HashSet<>();
     private HashSet<String> graphmlGenerating = new HashSet<>();
     private WebGraph metagraph = null;
+    private EnumMap<ToolService.Tool, Algorithm> algorithms;
 
 
     @Autowired
     public WebGraphService(
-            NodeController nodeController,
-            EdgeController edgeController,
-            DbCommunicationService dbCommunicationService,
-            ObjectMapper objectMapper,
-            HistoryController historyController,
-            ToolService toolService,
-            SocketController socketController) {
+                           NodeController nodeController,
+                           EdgeController edgeController,
+                           DbCommunicationService dbCommunicationService,
+                           ObjectMapper objectMapper,
+                           HistoryController historyController,
+                           ToolService toolService,
+                           SocketController socketController) {
         this.edgeController = edgeController;
         this.nodeController = nodeController;
         this.dbCommunicationService = dbCommunicationService;
@@ -79,6 +81,8 @@ public class WebGraphService {
         this.historyController = historyController;
         this.toolService = toolService;
         this.socketController = socketController;
+        this.algorithms = toolService.getAlgorithms();
+
     }
 
     public WebGraph getMetaGraph() {
@@ -935,82 +939,31 @@ public class WebGraphService {
     }
 
     public void applyModuleJob(Job j) {
-        int nodeTypeId = Graphs.getNode((j.getMethod().equals(ToolService.Tool.CENTRALITY) | j.getMethod().equals(ToolService.Tool.TRUSTRANK) ? "drug" : j.getMethod().equals(ToolService.Tool.BICON) ? "gene" : j.getTarget()));
-
-        if (j.getMethod() == ToolService.Tool.CENTRALITY | j.getMethod() == ToolService.Tool.TRUSTRANK)
-            filterDrugsMap(nodeTypeId, j);
-
-
-        boolean onlyKeepResult = j.getParams().containsKey("nodesOnly") && j.getParams().get("nodesOnly").equals("true");
 
         Graph g = getCachedGraph(j.getBasisGraph());
         Graph derived;
-        if (j.getMethod().equals(ToolService.Tool.MUST) | onlyKeepResult) {
+
+        Algorithm algorithm = algorithms.get(j.getMethod());
+
+        int nodeTypeId = algorithm.getNodeType(j);
+
+        if (nodeTypeId == Graphs.getNode("drug"))
+            filterDrugsMap(nodeTypeId, j);
+
+        boolean integrateOriginalGraph = algorithm.integrateOriginalGraph(j);
+
+        if (!integrateOriginalGraph) {
             derived = new Graph(historyController.getGraphId());
             derived.setParent(g.getId());
         } else
             derived = g.clone(historyController.getGraphId());
 
-        if (j.getMethod() != ToolService.Tool.MUST) {
-            HashSet<Integer> allNodes = new HashSet<>();
-            if (g.getNodes().containsKey(nodeTypeId))
-                allNodes.addAll(g.getNodes().get(nodeTypeId).keySet());
-            int beforeCount = allNodes.size();
-            Set<Integer> newNodeIDs = (j.getMethod().equals(ToolService.Tool.BICON) ? j.getResult().getNodes().entrySet().stream() : j.getResult().getNodes().entrySet().stream().filter(e -> e.getValue() != null)).map(Map.Entry::getKey).collect(Collectors.toSet());
-            allNodes.addAll(newNodeIDs);
-            derived.addNodeMarks(nodeTypeId, newNodeIDs);
-            j.setUpdate("" + (allNodes.size() - beforeCount));
-            NodeFilter nf = new NodeFilter(nodeController.getFilter(Graphs.getNode(nodeTypeId)), allNodes);
-            derived.saveNodeFilter(Graphs.getNode(nodeTypeId), nf);
-            derived.addNodes(nodeTypeId, nf.toList(-1).stream().map(e -> new Node(e.getNodeId(), e.getName())).collect(Collectors.toList()));
+        algorithm.createGraph(derived, j, nodeTypeId, g);
 
-            if (j.getMethod().equals(ToolService.Tool.DIAMOND)) {
-                derived.addCustomNodeAttributeType(nodeTypeId, "rank", "numeric");
-                derived.addCustomNodeAttributeType(nodeTypeId, "p_hyper", "numeric");
-                derived.addCustomNodeAttribute(nodeTypeId, j.getResult().getNodes());
-            }
-
-            if (j.getMethod().equals(ToolService.Tool.TRUSTRANK) || j.getMethod().equals(ToolService.Tool.CENTRALITY)) {
-                int otherTypeId = nodeTypeId;
+        //TODO check if fine with bicon
+        updateEdges(derived, j, nodeTypeId);
 
 
-                derived.addCustomNodeAttributeType(otherTypeId, "score", "numeric");
-                HashMap<Integer, HashMap<String, Object>> idMap = new HashMap<>();
-                j.getResult().getNodes().forEach((k, v) -> {
-                    if (newNodeIDs.contains(k))
-                        idMap.put(k, v);
-                });
-                derived.addCustomNodeAttribute(otherTypeId, idMap);
-                nodeTypeId = Graphs.getNode(j.getTarget());
-                derived.saveNodeFilter(j.getTarget(), g.getNodeFilter(j.getTarget()));
-                derived.addNodes(nodeTypeId, g.getNodes().get(nodeTypeId));
-
-                Set<Integer> seedIds = j.getResult().getNodes().entrySet().stream().filter(e -> e.getValue() != null).map(Map.Entry::getKey).collect(Collectors.toSet());
-                derived.addNodeMarks(nodeTypeId, seedIds);
-                updateEdges(derived, j, otherTypeId);
-            }
-            updateEdges(derived, j, nodeTypeId);
-        } else {
-
-
-            j.setUpdate("" + j.getResult().getNodes().size());
-            NodeFilter nf = new NodeFilter(nodeController.getFilter(Graphs.getNode(nodeTypeId)), j.getResult().getNodes().keySet());
-            derived.saveNodeFilter(Graphs.getNode(nodeTypeId), nf);
-            derived.addNodes(nodeTypeId, nf.toList(-1).stream().map(e -> new Node(e.getNodeId(), e.getName())).collect(Collectors.toList()));
-            LinkedList<Edge> edges = new LinkedList<>();
-            j.getResult().getEdges().forEach((id1, map) -> {
-                map.forEach((id2, attributes) -> {
-                    edges.add(new Edge(id1, id2));
-                });
-            });
-            derived.addCustomEdge(nodeTypeId, nodeTypeId, "MuST_Interaction", edges);
-            int eid = derived.getEdge("MuST_Interaction");
-            derived.addCustomEdgeAttribute(eid, j.getResult().getEdges());
-            derived.addCustomAttributeType(eid, "participation_number", "numeric");
-            derived.addCustomAttributeType(eid, "memberOne", "id");
-            derived.addCustomAttributeType(eid, "memberTwo", "id");
-
-        }
         AtomicInteger size = new AtomicInteger();
         derived.getNodes().forEach((k, v) -> size.addAndGet(v.size()));
         derived.getEdges().forEach((k, v) -> size.addAndGet(v.size()));
