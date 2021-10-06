@@ -14,12 +14,8 @@
         <v-divider></v-divider>
         <template v-if="show.summary">
 
-          <v-card-title>Summary</v-card-title>
+          <v-card-title>{{ graphInfo.name }}</v-card-title>
           <v-list>
-            <v-list-item class="nedrex-list-item">
-              <v-list-item-title class="nedrex-list-item-title">Name</v-list-item-title>
-              <v-list-item-subtitle>{{ graphInfo.name }}</v-list-item-subtitle>
-            </v-list-item>
             <v-list-item class="nedrex-list-item">
               <v-list-item-title class="nedrex-list-item-title">ID</v-list-item-title>
               <v-list-item-subtitle style="font-size: .6rem">{{ gid }}</v-list-item-subtitle>

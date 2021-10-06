@@ -5,15 +5,20 @@ ENV PYTHON=/usr/bin/python3
 ENV JAVA_HOME=/usr/app/jdk-15.0.1
 ENV PATH=$PATH:$JAVA_HOME/bin
 
+#RUN pip3.7 install domino-python
+
 RUN mkdir scripts cache
 WORKDIR /usr/app/scripts
 COPY scripts/* ./
+
+#RUN /usr/local/python3.7.12/bin/pip3 install domino-python
 
 RUN pipreqs ./
 RUN cat requirements.txt | grep -v "graph_tool" > reqs.txt
 RUN pip3 install -r reqs.txt
 RUN pip3 uninstall -y networkx
 RUN pip3 install networkx==2.3
+
 
 WORKDIR /usr/app
 

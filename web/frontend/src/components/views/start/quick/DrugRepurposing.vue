@@ -188,14 +188,18 @@
                                                 @addToSelectionEvent="addToSelection"
                                                 style="justify-self: flex-end;margin-left: auto"></SuggestionAutocomplete>
                       </div>
-                      <NodeInput text="or provide Seed IDs by" @addToSelectionEvent="addToSelection" :idName="['entrez','uniprot'][seedTypeId]" :nodeType="['gene', 'protein'][this.seedTypeId]" @printNotificationEvent="printNotification"></NodeInput>
+                      <NodeInput text="or provide Seed IDs by" @addToSelectionEvent="addToSelection"
+                                 :idName="['entrez','uniprot'][seedTypeId]"
+                                 :nodeType="['gene', 'protein'][this.seedTypeId]"
+                                 @printNotificationEvent="printNotification"></NodeInput>
                     </template>
                   </div>
                 </v-col>
 
                 <v-divider vertical v-show="seedTypeId!==undefined"></v-divider>
                 <v-col cols="6">
-                  <SeedTable ref="seedTable" v-show="seedTypeId!==undefined" :download="true" :remove="true" :filter="true"
+                  <SeedTable ref="seedTable" v-show="seedTypeId!==undefined" :download="true" :remove="true"
+                             :filter="true"
                              @printNotificationEvent="printNotification"
                              height="40vh"
                              :title="'Selected Seeds ('+($refs.seedTable ? $refs.seedTable.getSeeds().length : 0)+')'"
@@ -801,18 +805,21 @@
                 </v-col>
                 <v-col>
                   <Network ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle"
-                         :progress="resultProgress" :legend="resultProgress===100" :tools="resultProgress===100" :secondaryViewer="true"
-                  @loadIntoAdvancedEvent="$emit('graphLoadEvent',{post: {id: rankingGid}})">
+                           :progress="resultProgress" :legend="resultProgress===100" :tools="resultProgress===100"
+                           :secondaryViewer="true"
+                           @loadIntoAdvancedEvent="$emit('graphLoadEvent',{post: {id: rankingGid}})">
                     <template v-slot:legend v-if="results.drugs.length>0">
                       <v-card style="width: 15vw; max-width: 20vw; padding-top: 35px">
                         <v-list dense>
                           <v-list-item>
                             <v-list-item-icon>
-                              <div style="display: flex; align-content: center; justify-content: center;margin-left: 12px;margin-top:2px">
+                              <div
+                                style="display: flex; align-content: center; justify-content: center;margin-left: 12px;margin-top:2px">
                                 <v-icon color="#fbe223" style="position: absolute;margin-top:-11px;"
-                                        size="42" >fas fa-genderless
+                                        size="42">fas fa-genderless
                                 </v-icon>
-                                <v-icon size="18" style="position: absolute;margin-top:1px;" :color="getColoring('nodes',['gene','protein'][seedTypeId],'light')">fas
+                                <v-icon size="18" style="position: absolute;margin-top:1px;"
+                                        :color="getColoring('nodes',['gene','protein'][seedTypeId],'light')">fas
                                   fa-circle
                                 </v-icon>
                               </div>
@@ -825,12 +832,12 @@
                             </v-list-item-subtitle>
                           </v-list-item>
                           <v-list-item>
-                              <v-list-item-icon>
-                                <v-icon left :color="getColoring('nodes',['gene','protein'][seedTypeId],'light')"
-                                        size="43px">fas fa-genderless
-                                </v-icon>
+                            <v-list-item-icon>
+                              <v-icon left :color="getColoring('nodes',['gene','protein'][seedTypeId],'light')"
+                                      size="43px">fas fa-genderless
+                              </v-icon>
 
-                              </v-list-item-icon>
+                            </v-list-item-icon>
                             <v-list-item-title style="margin-left:-25px">{{ ['Gene', 'Protein'][seedTypeId] }} (Module)
                             </v-list-item-title>
                             <v-list-item-subtitle style="margin-right:-25px; margin-left:-25px">
@@ -1000,7 +1007,8 @@ export default {
         id: "diamond",
         label: "DIAMOnD",
         scores: [{id: "rank", name: "Rank"}, {id: "p_hyper", name: "P-Value", decimal: true}]
-      }, {id: "bicon", label: "BiCoN", scores: []}, {id: "must", label: "MuST", scores: []}],
+      }, {id: "bicon", label: "BiCoN", scores: []}, {id: "must", label: "MuST", scores: []},
+        {id: "domino", label: "DOMINO", scores: []}],
       rankingMethods: [
         {id: "trustrank", label: "TrustRank", scores: [{id: "score", name: "Score", decimal: true}]},
         {id: "centrality", label: "Closeness Centrality", scores: [{id: "score", name: "Score", decimal: true}]}],
@@ -1014,7 +1022,7 @@ export default {
           nModel: 200,
           alphaModel: 1,
           pModel: 0
-        },
+        }, domino: {},
         bicon: {
           exprFile: undefined,
           lg: [10, 15]
@@ -1222,7 +1230,7 @@ export default {
         params.experimentalOnly = this.experimentalSwitch
 
         params["addInteractions"] = true
-        params["nodesOnly"] = true
+        params["nodesOnly"] = false
 
         params['direct'] = this.rankingModels.onlyDirect;
         params['approved'] = this.rankingModels.onlyApproved;
@@ -1238,7 +1246,12 @@ export default {
 
     executeModuleJob: function (algorithm, params) {
       this.resultProgress = 0
-      let payload = {userId: this.uid,dbVersion: this.$global.metadata.repotrial.version, algorithm: algorithm, params: params}
+      let payload = {
+        userId: this.uid,
+        dbVersion: this.$global.metadata.repotrial.version,
+        algorithm: algorithm,
+        params: params
+      }
       payload.selection = true
       payload.experimentalOnly = params.experimentalOnly
       payload["nodes"] = this.seeds.map(n => n.id)
@@ -1256,7 +1269,13 @@ export default {
     }
     ,
     executeRankingJob: function (algorithm, params) {
-      let payload = {userId: this.uid,dbVersion: this.$global.metadata.repotrial.version, graphId: this.moduleGid, algorithm: algorithm, params: params}
+      let payload = {
+        userId: this.uid,
+        dbVersion: this.$global.metadata.repotrial.version,
+        graphId: this.moduleGid,
+        algorithm: algorithm,
+        params: params
+      }
       payload.selection = false
       payload.experimentalOnly = params.experimentalOnly
       this.$http.post("/submitJob", payload).then(response => {
@@ -1281,7 +1300,7 @@ export default {
           this.$socket.unsubscribeJob(this.moduleJid)
         this.loadModuleTargetTable().then(() => {
           this.resultProgress = 25
-          this.loadGraph(this.moduleGid,true)
+          this.loadGraph(this.moduleGid, true)
         })
       }
     }
@@ -1402,7 +1421,7 @@ export default {
         if (response.data !== undefined)
           return response.data
       }).then(data => this.$utils.roundScores(data, seedType, scoreAttr)).then(data => {
-        data.nodes[seedType].forEach(n=>n.displayName=this.$utils.adjustLabels(n.displayName))
+        data.nodes[seedType].forEach(n => n.displayName = this.$utils.adjustLabels(n.displayName))
         if (this.moduleMethodModel === 0)
           this.results.targets = data.nodes[seedType].sort((e1, e2) => {
             if (e1.rank && e2.rank)
@@ -1436,10 +1455,10 @@ export default {
         return this.$refs.graph;
       })
     },
-    loadGraph: function (graphId,disableSkipToAdvanced) {
+    loadGraph: function (graphId, disableSkipToAdvanced) {
       this.getGraph().then(graph => {
         this.resultProgress += 5
-        graph.loadNetworkById(graphId,disableSkipToAdvanced).then(() => {
+        graph.loadNetworkById(graphId, disableSkipToAdvanced).then(() => {
           this.resultProgress += 15
           graph.showLoops(false)
           let seedIds = this.seeds.map(s => s.id)

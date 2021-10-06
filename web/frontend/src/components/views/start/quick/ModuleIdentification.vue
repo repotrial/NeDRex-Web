@@ -586,8 +586,8 @@
                         <v-list>
                           <v-list-item>
                             <v-list-item-icon>
-                                <v-icon left color="#fbe223" size="42">fas fa-genderless
-                                </v-icon>
+                              <v-icon left color="#fbe223" size="42">fas fa-genderless
+                              </v-icon>
                             </v-list-item-icon>
                             <v-list-item-title style="margin-left: -25px">Seed {{ ['Gene', 'Protein'][seedTypeId] }}
                             </v-list-item-title>
@@ -774,7 +774,9 @@ export default {
         id: "diamond",
         label: "DIAMOnD",
         scores: [{id: "rank", name: "Rank"}, {id: "p_hyper", name: "P-Value", decimal: true}]
-      }, {id: "bicon", label: "BiCoN", scores: []}, {id: "must", label: "MuST", scores: []}],
+      }, {id: "bicon", label: "BiCoN", scores: []}, {id: "must", label: "MuST", scores: []},
+        {id: "domino", label: "DOMINO", scores: []}
+      ],
       graph: {physics: false},
       methodModel: undefined,
       rankingMethodModel: undefined,
@@ -788,6 +790,9 @@ export default {
           nModel: 200,
           alphaModel: 1,
           pModel: 0
+        },
+        domino: {
+
         },
         bicon: {
           exprFile: undefined,
@@ -937,16 +942,22 @@ export default {
     }
     ,
 
-    loadExample: async function(nr){
-      let example = await this.$http.getQuickExample(nr, ["gene","protein"][this.seedTypeId])
-      let origin = "Example "+(nr+1)+": ("
-      switch (nr){
-        case 0: origin+="Alzheimer)"; break;
-        case 1: origin+="Somatostatine and Analogues"; break;
-        case 2: origin+="Cancer Genes"; break;
+    loadExample: async function (nr) {
+      let example = await this.$http.getQuickExample(nr, ["gene", "protein"][this.seedTypeId])
+      let origin = "Example " + (nr + 1) + ": ("
+      switch (nr) {
+        case 0:
+          origin += "Alzheimer)";
+          break;
+        case 1:
+          origin += "Somatostatine and Analogues";
+          break;
+        case 2:
+          origin += "Cancer Genes";
+          break;
       }
-      origin+=")"
-      this.addToSelection({data:example, origin:origin})
+      origin += ")"
+      this.addToSelection({data: example, origin: origin})
     },
 
     submitAlgorithm: function () {
@@ -1109,7 +1120,7 @@ export default {
         if (response.data !== undefined)
           return response.data
       }).then(data => this.$utils.roundScores(data, seedType, scoreAttr)).then(data => {
-        data.nodes[seedType].forEach(n=>n.displayName=this.$utils.adjustLabels(n.displayName))
+        data.nodes[seedType].forEach(n => n.displayName = this.$utils.adjustLabels(n.displayName))
         if (this.methodModel === 0)
           this.$set(this.results, 'targets', data.nodes[seedType].sort((e1, e2) => {
             if (e1.rank && e2.rank)
