@@ -39,7 +39,7 @@ public class JobController {
     private HashMap<String, Job> jobs = new HashMap<>();
     private HashMap<String, LinkedList<String>> jobWaitingForResults = new HashMap<>();
     private Logger log = LoggerFactory.getLogger(JobController.class);
-    private EnumMap<ToolService.Tool,Algorithm> algorithms;
+    private EnumMap<ToolService.Tool, Algorithm> algorithms;
 
     @Autowired
     public JobController(HistoryController historyController, DrugService drugService, ProteinService proteinService, GeneService geneService, WebGraphService graphService, ToolService toolService, JobQueue jobQueue, JobRepository jobRepository, SocketController socketController, JobCache jobCache) {

@@ -25,7 +25,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -66,13 +65,13 @@ public class Bicon implements Algorithm{
     }
 
     @Override
-    public File interactionFiles(JobRequest request) {
-        return new File(utils.dataDir, "gene_gene_interaction_" + (request.experimentalOnly ? "exp" : "all") + ".pairs");
+    public File[] interactionFiles(JobRequest request) {
+        return new File[]{new File(utils.dataDir, "gene_gene_interaction_" + (request.experimentalOnly ? "exp" : "all") + ".pairs")};
     }
 
     @Override
-    public String createCommand(File interactions, JobRequest request) {
-        return "bicon " + executable.getAbsolutePath() + " exprFile " + interactions.getName() + " genes.txt " + request.getParams().get("lg_min") + " " + request.getParams().get("lg_max");
+    public String createCommand(File[] interactions, JobRequest request) {
+        return "bicon " + executable.getAbsolutePath() + " exprFile " + interactions[0].getName() + " genes.txt " + request.getParams().get("lg_min") + " " + request.getParams().get("lg_max");
     }
 
     @Override
@@ -145,6 +144,21 @@ public class Bicon implements Algorithm{
     @Override
     public boolean hasMultipleResultFiles() {
         return false;
+    }
+
+    @Override
+    public void createIndex() {
+
+    }
+    @Override
+    public boolean hasCustomEdges() {
+        return false;
+    }
+
+
+    @Override
+    public ProcessBuilder getExecutionEnvironment(String[] command) {
+        return new ProcessBuilder(command);
     }
 
     @Override

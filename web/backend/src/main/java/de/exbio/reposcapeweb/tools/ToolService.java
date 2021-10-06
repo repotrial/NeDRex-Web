@@ -24,6 +24,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -46,14 +47,14 @@ public class ToolService {
     private Logger log = LoggerFactory.getLogger(ToolService.class);
 
     @Autowired
-    public ToolService(TrustRank trustrank, ClosenessCentrality cc, Bicon bicon, Must must, Diamond diamond, ProteinService proteinService, GeneService geneService, Environment env, ProteinInteractsWithProteinService interactionService) {
+    public ToolService(Domino domino, TrustRank trustrank, ClosenessCentrality cc, Bicon bicon, Must must, Diamond diamond, ProteinService proteinService, GeneService geneService, Environment env, ProteinInteractsWithProteinService interactionService) {
         this.env = env;
         this.interactionService = interactionService;
         this.proteinService = proteinService;
         this.geneService = geneService;
 
         Algorithm[] algorithms = new Algorithm[]
-                {diamond, must, bicon, cc, trustrank};
+                {diamond, must, bicon, cc, trustrank, domino};
         for (Algorithm algorithm : algorithms) {
             this.algorithms.put(algorithm.getEnum(), algorithm);
         }
@@ -178,8 +179,8 @@ public class ToolService {
         LinkedList<File> neededFiles = new LinkedList<>();
 
         Algorithm algorithm = algorithms.get(job.getMethod());
-        File interactions = algorithm.interactionFiles(request);
-        neededFiles.add(interactions);
+        File[] interactions = algorithm.interactionFiles(request);
+        neededFiles.addAll(Arrays.asList(interactions));
         command += algorithm.createCommand(interactions, request);
 
         prepareTempDir(job, neededFiles);
@@ -202,9 +203,10 @@ public class ToolService {
         algorithms.get(job.getMethod()).prepareJobFiles(getTempDir(job.getJobId()), req, g, domainMap);
     }
 
-    public Process executeJob(String command) {
+    public Process executeJob(String command, Tool algo) {
         try {
-            return Runtime.getRuntime().exec(executor.getAbsolutePath() + " " + command);
+            ProcessBuilder pb = algorithms.get(algo).getExecutionEnvironment((executor.getAbsolutePath() + " " + command).split(" "));
+            return pb.start();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -237,7 +239,7 @@ public class ToolService {
             e.printStackTrace();
             throw new Exception("Missing results exception");
         }
-        removeTempDir(j.getJobId());
+//        removeTempDir(j.getJobId());
     }
 
     public void createGraphmlFromFS(File wd, File graphml) {
@@ -273,7 +275,15 @@ public class ToolService {
         return algorithms;
     }
 
+
+
+    public void createIndexFiles() {
+        algorithms.values().forEach(algorithm ->{
+            algorithm.createIndex();
+        });
+    }
+
     public enum Tool {
-        DIAMOND, BICON, TRUSTRANK, CENTRALITY, MUST
+        DIAMOND, BICON, TRUSTRANK, CENTRALITY, MUST, DOMINO
     }
 }

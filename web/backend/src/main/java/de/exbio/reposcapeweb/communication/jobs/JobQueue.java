@@ -80,7 +80,7 @@ public class JobQueue {
         j.setStatus(Job.JobState.EXECUTING);
         socketController.setJobUpdate(j);
         log.debug("Asynchronically run: "+j.getCommand());
-        Process p = toolService.executeJob(j.getCommand());
+        Process p = toolService.executeJob(j.getCommand(), j.getMethod());
         if (p != null)
             j.setProcess(p);
         else {

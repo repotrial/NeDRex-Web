@@ -30,5 +30,9 @@ then
   fi
 fi
 
+if [ $tool == 'domino' ]
+then
+  domino -a $4 -n $5 -s $6 -o $7
+fi
 curl $response
 

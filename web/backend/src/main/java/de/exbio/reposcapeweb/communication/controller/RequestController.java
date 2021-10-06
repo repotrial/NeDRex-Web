@@ -398,6 +398,7 @@ public class RequestController {
     @ResponseBody
     public String submitJob(@RequestBody JobRequest request) {
         Job j = jobController.registerJob(request);
+        System.out.println(request.getParams());
         return toJson(j.toMap());
     }
 

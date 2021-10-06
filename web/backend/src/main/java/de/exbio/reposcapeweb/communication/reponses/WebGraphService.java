@@ -67,13 +67,13 @@ public class WebGraphService {
 
     @Autowired
     public WebGraphService(
-                           NodeController nodeController,
-                           EdgeController edgeController,
-                           DbCommunicationService dbCommunicationService,
-                           ObjectMapper objectMapper,
-                           HistoryController historyController,
-                           ToolService toolService,
-                           SocketController socketController) {
+            NodeController nodeController,
+            EdgeController edgeController,
+            DbCommunicationService dbCommunicationService,
+            ObjectMapper objectMapper,
+            HistoryController historyController,
+            ToolService toolService,
+            SocketController socketController) {
         this.edgeController = edgeController;
         this.nodeController = nodeController;
         this.dbCommunicationService = dbCommunicationService;
@@ -960,8 +960,8 @@ public class WebGraphService {
 
         algorithm.createGraph(derived, j, nodeTypeId, g);
 
-        //TODO check if fine with bicon
-        updateEdges(derived, j, nodeTypeId);
+//        if (!algorithm.hasCustomEdges())
+            updateEdges(derived, j, nodeTypeId);
 
 
         AtomicInteger size = new AtomicInteger();

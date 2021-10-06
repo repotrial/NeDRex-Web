@@ -28,15 +28,21 @@ public class AlgorithmUtils {
     }
 
 
-    public void writeSeedFile(String type, File file, Graph g, HashMap<Integer, Pair<String, String>> domainMap) {
-        writeSeedFile(file, g.getNodes().get(Graphs.getNode(type)).keySet(), domainMap);
+    public void writeSeedFile(String type, File file, Graph g, HashMap<Integer, Pair<String, String>> domainMap, String prefix, boolean domainName) {
+        writeSeedFile(file, g.getNodes().get(Graphs.getNode(type)).keySet(), domainMap, prefix, domainName);
     }
 
-    public void writeSeedFile(File file, Collection<Integer> nodeIds, HashMap<Integer, Pair<String, String>> domainMap) {
+    public File getIndexDirectory(){
+        File indexDir = new File(dataDir,"index");
+        indexDir.mkdirs();
+        return indexDir;
+    }
+
+    public void writeSeedFile(File file, Collection<Integer> nodeIds, HashMap<Integer, Pair<String, String>> domainMap, String prefix, boolean domainName) {
         BufferedWriter bw = WriterUtils.getBasicWriter(file);
         nodeIds.forEach(node -> {
             try {
-                bw.write(domainMap.get(node).getFirst() + "\n");
+                bw.write(prefix+ (domainName ?domainMap.get(node).getFirst() : node) + "\n");
             } catch (IOException e) {
                 e.printStackTrace();
             }

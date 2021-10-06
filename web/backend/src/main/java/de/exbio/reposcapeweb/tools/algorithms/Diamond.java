@@ -45,16 +45,17 @@ public class Diamond implements Algorithm {
         this.utils = utils;
     }
 
-    public String createCommand(File interactions, JobRequest request) {
+    @Override
+    public String createCommand(File[] interactions, JobRequest request) {
         return "diamond " +
                 executable.getAbsolutePath() + " " +
-                interactions.getName() + " " +
+                interactions[0].getName() + " " +
                 "seeds.list " +
                 request.getParams().get("n") + " " + request.getParams().get("alpha");
     }
 
-    public File interactionFiles(JobRequest request) {
-        return (request.getParams().get("type").equals("gene") ? new File(utils.dataDir, "gene_gene_interaction_" + (request.experimentalOnly ? "exp" : "all") + ".pairs") : new File(utils.dataDir, "protein_protein_interaction_" + (request.experimentalOnly ? "exp" : "all") + ".pairs"));
+    public File[] interactionFiles(JobRequest request) {
+        return new File[]{(request.getParams().get("type").equals("gene") ? new File(utils.dataDir, "gene_gene_interaction_" + (request.experimentalOnly ? "exp" : "all") + ".pairs") : new File(utils.dataDir, "protein_protein_interaction_" + (request.experimentalOnly ? "exp" : "all") + ".pairs"))};
     }
 
 
@@ -108,6 +109,11 @@ public class Diamond implements Algorithm {
     }
 
     @Override
+    public void createIndex() {
+
+    }
+
+    @Override
     public void setTreads(Job j, int max) {
 
     }
@@ -122,12 +128,22 @@ public class Diamond implements Algorithm {
         }
     }
 
+    @Override
+    public ProcessBuilder getExecutionEnvironment(String[] command) {
+        return new ProcessBuilder(command);
+    }
+
     public void prepareJobFiles(File wd, JobRequest req, Graph g, HashMap<Integer, Pair<String, String>> domainMap) {
         File seed = new File(wd, "seeds.list");
         if (req.selection)
-            utils.writeSeedFile(seed, req.nodes, domainMap);
+            utils.writeSeedFile(seed, req.nodes, domainMap,"",true);
         else
-            utils.writeSeedFile(req.params.get("type"), seed, g, domainMap);
+            utils.writeSeedFile(req.params.get("type"), seed, g, domainMap,"",true);
+    }
+
+    @Override
+    public boolean hasCustomEdges() {
+        return false;
     }
 
     public void getResults(HashMap<Integer, HashMap<String, Object>> nodes, HashMap<Integer, HashMap<Integer, HashMap<String, Object>>> edges, File wd, Job j, HashMap<Integer, HashMap<String, Integer>> domainMaps) {

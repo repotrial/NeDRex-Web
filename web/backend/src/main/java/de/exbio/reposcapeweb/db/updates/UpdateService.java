@@ -238,6 +238,7 @@ public class UpdateService {
             e.printStackTrace();
         }
 
+        toolService.createIndexFiles();
         toolService.createInteractionFiles();
         log.info("Done");
     }

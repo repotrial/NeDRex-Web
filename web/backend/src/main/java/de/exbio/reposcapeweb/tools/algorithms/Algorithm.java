@@ -16,9 +16,9 @@ public interface Algorithm {
 
     void prepare();
 
-    File interactionFiles(JobRequest request);
+    File[] interactionFiles(JobRequest request);
 
-    String createCommand(File interactions, JobRequest request);
+    String createCommand(File[] interactions, JobRequest request);
 
     void prepareJobFiles(File tempDir, JobRequest req, Graph g, HashMap<Integer, Pair<String, String>> domainMap);
 
@@ -39,4 +39,11 @@ public interface Algorithm {
     void setTreads(Job j, int max);
 
     boolean hasMultipleResultFiles();
+
+    void createIndex();
+
+    boolean hasCustomEdges();
+
+    ProcessBuilder getExecutionEnvironment(String[] command);
+
 }

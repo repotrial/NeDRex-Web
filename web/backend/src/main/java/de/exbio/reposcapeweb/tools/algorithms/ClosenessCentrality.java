@@ -99,8 +99,8 @@ public class ClosenessCentrality implements Algorithm {
     }
 
     @Override
-    public File interactionFiles(JobRequest request) {
-        return request.getParams().get("type").equals("gene") ? new File(utils.dataDir, "ranking_files/GGDr_" + (request.experimentalOnly ? "exp" : "all") + ".gt") : new File(utils.dataDir, "ranking_files/PPDr_all.gt");
+    public File[] interactionFiles(JobRequest request) {
+        return new File[]{request.getParams().get("type").equals("gene") ? new File(utils.dataDir, "ranking_files/GGDr_" + (request.experimentalOnly ? "exp" : "all") + ".gt") : new File(utils.dataDir, "ranking_files/PPDr_all.gt")};
     }
 
     @Override
@@ -124,9 +124,14 @@ public class ClosenessCentrality implements Algorithm {
     }
 
     @Override
-    public String createCommand(File interactions, JobRequest request) {
+    public void createIndex() {
+
+    }
+
+    @Override
+    public String createCommand(File[] interactions, JobRequest request) {
         return "centrality " + executable.getAbsolutePath() + " " +
-                interactions.getName() +
+                interactions[0].getName() +
                 " seeds.list" +
                 (request.getParams().get("direct").charAt(0) == 't' ? " Y" : " N") +
                 (request.getParams().get("approved").charAt(0) == 't' ? " Y" : " N");
@@ -136,9 +141,19 @@ public class ClosenessCentrality implements Algorithm {
     public void prepareJobFiles(File tempDir, JobRequest req, Graph g, HashMap<Integer, Pair<String, String>> domainMap) {
         File seed = new File(tempDir, "seeds.list");
         if (req.selection)
-            utils.writeSeedFile(seed, req.nodes, domainMap);
+            utils.writeSeedFile(seed, req.nodes, domainMap,"",true);
         else
-            utils.writeSeedFile(req.params.get("type"), seed, g, domainMap);
+            utils.writeSeedFile(req.params.get("type"), seed, g, domainMap,"",true);
+    }
+    @Override
+    public boolean hasCustomEdges() {
+        return false;
+    }
+
+
+    @Override
+    public ProcessBuilder getExecutionEnvironment(String[] command) {
+        return new ProcessBuilder(command);
     }
 
     @Override

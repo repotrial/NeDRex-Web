@@ -998,6 +998,7 @@ export default {
       //   }
       // }
       this.$http.post("/submitJob", payload).then(response => {
+        console.log(payload)
         if (response.data !== undefined)
           return response.data
       }).then(data => {
