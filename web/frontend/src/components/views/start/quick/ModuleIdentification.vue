@@ -775,7 +775,7 @@ export default {
         label: "DIAMOnD",
         scores: [{id: "rank", name: "Rank"}, {id: "p_hyper", name: "P-Value", decimal: true}]
       }, {id: "bicon", label: "BiCoN", scores: []}, {id: "must", label: "MuST", scores: []},
-        {id: "domino", label: "DOMINO", scores: []}
+        {id: "domino", label: "DOMINO", scores: []},{id: "robust", label: "ROBUST", scores: ["occs_abs","occs_rel"]}
       ],
       graph: {physics: false},
       methodModel: undefined,
@@ -792,6 +792,9 @@ export default {
           pModel: 0
         },
         domino: {
+
+        },
+        robust:{
 
         },
         bicon: {
@@ -885,6 +888,7 @@ export default {
           this.step--
       }
       if (button === "cancel") {
+        this.$socket.unsubscribeJob(this.currentJid)
         this.init()
         this.$emit("resetEvent")
       }

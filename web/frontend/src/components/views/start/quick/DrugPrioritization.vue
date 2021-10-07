@@ -672,6 +672,7 @@ export default {
       }
 
       if (button === "cancel") {
+        this.$socket.unsubscribeJob(this.currentJid)
         this.init()
         this.$emit("resetEvent")
       }

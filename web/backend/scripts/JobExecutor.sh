@@ -34,5 +34,11 @@ if [ $tool == 'domino' ]
 then
   domino -a $4 -n $5 -s $6 -o $7
 fi
+
+if [ $tool == 'robust' ]
+then
+  python3.7 $4 $5 $6 $7 $8 $9 ${10} ${11}
+fi
+
 curl $response
 

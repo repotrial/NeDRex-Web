@@ -47,14 +47,14 @@ public class ToolService {
     private Logger log = LoggerFactory.getLogger(ToolService.class);
 
     @Autowired
-    public ToolService(Domino domino, TrustRank trustrank, ClosenessCentrality cc, Bicon bicon, Must must, Diamond diamond, ProteinService proteinService, GeneService geneService, Environment env, ProteinInteractsWithProteinService interactionService) {
+    public ToolService(Robust robust, Domino domino, TrustRank trustrank, ClosenessCentrality cc, Bicon bicon, Must must, Diamond diamond, ProteinService proteinService, GeneService geneService, Environment env, ProteinInteractsWithProteinService interactionService) {
         this.env = env;
         this.interactionService = interactionService;
         this.proteinService = proteinService;
         this.geneService = geneService;
 
         Algorithm[] algorithms = new Algorithm[]
-                {diamond, must, bicon, cc, trustrank, domino};
+                {diamond, must, bicon, cc, trustrank, domino, robust};
         for (Algorithm algorithm : algorithms) {
             this.algorithms.put(algorithm.getEnum(), algorithm);
         }
@@ -239,7 +239,7 @@ public class ToolService {
             e.printStackTrace();
             throw new Exception("Missing results exception");
         }
-//        removeTempDir(j.getJobId());
+        removeTempDir(j.getJobId());
     }
 
     public void createGraphmlFromFS(File wd, File graphml) {
@@ -284,6 +284,6 @@ public class ToolService {
     }
 
     public enum Tool {
-        DIAMOND, BICON, TRUSTRANK, CENTRALITY, MUST, DOMINO
+        DIAMOND, BICON, TRUSTRANK, CENTRALITY, MUST, DOMINO, ROBUST
     }
 }

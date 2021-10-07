@@ -16,7 +16,7 @@ RUN mkdir scripts cache
 WORKDIR /usr/app/scripts
 COPY scripts/* ./
 
-RUN /usr/local/python3.7.12/bin/pip3 install domino-python
+RUN /usr/local/python3.7.12/bin/pip3 install domino-python numpy matplotlib pandas networkx
 
 RUN pipreqs ./
 RUN cat requirements.txt | grep -v "graph_tool" > reqs.txt

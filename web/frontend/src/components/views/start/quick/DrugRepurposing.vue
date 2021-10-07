@@ -1008,7 +1008,7 @@ export default {
         label: "DIAMOnD",
         scores: [{id: "rank", name: "Rank"}, {id: "p_hyper", name: "P-Value", decimal: true}]
       }, {id: "bicon", label: "BiCoN", scores: []}, {id: "must", label: "MuST", scores: []},
-        {id: "domino", label: "DOMINO", scores: []}],
+        {id: "domino", label: "DOMINO", scores: []}, {id:"robust",label:"ROBUST",scores:["occs_abs","occs_rel"]}],
       rankingMethods: [
         {id: "trustrank", label: "TrustRank", scores: [{id: "score", name: "Score", decimal: true}]},
         {id: "centrality", label: "Closeness Centrality", scores: [{id: "score", name: "Score", decimal: true}]}],
@@ -1022,7 +1022,7 @@ export default {
           nModel: 200,
           alphaModel: 1,
           pModel: 0
-        }, domino: {},
+        }, domino: {}, robust:{},
         bicon: {
           exprFile: undefined,
           lg: [10, 15]
@@ -1155,6 +1155,8 @@ export default {
       }
 
       if (button === "cancel") {
+        this.$socket.unsubscribeJob(this.moduleJid)
+        this.$socket.unsubscribeJob(this.rankingJid)
         this.init()
         this.$emit("resetEvent")
       }
