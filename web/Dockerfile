@@ -47,7 +47,7 @@ WORKDIR /usr/app/scripts
 RUN rm -rf graph_tools
 
 
-RUN apt update --fix-missing && apt install libreadline-gplv2-dev libncursesw5-dev libssl-dev libsqlite3-dev tk-dev libgdbm-dev libc6-dev libbz2-dev
+RUN apt update --fix-missing && apt install -y libreadline-gplv2-dev libncursesw5-dev libssl-dev libsqlite3-dev tk-dev libgdbm-dev libc6-dev libbz2-dev
 
 #Set up python3.7 for domino
 WORKDIR /usr/app
@@ -60,9 +60,9 @@ RUN ./configure --prefix=/usr/local/python3.7.12 --enable-optimizations --enable
 RUN make
 RUN make install
 #RUN ln -s /usr/local/python3.7.12/bin/python3 /usr/local/python3.7.12/bin/python3.7
-RUN ln -s /usr/local/python3.7.12/bin/pip3 /usr/local/python3.7.12/bin/pip3.7
+#RUN ln -s /usr/local/python3.7.12/bin/pip3 /usr/local/python3.7.12/bin/pip3.7
 
-ENV LD_LIBRARY_PATH=/usr/local/python3.7.12/lib:$LD_LIBRARY_PATH
+
 
 #WORKDIR /usr/app
 #

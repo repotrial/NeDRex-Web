@@ -5,13 +5,18 @@ ENV PYTHON=/usr/bin/python3
 ENV JAVA_HOME=/usr/app/jdk-15.0.1
 ENV PATH=$PATH:$JAVA_HOME/bin
 
+ENV LD_LIBRARY_PATH=/usr/local/python3.7.12/lib:$LD_LIBRARY_PATH
+ENV PYTHONPATH=$PATHONPATH:/usr/lib/python3.7/dist-packages/
+ENV PYTHON=/usr/local/python3.7.12/bin/python3.7
+ENV PATH=$PATH:/usr/local/python3.7.12/bin
+
 #RUN pip3.7 install domino-python
 
 RUN mkdir scripts cache
 WORKDIR /usr/app/scripts
 COPY scripts/* ./
 
-#RUN /usr/local/python3.7.12/bin/pip3 install domino-python
+RUN /usr/local/python3.7.12/bin/pip3 install domino-python
 
 RUN pipreqs ./
 RUN cat requirements.txt | grep -v "graph_tool" > reqs.txt

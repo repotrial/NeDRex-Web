@@ -1,71 +1,6 @@
 <template>
   <div>
     <v-container>
-<!--      <v-card style="margin:5px;padding-bottom:15px" :loading="loading" ref="info">-->
-<!--        <template slot="progress">-->
-<!--          <v-card-title>General Information</v-card-title>-->
-<!--          <v-progress-circular v-if="!waiting"-->
-<!--                               color="primary"-->
-<!--                               size="50"-->
-<!--                               width="5"-->
-<!--                               indeterminate-->
-<!--          ></v-progress-circular>-->
-<!--          <i v-else>No data available!</i>-->
-<!--        </template>-->
-<!--        <v-container v-if="!loading">-->
-<!--          <v-card-title>General Information</v-card-title>-->
-<!--          <v-row>-->
-<!--            <v-col>-->
-<!--              <v-list v-if="attributes.nodes !=null">-->
-<!--                <v-list-item>-->
-<!--                  <b>Nodes ({{ getTotalCounts('nodes') }})</b>-->
-<!--                </v-list-item>-->
-<!--                <v-list-item v-for="node in Object.values(configuration.countMap.nodes)"-->
-<!--                             :key="node.name">-->
-<!--                  <v-chip outlined @click="focus('nodes',Object.keys(attributes.nodes).indexOf(node.name))">-->
-<!--                    <v-icon left :color="getExtendedColoring('nodes',node.name,'light')">fas fa-genderless</v-icon>-->
-<!--                    {{ node.name }} ({{ node.selected }}/{{ node.total }})-->
-<!--                  </v-chip>-->
-<!--                </v-list-item>-->
-
-<!--              </v-list>-->
-<!--            </v-col>-->
-<!--            <v-col>-->
-<!--              <v-list v-if="attributes.edges!=null">-->
-<!--                <v-list-item>-->
-<!--                  <b>Edges ({{ getTotalCounts('edges') }})</b>-->
-<!--                </v-list-item>-->
-<!--                <v-list-item v-for="edge in Object.values(configuration.countMap.edges)" :key="edge.name">-->
-<!--                  <v-chip outlined @click="focus('edges',Object.keys(attributes.edges).indexOf(edge.name))">-->
-<!--                    <v-icon left :color="getExtendedColoring('edges',edge.name,'light')[0]">fas fa-genderless</v-icon>-->
-<!--                    <template v-if="directionExtended(edge.name)===0">-->
-<!--                      <v-icon left>fas fa-undo-alt</v-icon>-->
-<!--                    </template>-->
-<!--                    <template v-else>-->
-<!--                      <v-icon v-if="directionExtended(edge.name)===1" left>fas fa-long-arrow-alt-right</v-icon>-->
-<!--                      <v-icon v-else left>fas fa-arrows-alt-h</v-icon>-->
-<!--                      <v-icon left :color="getExtendedColoring('edges',edge.name,'light')[1]">fas fa-genderless</v-icon>-->
-<!--                    </template>-->
-<!--                    {{ edge.name }} ({{ edge.selected }}/{{ edge.total }})-->
-
-<!--                  </v-chip>-->
-
-<!--                </v-list-item>-->
-<!--              </v-list>-->
-<!--            </v-col>-->
-<!--          </v-row>-->
-
-
-<!--        </v-container>-->
-<!--      </v-card>-->
-      <!--      <v-card style="margin:5px">-->
-      <!--        <v-card-title>General Options</v-card-title>-->
-      <!--        <v-container>-->
-      <!--          <v-row>-->
-      <!--            -->
-      <!--          </v-row>-->
-      <!--        </v-container>-->
-      <!--      </v-card>-->
       <v-card style="margin:5px;padding-bottom: 15px" :loading="loading">
         <template slot="progress">
           <v-card-title>Nodes</v-card-title>
@@ -76,12 +11,7 @@
                                indeterminate
           ></v-progress-circular>
           <i v-else>No data available!</i>
-          <!--          <v-progress-linear-->
-          <!--            color="primary"-->
-          <!--            height="5"-->
-          <!--            indeterminate-->
-          <!--          ></v-progress-linear>-->
-          <!--          <v-card-title>Nodes</v-card-title>-->
+
         </template>
         <template v-if="!loading" v-show="!nodeTabLoading">
           <v-card-title id="nodes" ref="nodeTitle" v-on:mouseenter="nodeOptionHover=true"
@@ -131,6 +61,17 @@
                 :search="filters.nodes.query"
                 :custom-filter="filterNode"
               >
+                <template v-slot:header.selected>
+                  <v-tooltip right>
+                    <template v-slot:activator="{attrs, on}">
+                      <v-btn small style="margin-left: -10px; margin-top: -2px;" icon v-bind="attrs" v-on="on" @click="nodeOptions">
+                        <v-icon small>fas fa-cog</v-icon>
+                      </v-btn>
+                    </template>
+                    <span>Edit table headers</span>
+                  </v-tooltip>
+                  Select
+                </template>
 
                 <template v-slot:top>
                   <v-container style="margin-top: 15px;margin-bottom: -40px">
@@ -356,6 +297,17 @@
                 loading-text="Loading... Please wait"
                 item-key="id"
               >
+                <template v-slot:header.selected>
+                  <v-tooltip right>
+                    <template v-slot:activator="{attrs, on}">
+                      <v-btn small style="margin-left: -10px; margin-top: -2px;" icon v-bind="attrs" v-on="on" @click="edgeOptions">
+                        <v-icon small>fas fa-cog</v-icon>
+                      </v-btn>
+                    </template>
+                    <span>Edit table headers</span>
+                  </v-tooltip>
+                  Select
+                </template>
                 <template v-slot:top>
                   <v-container style="margin-top: 15px;margin-bottom: -40px">
                     <v-row>
@@ -446,25 +398,11 @@
                 </template>
                 <template v-slot:item.edgeid="{item}">
                   <template v-if="item.sourceId !== undefined">
-                    <v-icon
-                      color="primary"
-                      dark
-                      v-on:click="edgeDetails(item.sourceId, item.targetId)"
-                    >
-                      fas fa-info-circle
-                    </v-icon>
                     {{ item.sourceId }}
                     <v-icon>fas fa-long-arrow-alt-right</v-icon>
                     {{ item.targetId }}
                   </template>
                   <template v-else>
-                    <v-icon
-                      color="primary"
-                      dark
-                      v-on:click="edgeDetails(item.idOne, item.idTwo)"
-                    >
-                      fas fa-info-circle
-                    </v-icon>
                     {{ item.idOne }}
                     <v-icon>fas fa-arrows-alt-h</v-icon>
                     {{ item.idTwo }}
@@ -1189,16 +1127,16 @@ export default {
         this.nodes = data.nodes;
         this.marks = data.marks;
         Object.keys(this.nodes).forEach(node => {
-          let columns = this.attributes.nodes[node].map(n=>n.name)
-          let p_hyper = columns.indexOf("p_hyper")!=-1
-          let rank = columns.indexOf("rank")!=-1
+          let columns = this.attributes.nodes[node].map(n => n.name)
+          let p_hyper = columns.indexOf("p_hyper") != -1
+          let rank = columns.indexOf("rank") != -1
           for (let idx in this.nodes[node]) {
             let n = this.nodes[node][idx]
             n["selected"] = false;
-            if(p_hyper && n.p_hyper ==null)
-              n.p_hyper=0
-            if(rank && n.rank == null)
-              n.rank=0;
+            if (p_hyper && n.p_hyper == null)
+              n.p_hyper = 0
+            if (rank && n.rank == null)
+              n.rank = 0;
           }
         })
         Object.keys(this.edges).forEach(edge => {
@@ -1550,12 +1488,12 @@ export default {
         let out = "#ID1\tID2\tName1\tName2\n"
         let edgeType = this.getExtendedNodes(name)
         let nodeMap1 = {}
-        this.nodes[edgeType[0]].forEach(n=>nodeMap1[n.id]=n.primaryDomainId)
+        this.nodes[edgeType[0]].forEach(n => nodeMap1[n.id] = n.primaryDomainId)
         let nodeMap2 = {}
-        if(edgeType[0]===edgeType[1])
+        if (edgeType[0] === edgeType[1])
           nodeMap2 = nodeMap1
         else
-          this.nodes[edgeType[1]].forEach(n=>nodeMap2[n.id]=n.primaryDomainId)
+          this.nodes[edgeType[1]].forEach(n => nodeMap2[n.id] = n.primaryDomainId)
         this.edges[name].forEach(e => {
           let ids = e.id.split('-')
           out += nodeMap1[parseInt(ids[0])] + "\t" + nodeMap2[parseInt(ids[1])] + "\t" + e.node1 + "\t" + e.node2 + "\n"
@@ -1890,7 +1828,7 @@ export default {
     }
     ,
     headers: function (entity, node) {
-      let out = [{text: "Select", align: 'start', sortable: false, value: "selected"}]
+      let out = [{text: "Select", align: 'start', sortable: false, value: "selected",width:"90px"}]
       this.attributes[entity][node].forEach(attr => {
         if (!attr.list)
           return
@@ -1908,6 +1846,7 @@ export default {
             numeric: true
           })
         }
+        console.log(attr)
         out.push({
           text: attr.label,
           align: 'start',
@@ -1915,6 +1854,7 @@ export default {
           list: attr.array,
           value: name,
           id: attr.id,
+          // groupable: attr.name ==="evidenceTypes",
           numeric: attr.numeric
         })
       })

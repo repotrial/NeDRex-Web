@@ -13,8 +13,23 @@
         </v-list-item>
         <v-divider></v-divider>
         <template v-if="show.summary">
+          <v-card-title v-if="!summaryTitleEdit"><span>{{ graphInfo.name }}
+            <v-btn icon style="top: -3px; left: -3px" @click="summaryTitleEdit=true">
+              <v-icon size="15" color="primary">fas fa-edit</v-icon>
+            </v-btn>
+          </span></v-card-title>
+          <v-card-title v-else>
+            <v-text-field v-model="graphInfo.name"></v-text-field>
+            <span>
+            <v-btn icon style="top: -3px; left: -3px" @click="summaryTitleEdit=false; saveGraphName()">
+              <v-icon size="15" color="green">fas fa-check</v-icon>
+            </v-btn>
+              <v-btn icon style="top: -3px; left: -3px" @click="summaryTitleEdit=false">
+              <v-icon size="15" color="red">fas fa-times</v-icon>
+            </v-btn>
+          </span>
+          </v-card-title>
 
-          <v-card-title>{{ graphInfo.name }}</v-card-title>
           <v-list>
             <v-list-item class="nedrex-list-item">
               <v-list-item-title class="nedrex-list-item-title">ID</v-list-item-title>
@@ -642,6 +657,7 @@ export default {
     return {
       gid: undefined,
       graphInfo: undefined,
+      summaryTitleEdit: false,
       show: {
         options: true,
         summary: true,
@@ -654,6 +670,7 @@ export default {
         detail: false,
         algorithms: false,
         jobs: false,
+
       },
 
       menu: {
@@ -680,7 +697,7 @@ export default {
 
   methods: {
 
-    init: function(){
+    init: function () {
       this.gid = this.$route.params["gid"]
       if (this.gid != null)
         this.$http.get("getGraphHistory?gid=" + this.gid + "&uid=" + this.$cookies.get("uid")).then(response => {
@@ -806,7 +823,7 @@ export default {
       if (item === "Genomic Location")
         return "UCSC"
       if (item === "CAS-Number")
-        return "Molbase"
+        return "ChemIDplus"
       if (item === "Formula")
         return "ChemCalc"
       return value
@@ -857,7 +874,7 @@ export default {
       if (item === "Genomic Location")
         return "http://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&position=" + value
       if (item === "CAS-Number")
-        return "http://www.molbase.com/en/cas-" + value + ".html"
+        return "https://chem.nlm.nih.gov/chemidplus/rn/" + value
       if (item === "Formula")
         return "https://www.chemcalc.org/?mf=" + value
       if (item === "Databases" || item === "Datasets" || item === "Primary Dataset")
@@ -1001,6 +1018,10 @@ export default {
       if (e.node1 === e.node2)
         return 0
       return e.directed ? 1 : 2
+    },
+
+    saveGraphName: function(){
+      this.$http.post("setGraphName", {gid: this.gid, name: this.graphInfo.name}).catch(console.error)
     },
     getNodeNames: function (type) {
       return this.$utils.getNodes(this.$global.metagraph, type)
