@@ -2,7 +2,7 @@
   <v-app-bar app elevation="0" :height="prominent? 100:50" color="#383838">
     <div v-show="prominent" id="particles-js"></div>
     <div id="title-div" style="position:fixed">
-      <img :src="getConfig().STATIC_PATH+'NeDRex-logo-bright-removebg-cropped.png'" :width="prominent?250:175" :style="{'padding-top':'25px', cursor: 'pointer'}" @click="$emit('redirectEvent','/home',true)">
+      <img :src="getConfig().STATIC_PATH+'nedrex-web-logo-transparent.png'" :width="prominent?350:250" :style="{'padding-top':'25px', cursor: 'pointer'}" @click="$emit('redirectEvent','/home',true)">
     </div>
     <v-row>
       <v-col cols="11"></v-col>

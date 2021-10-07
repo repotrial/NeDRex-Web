@@ -76,11 +76,10 @@ public class JobController {
 
         j.addParam("experimentalOnly", req.experimentalOnly);
 
-        String[] params = new String[]{"nodesOnly", "addInteractions", "n", "alpha", "type", "approved", "direct"};
-        for (String param : params)
-            if (req.getParams().containsKey(param))
+        for (String param : req.getParams().keySet())
                 j.addParam(param, req.getParams().get(param));
 
+        //TODO can be moved to frontend
         j.addParam("pcutoff", req.getParams().containsKey("pcutoff") ? Math.pow(10, Double.parseDouble(req.getParams().get("pcutoff"))) : 1);
         j.addParam("topX", req.getParams().containsKey("topX") ? Integer.parseInt(req.getParams().get("topX")) : Integer.MAX_VALUE);
         j.addParam("elements", req.getParams().containsKey("elements") && req.getParams().get("elements").startsWith("t"));

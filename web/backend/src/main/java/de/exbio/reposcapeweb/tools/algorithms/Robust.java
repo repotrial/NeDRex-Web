@@ -74,7 +74,7 @@ public class Robust implements Algorithm {
 
     @Override
     public String createCommand(File[] interactions, JobRequest request) {
-        return "robust robust.py " + interactions[0].getAbsolutePath() + " seeds.list result.csv 0.25 0.9 30 0.1";
+        return "robust robust.py " + interactions[0].getAbsolutePath() + " seeds.list result.csv "+request.getParams().get("initFract")+" " +request.getParams().get("reductionFactor") +" "+request.getParams().get("trees")+" "+request.getParams().get("threshold");
     }
 
     @Override

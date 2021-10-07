@@ -391,6 +391,137 @@
                           </v-slider>
                         </div>
                       </template>
+                      <template v-if="methods[methodModel].id==='robust'">
+                        <div>
+                          <v-slider
+                            hide-details
+                            class="align-center"
+                            v-model="models.robust.initFract"
+                            min="0"
+                            step="0.01"
+                            max="1"
+                          >
+                            <template v-slot:prepend>
+                              <v-text-field
+                                v-model="models.robust.initFract"
+                                class="mt-0 pt-0"
+                                type="number"
+                                style="width: 80px"
+                                label="Initial Fraction"
+                              ></v-text-field>
+                            </template>
+                            <template v-slot:append>
+                              <v-tooltip left>
+                                <template v-slot:activator="{ on, attrs }">
+                                  <v-icon
+                                    v-bind="attrs"
+                                    v-on="on"
+                                    left> far fa-question-circle
+                                  </v-icon>
+                                </template>
+                                <span>initial fraction</span>
+                              </v-tooltip>
+                            </template>
+                          </v-slider>
+                        </div>
+                        <div>
+                          <v-slider
+                            hide-details
+                            class="align-center"
+                            v-model="models.robust.reductionFactor"
+                            min="0"
+                            step="0.01"
+                            max="1"
+                          >
+                            <template v-slot:prepend>
+                              <v-text-field
+                                v-model="models.robust.reductionFactor"
+                                class="mt-0 pt-0"
+                                type="number"
+                                style="width: 80px"
+                                label="Reduction Factor"
+                              ></v-text-field>
+                            </template>
+                            <template v-slot:append>
+                              <v-tooltip left>
+                                <template v-slot:activator="{ on, attrs }">
+                                  <v-icon
+                                    v-bind="attrs"
+                                    v-on="on"
+                                    left> far fa-question-circle
+                                  </v-icon>
+                                </template>
+                                <span>reduction factor</span>
+                              </v-tooltip>
+                            </template>
+                          </v-slider>
+                        </div>
+                        <div>
+                          <v-slider
+                            hide-details
+                            class="align-center"
+                            v-model="models.robust.threshold"
+                            min="-100"
+                            max="0"
+                          >
+                            <template v-slot:prepend>
+                              <v-text-field
+                                prefix="10^"
+                                v-model="models.robust.threshold"
+                                class="mt-0 pt-0"
+                                type="number"
+                                style="width: 80px"
+                                label="threshold"
+                              ></v-text-field>
+                            </template>
+                            <template v-slot:append>
+                              <v-tooltip left>
+                                <template v-slot:activator="{ on, attrs }">
+                                  <v-icon
+                                    v-bind="attrs"
+                                    v-on="on"
+                                    left> far fa-question-circle
+                                  </v-icon>
+                                </template>
+                                <span>Threshold</span>
+                              </v-tooltip>
+                            </template>
+                          </v-slider>
+                        </div>
+                        <div>
+                          <v-slider
+                            hide-details
+                            class="align-center"
+                            v-model="models.robust.trees"
+                            min="2"
+                            max="100"
+                          >
+                            <template v-slot:prepend>
+                              <v-text-field
+                                v-model="models.robust.trees"
+                                class="mt-0 pt-0"
+                                type="number"
+                                style="width: 70px"
+                                label="trees"
+                              ></v-text-field>
+                            </template>
+                            <template v-slot:append>
+                              <v-tooltip left>
+                                <template v-slot:activator="{ on, attrs }">
+                                  <v-icon
+                                    v-bind="attrs"
+                                    v-on="on"
+                                    left> far fa-question-circle
+                                  </v-icon>
+                                </template>
+                                <span>Number of steiner trees to be computed (Integer).</span>
+                              </v-tooltip>
+                            </template>
+                          </v-slider>
+                        </div>
+
+
+                      </template>
                       <template v-if="methods[methodModel].id==='must'">
                         <div>
                           <v-slider
@@ -775,7 +906,7 @@ export default {
         label: "DIAMOnD",
         scores: [{id: "rank", name: "Rank"}, {id: "p_hyper", name: "P-Value", decimal: true}]
       }, {id: "bicon", label: "BiCoN", scores: []}, {id: "must", label: "MuST", scores: []},
-        {id: "domino", label: "DOMINO", scores: []},{id: "robust", label: "ROBUST", scores: ["occs_abs","occs_rel"]}
+        {id: "domino", label: "DOMINO", scores: []}, {id: "robust", label: "ROBUST", scores: [{id:"occs_abs",name:"Occs (Abs)"}, {id:"occs_rel",name:"Occs (%)", decimal:true}]}
       ],
       graph: {physics: false},
       methodModel: undefined,
@@ -791,11 +922,12 @@ export default {
           alphaModel: 1,
           pModel: 0
         },
-        domino: {
-
-        },
-        robust:{
-
+        domino: {},
+        robust: {
+          initFract: 0.25,
+          reductionFactor: 0.9,
+          trees: 30,
+          threshold: -1
         },
         bicon: {
           exprFile: undefined,
@@ -991,6 +1123,12 @@ export default {
         params["multiple"] = this.models.must.multiple
         params["trees"] = this.models.must.trees
         params["maxit"] = this.models.must.maxit
+      }
+      if(method ==='robust'){
+        params["trees"] =this.models.robust.trees;
+        params["initFract"]=this.models.robust.initFract;
+        params["threshold"]=Math.pow(10,this.models.robust.threshold);
+        params["reductionFactor"]=this.models.robust.reductionFactor;
       }
       params['type'] = ["gene", "protein"][this.seedTypeId]
       this.executeJob(method, params)
