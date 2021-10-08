@@ -18,11 +18,13 @@ import de.exbio.reposcapeweb.db.services.nodes.DrugService;
 import de.exbio.reposcapeweb.db.updates.UpdateService;
 import de.exbio.reposcapeweb.tools.ToolService;
 import de.exbio.reposcapeweb.utils.Pair;
+import de.exbio.reposcapeweb.utils.ProcessUtils;
 import de.exbio.reposcapeweb.utils.StringUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.*;
@@ -32,9 +34,11 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -56,9 +60,10 @@ public class RequestController {
     private final JobController jobController;
     private final DbCommunicationService dbCommunicationService;
     private final UpdateService updateService;
+    private final NedrexService nedrex;
 
     @Autowired
-    public RequestController(UpdateService updateService, DbCommunicationService dbCommunicationService, ObjectMapper objectMapper, WebGraphService webGraphService, NodeController nodeController, HistoryController historyController, JobController jobController) {
+    public RequestController(NedrexService nedrex, UpdateService updateService, DbCommunicationService dbCommunicationService, ObjectMapper objectMapper, WebGraphService webGraphService, NodeController nodeController, HistoryController historyController, JobController jobController) {
         this.objectMapper = objectMapper;
         this.webGraphService = webGraphService;
         this.nodeController = nodeController;
@@ -66,6 +71,7 @@ public class RequestController {
         this.jobController = jobController;
         this.dbCommunicationService = dbCommunicationService;
         this.updateService = updateService;
+        this.nedrex = nedrex;
     }
 
 
@@ -114,8 +120,8 @@ public class RequestController {
                 nodes.add(nodeController.getNode(nodeName, n).getAsMap(new HashSet<>(Arrays.asList("id", "displayName", "primaryDomainId"))));
             });
             return toJson(nodes);
-        }else{
-            return toJson(webGraphService.getConnectedNodes(nr==0?"disorder":"drug", nodeName, webGraphService.getQuickExample(nodeName, nr)));
+        } else {
+            return toJson(webGraphService.getConnectedNodes(nr == 0 ? "disorder" : "drug", nodeName, webGraphService.getQuickExample(nodeName, nr)));
         }
 
     }
@@ -155,7 +161,7 @@ public class RequestController {
     public String getConnectedNodes(@RequestBody HashMap<String, Object> request) {
         Collection<Integer> ids = request.get("sugId").toString().indexOf('_') > -1 ? webGraphService.getSuggestionEntry(null, request.get("sourceType").toString(), request.get("sugId").toString()) : Collections.singletonList(Integer.parseInt(request.get("sugId").toString()));
         if ((boolean) request.get("noloop")) {
-           LinkedList<Object> nodes= webGraphService.getDirectNodes(ids,request);
+            LinkedList<Object> nodes = webGraphService.getDirectNodes(ids, request);
             return toJson(nodes);
         }
         return toJson(webGraphService.getConnectedNodes(request.get("sourceType").toString(), request.get("targetType").toString(), ids));
@@ -400,6 +406,19 @@ public class RequestController {
         Job j = jobController.registerJob(request);
         return toJson(j.toMap());
     }
+
+    @RequestMapping(value = "/getNedrex", method = RequestMethod.POST)
+    @ResponseBody
+    public String getNedrex(@RequestBody NedrexRequest req) {
+        return this.nedrex.get(req.route);
+    }
+
+    @RequestMapping(value = "/postNedrex", method = RequestMethod.POST)
+    @ResponseBody
+    public String postNedrex(@RequestBody NedrexRequest req) {
+        return this.nedrex.post(req.route, req.data);
+    }
+
 
     @RequestMapping(value = "/getJobs", method = RequestMethod.GET)
     @ResponseBody

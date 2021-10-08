@@ -8,3 +8,5 @@ export const HOST_URL = PROTOCOL+"://" + HOST + ":" + BACKEND_PORT
 export const SOCKET_URL = PROTOCOL+"://" + HOST + ":"+BACKEND_PORT
 export const PATH_PREFIX= ""
 export const STATIC_PATH="/static/"
+
+export const NEDREX_API=PROTOCOL+"://api.nedrex.net"

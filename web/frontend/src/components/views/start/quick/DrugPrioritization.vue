@@ -150,7 +150,8 @@
                             through association the 'Limited' switch has to be toggled.
                           </div>
                         </v-tooltip>
-                        <SuggestionAutocomplete :suggestion-type="suggestionType"
+                        <SuggestionAutocomplete :suggestion-type="suggestionType" :emit-drugs="true"
+                                                @drugsEvent="saveDrugsForValidation"
                                                 :target-node-type="['gene', 'protein'][this.seedTypeId]"
                                                 @addToSelectionEvent="addToSelection"
                                                 style="justify-self: flex-end;margin-left: auto"></SuggestionAutocomplete>
@@ -497,13 +498,16 @@
 
                   </Network>
                 </v-col>
-                <v-col cols="2" style="padding: 0">
+                <v-col cols="3" style="padding: 0">
                   <v-card-title class="subtitle-1"> Drugs{{
                       (results.targets.length !== undefined && results.targets.length > 0 ? (" (" + (results.targets.length) + ")") : ": Processing")
                     }}
-                    <v-progress-circular indeterminate v-if="this.results.targets.length===0" style="margin-left:15px">
+                    <v-progress-circular indeterminate
+                                         v-if="results.targets.length===0"
+                                         style="margin-left:15px">
                     </v-progress-circular>
                   </v-card-title>
+                  <ValidationBox ref="validation" drugs></ValidationBox>
                   <template v-if="results.targets.length>=0">
                     <v-data-table max-height="50vh" height="50vh" class="overflow-y-auto" fixed-header dense
                                   item-key="id"
@@ -560,6 +564,7 @@ import ResultDownload from "@/components/app/tables/menus/ResultDownload";
 import SeedDownload from "@/components/app/tables/menus/SeedDownload";
 import NodeInput from "@/components/app/input/NodeInput";
 import ExampleSeeds from "@/components/start/quick/ExampleSeeds";
+import ValidationBox from "@/components/start/quick/ValidationBox";
 
 export default {
   name: "DrugRepurposing",
@@ -568,6 +573,7 @@ export default {
     blitz: Boolean,
   },
   sugQuery: "",
+  validationDrugs: {},
 
   data() {
     return {
@@ -589,8 +595,16 @@ export default {
       fileInputModel: undefined,
       physicsOn: false,
       methods: [
-        {id: "trustrank", label: "TrustRank", scores: [{id: "score", name: "Score", decimal: true}]},
-        {id: "centrality", label: "Closeness Centrality", scores: [{id: "score", name: "Score", decimal: true}]}],
+        {
+          id: "trustrank",
+          label: "TrustRank",
+          scores: [{id: "score", name: "Score", decimal: true}, {id: "rank", name: "Rank"}]
+        },
+        {
+          id: "centrality",
+          label: "Closeness Centrality",
+          scores: [{id: "score", name: "Score", decimal: true}, {id: "rank", name: "Rank"}]
+        }],
       graph: {physics: false},
       methodModel: undefined,
       experimentalSwitch: true,
@@ -622,6 +636,7 @@ export default {
       this.seedTypeId = undefined
       this.seeds = []
       this.methodModel = undefined
+      this.validationDrugs = {}
       if (this.blitz) {
         this.methodModel = 1
       }
@@ -633,6 +648,7 @@ export default {
     reset: function () {
       this.init()
     },
+
     getSuggestionSelection: function () {
       let type = ["gene", "protein"][this.seedTypeId]
       let nodeId = this.$global.metagraph.nodes.filter(n => n.group === type)[0].id
@@ -760,11 +776,16 @@ export default {
           this.$socket.unsubscribeJob(jid)
         this.jobs[jid].result = result
         this.loadTargetTable(result).then(() => {
+          this.$refs.validation.validate(this.results.targets, this.validationDrugs,this.models.onlyApproved)
           this.loadGraph(result)
         })
-
       }
     },
+
+    saveDrugsForValidation: function (drugs) {
+      drugs.forEach(drug => this.validationDrugs[drug.id] = drug);
+    },
+
 
     addToSelection: function (data) {
       this.$refs.seedTable.addSeeds(data)
@@ -863,6 +884,19 @@ export default {
       }).then(data => this.$utils.roundScores(data, 'drug', scoreAttrs)
       ).then(data => {
         this.results.targets = data.nodes.drug.sort((e1, e2) => e2.score - e1.score)
+
+        let lastRank = 0;
+        let lastScore = 0;
+        let step = 0;
+
+        this.results.targets.forEach(drug => {
+          step++
+          if (lastRank === 0 || lastScore !== drug.score) {
+            lastRank = step;
+            lastScore = drug.score;
+          }
+          drug.rank = lastRank
+        })
       }).catch(console.error)
     },
     clearList: function () {
@@ -911,6 +945,7 @@ export default {
   },
 
   components: {
+    ValidationBox,
     SeedDownload,
     NodeInput,
     SuggestionAutocomplete,

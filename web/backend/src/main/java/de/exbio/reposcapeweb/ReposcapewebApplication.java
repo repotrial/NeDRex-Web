@@ -1,9 +1,11 @@
 package de.exbio.reposcapeweb;
 
+import de.exbio.reposcapeweb.communication.cache.Graphs;
 import de.exbio.reposcapeweb.communication.jobs.JobController;
 import de.exbio.reposcapeweb.db.DbCommunicationService;
 import de.exbio.reposcapeweb.db.entities.edges.DrugHasIndication;
 import de.exbio.reposcapeweb.db.entities.edges.ProteinAssociatedWithDisorder;
+import de.exbio.reposcapeweb.db.entities.nodes.Disorder;
 import de.exbio.reposcapeweb.db.io.ImportService;
 import de.exbio.reposcapeweb.db.services.controller.EdgeController;
 import de.exbio.reposcapeweb.db.services.controller.NodeController;
@@ -11,6 +13,7 @@ import de.exbio.reposcapeweb.db.services.edges.ProteinInteractsWithProteinServic
 import de.exbio.reposcapeweb.db.updates.UpdateService;
 import de.exbio.reposcapeweb.tools.ToolService;
 import de.exbio.reposcapeweb.utils.StringUtils;
+import de.exbio.reposcapeweb.utils.WriterUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +28,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.sql.SQLOutput;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -84,6 +88,8 @@ public class ReposcapewebApplication extends SpringBootServletInitializer {
         dbService.setImportInProgress(true);
         importService.importNodeData();
 
+//        simnetmedFileCreation();
+
         //TODO maybe move importJob and importHistory to after update?
         jobController.importJobsHistory();
         importService.importHistory();
@@ -112,43 +118,103 @@ public class ReposcapewebApplication extends SpringBootServletInitializer {
 
     }
 
+    private void simnetmedFileCreation() {
+        System.out.println("Creating SimNetMed files");
+        BufferedWriter bw = WriterUtils.getBasicWriter(new File("/home/andim/projects/SimNetMed/data/disorders.map"));
+        HashSet<String> ids = new HashSet<>();
+        LinkedList<String> order = new LinkedList<>();
+        nodeController.findAll(Graphs.getNode("disorder")).forEach(disorder -> {
+            Disorder dis = (Disorder) disorder;
+            dis.getDomainIds().forEach(id -> {
+                String idType = id.substring(0, id.indexOf("."));
+                if(ids.add(idType))
+                    order.add(idType);
+            });
+        });
+        order.add("ICD-10");
+
+        String header = "";
+        for (String id : order) {
+            if (header.length() == 0)
+                header += "#";
+            else
+                header += "\t";
+            header += id;
+        }
+        try {
+            bw.write(header + "\n");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        nodeController.findAll(Graphs.getNode("disorder")).forEach(disorder -> {
+            Disorder dis = (Disorder) disorder;
+            HashMap<String, String> domainIds = new HashMap<>();
+            dis.getDomainIds().forEach(id -> {
+                int pos = id.indexOf(".");
+                domainIds.put(id.substring(0, pos), id.substring(pos+1));
+            });
+            String icd = StringUtils.listToString(dis.getIcd10());
+            domainIds.put("ICD-10", icd.substring(1,icd.length()-1));
+            for (String idType : order) {
+                try {
+                    if (domainIds.containsKey(idType)) {
+                        bw.write(domainIds.get(idType));
+                    }
+                    if (!idType.equals(order.getLast()))
+                        bw.write("\t");
+                    else bw.write("\n");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        try {
+            bw.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.out.println("Finishing simnet file");
+
+
+    }
+
     private void drugstoneFileCreation() throws IOException {
         System.out.println("Creating Drugstone files");
-        HashMap<Integer,String> disorders = new HashMap<>();
-        HashMap<Integer,String> proteins = new HashMap<>();
-        HashMap<Integer,String>drugs = new HashMap<>();
+        HashMap<Integer, String> disorders = new HashMap<>();
+        HashMap<Integer, String> proteins = new HashMap<>();
+        HashMap<Integer, String> drugs = new HashMap<>();
 
         edgeController.findAll(5).forEach(e -> {
             ProteinAssociatedWithDisorder pad = (ProteinAssociatedWithDisorder) e;
             if (pad.getAssertedBy().contains("disgenet")) {
                 proteins.put(pad.getPrimaryIds().getId1(), null);
-                disorders.put(pad.getPrimaryIds().getId2(),null);
+                disorders.put(pad.getPrimaryIds().getId2(), null);
             }
         });
 
-        edgeController.findAll(10).forEach(e->{
+        edgeController.findAll(10).forEach(e -> {
             DrugHasIndication di = (DrugHasIndication) e;
-            drugs.put(di.getPrimaryIds().getId1(),null);
-            disorders.put(di.getPrimaryIds().getId2(),null);
+            drugs.put(di.getPrimaryIds().getId1(), null);
+            disorders.put(di.getPrimaryIds().getId2(), null);
         });
 
 
         BufferedWriter bw = new BufferedWriter(new FileWriter("/home/andim/projects/drugstone/backend/data-NetExpander/Disorders/disorders.tsv"));
         bw.write("mondo_id\tlabel\ticd10\n");
         BufferedWriter finalBw = bw;
-        nodeController.findDisorders(disorders.keySet()).forEach(disorder->{
+        nodeController.findDisorders(disorders.keySet()).forEach(disorder -> {
             try {
-                String domainId = StringUtils.split(disorder.getPrimaryDomainId(),'.').get(1);
-                disorders.put(disorder.getId(),domainId);
-                finalBw.write(domainId+"\t"+disorder.getDisplayName()+"\t"+StringUtils.listToString(disorder.getIcd10())+"\n");
+                String domainId = StringUtils.split(disorder.getPrimaryDomainId(), '.').get(1);
+                disorders.put(disorder.getId(), domainId);
+                finalBw.write(domainId + "\t" + disorder.getDisplayName() + "\t" + StringUtils.listToString(disorder.getIcd10()) + "\n");
             } catch (IOException e) {
                 e.printStackTrace();
             }
         });
         bw.close();
 
-        nodeController.findProteins(proteins.keySet()).forEach(protein->{
-            proteins.put(protein.getId(),StringUtils.split(protein.getPrimaryDomainId(),'.').get(1));
+        nodeController.findProteins(proteins.keySet()).forEach(protein -> {
+            proteins.put(protein.getId(), StringUtils.split(protein.getPrimaryDomainId(), '.').get(1));
         });
 
 
@@ -169,8 +235,8 @@ public class ReposcapewebApplication extends SpringBootServletInitializer {
 
         proteins.clear();
 
-        nodeController.findDrugs(drugs.keySet()).forEach(drug->{
-            drugs.put(drug.getId(),StringUtils.split(drug.getPrimaryDomainId(),'.').get(1));
+        nodeController.findDrugs(drugs.keySet()).forEach(drug -> {
+            drugs.put(drug.getId(), StringUtils.split(drug.getPrimaryDomainId(), '.').get(1));
         });
 
 
@@ -179,11 +245,11 @@ public class ReposcapewebApplication extends SpringBootServletInitializer {
         BufferedWriter finalBw2 = bw;
         edgeController.findAll(10).forEach(e -> {
             DrugHasIndication di = (DrugHasIndication) e;
-                try {
-                    finalBw2.write(drugs.get(di.getPrimaryIds().getId1()) + "\t" + disorders.get(di.getPrimaryIds().getId2()) + "\n");
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
+            try {
+                finalBw2.write(drugs.get(di.getPrimaryIds().getId1()) + "\t" + disorders.get(di.getPrimaryIds().getId2()) + "\n");
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
         });
         bw.close();
         System.out.println("Done creating Drugstone files");

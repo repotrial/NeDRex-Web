@@ -185,7 +185,8 @@
                         </v-tooltip>
                         <SuggestionAutocomplete :suggestion-type="suggestionType"
                                                 :target-node-type="['gene', 'protein'][this.seedTypeId]"
-                                                @addToSelectionEvent="addToSelection"
+                                                @addToSelectionEvent="addToSelection" :emit-drugs="true"
+                                                @drugsEvent="saveDrugsForValidation"
                                                 style="justify-self: flex-end;margin-left: auto"></SuggestionAutocomplete>
                       </div>
                       <NodeInput text="or provide Seed IDs by" @addToSelectionEvent="addToSelection"
@@ -904,6 +905,7 @@
                     <v-progress-circular indeterminate v-if="this.results.targets.length===0" style="margin-left:15px">
                     </v-progress-circular>
                   </v-card-title>
+                  <ValidationBox ref="moduleValidation"></ValidationBox>
                   <v-data-table max-height="50vh" height="50vh" class="overflow-y-auto" fixed-header dense item-key="id"
                                 :items="(!results.targets ||results.targets.length ===0) ?seeds : results.targets"
                                 :headers="getHeaders(0)"
@@ -1036,13 +1038,14 @@
                     </template>
                   </Network>
                 </v-col>
-                <v-col cols="2" style="padding:0">
+                <v-col cols="3" style="padding:0">
                   <v-card-title class="subtitle-1"> Drugs{{
                       (results.drugs.length !== undefined && results.drugs.length > 0 ? (" (" + (results.drugs.length) + ")") : ": Processing")
                     }}
                     <v-progress-circular indeterminate v-if="results.drugs.length===0" style="margin-left:15px">
                     </v-progress-circular>
                   </v-card-title>
+                  <ValidationBox ref="drugValidation" drugs></ValidationBox>
                   <template v-if="results.drugs.length>0">
                     <v-data-table max-height="50vh" height="50vh" class="overflow-y-auto" fixed-header dense
                                   item-key="id"
@@ -1101,6 +1104,7 @@ import SeedTable from "@/components/app/tables/SeedTable";
 import ResultDownload from "@/components/app/tables/menus/ResultDownload";
 import NodeInput from "@/components/app/input/NodeInput";
 import ExampleSeeds from "@/components/start/quick/ExampleSeeds";
+import ValidationBox from "@/components/start/quick/ValidationBox";
 
 export default {
   name: "CombinedRepurposing",
@@ -1109,7 +1113,8 @@ export default {
   },
 
   sugQuery: undefined,
-
+  validationDrugs: {},
+  validationScore: undefined,
 
   data() {
     return {
@@ -1137,10 +1142,22 @@ export default {
         label: "DIAMOnD",
         scores: [{id: "rank", name: "Rank"}, {id: "p_hyper", name: "P-Value", decimal: true}]
       }, {id: "bicon", label: "BiCoN", scores: []}, {id: "must", label: "MuST", scores: []},
-        {id: "domino", label: "DOMINO", scores: []}, {id: "robust", label: "ROBUST", scores: [{id:"occs_abs",name:"Occs (Abs)"}, {id:"occs_rel",name:"Occs (%)", decimal:true}]}],
+        {id: "domino", label: "DOMINO", scores: []}, {
+          id: "robust",
+          label: "ROBUST",
+          scores: [{id: "occs_abs", name: "Occs (Abs)"}, {id: "occs_rel", name: "Occs (%)", decimal: true}]
+        }],
       rankingMethods: [
-        {id: "trustrank", label: "TrustRank", scores: [{id: "score", name: "Score", decimal: true}]},
-        {id: "centrality", label: "Closeness Centrality", scores: [{id: "score", name: "Score", decimal: true}]}],
+        {
+          id: "trustrank",
+          label: "TrustRank",
+          scores: [{id: "score", name: "Score", decimal: true}, {id: "rank", name: "Rank"}]
+        },
+        {
+          id: "centrality",
+          label: "Closeness Centrality",
+          scores: [{id: "score", name: "Score", decimal: true}, {id: "rank", name: "Rank"}]
+        }],
       graph: {physics: false},
       moduleMethodModel: undefined,
       rankingMethodModel: undefined,
@@ -1221,6 +1238,8 @@ export default {
       this.rankingJid = undefined
       this.rankingGid = undefined
       this.resultProgress = 0
+      this.validationDrugs = {}
+      this.validationScore = undefined;
     },
     reset: function () {
       this.init()
@@ -1349,11 +1368,11 @@ export default {
         params["trees"] = this.moduleModels.must.trees
         params["maxit"] = this.moduleModels.must.maxit
       }
-      if(method ==='robust'){
-        params["trees"] =this.moduleModels.robust.trees;
-        params["initFract"]=this.moduleModels.robust.initFract;
-        params["threshold"]=Math.pow(10,this.moduleModels.robust.threshold);
-        params["reductionFactor"]=this.moduleModels.robust.reductionFactor;
+      if (method === 'robust') {
+        params["trees"] = this.moduleModels.robust.trees;
+        params["initFract"] = this.moduleModels.robust.initFract;
+        params["threshold"] = Math.pow(10, this.moduleModels.robust.threshold);
+        params["reductionFactor"] = this.moduleModels.robust.reductionFactor;
       }
       params['type'] = ["gene", "protein"][this.seedTypeId]
       this.executeModuleJob(method, params)
@@ -1440,11 +1459,18 @@ export default {
       if (this.moduleGid != null && data.state === "DONE") {
         if (!unsubscribed)
           this.$socket.unsubscribeJob(this.moduleJid)
-        this.loadModuleTargetTable().then(() => {
+        this.loadModuleTargetTable().then((connectedOnly) => {
           this.resultProgress = 25
+          this.runModuleValidation(connectedOnly)
           this.loadGraph(this.moduleGid, true)
         })
       }
+    },
+    runModuleValidation:function(connectedOnly) {
+      if (this.$refs.moduleValidation != null)
+        this.$refs.moduleValidation.validate(connectedOnly, this.validationDrugs, false, ["gene", "protein"][this.seedTypeId])
+      else
+        setTimeout(()=>{this.runModuleValidation(connectedOnly)}, 1000)
     }
     ,
     readRankingJob: function (result, clean, unsubscribed) {
@@ -1457,6 +1483,7 @@ export default {
         if (!unsubscribed)
           this.$socket.unsubscribeJob(this.rankingJid)
         this.loadRankingTargetTable(this.rankingGid).then(() => {
+          this.$refs.drugValidation.validate(this.results.drugs, this.validationDrugs, this.rankingModels.onlyApproved)
           this.loadGraph(this.rankingGid)
         })
 
@@ -1541,6 +1568,10 @@ export default {
       }).catch(console.error)
     },
 
+    saveDrugsForValidation: function (drugs) {
+      drugs.forEach(drug => this.validationDrugs[drug.id] = drug);
+    },
+
     downloadFullResultList: function (jid) {
       window.open(CONFIG.HOST_URL + CONFIG.CONTEXT_PATH + '/api/downloadJobResult?jid=' + jid)
     }
@@ -1574,6 +1605,20 @@ export default {
           })
         else
           this.results.targets = data.nodes[seedType]
+
+        let connectedIds = []
+        data.edges[["GeneGeneInteraction", "ProteinProteinInteraction"][this.seedTypeId]].forEach(edge => {
+          let spl = edge.id.split("-")
+          let id1 = parseInt(spl[0])
+          let id2 = parseInt(spl[1])
+          if (id1 !== id2) {
+            if (connectedIds.indexOf(id1) === -1)
+              connectedIds.push(id1)
+            if (connectedIds.indexOf(id2))
+              connectedIds.push(id2)
+          }
+        })
+        return this.results.targets.filter(node => connectedIds.indexOf(node.id) > -1);
       }).catch(console.error)
     },
     loadRankingTargetTable: function () {
@@ -1584,6 +1629,19 @@ export default {
           return response.data
       }).then(data => this.$utils.roundScores(data, 'drug', scoreAttr)).then(data => {
         this.results.drugs = data.nodes.drug.sort((e1, e2) => e2.score - e1.score)
+
+        let lastRank = 0;
+        let lastScore = 0;
+        let step = 0;
+
+        this.results.drugs.forEach(drug => {
+          step++
+          if (lastRank === 0 || lastScore !== drug.score) {
+            lastRank = step;
+            lastScore = drug.score;
+          }
+          drug.rank = lastRank
+        })
       }).catch(console.error)
     },
     waitForGraph: function (resolve) {
@@ -1651,6 +1709,7 @@ export default {
     SeedTable,
     ResultDownload,
     ExampleSeeds,
+    ValidationBox,
   }
 }
 </script>

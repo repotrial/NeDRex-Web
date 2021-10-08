@@ -94,6 +94,16 @@ const Utils =
       })
       return data
     },
+    roundValue: function(score, decimals){
+      if ((score + "").indexOf('e') > -1) {
+        let parts = (score + "").split('e')
+        score = parseFloat(this.round(parseFloat(parts[0]), 2) + 'e' + parts[1])
+      } else {
+        score = this.round(score, decimals)
+      }
+      return score
+    },
+
     roundScore: function (item, scoreAttr) {
       if (!item[scoreAttr])
         return

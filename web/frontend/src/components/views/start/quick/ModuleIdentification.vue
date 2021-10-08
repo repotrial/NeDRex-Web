@@ -152,7 +152,8 @@
                             through association the 'Limited' switch has to be toggled.
                           </div>
                         </v-tooltip>
-                        <SuggestionAutocomplete :suggestion-type="suggestionType"
+                        <SuggestionAutocomplete :suggestion-type="suggestionType" :emit-drugs="true"
+                                                @drugsEvent="saveDrugsForValidation"
                                                 :target-node-type="['gene', 'protein'][this.seedTypeId]"
                                                 @addToSelectionEvent="addToSelection"
                                                 style="justify-self: flex-end;margin-left: auto"></SuggestionAutocomplete>
@@ -678,6 +679,9 @@
                     <v-progress-circular indeterminate v-if="this.results.targets.length===0" style="margin-left:15px">
                     </v-progress-circular>
                   </v-card-title>
+
+                  <ValidationBox ref="validation"></ValidationBox>
+
                   <template v-if="!loadingResults">
                     <v-data-table max-height="50vh" height="50vh" fixed-header dense item-key="id"
                                   :items="results.targets" :headers="getHeaders()" disable-pagination
@@ -872,6 +876,7 @@ import ResultDownload from "@/components/app/tables/menus/ResultDownload";
 import HeaderBar from "@/components/app/Header";
 import NodeInput from "@/components/app/input/NodeInput";
 import ExampleSeeds from "@/components/start/quick/ExampleSeeds";
+import ValidationBox from "@/components/start/quick/ValidationBox";
 
 export default {
   name: "ModuleIdentification",
@@ -906,7 +911,11 @@ export default {
         label: "DIAMOnD",
         scores: [{id: "rank", name: "Rank"}, {id: "p_hyper", name: "P-Value", decimal: true}]
       }, {id: "bicon", label: "BiCoN", scores: []}, {id: "must", label: "MuST", scores: []},
-        {id: "domino", label: "DOMINO", scores: []}, {id: "robust", label: "ROBUST", scores: [{id:"occs_abs",name:"Occs (Abs)"}, {id:"occs_rel",name:"Occs (%)", decimal:true}]}
+        {id: "domino", label: "DOMINO", scores: []}, {
+          id: "robust",
+          label: "ROBUST",
+          scores: [{id: "occs_abs", name: "Occs (Abs)"}, {id: "occs_rel", name: "Occs (%)", decimal: true}]
+        }
       ],
       graph: {physics: false},
       methodModel: undefined,
@@ -941,8 +950,11 @@ export default {
         }
       },
       drugTargetPopup: false,
-      rankingSelect: 1
+      rankingSelect: 1,
+      validationDrugs: {},
+      validationScore: undefined,
     }
+
   },
 
   created() {
@@ -967,6 +979,7 @@ export default {
       this.results.targets = []
       this.results.drugs = []
       this.seedOrigin = {}
+      this.validationDrugs = {}
       if (this.$refs.graph)
         this.$refs.graph.reload()
     },
@@ -1096,6 +1109,10 @@ export default {
       this.addToSelection({data: example, origin: origin})
     },
 
+    saveDrugsForValidation: function (drugs) {
+      drugs.forEach(drug => this.validationDrugs[drug.id] = drug);
+    },
+
     submitAlgorithm: function () {
       let params = {}
       let method = this.methods[this.methodModel].id
@@ -1124,11 +1141,11 @@ export default {
         params["trees"] = this.models.must.trees
         params["maxit"] = this.models.must.maxit
       }
-      if(method ==='robust'){
-        params["trees"] =this.models.robust.trees;
-        params["initFract"]=this.models.robust.initFract;
-        params["threshold"]=Math.pow(10,this.models.robust.threshold);
-        params["reductionFactor"]=this.models.robust.reductionFactor;
+      if (method === 'robust') {
+        params["trees"] = this.models.robust.trees;
+        params["initFract"] = this.models.robust.initFract;
+        params["threshold"] = Math.pow(10, this.models.robust.threshold);
+        params["reductionFactor"] = this.models.robust.reductionFactor;
       }
       params['type'] = ["gene", "protein"][this.seedTypeId]
       this.executeJob(method, params)
@@ -1151,7 +1168,6 @@ export default {
       //   }
       // }
       this.$http.post("/submitJob", payload).then(response => {
-        console.log(payload)
         if (response.data !== undefined)
           return response.data
       }).then(data => {
@@ -1171,12 +1187,38 @@ export default {
       if (this.currentGid != null && data.state === "DONE") {
         if (!notSubbed)
           this.$socket.unsubscribeJob(jid)
-        this.loadTargetTable(this.currentGid).then(() => {
+        this.loadTargetTable(this.currentGid).then((connectedOnly) => {
+          this.$refs.validation.validate(connectedOnly, this.validationDrugs, false, ["gene", "protein"][this.seedTypeId])
           this.loadGraph(this.currentGid)
         })
 
       }
     }
+    // validate: function () {
+    //   let data = {
+    //     module_members: this.results.targets.map(n => n.primaryDomainId),
+    //     module_member_type: ["gene", "protein"][this.seedTypeId],
+    //     true_drugs: Object.values(this.validationDrugs).map(d => d.primaryDomainId),
+    //     permutations: 1000,
+    //     only_approved_drugs: true,
+    //   }
+    //   this.$http.validateModule(data).then(response => {
+    //     this.checkValidationScore(response.data)
+    //   }).catch(console.error)
+    // },
+    //
+    // checkValidationScore: function (id) {
+    //   if (this.validationScore == null)
+    //     this.$http.getValidationScore(id).then(response => {
+    //       if (response.data.status !== "running")
+    //         console.log(response.data);
+    //       else
+    //         setTimeout(() => {
+    //           this.checkValidationScore(id)
+    //         }, 2000)
+    //     })
+    // }
+
     ,
     getTargetCount: function () {
       let seedids = this.seeds.map(s => s.id)
@@ -1274,6 +1316,21 @@ export default {
         else
           this.$set(this.results, 'targets', data.nodes[seedType])
         this.loadingResults = false;
+
+        let connectedIds = []
+        data.edges[["GeneGeneInteraction", "ProteinProteinInteraction"][this.seedTypeId]].forEach(edge => {
+          let spl = edge.id.split("-")
+          let id1 = parseInt(spl[0])
+          let id2 = parseInt(spl[1])
+          if (id1 !== id2) {
+            if (connectedIds.indexOf(id1) === -1)
+              connectedIds.push(id1)
+            if (connectedIds.indexOf(id2))
+              connectedIds.push(id2)
+          }
+        })
+        return this.results.targets.filter(node => connectedIds.indexOf(node.id) > -1);
+
       }).catch(console.error)
     },
 
@@ -1310,6 +1367,7 @@ export default {
   ,
 
   components: {
+    ValidationBox,
     HeaderBar,
     SuggestionAutocomplete,
     NodeInput,

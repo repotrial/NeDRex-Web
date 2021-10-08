@@ -1,6 +1,9 @@
 import axios from 'axios'
 
 const ApiService = {
+  setNedrex(url) {
+    axios.nedrex = url
+  },
 
   init(baseURL) {
     axios.defaults.baseURL = baseURL;
@@ -59,6 +62,26 @@ const ApiService = {
   saveGraph(gid, uid) {
     return this.get("/archiveHistory?uid=" + uid + "&gid=" + gid)
   },
+
+  postNedrex(route, data) {
+    return this.post("/postNedrex", {route: route, data: data})
+  },
+
+  getValidationScore(id) {
+    return this.getNedrex("/validation/status?uid=" + id)
+  },
+
+  getNedrex(route) {
+    return this.post("/getNedrex", {route: route})
+  },
+
+  validateModule(data) {
+    return this.postNedrex("/validation/module", data)
+  },
+  validateDrugs(data) {
+    return this.postNedrex("/validation/drug", data)
+  },
+
   /**
    * Perform a custom Axios request.
    *
@@ -75,12 +98,12 @@ const ApiService = {
   },
 
   getTableDownload(gid, type, name, attributes) {
-    return this.post("/getTableDownload",{gid: gid, type:type, name:name, attributes:attributes}).then(response=>{
+    return this.post("/getTableDownload", {gid: gid, type: type, name: name, attributes: attributes}).then(response => {
       return response.data
     })
   },
-  getQuickExample(nr,type) {
-    return this.get("/getQuickExample?nr="+nr+"&nodeType="+type).then(response=>{
+  getQuickExample(nr, type) {
+    return this.get("/getQuickExample?nr=" + nr + "&nodeType=" + type).then(response => {
       return response.data
     })
   }

@@ -21,10 +21,10 @@
       <v-tooltip top>
         <template v-slot:activator="{on, attrs}">
           <v-icon v-on="on" v-bind="attrs" @click="switchSorting()" style="width:25px">
-            {{sortings[sortingModel].icon}}
+            {{ sortings[sortingModel].icon }}
           </v-icon>
         </template>
-        <span>{{sortings[sortingModel].tooltip}}</span>
+        <span>{{ sortings[sortingModel].tooltip }}</span>
       </v-tooltip>
     </template>
   </v-autocomplete>
@@ -40,7 +40,11 @@ export default {
     targetNodeType: String,
     suggestionType: String,
     index: Number,
-    sortSwitch:{
+    emitDrugs: {
+      type: Boolean,
+      default: false,
+    },
+    sortSwitch: {
       type: Boolean,
       default: true,
     }
@@ -51,8 +55,20 @@ export default {
       nodeSuggestions: null,
       suggestions: {loading: false, data: []},
       suggestionModel: null,
-      sortings: [{icon:"fas fa-sort-amount-down", tooltip:"High to low entry count!", value:"size-down"},{icon:"fas fa-sort-amount-up", tooltip:"Low to high entry count!", value:"size-up"},{icon:"fas fa-sort-alpha-down", tooltip:"Lexicographic sorting!", value:"alpha-down"},{icon:"fas fa-sort-alpha-up", tooltip:"Reversed lexicographic sorting", value:"alpha-up"}],
-      sortingModel:0
+      sortings: [{
+        icon: "fas fa-sort-amount-down",
+        tooltip: "High to low entry count!",
+        value: "size-down"
+      }, {
+        icon: "fas fa-sort-amount-up",
+        tooltip: "Low to high entry count!",
+        value: "size-up"
+      }, {
+        icon: "fas fa-sort-alpha-down",
+        tooltip: "Lexicographic sorting!",
+        value: "alpha-down"
+      }, {icon: "fas fa-sort-alpha-up", tooltip: "Reversed lexicographic sorting", value: "alpha-up"}],
+      sortingModel: 0
     }
   },
 
@@ -87,38 +103,51 @@ export default {
         }).then(() => {
           this.suggestionModel = undefined
         }).catch(console.error)
+        if (this.emitDrugs) {
+          this.$http.post("getConnectedNodes", {
+            sourceType: this.suggestionType,
+            targetType: "drug",
+            sugId: val.sid,
+            noloop: false
+          }).then(response => {
+            if (response.data !== undefined)
+              return response.data
+          }).then(data=>{
+            this.$emit("drugsEvent",data)
+          }).catch(console.error)
+        }
       }
     },
 
   },
   methods: {
-    switchSorting: function(){
-      this.sortingModel = (this.sortingModel+1)%this.sortings.length
-      this.sortData(this.suggestions.data,this.sortings[this.sortingModel].value)
+    switchSorting: function () {
+      this.sortingModel = (this.sortingModel + 1) % this.sortings.length
+      this.sortData(this.suggestions.data, this.sortings[this.sortingModel].value)
     },
 
-    sortData: function(data, method){
+    sortData: function (data, method) {
       switch (method) {
-        case "alpha-down":{
-          data.sort((e1,e2)=>{
+        case "alpha-down": {
+          data.sort((e1, e2) => {
             return e1.text.localeCompare(e2.text)
           })
           break;
         }
-        case "alpha-up":{
-          data.sort((e1,e2)=>{
+        case "alpha-up": {
+          data.sort((e1, e2) => {
             return e2.text.localeCompare(e1.text)
           })
           break;
         }
-        case "size-down":{
-          data.sort((e1,e2)=>{
+        case "size-down": {
+          data.sort((e1, e2) => {
             return e2.size - e1.size
           })
           break;
         }
-        case "size-up":{
-          data.sort((e1,e2)=>{
+        case "size-up": {
+          data.sort((e1, e2) => {
             return e1.size - e2.size
           })
           break;
@@ -153,7 +182,7 @@ export default {
             return response.data
           }
         }).then(data => {
-          this.sortData(data.suggestions,this.sortings[this.sortingModel].value)
+          this.sortData(data.suggestions, this.sortings[this.sortingModel].value)
         }).catch(err =>
           console.error(err)
         ).finally(() =>

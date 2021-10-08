@@ -7,3 +7,5 @@ export const SOCKET_URL = PROTOCOL+"://" + HOST
 export const PATH_PREFIX= ""
 export const STATIC_PATH="/static/"
 
+export const NEDREX_API=PROTOCOL+"://api.nedrex.net"
+
