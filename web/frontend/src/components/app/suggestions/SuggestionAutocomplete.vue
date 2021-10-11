@@ -99,18 +99,15 @@ export default {
           if (response.data !== undefined)
             return response.data
         }).then(data => {
+          let payload = {
+            data: data,
+            origin: "SUG:" + val.text + "[" + this.suggestionType + "]",
+            source: this.suggestionType
+          }
           if (this.index !== undefined)
-            this.$emit("addToSelectionEvent", {
-              data: data,
-              origin: "SUG:" + val.text + "[" + this.suggestionType + "]",
-              source: this.suggestionType
-            }, this.index)
+            this.$emit("addToSelectionEvent", payload, this.index)
           else
-            this.$emit("addToSelectionEvent", {
-              data: data,
-              origin: "SUG:" + val.text + "[" + this.suggestionType + "]",
-              source: this.suggestionType
-            },)
+            this.$emit("addToSelectionEvent", payload,)
         }).then(() => {
           this.suggestionModel = undefined
         }).catch(console.error)
@@ -124,7 +121,11 @@ export default {
             if (response.data !== undefined)
               return response.data
           }).then(data=>{
-            this.$emit("drugsEvent",data)
+            this.$emit("drugsEvent",{
+              origin: "SUG:" + val.text + "[" + this.suggestionType + "]",
+              data: data,
+              source: this.suggestionType
+            })
           }).catch(console.error)
         }
       }

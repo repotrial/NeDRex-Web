@@ -1,9 +1,9 @@
 <template>
   <v-row v-show="this.seedTypeId!=null" style="margin-top:0">
     <v-col>
-      <v-menu bottom offset-y>
+      <v-menu bottom offset-y :disabled="disabled">
         <template v-slot:activator="{on,attrs}">
-          <v-btn small outlined right v-bind="attrs" v-on="on">
+          <v-btn small outlined right v-bind="attrs" v-on="on" :disabled="disabled">
             <v-icon left color="primary">
               fas fa-graduation-cap
             </v-icon>
@@ -34,6 +34,10 @@ export default {
   name: "ExampleSeeds",
   props:{
     seedTypeId: Number,
+    disabled:{
+      type: Boolean,
+      default: false,
+    }
   },
 
 

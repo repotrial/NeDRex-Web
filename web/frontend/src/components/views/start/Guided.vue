@@ -684,8 +684,8 @@ export default {
     }
     ,
 
-    addToSelection: function (list, index, nameFrom) {
-      this.$refs[["sourceTable", "targetTable"][index]].addSeeds(list, nameFrom)
+    addToSelection: function (list, index) {
+      this.$refs[["sourceTable", "targetTable"][index]].addSeeds(list)
     }
     ,
     loadTargetTable: function (gid) {

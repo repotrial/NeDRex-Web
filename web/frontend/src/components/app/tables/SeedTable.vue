@@ -5,7 +5,7 @@
                 :headers="headers"
                 disable-pagination
                 hide-default-footer
-                style="margin-top: 16px">
+                style="margin-top: 16px" >
     <template v-slot:top>
       <div style="display: flex">
         <v-card-title style="justify-self: flex-start" class="subtitle-1">{{ title }}
@@ -150,6 +150,7 @@ export default {
         {text: 'SourceDB', align: 'start', sortable: true, value: 'sourceDBs'},
         {text: 'Origin', align: 'start', sortable: true, value: 'origin'},
         {text: 'Action', align: 'end', sortable: false, value: 'action'}]
+      ,
     }
   },
 
@@ -158,7 +159,6 @@ export default {
   },
 
   methods: {
-
 
     getOrigins: function (id) {
       if (this.origins[id] === undefined)
@@ -182,6 +182,7 @@ export default {
     removeNode: function (id) {
       let index = this.nodes.map(e => e.id).indexOf(id)
       this.nodes.splice(index, 1)
+      this.$emit("remove",this.origins[id])
       delete this.origins[id]
     },
 
@@ -290,6 +291,7 @@ export default {
       })
       this.nodes = this.nodes.filter(s => remove.indexOf(s.id) === -1)
     },
+
   },
 
 
