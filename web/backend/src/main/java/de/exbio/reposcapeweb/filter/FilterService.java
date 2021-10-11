@@ -32,7 +32,7 @@ public class FilterService {
         }
 
         try {
-            BufferedWriter bw = new BufferedWriter(new FileWriter(new File(f.getAbsoluteFile() + ".unique")));
+            BufferedWriter bw = new BufferedWriter(new FileWriter(f.getAbsoluteFile() + ".unique"));
 
             nf.getUniqueMap().forEach((type, keys) -> keys.forEach((key, e) -> {
                 try {

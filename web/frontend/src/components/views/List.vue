@@ -1846,7 +1846,6 @@ export default {
             numeric: true
           })
         }
-        console.log(attr)
         out.push({
           text: attr.label,
           align: 'start',

@@ -5,4 +5,5 @@ public class SuggestionRequest {
     public String type;
     public String name;
     public String query;
+    public String typeCount;
 }

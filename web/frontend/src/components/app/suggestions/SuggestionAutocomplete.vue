@@ -15,7 +15,7 @@
     style="width: 100%"
   >
     <template v-slot:item="{ item }">
-      <SuggestionElement :data="item"></SuggestionElement>
+      <SuggestionElement :data="item" :source-type="suggestionType" :target-type="targetNodeType"></SuggestionElement>
     </template>
     <template v-slot:append-outer v-if="sortSwitch">
       <v-tooltip top>
@@ -57,18 +57,29 @@ export default {
       suggestionModel: null,
       sortings: [{
         icon: "fas fa-sort-amount-down",
-        tooltip: "High to low entry count!",
-        value: "size-down"
+        tooltip: "High to low source entry count!",
+        value: "source-down"
       }, {
         icon: "fas fa-sort-amount-up",
-        tooltip: "Low to high entry count!",
-        value: "size-up"
+        tooltip: "Low to high source entry count!",
+        value: "source-up"
       }, {
         icon: "fas fa-sort-alpha-down",
         tooltip: "Lexicographic sorting!",
         value: "alpha-down"
-      }, {icon: "fas fa-sort-alpha-up", tooltip: "Reversed lexicographic sorting", value: "alpha-up"}],
-      sortingModel: 0
+      },
+        {icon: "fas fa-sort-alpha-up", tooltip: "Reversed lexicographic sorting", value: "alpha-up"},
+        {
+          icon: "fas fa-sort-numeric-down",
+          tooltip: "High to low target entry count!",
+          value: "target-down"
+        },
+        {
+          icon: "fas fa-sort-numeric-up",
+          tooltip: "Low to high target entry count!",
+          value: "target-up"
+        }, ],
+      sortingModel: 4
     }
   },
 
@@ -83,7 +94,7 @@ export default {
           sourceType: this.suggestionType,
           targetType: this.targetNodeType,
           sugId: val.sid,
-          noloop: this.targetNodeType === this.suggestionType
+          noloop: this.targetNodeType === this.suggestionType,
         }).then(response => {
           if (response.data !== undefined)
             return response.data
@@ -140,17 +151,28 @@ export default {
           })
           break;
         }
-        case "size-down": {
+        case "source-down": {
           data.sort((e1, e2) => {
             return e2.size - e1.size
           })
           break;
         }
-        case "size-up": {
+        case "source-up": {
           data.sort((e1, e2) => {
             return e1.size - e2.size
           })
           break;
+        }
+        case "target-down":{
+          data.sort((e1,e2)=>{
+            return e2.targetCount - e1.targetCount
+          })
+          break;
+        }
+        case "target-up":{
+          data.sort((e1,e2)=>{
+            return e1.targetCount - e2.targetCount
+          })
         }
       }
       this.$set(this.suggestions, "data", data)
@@ -177,6 +199,7 @@ export default {
         this.$http.post("getSuggestions", {
           name: name,
           query: val,
+          typeCount: this.targetNodeType,
         }).then(response => {
           if (response.data !== undefined) {
             return response.data

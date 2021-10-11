@@ -30,9 +30,31 @@
       </v-list-item-subtitle>
     </v-list-item-content>
     <v-list-item-action style="margin-right: -10px">
-      <v-chip pill>
-        {{ data.size }}
-      </v-chip>
+      <span>
+        <v-tooltip left>
+          <template v-slot:activator="{on, attrs}">
+            <v-chip pill style="padding:2px 5px; " v-on="on" v-bind="attrs">
+              {{ data.size }}
+            </v-chip>
+            </template>
+            <span>This entry {{
+                data.size === 1 ? ("depicts one specific " + sourceType) : ("combines exactly " + data.size + " " + sourceType + "s")
+              }}</span>
+          </v-tooltip>
+      <template v-if="data.targetCount != null">
+        <v-icon style="margin: 3px">fas fa-caret-right</v-icon>
+        <v-tooltip left>
+           <template v-slot:activator="{on, attrs}">
+        <v-chip pill style="padding:2px 5px;" v-on="on" v-bind="attrs">
+          {{ data.targetCount }}
+        </v-chip>
+           </template>
+          <span>This entry {{
+              data.targetCount === 0 ? ("is not linked to any " + targetType) : (data.targetCount === 1 ? ("is linked to one "+targetType) :("is linked to " + data.targetCount + " " + targetType + "s"))
+            }}</span>
+          </v-tooltip>
+      </template>
+        </span>
     </v-list-item-action>
   </v-list-item>
 </template>
@@ -42,12 +64,14 @@ export default {
   props: {
     data: Object,
     total: Number,
+    sourceType: String,
+    targetType: String,
   },
   name: "SuggestionElement",
 
-  data(){
-    return{
-        styling:{tooltipDelay:400}
+  data() {
+    return {
+      styling: {tooltipDelay: 400}
     }
   },
 

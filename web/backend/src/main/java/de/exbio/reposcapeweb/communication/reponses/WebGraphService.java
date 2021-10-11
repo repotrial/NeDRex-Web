@@ -449,7 +449,7 @@ public class WebGraphService {
     }
 
     public Suggestions getSuggestions(SuggestionRequest request) {
-        NodeFilter nf;
+        NodeFilter nf = null;
         Suggestions suggestions;
         String query = StringUtils.normalize(request.query);
         if (request.gid == null) {
@@ -468,6 +468,15 @@ public class WebGraphService {
                 suggestions.setUnique(nf.uniqueContains(query), nf.getUniqueID2Keys(), ids);
             }
         }
+
+        if (request.typeCount != null) {
+            boolean sourceEqualsTargetType = request.name.equals(request.typeCount);
+            NodeFilter finalNf = nf;
+            suggestions.getSuggestions().forEach(suggestion -> {
+                suggestion.setTargetCount(sourceEqualsTargetType ? suggestion.getSize() : getConnectedNodesCount(request.name, request.typeCount, suggestion.getSId().contains("_") ?finalNf.getEntry(suggestion.getSId()).stream().map(FilterEntry::getNodeId).collect(Collectors.toSet()) : Collections.singletonList(Integer.parseInt(suggestion.getSId()))));
+            });
+        }
+
         return suggestions;
     }
 
@@ -962,7 +971,7 @@ public class WebGraphService {
         algorithm.createGraph(derived, j, nodeTypeId, g);
 
 //        if (!algorithm.hasCustomEdges())
-            updateEdges(derived, j, nodeTypeId);
+        updateEdges(derived, j, nodeTypeId);
 
 
         AtomicInteger size = new AtomicInteger();
@@ -1246,6 +1255,20 @@ public class WebGraphService {
         return out;
     }
 
+    public Integer getConnectedNodesCount(String sourceType, String targetType, Collection<Integer> sourceIds) {
+        LinkedList<Integer> edgeIds = Graphs.getEdgesfromNodes(Graphs.getNode(sourceType), Graphs.getNode(targetType));
+        HashSet<Integer> nodeList = new HashSet<>();
+        int edgeId = edgeIds.getFirst();
+        sourceIds.forEach(sourceId -> {
+            try {
+                edgeController.getEdges(edgeId, Graphs.getNode(sourceType), sourceId, false).forEach(e -> nodeList.add(Graphs.getNode(sourceType) == Graphs.getNodesfromEdge(edgeId).first ? e.getId2() : e.getId1()));
+            } catch (NullPointerException ignore) {
+            }
+        });
+        return nodeList.size();
+
+    }
+
     public LinkedList<Object> getConnectedNodes(String sourceType, String targetType, Collection<Integer> sourceIds) {
         LinkedList<Integer> edgeIds = Graphs.getEdgesfromNodes(Graphs.getNode(sourceType), Graphs.getNode(targetType));
         HashMap<Integer, HashMap<String, Object>> out = new HashMap<>();
@@ -1424,20 +1447,21 @@ public class WebGraphService {
         HashSet<Integer> out = new HashSet<>();
         int nodeId = Graphs.getNode(type);
         LinkedList<Integer> edgeIds = Graphs.getEdgesfromNodes(nodeId, nodeId);
-        if(edgeIds==null)
+        if (edgeIds == null)
             return out;
         int edgeId = edgeIds.get(0);
 
-        ids.forEach(node->{
+        ids.forEach(node -> {
             AtomicBoolean interacting = new AtomicBoolean(false);
             try {
                 edgeController.getEdges(edgeId, nodeId, node, false).forEach(edge -> {
                     if (edge.getId1() != edge.getId2())
                         interacting.set(true);
                 });
-            }catch (NullPointerException ignore){}
-            if(interacting.get())
-               out.add(node);
+            } catch (NullPointerException ignore) {
+            }
+            if (interacting.get())
+                out.add(node);
         });
         return out;
     }
