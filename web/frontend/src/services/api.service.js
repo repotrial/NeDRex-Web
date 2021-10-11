@@ -106,6 +106,12 @@ const ApiService = {
     return this.get("/getQuickExample?nr=" + nr + "&nodeType=" + type).then(response => {
       return response.data
     })
+  },
+  getInteractingOnly(type, nodeIDs) {
+    return this.post("/getInteractingOnly",{type:type, ids:nodeIDs}).then(response=>{
+      return response.data
+    })
+
   }
 }
 

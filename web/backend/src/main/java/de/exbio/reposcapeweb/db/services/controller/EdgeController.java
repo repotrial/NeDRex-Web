@@ -379,6 +379,8 @@ public class EdgeController {
         return getEdgesTo(edgeId, node);
     }
 
+
+
     private HashSet<PairId> getEdgesFrom(int edgeId, Integer node) {
         return switch (Graphs.getEdge(edgeId)) {
             case "GeneAssociatedWithDisorder" -> getGenesAssociatedWithDisorderFrom(node);

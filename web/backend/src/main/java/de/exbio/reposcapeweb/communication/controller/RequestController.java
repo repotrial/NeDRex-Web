@@ -432,6 +432,12 @@ public class RequestController {
         return toJson(jobController.getJobGraphStatesAndTypes(uid, null));
     }
 
+    @RequestMapping(value="/getInteractingOnly", method = RequestMethod.POST)
+    @ResponseBody
+    public String filterInteracting(@RequestBody FilterInteractionRequest req){
+        return toJson(webGraphService.filterInteracting(req.type, req.ids));
+    }
+
     private String toJson(Object o) {
         try {
             return objectMapper.writeValueAsString(o);

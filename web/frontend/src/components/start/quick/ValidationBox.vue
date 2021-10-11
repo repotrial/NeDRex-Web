@@ -104,8 +104,9 @@ export default {
         this.validateModule(test, refs, approved, type)
     },
 
-    validateModule: function (targets, validationDrugs, approved, type) {
-      console.log(targets)
+    validateModule: async function (targets, validationDrugs, approved, type) {
+      //necessary to avoid errors for the time being
+      let filtered = await this.$http.getInteractingOnly(type,targets.map(n => n.id)).catch(console.error)
       this.validationDrugs = validationDrugs;
       this.validationStatus = "preparing"
       let refDrugs = Object.values(validationDrugs).map(d => d.primaryDomainId);
@@ -113,12 +114,12 @@ export default {
         this.validationStatus = "no drugs"
         return;
       }
-      let module = Object.values(targets).map(node => node.primaryDomainId)
+      let module = Object.values(targets).filter(n=>filtered.indexOf(n.id)!==-1).map(node => node.primaryDomainId)
       let data = {
         module_members: module,
         module_member_type: type,
         true_drugs: refDrugs,
-        permutations: 10000,
+        permutations: 1000,
         only_approved_drugs: approved,
       }
       this.$http.validateModule(data).then(response => {
@@ -142,7 +143,7 @@ export default {
       let data = {
         test_drugs: drugs,
         true_drugs: refDrugs,
-        permutations: 10000,
+        permutations: 1000,
         only_approved_drugs: approved,
       }
       this.$http.validateDrugs(data).then(response => {

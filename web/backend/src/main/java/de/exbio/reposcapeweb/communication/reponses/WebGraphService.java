@@ -38,6 +38,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -1417,5 +1418,27 @@ public class WebGraphService {
             }
         });
         return nodes;
+    }
+
+    public HashSet<Integer> filterInteracting(String type, HashSet<Integer> ids) {
+        HashSet<Integer> out = new HashSet<>();
+        int nodeId = Graphs.getNode(type);
+        LinkedList<Integer> edgeIds = Graphs.getEdgesfromNodes(nodeId, nodeId);
+        if(edgeIds==null)
+            return out;
+        int edgeId = edgeIds.get(0);
+
+        ids.forEach(node->{
+            AtomicBoolean interacting = new AtomicBoolean(false);
+            try {
+                edgeController.getEdges(edgeId, nodeId, node, false).forEach(edge -> {
+                    if (edge.getId1() != edge.getId2())
+                        interacting.set(true);
+                });
+            }catch (NullPointerException ignore){}
+            if(interacting.get())
+               out.add(node);
+        });
+        return out;
     }
 }

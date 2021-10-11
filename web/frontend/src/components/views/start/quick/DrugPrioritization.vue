@@ -503,8 +503,9 @@
                       (results.targets.length !== undefined && results.targets.length > 0 ? (" (" + (results.targets.length) + ")") : ": Processing")
                     }}
                     <v-progress-circular indeterminate
+                                         size="25"
                                          v-if="results.targets.length===0"
-                                         style="margin-left:15px">
+                                         style="margin-left:15px; z-index:50">
                     </v-progress-circular>
                   </v-card-title>
                   <ValidationBox ref="validation" drugs></ValidationBox>

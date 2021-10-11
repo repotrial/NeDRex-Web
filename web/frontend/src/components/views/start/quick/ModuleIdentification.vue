@@ -676,7 +676,7 @@
                   <v-card-title class="subtitle-1">Seeds ({{ seeds.length }}) {{
                       (results.targets.length !== undefined && results.targets.length > 0 ? ("& Module (" + getTargetCount() + ") " + ["Genes", "Proteins"][seedTypeId]) : ": Processing")
                     }}
-                    <v-progress-circular indeterminate v-if="this.results.targets.length===0" style="margin-left:15px">
+                    <v-progress-circular indeterminate size="25" v-if="this.results.targets.length===0" style="margin-left:15px; z-index:50">
                     </v-progress-circular>
                   </v-card-title>
 
@@ -1187,8 +1187,8 @@ export default {
       if (this.currentGid != null && data.state === "DONE") {
         if (!notSubbed)
           this.$socket.unsubscribeJob(jid)
-        this.loadTargetTable(this.currentGid).then((connectedOnly) => {
-          this.$refs.validation.validate(connectedOnly, this.validationDrugs, false, ["gene", "protein"][this.seedTypeId])
+        this.loadTargetTable(this.currentGid).then(()=>{
+            this.$refs.validation.validate(this.results.targets, this.validationDrugs, false, ["gene", "protein"][this.seedTypeId])
           this.loadGraph(this.currentGid)
         })
 
@@ -1317,19 +1317,22 @@ export default {
           this.$set(this.results, 'targets', data.nodes[seedType])
         this.loadingResults = false;
 
-        let connectedIds = []
-        data.edges[["GeneGeneInteraction", "ProteinProteinInteraction"][this.seedTypeId]].forEach(edge => {
-          let spl = edge.id.split("-")
-          let id1 = parseInt(spl[0])
-          let id2 = parseInt(spl[1])
-          if (id1 !== id2) {
-            if (connectedIds.indexOf(id1) === -1)
-              connectedIds.push(id1)
-            if (connectedIds.indexOf(id2))
-              connectedIds.push(id2)
-          }
-        })
-        return this.results.targets.filter(node => connectedIds.indexOf(node.id) > -1);
+        // let connectedIds = []
+
+
+
+        // data.edges[["GeneGeneInteraction", "ProteinProteinInteraction"][this.seedTypeId]].forEach(edge => {
+        //   let spl = edge.id.split("-")
+        //   let id1 = parseInt(spl[0])
+        //   let id2 = parseInt(spl[1])
+        //   if (id1 !== id2) {
+        //     if (connectedIds.indexOf(id1) === -1)
+        //       connectedIds.push(id1)
+        //     if (connectedIds.indexOf(id2))
+        //       connectedIds.push(id2)
+        //   }
+        // })
+        // return this.results.targets.filter(node => connectedIds.indexOf(node.id) > -1);
 
       }).catch(console.error)
     },

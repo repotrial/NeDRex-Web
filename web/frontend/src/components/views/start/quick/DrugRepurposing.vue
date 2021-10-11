@@ -902,7 +902,8 @@
                   <v-card-title class="subtitle-1">Seeds ({{ seeds.length }}) {{
                       (results.targets.length !== undefined && results.targets.length > 0 ? ("& Module (" + getTargetCount() + ") " + ["Genes", "Proteins"][seedTypeId]) : ": Processing")
                     }}
-                    <v-progress-circular indeterminate v-if="this.results.targets.length===0" style="margin-left:15px">
+                    <v-progress-circular indeterminate size="25" v-if="this.results.targets.length===0"
+                                         style="margin-left:15px; z-index:50">
                     </v-progress-circular>
                   </v-card-title>
                   <ValidationBox ref="moduleValidation"></ValidationBox>
@@ -1042,7 +1043,8 @@
                   <v-card-title class="subtitle-1"> Drugs{{
                       (results.drugs.length !== undefined && results.drugs.length > 0 ? (" (" + (results.drugs.length) + ")") : ": Processing")
                     }}
-                    <v-progress-circular indeterminate v-if="results.drugs.length===0" style="margin-left:15px">
+                    <v-progress-circular indeterminate size="25" v-if="results.drugs.length===0"
+                                         style="margin-left:15px; z-index:50">
                     </v-progress-circular>
                   </v-card-title>
                   <ValidationBox ref="drugValidation" drugs></ValidationBox>
@@ -1459,18 +1461,20 @@ export default {
       if (this.moduleGid != null && data.state === "DONE") {
         if (!unsubscribed)
           this.$socket.unsubscribeJob(this.moduleJid)
-        this.loadModuleTargetTable().then((connectedOnly) => {
+        this.loadModuleTargetTable().then(() => {
           this.resultProgress = 25
-          this.runModuleValidation(connectedOnly)
+          this.runModuleValidation()
           this.loadGraph(this.moduleGid, true)
         })
       }
     },
-    runModuleValidation:function(connectedOnly) {
+    runModuleValidation: function () {
       if (this.$refs.moduleValidation != null)
-        this.$refs.moduleValidation.validate(connectedOnly, this.validationDrugs, false, ["gene", "protein"][this.seedTypeId])
+        this.$refs.moduleValidation.validate(this.results.targets, this.validationDrugs, false, ["gene", "protein"][this.seedTypeId])
       else
-        setTimeout(()=>{this.runModuleValidation(connectedOnly)}, 1000)
+        setTimeout(() => {
+          this.runModuleValidation()
+        }, 1000)
     }
     ,
     readRankingJob: function (result, clean, unsubscribed) {
@@ -1606,19 +1610,19 @@ export default {
         else
           this.results.targets = data.nodes[seedType]
 
-        let connectedIds = []
-        data.edges[["GeneGeneInteraction", "ProteinProteinInteraction"][this.seedTypeId]].forEach(edge => {
-          let spl = edge.id.split("-")
-          let id1 = parseInt(spl[0])
-          let id2 = parseInt(spl[1])
-          if (id1 !== id2) {
-            if (connectedIds.indexOf(id1) === -1)
-              connectedIds.push(id1)
-            if (connectedIds.indexOf(id2))
-              connectedIds.push(id2)
-          }
-        })
-        return this.results.targets.filter(node => connectedIds.indexOf(node.id) > -1);
+        // let connectedIds = []
+        // data.edges[["GeneGeneInteraction", "ProteinProteinInteraction"][this.seedTypeId]].forEach(edge => {
+        //   let spl = edge.id.split("-")
+        //   let id1 = parseInt(spl[0])
+        //   let id2 = parseInt(spl[1])
+        //   if (id1 !== id2) {
+        //     if (connectedIds.indexOf(id1) === -1)
+        //       connectedIds.push(id1)
+        //     if (connectedIds.indexOf(id2))
+        //       connectedIds.push(id2)
+        //   }
+        // })
+        // return this.results.targets.filter(node => connectedIds.indexOf(node.id) > -1);
       }).catch(console.error)
     },
     loadRankingTargetTable: function () {
