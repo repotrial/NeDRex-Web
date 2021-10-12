@@ -1003,14 +1003,10 @@ export default {
     }
     ,
     getColoring: function (type, name) {
-      // if (name.endsWith("Drug"))
-      //   name = "drug"
       return this.$utils.getColoring(this.$global.metagraph, type, name)
     },
 
     getExtendedColoring: function (type, name, style) {
-      // if (name.endsWith("Drug"))
-      //   name = "drug"
       return this.$utils.getColoringExtended(this.$global.metagraph, this.options.list.entityGraph, type, name, style)
     },
     directionExtended: function (edge) {
@@ -1030,18 +1026,6 @@ export default {
       return this.$utils.getNodesExtended(this.options.list.entityGraph, type)
     },
 
-    // visualizeGraph: function () {
-    //   // this.options.graph.visualized = true;
-    //   this.$emit('applyEvent');
-    //   this.show.options = false;
-    //   this.options.graph.physics = false;
-    //   this.options.graph.loops = true;
-    //   this.options.graph.single = true;
-    //   this.$nextTick(() => {
-    //     this.show.options = true;
-    //   })
-    //
-    // },
     toggleSelectMode: function (select) {
       this.$emit('selectModeEvent', select)
     }
@@ -1111,29 +1095,6 @@ export default {
       this.show.detail = true
     },
 
-    // clearModels: function () {
-    //   this.filterModel = ""
-    //   this.filterTypeModel = ""
-    // }
-    // ,
-    // saveFilter: function () {
-    //   let data = {type: this.filterTypeModel, expression: this.filterModel};
-    //
-    //   if (this.filters[this.filterEntity] === undefined)
-    //     this.filters[this.filterEntity] = []
-    //
-    //   if (this.filters[this.filterEntity].filter(f => (f.type === this.filterTypeModel && f.expression === this.filterModel)).length === 0) {
-    //     this.filters[this.filterEntity].push(data)
-    //   }
-    //   this.filterTypeModel = ""
-    //   this.filterModel = ""
-    // }
-    // ,
-    // removeFilter: function (idx) {
-    //   this.filters[this.filterEntity].splice(idx, 1)
-    //   this.$refs.filterTable.$forceUpdate()
-    // }
-    // ,
     getDetailDotColor: function (attribute) {
       if (this.detailedObject.node)
         return this.getColoring('nodes', this.detailedObject["Type"]);

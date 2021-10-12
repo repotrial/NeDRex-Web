@@ -28,7 +28,7 @@
         </template>
       </v-toolbar>
     </v-card>
-    <v-container align-self="start" v-if="metaLoaded" style="width: 100%; margin-left: 1%; margin-right: 1%">
+    <v-container align-self="start" v-if="metaLoaded" style="width: 100%; max-width:95vw; margin-left: 1%; margin-right: 1%">
       <v-row>
         <v-col :cols="sideHidden ? 12:10">
           <v-main app style="padding-top: 0">

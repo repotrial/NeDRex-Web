@@ -205,10 +205,12 @@ export default {
   methods: {
     reset: function () {
       this.options.selectedElements.forEach(e => {
-        if (e.type === "node") {
-          this.$refs.startgraph.hideGroupVisibility(this.nodes[e.index].label.toLowerCase(), true)
-        } else
-          this.$refs.startgraph.setEdgeVisible(this.edges[e.index].label,false)
+        if (e.type === "edge")
+          this.toggleEdge(e.index)
+      })
+      this.options.selectedElements.forEach(n=>{
+        if(n.type==="node")
+          this.$refs.startgraph.hideGroupVisibility(this.nodes[n.index].label.toLowerCase(), true)
       })
       this.nodeModel = []
       this.edgeModel = []
@@ -358,8 +360,8 @@ export default {
     },
     toggleEdge: function (edgeIndex) {
       let index = this.edgeModel.indexOf(edgeIndex)
+      this.edges[edgeIndex].hidden = !(this.edges[edgeIndex].hidden == null || this.edges[edgeIndex].hidden)
       this.$refs.startgraph.setEdgeVisible(this.edges[edgeIndex].label,!this.edges[edgeIndex].hidden,true)
-      this.edges[edgeIndex].hidden = !this.edges[edgeIndex].hidden
       if (index >= 0) {
         let remove = -1;
         let restDepending = []

@@ -1,7 +1,7 @@
 <template>
   <div>
-    <v-container>
-      <v-card style="margin:5px">
+    <v-container style="max-width: 90vw !important; min-width: 900px">
+      <v-card style="margin:5px;">
         <v-card-title>History<span
           style="color:gray; padding-left: 7px"> ({{
             options.favos ? "Favourites" : options.chronological ? "List" : "Tree"
@@ -59,8 +59,6 @@
                   </v-tooltip>
 
                     ({{ formatTime(item.created)[1] }} ago)
-
-
                   </span>
                   </v-list-item>
                 </template>
@@ -73,7 +71,8 @@
             </v-col>
             <v-divider vertical></v-divider>
             <v-col v-if="selectedId!==undefined">
-              <v-card v-if="selected===undefined" style="padding-bottom: 15px">
+              <div style="position: fixed; overflow-y: auto; max-height: 70vh; max-width:35vw">
+              <v-card v-if="selected===undefined" style="padding-bottom: 15px; max-width: 35vw">
                 <v-card-title>{{ selectedId }}</v-card-title>
                 <v-progress-circular
                   color="primary"
@@ -248,6 +247,7 @@
                   </v-row>
                 </v-container>
               </v-card>
+              </div>
             </v-col>
           </v-row>
         </v-container>
