@@ -377,8 +377,12 @@ export default {
       return this.$utils.getColoringExtended(this.$global.metagraph, this.selected.entityGraph, entity, name)
     },
     handleSelection: function (selected) {
-      if (selected[0] === undefined || this.selectedId === selected[0])
+      if (selected == null || selected[0] === undefined || this.selectedId === selected[0]) {
+        this.selection = undefined
+        this.selected=undefined;
+        this.selectedId= undefined;
         return
+      }
       this.selection = selected
       this.selected = undefined;
       this.selectedId = selected[0]
@@ -482,6 +486,7 @@ export default {
         out = this.getChronologicalList()
       }
       if (this.options.favos) {
+        this.handleSelection(undefined)
         out = this.getChronologicalList().filter(l=>l.starred)
       }
       return out
