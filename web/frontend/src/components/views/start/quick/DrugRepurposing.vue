@@ -136,18 +136,6 @@
                   </v-radio-group>
                 </v-list-item-action>
               </v-col>
-<!--              <v-col>-->
-<!--                <v-list-item-subtitle class="title">Select the seed type</v-list-item-subtitle>-->
-<!--                <v-list-item-action>-->
-<!--                  <v-radio-group row v-model="seedTypeId"-->
-<!--                                 :disabled="(this.seedTypeId !=null && $refs.seedTable !=null && $refs.seedTable.getSeeds()!=null && $refs.seedTable.getSeeds().length>0)">-->
-<!--                    <v-radio label="Gene">-->
-<!--                    </v-radio>-->
-<!--                    <v-radio label="Protein">-->
-<!--                    </v-radio>-->
-<!--                  </v-radio-group>-->
-<!--                </v-list-item-action>-->
-<!--              </v-col>-->
             </v-row>
             <ExampleSeeds :seedTypeId="seedTypeId" @addSeedsEvent="addToSelection" :disabled="validationDrugView"></ExampleSeeds>
             <v-container style="height: 55vh;margin: 15px;">

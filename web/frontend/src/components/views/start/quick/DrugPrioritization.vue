@@ -90,19 +90,33 @@
             <v-divider style="margin: 15px;"></v-divider>
             <v-row>
               <v-col>
-                <v-list-item-subtitle class="title">Select the seed type</v-list-item-subtitle>
+                <v-list-item-subtitle v-if="!validationDrugView" class="title">Select the seed type
+                </v-list-item-subtitle>
+                <v-list-item-subtitle v-else class="title">Select Validation Drugs</v-list-item-subtitle>
                 <v-list-item-action>
                   <v-radio-group row v-model="seedTypeId"
-                                 :disabled="(this.seedTypeId !=null && $refs.seedTable !=null && $refs.seedTable.getSeeds()!=null && $refs.seedTable.getSeeds().length>0)">
+                                 :disabled="validationDrugView || (this.seedTypeId !=null && $refs.seedTable !=null && $refs.seedTable.getSeeds()!=null && $refs.seedTable.getSeeds().length>0)">
                     <v-radio label="Gene">
                     </v-radio>
                     <v-radio label="Protein">
                     </v-radio>
                   </v-radio-group>
                 </v-list-item-action>
+
+<!--                <v-list-item-subtitle class="title">Select the seed type</v-list-item-subtitle>-->
+<!--                <v-list-item-action>-->
+<!--                  <v-radio-group row v-model="seedTypeId"-->
+<!--                                 :disabled="(this.seedTypeId !=null && $refs.seedTable !=null && $refs.seedTable.getSeeds()!=null && $refs.seedTable.getSeeds().length>0)">-->
+<!--                    <v-radio label="Gene">-->
+<!--                    </v-radio>-->
+<!--                    <v-radio label="Protein">-->
+<!--                    </v-radio>-->
+<!--                  </v-radio-group>-->
+<!--                </v-list-item-action>-->
               </v-col>
             </v-row>
-            <ExampleSeeds :seedTypeId="seedTypeId" @addSeedsEvent="addToSelection"></ExampleSeeds>
+            <ExampleSeeds :seedTypeId="seedTypeId" @addSeedsEvent="addToSelection"
+                          :disabled="validationDrugView"></ExampleSeeds>
             <v-container style="height: 55vh; margin: 15px;">
               <v-row style="height: 100%">
                 <v-col cols="6">
@@ -111,7 +125,7 @@
                       <div style="display: flex">
                         <div style="justify-content: flex-start">
                           <v-card-title style="margin-left: -25px;" class="subtitle-1">Add
-                            {{ ['genes', 'proteins'][this.seedTypeId] }} associated to
+                            {{ validationDrugView ? 'drugs':['genes', 'proteins'][this.seedTypeId] }} associated to
                           </v-card-title>
                         </div>
                         <v-tooltip top>
@@ -150,27 +164,43 @@
                             through association the 'Limited' switch has to be toggled.
                           </div>
                         </v-tooltip>
-                        <SuggestionAutocomplete :suggestion-type="suggestionType" :emit-drugs="true"
-                                                @drugsEvent="saveDrugsForValidation"
-                                                :target-node-type="['gene', 'protein'][this.seedTypeId]"
+                        <SuggestionAutocomplete :suggestion-type="suggestionType" :emit-drugs="!validationDrugView"
+                                                @drugsEvent="$refs.validationTable.addDrugs"
+                                                :target-node-type="validationDrugView ? 'drug' : ['gene', 'protein'][seedTypeId]"
                                                 @addToSelectionEvent="addToSelection"
                                                 style="justify-self: flex-end;margin-left: auto"></SuggestionAutocomplete>
                       </div>
                       <NodeInput text="or provide Seed IDs by" @addToSelectionEvent="addToSelection"
-                                 :idName="['entrez','uniprot'][seedTypeId]"
-                                 :nodeType="['gene', 'protein'][this.seedTypeId]"
+                                 :idName="validationDrugView? 'drugbank':['entrez','uniprot'][seedTypeId]"
+                                 :nodeType="validationDrugView? 'drug':['gene', 'protein'][seedTypeId]"
                                  @printNotificationEvent="printNotification"></NodeInput>
                     </template>
                   </div>
                 </v-col>
                 <v-divider vertical v-show="seedTypeId!==undefined"></v-divider>
                 <v-col cols="6">
-                  <SeedTable ref="seedTable" v-show="seedTypeId!==undefined" :download="true" :remove="true"
+                  <v-tooltip left>
+                    <template v-slot:activator="{attrs,on}">
+                      <v-chip style="position: absolute; left:auto; right:0" v-on="on" v-bind="attrs"
+                              v-show="seedTypeId!=null"
+                              @click="toggleValidationDrugView()" :color="validationDrugView ? 'green':'primary'">
+                        <v-icon left>fas fa-capsules</v-icon>
+                        {{ validationDrugCount }}
+                      </v-chip>
+                    </template>
+                    <span>There are {{ validationDrugCount }} drugs that were associated with your query.<br> These are saved for validation purposes later.<br><br><i>To see or even adjust the list, toggle this button!</i></span>
+                  </v-tooltip>
+                  <SeedTable ref="seedTable" v-show="seedTypeId!=null && !validationDrugView" :download="true"
+                             :remove="true"
                              :filter="true"
                              @printNotificationEvent="printNotification"
                              height="40vh"
                              :title="'Selected Seeds ('+($refs.seedTable ? $refs.seedTable.getSeeds().length : 0)+')'"
-                             :nodeName="['gene','protein'][seedTypeId]"></SeedTable>
+                             :nodeName="['gene','protein'][seedTypeId]"
+                  ></SeedTable>
+                  <ValidationDrugTable v-show="seedTypeId!=null && validationDrugView" ref="validationTable"
+                                       @printNotificationEvent="printNotification"
+                                       @drugCountUpdate="updateDrugCount()"></ValidationDrugTable>
                 </v-col>
               </v-row>
             </v-container>
@@ -566,6 +596,7 @@ import SeedDownload from "@/components/app/tables/menus/SeedDownload";
 import NodeInput from "@/components/app/input/NodeInput";
 import ExampleSeeds from "@/components/start/quick/ExampleSeeds";
 import ValidationBox from "@/components/start/quick/ValidationBox";
+import ValidationDrugTable from "@/components/app/tables/ValidationDrugTable";
 
 export default {
   name: "DrugRepurposing",
@@ -618,7 +649,9 @@ export default {
         damping: 0.85,
         topX: 100,
         filterElements: true,
-      }
+      },
+      validationDrugCount: 0,
+      validationDrugView: false,
     }
   },
 
@@ -641,6 +674,7 @@ export default {
       if (this.blitz) {
         this.methodModel = 1
       }
+      this.validationDrugCount = 0
       this.results.target = []
       this.seedOrigin = {}
       if (this.$refs.graph)
@@ -777,19 +811,29 @@ export default {
           this.$socket.unsubscribeJob(jid)
         this.jobs[jid].result = result
         this.loadTargetTable(result).then(() => {
-          this.$refs.validation.validate(this.results.targets, this.validationDrugs,this.models.onlyApproved)
+          this.$refs.validation.validate(this.results.targets, this.$refs.validationTable.getDrugs(),this.models.onlyApproved)
           this.loadGraph(result)
         })
       }
     },
 
-    saveDrugsForValidation: function (drugs) {
-      drugs.forEach(drug => this.validationDrugs[drug.id] = drug);
+    updateDrugCount: function(){
+      this.validationDrugCount = this.$refs.validationTable.getDrugs().length;
     },
+
+    // saveDrugsForValidation: function (drugs) {
+    //   drugs.forEach(drug => this.validationDrugs[drug.id] = drug);
+    // },
 
 
     addToSelection: function (data) {
-      this.$refs.seedTable.addSeeds(data)
+      if (this.validationDrugView)
+        this.$refs.validationTable.addDrugs(data)
+      else
+        this.$refs.seedTable.addSeeds(data)
+    },
+    toggleValidationDrugView: function () {
+      this.$set(this, "validationDrugView", !this.validationDrugView)
     },
     methodScores: function () {
       if (this.methodModel !== undefined && this.methodModel > -1 && this.methods[this.methodModel] != null)
@@ -950,6 +994,7 @@ export default {
     SeedDownload,
     NodeInput,
     SuggestionAutocomplete,
+    ValidationDrugTable,
     Network,
     SeedTable,
     ResultDownload,
