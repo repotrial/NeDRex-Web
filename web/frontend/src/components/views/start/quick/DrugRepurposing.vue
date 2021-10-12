@@ -962,18 +962,10 @@
                       <v-card style="width: 15vw; max-width: 20vw; padding-top: 35px">
                         <v-list dense>
                           <v-list-item>
-                            <v-list-item-icon>
-                              <div
-                                style="display: flex; align-content: center; justify-content: center;margin-left: 12px;margin-top:2px">
-                                <v-icon color="#fbe223" style="position: absolute;margin-top:-11px;"
-                                        size="42">fas fa-genderless
-                                </v-icon>
-                                <v-icon size="18" style="position: absolute;margin-top:1px;"
-                                        :color="getColoring('nodes',['gene','protein'][seedTypeId],'light')">fas
-                                  fa-circle
-                                </v-icon>
-                              </div>
-                            </v-list-item-icon>
+                                <v-list-item-icon>
+                                  <v-icon left color="#fbe223" size="42">fas fa-genderless
+                                  </v-icon>
+                                </v-list-item-icon>
                             <v-list-item-title style="margin-left:-25px">{{ ['Gene', 'Protein'][seedTypeId] }} (Seed)
                             </v-list-item-title>
                             <v-list-item-subtitle style="margin-right:-25px; margin-left:-25px">{{
@@ -984,7 +976,7 @@
                           <v-list-item>
                             <v-list-item-icon>
                               <v-icon left :color="getColoring('nodes',['gene','protein'][seedTypeId],'light')"
-                                      size="43px">fas fa-genderless
+                                      size="42">fas fa-genderless
                               </v-icon>
 
                             </v-list-item-icon>
@@ -996,7 +988,7 @@
                           </v-list-item>
                           <v-list-item>
                             <v-list-item-icon>
-                              <v-icon left :color="getColoring('nodes','drug','light')" size="43px">fas fa-genderless
+                              <v-icon left :color="getColoring('nodes','drug','light')" size="42">fas fa-genderless
                               </v-icon>
                             </v-list-item-icon>
                             <v-list-item-title style="margin-left:-25px">Drug</v-list-item-title>
