@@ -71,7 +71,7 @@
             </v-col>
             <v-divider vertical></v-divider>
             <v-col v-if="selectedId!==undefined">
-              <div style="position: fixed; overflow-y: auto; max-height: 70vh; max-width:35vw; width: 100%">
+              <div style="position: fixed; overflow-y: auto; max-height: 75vh; max-width:35vw; width: 100%; margin-top: -70px">
               <v-card v-if="selected===undefined" style="padding-bottom: 15px; max-width: 35vw; width: 100%">
                 <v-card-title >{{ selectedId }}</v-card-title>
                 <v-progress-circular
