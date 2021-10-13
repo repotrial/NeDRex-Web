@@ -430,7 +430,7 @@
                   </v-card-title>
                   <v-data-table max-height="50vh" height="50vh" class="overflow-y-auto" fixed-header dense item-key="id"
                                 :items="seeds" :headers="getHeaders(true)" disable-pagination
-                                hide-default-footer @click:row="seedClicked">
+                                hide-default-footer @click:row="seedClicked" show-expand :single-expand="true">
                     <template v-slot:item.displayName="{item}">
                       <v-tooltip v-if="item.displayName.length>16" right>
                         <template v-slot:activator="{attr,on }">
@@ -440,6 +440,15 @@
                         <span>{{ item.displayName }}</span>
                       </v-tooltip>
                       <span v-else>{{ item.displayName }}</span>
+                    </template>
+                    <template v-slot:item.data-table-expand="{expand, item,isExpanded}">
+                      <v-icon v-show="!isExpanded" @click="expand(true)">fas fa-angle-down</v-icon>
+                      <v-icon v-show="isExpanded" @click="expand(false)">fas fa-angle-up</v-icon>
+                    </template>
+                    <template v-slot:expanded-item="{ headers, item }">
+                      <td :colspan="headers.length">
+                        <EntryDetails :max-width="headers.length" :detail-request="{edge:false, type:['gene', 'protein'][seedTypeId], id:item.id}"></EntryDetails>
+                      </td>
                     </template>
                     <template v-slot:footer>
                       <div style="display: flex; justify-content: center">
@@ -542,7 +551,7 @@
                   <template v-if="results.targets.length>=0">
                     <v-data-table max-height="50vh" height="50vh" class="overflow-y-auto" fixed-header dense
                                   item-key="id"
-                                  :items="results.targets" :headers="getHeaders()" disable-pagination
+                                  :items="results.targets" :headers="getHeaders()" disable-pagination show-expand :single-expand="true"
                                   hide-default-footer @click:row="drugClicked">
                       <template v-slot:item.displayName="{item}">
                         <v-tooltip v-if="item.displayName.length>16" right>
@@ -553,6 +562,15 @@
                           <span>{{ item.displayName }}</span>
                         </v-tooltip>
                         <span v-else>{{ item.displayName }}</span>
+                      </template>
+                      <template v-slot:expanded-item="{ headers, item }">
+                        <td :colspan="headers.length">
+                          <EntryDetails max-width="19vw" :detail-request="{edge:false, type:'drug', id:item.id}"></EntryDetails>
+                        </td>
+                      </template>
+                      <template v-slot:item.data-table-expand="{expand, item,isExpanded}">
+                        <v-icon v-show="!isExpanded" @click="expand(true)">fas fa-angle-down</v-icon>
+                        <v-icon v-show="isExpanded" @click="expand(false)">fas fa-angle-up</v-icon>
                       </template>
                       <template v-slot:footer>
                         <div style="display: flex; justify-content: center" v-show="results.targets.length>0">
@@ -597,6 +615,7 @@ import NodeInput from "@/components/app/input/NodeInput";
 import ExampleSeeds from "@/components/start/quick/ExampleSeeds";
 import ValidationBox from "@/components/start/quick/ValidationBox";
 import ValidationDrugTable from "@/components/app/tables/ValidationDrugTable";
+import EntryDetails from "@/components/app/EntryDetails";
 
 export default {
   name: "DrugRepurposing",
@@ -739,6 +758,7 @@ export default {
           sortable: true,
           value: e.id,
         }))
+      headers.push({text:"",value:"data-table-expand"})
       return headers
     },
     seedClicked: function (item) {
@@ -999,6 +1019,7 @@ export default {
     SeedTable,
     ResultDownload,
     ExampleSeeds,
+    EntryDetails,
   }
 }
 </script>

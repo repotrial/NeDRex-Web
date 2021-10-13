@@ -928,7 +928,7 @@
                   <v-data-table max-height="50vh" height="50vh" class="overflow-y-auto" fixed-header dense item-key="id"
                                 :items="(!results.targets ||results.targets.length ===0) ?seeds : results.targets"
                                 :headers="getHeaders(0)"
-                                disable-pagination
+                                disable-pagination show-expand :single-expand="true"
                                 hide-default-footer @click:row="seedClicked">
                     <template v-slot:item.displayName="{item}">
                       <v-tooltip v-if="item.displayName.length>16" right>
@@ -939,6 +939,15 @@
                         <span>{{ item.displayName }}</span>
                       </v-tooltip>
                       <span v-else>{{ item.displayName }}</span>
+                    </template>
+                    <template v-slot:item.data-table-expand="{expand, item,isExpanded}">
+                      <v-icon v-show="!isExpanded" @click="expand(true)">fas fa-angle-down</v-icon>
+                      <v-icon v-show="isExpanded" @click="expand(false)">fas fa-angle-up</v-icon>
+                    </template>
+                    <template v-slot:expanded-item="{ headers, item }">
+                      <td :colspan="headers.length">
+                        <EntryDetails max-width="17vw" :detail-request="{edge:false, type:['gene','protein'][seedTypeId], id:item.id}"></EntryDetails>
+                      </td>
                     </template>
                     <template v-slot:footer>
                       <div style="display: flex; justify-content: center; margin-left: auto">
@@ -1060,7 +1069,7 @@
                   <ValidationBox ref="drugValidation" drugs></ValidationBox>
                   <template v-if="results.drugs.length>0">
                     <v-data-table max-height="50vh" height="50vh" class="overflow-y-auto" fixed-header dense
-                                  item-key="id"
+                                  item-key="id" show-expand :single-expand="true"
                                   :items="results.drugs"
                                   :headers="getHeaders(1)"
                                   disable-pagination
@@ -1074,6 +1083,15 @@
                           <span>{{ item.displayName }}</span>
                         </v-tooltip>
                         <span v-else>{{ item.displayName }}</span>
+                      </template>
+                      <template v-slot:item.data-table-expand="{expand, item,isExpanded}">
+                        <v-icon v-show="!isExpanded" @click="expand(true)">fas fa-angle-down</v-icon>
+                        <v-icon v-show="isExpanded" @click="expand(false)">fas fa-angle-up</v-icon>
+                      </template>
+                      <template v-slot:expanded-item="{ headers, item }">
+                        <td :colspan="headers.length">
+                          <EntryDetails max-width="19vw" :detail-request="{edge:false, type:'drug', id:item.id}"></EntryDetails>
+                        </td>
                       </template>
                       <template v-slot:footer>
                         <div style="display: flex; justify-content: center">
@@ -1118,6 +1136,7 @@ import NodeInput from "@/components/app/input/NodeInput";
 import ExampleSeeds from "@/components/start/quick/ExampleSeeds";
 import ValidationBox from "@/components/start/quick/ValidationBox";
 import ValidationDrugTable from "@/components/app/tables/ValidationDrugTable";
+import EntryDetails from "@/components/app/EntryDetails";
 
 export default {
   name: "CombinedRepurposing",
@@ -1720,7 +1739,7 @@ export default {
         sortable: true,
         value: e.id,
       }))
-
+      headers.push({text:"",value:"data-table-expand"})
       return headers
     },
     seedClicked: function (item) {
@@ -1747,6 +1766,7 @@ export default {
     ResultDownload,
     ExampleSeeds,
     ValidationBox,
+    EntryDetails
   }
 }
 </script>

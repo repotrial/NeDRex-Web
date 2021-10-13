@@ -705,7 +705,7 @@
                   <template v-if="!loadingResults">
                     <v-data-table max-height="50vh" height="50vh" fixed-header dense item-key="id"
                                   :items="results.targets" :headers="getHeaders()" disable-pagination
-                                  hide-default-footer @click:row="rowClicked">
+                                  hide-default-footer @click:row="rowClicked" show-expand :single-expand="true">
                       <template v-slot:item.displayName="{item}">
                         <v-tooltip v-if="item.displayName.length>16" right>
                           <template v-slot:activator="{attr,on }">
@@ -715,6 +715,15 @@
                           <span>{{ item.displayName }}</span>
                         </v-tooltip>
                         <span v-else>{{ item.displayName }}</span>
+                      </template>
+                      <template v-slot:item.data-table-expand="{expand, item,isExpanded}">
+                        <v-icon v-show="!isExpanded" @click="expand(true)">fas fa-angle-down</v-icon>
+                        <v-icon v-show="isExpanded" @click="expand(false)">fas fa-angle-up</v-icon>
+                      </template>
+                      <template v-slot:expanded-item="{ headers, item }">
+                        <td :colspan="headers.length">
+                          <EntryDetails :max-width="headers.length" :gid="currentGid" :detail-request="{edge:false, type:['gene', 'protein'][seedTypeId], id:item.id}"></EntryDetails>
+                        </td>
                       </template>
                       <template v-slot:footer>
                         <div style="display: flex; justify-content: center; margin-left: auto">
@@ -898,6 +907,7 @@ import NodeInput from "@/components/app/input/NodeInput";
 import ExampleSeeds from "@/components/start/quick/ExampleSeeds";
 import ValidationBox from "@/components/start/quick/ValidationBox";
 import ValidationDrugTable from "@/components/app/tables/ValidationDrugTable";
+import EntryDetails from "@/components/app/EntryDetails";
 
 export default {
   name: "ModuleIdentification",
@@ -1118,6 +1128,7 @@ export default {
           sortable: true,
           value: e.id,
         }))
+      headers.push({text:"",value:"data-table-expand"})
       return headers
     },
     updateGraphPhysics: function () {
@@ -1398,6 +1409,7 @@ export default {
   ,
 
   components: {
+    EntryDetails,
     ValidationBox,
     ValidationDrugTable,
     HeaderBar,

@@ -1804,7 +1804,7 @@ export default {
     }
     ,
     nodeDetails: function (nodeId) {
-      this.$emit("selectionEvent", {type: "node", name: Object.keys(this.nodes)[this.nodeTab], id: nodeId})
+      this.$emit("selectionEvent", {edge: false, type: Object.keys(this.nodes)[this.nodeTab], id: nodeId})
     }
     ,
     resetFilters: function (type) {
@@ -1820,8 +1820,8 @@ export default {
     edgeDetails: function (item) {
       let ids = (item.id === undefined ? item.ID : item.id).split("-")
       this.$emit("selectionEvent", {
-        type: "edge",
-        name: Object.keys(this.edges)[this.edgeTab],
+        edge: true,
+        type: Object.keys(this.edges)[this.edgeTab],
         id1: ids[0],
         id2: ids[1]
       })
