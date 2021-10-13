@@ -313,7 +313,7 @@
                 </v-card-title>
                 <v-data-table max-height="50vh" height="50vh" class="overflow-y-auto" fixed-header dense item-key="id"
                               :items="sources"
-                              :headers="getHeaders()"
+                              :headers="getHeaders()" show-expand :single-expand="true"
                               disable-pagination
                               hide-default-footer @click:row="seedClicked">
                   <template v-slot:item.displayName="{item}">
@@ -325,6 +325,16 @@
                       <span>{{ item.displayName }}</span>
                     </v-tooltip>
                     <span v-else>{{ item.displayName }}</span>
+                  </template>
+                  <template v-slot:item.data-table-expand="{expand, item,isExpanded}">
+                    <v-icon v-show="!isExpanded" @click="expand(true)">fas fa-angle-down</v-icon>
+                    <v-icon v-show="isExpanded" @click="expand(false)">fas fa-angle-up</v-icon>
+                  </template>
+                  <template v-slot:expanded-item="{ headers, item }">
+                    <td :colspan="headers.length">
+                      <EntryDetails :max-width="headers.length"
+                                    :detail-request="{edge:false, type: nodeList[sourceTypeId].value, id:item.id}"></EntryDetails>
+                    </td>
                   </template>
                   <template v-slot:footer>
                     <div style="display: flex; justify-content: center; margin-left: auto">
@@ -409,7 +419,7 @@
                   <v-data-table max-height="50vh" height="50vh" class="overflow-y-auto" fixed-header dense item-key="id"
                                 :items="targets"
                                 :headers="getHeaders()"
-                                disable-pagination
+                                disable-pagination show-expand :single-expand="true"
                                 hide-default-footer @click:row="targetClicked">
                     <template v-slot:item.displayName="{item}">
                       <v-tooltip v-if="item.displayName.length>30" right>
@@ -420,6 +430,16 @@
                         <span>{{ item.displayName }}</span>
                       </v-tooltip>
                       <span v-else>{{ item.displayName }}</span>
+                    </template>
+                    <template v-slot:item.data-table-expand="{expand, item,isExpanded}">
+                      <v-icon v-show="!isExpanded" @click="expand(true)">fas fa-angle-down</v-icon>
+                      <v-icon v-show="isExpanded" @click="expand(false)">fas fa-angle-up</v-icon>
+                    </template>
+                    <template v-slot:expanded-item="{ headers, item }">
+                      <td :colspan="headers.length">
+                        <EntryDetails :max-width="headers.length"
+                                      :detail-request="{edge:false, type: nodeList[sourceTypeId].value, id:item.id}"></EntryDetails>
+                      </td>
                     </template>
                     <template v-slot:footer>
                       <div style="display: flex; justify-content: center; margin-left: auto">
@@ -455,6 +475,7 @@ import SeedTable from "@/components/app/tables/SeedTable";
 import ResultDownload from "@/components/app/tables/menus/ResultDownload";
 import NodeInput from "@/components/app/input/NodeInput";
 import Legend from "@/components/views/graph/Legend";
+import EntryDetails from "@/components/app/EntryDetails";
 
 
 export default {
@@ -768,7 +789,7 @@ export default {
           return response.data
       }).then(data => {
         let text = "#ID" + (names ? sep + "Name" : "") + "\n";
-        let dlName = ["gene", "protein"][this.seedTypeId] + "_seeds." + (!names ? "list" : (sep === '\t' ? "tsv" : "csv"))
+        let dlName = nodeType + "_seeds." + (!names ? "list" : (sep === '\t' ? "tsv" : "csv"))
         if (!names) {
           Object.values(data).forEach(id => text += id + "\n")
         } else {
@@ -823,7 +844,10 @@ export default {
     }
     ,
     getHeaders: function () {
-      return [{text: "Name", align: "start", sortable: true, value: "displayName"}]
+      return [{text: "Name", align: "start", sortable: true, value: "displayName"}, {
+        text: "",
+        value: "data-table-expand"
+      }]
     }
     ,
     seedClicked: function (item) {
@@ -866,13 +890,12 @@ export default {
     ,
   }
   ,
-  components
-:
-{
+  components: {
   SuggestionAutocomplete,
     NodeInput,
     Network,
     SeedTable,
+    EntryDetails,
     ResultDownload,
     Legend,
 }
