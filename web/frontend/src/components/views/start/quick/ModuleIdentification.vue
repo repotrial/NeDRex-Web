@@ -116,7 +116,7 @@
                       <div style="display: flex">
                         <div style="justify-content: flex-start">
                           <v-card-title style="margin-left: -25px;" class="subtitle-1">Add
-                            {{ validationDrugView ? 'drugs':['genes', 'proteins'][this.seedTypeId] }} associated to
+                            {{ validationDrugView ? 'drugs' : ['genes', 'proteins'][this.seedTypeId] }} associated to
                           </v-card-title>
                         </div>
                         <v-tooltip top>
@@ -189,7 +189,7 @@
                              height="40vh"
                              :title="'Selected Seeds ('+($refs.seedTable ? $refs.seedTable.getSeeds().length : 0)+')'"
                              :nodeName="['gene','protein'][seedTypeId]"
-                             ></SeedTable>
+                  ></SeedTable>
                   <ValidationDrugTable v-show="seedTypeId!=null && validationDrugView" ref="validationTable"
                                        @printNotificationEvent="printNotification"
                                        @drugCountUpdate="updateDrugCount()"></ValidationDrugTable>
@@ -930,12 +930,24 @@ export default {
       methods: [{
         id: "diamond",
         label: "DIAMOnD",
-        scores: [{id: "rank", name: "Rank"}, {id: "p_hyper", name: "P-Value", decimal: true}]
+        scores: [{id: "rank", name: "Rank", order: "ascending", primary: true, seed: 0}, {
+          id: "p_hyper",
+          name: "P-Value",
+          decimal: true,
+          order: "ascending",
+          seed: 0.0
+        }]
       }, {id: "bicon", label: "BiCoN", scores: []}, {id: "must", label: "MuST", scores: []},
         {id: "domino", label: "DOMINO", scores: []}, {
           id: "robust",
           label: "ROBUST",
-          scores: [{id: "occs_abs", name: "Occs (Abs)"}, {id: "occs_rel", name: "Occs (%)", decimal: true}]
+          scores: [{
+            id: "occs_abs",
+            name: "Occs (Abs)",
+            order: "descending",
+            seed: -1
+          }, {id: "occs_rel", name: "Occs (%)",
+            primary: true, decimal: true, order: "descending", seed: 1}]
         }
       ],
       graph: {physics: false},
@@ -1213,7 +1225,7 @@ export default {
       }
     }
     ,
-    updateDrugCount: function(){
+    updateDrugCount: function () {
       this.validationDrugCount = this.$refs.validationTable.getDrugs().length;
     },
     getTargetCount: function () {
@@ -1298,6 +1310,28 @@ export default {
       this.readJob(data)
     }
     ,
+
+    initialListSort: function (list) {
+      let seedIds = this.seeds.map(n => n.id)
+      let seeds = list.filter(n => seedIds.indexOf(n.id > -1))
+      this.methods[this.methodModel].scores.forEach(score => seeds.filter(n=>n[score.id]==null).forEach(n => n[score.id] = score.seed))
+
+      let scores = this.methods[this.methodModel].scores.filter(s => s.primary);
+      if (scores.length === 0)
+        return list
+      let score = scores[0]
+      let key = score.id
+
+
+      if (score.order === "descending")
+        return list.sort((e1, e2) => {
+          return e2[key] - e1[key]
+        })
+      return list.sort((e1, e2) => {
+        return e1[key] - e2[key]
+      })
+    },
+
     loadTargetTable: function (gid) {
       let seedType = [["gene", "protein"][this.seedTypeId]]
       let scoreAttr = this.methods[this.methodModel].scores.filter(s => s.decimal)
@@ -1307,16 +1341,9 @@ export default {
           return response.data
       }).then(data => this.$utils.roundScores(data, seedType, scoreAttr)).then(data => {
         data.nodes[seedType].forEach(n => n.displayName = this.$utils.adjustLabels(n.displayName))
-        if (this.methodModel === 0)
-          this.$set(this.results, 'targets', data.nodes[seedType].sort((e1, e2) => {
-            if (e1.rank && e2.rank)
-              return e1.rank - e2.rank
-            if (e1.rank)
-              return -1
-            return 1
-          }))
-        else
-          this.$set(this.results, 'targets', data.nodes[seedType])
+        this.$set(this.results, "targets", this.initialListSort(data.nodes[seedType]))
+
+
         this.loadingResults = false;
 
         // let connectedIds = []

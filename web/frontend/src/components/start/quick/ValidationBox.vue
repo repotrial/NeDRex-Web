@@ -12,13 +12,13 @@
                :href="'https://api.nedrex.net/validation/status?uid='+validationUID" style="text-decoration:none">
 
               <v-chip v-if="validationStatus==='failed'" color="red" x-small style="color: white">validation error
-                <v-icon right>far fa-times-circle</v-icon>
+                <v-icon right x-small>far fa-times-circle</v-icon>
               </v-chip>
               <template v-else>
                 <v-chip :color="validationStatus==='completed' ? 'primary' :'green' " style="color: white" x-small v-if="drugs">{{
                     validationStatus !== "completed" ? "Validation: " + validationStatus : "P-values: " + $utils.roundValue(validationScore["empirical DCG-based p-value"], 6)+ ' / ' + $utils.roundValue(validationScore["empirical p-value without considering ranks"], 6)
                   }}
-                  <v-icon right>
+                  <v-icon right x-small>
                     {{
                       validationStatus !== "completed" ? "fas fa-circle-notch fa-spin" : "fas fa-question-circle"
                     }}
@@ -26,7 +26,7 @@
                 </v-chip>
                 <v-chip :color="validationStatus==='completed' ? 'primary' :'green' " style="color: white" x-small v-if="!drugs">{{
                     validationStatus !== "completed" ? "Validation: " + validationStatus : "P-values: " + $utils.roundValue(validationScore["emprirical p-value"],6)+ ' / ' + $utils.roundValue(validationScore["empircal (precision-based) p-value"], 6) }}
-                  <v-icon right>
+                  <v-icon right x-small>
                     {{
                       validationStatus !== "completed" ? "fas fa-circle-notch fa-spin" : "fas fa-question-circle"
                     }}
