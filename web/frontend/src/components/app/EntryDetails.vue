@@ -92,7 +92,7 @@
     </v-card-text>
 
     <v-divider></v-divider>
-    <v-timeline align-top dense>
+    <v-timeline align-top dense style="margin-left: -30px">
       <v-timeline-item small :color="getDetailDotColor(item)" v-for="item in detailedObject.order"
                        :key="item">
 
@@ -101,7 +101,7 @@
           <v-list v-if="typeof detailedObject[item] === 'object'">
             <div v-for="(i, index) in detailedObject[item]" :key="index">
               <v-chip outlined v-if="getUrl(item,i).length>0" @click="openExternal(item,i)"
-                      :title="getExternalSource(item,i)">
+                      :title="getExternalSource(item,i)" style="margin: 2px">
                 {{ format(item, i) }}
                 <v-icon right size="14px" :color="getExternalColor(item,i)">fas fa-external-link-alt
                 </v-icon>
@@ -489,6 +489,10 @@ export default {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
+
+.v-timeline-item{
+  padding-bottom:8px;
+}
 
 </style>

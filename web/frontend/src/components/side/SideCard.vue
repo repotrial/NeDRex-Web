@@ -42,7 +42,7 @@
                 }}/{{ Object.values(graphInfo.counts.nodes).reduce((s, v) => s + v) }})
               </v-list-item-title>
             </v-list-item>
-            <v-list-item v-for="(count,name) in graphInfo.counts.nodes" :id="name" class="nedrex-list-item">
+            <v-list-item v-for="(count,name) in graphInfo.counts.nodes" :key="name" class="nedrex-list-item">
               <v-list-item-avatar>
                 <v-icon left :color="getExtendedColoring('nodes',name,'light')">fas fa-genderless</v-icon>
               </v-list-item-avatar>
@@ -59,7 +59,7 @@
                 }}/{{ Object.values(graphInfo.counts.edges).reduce((s, v) => s + v) }})
               </v-list-item-title>
             </v-list-item>
-            <v-list-item v-for="(count,name) in graphInfo.counts.edges" :id="name" class="nedrex-list-item">
+            <v-list-item v-for="(count,name) in graphInfo.counts.edges" :key="name" class="nedrex-list-item">
               <v-list-item-avatar>
                 <v-icon class="nedrex-list-icon" size="15" :color="getExtendedColoring('edges',name,'light')[0]">fas
                   fa-genderless

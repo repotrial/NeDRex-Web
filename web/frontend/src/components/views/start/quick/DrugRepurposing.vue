@@ -65,7 +65,7 @@
                   </span>
                 </template>
                 <span>
-                  <v-container>
+                  <v-container style="max-width: 100%">
                     <v-row>
                       <v-col>
                         <i>
@@ -138,7 +138,7 @@
               </v-col>
             </v-row>
             <ExampleSeeds :seedTypeId="seedTypeId" @addSeedsEvent="addToSelection" :disabled="validationDrugView"></ExampleSeeds>
-            <v-container style="height: 55vh;margin: 15px;">
+            <v-container style="height: 55vh;margin: 15px;max-width: 100%">
               <v-row style="height: 100%">
                 <v-col cols="6">
                   <div style="height: 40vh; max-height: 40vh;">
@@ -254,7 +254,7 @@
               construct a disease module.
             </v-card-subtitle>
             <v-divider style="margin: 15px;"></v-divider>
-            <v-container style="height: 80%">
+            <v-container style="height: 80%; max-width: 100%">
               <v-row style="height: 100%">
                 <v-col>
                   <v-card-title style="margin-left: -25px">Select the Base-Algorithm</v-card-title>
@@ -721,7 +721,7 @@
               identify and rank drug candidates.
             </v-card-subtitle>
             <v-divider style="margin: 15px;"></v-divider>
-            <v-container style="height: 80%">
+            <v-container style="height: 80%; max-width: 100%">
               <v-row style="height: 100%">
                 <v-col>
                   <v-card-title style="margin-left: -25px">Select the Base-Algorithm</v-card-title>
@@ -914,7 +914,7 @@
           >
             <v-card-subtitle class="headline">4. Drug Repurposing Results</v-card-subtitle>
             <v-divider style="margin: 15px;"></v-divider>
-            <v-container>
+            <v-container style="max-width: 100%">
               <v-row>
                 <v-col cols="3" style="padding: 0 50px 0 0; margin-right: -50px">
                   <v-card-title class="subtitle-1">Seeds ({{ seeds.length }}) {{
@@ -1772,6 +1772,9 @@ export default {
 </script>
 
 <style lang="sass">
+
+th
+  z-index: 5 !important
 
 .td-name
   max-width: 4vw

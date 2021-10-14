@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <v-container style="max-width: 95vw">
     <template v-if="modus===-1">
       <div style="display:flex; justify-content: center">
         <div style="justify-content: center; justify-self: flex-start;">

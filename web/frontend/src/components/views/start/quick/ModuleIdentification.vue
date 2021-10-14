@@ -60,7 +60,7 @@
                   </span>
                 </template>
                 <span>
-                  <v-container>
+                  <v-container style="max-width: 100%">
                     <v-row>
                       <v-col>
                   <i>
@@ -108,7 +108,7 @@
             </v-row>
             <ExampleSeeds :seedTypeId="seedTypeId" @addSeedsEvent="addToSelection"
                           :disabled="validationDrugView"></ExampleSeeds>
-            <v-container style="height: 55vh; margin-top: 15px">
+            <v-container style="height: 55vh; margin-top: 15px; max-width: 100%">
               <v-row style="height: 100%">
                 <v-col cols="6">
                   <div style="height: 40vh; max-height: 40vh;">
@@ -224,7 +224,7 @@
               construct a disease module.
             </v-card-subtitle>
             <v-divider style="margin: 15px;"></v-divider>
-            <v-container style="height: 80%">
+            <v-container style="height: 80%; max-width: 100%">
               <v-row style="height: 100%">
                 <v-col>
                   <v-card-title style="margin-left: -25px">Select the Base-Algorithm</v-card-title>
@@ -689,7 +689,7 @@
           >
             <v-card-subtitle class="headline">3. Module Identification Results</v-card-subtitle>
             <v-divider style="margin: 15px;"></v-divider>
-            <v-container>
+            <v-container style="max-width: 100%">
               <v-row>
                 <v-col cols="3" style="padding: 0 50px 0 0; margin-right: -50px">
                   <v-card-title class="subtitle-1">Seeds ({{ seeds.length }}) {{
@@ -722,7 +722,7 @@
                       </template>
                       <template v-slot:expanded-item="{ headers, item }">
                         <td :colspan="headers.length">
-                          <EntryDetails :max-width="headers.length" :gid="currentGid" :detail-request="{edge:false, type:['gene', 'protein'][seedTypeId], id:item.id}"></EntryDetails>
+                          <EntryDetails max-width="15vw" :gid="currentGid" :detail-request="{edge:false, type:['gene', 'protein'][seedTypeId], id:item.id}"></EntryDetails>
                         </td>
                       </template>
                       <template v-slot:footer>
@@ -738,8 +738,20 @@
 
                   </template>
                   <v-data-table v-else max-height="45vh" height="45vh" max-width="100%" fixed-header dense item-key="id"
-                                :items="seeds" :headers="getHeaders(true)" disable-pagination
-                                hide-default-footer @click:row="rowClicked"></v-data-table>
+                                :items="seeds" :headers="getHeaders(true)" disable-pagination show-expand :single-expand="true"
+                                hide-default-footer @click:row="rowClicked">
+                    <template v-slot:item.data-table-expand="{expand, item,isExpanded}">
+                      <v-icon v-show="!isExpanded" @click="expand(true)">fas fa-angle-down</v-icon>
+                      <v-icon v-show="isExpanded" @click="expand(false)">fas fa-angle-up</v-icon>
+                    </template>
+                    <template v-slot:expanded-item="{ headers, item }">
+                      <td :colspan="headers.length">
+                        <EntryDetails max-width="15vw" :gid="currentGid" :detail-request="{edge:false, type:['gene', 'protein'][seedTypeId], id:item.id}"></EntryDetails>
+                      </td>
+                    </template>
+
+
+                  </v-data-table>
                 </v-col>
                 <v-col>
                   <Network ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle"
@@ -1051,7 +1063,7 @@ export default {
       return out
     },
     focusNode: function (id) {
-      if (this.$refs.graph === undefined)
+      if (this.$refs.graph == null)
         return
       this.$refs.graph.setSelection([id])
       this.$refs.graph.zoomToNode(id)
@@ -1427,6 +1439,8 @@ export default {
 
 <style lang="sass">
 
+th
+  z-index: 5 !important
 
 .td-name
   max-width: 4vw
