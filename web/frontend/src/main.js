@@ -22,8 +22,6 @@ ApiService.init(CONFIG.HOST_URL+CONFIG.CONTEXT_PATH+"/api/")
 ApiService.setNedrex(CONFIG.NEDREX_API)
 Vue.prototype.$http = ApiService;
 
-// NedrexService.init(CONFIG.NEDREX_API)
-// Vue.prototype.$nedrex = NedrexService;
 
 Vue.prototype.$global = {metagraph:undefined, metadata: undefined}
 

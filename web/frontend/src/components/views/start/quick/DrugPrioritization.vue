@@ -131,9 +131,7 @@
                         <v-tooltip top>
                           <template v-slot:activator="{on,attrs}">
                             <div v-on="on" v-bind="attrs" style="justify-content: flex-end; margin-left: auto">
-                              <v-switch :label="advancedOptions ? 'Full' :'Limited'"
-                                        v-model="advancedOptions"
-                                        @click="suggestionType = advancedOptions ? suggestionType : 'disorder'"></v-switch>
+                              <LabeledSwitch v-model="advancedOptions" @click="suggestionType = advancedOptions ? suggestionType : 'disorder'" label-off="Limited" label-on="Full" v-on="on" v-bind="attrs"></LabeledSwitch>
                             </div>
                           </template>
                           <div style="width: 300px"><b>Limited Mode:</b><br>The options are limited to the most
@@ -619,6 +617,7 @@ import ExampleSeeds from "@/components/start/quick/ExampleSeeds";
 import ValidationBox from "@/components/start/quick/ValidationBox";
 import ValidationDrugTable from "@/components/app/tables/ValidationDrugTable";
 import EntryDetails from "@/components/app/EntryDetails";
+import LabeledSwitch from "@/components/app/input/LabeledSwitch";
 
 export default {
   name: "DrugRepurposing",
@@ -1065,6 +1064,7 @@ export default {
   },
 
   components: {
+    LabeledSwitch,
     ValidationBox,
     SeedDownload,
     NodeInput,
