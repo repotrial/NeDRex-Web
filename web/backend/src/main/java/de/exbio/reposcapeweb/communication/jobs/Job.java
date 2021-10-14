@@ -230,6 +230,7 @@ public class Job {
         return params.equals(job.params) && seeds.equals(job.seeds) && method == job.method && dbVersion.equals(job.dbVersion);
     }
 
+    //FIXME can overflow but unlikely to cause collisions
     @Override
     public int hashCode() {
         return Objects.hash(params, Arrays.hashCode(seeds.toArray()),dbVersion);

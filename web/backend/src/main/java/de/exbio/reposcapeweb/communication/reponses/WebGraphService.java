@@ -473,7 +473,7 @@ public class WebGraphService {
             boolean sourceEqualsTargetType = request.name.equals(request.typeCount);
             NodeFilter finalNf = nf;
             suggestions.getSuggestions().forEach(suggestion -> {
-                suggestion.setTargetCount(sourceEqualsTargetType ? suggestion.getSize() : getConnectedNodesCount(request.name, request.typeCount, suggestion.getSId().contains("_") ?finalNf.getEntry(suggestion.getSId()).stream().map(FilterEntry::getNodeId).collect(Collectors.toSet()) : Collections.singletonList(Integer.parseInt(suggestion.getSId()))));
+                suggestion.setTargetCount(sourceEqualsTargetType ? suggestion.getSize() : getConnectedNodesCount(request.name, request.typeCount, suggestion.getSId().contains("_") ? finalNf.getEntry(suggestion.getSId()).stream().map(FilterEntry::getNodeId).collect(Collectors.toSet()) : Collections.singletonList(Integer.parseInt(suggestion.getSId()))));
             });
         }
 
@@ -948,7 +948,7 @@ public class WebGraphService {
         });
     }
 
-    public void applyModuleJob(Job j) {
+    public void applyJob(Job j) {
 
         Graph g = getCachedGraph(j.getBasisGraph());
         Graph derived;
@@ -972,7 +972,6 @@ public class WebGraphService {
 
 //        if (!algorithm.hasCustomEdges())
         updateEdges(derived, j, nodeTypeId);
-
 
         AtomicInteger size = new AtomicInteger();
         derived.getNodes().forEach((k, v) -> size.addAndGet(v.size()));
@@ -1023,8 +1022,8 @@ public class WebGraphService {
             else
                 g.getEdges().put(k, v);
         });
-
-        if (j.getParams().containsKey("addInteractions") && j.getParams().get("addInteractions").equals("true")) {
+        boolean isDrug = nodeTypeId == Graphs.getNode("drug");
+        if (!isDrug && j.getParams().containsKey("addInteractions") && j.getParams().get("addInteractions").equals("true")) {
             boolean expOnly = j.getParams().containsKey("experimentalOnly") && j.getParams().get("experimentalOnly").equals("true");
             int typeId1 = nodeTypeId;
             int typeId2 = Graphs.getNode(j.getTarget());
@@ -1058,6 +1057,36 @@ public class WebGraphService {
                 g.getEdges().get(edgeId).forEach(e -> {
                     if (edges.containsKey(e.getId1()))
                         edges.get(e.getId1()).remove(e.getId2());
+                });
+                edges.forEach((id1, l) -> l.forEach(id2 -> g.getEdges().get(edgeId).add(new Edge(id1, id2))));
+            }
+        }
+
+        if (isDrug && j.getParams().containsKey("addInteractions") && j.getParams().get("addInteractions").equals("true")) {
+            int typeId1 = nodeTypeId;
+            int typeId2 = Graphs.getNode(j.getTarget());
+            List<Integer> edgeIds = Graphs.getEdgesfromNodes(typeId1, typeId2);
+            for (int edgeId : edgeIds) {
+                if (!g.getEdges().containsKey(edgeId))
+                    g.getEdges().put(edgeId, new LinkedList<>());
+                if (!Graphs.checkEdgeDirection(edgeId, typeId1, typeId2)) {
+                    int tmp = typeId1;
+                    typeId1 = typeId2;
+                    typeId2 = tmp;
+                }
+                HashMap<Integer, HashSet<Integer>> edges = new HashMap<>();
+                int finalTypeId = typeId1;
+                int finalTypeId1 = typeId2;
+                g.getNodes().get(typeId1).keySet().forEach(n -> {
+                    try {
+                        edgeController.getEdges(edgeId, finalTypeId, n, false).stream().filter(e -> g.getNodes().get(finalTypeId1).containsKey(e.getId2())).forEach(e -> {
+                            int n2 = e.getId2();
+                            if (!edges.containsKey(n))
+                                edges.put(n, new HashSet<>());
+                            edges.get(n).add(n2);
+                        });
+                    } catch (NullPointerException ignore) {
+                    }
                 });
                 edges.forEach((id1, l) -> l.forEach(id2 -> g.getEdges().get(edgeId).add(new Edge(id1, id2))));
             }
@@ -1436,8 +1465,8 @@ public class WebGraphService {
                         DBConfig.getConfig().getEdge(Graphs.getEdge("DisorderHierarchy")).databases.forEach(s -> edgeSource.get().add(sourceType + ":" + s));
                         node.put("sourceDBs", edgeSource);
                     }
-                }else{
-                    node.put("sourceDBs",Collections.singletonList(DBConfig.getConfig().nodes.get(Graphs.getNode(sourceType)).sourceId));
+                } else {
+                    node.put("sourceDBs", Collections.singletonList(DBConfig.getConfig().nodes.get(Graphs.getNode(sourceType)).sourceId));
                 }
                 nodes.add(node);
             }

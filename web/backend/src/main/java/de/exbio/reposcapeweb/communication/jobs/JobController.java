@@ -8,7 +8,6 @@ import de.exbio.reposcapeweb.db.history.HistoryController;
 import de.exbio.reposcapeweb.db.services.nodes.DrugService;
 import de.exbio.reposcapeweb.db.services.nodes.GeneService;
 import de.exbio.reposcapeweb.db.services.nodes.ProteinService;
-import de.exbio.reposcapeweb.filter.NodeFilter;
 import de.exbio.reposcapeweb.tools.ToolService;
 import de.exbio.reposcapeweb.tools.algorithms.Algorithm;
 import de.exbio.reposcapeweb.utils.Pair;
@@ -75,7 +74,6 @@ public class JobController {
         Job j = createJob(req);
 
         j.addParam("experimentalOnly", req.experimentalOnly);
-
         for (String param : req.getParams().keySet())
                 j.addParam(param, req.getParams().get(param));
 
@@ -208,7 +206,7 @@ public class JobController {
             if ((j.getResult().getNodes().isEmpty()) & (!j.getParams().containsKey("nodesOnly") || !j.getParams().get("nodesOnly").equals("true"))) {
                 j.setDerivedGraph(j.getBasisGraph());
             } else
-                graphService.applyModuleJob(j);
+                graphService.applyJob(j);
         } catch (Exception e) {
             log.error("Error on finishing job: " + id);
             e.printStackTrace();
