@@ -707,10 +707,10 @@
                                   :items="results.targets" :headers="getHeaders()" disable-pagination
                                   hide-default-footer @click:row="rowClicked" show-expand :single-expand="true">
                       <template v-slot:item.displayName="{item}">
-                        <v-tooltip v-if="item.displayName.length>16" right>
+                        <v-tooltip v-if="item.displayName.length>12" right>
                           <template v-slot:activator="{attr,on }">
                           <span v-bind="attr" v-on="on"
-                                style="color: dimgray">{{ item.displayName.substr(0, 16) }}...</span>
+                                style="color: dimgray">{{ item.displayName.substr(0, 12) }}...</span>
                           </template>
                           <span>{{ item.displayName }}</span>
                         </v-tooltip>
@@ -1146,7 +1146,7 @@ export default {
           } else
             headers.push(entry)
         })
-      headers.push({text:"",value:"data-table-expand"})
+      headers.push({text:"",value:"data-table-expand", width: "1rem"})
       return headers
     },
     updateGraphPhysics: function () {
