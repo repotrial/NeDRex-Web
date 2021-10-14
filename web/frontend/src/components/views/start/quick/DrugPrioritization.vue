@@ -854,7 +854,7 @@ export default {
           this.$socket.unsubscribeJob(jid)
         this.jobs[jid].result = result
         this.loadTargetTable(result).then(() => {
-          this.$refs.validation.validate(this.results.targets, this.$refs.validationTable.getDrugs(),this.models.onlyApproved)
+          this.$refs.validation.validate(this.results.targets, this.$refs.validationTable.getDrugs(), this.models.onlyApproved)
           this.loadGraph(result)
         })
       }
@@ -966,8 +966,8 @@ export default {
           return response.data
       }).then(data => {
         let primaryAttribute = this.methods[this.methodModel].scores.filter(s => s.primary)[0]
-        this.results.targets = this.sort(data.nodes.drug,primaryAttribute)
-        this.rank(this.results.targets,primaryAttribute.id)
+        this.results.targets = this.sort(data.nodes.drug, primaryAttribute)
+        this.rank(this.results.targets, primaryAttribute.id)
         this.normalize(this.results.targets)
         this.round(this.results.targets)
       }).catch(console.error)
@@ -977,8 +977,8 @@ export default {
       this.seedOrigin = {}
     },
 
-    sort: function (list,attribute) {
-      return attribute.order === "descending" ? list.sort((e1, e2) => e2[attribute.id] - e1[attribute.id]): list.sort((e1, e2) => e1[attribute.id] - e2[attribute.id])
+    sort: function (list, attribute) {
+      return attribute.order === "descending" ? list.sort((e1, e2) => e2[attribute.id] - e1[attribute.id]) : list.sort((e1, e2) => e1[attribute.id] - e2[attribute.id])
     },
 
     round: function (list) {
@@ -989,7 +989,7 @@ export default {
       })
     },
 
-    rank: function (list,attribute) {
+    rank: function (list, attribute) {
       let lastRank = 0;
       let lastScore = 0;
 
@@ -1015,7 +1015,8 @@ export default {
           })
           list.forEach(e => e[attribute.id] = base / e.attribute.id)
         }
-        attribute.name = attribute.name + " (Norm)"
+        if (!attribute.name.endsWith(" (Norm)"))
+          attribute.name = attribute.name + " (Norm)"
       })
     }
     ,

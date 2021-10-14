@@ -722,7 +722,8 @@
                       </template>
                       <template v-slot:expanded-item="{ headers, item }">
                         <td :colspan="headers.length">
-                          <EntryDetails max-width="15vw" :gid="currentGid" :detail-request="{edge:false, type:['gene', 'protein'][seedTypeId], id:item.id}"></EntryDetails>
+                          <EntryDetails max-width="15vw" :gid="currentGid"
+                                        :detail-request="{edge:false, type:['gene', 'protein'][seedTypeId], id:item.id}"></EntryDetails>
                         </td>
                       </template>
                       <template v-slot:footer>
@@ -738,7 +739,8 @@
 
                   </template>
                   <v-data-table v-else max-height="45vh" height="45vh" max-width="100%" fixed-header dense item-key="id"
-                                :items="seeds" :headers="getHeaders(true)" disable-pagination show-expand :single-expand="true"
+                                :items="seeds" :headers="getHeaders(true)" disable-pagination show-expand
+                                :single-expand="true"
                                 hide-default-footer @click:row="rowClicked">
                     <template v-slot:item.data-table-expand="{expand, item,isExpanded}">
                       <v-icon v-show="!isExpanded" @click="expand(true)">fas fa-angle-down</v-icon>
@@ -746,7 +748,8 @@
                     </template>
                     <template v-slot:expanded-item="{ headers, item }">
                       <td :colspan="headers.length">
-                        <EntryDetails max-width="15vw" :gid="currentGid" :detail-request="{edge:false, type:['gene', 'protein'][seedTypeId], id:item.id}"></EntryDetails>
+                        <EntryDetails max-width="15vw" :gid="currentGid"
+                                      :detail-request="{edge:false, type:['gene', 'protein'][seedTypeId], id:item.id}"></EntryDetails>
                       </td>
                     </template>
 
@@ -968,8 +971,10 @@ export default {
             name: "Occs (Abs)",
             order: "descending",
             seed: -1
-          }, {id: "occs_rel", name: "Occs (%)",
-            primary: true, decimal: true, order: "descending", seed: 1}]
+          }, {
+            id: "occs_rel", name: "Occs (%)",
+            primary: true, decimal: true, order: "descending", seed: 1
+          }]
         }
       ],
       graph: {physics: false},
@@ -1146,7 +1151,7 @@ export default {
           } else
             headers.push(entry)
         })
-      headers.push({text:"",value:"data-table-expand", width: "1rem"})
+      headers.push({text: "", value: "data-table-expand", width: "1rem"})
       return headers
     },
     updateGraphPhysics: function () {
@@ -1337,7 +1342,7 @@ export default {
     initialListSort: function (list) {
       let seedIds = this.seeds.map(n => n.id)
       let seeds = list.filter(n => seedIds.indexOf(n.id > -1))
-      this.methods[this.methodModel].scores.forEach(score => seeds.filter(n=>n[score.id]==null).forEach(n => n[score.id] = score.seed))
+      this.methods[this.methodModel].scores.forEach(score => seeds.filter(n => n[score.id] == null).forEach(n => n[score.id] = score.seed))
 
       let scores = this.methods[this.methodModel].scores.filter(s => s.primary);
       if (scores.length === 0)
@@ -1367,10 +1372,10 @@ export default {
         let method = this.methods[this.methodModel]
         let primaryAttribute = method.scores.filter(s => s.primary)[0]
         this.seedValueReplacement(data.nodes[seedType])
-        this.results.targets = this.sort(data.nodes[seedType],primaryAttribute)
-        this.rank(this.results.targets,primaryAttribute)
-        this.normalize(this.results.targets,method)
-        this.round(this.results.targets,method)
+        this.results.targets = this.sort(data.nodes[seedType], primaryAttribute)
+        this.rank(this.results.targets, primaryAttribute)
+        this.normalize(this.results.targets, method)
+        this.round(this.results.targets, method)
 
 
         this.loadingResults = false;
@@ -1384,13 +1389,13 @@ export default {
       this.methods[this.methodModel].scores.forEach(score => seeds.filter(n => n[score.id] == null).forEach(n => n[score.id] = score.seed))
     },
 
-    sort: function (list,attribute) {
-      if(attribute == null)
+    sort: function (list, attribute) {
+      if (attribute == null)
         return list
-      return attribute.order === "descending" ? list.sort((e1, e2) => e2[attribute.id] - e1[attribute.id]): list.sort((e1, e2) => e1[attribute.id] - e2[attribute.id])
+      return attribute.order === "descending" ? list.sort((e1, e2) => e2[attribute.id] - e1[attribute.id]) : list.sort((e1, e2) => e1[attribute.id] - e2[attribute.id])
     },
 
-    round: function (list,method) {
+    round: function (list, method) {
       method.scores.filter(s => s.decimal).forEach(attribute => {
         list.forEach(e => {
           this.$utils.roundScore(e, attribute.id)
@@ -1399,8 +1404,8 @@ export default {
 
     },
 
-    rank: function (list,attribute) {
-      if(attribute == null || (list.length>0 && list[0].rank !=null))
+    rank: function (list, attribute) {
+      if (attribute == null || (list.length > 0 && list[0].rank != null))
         return list
       let lastRank = 0;
       let lastScore = 0;
@@ -1414,7 +1419,7 @@ export default {
       })
     },
 
-    normalize: function (list,method) {
+    normalize: function (list, method) {
       method.scores.filter(s => s["normalize"]).forEach(attribute => {
         if (attribute.order === "descending") {
           let base = list.map(e => e[attribute.id]).reduce((e1, e2) => {
@@ -1427,7 +1432,8 @@ export default {
           })
           list.forEach(e => e[attribute.id] = base / e.attribute.id)
         }
-        attribute.name = attribute.name + " (Norm)"
+        if (!attribute.name.endsWith(" (Norm)"))
+          attribute.name = attribute.name + " (Norm)"
       })
     }
     ,

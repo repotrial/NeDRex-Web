@@ -1745,7 +1745,8 @@ export default {
           })
           list.forEach(e => e[attribute.id] = base / e.attribute.id)
         }
-        attribute.name = attribute.name + " (Norm)"
+        if (!attribute.name.endsWith(" (Norm)"))
+          attribute.name = attribute.name + " (Norm)"
       })
     }
     ,
