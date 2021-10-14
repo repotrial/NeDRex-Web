@@ -533,6 +533,7 @@ export default {
       return neighbors
     },
     setSelection: function (nodes) {
+      if(this.$refs.network !=null)
       if (nodes !== undefined && nodes[0] !== undefined) {
         this.$refs.network.selectNodes(nodes)
         this.identifyNeighbors(nodes[0])
@@ -566,6 +567,7 @@ export default {
     },
 
     zoomToNode: function (nodeId) {
+      if(this.$refs.network !=null)
       if (nodeId !== undefined) {
         this.focusNode(nodeId)
         this.$refs.network.moveTo({scale: 0.9})
@@ -583,12 +585,11 @@ export default {
         if (edgeId === undefined)
           this.viewAll()
       })
-    }
-    ,
+    },
+
     viewAll: function () {
       this.$refs.network.fit()
-    }
-    ,
+    },
 
     toggleEdgeVisible: function (name) {
       let updates = Object.values(this.edgeSet.get({

@@ -83,18 +83,18 @@ const Utils =
     }
     ,
     roundScores: function (data, nodeType, scoreAttrs) {
-      data.nodes[nodeType].forEach(item => {
-        if (typeof scoreAttrs === 'object') {
-          if (scoreAttrs.id)
-            this.roundScores(item, scoreAttrs.id)
-          else
-            scoreAttrs.forEach(scoreAttr => this.roundScore(item, scoreAttr.id))
-        } else
-          this.roundScore(item, scoreAttrs)
-      })
+        data.nodes[nodeType].forEach(item => {
+          if (typeof scoreAttrs === 'object') {
+            if (scoreAttrs.id)
+              this.roundScores(item, scoreAttrs.id)
+            else
+              scoreAttrs.forEach(scoreAttr => this.roundScore(item, scoreAttr.id))
+          } else
+            this.roundScore(item, scoreAttrs)
+        })
       return data
     },
-    roundValue: function(score, decimals){
+    roundValue: function (score, decimals) {
       if ((score + "").indexOf('e') > -1) {
         let parts = (score + "").split('e')
         score = parseFloat(this.round(parseFloat(parts[0]), 2) + 'e' + parts[1])
@@ -122,21 +122,21 @@ const Utils =
       return Math.round(value * factor) / factor
     },
     adjustLabels: function (label) {
-      if(label.endsWith("_HUMAN"))
-        label = label.substring(0,label.length - 6)
+      if (label.endsWith("_HUMAN"))
+        label = label.substring(0, label.length - 6)
       return label
     },
 
-    clone: function(object){
+    clone: function (object) {
       return JSON.parse(JSON.stringify(object))
     },
 
-    checkSeparator: function(data,seps){
-     let sep = seps[0]
+    checkSeparator: function (data, seps) {
+      let sep = seps[0]
       let min = 1;
-      seps.forEach(s=>{
+      seps.forEach(s => {
         let spl = data.split(s)
-        if(spl.length>min){
+        if (spl.length > min) {
           sep = s;
           min = spl.length
         }
@@ -145,28 +145,29 @@ const Utils =
     },
 
     adjustMetaOptions(metagraph) {
-      function drawEllipse({ ctx, id, x, y, state: { selected, hover }, style, label }){
+      function drawEllipse({ctx, id, x, y, state: {selected, hover}, style, label}) {
         console.log(style)
         return {
           // bellow arrows
           // primarily meant for nodes and the labels inside of their boundaries
           drawNode() {
-            ctx.fillStyle="black"
+            ctx.fillStyle = "black"
             ctx.beginPath()
-            ctx.ellipse(x,y,50,25,0,0,Math.PI*2);
+            ctx.ellipse(x, y, 50, 25, 0, 0, Math.PI * 2);
             ctx.fill();
           },
           // above arrows
           // primarily meant for labels outside of the node
           drawExternalLabel() {
-            ctx.fillText(label,20,100)
+            ctx.fillText(label, 20, 100)
           },
           // node dimensions defined by node drawing
-          nodeDimensions: { width:50, height:25 },
+          nodeDimensions: {width: 50, height: 25},
         };
       }
-      metagraph.options.options.groups.pathway["shape"]="triangle";
-      metagraph.options.options.groups.pathway["ctxRenderer"]=drawEllipse;
+
+      metagraph.options.options.groups.pathway["shape"] = "triangle";
+      metagraph.options.options.groups.pathway["ctxRenderer"] = drawEllipse;
       console.log(metagraph)
 
       return metagraph;

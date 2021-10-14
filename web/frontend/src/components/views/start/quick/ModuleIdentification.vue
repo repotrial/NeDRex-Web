@@ -1134,12 +1134,18 @@ export default {
     getHeaders: function (seeds) {
       let headers = [{text: "Name", align: "start", sortable: true, value: "displayName"}]
       if (!seeds)
-        this.methodScores().forEach(e => headers.push({
-          text: e.name,
-          align: e.decimal ? "start" : "end",
-          sortable: true,
-          value: e.id,
-        }))
+        this.methodScores().forEach(e => {
+          let entry = {
+            text: e.name,
+            align: e.decimal ? "start" : "end",
+            sortable: true,
+            value: e.id,
+          }
+          if (e.id === "rank") {
+            headers = [entry].concat(headers)
+          } else
+            headers.push(entry)
+        })
       headers.push({text:"",value:"data-table-expand"})
       return headers
     },
@@ -1214,12 +1220,6 @@ export default {
       payload.selection = true
       payload.experimentalOnly = params.experimentalOnly
       payload["nodes"] = this.seeds.map(n => n.id)
-      // if (algorithm !== "bicon") {
-      //   if (this.seeds.length === 0) {
-      //     this.printNotification("Cannot execute " + algorithm + " without seed nodes!", 1)
-      //     return;
-      //   }
-      // }
       this.$http.post("/submitJob", payload).then(response => {
         if (response.data !== undefined)
           return response.data
@@ -1357,36 +1357,80 @@ export default {
 
     loadTargetTable: function (gid) {
       let seedType = [["gene", "protein"][this.seedTypeId]]
-      let scoreAttr = this.methods[this.methodModel].scores.filter(s => s.decimal)
       this.targetColorStyle = {'background-color': this.$global.metagraph.colorMap[seedType].light}
       return this.$http.get("/getGraphList?id=" + gid).then(response => {
         if (response.data !== undefined)
           return response.data
-      }).then(data => this.$utils.roundScores(data, seedType, scoreAttr)).then(data => {
+      }).then(data => {
         data.nodes[seedType].forEach(n => n.displayName = this.$utils.adjustLabels(n.displayName))
-        this.$set(this.results, "targets", this.initialListSort(data.nodes[seedType]))
+
+        let method = this.methods[this.methodModel]
+        let primaryAttribute = method.scores.filter(s => s.primary)[0]
+        this.seedValueReplacement(data.nodes[seedType])
+        this.results.targets = this.sort(data.nodes[seedType],primaryAttribute)
+        this.rank(this.results.targets,primaryAttribute)
+        this.normalize(this.results.targets,method)
+        this.round(this.results.targets,method)
 
 
         this.loadingResults = false;
 
-        // let connectedIds = []
-
-
-        // data.edges[["GeneGeneInteraction", "ProteinProteinInteraction"][this.seedTypeId]].forEach(edge => {
-        //   let spl = edge.id.split("-")
-        //   let id1 = parseInt(spl[0])
-        //   let id2 = parseInt(spl[1])
-        //   if (id1 !== id2) {
-        //     if (connectedIds.indexOf(id1) === -1)
-        //       connectedIds.push(id1)
-        //     if (connectedIds.indexOf(id2))
-        //       connectedIds.push(id2)
-        //   }
-        // })
-        // return this.results.targets.filter(node => connectedIds.indexOf(node.id) > -1);
-
       }).catch(console.error)
     },
+
+    seedValueReplacement: function (list) {
+      let seedIds = this.seeds.map(n => n.id)
+      let seeds = list.filter(n => seedIds.indexOf(n.id > -1))
+      this.methods[this.methodModel].scores.forEach(score => seeds.filter(n => n[score.id] == null).forEach(n => n[score.id] = score.seed))
+    },
+
+    sort: function (list,attribute) {
+      if(attribute == null)
+        return list
+      return attribute.order === "descending" ? list.sort((e1, e2) => e2[attribute.id] - e1[attribute.id]): list.sort((e1, e2) => e1[attribute.id] - e2[attribute.id])
+    },
+
+    round: function (list,method) {
+      method.scores.filter(s => s.decimal).forEach(attribute => {
+        list.forEach(e => {
+          this.$utils.roundScore(e, attribute.id)
+        })
+      })
+
+    },
+
+    rank: function (list,attribute) {
+      if(attribute == null || (list.length>0 && list[0].rank !=null))
+        return list
+      let lastRank = 0;
+      let lastScore = 0;
+
+      list.forEach(drug => {
+        if (lastRank === 0 || lastScore !== drug[attribute.id]) {
+          lastRank++
+          lastScore = drug[attribute.id];
+        }
+        drug.rank = lastRank
+      })
+    },
+
+    normalize: function (list,method) {
+      method.scores.filter(s => s["normalize"]).forEach(attribute => {
+        if (attribute.order === "descending") {
+          let base = list.map(e => e[attribute.id]).reduce((e1, e2) => {
+            return Math.max(e1, e2)
+          })
+          list.forEach(e => e[attribute.id] = (e[attribute.id] / base))
+        } else if (attribute.order === "ascending") {
+          let base = list.map(e => e[attribute.id]).reduce((e1, e2) => {
+            return Math.min(e1, e2)
+          })
+          list.forEach(e => e[attribute.id] = base / e.attribute.id)
+        }
+        attribute.name = attribute.name + " (Norm)"
+      })
+    }
+    ,
 
     waitForGraph: function (resolve) {
       if (this.$refs.graph === undefined)

@@ -103,16 +103,16 @@
                   </v-radio-group>
                 </v-list-item-action>
 
-<!--                <v-list-item-subtitle class="title">Select the seed type</v-list-item-subtitle>-->
-<!--                <v-list-item-action>-->
-<!--                  <v-radio-group row v-model="seedTypeId"-->
-<!--                                 :disabled="(this.seedTypeId !=null && $refs.seedTable !=null && $refs.seedTable.getSeeds()!=null && $refs.seedTable.getSeeds().length>0)">-->
-<!--                    <v-radio label="Gene">-->
-<!--                    </v-radio>-->
-<!--                    <v-radio label="Protein">-->
-<!--                    </v-radio>-->
-<!--                  </v-radio-group>-->
-<!--                </v-list-item-action>-->
+                <!--                <v-list-item-subtitle class="title">Select the seed type</v-list-item-subtitle>-->
+                <!--                <v-list-item-action>-->
+                <!--                  <v-radio-group row v-model="seedTypeId"-->
+                <!--                                 :disabled="(this.seedTypeId !=null && $refs.seedTable !=null && $refs.seedTable.getSeeds()!=null && $refs.seedTable.getSeeds().length>0)">-->
+                <!--                    <v-radio label="Gene">-->
+                <!--                    </v-radio>-->
+                <!--                    <v-radio label="Protein">-->
+                <!--                    </v-radio>-->
+                <!--                  </v-radio-group>-->
+                <!--                </v-list-item-action>-->
               </v-col>
             </v-row>
             <ExampleSeeds :seedTypeId="seedTypeId" @addSeedsEvent="addToSelection"
@@ -125,7 +125,7 @@
                       <div style="display: flex">
                         <div style="justify-content: flex-start">
                           <v-card-title style="margin-left: -25px;" class="subtitle-1">Add
-                            {{ validationDrugView ? 'drugs':['genes', 'proteins'][this.seedTypeId] }} associated to
+                            {{ validationDrugView ? 'drugs' : ['genes', 'proteins'][this.seedTypeId] }} associated to
                           </v-card-title>
                         </div>
                         <v-tooltip top>
@@ -447,7 +447,8 @@
                     </template>
                     <template v-slot:expanded-item="{ headers, item }">
                       <td :colspan="headers.length">
-                        <EntryDetails max-width="9vw" :detail-request="{edge:false, type:['gene', 'protein'][seedTypeId], id:item.id}"></EntryDetails>
+                        <EntryDetails max-width="9vw"
+                                      :detail-request="{edge:false, type:['gene', 'protein'][seedTypeId], id:item.id}"></EntryDetails>
                       </td>
                     </template>
                     <template v-slot:footer>
@@ -551,7 +552,8 @@
                   <template v-if="results.targets.length>=0">
                     <v-data-table max-height="50vh" height="50vh" class="overflow-y-auto" fixed-header dense
                                   item-key="id"
-                                  :items="results.targets" :headers="getHeaders()" disable-pagination show-expand :single-expand="true"
+                                  :items="results.targets" :headers="getHeaders()" disable-pagination show-expand
+                                  :single-expand="true"
                                   hide-default-footer @click:row="drugClicked">
                       <template v-slot:item.displayName="{item}">
                         <v-tooltip v-if="item.displayName.length>16" right>
@@ -565,7 +567,8 @@
                       </template>
                       <template v-slot:expanded-item="{ headers, item }">
                         <td :colspan="headers.length">
-                          <EntryDetails max-width="19vw" :detail-request="{edge:false, type:'drug', id:item.id}"></EntryDetails>
+                          <EntryDetails max-width="19vw"
+                                        :detail-request="{edge:false, type:'drug', id:item.id}"></EntryDetails>
                         </td>
                       </template>
                       <template v-slot:item.data-table-expand="{expand, item,isExpanded}">
@@ -649,12 +652,26 @@ export default {
         {
           id: "trustrank",
           label: "TrustRank",
-          scores: [{id: "score", name: "Score", decimal: true}, {id: "rank", name: "Rank"}]
+          scores: [{
+            id: "score",
+            name: "Score",
+            decimal: true,
+            normalize: true,
+            order: "descending",
+            primary: true
+          }, {id: "rank", name: "Rank"}]
         },
         {
           id: "centrality",
           label: "Closeness Centrality",
-          scores: [{id: "score", name: "Score", decimal: true}, {id: "rank", name: "Rank"}]
+          scores: [{
+            id: "score",
+            name: "Score",
+            decimal: true,
+            normalize: true,
+            order: "descending",
+            primary: true
+          }, {id: "rank", name: "Rank"}]
         }],
       graph: {physics: false},
       methodModel: undefined,
@@ -752,13 +769,19 @@ export default {
     getHeaders: function (seed) {
       let headers = [{text: "Name", align: "start", sortable: true, value: "displayName"}]
       if (!seed)
-        this.methodScores().forEach(e => headers.push({
-          text: e.name,
-          align: e.decimal ? "start" : "end",
-          sortable: true,
-          value: e.id,
-        }))
-      headers.push({text:"",value:"data-table-expand"})
+        this.methodScores().forEach(e => {
+          let entry = {
+            text: e.name,
+            align: e.decimal ? "start" : "end",
+            sortable: true,
+            value: e.id,
+          }
+          if (e.id === "rank") {
+            headers = [entry].concat(headers)
+          } else
+            headers.push(entry)
+        })
+      headers.push({text: "", value: "data-table-expand"})
       return headers
     },
     seedClicked: function (item) {
@@ -837,13 +860,9 @@ export default {
       }
     },
 
-    updateDrugCount: function(){
+    updateDrugCount: function () {
       this.validationDrugCount = this.$refs.validationTable.getDrugs().length;
     },
-
-    // saveDrugsForValidation: function (drugs) {
-    //   drugs.forEach(drug => this.validationDrugs[drug.id] = drug);
-    // },
 
 
     addToSelection: function (data) {
@@ -941,39 +960,73 @@ export default {
       this.readJob(data)
     },
     loadTargetTable: function (gid) {
-      let scoreAttrs = this.methods[this.methodModel].scores.filter(s => s.decimal)
       this.targetColorStyle = {'background-color': this.$global.metagraph.colorMap['drug'].light}
       return this.$http.get("/getGraphList?id=" + gid).then(response => {
         if (response.data !== undefined)
           return response.data
-      }).then(data => this.$utils.roundScores(data, 'drug', scoreAttrs)
-      ).then(data => {
-        this.results.targets = data.nodes.drug.sort((e1, e2) => e2.score - e1.score)
-
-        let lastRank = 0;
-        let lastScore = 0;
-        let step = 0;
-
-        this.results.targets.forEach(drug => {
-          step++
-          if (lastRank === 0 || lastScore !== drug.score) {
-            lastRank = step;
-            lastScore = drug.score;
-          }
-          drug.rank = lastRank
-        })
+      }).then(data => {
+        let primaryAttribute = this.methods[this.methodModel].scores.filter(s => s.primary)[0]
+        this.results.targets = this.sort(data.nodes.drug,primaryAttribute)
+        this.rank(this.results.targets,primaryAttribute.id)
+        this.normalize(this.results.targets)
+        this.round(this.results.targets)
       }).catch(console.error)
     },
     clearList: function () {
       this.seeds = []
       this.seedOrigin = {}
     },
+
+    sort: function (list,attribute) {
+      return attribute.order === "descending" ? list.sort((e1, e2) => e2[attribute.id] - e1[attribute.id]): list.sort((e1, e2) => e1[attribute.id] - e2[attribute.id])
+    },
+
+    round: function (list) {
+      this.methods[this.methodModel].scores.filter(s => s.decimal).forEach(attribute => {
+        list.forEach(e => {
+          this.$utils.roundScore(e, attribute.id)
+        })
+      })
+    },
+
+    rank: function (list,attribute) {
+      let lastRank = 0;
+      let lastScore = 0;
+
+      list.forEach(drug => {
+        if (lastRank === 0 || lastScore !== drug[attribute]) {
+          lastRank++
+          lastScore = drug[attribute];
+        }
+        drug.rank = lastRank
+      })
+    },
+
+    normalize: function (list) {
+      this.methods[this.methodModel].scores.filter(s => s["normalize"]).forEach(attribute => {
+        if (attribute.order === "descending") {
+          let base = list.map(e => e[attribute.id]).reduce((e1, e2) => {
+            return Math.max(e1, e2)
+          })
+          list.forEach(e => e[attribute.id] = (e[attribute.id] / base))
+        } else if (attribute.order === "ascending") {
+          let base = list.map(e => e[attribute.id]).reduce((e1, e2) => {
+            return Math.min(e1, e2)
+          })
+          list.forEach(e => e[attribute.id] = base / e.attribute.id)
+        }
+        attribute.name = attribute.name + " (Norm)"
+      })
+    }
+    ,
+
     focusNode: function (id) {
       if (this.$refs.graph === undefined)
         return
       this.$refs.graph.setSelection([id])
       this.$refs.graph.zoomToNode(id)
     }
+
     ,
     waitForGraph: function (resolve) {
       if (this.$refs.graph === undefined)
@@ -1006,7 +1059,8 @@ export default {
     ,
     printNotification: function (message, type) {
       this.$emit("printNotificationEvent", message, type)
-    },
+    }
+    ,
   },
 
   components: {

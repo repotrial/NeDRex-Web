@@ -1436,6 +1436,8 @@ public class WebGraphService {
                         DBConfig.getConfig().getEdge(Graphs.getEdge("DisorderHierarchy")).databases.forEach(s -> edgeSource.get().add(sourceType + ":" + s));
                         node.put("sourceDBs", edgeSource);
                     }
+                }else{
+                    node.put("sourceDBs",Collections.singletonList(DBConfig.getConfig().nodes.get(Graphs.getNode(sourceType)).sourceId));
                 }
                 nodes.add(node);
             }

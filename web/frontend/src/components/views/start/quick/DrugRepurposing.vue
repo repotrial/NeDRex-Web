@@ -137,7 +137,8 @@
                 </v-list-item-action>
               </v-col>
             </v-row>
-            <ExampleSeeds :seedTypeId="seedTypeId" @addSeedsEvent="addToSelection" :disabled="validationDrugView"></ExampleSeeds>
+            <ExampleSeeds :seedTypeId="seedTypeId" @addSeedsEvent="addToSelection"
+                          :disabled="validationDrugView"></ExampleSeeds>
             <v-container style="height: 55vh;margin: 15px;max-width: 100%">
               <v-row style="height: 100%">
                 <v-col cols="6">
@@ -146,7 +147,7 @@
                       <div style="display: flex">
                         <div style="justify-content: flex-start">
                           <v-card-title style="margin-left: -25px;" class="subtitle-1">Add
-                            {{validationDrugView ? 'drugs': ['genes', 'proteins'][this.seedTypeId] }} associated to
+                            {{ validationDrugView ? 'drugs' : ['genes', 'proteins'][this.seedTypeId] }} associated to
                           </v-card-title>
                         </div>
                         <v-tooltip top>
@@ -946,7 +947,8 @@
                     </template>
                     <template v-slot:expanded-item="{ headers, item }">
                       <td :colspan="headers.length">
-                        <EntryDetails max-width="17vw" :detail-request="{edge:false, type:['gene','protein'][seedTypeId], id:item.id}"></EntryDetails>
+                        <EntryDetails max-width="17vw"
+                                      :detail-request="{edge:false, type:['gene','protein'][seedTypeId], id:item.id}"></EntryDetails>
                       </td>
                     </template>
                     <template v-slot:footer>
@@ -971,10 +973,10 @@
                       <v-card style="width: 15vw; max-width: 20vw; padding-top: 35px">
                         <v-list dense>
                           <v-list-item>
-                                <v-list-item-icon>
-                                  <v-icon left color="#fbe223" size="42">fas fa-genderless
-                                  </v-icon>
-                                </v-list-item-icon>
+                            <v-list-item-icon>
+                              <v-icon left color="#fbe223" size="42">fas fa-genderless
+                              </v-icon>
+                            </v-list-item-icon>
                             <v-list-item-title style="margin-left:-25px">{{ ['Gene', 'Protein'][seedTypeId] }} (Seed)
                             </v-list-item-title>
                             <v-list-item-subtitle style="margin-right:-25px; margin-left:-25px">{{
@@ -1090,7 +1092,8 @@
                       </template>
                       <template v-slot:expanded-item="{ headers, item }">
                         <td :colspan="headers.length">
-                          <EntryDetails max-width="19vw" :detail-request="{edge:false, type:'drug', id:item.id}"></EntryDetails>
+                          <EntryDetails max-width="19vw"
+                                        :detail-request="{edge:false, type:'drug', id:item.id}"></EntryDetails>
                         </td>
                       </template>
                       <template v-slot:footer>
@@ -1188,19 +1191,35 @@ export default {
             name: "Occs (Abs)",
             order: "descending",
             seed: -1
-          }, {id: "occs_rel", name: "Occs (%)",
-            primary: true, decimal: true, order: "descending", seed: 1}]
+          }, {
+            id: "occs_rel", name: "Occs (%)",
+            primary: true, decimal: true, order: "descending", seed: 1
+          }]
         }],
       rankingMethods: [
         {
           id: "trustrank",
           label: "TrustRank",
-          scores: [{id: "score", name: "Score", decimal: true}, {id: "rank", name: "Rank"}]
+          scores: [{
+            id: "score",
+            name: "Score",
+            decimal: true,
+            normalize: true,
+            order: "descending",
+            primary: true
+          }, {id: "rank", name: "Rank"}]
         },
         {
           id: "centrality",
           label: "Closeness Centrality",
-          scores: [{id: "score", name: "Score", decimal: true}, {id: "rank", name: "Rank"}]
+          scores: [{
+            id: "score",
+            name: "Score",
+            decimal: true,
+            normalize: true,
+            order: "descending",
+            primary: true
+          }, {id: "rank", name: "Rank"}]
         }],
       graph: {physics: false},
       moduleMethodModel: undefined,
@@ -1520,7 +1539,7 @@ export default {
         }, 1000)
     }
     ,
-    updateDrugCount: function(){
+    updateDrugCount: function () {
       this.validationDrugCount = this.$refs.validationTable.getDrugs().length;
     },
     readRankingJob: function (result, clean, unsubscribed) {
@@ -1642,63 +1661,95 @@ export default {
       document.body.removeChild(dl)
     }
     ,
-    initialModuleSort: function (list) {
+    seedValueReplacement: function (list) {
       let seedIds = this.seeds.map(n => n.id)
       let seeds = list.filter(n => seedIds.indexOf(n.id > -1))
-      this.moduleMethods[this.moduleMethodModel].scores.forEach(score => seeds.filter(n=>n[score.id]==null).forEach(n => n[score.id] = score.seed))
-
-      let scores = this.moduleMethods[this.moduleMethodModel].scores.filter(s => s.primary);
-      if (scores.length === 0)
-        return list
-      let score = scores[0]
-      let key = score.id
-
-
-      if (score.order === "descending")
-        return list.sort((e1, e2) => {
-          return e2[key] - e1[key]
-        })
-      return list.sort((e1, e2) => {
-        return e1[key] - e2[key]
-      })
+      this.moduleMethods[this.moduleMethodModel].scores.forEach(score => seeds.filter(n => n[score.id] == null).forEach(n => n[score.id] = score.seed))
     },
 
     loadModuleTargetTable: function () {
       let seedType = ['gene', 'protein'][this.seedTypeId]
-      let scoreAttr = this.moduleMethods[this.moduleMethodModel].scores.filter(s => s.decimal)
       this.targetColorStyle = {'background-color': this.$global.metagraph.colorMap[seedType].light}
       return this.$http.get("/getGraphList?id=" + this.moduleGid).then(response => {
         if (response.data !== undefined)
           return response.data
-      }).then(data => this.$utils.roundScores(data, seedType, scoreAttr)).then(data => {
+      }).then(data => {
         data.nodes[seedType].forEach(n => n.displayName = this.$utils.adjustLabels(n.displayName))
-        this.results.targets = this.initialModuleSort(data.nodes[seedType])
 
+        let method = this.moduleMethods[this.moduleMethodModel]
+
+        let primaryAttribute = method.scores.filter(s => s.primary)[0]
+        this.seedValueReplacement(data.nodes[seedType])
+        this.results.targets = this.sort(data.nodes[seedType], primaryAttribute)
+        this.rank(this.results.targets, primaryAttribute)
+        this.normalize(this.results.targets, method)
+        this.round(this.results.targets, method)
       }).catch(console.error)
     },
     loadRankingTargetTable: function () {
-      let scoreAttr = this.rankingMethods[this.rankingMethodModel].scores.filter(s => s.decimal)
       this.drugColorStyle = {'background-color': this.$global.metagraph.colorMap['drug'].light}
       return this.$http.get("/getGraphList?id=" + this.rankingGid).then(response => {
         if (response.data !== undefined)
           return response.data
-      }).then(data => this.$utils.roundScores(data, 'drug', scoreAttr)).then(data => {
-        this.results.drugs = data.nodes.drug.sort((e1, e2) => e2.score - e1.score)
-
-        let lastRank = 0;
-        let lastScore = 0;
-        let step = 0;
-
-        this.results.drugs.forEach(drug => {
-          step++
-          if (lastRank === 0 || lastScore !== drug.score) {
-            lastRank = step;
-            lastScore = drug.score;
-          }
-          drug.rank = lastRank
-        })
+      }).then(data => {
+        let method = this.rankingMethods[this.rankingMethodModel]
+        let primaryAttribute = method.scores.filter(s => s.primary)[0]
+        this.results.drugs = this.sort(data.nodes.drug, primaryAttribute)
+        this.rank(this.results.drugs, primaryAttribute)
+        this.normalize(this.results.drugs, method)
+        this.round(this.results.drugs, method)
       }).catch(console.error)
     },
+
+
+    sort: function (list, attribute) {
+      if (attribute == null)
+        return list
+      return attribute.order === "descending" ? list.sort((e1, e2) => e2[attribute.id] - e1[attribute.id]) : list.sort((e1, e2) => e1[attribute.id] - e2[attribute.id])
+    },
+
+    round: function (list, method) {
+      method.scores.filter(s => s.decimal).forEach(attribute => {
+        list.forEach(e => {
+          this.$utils.roundScore(e, attribute.id)
+        })
+      })
+
+    },
+
+    rank: function (list, attribute) {
+      if (attribute == null || (list.length > 0 && list[0].rank != null))
+        return list;
+      let lastRank = 0;
+      let lastScore = 0;
+
+      list.forEach(drug => {
+        if (lastRank === 0 || lastScore !== drug[attribute.id]) {
+          lastRank++
+          lastScore = drug[attribute];
+        }
+        drug.rank = lastRank
+      })
+    },
+
+    normalize: function (list, method) {
+      method.scores.filter(s => s["normalize"]).forEach(attribute => {
+        if (attribute.order === "descending") {
+          let base = list.map(e => e[attribute.id]).reduce((e1, e2) => {
+            return Math.max(e1, e2)
+          })
+          list.forEach(e => e[attribute.id] = (e[attribute.id] / base))
+        } else if (attribute.order === "ascending") {
+          let base = list.map(e => e[attribute.id]).reduce((e1, e2) => {
+            return Math.min(e1, e2)
+          })
+          list.forEach(e => e[attribute.id] = base / e.attribute.id)
+        }
+        attribute.name = attribute.name + " (Norm)"
+      })
+    }
+    ,
+
     waitForGraph: function (resolve) {
       if (this.$refs.graph === undefined)
         setTimeout(this.waitForGraph, 100, resolve)
@@ -1733,13 +1784,19 @@ export default {
         scores = this.moduleMethodScores()
       else
         scores = this.rankingMethodScores();
-      scores.forEach(e => headers.push({
-        text: e.name,
-        align: e.decimal ? "start" : "end",
-        sortable: true,
-        value: e.id,
-      }))
-      headers.push({text:"",value:"data-table-expand"})
+      scores.forEach(e => {
+        let entry = {
+          text: e.name,
+          align: e.decimal ? "start" : "end",
+          sortable: true,
+          value: e.id,
+        }
+        if (e.id === "rank") {
+          headers = [entry].concat(headers)
+        } else
+          headers.push(entry)
+      })
+      headers.push({text: "", value: "data-table-expand"})
       return headers
     },
     seedClicked: function (item) {
