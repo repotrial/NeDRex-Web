@@ -946,7 +946,7 @@
                     </template>
                     <template v-slot:expanded-item="{ headers, item }">
                       <td :colspan="headers.length">
-                        <EntryDetails max-width="17vw"
+                        <EntryDetails max-width="17vw"  :attributes="[geneDetailAttributes,proteinDetailAttributes][seedTypeId]"
                                       :detail-request="{edge:false, type:['gene','protein'][seedTypeId], id:item.id}"></EntryDetails>
                       </td>
                     </template>
@@ -1059,7 +1059,7 @@
                     </template>
                   </Network>
                 </v-col>
-                <v-col cols="3" style="padding:0">
+                <v-col style="padding:0; max-width: 31%; width: 31%">
                   <v-card-title class="subtitle-1"> Drugs{{
                       (results.drugs.length !== undefined && results.drugs.length > 0 ? (" (" + (results.drugs.length) + ")") : ": Processing")
                     }}
@@ -1085,13 +1085,28 @@
                         </v-tooltip>
                         <span v-else>{{ item.displayName }}</span>
                       </template>
+                      <template v-slot:item.trialCount="{item}">
+                        <v-tooltip v-if="item.known" left>
+                          <template v-slot:activator="{attr,on }">
+                            <span v-bind="attr" v-on="on"><v-icon size="1rem" left>fas fa-check</v-icon></span>
+                          </template>
+                          <span>This drug is already known to have an effect on at least one of the initially selected disorders.</span>
+                        </v-tooltip>
+                        <v-tooltip v-if="item.trials!=null" left>
+                          <template v-slot:activator="{attr,on }">
+                            <span v-bind="attr" v-on="on">{{item.trialCount }}</span>
+                          </template>
+                          <span>There are the {{item.trialCount}} entries for trials regarding one of the<br> initially selected disorders and this drug on ClinicalTrial.gov. Expand the entry to find all studies!</span>
+                        </v-tooltip>
+
+                      </template>
                       <template v-slot:item.data-table-expand="{expand, item,isExpanded}">
                         <v-icon v-show="!isExpanded" @click="expand(true)">fas fa-angle-down</v-icon>
                         <v-icon v-show="isExpanded" @click="expand(false)">fas fa-angle-up</v-icon>
                       </template>
                       <template v-slot:expanded-item="{ headers, item }">
                         <td :colspan="headers.length">
-                          <EntryDetails max-width="19vw"
+                          <EntryDetails max-width="25vw" :attributes="drugDetailAttributes" :additions="(item.trials != null ?  [{pos:3,key:'ClinicalTrials',value:item.trials}]:null)"
                                         :detail-request="{edge:false, type:'drug', id:item.id}"></EntryDetails>
                         </td>
                       </template>
@@ -1263,6 +1278,9 @@ export default {
       rankingJid: undefined,
       validationDrugCount: 0,
       validationDrugView: false,
+      drugDetailAttributes:["Name", "SourceID","SourceIDs","Formula","Indication","Description","Synonyms"],
+      geneDetailAttributes:["Name", "SourceID","SourceIDs","Symbols","Chromosome","Genomic Location","Synonyms", "Description"],
+      proteinDetailAttributes:["Name", "SourceID","SourceIDs","Gene","Synonyms", "Comments"],
       disorderIds: [],
     }
   },
@@ -1703,6 +1721,7 @@ export default {
         this.rank(this.results.drugs, primaryAttribute)
         this.normalize(this.results.drugs, method)
         this.round(this.results.drugs, method)
+        this.addTrialsNumber(this.results.drugs, method)
       }).catch(console.error)
     },
 
@@ -1720,6 +1739,51 @@ export default {
         })
       })
 
+    },
+
+    addTrialsNumber: async function (list, method) {
+      if(this.disorderIds==null || this.disorderIds.length===0){
+        // let scoreIdx = method.scores.map(s=>s.id).indexOf("trialCount")
+        // if(scoreIdx>-1)
+        //   method.scores.splice(scoreIdx,1)
+        return
+      }
+      let drugNames = await this.$http.getNodes("drug", list.map(drug => drug.id), ["id", "displayName"]).then(data => {
+        return data.map(d => d.displayName)
+      })
+      let disorderNames = await this.$http.getNodes("disorder", this.disorderIds, ["id", "displayName", "synonyms"]).then(data => {
+        return data.map(d => d.displayName)
+      })
+      await this.$http.getAllTrials(disorderNames, drugNames).then(data => {
+        data.StudyFields.forEach(studie => {
+          studie.InterventionName.forEach(target => {
+            list.forEach(drug => {
+              if (target.toLowerCase().indexOf(drug.displayName.toLowerCase())>-1) {
+                if (drug.trials == null)
+                  drug.trials = studie.NCTId
+                else {
+                  studie.NCTId.forEach(id => {
+                    if (drug.trials.indexOf(id) === -1)
+                      drug.trials.push(id)
+                  })
+                }
+              }
+            })
+          })
+        })
+      })
+      list.forEach(drug=>{
+        if(drug.trials != null) {
+          drug.trialCount = drug.trials.length;
+        }
+      })
+      let validDrugs = this.$refs.validationTable.getDrugs();
+      if(validDrugs!=null){
+        let ids = validDrugs.map(d=>d.id)
+        this.results.drugs.filter(d=>ids.indexOf(d.id)>-1).forEach(d=>d.known=true)
+      }
+      if(method.scores.filter(s=>s.id==="trialCount").length===0)
+        method.scores.push({id: "trialCount", name: "Use"})
     },
 
     rank: function (list, attribute) {

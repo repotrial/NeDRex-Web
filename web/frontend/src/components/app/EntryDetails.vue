@@ -93,7 +93,8 @@
 
     <v-divider></v-divider>
     <v-timeline align-top dense style="margin-left: -30px">
-      <v-timeline-item small :color="getDetailDotColor(item)" v-for="item in detailedObject.order"
+      <v-timeline-item small :color="getDetailDotColor(item)"
+                       v-for="item in (attributes !=null && attributes.length >0 ? attributes :detailedObject.order)"
                        :key="item">
 
         <div><strong>{{ item }}</strong></div>
@@ -130,8 +131,10 @@ export default {
   props: {
     gid: String,
     entityGraph: Object,
-    detailRequest:Object,
+    detailRequest: Object,
     maxWidth: String,
+    attributes: Array,
+    additions: Array,
   },
 
   data() {
@@ -144,7 +147,7 @@ export default {
   },
 
   created() {
-    if(this.detailRequest!=null){
+    if (this.detailRequest != null) {
       this.loadDetails(this.detailRequest)
     }
   },
@@ -154,6 +157,8 @@ export default {
 
 
     format: function (item, value) {
+      if (value == null)
+        return ""
       if (item === "SourceIDs" || item === "SourceID" || item === "TargetID" || item === "TargetIDs" || item === "MemberOne" || item === "MemberTwo") {
         let split = value.split(".")
         switch (split[0]) {
@@ -290,6 +295,8 @@ export default {
         return "https://chem.nlm.nih.gov/chemidplus/rn/" + value
       if (item === "Formula")
         return "https://www.chemcalc.org/?mf=" + value
+      if (item === "ClinicalTrials")
+        return "https://clinicaltrials.gov/ct2/show/" + value
       if (item === "Databases" || item === "Datasets" || item === "Primary Dataset")
         switch (value) {
           case "biogrid":
@@ -372,6 +379,8 @@ export default {
         return "#749bc4"
       if (item === "Formula")
         return "#33484d"
+      if (item === "ClinicalTrials")
+        return "#080e78"
 
       if (item === "Databases" || item === "Datasets" || item === "Primary Dataset")
         switch (value) {
@@ -415,16 +424,24 @@ export default {
       window.open(this.getUrl(item, i), '_blank')
     },
     redirect: function (req) {
-      if (req!=null && req !== this.lastReq) {
-        this.loadDetails(req,true)
+      if (req != null && req !== this.lastReq) {
+        this.loadDetails(req, true)
       } else {
         this.redirected = false;
         this.loadDetails(this.lastReq)
       }
     },
+    addToDetails: function (pos, attributeName, value) {
+      let list = this.attributes == null ? this.detailedObject.order : this.attributes;
+      if (list.indexOf(attributeName) === -1)
+        list.splice(pos, 0, attributeName)
+      this.$set(this.detailedObject, attributeName, value)
+    },
 
-    loadDetails: function (detailRequest, redirect) {
-      this.redirected = redirect !=null && redirect
+    loadDetails: function (detailRequest, redirect, attributes) {
+      if (attributes != null)
+        this.attributes = attributes
+      this.redirected = redirect != null && redirect
       if (!this.redirected)
         this.lastReq = detailRequest;
       if (!detailRequest.edge) {
@@ -434,9 +451,12 @@ export default {
             this.detailedObject.node = true;
             this.description = "for " + this.detailedObject["Type"] + " " + this.detailedObject["Name"] + " (id:" + this.detailedObject["ID"] + ")"
           }
+          if (this.additions != null)
+            this.additions.forEach(entry => this.addToDetails(entry.pos, entry.key, entry.value))
         }).catch(err => {
           console.error(err)
         })
+
       } else {
         this.$http.get("getEdgeDetails?name=" + detailRequest.type + "&id1=" + detailRequest.id1 + "&id2=" + detailRequest.id2 + "&gid=" + this.gid).then(response => {
           if (response.data !== undefined) {
@@ -457,13 +477,15 @@ export default {
     getDetailDotColor: function (attribute) {
       if (this.detailedObject.node)
         return this.getColoring('nodes', this.detailedObject["Type"]);
-      let basic = "#464e53";
-      let colors = this.getExtendedColoring('edges', this.detailedObject["Type"]);
-      if (["Source", "Node1", "SourceDomainID", "SourceID", "SourceDomainIDs", "IDOne", "MemberOne"].indexOf(attribute) > -1)
-        return colors[0]
-      if (["Target", "Node2", "TargetDomainID", "TargetID", "TargetDomainIDs", "IDTwo", "MemberTwo"].indexOf(attribute) > -1)
-        return colors[1]
-      return basic;
+      if (this.detailedObject.edge) {
+        let basic = "#464e53";
+        let colors = this.getExtendedColoring('edges', this.detailedObject["Type"]);
+        if (["Source", "Node1", "SourceDomainID", "SourceID", "SourceDomainIDs", "IDOne", "MemberOne"].indexOf(attribute) > -1)
+          return colors[0]
+        if (["Target", "Node2", "TargetDomainID", "TargetID", "TargetDomainIDs", "IDTwo", "MemberTwo"].indexOf(attribute) > -1)
+          return colors[1]
+        return basic;
+      }
     },
 
     getColoring: function (type, name) {
@@ -491,8 +513,8 @@ export default {
 
 <style scoped lang="scss">
 
-.v-timeline-item{
-  padding-bottom:8px;
+.v-timeline-item {
+  padding-bottom: 8px;
 }
 
 </style>

@@ -91,6 +91,20 @@ public class RequestController {
         return out;
     }
 
+    @RequestMapping(value = "/getNodeDetails", method = RequestMethod.POST)
+    @ResponseBody
+    public String getCustomDetails(@RequestBody DetailRequest req) {
+        log.info("requested details" + toJson(req));
+        if(req.attributes ==null || req.attributes.isEmpty())
+            return getDetails(req.name,req.id);
+        HashMap<String, Object> details = new HashMap<>();
+        nodeController.nodeToAttributeList(Graphs.getNode(req.name), req.id).forEach((k, v) -> {
+            if(req.attributes.contains(k))
+            details.put(nodeController.getAttributeLabelMap(req.name).get(k), v);
+        });
+        return toJson(details);
+    }
+
     @RequestMapping(value = "/getEdgeDetails", method = RequestMethod.GET)
     @ResponseBody
     public String getDetails(@RequestParam("gid") String gid, @RequestParam("name") String name, @RequestParam("id1") int id1, @RequestParam("id2") int id2) {
