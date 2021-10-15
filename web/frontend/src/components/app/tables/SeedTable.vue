@@ -1,125 +1,123 @@
 <template>
-  <v-data-table :max-height="height" :height="height" class="overflow-y-auto overflow-x-hidden" fixed-header
-                dense item-key="id"
-                :items="nodes"
-                :headers="headers"
-                disable-pagination
-                hide-default-footer
-                style="margin-top: 16px" >
-    <template v-slot:top>
-      <div style="display: flex">
-        <v-card-title style="justify-self: flex-start" class="subtitle-1">{{ title }}
-        </v-card-title>
-      </div>
-    </template>
-    <template v-slot:item.displayName="{item}">
-      <v-tooltip v-if="item.displayName.length>16" right>
-        <template v-slot:activator="{attr,on }">
+  <div>
+    <v-data-table :max-height="height" :height="height" class="overflow-y-auto overflow-x-hidden" fixed-header
+                  dense item-key="id"
+                  :items="nodes"
+                  :headers="headers"
+                  style="margin-top: 16px">
+      <template v-slot:top>
+        <div style="display: flex">
+          <v-card-title style="justify-self: flex-start; padding-top: 0" class="subtitle-1">{{ title }}
+          </v-card-title>
+        </div>
+      </template>
+      <template v-slot:item.displayName="{item}">
+        <v-tooltip v-if="item.displayName.length>16" right>
+          <template v-slot:activator="{attr,on }">
                           <span v-bind="attr" v-on="on"
                                 style="color: dimgray">{{ item.displayName.substr(0, 16) }}...</span>
-        </template>
-        <span>{{ item.displayName }}</span>
-      </v-tooltip>
-      <span v-else>{{ item.displayName }}</span>
-    </template>
-    <template v-slot:item.origin="{item}">
-      <template v-for="o in getOrigins(item.id)">
-        <v-tooltip bottom :key="item.id+o">
-          <template v-slot:activator="{attr,on }">
-            <v-chip style="font-size: smaller; color: gray; margin:1px; max-width: 9rem" pill v-on="on" v-bind="attr">
-              <div v-if="o[2]" style="background-color: transparent; border:none; box-shadow: none;">
-                <div style="font-size: 0.6rem; margin:0; margin-top:-5px; padding:0; max-height: 0.8rem">
-                  <b>{{ o[2].toUpperCase() }}</b></div>
-                <div style="font-size: 0.7rem; margin:0; padding:0; max-height: 1rem; white-space: nowrap;">
+          </template>
+          <span>{{ item.displayName }}</span>
+        </v-tooltip>
+        <span v-else>{{ item.displayName }}</span>
+      </template>
+      <template v-slot:item.origin="{item}">
+        <template v-for="o in getOrigins(item.id)">
+          <v-tooltip bottom :key="item.id+o">
+            <template v-slot:activator="{attr,on }">
+              <v-chip style="font-size: smaller; color: gray; margin:1px; max-width: 9rem" pill v-on="on" v-bind="attr">
+                <div v-if="o[2]" style="background-color: transparent; border:none; box-shadow: none;">
+                  <div style="font-size: 0.6rem; margin:0; margin-top:-5px; padding:0; max-height: 0.8rem">
+                    <b>{{ o[2].toUpperCase() }}</b></div>
+                  <div style="font-size: 0.7rem; margin:0; padding:0; max-height: 1rem; white-space: nowrap;">
                   <span
                     :style="{color: o[1].length>20 ? 'gray':'black'}">{{
                       o[1].length > 20 ? (o[1].substring(0, 20).trim() + "...") : o[1]
                     }}</span>
+                  </div>
                 </div>
-              </div>
-              <div v-else-if="o[0]==='FILE'">
-                <div style="font-size: 0.6rem; margin:0; margin-top:-5px; padding:0; max-height: 0.8rem">
-                  <b>{{ o[0] }}</b></div>
-                <div style="font-size: 0.7rem; margin:0; padding:0; max-height: 1rem; white-space: nowrap;">
+                <div v-else-if="o[0]==='FILE'">
+                  <div style="font-size: 0.6rem; margin:0; margin-top:-5px; padding:0; max-height: 0.8rem">
+                    <b>{{ o[0] }}</b></div>
+                  <div style="font-size: 0.7rem; margin:0; padding:0; max-height: 1rem; white-space: nowrap;">
                   <span
                     :style="{color: o[1].length>20 ? 'gray':'black'}">{{
                       o[1].length > 20 ? (o[1].substring(0, 20).trim() + "...") : o[1]
                     }}</span>
+                  </div>
                 </div>
-              </div>
-              <div v-else>
-                <div style="font-size: 0.6rem; margin:0; margin-top:-5px; padding:0; max-height: 0.8rem">
-                  <b>FUNCTION</b></div>
-                <div style="font-size: 0.7rem; margin:0; padding:0; max-height: 1rem; white-space: nowrap;">
+                <div v-else>
+                  <div style="font-size: 0.6rem; margin:0; margin-top:-5px; padding:0; max-height: 0.8rem">
+                    <b>FUNCTION</b></div>
+                  <div style="font-size: 0.7rem; margin:0; padding:0; max-height: 1rem; white-space: nowrap;">
                   <span
                     :style="{color: o[0].length>20 ? 'gray':'black'}">{{
                       o[0].length > 20 ? (o[0].substring(0, 20).trim() + "...") : o[0]
                     }}</span>
+                  </div>
                 </div>
-              </div>
-            </v-chip>
-          </template>
-          <span v-if="o[2]">Connected to <b>{{ o[2] }}</b>:<br><b>{{ o[1] }}</b></span>
-          <span v-else-if="o[0]==='FILE'">Added from user file:<br><b>{{ o[1] }}</b></span>
-          <span v-else>Returned by method:<br><b>{{ o[1] != null ? o[1] : o[0] }}</b></span>
-        </v-tooltip>
+              </v-chip>
+            </template>
+            <span v-if="o[2]">Connected to <b>{{ o[2] }}</b>:<br><b>{{ o[1] }}</b></span>
+            <span v-else-if="o[0]==='FILE'">Added from user file:<br><b>{{ o[1] }}</b></span>
+            <span v-else>Returned by method:<br><b>{{ o[1] != null ? o[1] : o[0] }}</b></span>
+          </v-tooltip>
+        </template>
       </template>
-    </template>
-    <template v-slot:item.sourceDBs="{item}">
-      <template v-for="o in item.sourceDBs">
-        <SeedTableSourceChip :key="item.id+o" :source="o" :nodeName="nodeName"></SeedTableSourceChip>
+      <template v-slot:item.sourceDBs="{item}">
+        <template v-for="o in item.sourceDBs">
+          <SeedTableSourceChip :key="item.id+o" :source="o" :nodeName="nodeName"></SeedTableSourceChip>
+        </template>
       </template>
-    </template>
-    <template v-slot:header.origin="{header}">
-      <v-tooltip bottom>
-        <template v-slot:activator="{attr,on }">
+      <template v-slot:header.origin="{header}">
+        <v-tooltip bottom>
+          <template v-slot:activator="{attr,on }">
                           <span v-bind="attr" v-on="on">
                           Origin
                           </span>
 
-        </template>
-        <span>Holds the sources the seed node was added by:<br><b>SUG=</b>Suggestion, <b>FILE</b>=File input or <b>METH</b>=Other method</span>
-      </v-tooltip>
-    </template>
-    <template v-slot:header.sourceDBs="{header}">
-      <v-tooltip bottom>
-        <template v-slot:activator="{attr,on }">
+          </template>
+          <span>Holds the sources the seed node was added by:<br><b>SUG=</b>Suggestion, <b>FILE</b>=File input or <b>METH</b>=Other method</span>
+        </v-tooltip>
+      </template>
+      <template v-slot:header.sourceDBs="{header}">
+        <v-tooltip bottom>
+          <template v-slot:activator="{attr,on }">
                           <span v-bind="attr" v-on="on">
                           SourceDBs
                           </span>
-        </template>
-        <span>Holds the source which provided information about the used association.</span>
-      </v-tooltip>
-    </template>
-    <template v-slot:header.displayName="{header}">
-      <v-tooltip bottom>
-        <template v-slot:activator="{attr,on }">
+          </template>
+          <span>Holds the source which provided information about the used association.</span>
+        </v-tooltip>
+      </template>
+      <template v-slot:header.displayName="{header}">
+        <v-tooltip bottom>
+          <template v-slot:activator="{attr,on }">
                           <span v-bind="attr" v-on="on">
                           Name
                           </span>
-        </template>
-        <span>Holds the common name of the {{ nodeName }} if available.</span>
-      </v-tooltip>
-    </template>
-    <template v-slot:item.action="{item}">
-      <v-tooltip right>
-        <template v-slot:activator="{attr,on }">
-          <v-btn icon @click="removeNode(item.id)" color="red">
-            <v-icon>far fa-trash-alt</v-icon>
-          </v-btn>
-        </template>
-        <span>Remove the current entry from the seed selection!</span>
-      </v-tooltip>
-    </template>
-    <template v-slot:footer>
-      <div style="display: flex; justify-content: center;padding-top: 16px" v-if="nodes !=null && nodes.length>0">
-        <SeedDownload v-show="download" @downloadListEvent="downloadNodes"></SeedDownload>
-        <SeedRemove v-show="remove" @clearEvent="clear" @intersectionEvent="keepIntersection"
-                    :attributes="attributes" @removeEvent="removeNodes"></SeedRemove>
-        <SeedFilter v-show="filter" :attributes="attributes" @filterEvent="filterNodes"></SeedFilter>
-      </div>
-    </template>
-  </v-data-table>
+          </template>
+          <span>Holds the common name of the {{ nodeName }} if available.</span>
+        </v-tooltip>
+      </template>
+      <template v-slot:item.action="{item}">
+        <v-tooltip right>
+          <template v-slot:activator="{attr,on }">
+            <v-btn icon @click="removeNode(item.id)" color="red">
+              <v-icon>far fa-trash-alt</v-icon>
+            </v-btn>
+          </template>
+          <span>Remove the current entry from the seed selection!</span>
+        </v-tooltip>
+      </template>
+    </v-data-table>
+    <div style="display:flex; justify-content: center; ;" v-if="nodes !=null && nodes.length>0">
+      <SeedDownload v-show="download" @downloadListEvent="downloadNodes"></SeedDownload>
+      <SeedRemove v-show="remove" @clearEvent="clear" @intersectionEvent="keepIntersection"
+                  :attributes="attributes" @removeEvent="removeNodes"></SeedRemove>
+      <SeedFilter v-show="filter" :attributes="attributes" @filterEvent="filterNodes"></SeedFilter>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -182,7 +180,7 @@ export default {
     removeNode: function (id) {
       let index = this.nodes.map(e => e.id).indexOf(id)
       this.nodes.splice(index, 1)
-      this.$emit("remove",this.origins[id])
+      this.$emit("remove", this.origins[id])
       delete this.origins[id]
     },
 

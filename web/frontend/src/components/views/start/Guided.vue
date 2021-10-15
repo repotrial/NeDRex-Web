@@ -46,8 +46,8 @@
           <v-card
             v-show="step===1"
             class="mb-4"
-            max-height="95vh"
-            height="95vh"
+            max-height="980px"
+            height="980px"
           >
 
             <v-card-subtitle class="headline">Node Configuration</v-card-subtitle>
@@ -59,8 +59,7 @@
               specific connections might be of interest.
             </v-card-subtitle>
 
-            <v-container style="height: 80%">
-              <div style="height: 75vh; display: flex">
+              <div style="height: 960px; display: flex">
                 <div style="justify-self: flex-start; width: 48%;">
                   <div style="display: flex; justify-content: flex-start;">
                     <div class="title" style="padding-top: 16px;">1a. Select the source node type:</div>
@@ -90,12 +89,12 @@
                     <SeedTable ref="sourceTable" v-show="sourceTypeId!==undefined" :download="true" :remove="true"
                                :filter="true"
                                @printNotificationEvent="printNotification"
-                               height="30vh"
+                               height="360px"
                                :title="'Source nodes ('+($refs.sourceTable ? $refs.sourceTable.getSeeds().length : 0)+')'"
                                :nodeName="nodeList[sourceTypeId].value"></SeedTable>
                   </div>
                 </div>
-                <div style="justify-self: center; margin-left: auto">
+                <div style="justify-self: center; margin-left: auto; padding-bottom:120px">
                   <v-divider vertical></v-divider>
                 </div>
                 <div style="justify-self: flex-end; margin-left: auto; width: 48%;">
@@ -128,13 +127,12 @@
 
                     <SeedTable ref="targetTable" v-show="targetTypeId!==undefined" :download="true" :remove="true"
                                @printNotificationEvent="printNotification"
-                               height="30vh"
+                               height="360px"
                                :title="'Target nodes ('+($refs.targetTable ? $refs.targetTable.getSeeds().length : 0)+')'"
                                :nodeName="nodeList[targetTypeId].value"></SeedTable>
                   </div>
                 </div>
               </div>
-            </v-container>
           </v-card>
           <v-btn
             color="primary"
@@ -159,7 +157,6 @@
               intermediate node (in case an indirect path is selected) or to create a new edge type given a user defined
               name. Additional path specific configuration may be available.
             </v-card-subtitle>
-            <v-container style="height: 80%">
               <v-row style="min-height: 35vh; margin-bottom: 15px">
                 <v-col cols="3">
                   <v-radio-group v-model="pathModel">
@@ -248,7 +245,9 @@
                     </v-list>
                   </v-radio-group>
                 </v-col>
+                <div style="margin-bottom: 20px">
                 <v-divider vertical></v-divider>
+                </div>
                 <v-col>
                   <v-list-item-subtitle class="title">Additional Options</v-list-item-subtitle>
                   <v-card-subtitle>General</v-card-subtitle>
@@ -278,7 +277,6 @@
                   <v-card-subtitle>Edge specific</v-card-subtitle>
                 </v-col>
               </v-row>
-            </v-container>
           </v-card>
           <v-btn
             @click="makeStep(2,'back')"
@@ -301,7 +299,7 @@
           <v-card
             v-if="step===3"
             class="mb-4"
-            max-height="80vh"
+            max-height="750px"
           >
             <v-card-subtitle class="headline">3. Network</v-card-subtitle>
             <v-card-subtitle style="margin-top: -25px">The network you created
@@ -311,7 +309,7 @@
               <v-col cols="2" style="padding: 0">
                 <v-card-title class="subtitle-1">Sources ({{ sources.length }})
                 </v-card-title>
-                <v-data-table max-height="50vh" height="50vh" class="overflow-y-auto" fixed-header dense item-key="id"
+                <v-data-table max-height="550px" height="550px" class="overflow-y-auto" fixed-header dense item-key="id"
                               :items="sources"
                               :headers="getHeaders()" show-expand :single-expand="true"
                               disable-pagination
@@ -338,7 +336,7 @@
                   </template>
                   <template v-slot:footer>
                     <div style="display: flex; justify-content: center; margin-left: auto">
-                      <div style="padding-top: 16px">
+                      <div style="padding-top: 16px; padding-bottom: 8px">
                         <ResultDownload v-show="sources !=null && sources.length>0" seeds
                                         @downloadEvent="downloadSourceList"></ResultDownload>
                       </div>
@@ -416,7 +414,7 @@
                   </v-progress-circular>
                 </v-card-title>
                 <template v-if="targets.length>=0">
-                  <v-data-table max-height="50vh" height="50vh" class="overflow-y-auto" fixed-header dense item-key="id"
+                  <v-data-table max-height="550px" height="550px" class="overflow-y-auto" fixed-header dense item-key="id"
                                 :items="targets"
                                 :headers="getHeaders()"
                                 disable-pagination show-expand :single-expand="true"
@@ -443,7 +441,7 @@
                     </template>
                     <template v-slot:footer>
                       <div style="display: flex; justify-content: center; margin-left: auto">
-                        <div style="padding-top: 16px">
+                        <div style="padding-top: 16px;padding-bottom: 8px">
                           <ResultDownload v-show="targets !=null && targets.length>0" seeds
                                           @downloadEvent="downloadTargetList"></ResultDownload>
                         </div>
@@ -488,8 +486,8 @@ export default {
 
       sugQuery: [undefined, undefined],
       graphWindowStyle: {
-        height: '60vh',
-        'min-height': '60vh',
+        height: '550px',
+        'min-height': '550px',
       },
       graphConfig: {visualized: false},
 

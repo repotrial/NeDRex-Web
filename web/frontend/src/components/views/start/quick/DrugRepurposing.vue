@@ -139,7 +139,7 @@
             </v-row>
             <ExampleSeeds :seedTypeId="seedTypeId" @addSeedsEvent="addToSelection"
                           :disabled="validationDrugView"></ExampleSeeds>
-            <v-container style="height: 55vh;margin: 15px;max-width: 100%">
+            <v-container style="height: 560px;margin: 15px;max-width: 100%">
               <v-row style="height: 100%">
                 <v-col cols="6">
                   <div style="height: 40vh; max-height: 40vh;">
@@ -199,7 +199,7 @@
                 </v-col>
 
                 <v-divider vertical v-show="seedTypeId!==undefined"></v-divider>
-                <v-col cols="6">
+                <v-col cols="6" style="padding-top:0">
                   <v-tooltip left>
                     <template v-slot:activator="{attrs,on}">
                       <v-chip style="position: absolute; left:auto; right:0" v-on="on" v-bind="attrs"
@@ -215,7 +215,7 @@
                              :remove="true"
                              :filter="true"
                              @printNotificationEvent="printNotification"
-                             height="40vh"
+                             height="405px"
                              :title="'Selected Seeds ('+($refs.seedTable ? $refs.seedTable.getSeeds().length : 0)+')'"
                              :nodeName="['gene','protein'][seedTypeId]"
                   ></SeedTable>

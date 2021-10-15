@@ -27,6 +27,17 @@
         <span>{{ sortings[sortingModel].tooltip }}</span>
       </v-tooltip>
     </template>
+    <template v-slot:append-item>
+      <v-list-item v-show="suggestions.data != null && suggestions.data.length >0">
+        <v-list-item-content>
+          <div style="width: 100%; color: dimgray; display: flex; justify-content: center;">
+            <i style="max-width: 400px;">
+              There might be more matches but they are
+              not associated to any entries of the current target type!</i>
+          </div>
+        </v-list-item-content>
+      </v-list-item>
+    </template>
   </v-autocomplete>
 </template>
 
@@ -78,7 +89,7 @@ export default {
           icon: "fas fa-sort-numeric-up",
           tooltip: "Low to high target entry count!",
           value: "target-up"
-        }, ],
+        },],
       sortingModel: 4
     }
   },
@@ -120,8 +131,8 @@ export default {
           }).then(response => {
             if (response.data !== undefined)
               return response.data
-          }).then(data=>{
-            this.$emit("drugsEvent",{
+          }).then(data => {
+            this.$emit("drugsEvent", {
               origin: "SUG:" + val.text + "[" + this.suggestionType + "]",
               data: data,
               source: this.suggestionType
@@ -164,14 +175,14 @@ export default {
           })
           break;
         }
-        case "target-down":{
-          data.sort((e1,e2)=>{
+        case "target-down": {
+          data.sort((e1, e2) => {
             return e2.targetCount - e1.targetCount
           })
           break;
         }
-        case "target-up":{
-          data.sort((e1,e2)=>{
+        case "target-up": {
+          data.sort((e1, e2) => {
             return e1.targetCount - e2.targetCount
           })
         }

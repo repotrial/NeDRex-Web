@@ -469,12 +469,19 @@ public class WebGraphService {
             }
         }
 
+
         if (request.typeCount != null) {
             boolean sourceEqualsTargetType = request.name.equals(request.typeCount);
             NodeFilter finalNf = nf;
+            LinkedList<Suggestion> keep = new LinkedList<>();
             suggestions.getSuggestions().forEach(suggestion -> {
-                suggestion.setTargetCount(sourceEqualsTargetType ? suggestion.getSize() : getConnectedNodesCount(request.name, request.typeCount, suggestion.getSId().contains("_") ? finalNf.getEntry(suggestion.getSId()).stream().map(FilterEntry::getNodeId).collect(Collectors.toSet()) : Collections.singletonList(Integer.parseInt(suggestion.getSId()))));
+                int count = sourceEqualsTargetType ? suggestion.getSize() : getConnectedNodesCount(request.name, request.typeCount, suggestion.getSId().contains("_") ? finalNf.getEntry(suggestion.getSId()).stream().map(FilterEntry::getNodeId).collect(Collectors.toSet()) : Collections.singletonList(Integer.parseInt(suggestion.getSId())));
+                if(count>0){
+                    suggestion.setTargetCount(count);
+                    keep.add(suggestion);
+                }
             });
+            suggestions.setSuggestions(keep);
         }
 
         return suggestions;

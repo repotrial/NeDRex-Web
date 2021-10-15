@@ -65,6 +65,11 @@ public class Suggestions {
         return suggestions;
     }
 
+    public void setSuggestions(Collection<Suggestion> suggestions){
+        this.suggestions.clear();
+        this.suggestions.addAll(suggestions);
+    }
+
 
     private class SuggestionEntry {
 
