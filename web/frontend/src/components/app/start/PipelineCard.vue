@@ -11,7 +11,7 @@
          :src="image" width="25vw" contain :style="{minWidth:minWidth}">
       <div v-show="!cardHover"
            style="height: 100%; width: 100%; display: flex; align-content: center; justify-content: center">
-        <v-icon right :size="'calc(0.5*'+imgHeight+')'" color="rgba(0,0,0,.05)">fas fa-cogs</v-icon>
+<!--        <v-icon right :size="'calc(0.5*'+imgHeight+')'" color="rgba(0,0,0,.05)">fas fa-cogs</v-icon>-->
       </div>
     </v-img>
     <div v-if="imgHeight!=='0'" class="content" v-show="cardHover"
