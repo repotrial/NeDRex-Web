@@ -8,39 +8,26 @@ import de.exbio.reposcapeweb.communication.jobs.JobController;
 import de.exbio.reposcapeweb.communication.jobs.JobRequest;
 import de.exbio.reposcapeweb.communication.reponses.*;
 import de.exbio.reposcapeweb.communication.requests.*;
-import de.exbio.reposcapeweb.configs.DBConfig;
 import de.exbio.reposcapeweb.db.DbCommunicationService;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
 import de.exbio.reposcapeweb.db.history.HistoryController;
-import de.exbio.reposcapeweb.db.services.controller.EdgeController;
 import de.exbio.reposcapeweb.db.services.controller.NodeController;
-import de.exbio.reposcapeweb.db.services.nodes.DrugService;
 import de.exbio.reposcapeweb.db.updates.UpdateService;
 import de.exbio.reposcapeweb.tools.ToolService;
 import de.exbio.reposcapeweb.utils.Pair;
-import de.exbio.reposcapeweb.utils.ProcessUtils;
 import de.exbio.reposcapeweb.utils.StringUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.*;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLEncoder;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Controller for the incoming requests on the RepoScape-WEB application.
@@ -128,7 +115,7 @@ public class RequestController {
 
     @RequestMapping(value = "/getSuggestionEntry", method = RequestMethod.GET)
     @ResponseBody
-    public String getSuggestionEntry(@RequestParam("gid") String gid, @RequestParam("nodeType") String nodeName, @RequestParam("sid") String sid) {
+    public String getSuggestionEntry(@RequestParam(value = "gid",required = false) String gid, @RequestParam("nodeType") String nodeName, @RequestParam("sid") String sid) {
         try {
             log.debug("Got request for SuggestionId=" + sid);
             return objectMapper.writeValueAsString(webGraphService.getSuggestionEntry(gid, nodeName, sid));
@@ -322,15 +309,22 @@ public class RequestController {
     @RequestMapping(value = "/mapFileListToItems", method = RequestMethod.POST)
     @ResponseBody
     public String getFileListToItems(@RequestBody HashMap<String, String> request) {
-        return toJson(webGraphService.mapIdsToItemList(request.get("type"), StringUtils.convertBase64(request.get("file"))));
+        return toJson(webGraphService.mapDomainIdsToItemList(request.get("type"), StringUtils.convertBase64(request.get("file"))));
     }
 
     @RequestMapping(value = "/mapListToItems", method = RequestMethod.POST)
     @ResponseBody
     public String getListToItems(@RequestBody MapListRequest request) {
         log.debug("Got mapping request for node type: " + request.type + " and list " + toJson(request.list));
-        return toJson(webGraphService.mapIdsToItemList(request.type, new LinkedList(Arrays.asList(request.list))));
+        return toJson(webGraphService.mapDomainIdsToItemList(request.type, new LinkedList(Arrays.asList(request.list))));
     }
+    @RequestMapping(value = "/mapIdListToItems", method = RequestMethod.POST)
+    @ResponseBody
+    public String getIdListToItems(@RequestBody MapListRequest request) {
+        log.debug("Got mapping request for node type: " + request.type + " and id list " + toJson(request.list));
+        return toJson(webGraphService.mapIdsToItemList(request.type, request.list,request.attributes));
+    }
+
 
     @RequestMapping(value = "/removeGraph", method = RequestMethod.GET)
     @ResponseBody

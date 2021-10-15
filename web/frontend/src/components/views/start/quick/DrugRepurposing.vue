@@ -184,8 +184,9 @@
                             through association the 'Limited' switch has to be toggled.
                           </div>
                         </v-tooltip>
-                        <SuggestionAutocomplete :suggestion-type="suggestionType" :emit-drugs="!validationDrugView"
+                        <SuggestionAutocomplete :suggestion-type="suggestionType" :emit-drugs="!validationDrugView" :emit-disorders="true"
                                                 @drugsEvent="$refs.validationTable.addDrugs"
+                                                @disorderEvent="saveDisorders"
                                                 :target-node-type="validationDrugView ? 'drug' : ['gene', 'protein'][seedTypeId]"
                                                 @addToSelectionEvent="addToSelection"
                                                 style="justify-self: flex-end;margin-left: auto"></SuggestionAutocomplete>
@@ -1262,6 +1263,7 @@ export default {
       rankingJid: undefined,
       validationDrugCount: 0,
       validationDrugView: false,
+      disorderIds: [],
     }
   },
 
@@ -1302,6 +1304,7 @@ export default {
       this.rankingJid = undefined
       this.rankingGid = undefined
       this.resultProgress = 0
+      this.disorderIds=[]
       this.validationDrugCount = 0
     },
     reset: function () {
@@ -1538,6 +1541,9 @@ export default {
         }, 1000)
     }
     ,
+    saveDisorders:function(list){
+      this.disorderIds = this.disorderIds.concat(list.filter(id=>this.disorderIds.indexOf(id)===-1))
+    },
     updateDrugCount: function () {
       this.validationDrugCount = this.$refs.validationTable.getDrugs().length;
     },

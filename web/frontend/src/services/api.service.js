@@ -55,6 +55,13 @@ const ApiService = {
     return this.post("/getGraphInfo", payload)
   },
 
+
+  getNodes(type,ids,attrs){
+    return this.post("/mapIdListToItems",{type:type, list:ids, attributes: attrs}).then(response=>{
+      return response.data;
+    }).catch(console.error)
+  },
+
   removeGraph(id) {
     this.get("/removeGraph?gid=" + id).catch(console.error)
   },
@@ -112,6 +119,25 @@ const ApiService = {
       return response.data
     })
 
+  },
+  getTrials(disorders, drugs,lower,upper) {
+    let disorderString = disorders.reduce((d1,d2)=>d1+"+OR+"+d2).replaceAll(" ","+")
+    let drugString = drugs.reduce((d1,d2)=>d1+"+OR+"+d2).replaceAll(" ","+")
+    return this.get("https://clinicaltrials.gov/api/query/study_fields?expr=("+disorderString+")+AND+("+drugString+")&min_rnk="+lower+"&max_rnk="+upper+"&fields=NCTId,InterventionName,Condition&fmt=json").then(response=>{
+      return response.data["StudyFieldsResponse"]
+    }).catch(console.error)
+  },
+
+  getAllTrials(disorders, drugs){
+    return this.getTrials(disorders,drugs,1,1000).then(data => {
+      let total = data.NStudiesFound
+      for (let i = 1; i * 1000 < total; i += 1) {
+        this.getTrials(disorders, drugs, i * 1000+1, (i + 1) * 1000).then(data2 => {
+          data.StudyFields = data.StudyFields.concat(data2.StudyFields)
+        })
+      }
+      return data
+    }).catch(console.error)
   }
 }
 

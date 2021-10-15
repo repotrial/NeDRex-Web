@@ -1255,7 +1255,7 @@ public class WebGraphService {
         return coords;
     }
 
-    public LinkedList<Object> mapIdsToItemList(String type, LinkedList<String> file) {
+    public LinkedList<Object> mapDomainIdsToItemList(String type, LinkedList<String> file) {
         LinkedList<Object> out = new LinkedList<>();
 
         List<Integer> ids = new LinkedList<>();
@@ -1287,6 +1287,22 @@ public class WebGraphService {
                 case "drug" -> n = (Drug) o;
             }
             out.add(n.getAsMap(new HashSet<>(Arrays.asList("id", "displayName", "primaryDomainId"))));
+        });
+        return out;
+    }
+
+    public LinkedList<Object> mapIdsToItemList(String type, List<Integer> ids, List<String> attributes) {
+        LinkedList<Object> out = new LinkedList<>();
+        nodeController.findByIds(type, ids).forEach(o -> {
+            RepoTrialNode n = null;
+            switch (type) {
+                case "gene" -> n = (Gene) o;
+                case "protein" -> n = (Protein) o;
+                case "pathway" -> n = (Pathway) o;
+                case "disorder" -> n = (Disorder) o;
+                case "drug" -> n = (Drug) o;
+            }
+            out.add(n.getAsMap(new HashSet<>(attributes == null ? Arrays.asList("id", "displayName", "primaryDomainId"):attributes)));
         });
         return out;
     }

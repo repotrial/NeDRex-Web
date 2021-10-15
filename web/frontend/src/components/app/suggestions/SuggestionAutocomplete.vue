@@ -55,6 +55,10 @@ export default {
       type: Boolean,
       default: false,
     },
+    emitDisorders: {
+      type: Boolean,
+      default: false,
+    },
     sortSwitch: {
       type: Boolean,
       default: true,
@@ -122,7 +126,7 @@ export default {
         }).then(() => {
           this.suggestionModel = undefined
         }).catch(console.error)
-        if (this.emitDrugs) {
+        if (this.emitDrugs && this.suggestionType === "disorder") {
           this.$http.post("getConnectedNodes", {
             sourceType: this.suggestionType,
             targetType: "drug",
@@ -138,6 +142,18 @@ export default {
               source: this.suggestionType
             })
           }).catch(console.error)
+        }
+        if (this.emitDisorders && this.suggestionType === "disorder") {
+          if (val.sid.indexOf("_") > -1) {
+            this.$http.get("getSuggestionEntry?nodeType=" + this.suggestionType + "&sid=" + val.sid).then(response => {
+              if (response.data !== undefined)
+                return response.data
+            }).then(data => {
+              this.$emit("disorderEvent", data)
+            }).catch(console.error)
+          }else{
+            this.$emit("disorderEvent",[parseInt(val.sid)])
+          }
         }
       }
     },

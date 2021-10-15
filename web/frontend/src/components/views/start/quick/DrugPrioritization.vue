@@ -121,7 +121,10 @@
                         <v-tooltip top>
                           <template v-slot:activator="{on,attrs}">
                             <div v-on="on" v-bind="attrs" style="justify-content: flex-end; margin-left: auto">
-                              <LabeledSwitch v-model="advancedOptions" @click="suggestionType = advancedOptions ? suggestionType : 'disorder'" label-off="Limited" label-on="Full" v-on="on" v-bind="attrs"></LabeledSwitch>
+                              <LabeledSwitch v-model="advancedOptions"
+                                             @click="suggestionType = advancedOptions ? suggestionType : 'disorder'"
+                                             label-off="Limited" label-on="Full" v-on="on"
+                                             v-bind="attrs"></LabeledSwitch>
                             </div>
                           </template>
                           <div style="width: 300px"><b>Limited Mode:</b><br>The options are limited to the most
@@ -153,7 +156,9 @@
                           </div>
                         </v-tooltip>
                         <SuggestionAutocomplete :suggestion-type="suggestionType" :emit-drugs="!validationDrugView"
+                                                :emit-disorders="true"
                                                 @drugsEvent="$refs.validationTable.addDrugs"
+                                                @disorderEvent="saveDisorders"
                                                 :target-node-type="validationDrugView ? 'drug' : ['gene', 'protein'][seedTypeId]"
                                                 @addToSelectionEvent="addToSelection"
                                                 style="justify-self: flex-end;margin-left: auto"></SuggestionAutocomplete>
@@ -677,6 +682,8 @@ export default {
       },
       validationDrugCount: 0,
       validationDrugView: false,
+
+      disorderIds: [],
     }
   },
 
@@ -699,6 +706,7 @@ export default {
       if (this.blitz) {
         this.methodModel = 1
       }
+      this.disorderIds = []
       this.validationDrugCount = 0
       this.results.target = []
       this.seedOrigin = {}
@@ -959,11 +967,44 @@ export default {
         this.rank(this.results.targets, primaryAttribute.id)
         this.normalize(this.results.targets)
         this.round(this.results.targets)
+        this.addTrialsNumber(this.results.targets)
       }).catch(console.error)
     },
     clearList: function () {
       this.seeds = []
       this.seedOrigin = {}
+    },
+
+    addTrialsNumber: async function (list) {
+      let drugNames = await this.$http.getNodes("drug", list.map(drug => drug.id), ["id", "displayName"]).then(data => {
+        return data.map(d => d.displayName)
+      })
+      let disorderNames = await this.$http.getNodes("disorder", this.disorderIds, ["id", "displayName", "synonyms"]).then(data => {
+        return data.map(d => d.displayName)
+      })
+      this.$http.getAllTrials(disorderNames, drugNames).then(data => {
+        data.StudyFields.forEach(studie => {
+          studie.InterventionName.forEach(target => {
+            list.forEach(drug => {
+              if (target.toLowerCase().indexOf(drug.displayName.toLowerCase())>-1) {
+                if (drug.trials == null)
+                  drug.trials = studie.NCTId
+                else {
+                  studie.NCTId.forEach(id => {
+                    if (drug.trials.indexOf(id) === -1)
+                      drug.trials.push(id)
+                  })
+                }
+              }
+            })
+          })
+        })
+      })
+      console.log(list)
+    },
+
+    saveDisorders: function (list) {
+      this.disorderIds = this.disorderIds.concat(list.filter(id => this.disorderIds.indexOf(id) === -1))
     },
 
     sort: function (list, attribute) {
