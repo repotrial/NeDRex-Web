@@ -75,7 +75,7 @@ public class JobController {
 
         j.addParam("experimentalOnly", req.experimentalOnly);
         for (String param : req.getParams().keySet())
-                j.addParam(param, req.getParams().get(param));
+            j.addParam(param, req.getParams().get(param));
 
         //TODO can be moved to frontend
         j.addParam("pcutoff", req.getParams().containsKey("pcutoff") ? Math.pow(10, Double.parseDouble(req.getParams().get("pcutoff"))) : 1);
@@ -253,7 +253,7 @@ public class JobController {
 
     public HashMap<String, Pair<String, Pair<Job.JobState, ToolService.Tool>>> getJobGraphStatesAndTypes(String user) {
         HashMap<String, Pair<String, Pair<Job.JobState, ToolService.Tool>>> stateMap = new HashMap<>();
-        jobs.values().stream().filter(j -> j.getUserId().equals(user)).forEach(j -> stateMap.put(j.getDerivedGraph(), new Pair<>(j.getJobId(), new Pair<>(j.getState(), j.getMethod()))));
+        jobs.values().stream().filter(j -> j.getUserId()!=null &&j.getUserId().equals(user)).forEach(j -> stateMap.put(j.getDerivedGraph(), new Pair<>(j.getJobId(), new Pair<>(j.getState(), j.getMethod()))));
         return stateMap;
     }
 

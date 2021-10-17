@@ -29,7 +29,7 @@
         <v-divider></v-divider>
         <v-stepper-step step="2" :complete="step>2 || blitz">
           Select Method
-          <small v-if=" methodModel>-1">{{ methods[methodModel].label }}</small>
+          <small v-if="algorithmSelected">{{ this.$refs.algorithms.getAlgorithm().label }}</small>
         </v-stepper-step>
         <v-divider></v-divider>
         <v-stepper-step step="3">
@@ -64,7 +64,7 @@
                         </i>
                       </v-col>
                       <v-col>
-                        <b>{{ methods[methodModel].label }}</b>
+                        <b v-if="algorithmSelected">{{ this.$refs.algorithms.getAlgorithm().label }}</b>
                       </v-col>
                     </v-row>
                     <v-row>
@@ -212,185 +212,9 @@
         </v-stepper-content>
 
         <v-stepper-content step="2">
-          <v-card
-            v-if="step===2"
-            class="mb-4"
-            height="80vh"
-          >
-            <v-card-subtitle class="headline">2. Algorithm Selection</v-card-subtitle>
-            <v-card-subtitle style="margin-top: -25px">Select and adjust the algorithm you want to apply on the
-              constructed module to
-              identify and rank drug candidates.
-            </v-card-subtitle>
-            <v-divider style="margin: 15px;"></v-divider>
-            <v-container style="height: 80%; max-width: 100%">
-              <v-row style="height: 100%">
-                <v-col>
-                  <v-card-title style="margin-left: -25px">Select the Base-Algorithm</v-card-title>
-                  <v-radio-group v-model="methodModel" row>
-                    <v-radio v-for="method in methods"
-                             :label="method.label"
-                             :key="method.label"
-                    >
-                    </v-radio>
-                  </v-radio-group>
-                  <template v-if="methodModel!==undefined">
-                    <v-card-title style="margin-left:-25px">Configure Parameters</v-card-title>
-                    <div>
-                      <v-slider
-                        hide-details
-                        class="align-center"
-                        v-model="models.topX"
-                        step="1"
-                        min="1"
-                        max="2000"
-                      >
-                        <template v-slot:prepend>
-                          <v-text-field
-                            v-model="models.topX"
-                            class="mt-0 pt-0"
-                            type="integer"
-                            style="width: 100px"
-                            label="visualize topX"
-                          ></v-text-field>
-                        </template>
-                        <template v-slot:append>
-                          <v-tooltip left>
-                            <template v-slot:activator="{ on, attrs }">
-                              <v-icon
-                                v-bind="attrs"
-                                v-on="on"
-                                left> far fa-question-circle
-                              </v-icon>
-                            </template>
-                            <span>A integer X limiting the visualization to the top X drugs that were found.</span>
-                          </v-tooltip>
-                        </template>
-                      </v-slider>
-                    </div>
-                    <div style="display: flex">
-                      <div>
-                        <v-switch
-                          label="Only use experimentally validated interaction networks"
-                          v-model="experimentalSwitch"
-                        >
-                          <template v-slot:append>
-                            <v-tooltip left>
-                              <template v-slot:activator="{ on, attrs }">
-                                <v-icon
-                                  v-bind="attrs"
-                                  v-on="on"
-                                  left> far fa-question-circle
-                                </v-icon>
-                              </template>
-                              <span>Restricts the edges in the {{
-                                  ['Gene', 'Protein'][seedTypeId] + '-' + ['Gene', 'Protein'][seedTypeId]
-                                }} network to experimentally validated ones.</span>
-                            </v-tooltip>
-                          </template>
-                        </v-switch>
-                      </div>
-                    </div>
-                    <div style="display:flex; width: 100%">
-                      <div style="justify-self: flex-start">
-                        <v-switch
-                          label="Only direct Drugs"
-                          v-model="models.onlyDirect"
-                        >
-                          <template v-slot:append>
-                            <v-tooltip left>
-                              <template v-slot:activator="{ on, attrs }">
-                                <v-icon
-                                  v-bind="attrs"
-                                  v-on="on"
-                                  left> far fa-question-circle
-                                </v-icon>
-                              </template>
-                              <span>If only the drugs interacting directly with seeds should be considered in the ranking,
-                             this should be selected. If including the non-direct drugs is desired unselect.</span>
-                            </v-tooltip>
-                          </template>
-                        </v-switch>
-                      </div>
-                      <div style="justify-self: center; margin-left: auto">
-                        <v-switch
-                          label="Only approved Drugs"
-                          v-model="models.onlyApproved"
-                        >
-                          <template v-slot:append>
-                            <v-tooltip left>
-                              <template v-slot:activator="{ on, attrs }">
-                                <v-icon
-                                  v-bind="attrs"
-                                  v-on="on"
-                                  left> far fa-question-circle
-                                </v-icon>
-                              </template>
-                              <span>If only approved drugs should be considered in the ranking,
-                             this should be selected. If including all approved and unapproved drugs is desired unselect.</span>
-                            </v-tooltip>
-                          </template>
-                        </v-switch>
-                      </div>
-                      <div style="justify-self: flex-end; margin-left: auto">
-                        <v-switch
-                          label="Filter Element 'Drugs'"
-                          v-model="models.filterElements"
-                        >
-                          <template v-slot:append>
-                            <v-tooltip left>
-                              <template v-slot:activator="{ on, attrs }">
-                                <v-icon
-                                  v-bind="attrs"
-                                  v-on="on"
-                                  left> far fa-question-circle
-                                </v-icon>
-                              </template>
-                              <span>Filters:<br><b>chemical elements:</b> <i>Gold</i>, <i>Zinc</i>, ...<br><b>metals and metal cations:</b> <i>Cupric Chloride</i>, <i>Aluminium acetoacetate</i>, ...<br><b>minerals and mineral supplements:</b> <i>Calcium silicate</i>, <i>Sodium chloride</i>, ...</span>
-                            </v-tooltip>
-                          </template>
-                        </v-switch>
-                      </div>
-                    </div>
-                    <div>
-                      <v-slider
-                        v-show="methodModel===0"
-                        hide-details
-                        class="align-center"
-                        v-model="models.damping"
-                        step="0.01"
-                        min="0"
-                        max="1"
-                      >
-                        <template v-slot:prepend>
-                          <v-text-field
-                            v-model="models.damping"
-                            class="mt-0 pt-0"
-                            type="float"
-                            style="width: 60px"
-                            label="damping-factor"
-                          ></v-text-field>
-                        </template>
-                        <template v-slot:append>
-                          <v-tooltip left>
-                            <template v-slot:activator="{ on, attrs }">
-                              <v-icon
-                                v-bind="attrs"
-                                v-on="on"
-                                left> far fa-question-circle
-                              </v-icon>
-                            </template>
-                            <span>A float value between 0-1 to be used as damping factor parameter.</span>
-                          </v-tooltip>
-                        </template>
-                      </v-slider>
-                    </div>
-                  </template>
-                </v-col>
-              </v-row>
-            </v-container>
-          </v-card>
-
+          <DPAlgorithmSelect ref="algorithms" :blitz="blitz" type="mi" :step="2" :seeds="seeds" :seed-type-id="seedTypeId"
+                             @algorithmSelectedEvent="acceptAlgorithmSelectEvent"
+                             @jobEvent="readJob"></DPAlgorithmSelect>
           <v-btn text @click="makeStep(2,'back')">
             Back
           </v-btn>
@@ -398,7 +222,7 @@
           <v-btn
             @click="makeStep(2,'continue')"
             color="primary"
-            :disabled="methodModel===undefined"
+            :disabled=" !algorithmSelected"
           >
             Run
           </v-btn>
@@ -406,6 +230,202 @@
           <v-btn text @click="makeStep(2,'cancel')">
             Cancel
           </v-btn>
+
+
+          <!--          <v-card-->
+          <!--            v-if="step===2"-->
+          <!--            class="mb-4"-->
+          <!--            height="80vh"-->
+          <!--          >-->
+          <!--            <v-card-subtitle class="headline">2. Algorithm Selection</v-card-subtitle>-->
+          <!--            <v-card-subtitle style="margin-top: -25px">Select and adjust the algorithm you want to apply on the-->
+          <!--              constructed module to-->
+          <!--              identify and rank drug candidates.-->
+          <!--            </v-card-subtitle>-->
+          <!--            <v-divider style="margin: 15px;"></v-divider>-->
+          <!--            <v-container style="height: 80%; max-width: 100%">-->
+          <!--              <v-row style="height: 100%">-->
+          <!--                <v-col>-->
+          <!--                  <v-card-title style="margin-left: -25px">Select the Base-Algorithm</v-card-title>-->
+          <!--                  <v-radio-group v-model="methodModel" row>-->
+          <!--                    <v-radio v-for="method in methods"-->
+          <!--                             :label="method.label"-->
+          <!--                             :key="method.label"-->
+          <!--                    >-->
+          <!--                    </v-radio>-->
+          <!--                  </v-radio-group>-->
+          <!--                  <template v-if="methodModel!==undefined">-->
+          <!--                    <v-card-title style="margin-left:-25px">Configure Parameters</v-card-title>-->
+          <!--                    <div>-->
+          <!--                      <v-slider-->
+          <!--                        hide-details-->
+          <!--                        class="align-center"-->
+          <!--                        v-model="models.topX"-->
+          <!--                        step="1"-->
+          <!--                        min="1"-->
+          <!--                        max="2000"-->
+          <!--                      >-->
+          <!--                        <template v-slot:prepend>-->
+          <!--                          <v-text-field-->
+          <!--                            v-model="models.topX"-->
+          <!--                            class="mt-0 pt-0"-->
+          <!--                            type="integer"-->
+          <!--                            style="width: 100px"-->
+          <!--                            label="visualize topX"-->
+          <!--                          ></v-text-field>-->
+          <!--                        </template>-->
+          <!--                        <template v-slot:append>-->
+          <!--                          <v-tooltip left>-->
+          <!--                            <template v-slot:activator="{ on, attrs }">-->
+          <!--                              <v-icon-->
+          <!--                                v-bind="attrs"-->
+          <!--                                v-on="on"-->
+          <!--                                left> far fa-question-circle-->
+          <!--                              </v-icon>-->
+          <!--                            </template>-->
+          <!--                            <span>A integer X limiting the visualization to the top X drugs that were found.</span>-->
+          <!--                          </v-tooltip>-->
+          <!--                        </template>-->
+          <!--                      </v-slider>-->
+          <!--                    </div>-->
+          <!--                    <div style="display: flex">-->
+          <!--                      <div>-->
+          <!--                        <v-switch-->
+          <!--                          label="Only use experimentally validated interaction networks"-->
+          <!--                          v-model="experimentalSwitch"-->
+          <!--                        >-->
+          <!--                          <template v-slot:append>-->
+          <!--                            <v-tooltip left>-->
+          <!--                              <template v-slot:activator="{ on, attrs }">-->
+          <!--                                <v-icon-->
+          <!--                                  v-bind="attrs"-->
+          <!--                                  v-on="on"-->
+          <!--                                  left> far fa-question-circle-->
+          <!--                                </v-icon>-->
+          <!--                              </template>-->
+          <!--                              <span>Restricts the edges in the {{-->
+          <!--                                  ['Gene', 'Protein'][seedTypeId] + '-' + ['Gene', 'Protein'][seedTypeId]-->
+          <!--                                }} network to experimentally validated ones.</span>-->
+          <!--                            </v-tooltip>-->
+          <!--                          </template>-->
+          <!--                        </v-switch>-->
+          <!--                      </div>-->
+          <!--                    </div>-->
+          <!--                    <div style="display:flex; width: 100%">-->
+          <!--                      <div style="justify-self: flex-start">-->
+          <!--                        <v-switch-->
+          <!--                          label="Only direct Drugs"-->
+          <!--                          v-model="models.onlyDirect"-->
+          <!--                        >-->
+          <!--                          <template v-slot:append>-->
+          <!--                            <v-tooltip left>-->
+          <!--                              <template v-slot:activator="{ on, attrs }">-->
+          <!--                                <v-icon-->
+          <!--                                  v-bind="attrs"-->
+          <!--                                  v-on="on"-->
+          <!--                                  left> far fa-question-circle-->
+          <!--                                </v-icon>-->
+          <!--                              </template>-->
+          <!--                              <span>If only the drugs interacting directly with seeds should be considered in the ranking,-->
+          <!--                             this should be selected. If including the non-direct drugs is desired unselect.</span>-->
+          <!--                            </v-tooltip>-->
+          <!--                          </template>-->
+          <!--                        </v-switch>-->
+          <!--                      </div>-->
+          <!--                      <div style="justify-self: center; margin-left: auto">-->
+          <!--                        <v-switch-->
+          <!--                          label="Only approved Drugs"-->
+          <!--                          v-model="models.onlyApproved"-->
+          <!--                        >-->
+          <!--                          <template v-slot:append>-->
+          <!--                            <v-tooltip left>-->
+          <!--                              <template v-slot:activator="{ on, attrs }">-->
+          <!--                                <v-icon-->
+          <!--                                  v-bind="attrs"-->
+          <!--                                  v-on="on"-->
+          <!--                                  left> far fa-question-circle-->
+          <!--                                </v-icon>-->
+          <!--                              </template>-->
+          <!--                              <span>If only approved drugs should be considered in the ranking,-->
+          <!--                             this should be selected. If including all approved and unapproved drugs is desired unselect.</span>-->
+          <!--                            </v-tooltip>-->
+          <!--                          </template>-->
+          <!--                        </v-switch>-->
+          <!--                      </div>-->
+          <!--                      <div style="justify-self: flex-end; margin-left: auto">-->
+          <!--                        <v-switch-->
+          <!--                          label="Filter Element 'Drugs'"-->
+          <!--                          v-model="models.filterElements"-->
+          <!--                        >-->
+          <!--                          <template v-slot:append>-->
+          <!--                            <v-tooltip left>-->
+          <!--                              <template v-slot:activator="{ on, attrs }">-->
+          <!--                                <v-icon-->
+          <!--                                  v-bind="attrs"-->
+          <!--                                  v-on="on"-->
+          <!--                                  left> far fa-question-circle-->
+          <!--                                </v-icon>-->
+          <!--                              </template>-->
+          <!--                              <span>Filters:<br><b>chemical elements:</b> <i>Gold</i>, <i>Zinc</i>, ...<br><b>metals and metal cations:</b> <i>Cupric Chloride</i>, <i>Aluminium acetoacetate</i>, ...<br><b>minerals and mineral supplements:</b> <i>Calcium silicate</i>, <i>Sodium chloride</i>, ...</span>-->
+          <!--                            </v-tooltip>-->
+          <!--                          </template>-->
+          <!--                        </v-switch>-->
+          <!--                      </div>-->
+          <!--                    </div>-->
+          <!--                    <div>-->
+          <!--                      <v-slider-->
+          <!--                        v-show="methodModel===0"-->
+          <!--                        hide-details-->
+          <!--                        class="align-center"-->
+          <!--                        v-model="models.damping"-->
+          <!--                        step="0.01"-->
+          <!--                        min="0"-->
+          <!--                        max="1"-->
+          <!--                      >-->
+          <!--                        <template v-slot:prepend>-->
+          <!--                          <v-text-field-->
+          <!--                            v-model="models.damping"-->
+          <!--                            class="mt-0 pt-0"-->
+          <!--                            type="float"-->
+          <!--                            style="width: 60px"-->
+          <!--                            label="damping-factor"-->
+          <!--                          ></v-text-field>-->
+          <!--                        </template>-->
+          <!--                        <template v-slot:append>-->
+          <!--                          <v-tooltip left>-->
+          <!--                            <template v-slot:activator="{ on, attrs }">-->
+          <!--                              <v-icon-->
+          <!--                                v-bind="attrs"-->
+          <!--                                v-on="on"-->
+          <!--                                left> far fa-question-circle-->
+          <!--                              </v-icon>-->
+          <!--                            </template>-->
+          <!--                            <span>A float value between 0-1 to be used as damping factor parameter.</span>-->
+          <!--                          </v-tooltip>-->
+          <!--                        </template>-->
+          <!--                      </v-slider>-->
+          <!--                    </div>-->
+          <!--                  </template>-->
+          <!--                </v-col>-->
+          <!--              </v-row>-->
+          <!--            </v-container>-->
+          <!--          </v-card>-->
+
+          <!--          <v-btn text @click="makeStep(2,'back')">-->
+          <!--            Back-->
+          <!--          </v-btn>-->
+
+          <!--          <v-btn-->
+          <!--            @click="makeStep(2,'continue')"-->
+          <!--            color="primary"-->
+          <!--            :disabled="methodModel===undefined"-->
+          <!--          >-->
+          <!--            Run-->
+          <!--          </v-btn>-->
+
+          <!--          <v-btn text @click="makeStep(2,'cancel')">-->
+          <!--            Cancel-->
+          <!--          </v-btn>-->
         </v-stepper-content>
 
         <v-stepper-content step="3">
@@ -440,7 +460,8 @@
                     </template>
                     <template v-slot:expanded-item="{ headers, item }">
                       <td :colspan="headers.length">
-                        <EntryDetails max-width="9vw" :attributes="[geneDetailAttributes,proteinDetailAttributes][seedTypeId]"
+                        <EntryDetails max-width="9vw"
+                                      :attributes="[geneDetailAttributes,proteinDetailAttributes][seedTypeId]"
                                       :detail-request="{edge:false, type:['gene', 'protein'][seedTypeId], id:item.id}"></EntryDetails>
                       </td>
                     </template>
@@ -567,15 +588,16 @@
                         </v-tooltip>
                         <v-tooltip v-if="item.trials!=null" left>
                           <template v-slot:activator="{attr,on }">
-                          <span v-bind="attr" v-on="on">{{item.trialCount }}</span>
+                            <span v-bind="attr" v-on="on">{{ item.trialCount }}</span>
                           </template>
-                          <span>There are the {{item.trialCount}} entries for trials regarding one of the<br> initially selected disorders and this drug on ClinicalTrial.gov. Expand the entry to find all studies!</span>
+                          <span>There are the {{ item.trialCount }} entries for trials regarding one of the<br> initially selected disorders and this drug on ClinicalTrial.gov. Expand the entry to find all studies!</span>
                         </v-tooltip>
 
                       </template>
                       <template v-slot:expanded-item="{ headers, item }">
                         <td :colspan="headers.length">
-                          <EntryDetails max-width="25vw" :attributes="drugDetailAttributes" :additions="(item.trials != null ?  [{pos:3,key:'ClinicalTrials',value:item.trials}]:null)"
+                          <EntryDetails max-width="25vw" :attributes="drugDetailAttributes"
+                                        :additions="(item.trials != null ?  [{pos:3,key:'ClinicalTrials',value:item.trials}]:null)"
                                         :detail-request="{edge:false, type:'drug', id:item.id}"></EntryDetails>
                         </td>
                       </template>
@@ -629,6 +651,7 @@ import ValidationBox from "@/components/start/quick/ValidationBox";
 import ValidationDrugTable from "@/components/app/tables/ValidationDrugTable";
 import EntryDetails from "@/components/app/EntryDetails";
 import LabeledSwitch from "@/components/app/input/LabeledSwitch";
+import DPAlgorithmSelect from "@/components/start/quick/DPAlgorithmSelect";
 
 export default {
   name: "DrugRepurposing",
@@ -658,47 +681,48 @@ export default {
       suggestionType: undefined,
       fileInputModel: undefined,
       physicsOn: false,
-      methods: [
-        {
-          id: "trustrank",
-          label: "TrustRank",
-          scores: [{
-            id: "score",
-            name: "Score",
-            decimal: true,
-            normalize: true,
-            order: "descending",
-            primary: true
-          }, {id: "rank", name: "Rank"}]
-        },
-        {
-          id: "centrality",
-          label: "Closeness Centrality",
-          scores: [{
-            id: "score",
-            name: "Score",
-            decimal: true,
-            normalize: true,
-            order: "descending",
-            primary: true
-          }, {id: "rank", name: "Rank"}]
-        }],
+      // methods: [
+      //   {
+      //     id: "trustrank",
+      //     label: "TrustRank",
+      //     scores: [{
+      //       id: "score",
+      //       name: "Score",
+      //       decimal: true,
+      //       normalize: true,
+      //       order: "descending",
+      //       primary: true
+      //     }, {id: "rank", name: "Rank"}]
+      //   },
+      //   {
+      //     id: "centrality",
+      //     label: "Closeness Centrality",
+      //     scores: [{
+      //       id: "score",
+      //       name: "Score",
+      //       decimal: true,
+      //       normalize: true,
+      //       order: "descending",
+      //       primary: true
+      //     }, {id: "rank", name: "Rank"}]
+      //   }],
+      algorithmSelected: false,
       graph: {physics: false},
       methodModel: undefined,
       experimentalSwitch: true,
       results: {seeds: [], targets: []},
       jobs: {},
       currentJid: undefined,
-      models: {
-        onlyApproved: true,
-        onlyDirect: true,
-        damping: 0.85,
-        topX: 100,
-        filterElements: true,
-      },
-      drugDetailAttributes:["Name", "SourceID","SourceIDs","Formula","Indication","Description","Synonyms"],
-      geneDetailAttributes:["Name", "SourceID","SourceIDs","Symbols","Chromosome","Genomic Location","Synonyms", "Description"],
-      proteinDetailAttributes:["Name", "SourceID","SourceIDs","Gene","Synonyms", "Comments"],
+      // models: {
+      //   onlyApproved: true,
+      //   onlyDirect: true,
+      //   damping: 0.85,
+      //   topX: 100,
+      //   filterElements: true,
+      // },
+      drugDetailAttributes: ["Name", "SourceID", "SourceIDs", "Formula", "Indication", "Description", "Synonyms"],
+      geneDetailAttributes: ["Name", "SourceID", "SourceIDs", "Symbols", "Chromosome", "Genomic Location", "Synonyms", "Description"],
+      proteinDetailAttributes: ["Name", "SourceID", "SourceIDs", "Gene", "Synonyms", "Comments"],
       validationDrugCount: 0,
       validationDrugView: false,
 
@@ -707,7 +731,7 @@ export default {
   },
 
   created() {
-    this.$socket.$on("quickFinishedEvent", this.convertJobResult)
+    this.$socket.$on("quickRankingFinishedEvent", this.convertJobResult)
     this.uid = this.$cookies.get("uid")
     this.init()
   },
@@ -779,8 +803,9 @@ export default {
         this.init()
         this.$emit("resetEvent")
       }
-      if (this.step === 3)
-        this.submitAlgorithm()
+      if (this.step === 3) {
+        this.$refs.algorithms.run()
+      }
     },
     getHeaders: function (seed) {
       let headers = [{text: "Name", align: "start", sortable: true, value: "displayName"}]
@@ -809,50 +834,7 @@ export default {
     updateGraphPhysics: function () {
       this.$refs.graph.setPhysics(this.graph.physics)
     },
-    submitAlgorithm: function () {
-      let params = {}
-      let method = this.methods[this.methodModel].id
-      params.experimentalOnly = this.experimentalSwitch
 
-      params["addInteractions"] = true
-      params["nodesOnly"] = true
-
-      params['direct'] = this.models.onlyDirect;
-      params['approved'] = this.models.onlyApproved;
-      if (method === "trustrank")
-        params['damping'] = this.models.damping;
-
-      params['type'] = ["gene", "protein"][this.seedTypeId]
-      params['topX'] = this.models.topX
-      params['elements'] = !this.models.filterElements
-      this.executeJob(method, params)
-    },
-    executeJob: function (algorithm, params) {
-      let payload = {
-        userId: this.uid,
-        dbVersion: this.$global.metadata.repotrial.version,
-        algorithm: algorithm,
-        params: params
-      }
-      payload.selection = true
-      payload.experimentalOnly = params.experimentalOnly
-      payload["nodes"] = this.seeds.map(n => n.id)
-      if (this.seeds.length === 0) {
-        this.printNotification("Cannot execute " + algorithm + " without seed nodes!", 1)
-        return;
-      }
-      this.$http.post("/submitJob", payload).then(response => {
-        if (response.data !== undefined)
-          return response.data
-      }).then(data => {
-        if (data.state === "DONE") {
-          this.readJob(data, true)
-        } else {
-          this.$socket.subscribeJob(data.jid, "quickFinishedEvent");
-          this.readJob(data)
-        }
-      }).catch(console.error)
-    },
     readJob: function (data, notSubbed) {
       let jid = data.jid
       this.currentJid = jid
@@ -870,7 +852,7 @@ export default {
           this.$socket.unsubscribeJob(jid)
         this.jobs[jid].result = result
         this.loadTargetTable(result).then(() => {
-          this.$refs.validation.validate(this.results.targets, this.$refs.validationTable.getDrugs(), this.models.onlyApproved)
+          this.$refs.validation.validate(this.results.targets, this.$refs.validationTable.getDrugs(), this.$refs.algorithms.getAlgorithmModels().onlyApproved)
           this.loadGraph(result)
         })
       }
@@ -880,7 +862,9 @@ export default {
       this.validationDrugCount = this.$refs.validationTable.getDrugs().length;
     },
 
-
+    acceptAlgorithmSelectEvent: function (value) {
+      this.$set(this, "algorithmSelected", value)
+    },
     addToSelection: function (data) {
       if (this.validationDrugView)
         this.$refs.validationTable.addDrugs(data)
@@ -891,9 +875,7 @@ export default {
       this.$set(this, "validationDrugView", !this.validationDrugView)
     },
     methodScores: function () {
-      if (this.methodModel !== undefined && this.methodModel > -1 && this.methods[this.methodModel] != null)
-        return this.methods[this.methodModel].scores;
-      return []
+      return this.$refs.algorithms.getHeaders()
     },
 
     setSeeds: function (seeds, type, origin) {
@@ -951,11 +933,12 @@ export default {
           return response.data
       }).then(data => {
         let text = "#ID" + sep + "Name"
-        this.methods[this.methodModel].scores.forEach(s => text += sep + s.name)
+        let scores = this.$refs.algorithms.getAlgorithm().scores
+        scores.forEach(s => text += sep + s.name)
         text += "\n"
         this.results.targets.forEach(t => {
             text += data[t.id] + sep + t.displayName
-            this.methods[this.methodModel].scores.forEach(s => text += sep + t[s.id])
+            scores.forEach(s => text += sep + t[s.id])
             text += "\n"
           }
         )
@@ -981,12 +964,13 @@ export default {
         if (response.data !== undefined)
           return response.data
       }).then(data => {
-        let primaryAttribute = this.methods[this.methodModel].scores.filter(s => s.primary)[0]
+        let method = this.$refs.algorithms.getAlgorithm()
+        let primaryAttribute = method.scores.filter(s => s.primary)[0]
         this.results.targets = this.sort(data.nodes.drug, primaryAttribute)
         this.rank(this.results.targets, primaryAttribute.id)
-        this.normalize(this.results.targets)
-        this.round(this.results.targets)
-        this.addTrialsNumber(this.results.targets)
+        this.normalize(this.results.targets, method)
+        this.round(this.results.targets, method)
+        this.addTrialsNumber(this.results.targets, method)
       }).catch(console.error)
     },
     clearList: function () {
@@ -994,8 +978,8 @@ export default {
       this.seedOrigin = {}
     },
 
-    addTrialsNumber: async function (list) {
-      if(this.disorderIds==null || this.disorderIds.length===0){
+    addTrialsNumber: async function (list, method) {
+      if (this.disorderIds == null || this.disorderIds.length === 0) {
         return
       }
       let drugNames = await this.$http.getNodes("drug", list.map(drug => drug.id), ["id", "displayName"]).then(data => {
@@ -1008,7 +992,7 @@ export default {
         data.StudyFields.forEach(studie => {
           studie.InterventionName.forEach(target => {
             list.forEach(drug => {
-              if (target.toLowerCase().indexOf(drug.displayName.toLowerCase())>-1) {
+              if (target.toLowerCase().indexOf(drug.displayName.toLowerCase()) > -1) {
                 if (drug.trials == null)
                   drug.trials = studie.NCTId
                 else {
@@ -1022,18 +1006,18 @@ export default {
           })
         })
       })
-      list.forEach(drug=>{
-        if(drug.trials != null) {
+      list.forEach(drug => {
+        if (drug.trials != null) {
           drug.trialCount = drug.trials.length;
         }
       })
       let validDrugs = this.$refs.validationTable.getDrugs();
-      if(validDrugs!=null){
-        let ids = validDrugs.map(d=>d.id)
-        this.results.targets.filter(d=>ids.indexOf(d.id)>-1).forEach(d=>d.known=true)
+      if (validDrugs != null) {
+        let ids = validDrugs.map(d => d.id)
+        this.results.targets.filter(d => ids.indexOf(d.id) > -1).forEach(d => d.known = true)
       }
-      if(this.methods[this.methodModel].scores.filter(s=>s.id==="trialCount").length===0)
-        this.methods[this.methodModel].scores.push({id: "trialCount", name: "Use"})
+      if (method.scores.filter(s => s.id === "trialCount").length === 0)
+        method.scores.push({id: "trialCount", name: "Use"})
     },
 
     saveDisorders: function (list) {
@@ -1044,8 +1028,8 @@ export default {
       return attribute.order === "descending" ? list.sort((e1, e2) => e2[attribute.id] - e1[attribute.id]) : list.sort((e1, e2) => e1[attribute.id] - e2[attribute.id])
     },
 
-    round: function (list) {
-      this.methods[this.methodModel].scores.filter(s => s.decimal).forEach(attribute => {
+    round: function (list, method) {
+      method.scores.filter(s => s.decimal).forEach(attribute => {
         list.forEach(e => {
           this.$utils.roundScore(e, attribute.id)
         })
@@ -1065,8 +1049,8 @@ export default {
       })
     },
 
-    normalize: function (list) {
-      this.methods[this.methodModel].scores.filter(s => s["normalize"]).forEach(attribute => {
+    normalize: function (list, method) {
+      method.scores.filter(s => s["normalize"]).forEach(attribute => {
         if (attribute.order === "descending") {
           let base = list.map(e => e[attribute.id]).reduce((e1, e2) => {
             return Math.max(e1, e2)
@@ -1128,6 +1112,7 @@ export default {
   },
 
   components: {
+    DPAlgorithmSelect,
     LabeledSwitch,
     ValidationBox,
     SeedDownload,
