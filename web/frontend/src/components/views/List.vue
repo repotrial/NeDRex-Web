@@ -72,7 +72,6 @@
                   </v-tooltip>
                   Select
                 </template>
-
                 <template v-slot:top>
                   <v-container style="margin-top: 15px;margin-bottom: -40px">
                     <v-row>

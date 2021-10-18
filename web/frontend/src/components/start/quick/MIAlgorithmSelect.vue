@@ -482,6 +482,7 @@ export default {
   props: {
     seeds: Array,
     seedTypeId: Number,
+    socketEvent:String,
     blitz: {
       type: Boolean,
       default: false
@@ -697,7 +698,7 @@ export default {
         if (data.state === "DONE") {
           ctx.$emit("jobEvent", data, true)
         } else {
-          this.$socket.subscribeJob(data.jid, "quickModuleFinishedEvent");
+          this.$socket.subscribeJob(data.jid, this.socketEvent);
           ctx.$emit("jobEvent", data)
         }
       }).catch(console.error)

@@ -214,7 +214,7 @@
         <v-stepper-content step="2">
           <DPAlgorithmSelect ref="algorithms" :blitz="blitz" type="mi" :step="2" :seeds="seeds" :seed-type-id="seedTypeId"
                              @algorithmSelectedEvent="acceptAlgorithmSelectEvent"
-                             @jobEvent="readJob"></DPAlgorithmSelect>
+                             @jobEvent="readJob" socket-event="quickRankingFinishedEvent" ></DPAlgorithmSelect>
           <v-btn text @click="makeStep(2,'back')">
             Back
           </v-btn>
@@ -579,6 +579,14 @@
                         </v-tooltip>
                         <span v-else>{{ item.displayName }}</span>
                       </template>
+                      <template v-slot:header.trialCount="{header}">
+                        <v-tooltip bottom>
+                          <template v-slot:activator="{on, attrs}">
+                              <span v-on="on" v-bind="attrs">{{header.text}}</span>
+                          </template>
+                          <span>Entries in this column can contain following values<br><v-icon left color="white" size="12pt">fas fa-check</v-icon>: This drug is already known to be effective against at least one of the selected disorders<br><i>{{"<"+"n"+">"}}</i>: This drug has <i>#n</i> entries in ClinicalTrials.org for treatments of the selected disorders.</span>
+                        </v-tooltip>
+                      </template>
                       <template v-slot:item.trialCount="{item}">
                         <v-tooltip v-if="item.known" left>
                           <template v-slot:activator="{attr,on }">
@@ -681,31 +689,6 @@ export default {
       suggestionType: undefined,
       fileInputModel: undefined,
       physicsOn: false,
-      // methods: [
-      //   {
-      //     id: "trustrank",
-      //     label: "TrustRank",
-      //     scores: [{
-      //       id: "score",
-      //       name: "Score",
-      //       decimal: true,
-      //       normalize: true,
-      //       order: "descending",
-      //       primary: true
-      //     }, {id: "rank", name: "Rank"}]
-      //   },
-      //   {
-      //     id: "centrality",
-      //     label: "Closeness Centrality",
-      //     scores: [{
-      //       id: "score",
-      //       name: "Score",
-      //       decimal: true,
-      //       normalize: true,
-      //       order: "descending",
-      //       primary: true
-      //     }, {id: "rank", name: "Rank"}]
-      //   }],
       algorithmSelected: false,
       graph: {physics: false},
       methodModel: undefined,
@@ -713,13 +696,6 @@ export default {
       results: {seeds: [], targets: []},
       jobs: {},
       currentJid: undefined,
-      // models: {
-      //   onlyApproved: true,
-      //   onlyDirect: true,
-      //   damping: 0.85,
-      //   topX: 100,
-      //   filterElements: true,
-      // },
       drugDetailAttributes: ["Name", "SourceID", "SourceIDs", "Formula", "Indication", "Description", "Synonyms"],
       geneDetailAttributes: ["Name", "SourceID", "SourceIDs", "Symbols", "Chromosome", "Genomic Location", "Synonyms", "Description"],
       proteinDetailAttributes: ["Name", "SourceID", "SourceIDs", "Gene", "Synonyms", "Comments"],

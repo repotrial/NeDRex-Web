@@ -215,7 +215,7 @@
 
         <v-stepper-content step="2">
           <template>
-            <MIAlgorithmSelect ref="algorithms" :blitz="blitz" type="mi" :seeds="seeds" :seed-type-id="seedTypeId" @algorithmSelectedEvent="acceptAlgorithmSelectEvent" @jobEvent="readJob" ></MIAlgorithmSelect>
+            <MIAlgorithmSelect ref="algorithms" :blitz="blitz" type="mi" :seeds="seeds" socket-event="quickModuleFinishedEvent"  :seed-type-id="seedTypeId" @algorithmSelectedEvent="acceptAlgorithmSelectEvent" @jobEvent="readJob" ></MIAlgorithmSelect>
             <v-btn text @click="makeStep(2,'back')">
               Back
             </v-btn>

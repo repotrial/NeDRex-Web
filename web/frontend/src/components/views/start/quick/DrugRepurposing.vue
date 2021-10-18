@@ -243,7 +243,7 @@
         </v-stepper-content>
 
         <v-stepper-content step="2">
-            <MIAlgorithmSelect ref="moduleAlgorithms" :blitz="blitz" :seeds="seeds" :seed-type-id="seedTypeId" @algorithmSelectedEvent="acceptModuleAlgorithmSelectEvent" @jobEvent="readModuleJob" ></MIAlgorithmSelect>
+            <MIAlgorithmSelect ref="moduleAlgorithms" :blitz="blitz" :seeds="seeds" :seed-type-id="seedTypeId" socket-event="quickRepurposeModuleFinishedEvent" @algorithmSelectedEvent="acceptModuleAlgorithmSelectEvent" @jobEvent="readModuleJob" ></MIAlgorithmSelect>
             <v-btn text @click="makeStep(2,'back')">
               Back
             </v-btn>
@@ -261,7 +261,7 @@
         </v-stepper-content>
 
         <v-stepper-content step="3">
-          <DPAlgorithmSelect ref="rankingAlgorithms" :blitz="blitz" :step="3" :seeds="seeds" :seed-type-id="seedTypeId" @algorithmSelectedEvent="acceptRankingAlgorithmSelectEvent" @jobEvent="readRankingJob"></DPAlgorithmSelect>
+          <DPAlgorithmSelect ref="rankingAlgorithms" :blitz="blitz" :step="3" :seeds="seeds" :seed-type-id="seedTypeId" socket-event="quickRepurposeRankingFinishedEvent" @algorithmSelectedEvent="acceptRankingAlgorithmSelectEvent" @jobEvent="readRankingJob"></DPAlgorithmSelect>
 
           <v-btn text @click="makeStep(3,'back')">
             Back
@@ -437,8 +437,7 @@
                   <v-card-title class="subtitle-1"> Drugs{{
                       (results.drugs.length !== undefined && results.drugs.length > 0 ? (" (" + (results.drugs.length) + ")") : ": Processing")
                     }}
-                    <v-progress-circular indeterminate size="25" v-if="results.drugs.length===0"
-                                         style="margin-left:15px; z-index:50">
+                    <v-progress-circular indeterminate size="25" v-if="results.drugs.length===0" style="margin-left:15px; z-index:50">
                     </v-progress-circular>
                   </v-card-title>
                   <ValidationBox ref="drugValidation" drugs></ValidationBox>
@@ -458,6 +457,14 @@
                           <span>{{ item.displayName }}</span>
                         </v-tooltip>
                         <span v-else>{{ item.displayName }}</span>
+                      </template>
+                      <template v-slot:header.trialCount="{header}">
+                        <v-tooltip bottom>
+                          <template v-slot:activator="{on, attrs}">
+                            <span v-on="on" v-bind="attrs">{{header.text}}</span>
+                          </template>
+                          <span>Entries in this column can contain following values<br><v-icon left color="white" size="12pt">fas fa-check</v-icon>: This drug is already known to be effective against at least one of the selected disorders<br><i>{{"<"+"n"+">"}}</i> : This drug has <i>#n</i> entries in ClinicalTrials.org for treatments of the selected disorders.</span>
+                        </v-tooltip>
                       </template>
                       <template v-slot:item.trialCount="{item}">
                         <v-tooltip v-if="item.known" left>
@@ -583,8 +590,8 @@ export default {
   },
 
   created() {
-    this.$socket.$on("quickModuleFinishedEvent", this.convertModuleJob)
-    this.$socket.$on("quickRankingFinishedEvent", this.convertRankingJob)
+    this.$socket.$on("quickRepurposeModuleFinishedEvent", this.convertModuleJob)
+    this.$socket.$on("quickRepurposeRankingFinishedEvent", this.convertRankingJob)
     this.uid = this.$cookies.get("uid")
     this.list
     this.init()
