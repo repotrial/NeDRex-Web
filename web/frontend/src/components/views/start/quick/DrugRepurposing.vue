@@ -36,8 +36,12 @@
           <small v-if="rankingAlgorithmSelected">{{ this.$refs.rankingAlgorithms.getAlgorithm().label }}</small>
         </v-stepper-step>
         <v-divider></v-divider>
-        <v-stepper-step step="4">
+        <v-stepper-step step="4" :complete="step>4">
           Results
+        </v-stepper-step>
+        <v-divider></v-divider>
+        <v-stepper-step step="5">
+          Validation
         </v-stepper-step>
       </v-stepper-header>
 
@@ -123,12 +127,11 @@
             <v-divider style="margin: 15px;"></v-divider>
             <v-row>
               <v-col>
-                <v-list-item-subtitle v-if="!validationDrugView" class="title">Select the seed type
+                <v-list-item-subtitle  class="title">Select the seed type
                 </v-list-item-subtitle>
-                <v-list-item-subtitle v-else class="title">Select Validation Drugs</v-list-item-subtitle>
                 <v-list-item-action>
                   <v-radio-group row v-model="seedTypeId"
-                                 :disabled="validationDrugView || (this.seedTypeId !=null && $refs.seedTable !=null && $refs.seedTable.getSeeds()!=null && $refs.seedTable.getSeeds().length>0)">
+                                 :disabled="(this.seedTypeId !=null && $refs.seedTable !=null && $refs.seedTable.getSeeds()!=null && $refs.seedTable.getSeeds().length>0)">
                     <v-radio label="Gene">
                     </v-radio>
                     <v-radio label="Protein">
@@ -138,7 +141,7 @@
               </v-col>
             </v-row>
             <ExampleSeeds :seedTypeId="seedTypeId" @addSeedsEvent="addToSelection"
-                          :disabled="validationDrugView"></ExampleSeeds>
+                          ></ExampleSeeds>
             <v-container style="height: 560px;margin: 15px;max-width: 100%">
               <v-row style="height: 100%">
                 <v-col cols="6">
@@ -147,7 +150,7 @@
                       <div style="display: flex">
                         <div style="justify-content: flex-start">
                           <v-card-title style="margin-left: -25px;" class="subtitle-1">Add
-                            {{ validationDrugView ? 'drugs' : ['genes', 'proteins'][this.seedTypeId] }} associated to
+                            {{ ['genes', 'proteins'][this.seedTypeId] }} associated to
                           </v-card-title>
                         </div>
                         <v-tooltip top>
@@ -184,16 +187,16 @@
                             through association the 'Limited' switch has to be toggled.
                           </div>
                         </v-tooltip>
-                        <SuggestionAutocomplete :suggestion-type="suggestionType" :emit-drugs="!validationDrugView" :emit-disorders="true"
-                                                @drugsEvent="$refs.validationTable.addDrugs"
+                        <SuggestionAutocomplete :suggestion-type="suggestionType" :emit-drugs="true" :emit-disorders="true"
+                                                @drugsEvent="$refs.validation.addDrugs"
                                                 @disorderEvent="saveDisorders"
-                                                :target-node-type="validationDrugView ? 'drug' : ['gene', 'protein'][seedTypeId]"
+                                                :target-node-type="['gene', 'protein'][seedTypeId]"
                                                 @addToSelectionEvent="addToSelection"
                                                 style="justify-self: flex-end;margin-left: auto"></SuggestionAutocomplete>
                       </div>
                       <NodeInput text="or provide Seed IDs by" @addToSelectionEvent="addToSelection"
-                                 :idName="validationDrugView? 'drugbank':['entrez','uniprot'][seedTypeId]"
-                                 :nodeType="validationDrugView? 'drug':['gene', 'protein'][this.seedTypeId]"
+                                 :idName="['entrez','uniprot'][seedTypeId]"
+                                 :nodeType="['gene', 'protein'][this.seedTypeId]"
                                  @printNotificationEvent="printNotification"></NodeInput>
                     </template>
                   </div>
@@ -205,14 +208,14 @@
                     <template v-slot:activator="{attrs,on}">
                       <v-chip style="position: absolute; left:auto; right:0" v-on="on" v-bind="attrs"
                               v-show="seedTypeId!=null"
-                              @click="toggleValidationDrugView()" :color="validationDrugView ? 'green':'primary'">
+                              color='primary'>
                         <v-icon left>fas fa-capsules</v-icon>
                         {{ validationDrugCount }}
                       </v-chip>
                     </template>
                     <span>There are {{ validationDrugCount }} drugs that were associated with your query.<br> These are saved for validation purposes later.<br><br><i>To see or even adjust the list, toggle this button!</i></span>
                   </v-tooltip>
-                  <SeedTable ref="seedTable" v-show="seedTypeId!=null && !validationDrugView" :download="true"
+                  <SeedTable ref="seedTable" v-show="seedTypeId!=null" :download="true"
                              :remove="true"
                              :filter="true"
                              @printNotificationEvent="printNotification"
@@ -220,9 +223,6 @@
                              :title="'Selected Seeds ('+($refs.seedTable ? $refs.seedTable.getSeeds().length : 0)+')'"
                              :nodeName="['gene','protein'][seedTypeId]"
                   ></SeedTable>
-                  <ValidationDrugTable v-show="seedTypeId!=null && validationDrugView" ref="validationTable"
-                                       @printNotificationEvent="printNotification"
-                                       @drugCountUpdate="updateDrugCount()"></ValidationDrugTable>
                 </v-col>
               </v-row>
             </v-container>
@@ -298,7 +298,6 @@
                                          style="margin-left:15px; z-index:50">
                     </v-progress-circular>
                   </v-card-title>
-                  <ValidationBox ref="moduleValidation"></ValidationBox>
                   <v-data-table max-height="50vh" height="50vh" class="overflow-y-auto" fixed-header dense item-key="id"
                                 :items="(!results.targets ||results.targets.length ===0) ?seeds : results.targets"
                                 :headers="getHeaders(0)"
@@ -440,7 +439,6 @@
                     <v-progress-circular indeterminate size="25" v-if="results.drugs.length===0" style="margin-left:15px; z-index:50">
                     </v-progress-circular>
                   </v-card-title>
-                  <ValidationBox ref="drugValidation" drugs></ValidationBox>
                   <template v-if="results.drugs.length>0">
                     <v-data-table max-height="50vh" height="50vh" class="overflow-y-auto" fixed-header dense
                                   item-key="id" show-expand :single-expand="true"
@@ -513,7 +511,17 @@
             Back
           </v-btn>
 
-          <v-btn text @click="makeStep(4,'cancel')">
+          <v-btn text @click="makeStep(4,'continue')" :disabled="rankingGid ==null">
+            Validate
+          </v-btn>
+        </v-stepper-content>
+        <v-stepper-content step="5">
+          <Validation ref="validation" :step="5" :seed-type-id="seedTypeId" :module="results.targets" :ranking="results.drugs"  @drugCountUpdate="updateDrugCount" @printNotificationEvent="printNotification"></Validation>
+          <v-btn text @click="makeStep(5,'back')">
+            Back
+          </v-btn>
+
+          <v-btn text @click="makeStep(5,'cancel')">
             Restart
           </v-btn>
         </v-stepper-content>
@@ -538,6 +546,7 @@ import EntryDetails from "@/components/app/EntryDetails";
 import LabeledSwitch from "@/components/app/input/LabeledSwitch";
 import MIAlgorithmSelect from "@/components/start/quick/MIAlgorithmSelect";
 import DPAlgorithmSelect from "@/components/start/quick/DPAlgorithmSelect";
+import Validation from "@/components/start/quick/Validation";
 
 export default {
   name: "CombinedRepurposing",
@@ -581,7 +590,6 @@ export default {
       rankingGid: undefined,
       rankingJid: undefined,
       validationDrugCount: 0,
-      validationDrugView: false,
       drugDetailAttributes:["Name", "SourceID","SourceIDs","Formula","Indication","Description","Synonyms"],
       geneDetailAttributes:["Name", "SourceID","SourceIDs","Symbols","Chromosome","Genomic Location","Synonyms", "Description"],
       proteinDetailAttributes:["Name", "SourceID","SourceIDs","Gene","Synonyms", "Comments"],
@@ -739,7 +747,6 @@ export default {
     },
 
     readModuleJob: function (data, notSubbed,dirty) {
-      console.log(data)
       this.resultProgress+=5
       let jid = data.jid
       this.moduleJid = jid
@@ -749,25 +756,16 @@ export default {
           this.$socket.unsubscribeJob(jid)
         this.loadModuleTargetTable(this.moduleGid).then(() => {
           this.resultProgress = 25
-          this.runModuleValidation()
+          // this.$refs.validation.validate()
           this.loadGraph(this.moduleGid,true)
         })
       }
     },
-    runModuleValidation: function () {
-      if (this.$refs.moduleValidation != null)
-        this.$refs.moduleValidation.validate(this.results.targets, this.$refs.validationTable.getDrugs(), false, ["gene", "protein"][this.seedTypeId])
-      else
-        setTimeout(() => {
-          this.runModuleValidation()
-        }, 1000)
-    }
-    ,
     saveDisorders:function(list){
       this.disorderIds = this.disorderIds.concat(list.filter(id=>this.disorderIds.indexOf(id)===-1))
     },
     updateDrugCount: function () {
-      this.validationDrugCount = this.$refs.validationTable.getDrugs().length;
+      this.validationDrugCount = this.$refs.validation.getDrugs().length;
     },
     readRankingJob: function (result, unsubscribed, dirty) {
       this.resultProgress += 5
@@ -779,7 +777,7 @@ export default {
         if (!unsubscribed)
           this.$socket.unsubscribeJob(this.rankingJid)
         this.loadRankingTargetTable(this.rankingGid).then(() => {
-          this.$refs.drugValidation.validate(this.results.drugs, this.$refs.validationTable.getDrugs(),this.$refs.rankingAlgorithms.getAlgorithmModels().onlyApproved)
+          // this.$refs.validation.validate()
           this.loadGraph(this.rankingGid)
         })
 
@@ -787,15 +785,8 @@ export default {
     },
 
     addToSelection: function (data) {
-      if (this.validationDrugView)
-        this.$refs.validationTable.addDrugs(data)
-      else
         this.$refs.seedTable.addSeeds(data)
     },
-    toggleValidationDrugView: function () {
-      this.$set(this, "validationDrugView", !this.validationDrugView)
-    }
-    ,
     moduleMethodScores: function () {
       return this.$refs.moduleAlgorithms.getHeaders()
     }
@@ -971,7 +962,7 @@ export default {
           drug.trialCount = drug.trials.length;
         }
       })
-      let validDrugs = this.$refs.validationTable.getDrugs();
+      let validDrugs = this.$refs.validation.getDrugs();
       if(validDrugs!=null){
         let ids = validDrugs.map(d=>d.id)
         this.results.drugs.filter(d=>ids.indexOf(d.id)>-1).forEach(d=>d.known=true)
@@ -1090,7 +1081,8 @@ export default {
     ValidationBox,
     EntryDetails,
     MIAlgorithmSelect,
-    DPAlgorithmSelect
+    DPAlgorithmSelect,
+    Validation
   }
 }
 </script>

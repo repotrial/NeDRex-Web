@@ -32,8 +32,12 @@
           <small v-if="algorithmSelected">{{ this.$refs.algorithms.getAlgorithm().label }}</small>
         </v-stepper-step>
         <v-divider></v-divider>
-        <v-stepper-step step="3">
+        <v-stepper-step step="3" :complete="step>3">
           Results
+        </v-stepper-step>
+        <v-divider></v-divider>
+        <v-stepper-step step="4">
+          Validation
         </v-stepper-step>
       </v-stepper-header>
 
@@ -90,12 +94,11 @@
             <v-divider style="margin: 15px;"></v-divider>
             <v-row>
               <v-col>
-                <v-list-item-subtitle v-if="!validationDrugView" class="title">Select the seed type
+                <v-list-item-subtitle class="title">Select the seed type
                 </v-list-item-subtitle>
-                <v-list-item-subtitle v-else class="title">Select Validation Drugs</v-list-item-subtitle>
                 <v-list-item-action>
                   <v-radio-group row v-model="seedTypeId"
-                                 :disabled="validationDrugView || (this.seedTypeId !=null && $refs.seedTable !=null && $refs.seedTable.getSeeds()!=null && $refs.seedTable.getSeeds().length>0)">
+                                 :disabled="(this.seedTypeId !=null && $refs.seedTable !=null && $refs.seedTable.getSeeds()!=null && $refs.seedTable.getSeeds().length>0)">
                     <v-radio label="Gene">
                     </v-radio>
                     <v-radio label="Protein">
@@ -105,8 +108,7 @@
 
               </v-col>
             </v-row>
-            <ExampleSeeds :seedTypeId="seedTypeId" @addSeedsEvent="addToSelection"
-                          :disabled="validationDrugView"></ExampleSeeds>
+            <ExampleSeeds :seedTypeId="seedTypeId" @addSeedsEvent="addToSelection"></ExampleSeeds>
             <v-container style="height: 560px; margin: 15px; max-width: 100%">
               <v-row style="height: 100%">
                 <v-col cols="6">
@@ -115,7 +117,7 @@
                       <div style="display: flex">
                         <div style="justify-content: flex-start">
                           <v-card-title style="margin-left: -25px;" class="subtitle-1">Add
-                            {{ validationDrugView ? 'drugs' : ['genes', 'proteins'][this.seedTypeId] }} associated to
+                            {{ ['genes', 'proteins'][this.seedTypeId] }} associated to
                           </v-card-title>
                         </div>
                         <v-tooltip top>
@@ -155,17 +157,17 @@
                             through association the 'Limited' switch has to be toggled.
                           </div>
                         </v-tooltip>
-                        <SuggestionAutocomplete :suggestion-type="suggestionType" :emit-drugs="!validationDrugView"
+                        <SuggestionAutocomplete :suggestion-type="suggestionType" :emit-drugs="true"
                                                 :emit-disorders="true"
-                                                @drugsEvent="$refs.validationTable.addDrugs"
+                                                @drugsEvent="$refs.validation.addDrugs"
                                                 @disorderEvent="saveDisorders"
-                                                :target-node-type="validationDrugView ? 'drug' : ['gene', 'protein'][seedTypeId]"
+                                                :target-node-type="['gene', 'protein'][seedTypeId]"
                                                 @addToSelectionEvent="addToSelection"
                                                 style="justify-self: flex-end;margin-left: auto"></SuggestionAutocomplete>
                       </div>
                       <NodeInput text="or provide Seed IDs by" @addToSelectionEvent="addToSelection"
-                                 :idName="validationDrugView? 'drugbank':['entrez','uniprot'][seedTypeId]"
-                                 :nodeType="validationDrugView? 'drug':['gene', 'protein'][seedTypeId]"
+                                 :idName="['entrez','uniprot'][seedTypeId]"
+                                 :nodeType="['gene', 'protein'][seedTypeId]"
                                  @printNotificationEvent="printNotification"></NodeInput>
                     </template>
                   </div>
@@ -175,15 +177,14 @@
                   <v-tooltip left>
                     <template v-slot:activator="{attrs,on}">
                       <v-chip style="position: absolute; left:auto; right:0" v-on="on" v-bind="attrs"
-                              v-show="seedTypeId!=null"
-                              @click="toggleValidationDrugView()" :color="validationDrugView ? 'green':'primary'">
+                              v-show="seedTypeId!=null" color='primary'>
                         <v-icon left>fas fa-capsules</v-icon>
                         {{ validationDrugCount }}
                       </v-chip>
                     </template>
                     <span>There are {{ validationDrugCount }} drugs that were associated with your query.<br> These are saved for validation purposes later.<br><br><i>To see or even adjust the list, toggle this button!</i></span>
                   </v-tooltip>
-                  <SeedTable ref="seedTable" v-show="seedTypeId!=null && !validationDrugView" :download="true"
+                  <SeedTable ref="seedTable" v-show="seedTypeId!=null" :download="true"
                              :remove="true"
                              :filter="true"
                              @printNotificationEvent="printNotification"
@@ -191,9 +192,6 @@
                              :title="'Selected Seeds ('+($refs.seedTable ? $refs.seedTable.getSeeds().length : 0)+')'"
                              :nodeName="['gene','protein'][seedTypeId]"
                   ></SeedTable>
-                  <ValidationDrugTable v-show="seedTypeId!=null && validationDrugView" ref="validationTable"
-                                       @printNotificationEvent="printNotification"
-                                       @drugCountUpdate="updateDrugCount()"></ValidationDrugTable>
                 </v-col>
               </v-row>
             </v-container>
@@ -231,201 +229,6 @@
             Cancel
           </v-btn>
 
-
-          <!--          <v-card-->
-          <!--            v-if="step===2"-->
-          <!--            class="mb-4"-->
-          <!--            height="80vh"-->
-          <!--          >-->
-          <!--            <v-card-subtitle class="headline">2. Algorithm Selection</v-card-subtitle>-->
-          <!--            <v-card-subtitle style="margin-top: -25px">Select and adjust the algorithm you want to apply on the-->
-          <!--              constructed module to-->
-          <!--              identify and rank drug candidates.-->
-          <!--            </v-card-subtitle>-->
-          <!--            <v-divider style="margin: 15px;"></v-divider>-->
-          <!--            <v-container style="height: 80%; max-width: 100%">-->
-          <!--              <v-row style="height: 100%">-->
-          <!--                <v-col>-->
-          <!--                  <v-card-title style="margin-left: -25px">Select the Base-Algorithm</v-card-title>-->
-          <!--                  <v-radio-group v-model="methodModel" row>-->
-          <!--                    <v-radio v-for="method in methods"-->
-          <!--                             :label="method.label"-->
-          <!--                             :key="method.label"-->
-          <!--                    >-->
-          <!--                    </v-radio>-->
-          <!--                  </v-radio-group>-->
-          <!--                  <template v-if="methodModel!==undefined">-->
-          <!--                    <v-card-title style="margin-left:-25px">Configure Parameters</v-card-title>-->
-          <!--                    <div>-->
-          <!--                      <v-slider-->
-          <!--                        hide-details-->
-          <!--                        class="align-center"-->
-          <!--                        v-model="models.topX"-->
-          <!--                        step="1"-->
-          <!--                        min="1"-->
-          <!--                        max="2000"-->
-          <!--                      >-->
-          <!--                        <template v-slot:prepend>-->
-          <!--                          <v-text-field-->
-          <!--                            v-model="models.topX"-->
-          <!--                            class="mt-0 pt-0"-->
-          <!--                            type="integer"-->
-          <!--                            style="width: 100px"-->
-          <!--                            label="visualize topX"-->
-          <!--                          ></v-text-field>-->
-          <!--                        </template>-->
-          <!--                        <template v-slot:append>-->
-          <!--                          <v-tooltip left>-->
-          <!--                            <template v-slot:activator="{ on, attrs }">-->
-          <!--                              <v-icon-->
-          <!--                                v-bind="attrs"-->
-          <!--                                v-on="on"-->
-          <!--                                left> far fa-question-circle-->
-          <!--                              </v-icon>-->
-          <!--                            </template>-->
-          <!--                            <span>A integer X limiting the visualization to the top X drugs that were found.</span>-->
-          <!--                          </v-tooltip>-->
-          <!--                        </template>-->
-          <!--                      </v-slider>-->
-          <!--                    </div>-->
-          <!--                    <div style="display: flex">-->
-          <!--                      <div>-->
-          <!--                        <v-switch-->
-          <!--                          label="Only use experimentally validated interaction networks"-->
-          <!--                          v-model="experimentalSwitch"-->
-          <!--                        >-->
-          <!--                          <template v-slot:append>-->
-          <!--                            <v-tooltip left>-->
-          <!--                              <template v-slot:activator="{ on, attrs }">-->
-          <!--                                <v-icon-->
-          <!--                                  v-bind="attrs"-->
-          <!--                                  v-on="on"-->
-          <!--                                  left> far fa-question-circle-->
-          <!--                                </v-icon>-->
-          <!--                              </template>-->
-          <!--                              <span>Restricts the edges in the {{-->
-          <!--                                  ['Gene', 'Protein'][seedTypeId] + '-' + ['Gene', 'Protein'][seedTypeId]-->
-          <!--                                }} network to experimentally validated ones.</span>-->
-          <!--                            </v-tooltip>-->
-          <!--                          </template>-->
-          <!--                        </v-switch>-->
-          <!--                      </div>-->
-          <!--                    </div>-->
-          <!--                    <div style="display:flex; width: 100%">-->
-          <!--                      <div style="justify-self: flex-start">-->
-          <!--                        <v-switch-->
-          <!--                          label="Only direct Drugs"-->
-          <!--                          v-model="models.onlyDirect"-->
-          <!--                        >-->
-          <!--                          <template v-slot:append>-->
-          <!--                            <v-tooltip left>-->
-          <!--                              <template v-slot:activator="{ on, attrs }">-->
-          <!--                                <v-icon-->
-          <!--                                  v-bind="attrs"-->
-          <!--                                  v-on="on"-->
-          <!--                                  left> far fa-question-circle-->
-          <!--                                </v-icon>-->
-          <!--                              </template>-->
-          <!--                              <span>If only the drugs interacting directly with seeds should be considered in the ranking,-->
-          <!--                             this should be selected. If including the non-direct drugs is desired unselect.</span>-->
-          <!--                            </v-tooltip>-->
-          <!--                          </template>-->
-          <!--                        </v-switch>-->
-          <!--                      </div>-->
-          <!--                      <div style="justify-self: center; margin-left: auto">-->
-          <!--                        <v-switch-->
-          <!--                          label="Only approved Drugs"-->
-          <!--                          v-model="models.onlyApproved"-->
-          <!--                        >-->
-          <!--                          <template v-slot:append>-->
-          <!--                            <v-tooltip left>-->
-          <!--                              <template v-slot:activator="{ on, attrs }">-->
-          <!--                                <v-icon-->
-          <!--                                  v-bind="attrs"-->
-          <!--                                  v-on="on"-->
-          <!--                                  left> far fa-question-circle-->
-          <!--                                </v-icon>-->
-          <!--                              </template>-->
-          <!--                              <span>If only approved drugs should be considered in the ranking,-->
-          <!--                             this should be selected. If including all approved and unapproved drugs is desired unselect.</span>-->
-          <!--                            </v-tooltip>-->
-          <!--                          </template>-->
-          <!--                        </v-switch>-->
-          <!--                      </div>-->
-          <!--                      <div style="justify-self: flex-end; margin-left: auto">-->
-          <!--                        <v-switch-->
-          <!--                          label="Filter Element 'Drugs'"-->
-          <!--                          v-model="models.filterElements"-->
-          <!--                        >-->
-          <!--                          <template v-slot:append>-->
-          <!--                            <v-tooltip left>-->
-          <!--                              <template v-slot:activator="{ on, attrs }">-->
-          <!--                                <v-icon-->
-          <!--                                  v-bind="attrs"-->
-          <!--                                  v-on="on"-->
-          <!--                                  left> far fa-question-circle-->
-          <!--                                </v-icon>-->
-          <!--                              </template>-->
-          <!--                              <span>Filters:<br><b>chemical elements:</b> <i>Gold</i>, <i>Zinc</i>, ...<br><b>metals and metal cations:</b> <i>Cupric Chloride</i>, <i>Aluminium acetoacetate</i>, ...<br><b>minerals and mineral supplements:</b> <i>Calcium silicate</i>, <i>Sodium chloride</i>, ...</span>-->
-          <!--                            </v-tooltip>-->
-          <!--                          </template>-->
-          <!--                        </v-switch>-->
-          <!--                      </div>-->
-          <!--                    </div>-->
-          <!--                    <div>-->
-          <!--                      <v-slider-->
-          <!--                        v-show="methodModel===0"-->
-          <!--                        hide-details-->
-          <!--                        class="align-center"-->
-          <!--                        v-model="models.damping"-->
-          <!--                        step="0.01"-->
-          <!--                        min="0"-->
-          <!--                        max="1"-->
-          <!--                      >-->
-          <!--                        <template v-slot:prepend>-->
-          <!--                          <v-text-field-->
-          <!--                            v-model="models.damping"-->
-          <!--                            class="mt-0 pt-0"-->
-          <!--                            type="float"-->
-          <!--                            style="width: 60px"-->
-          <!--                            label="damping-factor"-->
-          <!--                          ></v-text-field>-->
-          <!--                        </template>-->
-          <!--                        <template v-slot:append>-->
-          <!--                          <v-tooltip left>-->
-          <!--                            <template v-slot:activator="{ on, attrs }">-->
-          <!--                              <v-icon-->
-          <!--                                v-bind="attrs"-->
-          <!--                                v-on="on"-->
-          <!--                                left> far fa-question-circle-->
-          <!--                              </v-icon>-->
-          <!--                            </template>-->
-          <!--                            <span>A float value between 0-1 to be used as damping factor parameter.</span>-->
-          <!--                          </v-tooltip>-->
-          <!--                        </template>-->
-          <!--                      </v-slider>-->
-          <!--                    </div>-->
-          <!--                  </template>-->
-          <!--                </v-col>-->
-          <!--              </v-row>-->
-          <!--            </v-container>-->
-          <!--          </v-card>-->
-
-          <!--          <v-btn text @click="makeStep(2,'back')">-->
-          <!--            Back-->
-          <!--          </v-btn>-->
-
-          <!--          <v-btn-->
-          <!--            @click="makeStep(2,'continue')"-->
-          <!--            color="primary"-->
-          <!--            :disabled="methodModel===undefined"-->
-          <!--          >-->
-          <!--            Run-->
-          <!--          </v-btn>-->
-
-          <!--          <v-btn text @click="makeStep(2,'cancel')">-->
-          <!--            Cancel-->
-          <!--          </v-btn>-->
         </v-stepper-content>
 
         <v-stepper-content step="3">
@@ -562,7 +365,6 @@
                                          style="margin-left:15px; z-index:50">
                     </v-progress-circular>
                   </v-card-title>
-                  <ValidationBox ref="validation" drugs></ValidationBox>
                   <template v-if="results.targets.length>=0">
                     <v-data-table max-height="50vh" height="50vh" class="overflow-y-auto" fixed-header dense
                                   item-key="id"
@@ -635,7 +437,17 @@
             Back
           </v-btn>
 
-          <v-btn text @click="makeStep(3,'cancel')">
+          <v-btn text @click="makeStep(3,'continue')" :disabled="currentGid==null">
+            Validate
+          </v-btn>
+        </v-stepper-content>
+        <v-stepper-content step="4">
+          <Validation ref="validation" :step="4" :seed-type-id="seedTypeId" :ranking="results.targets" @drugCountUpdate="updateDrugCount" @printNotificationEvent="printNotification"></Validation>
+          <v-btn text @click="makeStep(3,'back')">
+            Back
+          </v-btn>
+
+          <v-btn text @click="makeStep(4,'cancel')">
             Restart
           </v-btn>
         </v-stepper-content>
@@ -655,11 +467,10 @@ import ResultDownload from "@/components/app/tables/menus/ResultDownload";
 import SeedDownload from "@/components/app/tables/menus/SeedDownload";
 import NodeInput from "@/components/app/input/NodeInput";
 import ExampleSeeds from "@/components/start/quick/ExampleSeeds";
-import ValidationBox from "@/components/start/quick/ValidationBox";
-import ValidationDrugTable from "@/components/app/tables/ValidationDrugTable";
 import EntryDetails from "@/components/app/EntryDetails";
 import LabeledSwitch from "@/components/app/input/LabeledSwitch";
 import DPAlgorithmSelect from "@/components/start/quick/DPAlgorithmSelect";
+import Validation from "@/components/start/quick/Validation";
 
 export default {
   name: "DrugRepurposing",
@@ -696,11 +507,11 @@ export default {
       results: {seeds: [], targets: []},
       jobs: {},
       currentJid: undefined,
+      currentGid: undefined,
       drugDetailAttributes: ["Name", "SourceID", "SourceIDs", "Formula", "Indication", "Description", "Synonyms"],
       geneDetailAttributes: ["Name", "SourceID", "SourceIDs", "Symbols", "Chromosome", "Genomic Location", "Synonyms", "Description"],
       proteinDetailAttributes: ["Name", "SourceID", "SourceIDs", "Gene", "Synonyms", "Comments"],
       validationDrugCount: 0,
-      validationDrugView: false,
 
       disorderIds: [],
     }
@@ -815,7 +626,8 @@ export default {
       let jid = data.jid
       this.currentJid = jid
       let base = data.basis
-      let result = data.gid
+      this.currentGid = data.gid
+      let result = this.currentGid
       if (this.jobs[jid] === undefined)
         this.jobs[jid] = {}
       if (base != null) {
@@ -828,28 +640,23 @@ export default {
           this.$socket.unsubscribeJob(jid)
         this.jobs[jid].result = result
         this.loadTargetTable(result).then(() => {
-          this.$refs.validation.validate(this.results.targets, this.$refs.validationTable.getDrugs(), this.$refs.algorithms.getAlgorithmModels().onlyApproved)
+          // this.$refs.validation.validate(this.results.targets, this.$refs.validation.getDrugs(), this.$refs.algorithms.getAlgorithmModels().onlyApproved)
           this.loadGraph(result)
         })
       }
     },
 
     updateDrugCount: function () {
-      this.validationDrugCount = this.$refs.validationTable.getDrugs().length;
+      this.validationDrugCount = this.$refs.validation.getDrugs().length;
     },
 
     acceptAlgorithmSelectEvent: function (value) {
       this.$set(this, "algorithmSelected", value)
     },
     addToSelection: function (data) {
-      if (this.validationDrugView)
-        this.$refs.validationTable.addDrugs(data)
-      else
-        this.$refs.seedTable.addSeeds(data)
+      this.$refs.seedTable.addSeeds(data)
     },
-    toggleValidationDrugView: function () {
-      this.$set(this, "validationDrugView", !this.validationDrugView)
-    },
+
     methodScores: function () {
       return this.$refs.algorithms.getHeaders()
     },
@@ -987,7 +794,7 @@ export default {
           drug.trialCount = drug.trials.length;
         }
       })
-      let validDrugs = this.$refs.validationTable.getDrugs();
+      let validDrugs = this.$refs.validation.getDrugs();
       if (validDrugs != null) {
         let ids = validDrugs.map(d => d.id)
         this.results.targets.filter(d => ids.indexOf(d.id) > -1).forEach(d => d.known = true)
@@ -1088,13 +895,12 @@ export default {
   },
 
   components: {
+    Validation,
     DPAlgorithmSelect,
     LabeledSwitch,
-    ValidationBox,
     SeedDownload,
     NodeInput,
     SuggestionAutocomplete,
-    ValidationDrugTable,
     Network,
     SeedTable,
     ResultDownload,
