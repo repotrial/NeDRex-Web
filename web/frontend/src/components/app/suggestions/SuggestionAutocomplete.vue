@@ -5,8 +5,7 @@
     :disabled="suggestionType===undefined || suggestionType<0"
     :loading="suggestions.loading"
     :items="suggestions.data"
-    :filter="()=>{return true}"
-    item-value="key"
+    item-value="id"
     v-model="suggestionModel"
     label="by suggestions"
     class="mx-4"
@@ -203,7 +202,7 @@ export default {
           })
         }
       }
-      this.$set(this.suggestions, "data", data)
+      this.suggestions.data = data
     },
     getSuggestions: function (val, timeouted) {
       if (!timeouted) {
@@ -233,6 +232,7 @@ export default {
             return response.data
           }
         }).then(data => {
+          data.suggestions.forEach(s=>s.id=s.sid+":"+s.type+":"+s.key)
           this.sortData(data.suggestions, this.sortings[this.sortingModel].value)
         }).catch(err =>
           console.error(err)

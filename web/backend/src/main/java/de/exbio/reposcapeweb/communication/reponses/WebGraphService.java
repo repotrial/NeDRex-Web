@@ -469,7 +469,6 @@ public class WebGraphService {
             }
         }
 
-
         if (request.typeCount != null) {
             boolean sourceEqualsTargetType = request.name.equals(request.typeCount);
             NodeFilter finalNf = nf;

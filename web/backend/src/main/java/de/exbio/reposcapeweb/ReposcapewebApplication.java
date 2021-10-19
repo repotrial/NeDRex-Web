@@ -2,6 +2,9 @@ package de.exbio.reposcapeweb;
 
 import de.exbio.reposcapeweb.communication.cache.Graphs;
 import de.exbio.reposcapeweb.communication.jobs.JobController;
+import de.exbio.reposcapeweb.communication.reponses.Suggestions;
+import de.exbio.reposcapeweb.communication.reponses.WebGraphService;
+import de.exbio.reposcapeweb.communication.requests.SuggestionRequest;
 import de.exbio.reposcapeweb.db.DbCommunicationService;
 import de.exbio.reposcapeweb.db.entities.edges.DrugHasIndication;
 import de.exbio.reposcapeweb.db.entities.edges.ProteinAssociatedWithDisorder;
@@ -57,6 +60,8 @@ public class ReposcapewebApplication extends SpringBootServletInitializer {
     private NodeController nodeController;
     @Autowired
     private DbCommunicationService dbService;
+    @Autowired
+    WebGraphService webGraphService;
 
     @Autowired
     private ProteinInteractsWithProteinService ppiService;
@@ -88,6 +93,8 @@ public class ReposcapewebApplication extends SpringBootServletInitializer {
         dbService.setImportInProgress(true);
         importService.importNodeData();
 
+
+
 //        simnetmedFileCreation();
 
         //TODO maybe move importJob and importHistory to after update?
@@ -112,7 +119,6 @@ public class ReposcapewebApplication extends SpringBootServletInitializer {
                 + "MB");
         log.info("Loaded " + nodeController.getCount() + " nodes and " + edgeController.getSize() + " edges!");
         log.info("Service can be used!");
-
 
 //        drugstoneFileCreation();
 
