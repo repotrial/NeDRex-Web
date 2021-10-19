@@ -1257,7 +1257,7 @@ public class WebGraphService {
         return coords;
     }
 
-    public LinkedList<Object> mapDomainIdsToItemList(String type, LinkedList<String> file) {
+    public LinkedList<Object> mapDomainIdsToItemList(String type, Collection<String> file) {
         LinkedList<Object> out = new LinkedList<>();
 
         List<Integer> ids = new LinkedList<>();

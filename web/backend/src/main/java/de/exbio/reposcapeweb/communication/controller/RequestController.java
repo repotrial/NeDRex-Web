@@ -330,9 +330,9 @@ public class RequestController {
 
     @RequestMapping(value = "/mapListToItems", method = RequestMethod.POST)
     @ResponseBody
-    public String getListToItems(@RequestBody MapListRequest request) {
+    public String getListToItems(@RequestBody MapDomainListRequest request) {
         log.debug("Got mapping request for node type: " + request.type + " and list " + toJson(request.list));
-        return toJson(webGraphService.mapDomainIdsToItemList(request.type, new LinkedList(Arrays.asList(request.list))));
+        return toJson(webGraphService.mapDomainIdsToItemList(request.type, request.list));
     }
     @RequestMapping(value = "/mapIdListToItems", method = RequestMethod.POST)
     @ResponseBody
