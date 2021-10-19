@@ -477,7 +477,9 @@
                             <span v-on="on" v-bind="attrs">{{ header.text }}</span>
                           </template>
                           <span>Entries in this column can contain following values<br><v-icon left color="white"
-                                                                                               size="12pt">fas fa-check</v-icon>: This drug is already known to be effective against at least one of the selected disorders<br><i>{{ "<" + "n" + ">" }}</i> : This drug has <i>#n</i> entries in ClinicalTrials.org for treatments of the selected disorders.</span>
+                                                                                               size="12pt">fas fa-check</v-icon>: This drug is already known to be effective against at least one of the selected disorders<br><i>{{
+                              "<" + "n" + ">"
+                            }}</i> : This drug has <i>#n</i> entries in ClinicalTrials.org for treatments of the selected disorders.</span>
                         </v-tooltip>
                       </template>
                       <template v-slot:item.trialCount="{item}">
@@ -823,6 +825,7 @@ export default {
         this.loadModuleTargetTable(this.moduleGid).then(() => {
           this.resultProgress = 25
           // this.$refs.validation.validate()
+
           this.loadGraph(this.moduleGid, true)
         })
       }
@@ -1079,6 +1082,7 @@ export default {
         this.selectedSuggestions.forEach(s => sources += s + "; ")
         sources = sources.substr(0, sources.length - 2)
       }
+      this.nameOptions=[]
       this.nameOptions.push(sources)
       this.nameOptions.push((sources + " (" + this.$refs.moduleAlgorithms.getAlgorithmMethod() + "/" + this.$refs.rankingAlgorithms.getAlgorithmMethod() + ")"))
       this.nameOptions.push((sources + " (" + this.$refs.moduleAlgorithms.getAlgorithmMethod() + ") [" + (await this.$refs.moduleAlgorithms.getParamString()) + "]" + " / " + "(" + this.$refs.rankingAlgorithms.getAlgorithmMethod() + ") [" + (await this.$refs.rankingAlgorithms.getParamString()) + "]"))
@@ -1115,17 +1119,23 @@ export default {
       })
     },
     loadGraph: function (graphId, disableSkipToAdvanced) {
-      this.getGraph().then(graph => {
-        this.resultProgress += 5
-        graph.loadNetworkById(graphId, disableSkipToAdvanced).then(() => {
-          this.resultProgress += 15
-          graph.showLoops(false)
-          let seedIds = this.seeds.map(s => s.id)
-          this.resultProgress += 3
-          graph.modifyGroups(this.results.targets.filter(n => seedIds.indexOf(n.id) > -1).map(n => ["gen_", "pro_"][this.seedTypeId] + n.id), ["seedGene", "seedProtein"][this.seedTypeId])
-          this.resultProgress += 2
-        })
-      })
+      if (this.namePopup) {
+        setTimeout(() => {
+          this.loadGraph(graphId,disableSkipToAdvanced)
+        }, 500)
+      } else if(this.rankingGid==null || graphId === this.rankingGid) {
+          this.getGraph().then(graph => {
+            this.resultProgress += 5
+            graph.loadNetworkById(graphId, disableSkipToAdvanced).then(() => {
+              this.resultProgress += 15
+              graph.showLoops(false)
+              let seedIds = this.seeds.map(s => s.id)
+              this.resultProgress += 3
+              graph.modifyGroups(this.results.targets.filter(n => seedIds.indexOf(n.id) > -1).map(n => ["gen_", "pro_"][this.seedTypeId] + n.id), ["seedGene", "seedProtein"][this.seedTypeId])
+              this.resultProgress += 2
+            })
+          })
+      }
     },
     printNotification: function (message, type) {
       this.$emit("printNotificationEvent", message, type)

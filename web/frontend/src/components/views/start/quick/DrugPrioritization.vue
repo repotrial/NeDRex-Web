@@ -211,7 +211,8 @@
         </v-stepper-content>
 
         <v-stepper-content step="2">
-          <DPAlgorithmSelect ref="algorithms" :blitz="blitz" type="mi" :step="2" :seeds="seeds" :seed-type-id="seedTypeId"
+          <DPAlgorithmSelect ref="algorithms" :blitz="blitz" type="mi" :step="2" :seeds="seeds"
+                             :seed-type-id="seedTypeId"
                              @algorithmSelectedEvent="acceptAlgorithmSelectEvent"
                              @jobEvent="readJob" socket-event="quickRankingFinishedEvent"></DPAlgorithmSelect>
           <v-btn text @click="makeStep(2,'back')">
@@ -385,9 +386,10 @@
                       <template v-slot:header.trialCount="{header}">
                         <v-tooltip bottom>
                           <template v-slot:activator="{on, attrs}">
-                              <span v-on="on" v-bind="attrs">{{header.text}}</span>
+                            <span v-on="on" v-bind="attrs">{{ header.text }}</span>
                           </template>
-                          <span>Entries in this column can contain following values<br><v-icon left color="white" size="12pt">fas fa-check</v-icon>: This drug is already known to be effective against at least one of the selected disorders<br><i>{{"<"+"n"+">"}}</i>: This drug has <i>#n</i> entries in ClinicalTrials.org for treatments of the selected disorders.</span>
+                          <span>Entries in this column can contain following values<br><v-icon left color="white"
+                                                                                               size="12pt">fas fa-check</v-icon>: This drug is already known to be effective against at least one of the selected disorders<br><i>{{ "<" + "n" + ">" }}</i>: This drug has <i>#n</i> entries in ClinicalTrials.org for treatments of the selected disorders.</span>
                         </v-tooltip>
                       </template>
                       <template v-slot:item.trialCount="{item}">
@@ -443,7 +445,8 @@
           </v-btn>
         </v-stepper-content>
         <v-stepper-content step="4">
-          <Validation ref="validation" :step="4" :seed-type-id="seedTypeId" :ranking="results.targets" @drugCountUpdate="updateDrugCount" @printNotificationEvent="printNotification"></Validation>
+          <Validation ref="validation" :step="4" :seed-type-id="seedTypeId" :ranking="results.targets"
+                      @drugCountUpdate="updateDrugCount" @printNotificationEvent="printNotification"></Validation>
           <v-btn text @click="makeStep(3,'back')">
             Back
           </v-btn>
@@ -948,11 +951,16 @@ export default {
     }
     ,
     loadGraph: function (graphId) {
-      this.getGraph().then(graph => {
-        graph.loadNetworkById(graphId).then(() => {
-          graph.showLoops(false)
+      if (this.namePopup)
+        setTimeout(() => {
+          this.loadGraph(graphId)
+        }, 500)
+      else
+        this.getGraph().then(graph => {
+          graph.loadNetworkById(graphId).then(() => {
+            graph.showLoops(false)
+          })
         })
-      })
     }
     ,
     focus: function () {

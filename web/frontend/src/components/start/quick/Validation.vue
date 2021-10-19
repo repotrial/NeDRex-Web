@@ -351,7 +351,7 @@ export default {
           if (this[type + "ValidationStatus"] === "running")
             setTimeout(() => {
               this.checkValidationScore(id, type)
-            }, 2000)
+            }, 5000)
           else {
             if (this[type + "ValidationStatus"] === "completed") {
               this.$set(this, type + "ValidationScore", {})

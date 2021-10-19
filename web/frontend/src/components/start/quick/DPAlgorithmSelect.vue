@@ -316,7 +316,6 @@ export default {
       Object.keys(params).forEach(key => {
         str += key + "=" + params[key] + ", "
       })
-      console.log(params)
       str = str.substring(0, str.length - 2)
       return str
     },

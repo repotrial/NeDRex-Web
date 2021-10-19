@@ -485,7 +485,6 @@
           <v-card-actions>
             <v-radio-group v-model="rankingSelect" row>
               <v-radio :label="'Original seeds ('+seeds.length+')'">
-
               </v-radio>
               <v-radio :label="'whole Module ('+(getTargetCount()+seeds.length)+')'">
               </v-radio>
@@ -960,13 +959,18 @@ export default {
       this.$emit("focusEvent")
     },
     loadGraph: function (graphId) {
-      this.getGraph().then(graph => {
-        graph.loadNetworkById(graphId).then(() => {
-          graph.showLoops(false)
-          let seedIds = this.seeds.map(s => s.id)
-          graph.modifyGroups(this.results.targets.filter(n => seedIds.indexOf(n.id) > -1).map(n => ["gen_", "pro_"][this.seedTypeId] + n.id), ["seedGene", "seedProtein"][this.seedTypeId])
+      if (this.namePopup)
+        setTimeout(() => {
+          this.loadGraph(graphId)
+        }, 500)
+      else
+        this.getGraph().then(graph => {
+          graph.loadNetworkById(graphId).then(() => {
+            graph.showLoops(false)
+            let seedIds = this.seeds.map(s => s.id)
+            graph.modifyGroups(this.results.targets.filter(n => seedIds.indexOf(n.id) > -1).map(n => ["gen_", "pro_"][this.seedTypeId] + n.id), ["seedGene", "seedProtein"][this.seedTypeId])
+          })
         })
-      })
     },
   }
   ,
