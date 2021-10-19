@@ -300,6 +300,20 @@
           </v-container>
         </v-list>
       </v-card>
+<!--      <v-card elevation="3" style="margin:15px" v-if="selectedTab ===3">-->
+<!--        <v-list-item @click="show.filter=!show.filter">-->
+<!--          <v-list-item-title>-->
+<!--            <v-icon left>{{ show.filter ? "far fa-minus-square" : "far fa-plus-square" }}</v-icon>-->
+<!--            Filter-->
+<!--          </v-list-item-title>-->
+<!--        </v-list-item>-->
+<!--        <v-divider></v-divider>-->
+<!--        <v-list>-->
+<!--          <v-container v-if="show.filter">-->
+<!--            content-->
+<!--          </v-container>-->
+<!--        </v-list>-->
+<!--        </v-card>-->
 
       <template v-if="(selectedTab===1 && options.graph.visualized)" :options="options.graph.selection">
         <Selection ref="selection" :options="options.graph.selection"
@@ -415,7 +429,7 @@ export default {
         detail: false,
         algorithms: false,
         jobs: false,
-
+        filter:true,
       },
 
       menu: {

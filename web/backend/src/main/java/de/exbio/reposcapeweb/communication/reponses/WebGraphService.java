@@ -475,7 +475,7 @@ public class WebGraphService {
             LinkedList<Suggestion> keep = new LinkedList<>();
             suggestions.getSuggestions().forEach(suggestion -> {
                 int count = sourceEqualsTargetType ? suggestion.getSize() : getConnectedNodesCount(request.name, request.typeCount, suggestion.getSId().contains("_") ? finalNf.getEntry(suggestion.getSId()).stream().map(FilterEntry::getNodeId).collect(Collectors.toSet()) : Collections.singletonList(Integer.parseInt(suggestion.getSId())));
-                if(count>0){
+                if (count > 0) {
                     suggestion.setTargetCount(count);
                     keep.add(suggestion);
                 }
@@ -954,7 +954,7 @@ public class WebGraphService {
         });
     }
 
-    public void applyJob(Job j) {
+    public void applyJob(Job j, boolean basisIsJob) {
 
         Graph g = getCachedGraph(j.getBasisGraph());
         Graph derived;
@@ -976,18 +976,21 @@ public class WebGraphService {
 
         algorithm.createGraph(derived, j, nodeTypeId, g);
 
-//        if (!algorithm.hasCustomEdges())
-        updateEdges(derived, j, nodeTypeId);
+        if (!algorithm.hasCustomEdges())
+            updateEdges(derived, j, nodeTypeId);
 
         AtomicInteger size = new AtomicInteger();
         derived.getNodes().forEach((k, v) -> size.addAndGet(v.size()));
         derived.getEdges().forEach((k, v) -> size.addAndGet(v.size()));
         if (size.get() < 100_000) {
+            if (!basisIsJob)
+                derived.setParent(null);
             cache.put(derived.getId(), derived);
             j.setDerivedGraph(derived.getId());
             addGraphToHistory(j.getUserId(), derived.getId());
         } else
             j.setStatus(Job.JobState.LIMITED);
+
     }
 
     private void filterDrugsMap(int nodeTypeId, Job j) {
@@ -1301,7 +1304,7 @@ public class WebGraphService {
                 case "disorder" -> n = (Disorder) o;
                 case "drug" -> n = (Drug) o;
             }
-            out.add(n.getAsMap(new HashSet<>(attributes == null ? Arrays.asList("id", "displayName", "primaryDomainId"):attributes)));
+            out.add(n.getAsMap(new HashSet<>(attributes == null ? Arrays.asList("id", "displayName", "primaryDomainId") : attributes)));
         });
         return out;
     }

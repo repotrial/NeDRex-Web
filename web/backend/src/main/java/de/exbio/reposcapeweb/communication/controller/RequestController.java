@@ -2,6 +2,7 @@ package de.exbio.reposcapeweb.communication.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.exbio.reposcapeweb.communication.cache.Graph;
 import de.exbio.reposcapeweb.communication.cache.Graphs;
 import de.exbio.reposcapeweb.communication.jobs.Job;
 import de.exbio.reposcapeweb.communication.jobs.JobController;
@@ -10,6 +11,7 @@ import de.exbio.reposcapeweb.communication.reponses.*;
 import de.exbio.reposcapeweb.communication.requests.*;
 import de.exbio.reposcapeweb.db.DbCommunicationService;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
+import de.exbio.reposcapeweb.db.history.GraphHistoryDetail;
 import de.exbio.reposcapeweb.db.history.HistoryController;
 import de.exbio.reposcapeweb.db.services.controller.NodeController;
 import de.exbio.reposcapeweb.db.updates.UpdateService;
@@ -377,7 +379,10 @@ public class RequestController {
         log.info("GraphHistory detail request: " + gid);
         File thumbnail = webGraphService.getThumbnail(gid);
         webGraphService.createThumbnail(gid, thumbnail);
-        return toJson(historyController.getDetailedHistory(uid, webGraphService.getCachedGraph(gid), webGraphService.getConnectionGraph(gid), jobController.getJobGraphStatesAndTypes(uid), thumbnail));
+        GraphHistoryDetail detail = historyController.getDetailedHistory(uid, webGraphService.getCachedGraph(gid), webGraphService.getConnectionGraph(gid), jobController.getJobGraphStatesAndTypes(uid), thumbnail);
+        if(detail.jobid!=null)
+            detail.params.putAll(jobController.getParams(detail.jobid));
+        return toJson(detail);
     }
 
     @RequestMapping(value = "/getThumbnailPath", method = RequestMethod.GET)

@@ -8,7 +8,7 @@
           }})</span></v-card-title>
         <v-container ref="history">
           <v-row>
-            <v-col>
+            <v-col :style="{width: selectedId ?'50vw':'', maxWidth: selectedId ? '50vw' :''}">
               <v-treeview
                 :items="getHistoryList()"
                 hoverable
@@ -71,8 +71,8 @@
             </v-col>
             <v-divider vertical></v-divider>
             <v-col v-if="selectedId!==undefined">
-              <div style="position: fixed; overflow-y: auto; max-height: 75vh; max-width:35vw; width: 100%; margin-top: -70px">
-              <v-card v-if="selected===undefined" style="padding-bottom: 15px; max-width: 35vw; width: 100%">
+              <div style="position: fixed; overflow-y: auto; max-height: 75vh; max-width:29vw; width: 29vw; margin-top: -70px">
+              <v-card v-if="selected===undefined" style="padding-bottom: 15px;">
                 <v-card-title >{{ selectedId }}</v-card-title>
                 <v-progress-circular
                   color="primary"
@@ -161,15 +161,36 @@
                   </v-row>
                   <v-row style="margin: 25px"></v-row>
                   <v-row style="margin: 25px" v-if="selected.jobid!=null">
+                    <v-chip v-show="selected.params!=null" outlined style="margin-right: 7px" @click="showParams=!showParams">Chosen Parameters <v-icon right>{{showParams ? 'fas fa-caret-up':'fas fa-caret-down'}}</v-icon></v-chip>
                     <v-chip outlined @click="downloadJob(selected.jobid)">
                       {{ selected.method }} Results
                       <v-icon right>fas fa-download</v-icon>
                     </v-chip>
-
+                  </v-row>
+                  <v-row v-if="selected.params">
+                    <v-col style="max-width: 300px" >
+                      <v-simple-table v-show="showParams">
+                        <template v-slot:default>
+                          <thead>
+                          <tr>
+                            <th class="text-left">
+                              Parameter
+                            </th>
+                            <th class="text-left">Value</th>
+                          </tr>
+                          </thead>
+                          <tbody>
+                          <tr v-for="(param,key) in selected.params" v-if="['nodesOnly','addInteractions','type'].indexOf(key)===-1">
+                            <td class="text-left">{{key}}</td>
+                            <td class="text-left">{{param}}</td>
+                          </tr>
+                          </tbody>
+                        </template>
+                      </v-simple-table>
+                    </v-col>
                   </v-row>
                   <v-row v-if="$global.metagraph!=null &&selected!==undefined">
                     <v-container>
-                      <!--                      <v-card-title>General Information</v-card-title>-->
                       <v-row>
                         <v-col>
                           <v-list>
@@ -216,7 +237,7 @@
                   </v-row>
                   <v-divider></v-divider>
                   <v-row v-if="selected.thumbnailReady" style="padding:15px;display: flex;justify-content: center">
-                    <v-img max-height="600" max-width="600" :src="getThumbnail(selectedId)">
+                    <v-img max-height="28vw" max-width="28vw" :src="getThumbnail(selectedId)">
                     </v-img>
                   </v-row>
                   <v-row v-else style="padding:15px;display: flex;justify-content: center" >
@@ -307,6 +328,7 @@ export default {
       description: "",
       selectedId: undefined,
       selected: undefined,
+      showParams:false,
       hover: {star: false, timeline: {parent: false, children: {}}},
       edit: false,
       deletePopup: false,

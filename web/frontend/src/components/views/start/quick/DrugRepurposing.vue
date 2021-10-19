@@ -28,7 +28,9 @@
         <v-divider></v-divider>
         <v-stepper-step step="2" :complete="step>2 || blitz">
           Module Method
-          <small v-if="step>2 && $refs.moduleAlgorithms.getAlgorithm()!=null">{{ $refs.moduleAlgorithms.getAlgorithm().label }}</small>
+          <small v-if="step>2 && $refs.moduleAlgorithms.getAlgorithm()!=null">{{
+              $refs.moduleAlgorithms.getAlgorithm().label
+            }}</small>
         </v-stepper-step>
         <v-divider></v-divider>
         <v-stepper-step step="3" :complete="step>3 || blitz">
@@ -101,7 +103,7 @@
                         </i>
                       </v-col>
                       <v-col>
-                        <b v-if="rankingAlgorithmSelected">{{this.$refs.rankingAlgorithms.getAlgorithm().label }}</b>
+                        <b v-if="rankingAlgorithmSelected">{{ this.$refs.rankingAlgorithms.getAlgorithm().label }}</b>
                       </v-col>
                     </v-row>
                     <v-row>
@@ -127,7 +129,7 @@
             <v-divider style="margin: 15px;"></v-divider>
             <v-row>
               <v-col>
-                <v-list-item-subtitle  class="title">Select the seed type
+                <v-list-item-subtitle class="title">Select the seed type
                 </v-list-item-subtitle>
                 <v-list-item-action>
                   <v-radio-group row v-model="seedTypeId"
@@ -141,7 +143,7 @@
               </v-col>
             </v-row>
             <ExampleSeeds :seedTypeId="seedTypeId" @addSeedsEvent="addToSelection"
-                          ></ExampleSeeds>
+            ></ExampleSeeds>
             <v-container style="height: 560px;margin: 15px;max-width: 100%">
               <v-row style="height: 100%">
                 <v-col cols="6">
@@ -156,7 +158,10 @@
                         <v-tooltip top>
                           <template v-slot:activator="{on,attrs}">
                             <div v-on="on" v-bind="attrs" style="justify-content: flex-end; margin-left: auto">
-                              <LabeledSwitch v-model="advancedOptions" @click="suggestionType = advancedOptions ? suggestionType : 'disorder'" label-off="Limited" label-on="Full" v-on="on" v-bind="attrs"></LabeledSwitch>
+                              <LabeledSwitch v-model="advancedOptions"
+                                             @click="suggestionType = advancedOptions ? suggestionType : 'disorder'"
+                                             label-off="Limited" label-on="Full" v-on="on"
+                                             v-bind="attrs"></LabeledSwitch>
                             </div>
                           </template>
                           <div style="width: 300px"><b>Limited Mode:</b><br>The options are limited to the most
@@ -187,7 +192,8 @@
                             through association the 'Limited' switch has to be toggled.
                           </div>
                         </v-tooltip>
-                        <SuggestionAutocomplete :suggestion-type="suggestionType" :emit-drugs="true" :emit-disorders="true"
+                        <SuggestionAutocomplete :suggestion-type="suggestionType" :emit-drugs="true"
+                                                :emit-disorders="true"
                                                 @drugsEvent="$refs.validation.addDrugs"
                                                 @disorderEvent="saveDisorders"
                                                 :target-node-type="['gene', 'protein'][seedTypeId]"
@@ -244,25 +250,31 @@
         </v-stepper-content>
 
         <v-stepper-content step="2">
-            <MIAlgorithmSelect ref="moduleAlgorithms" :blitz="blitz" :seeds="seeds" :seed-type-id="seedTypeId" socket-event="quickRepurposeModuleFinishedEvent" @algorithmSelectedEvent="acceptModuleAlgorithmSelectEvent" @jobEvent="readModuleJob" ></MIAlgorithmSelect>
-            <v-btn text @click="makeStep(2,'back')">
-              Back
-            </v-btn>
-            <v-btn
-              @click="makeStep(2,'continue')"
-              color="primary"
-              :disabled=" !moduleAlgorithmSelected  || ($refs.moduleAlgorithms.getAlgorithmMethod()==='bicon' && $refs.moduleAlgorithms.getAlgorithmModels().exprFile ===undefined)"
-            >
-              Run
-            </v-btn>
+          <MIAlgorithmSelect ref="moduleAlgorithms" :blitz="blitz" :seeds="seeds" :seed-type-id="seedTypeId"
+                             socket-event="quickRepurposeModuleFinishedEvent"
+                             @algorithmSelectedEvent="acceptModuleAlgorithmSelectEvent"
+                             @jobEvent="readModuleJob"></MIAlgorithmSelect>
+          <v-btn text @click="makeStep(2,'back')">
+            Back
+          </v-btn>
+          <v-btn
+            @click="makeStep(2,'continue')"
+            color="primary"
+            :disabled=" !moduleAlgorithmSelected  || ($refs.moduleAlgorithms.getAlgorithmMethod()==='bicon' && $refs.moduleAlgorithms.getAlgorithmModels().exprFile ===undefined)"
+          >
+            Run
+          </v-btn>
 
-            <v-btn text @click="makeStep(2,'cancel')">
-              Cancel
-            </v-btn>
+          <v-btn text @click="makeStep(2,'cancel')">
+            Cancel
+          </v-btn>
         </v-stepper-content>
 
         <v-stepper-content step="3">
-          <DPAlgorithmSelect ref="rankingAlgorithms" :blitz="blitz" :step="3" :seeds="seeds" :seed-type-id="seedTypeId" socket-event="quickRepurposeRankingFinishedEvent" @algorithmSelectedEvent="acceptRankingAlgorithmSelectEvent" @jobEvent="readRankingJob"></DPAlgorithmSelect>
+          <DPAlgorithmSelect ref="rankingAlgorithms" :blitz="blitz" :step="3" :seeds="seeds" :seed-type-id="seedTypeId"
+                             socket-event="quickRepurposeRankingFinishedEvent"
+                             @algorithmSelectedEvent="acceptRankingAlgorithmSelectEvent"
+                             @jobEvent="readRankingJob"></DPAlgorithmSelect>
 
           <v-btn text @click="makeStep(3,'back')">
             Back
@@ -320,7 +332,8 @@
                     </template>
                     <template v-slot:expanded-item="{ headers, item }">
                       <td :colspan="headers.length">
-                        <EntryDetails max-width="17vw"  :attributes="[geneDetailAttributes,proteinDetailAttributes][seedTypeId]"
+                        <EntryDetails max-width="17vw"
+                                      :attributes="[geneDetailAttributes,proteinDetailAttributes][seedTypeId]"
                                       :detail-request="{edge:false, type:['gene','protein'][seedTypeId], id:item.id}"></EntryDetails>
                       </td>
                     </template>
@@ -437,7 +450,8 @@
                   <v-card-title class="subtitle-1"> Drugs{{
                       (results.drugs.length !== undefined && results.drugs.length > 0 ? (" (" + (results.drugs.length) + ")") : ": Processing")
                     }}
-                    <v-progress-circular indeterminate size="25" v-if="results.drugs.length===0" style="margin-left:15px; z-index:50">
+                    <v-progress-circular indeterminate size="25" v-if="results.drugs.length===0"
+                                         style="margin-left:15px; z-index:50">
                     </v-progress-circular>
                   </v-card-title>
                   <template v-if="results.drugs.length>0">
@@ -460,9 +474,10 @@
                       <template v-slot:header.trialCount="{header}">
                         <v-tooltip bottom>
                           <template v-slot:activator="{on, attrs}">
-                            <span v-on="on" v-bind="attrs">{{header.text}}</span>
+                            <span v-on="on" v-bind="attrs">{{ header.text }}</span>
                           </template>
-                          <span>Entries in this column can contain following values<br><v-icon left color="white" size="12pt">fas fa-check</v-icon>: This drug is already known to be effective against at least one of the selected disorders<br><i>{{"<"+"n"+">"}}</i> : This drug has <i>#n</i> entries in ClinicalTrials.org for treatments of the selected disorders.</span>
+                          <span>Entries in this column can contain following values<br><v-icon left color="white"
+                                                                                               size="12pt">fas fa-check</v-icon>: This drug is already known to be effective against at least one of the selected disorders<br><i>{{ "<" + "n" + ">" }}</i> : This drug has <i>#n</i> entries in ClinicalTrials.org for treatments of the selected disorders.</span>
                         </v-tooltip>
                       </template>
                       <template v-slot:item.trialCount="{item}">
@@ -474,9 +489,9 @@
                         </v-tooltip>
                         <v-tooltip v-if="item.trials!=null" left>
                           <template v-slot:activator="{attr,on }">
-                            <span v-bind="attr" v-on="on">{{item.trialCount }}</span>
+                            <span v-bind="attr" v-on="on">{{ item.trialCount }}</span>
                           </template>
-                          <span>There are the {{item.trialCount}} entries for trials regarding one of the<br> initially selected disorders and this drug on ClinicalTrial.gov. Expand the entry to find all studies!</span>
+                          <span>There are the {{ item.trialCount }} entries for trials regarding one of the<br> initially selected disorders and this drug on ClinicalTrial.gov. Expand the entry to find all studies!</span>
                         </v-tooltip>
 
                       </template>
@@ -486,7 +501,8 @@
                       </template>
                       <template v-slot:expanded-item="{ headers, item }">
                         <td :colspan="headers.length">
-                          <EntryDetails max-width="25vw" :attributes="drugDetailAttributes" :additions="(item.trials != null ?  [{pos:3,key:'ClinicalTrials',value:item.trials}]:null)"
+                          <EntryDetails max-width="25vw" :attributes="drugDetailAttributes"
+                                        :additions="(item.trials != null ?  [{pos:3,key:'ClinicalTrials',value:item.trials}]:null)"
                                         :detail-request="{edge:false, type:'drug', id:item.id}"></EntryDetails>
                         </td>
                       </template>
@@ -517,7 +533,9 @@
           </v-btn>
         </v-stepper-content>
         <v-stepper-content step="5">
-          <Validation ref="validation" :step="5" :seed-type-id="seedTypeId" :module="results.targets" :ranking="results.drugs"  @drugCountUpdate="updateDrugCount" @printNotificationEvent="printNotification"></Validation>
+          <Validation ref="validation" :step="5" :seed-type-id="seedTypeId" :module="results.targets"
+                      :ranking="results.drugs" @drugCountUpdate="updateDrugCount"
+                      @printNotificationEvent="printNotification"></Validation>
           <v-btn text @click="makeStep(5,'back')">
             Back
           </v-btn>
@@ -619,8 +637,8 @@ export default {
       suggestionType: undefined,
       fileInputModel: undefined,
       advancedOptions: false,
-      moduleAlgorithmSelected:false,
-      rankingAlgorithmSelected:false,
+      moduleAlgorithmSelected: false,
+      rankingAlgorithmSelected: false,
       physicsOn: false,
       graph: {physics: false},
       results: {seeds: [], targets: []},
@@ -631,9 +649,9 @@ export default {
       rankingGid: undefined,
       rankingJid: undefined,
       validationDrugCount: 0,
-      drugDetailAttributes:["Name", "SourceID","SourceIDs","Formula","Indication","Description","Synonyms"],
-      geneDetailAttributes:["Name", "SourceID","SourceIDs","Symbols","Chromosome","Genomic Location","Synonyms", "Description"],
-      proteinDetailAttributes:["Name", "SourceID","SourceIDs","Gene","Synonyms", "Comments"],
+      drugDetailAttributes: ["Name", "SourceID", "SourceIDs", "Formula", "Indication", "Description", "Synonyms"],
+      geneDetailAttributes: ["Name", "SourceID", "SourceIDs", "Symbols", "Chromosome", "Genomic Location", "Synonyms", "Description"],
+      proteinDetailAttributes: ["Name", "SourceID", "SourceIDs", "Gene", "Synonyms", "Comments"],
       disorderIds: [],
 
       selectedSuggestions: [],
@@ -672,7 +690,7 @@ export default {
       this.rankingJid = undefined
       this.rankingGid = undefined
       this.resultProgress = 0
-      this.disorderIds=[]
+      this.disorderIds = []
       this.validationDrugCount = 0
     },
     reset: function () {
@@ -697,10 +715,10 @@ export default {
       }
       return out
     },
-    acceptModuleAlgorithmSelectEvent: function(value){
+    acceptModuleAlgorithmSelectEvent: function (value) {
       this.moduleAlgorithmSelected = value;
     },
-    acceptRankingAlgorithmSelectEvent: function(value){
+    acceptRankingAlgorithmSelectEvent: function (value) {
       this.rankingAlgorithmSelected = value;
     },
     makeStep: function (s, button) {
@@ -794,8 +812,8 @@ export default {
       })
     },
 
-    readModuleJob: function (data, notSubbed,dirty) {
-      this.resultProgress+=5
+    readModuleJob: function (data, notSubbed, dirty) {
+      this.resultProgress += 5
       let jid = data.jid
       this.moduleJid = jid
       this.moduleGid = data.gid
@@ -805,12 +823,12 @@ export default {
         this.loadModuleTargetTable(this.moduleGid).then(() => {
           this.resultProgress = 25
           // this.$refs.validation.validate()
-          this.loadGraph(this.moduleGid,true)
+          this.loadGraph(this.moduleGid, true)
         })
       }
     },
-    saveDisorders:function(list){
-      this.disorderIds = this.disorderIds.concat(list.filter(id=>this.disorderIds.indexOf(id)===-1))
+    saveDisorders: function (list) {
+      this.disorderIds = this.disorderIds.concat(list.filter(id => this.disorderIds.indexOf(id) === -1))
     },
     updateDrugCount: function () {
       this.validationDrugCount = this.$refs.validation.getDrugs().length;
@@ -833,7 +851,7 @@ export default {
     },
 
     addToSelection: function (data) {
-        this.$refs.seedTable.addSeeds(data)
+      this.$refs.seedTable.addSeeds(data)
     },
     moduleMethodScores: function () {
       return this.$refs.moduleAlgorithms.getHeaders()
@@ -873,7 +891,7 @@ export default {
         let sep = s ? s : "\t"
         let text = "#ID" + (names ? sep + "Name" : "");
         let scores = this.$refs.moduleAlgorithms.getAlgorithm().scores
-       scores.forEach(s => text += sep + s.name)
+        scores.forEach(s => text += sep + s.name)
         text += "\n"
         this.results.targets.forEach(t => {
             text += data[t.id] + (names ? sep + t.displayName : "")
@@ -920,7 +938,7 @@ export default {
       document.body.removeChild(dl)
     }
     ,
-    seedValueReplacement: function (list,method) {
+    seedValueReplacement: function (list, method) {
       let seedIds = this.seeds.map(n => n.id)
       let seeds = list.filter(n => seedIds.indexOf(n.id > -1))
       method.scores.forEach(score => seeds.filter(n => n[score.id] == null).forEach(n => n[score.id] = score.seed))
@@ -938,7 +956,7 @@ export default {
         let method = this.$refs.moduleAlgorithms.getAlgorithm()
 
         let primaryAttribute = method.scores.filter(s => s.primary)[0]
-        this.seedValueReplacement(data.nodes[seedType],method)
+        this.seedValueReplacement(data.nodes[seedType], method)
         this.results.targets = this.sort(data.nodes[seedType], primaryAttribute)
         this.rank(this.results.targets, primaryAttribute)
         this.normalize(this.results.targets, method)
@@ -978,7 +996,7 @@ export default {
     },
 
     addTrialsNumber: async function (list, method) {
-      if(this.disorderIds==null || this.disorderIds.length===0){
+      if (this.disorderIds == null || this.disorderIds.length === 0) {
         return
       }
       let drugNames = await this.$http.getNodes("drug", list.map(drug => drug.id), ["id", "displayName"]).then(data => {
@@ -991,7 +1009,7 @@ export default {
         data.StudyFields.forEach(studie => {
           studie.InterventionName.forEach(target => {
             list.forEach(drug => {
-              if (target.toLowerCase().indexOf(drug.displayName.toLowerCase())>-1) {
+              if (target.toLowerCase().indexOf(drug.displayName.toLowerCase()) > -1) {
                 if (drug.trials == null)
                   drug.trials = studie.NCTId
                 else {
@@ -1005,17 +1023,17 @@ export default {
           })
         })
       })
-      list.forEach(drug=>{
-        if(drug.trials != null) {
+      list.forEach(drug => {
+        if (drug.trials != null) {
           drug.trialCount = drug.trials.length;
         }
       })
       let validDrugs = this.$refs.validation.getDrugs();
-      if(validDrugs!=null){
-        let ids = validDrugs.map(d=>d.id)
-        this.results.drugs.filter(d=>ids.indexOf(d.id)>-1).forEach(d=>d.known=true)
+      if (validDrugs != null) {
+        let ids = validDrugs.map(d => d.id)
+        this.results.drugs.filter(d => ids.indexOf(d.id) > -1).forEach(d => d.known = true)
       }
-      if(method.scores.filter(s=>s.id==="trialCount").length===0)
+      if (method.scores.filter(s => s.id === "trialCount").length === 0)
         method.scores.push({id: "trialCount", name: "Use"})
     },
 
@@ -1062,8 +1080,8 @@ export default {
         sources = sources.substr(0, sources.length - 2)
       }
       this.nameOptions.push(sources)
-      this.nameOptions.push((sources + " (" + this.$refs.moduleAlgorithms.getAlgorithmMethod() +"/"+this.$refs.rankingAlgorithms.getAlgorithmMethod()+ ")"))
-      this.nameOptions.push((sources + " (" + this.$refs.moduleAlgorithms.getAlgorithmMethod() + ") [" + (await this.$refs.moduleAlgorithms.getParamString()) + "]"+" / "+"(" + this.$refs.rankingAlgorithms.getAlgorithmMethod() + ") [" + (await this.$refs.rankingAlgorithms.getParamString()) + "]"))
+      this.nameOptions.push((sources + " (" + this.$refs.moduleAlgorithms.getAlgorithmMethod() + "/" + this.$refs.rankingAlgorithms.getAlgorithmMethod() + ")"))
+      this.nameOptions.push((sources + " (" + this.$refs.moduleAlgorithms.getAlgorithmMethod() + ") [" + (await this.$refs.moduleAlgorithms.getParamString()) + "]" + " / " + "(" + this.$refs.rankingAlgorithms.getAlgorithmMethod() + ") [" + (await this.$refs.rankingAlgorithms.getParamString()) + "]"))
       this.namePopup = true
 
     },
@@ -1078,8 +1096,10 @@ export default {
         setTimeout(() => {
           this.setName(name)
         }, 500)
-      else
+      else {
+        this.$http.post("setGraphName", {gid: this.moduleGid, name: name}).catch(console.error)
         this.$http.post("setGraphName", {gid: this.rankingGid, name: name}).catch(console.error)
+      }
     },
 
 

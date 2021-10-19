@@ -108,26 +108,44 @@
             </template>
           </v-slider>
 
-          <v-btn @click="validate()" color="primary">Run Validation<v-icon right>fas fa-angle-double-right</v-icon></v-btn>
+          <v-btn @click="validate()" color="primary">Run Validation
+            <v-icon right>fas fa-angle-double-right</v-icon>
+          </v-btn>
           <div v-if="module!=null">
             <v-card-subtitle v-if="moduleValidationStatus !=null" class="title">Module Validation Result:
             </v-card-subtitle>
             <v-card-subtitle style="margin-top: -25px">
               <v-chip v-if="styleMap[moduleValidationStatus]!=null" style="margin-left: 10px"
-                      :color="styleMap[moduleValidationStatus][0]"><a style="color: white;text-decoration: none" target="_blank"
-                                                                      :href="'https://api.nedrex.net/validation/status?uid='+moduleValidationUID"> {{ moduleValidationStatus }}
-                <v-icon right size="10pt">{{ styleMap[moduleValidationStatus][1] }}</v-icon></a>
+                      :color="styleMap[moduleValidationStatus][0]"><a style="color: white;text-decoration: none"
+                                                                      target="_blank"
+                                                                      :href="'https://api.nedrex.net/validation/status?uid='+moduleValidationUID">
+                {{ moduleValidationStatus }}
+                <v-icon right size="10pt">{{ styleMap[moduleValidationStatus][1] }}</v-icon>
+              </a>
               </v-chip>
             </v-card-subtitle>
-            <v-list v-if="moduleValidationError.length===0">
-              <v-list-item v-for="(score,id) in moduleValidationScore" v-if="score!=null">
-                <v-list-item-title style="font-size: smaller">{{ id }}</v-list-item-title>
-                <v-list-item-subtitle>{{ score }}</v-list-item-subtitle>
-              </v-list-item>
-            </v-list>
+            <div style="display: flex; justify-content: center; width: 100%">
+              <v-simple-table v-if="moduleValidationError.length===0" style="max-width: 400px;">
+                <template v-slot:default>
+                  <thead>
+                  <tr>
+                    <th class="text-center">Measure</th>
+                    <th class="text-center">Value</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  <tr v-for="(score,id) in moduleValidationScore" v-if="score!=null">
+                    <td>{{ id }}</td>
+                    <td>{{ score }}
+                    </td>
+                  </tr>
+                  </tbody>
+                </template>
+              </v-simple-table>
             <div v-else>
               Error:
               <div style="color: dimgray">{{ moduleValidationError }}</div>
+            </div>
             </div>
           </div>
           <div v-if="ranking!=null">
@@ -135,20 +153,37 @@
             </v-card-subtitle>
             <v-card-subtitle style="margin-top: -25px">
               <v-chip v-if="styleMap[rankingValidationStatus]!=null" style="color: white; margin-left: 10px"
-                      :color="styleMap[rankingValidationStatus][0]"><a style="color: white;text-decoration: none" target="_blank"
-                                                                                                        :href="'https://api.nedrex.net/validation/status?uid='+rankingValidationUID"> {{ rankingValidationStatus }}
-                <v-icon right size="10pt">{{ styleMap[rankingValidationStatus][1] }}</v-icon></a>
+                      :color="styleMap[rankingValidationStatus][0]"><a style="color: white;text-decoration: none"
+                                                                       target="_blank"
+                                                                       :href="'https://api.nedrex.net/validation/status?uid='+rankingValidationUID">
+                {{ rankingValidationStatus }}
+                <v-icon right size="10pt">{{ styleMap[rankingValidationStatus][1] }}</v-icon>
+              </a>
               </v-chip>
             </v-card-subtitle>
-            <v-list v-if="rankingValidationError.length===0">
-              <v-list-item v-for="(score,id) in rankingValidationScore" v-if="score!=null">
-                <v-list-item-title style="font-size: smaller">{{ id }}</v-list-item-title>
-                <v-list-item-subtitle>{{ score }}</v-list-item-subtitle>
-              </v-list-item>
-            </v-list>
-            <div v-else>
-              Error:
-              <div style="color: dimgray">{{ rankingValidationScore }}</div>
+
+            <div style="display: flex; justify-content: center; width: 100%">
+              <v-simple-table v-if="rankingValidationError.length===0" style="max-width: 400px;">
+                <template v-slot:default>
+                  <thead>
+                  <tr>
+                    <th class="text-center">Measure</th>
+                    <th class="text-center">Value</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  <tr v-for="(score,id) in rankingValidationScore" v-if="score!=null">
+                    <td>{{ id }}</td>
+                    <td>{{ score }}
+                    </td>
+                  </tr>
+                  </tbody>
+                </template>
+              </v-simple-table>
+              <div v-else>
+                Error:
+                <div style="color: dimgray">{{ rankingValidationError }}</div>
+              </div>
             </div>
           </div>
         </div>
@@ -176,11 +211,11 @@ export default {
 
   data() {
     return {
-      models:{
+      models: {
         perms: 1000,
         onlyApproved: true,
       },
-      skipUIDs:[],
+      skipUIDs: [],
       advancedOptions: false,
       suggestionType: "",
       moduleValidationUID: "",
@@ -243,9 +278,9 @@ export default {
     },
 
     validate: function () {
-      if(this.moduleValidationUID.length>0 && this.skipUIDs.indexOf(this.moduleValidationUID)===-1)
+      if (this.moduleValidationUID.length > 0 && this.skipUIDs.indexOf(this.moduleValidationUID) === -1)
         this.skipUIDs.push(this.moduleValidationUID)
-      if(this.rankingValidationUID.length>0 && this.skipUIDs.indexOf(this.rankingValidationUID)===-1)
+      if (this.rankingValidationUID.length > 0 && this.skipUIDs.indexOf(this.rankingValidationUID) === -1)
         this.skipUIDs.push(this.rankingValidationUID)
       this.moduleValidationUID = ""
       this.rankingValidationUID = ""
@@ -308,7 +343,7 @@ export default {
     },
 
     checkValidationScore: function (id, type) {
-      if(this.skipUIDs.indexOf(id)>-1)
+      if (this.skipUIDs.indexOf(id) > -1)
         return
       if (this[type + "ValidationScore"] == null)
         this.$http.getValidationScore(id).then(response => {

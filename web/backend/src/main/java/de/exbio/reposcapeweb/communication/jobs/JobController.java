@@ -205,8 +205,14 @@ public class JobController {
             toolService.getJobResults(j, domainIds);
             if ((j.getResult().getNodes().isEmpty()) & (!j.getParams().containsKey("nodesOnly") || !j.getParams().get("nodesOnly").equals("true"))) {
                 j.setDerivedGraph(j.getBasisGraph());
-            } else
-                graphService.applyJob(j);
+            } else {
+                boolean basisIsJob = getJobByGraphId(j.getBasisGraph()) != null;
+                graphService.applyJob(j,basisIsJob);
+                if (!basisIsJob) {
+                    historyController.remove(j.getBasisGraph());
+                }
+
+            }
         } catch (Exception e) {
             log.error("Error on finishing job: " + id);
             e.printStackTrace();
@@ -250,10 +256,15 @@ public class JobController {
         return historyController.getJobPath(jobs.get(id));
     }
 
+    public String getJobByGraphId(String gid) {
+        Optional<Job> j = jobs.values().stream().filter(job -> job!=null && job.getDerivedGraph()!= null && job.getDerivedGraph().equals(gid)).findFirst();
+        return j.map(Job::getJobId).orElse(null);
+    }
+
 
     public HashMap<String, Pair<String, Pair<Job.JobState, ToolService.Tool>>> getJobGraphStatesAndTypes(String user) {
         HashMap<String, Pair<String, Pair<Job.JobState, ToolService.Tool>>> stateMap = new HashMap<>();
-        jobs.values().stream().filter(j -> j.getUserId()!=null &&j.getUserId().equals(user)).forEach(j -> stateMap.put(j.getDerivedGraph(), new Pair<>(j.getJobId(), new Pair<>(j.getState(), j.getMethod()))));
+        jobs.values().stream().filter(j -> j.getUserId() != null && j.getUserId().equals(user)).forEach(j -> stateMap.put(j.getDerivedGraph(), new Pair<>(j.getJobId(), new Pair<>(j.getState(), j.getMethod()))));
         return stateMap;
     }
 
@@ -267,4 +278,16 @@ public class JobController {
         return stateMap;
     }
 
+    public Job getJobById(String jobid) {
+        return this.jobs.get(jobid);
+    }
+
+    public HashMap<String, String> getParams(String jobid) {
+        Job j = this.getJobById(jobid);
+        if (j == null)
+            return new HashMap<>();
+        return j.getParams();
+
+
+    }
 }
