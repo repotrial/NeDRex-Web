@@ -277,7 +277,7 @@
                       </template>
                       <template v-slot:expanded-item="{ headers, item }">
                         <td :colspan="headers.length">
-                          <EntryDetails max-width="15vw" :gid="currentGid"
+                          <EntryDetails max-width="15vw" :gid="currentGid" :attributes="[geneDetailAttributes,proteinDetailAttributes][seedTypeId]"
                                         :detail-request="{edge:false, type:['gene', 'protein'][seedTypeId], id:item.id}"></EntryDetails>
                         </td>
                       </template>
@@ -525,6 +525,9 @@ export default {
       loadingResults: true,
       advancedOptions: false,
       physicsOn: false,
+
+      geneDetailAttributes: ["Name", "SourceID", "SourceIDs", "Symbols", "Chromosome", "Genomic Location", "Synonyms", "Description"],
+      proteinDetailAttributes: ["Name", "SourceID", "SourceIDs", "Gene", "Synonyms", "Comments"],
 
       drugTargetPopup: false,
       rankingSelect: 1,
