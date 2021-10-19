@@ -633,6 +633,19 @@ export default {
       return undefined
     },
 
+    getParamString: async function () {
+      let params = await this.getParams()
+      delete params.nodesOnly
+      delete params.addInteractions
+      let str = ""
+      Object.keys(params).forEach(key => {
+        str += key + "=" + params[key] + ", "
+      })
+      console.log(params)
+      str = str.substring(0, str.length - 2)
+      return str
+    },
+
     getParams: async function () {
       let params = {}
       let method = this.getAlgorithmMethod()
@@ -701,6 +714,7 @@ export default {
           this.$socket.subscribeJob(data.jid, this.socketEvent);
           ctx.$emit("jobEvent", data)
         }
+        ctx.$emit("jobSubmitted")
       }).catch(console.error)
     }
 

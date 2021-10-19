@@ -75,7 +75,6 @@ export default {
     }
   },
 
-
   methods: {
     getIcon: function (type) {
       let icon = 'fas fa-question'

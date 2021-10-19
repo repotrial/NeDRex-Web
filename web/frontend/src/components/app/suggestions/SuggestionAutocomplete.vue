@@ -104,6 +104,7 @@ export default {
     },
     suggestionModel: function (val) {
       if (val) {
+        this.$emit("suggestionEvent",val)
         this.$http.post("getConnectedNodes", {
           sourceType: this.suggestionType,
           targetType: this.targetNodeType,

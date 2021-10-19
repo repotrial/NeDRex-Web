@@ -308,6 +308,19 @@ export default {
       return params;
     },
 
+    getParamString: async function () {
+      let params = await this.getParams()
+      delete params.nodesOnly
+      delete params.addInteractions
+      let str = ""
+      Object.keys(params).forEach(key => {
+        str += key + "=" + params[key] + ", "
+      })
+      console.log(params)
+      str = str.substring(0, str.length - 2)
+      return str
+    },
+
     getHeaders: function () {
       if (this.getAlgorithm() != null || this.getAlgorithm().scores != null)
         return this.getAlgorithm().scores;
