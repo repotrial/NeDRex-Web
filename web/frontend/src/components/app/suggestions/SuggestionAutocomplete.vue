@@ -5,6 +5,7 @@
     :disabled="suggestionType===undefined || suggestionType<0"
     :loading="suggestions.loading"
     :items="suggestions.data"
+    :filter="()=>{return true}"
     item-value="id"
     v-model="suggestionModel"
     label="by suggestions"
