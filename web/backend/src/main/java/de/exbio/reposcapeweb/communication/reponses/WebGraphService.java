@@ -976,8 +976,9 @@ public class WebGraphService {
 
         algorithm.createGraph(derived, j, nodeTypeId, g);
 
-        if (!algorithm.hasCustomEdges())
-            updateEdges(derived, j, nodeTypeId);
+        //TODO maybe as an option
+        //if (!algorithm.hasCustomEdges())
+        updateEdges(derived, j, nodeTypeId);
 
         AtomicInteger size = new AtomicInteger();
         derived.getNodes().forEach((k, v) -> size.addAndGet(v.size()));
