@@ -361,9 +361,11 @@
                   <v-card-title class="subtitle-1"> Drugs{{
                       (results.targets.length !== undefined && results.targets.length > 0 ? (" (" + (results.targets.length) + ")") : ": Processing")
                     }}
+                    <span v-show="loadingTrialData">: Loading Trial
+                      Data</span>
                     <v-progress-circular indeterminate
                                          size="25"
-                                         v-if="results.targets.length===0"
+                                         v-if="results.targets.length===0 || loadingTrialData"
                                          style="margin-left:15px; z-index:50">
                     </v-progress-circular>
                   </v-card-title>
@@ -406,7 +408,9 @@
                           <template v-slot:activator="{attr,on }">
                             <span v-bind="attr" v-on="on"><v-icon size="12pt">fas fa-clinic-medical</v-icon></span>
                           </template>
-                          <span>There is at least one entry for trials regarding one of the<br> initially selected disorders and this drug on e.g. ClinicalTrial.gov ({{item.trialCount }}). Expand the entry to find some linked studies!</span>
+                          <span>There is at least one entry for trials regarding one of the<br> initially selected disorders and this drug on e.g. ClinicalTrial.gov ({{
+                              item.trialCount
+                            }}). Expand the entry to find some linked studies!</span>
                         </v-tooltip>
 
                       </template>
@@ -565,6 +569,7 @@ export default {
       namePopup: false,
       nameOptions: [],
       graphName: "",
+      loadingTrialData: false,
     }
   },
 
@@ -655,6 +660,7 @@ export default {
         this.selectedSuggestions.forEach(s => sources += s + "; ")
         sources = sources.substr(0, sources.length - 2)
       }
+      this.nameOptions = []
       this.nameOptions.push(sources)
       this.nameOptions.push((sources + " (" + this.$refs.algorithms.getAlgorithmMethod() + ")"))
       this.nameOptions.push((sources + " (" + this.$refs.algorithms.getAlgorithmMethod() + ") [" + (await this.$refs.algorithms.getParamString()) + "]"))
@@ -846,6 +852,12 @@ export default {
       if (this.disorderIds == null || this.disorderIds.length === 0) {
         return
       }
+      this.loadingTrialData = true
+      let validDrugs = this.$refs.validation.getDrugs();
+      if (validDrugs != null) {
+        let ids = validDrugs.map(d => d.id)
+        this.results.targets.filter(d => ids.indexOf(d.id) > -1).forEach(d => d.known = true)
+      }
       let drugNames = await this.$http.getNodes("drug", list.map(drug => drug.id), ["id", "displayName"]).then(data => {
         return data.map(d => d.displayName)
       })
@@ -875,13 +887,10 @@ export default {
           drug.trialCount = drug.trials.length;
         }
       })
-      let validDrugs = this.$refs.validation.getDrugs();
-      if (validDrugs != null) {
-        let ids = validDrugs.map(d => d.id)
-        this.results.targets.filter(d => ids.indexOf(d.id) > -1).forEach(d => d.known = true)
-      }
       if (method.scores.filter(s => s.id === "trialCount").length === 0)
         method.scores.push({id: "trialCount", name: "Use"})
+      this.loadingTrialData = false
+
     },
 
     saveDisorders: function (list) {

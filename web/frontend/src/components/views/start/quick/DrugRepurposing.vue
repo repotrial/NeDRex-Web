@@ -450,7 +450,11 @@
                   <v-card-title class="subtitle-1"> Drugs{{
                       (results.drugs.length !== undefined && results.drugs.length > 0 ? (" (" + (results.drugs.length) + ")") : ": Processing")
                     }}
-                    <v-progress-circular indeterminate size="25" v-if="results.drugs.length===0"
+                    <span v-show="loadingTrialData">: Loading Trial
+                      Data</span>
+                    <v-progress-circular indeterminate
+                                         size="25"
+                                         v-if="results.drugs.length===0 || loadingTrialData"
                                          style="margin-left:15px; z-index:50">
                     </v-progress-circular>
                   </v-card-title>
@@ -492,9 +496,11 @@
                         <span v-if="item.known && item.trials" style="margin-left: 5px"></span>
                         <v-tooltip v-if="item.trials!=null" left>
                           <template v-slot:activator="{attr,on }">
-                            <span v-bind="attr" v-on="on"><v-icon>fas fa-clinic-medical</v-icon></span>
+                            <span v-bind="attr" v-on="on"><v-icon size="12pt">fas fa-clinic-medical</v-icon></span>
                           </template>
-                          <span>There is at least one entry for trials regarding one of the<br> initially selected disorders and this drug on e.g. ClinicalTrial.gov ({{item.trialCount }}). Expand the entry to find some linked studies!</span>
+                          <span>There is at least one entry for trials regarding one of the<br> initially selected disorders and this drug on e.g. ClinicalTrial.gov ({{
+                              item.trialCount
+                            }}). Expand the entry to find some linked studies!</span>
                         </v-tooltip>
 
                       </template>
@@ -661,6 +667,7 @@ export default {
       namePopup: false,
       nameOptions: [],
       graphName: "",
+      loadingTrialData: false,
     }
   },
 
@@ -1003,6 +1010,7 @@ export default {
       if (this.disorderIds == null || this.disorderIds.length === 0) {
         return
       }
+      this.loadingTrialData = true
       let drugNames = await this.$http.getNodes("drug", list.map(drug => drug.id), ["id", "displayName"]).then(data => {
         return data.map(d => d.displayName)
       })
@@ -1039,6 +1047,7 @@ export default {
       }
       if (method.scores.filter(s => s.id === "trialCount").length === 0)
         method.scores.push({id: "trialCount", name: "Use"})
+      this.loadingTrialData = false
     },
 
     rank: function (list, attribute) {
@@ -1054,7 +1063,9 @@ export default {
         }
         drug.rank = lastRank
       })
-    },
+    }
+
+    ,
 
     normalize: function (list, method) {
       method.scores.filter(s => s["normalize"]).forEach(attribute => {
@@ -1076,26 +1087,29 @@ export default {
     ,
     addToSuggestions: function (item) {
       this.selectedSuggestions.push(item.value)
-    },
+    }
+    ,
     graphNamePopup: async function () {
       let sources = ""
       if (this.selectedSuggestions.length > 0) {
         this.selectedSuggestions.forEach(s => sources += s + "; ")
         sources = sources.substr(0, sources.length - 2)
       }
-      this.nameOptions=[]
+      this.nameOptions = []
       this.nameOptions.push(sources)
       this.nameOptions.push((sources + " (" + this.$refs.moduleAlgorithms.getAlgorithmMethod() + "/" + this.$refs.rankingAlgorithms.getAlgorithmMethod() + ")"))
       this.nameOptions.push((sources + " (" + this.$refs.moduleAlgorithms.getAlgorithmMethod() + ") [" + (await this.$refs.moduleAlgorithms.getParamString()) + "]" + " / " + "(" + this.$refs.rankingAlgorithms.getAlgorithmMethod() + ") [" + (await this.$refs.rankingAlgorithms.getParamString()) + "]"))
       this.namePopup = true
 
-    },
+    }
+    ,
     resolveNamingDialog: function (value) {
       this.namePopup = false
       if (value == null || value.length === 0)
         return
       this.setName(value)
-    },
+    }
+    ,
     setName: function (name) {
       if (this.rankingGid == null)
         setTimeout(() => {
@@ -1105,7 +1119,8 @@ export default {
         this.$http.post("setGraphName", {gid: this.moduleGid, name: name}).catch(console.error)
         this.$http.post("setGraphName", {gid: this.rankingGid, name: name}).catch(console.error)
       }
-    },
+    }
+    ,
 
 
     waitForGraph: function (resolve) {
@@ -1113,34 +1128,38 @@ export default {
         setTimeout(this.waitForGraph, 100, resolve)
       else
         resolve()
-    },
+    }
+    ,
     getGraph: function () {
       return new Promise(resolve => this.waitForGraph(resolve)).then(() => {
         return this.$refs.graph;
       })
-    },
+    }
+    ,
     loadGraph: function (graphId, disableSkipToAdvanced) {
       if (this.namePopup) {
         setTimeout(() => {
-          this.loadGraph(graphId,disableSkipToAdvanced)
+          this.loadGraph(graphId, disableSkipToAdvanced)
         }, 500)
-      } else if(this.rankingGid==null || graphId === this.rankingGid) {
-          this.getGraph().then(graph => {
-            this.resultProgress += 5
-            graph.loadNetworkById(graphId, disableSkipToAdvanced).then(() => {
-              this.resultProgress += 15
-              graph.showLoops(false)
-              let seedIds = this.seeds.map(s => s.id)
-              this.resultProgress += 3
-              graph.modifyGroups(this.results.targets.filter(n => seedIds.indexOf(n.id) > -1).map(n => ["gen_", "pro_"][this.seedTypeId] + n.id), ["seedGene", "seedProtein"][this.seedTypeId])
-              this.resultProgress += 2
-            })
+      } else if (this.rankingGid == null || graphId === this.rankingGid) {
+        this.getGraph().then(graph => {
+          this.resultProgress += 5
+          graph.loadNetworkById(graphId, disableSkipToAdvanced).then(() => {
+            this.resultProgress += 15
+            graph.showLoops(false)
+            let seedIds = this.seeds.map(s => s.id)
+            this.resultProgress += 3
+            graph.modifyGroups(this.results.targets.filter(n => seedIds.indexOf(n.id) > -1).map(n => ["gen_", "pro_"][this.seedTypeId] + n.id), ["seedGene", "seedProtein"][this.seedTypeId])
+            this.resultProgress += 2
           })
+        })
       }
-    },
+    }
+    ,
     printNotification: function (message, type) {
       this.$emit("printNotificationEvent", message, type)
-    },
+    }
+    ,
     getHeaders: function (table) {
       let headers = [{text: "Name", align: "start", sortable: true, value: "displayName"}]
       let scores = []
@@ -1162,19 +1181,24 @@ export default {
       })
       headers.push({text: "", value: "data-table-expand", width: "1rem"})
       return headers
-    },
+    }
+    ,
     seedClicked: function (item) {
       this.focusNode(['gen_', 'pro_'][this.seedTypeId] + item.id)
-    },
+    }
+    ,
     drugClicked: function (item) {
       this.focusNode(['dru_'] + item.id)
-    },
+    }
+    ,
     focus: function () {
       this.$emit("focusEvent")
-    },
+    }
+    ,
     getColoring: function (entity, name, style) {
       return this.$utils.getColoring(this.$global.metagraph, entity, name, style);
-    },
+    }
+    ,
 
   },
 

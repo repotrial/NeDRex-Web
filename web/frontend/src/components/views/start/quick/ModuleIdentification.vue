@@ -918,6 +918,7 @@ export default {
         this.selectedSuggestions.forEach(s => sources += s + "; ")
         sources = sources.substr(0, sources.length - 2)
       }
+      this.nameOptions=[]
       this.nameOptions.push(sources)
       this.nameOptions.push((sources + " (" + this.$refs.algorithms.getAlgorithmMethod() + ")"))
       this.nameOptions.push((sources + " (" + this.$refs.algorithms.getAlgorithmMethod() + ") [" + (await this.$refs.algorithms.getParamString()) + "]"))
