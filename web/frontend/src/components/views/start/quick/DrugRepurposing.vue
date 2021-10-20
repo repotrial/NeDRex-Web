@@ -477,9 +477,9 @@
                             <span v-on="on" v-bind="attrs">{{ header.text }}</span>
                           </template>
                           <span>Entries in this column can contain following values<br><v-icon left color="white"
-                                                                                               size="12pt">fas fa-check</v-icon>: This drug is already known to be effective against at least one of the selected disorders<br><i>{{
-                              "<" + "n" + ">"
-                            }}</i> : This drug has <i>#n</i> entries in ClinicalTrials.org for treatments of the selected disorders.</span>
+                                                                                               size="12pt">fas fa-check</v-icon> This drug is already known to be effective against at least one of the selected disorders<br>
+                            <v-icon left color="white"
+                                    size="12pt">fas fa-clinic-medical</v-icon> This drug has some clinical trial entries for treatments of the selected disorders.</span>
                         </v-tooltip>
                       </template>
                       <template v-slot:item.trialCount="{item}">
@@ -489,11 +489,12 @@
                           </template>
                           <span>This drug is already known to have an effect on at least one of the initially selected disorders.</span>
                         </v-tooltip>
+                        <span v-if="item.known && item.trials" style="margin-left: 5px"></span>
                         <v-tooltip v-if="item.trials!=null" left>
                           <template v-slot:activator="{attr,on }">
-                            <span v-bind="attr" v-on="on">{{ item.trialCount }}</span>
+                            <span v-bind="attr" v-on="on"><v-icon>fas fa-clinic-medical</v-icon></span>
                           </template>
-                          <span>There are the {{ item.trialCount }} entries for trials regarding one of the<br> initially selected disorders and this drug on ClinicalTrial.gov. Expand the entry to find all studies!</span>
+                          <span>There is at least one entry for trials regarding one of the<br> initially selected disorders and this drug on e.g. ClinicalTrial.gov ({{item.trialCount }}). Expand the entry to find some linked studies!</span>
                         </v-tooltip>
 
                       </template>
