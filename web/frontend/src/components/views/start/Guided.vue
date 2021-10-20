@@ -59,80 +59,80 @@
               specific connections might be of interest.
             </v-card-subtitle>
 
-              <div style="height: 960px; display: flex">
-                <div style="justify-self: flex-start; width: 48%;">
-                  <div style="display: flex; justify-content: flex-start;">
-                    <div class="title" style="padding-top: 16px;">1a. Select the source node type:</div>
-                    <v-select item-value="id" :items="nodeList" v-model="sourceTypeId"
-                              placeholder="Select start type"
-                              :disabled="$refs.sourceTable!=null && $refs.sourceTable.getSeeds().length>0"
-                              style="min-width: 9.5em; max-width: 11.2em; margin-left: 25px">
-                    </v-select>
-                  </div>
-                  <div v-if="sourceTypeId!==undefined" style="margin-top: 25px;">
-                    <div style="display: flex">
-                      <div class="title" style="padding-top: 16px;justify-self: flex-start">1b. Prefilter the sources:
-                      </div>
-                    </div>
-                    <div style="display: flex">
-
-                      <v-select :items="getSuggestionSelection(0)" v-model="suggestionType[0]"
-                                placeholder="connected to" style="width: 35%; justify-self: flex-start"></v-select>
-                      <SuggestionAutocomplete :suggestion-type="suggestionType[0]" :index="0"
-                                              :target-node-type="this.nodeList[[[this.sourceTypeId, this.targetTypeId][0]]].value"
-                                              @addToSelectionEvent="addToSelection"
-                                              style="justify-self: flex-end;margin-left: auto"></SuggestionAutocomplete>
-                    </div>
-                    <NodeInput text="or provide Node IDs by" @addToSelectionEvent="addToSourceSelection"
-                               :idName="nodeIdTypeList[sourceTypeId]" :nodeType="nodeList[sourceTypeId].value"
-                               @printNotificationEvent="printNotification"></NodeInput>
-                    <SeedTable ref="sourceTable" v-show="sourceTypeId!==undefined" :download="true" :remove="true"
-                               :filter="true"
-                               @printNotificationEvent="printNotification"
-                               height="360px"
-                               :title="'Source nodes ('+($refs.sourceTable ? $refs.sourceTable.getSeeds().length : 0)+')'"
-                               :nodeName="nodeList[sourceTypeId].value"></SeedTable>
-                  </div>
+            <div style="height: 960px; display: flex">
+              <div style="justify-self: flex-start; width: 48%;">
+                <div style="display: flex; justify-content: flex-start;">
+                  <div class="title" style="padding-top: 16px;">1a. Select the source node type:</div>
+                  <v-select item-value="id" :items="nodeList" v-model="sourceTypeId"
+                            placeholder="Select start type"
+                            :disabled="$refs.sourceTable!=null && $refs.sourceTable.getSeeds().length>0"
+                            style="min-width: 9.5em; max-width: 11.2em; margin-left: 25px">
+                  </v-select>
                 </div>
-                <div style="justify-self: center; margin-left: auto; padding-bottom:120px">
-                  <v-divider vertical></v-divider>
-                </div>
-                <div style="justify-self: flex-end; margin-left: auto; width: 48%;">
-                  <div style="display: flex; justify-content: flex-start;">
-                    <div class="title" style="padding-top: 16px;">2a. Select the target node type:</div>
-                    <v-select item-value="id" :items="nodeList" v-model="targetTypeId"
-                              placeholder="Select target type"
-                              :disabled="$refs.targetTable!=null && $refs.targetTable.getSeeds().length>0"
-                              style="min-width: 9.5em; max-width: 11.2em; margin-left: 25px">
-                    </v-select>
-                  </div>
-                  <div v-if="targetTypeId!==undefined" style="margin-top: 25px;">
-                    <div style="display: flex">
-                      <div class="title" style="padding-top: 16px;justify-self: flex-start">2b. Prefilter the targets
-                        (optional):
-                      </div>
+                <div v-if="sourceTypeId!==undefined" style="margin-top: 25px;">
+                  <div style="display: flex">
+                    <div class="title" style="padding-top: 16px;justify-self: flex-start">1b. Prefilter the sources:
                     </div>
-                    <div style="display: flex">
-
-                      <v-select :items="getSuggestionSelection(1)" v-model="suggestionType[1]"
-                                placeholder="connected to" style="width: 35%; justify-self: flex-start"></v-select>
-                      <SuggestionAutocomplete :suggestion-type="suggestionType[1]" :index="1"
-                                              :target-node-type="this.nodeList[[this.targetTypeId]].value"
-                                              @addToSelectionEvent="addToSelection"
-                                              style="justify-self: flex-end;margin-left: auto"></SuggestionAutocomplete>
-                    </div>
-                    <NodeInput text="or provide Node IDs by" @addToSelectionEvent="addToTargetSelection"
-                               :idName="nodeIdTypeList[targetTypeId]" :nodeType="nodeList[targetTypeId].value"
-                               @printNotificationEvent="printNotification"></NodeInput>
-
-                    <SeedTable ref="targetTable" v-show="targetTypeId!==undefined" :download="true" :remove="true"
-                               @printNotificationEvent="printNotification"
-                               height="360px"
-                               :title="'Target nodes ('+($refs.targetTable ? $refs.targetTable.getSeeds().length : 0)+')'"
-                               :nodeName="nodeList[targetTypeId].value"></SeedTable>
                   </div>
+                  <div style="display: flex">
+
+                    <v-select :items="getSuggestionSelection(0)" v-model="suggestionType[0]"
+                              placeholder="connected to" style="width: 35%; justify-self: flex-start"></v-select>
+                    <SuggestionAutocomplete :suggestion-type="suggestionType[0]" :index="0"
+                                            :target-node-type="this.nodeList[[[this.sourceTypeId, this.targetTypeId][0]]].value"
+                                            @addToSelectionEvent="addToSelection"
+                                            style="justify-self: flex-end;margin-left: auto"></SuggestionAutocomplete>
+                  </div>
+                  <NodeInput text="or provide Node IDs by" @addToSelectionEvent="addToSourceSelection"
+                             :idName="nodeIdTypeList[sourceTypeId]" :nodeType="nodeList[sourceTypeId].value"
+                             @printNotificationEvent="printNotification"></NodeInput>
+                  <SeedTable ref="sourceTable" v-show="sourceTypeId!==undefined" :download="true" :remove="true"
+                             :filter="true"
+                             @printNotificationEvent="printNotification"
+                             height="360px"
+                             :title="'Source nodes ('+($refs.sourceTable ? $refs.sourceTable.getSeeds().length : 0)+')'"
+                             :nodeName="nodeList[sourceTypeId].value"></SeedTable>
                 </div>
               </div>
+              <div style="justify-self: center; margin-left: auto; padding-bottom:120px">
+                <v-divider vertical></v-divider>
+              </div>
+              <div style="justify-self: flex-end; margin-left: auto; width: 48%;">
+                <div style="display: flex; justify-content: flex-start;">
+                  <div class="title" style="padding-top: 16px;">2a. Select the target node type:</div>
+                  <v-select item-value="id" :items="nodeList" v-model="targetTypeId"
+                            placeholder="Select target type"
+                            :disabled="$refs.targetTable!=null && $refs.targetTable.getSeeds().length>0"
+                            style="min-width: 9.5em; max-width: 11.2em; margin-left: 25px">
+                  </v-select>
+                </div>
+                <div v-if="targetTypeId!==undefined" style="margin-top: 25px;">
+                  <div style="display: flex">
+                    <div class="title" style="padding-top: 16px;justify-self: flex-start">2b. Prefilter the targets
+                      (optional):
+                    </div>
+                  </div>
+                  <div style="display: flex">
+
+                    <v-select :items="getSuggestionSelection(1)" v-model="suggestionType[1]"
+                              placeholder="connected to" style="width: 35%; justify-self: flex-start"></v-select>
+                    <SuggestionAutocomplete :suggestion-type="suggestionType[1]" :index="1"
+                                            :target-node-type="this.nodeList[[this.targetTypeId]].value"
+                                            @addToSelectionEvent="addToSelection"
+                                            style="justify-self: flex-end;margin-left: auto"></SuggestionAutocomplete>
+                  </div>
+                  <NodeInput text="or provide Node IDs by" @addToSelectionEvent="addToTargetSelection"
+                             :idName="nodeIdTypeList[targetTypeId]" :nodeType="nodeList[targetTypeId].value"
+                             @printNotificationEvent="printNotification"></NodeInput>
+
+                  <SeedTable ref="targetTable" v-show="targetTypeId!==undefined" :download="true" :remove="true"
+                             @printNotificationEvent="printNotification"
+                             height="360px"
+                             :title="'Target nodes ('+($refs.targetTable ? $refs.targetTable.getSeeds().length : 0)+')'"
+                             :nodeName="nodeList[targetTypeId].value"></SeedTable>
+                </div>
+              </div>
+            </div>
           </v-card>
           <v-btn
             color="primary"
@@ -157,24 +157,24 @@
               intermediate node (in case an indirect path is selected) or to create a new edge type given a user defined
               name. Additional path specific configuration may be available.
             </v-card-subtitle>
-              <v-row style="min-height: 35vh; margin-bottom: 15px">
-                <v-col cols="3">
-                  <v-radio-group v-model="pathModel">
-                    <v-list-item-subtitle class="title">Direct-Paths</v-list-item-subtitle>
-                    <v-list>
-                      <v-list-item v-for="(path,idx) in paths[0]" :key="idx" v-if="paths[0].length>0">
-                        <v-list-item-title>
-                          <v-tooltip top>
-                            <template v-slot:activator="{on,attrs}">
-                              <v-icon v-on="on" v-bind="attrs"
-                                      :color="getColoring('nodes',nodeList[sourceTypeId].value,'light')"
-                                      size="30px">
-                                fas fa-genderless
-                              </v-icon>
-                            </template>
-                            <span>{{ nodeList[sourceTypeId].text }}</span>
-                          </v-tooltip>
-                          <span v-for="(edge,idx2) in path" :key="'0_'+idx+'_'+idx2+'_'+edge.label">
+            <v-row style="min-height: 35vh; margin-bottom: 15px">
+              <v-col cols="3">
+                <v-radio-group v-model="pathModel">
+                  <v-list-item-subtitle class="title">Direct-Paths</v-list-item-subtitle>
+                  <v-list>
+                    <v-list-item v-for="(path,idx) in paths[0]" :key="idx" v-if="paths[0].length>0">
+                      <v-list-item-title>
+                        <v-tooltip top>
+                          <template v-slot:activator="{on,attrs}">
+                            <v-icon v-on="on" v-bind="attrs"
+                                    :color="getColoring('nodes',nodeList[sourceTypeId].value,'light')"
+                                    size="30px">
+                              fas fa-genderless
+                            </v-icon>
+                          </template>
+                          <span>{{ nodeList[sourceTypeId].text }}</span>
+                        </v-tooltip>
+                        <span v-for="(edge,idx2) in path" :key="'0_'+idx+'_'+idx2+'_'+edge.label">
                             <v-tooltip top>
                                <template v-slot:activator="{ on, attrs }">
                                   <v-icon v-bind="attrs"
@@ -194,29 +194,29 @@
                         <span>{{ getNodeLabel(edge.label, [edge.direction ? 1 : 0]) }}</span>
                       </v-tooltip>
                       </span>
-                        </v-list-item-title>
-                        <v-list-item-action>
-                          <v-radio></v-radio>
-                        </v-list-item-action>
-                      </v-list-item>
-                      <v-list-item v-if="paths[0].length===0">
-                        <v-list-item-subtitle>no direct path available</v-list-item-subtitle>
-                      </v-list-item>
-                    </v-list>
-                    <v-list-item-subtitle class="title">Indirect-Paths</v-list-item-subtitle>
-                    <v-list>
-                      <v-list-item v-for="(path,idx) in paths[1]" :key="idx">
-                        <v-list-item-title>
-                          <v-tooltip top>
-                            <template v-slot:activator="{on,attrs}">
-                              <v-icon v-on="on" v-bind="attrs" size="30px"
-                                      :color="getColoring('nodes',nodeList[sourceTypeId].value,'light')">
-                                fas fa-genderless
-                              </v-icon>
-                            </template>
-                            <span>{{ nodeList[sourceTypeId].text }}</span>
-                          </v-tooltip>
-                          <span v-for="(edge,idx2) in path" :key="'1_'+idx+'_'+idx2+'_'+edge.label">
+                      </v-list-item-title>
+                      <v-list-item-action>
+                        <v-radio></v-radio>
+                      </v-list-item-action>
+                    </v-list-item>
+                    <v-list-item v-if="paths[0].length===0">
+                      <v-list-item-subtitle>no direct path available</v-list-item-subtitle>
+                    </v-list-item>
+                  </v-list>
+                  <v-list-item-subtitle class="title">Indirect-Paths</v-list-item-subtitle>
+                  <v-list>
+                    <v-list-item v-for="(path,idx) in paths[1]" :key="idx">
+                      <v-list-item-title>
+                        <v-tooltip top>
+                          <template v-slot:activator="{on,attrs}">
+                            <v-icon v-on="on" v-bind="attrs" size="30px"
+                                    :color="getColoring('nodes',nodeList[sourceTypeId].value,'light')">
+                              fas fa-genderless
+                            </v-icon>
+                          </template>
+                          <span>{{ nodeList[sourceTypeId].text }}</span>
+                        </v-tooltip>
+                        <span v-for="(edge,idx2) in path" :key="'1_'+idx+'_'+idx2+'_'+edge.label">
                             <v-tooltip top>
                                <template v-slot:activator="{ on, attrs }">
                                   <v-icon v-bind="attrs"
@@ -236,47 +236,47 @@
                         <span>{{ getNodeLabel(edge.label, [edge.direction ? 1 : 0]) }}</span>
                       </v-tooltip>
                       </span>
-                        </v-list-item-title>
-                        <v-list-item-action>
-                          <v-radio>
-                          </v-radio>
-                        </v-list-item-action>
-                      </v-list-item>
-                    </v-list>
-                  </v-radio-group>
-                </v-col>
-                <div style="margin-bottom: 20px">
+                      </v-list-item-title>
+                      <v-list-item-action>
+                        <v-radio>
+                        </v-radio>
+                      </v-list-item-action>
+                    </v-list-item>
+                  </v-list>
+                </v-radio-group>
+              </v-col>
+              <div style="margin-bottom: 20px">
                 <v-divider vertical></v-divider>
-                </div>
-                <v-col>
-                  <v-list-item-subtitle class="title">Additional Options</v-list-item-subtitle>
-                  <v-card-subtitle>General</v-card-subtitle>
-                  <v-row v-show="!direct">
-                    <v-col cols="7">
-                      <v-tooltip top>
-                        <template v-slot:activator="{on,attrs}">
-                          <v-list-item v-bind="attrs" v-on="on">
-                            <span>Remove Intermediate Nodes</span>
-                            <v-switch v-model="options.general.keep" style="margin-left: 5px"
-                                      @click=" print(options.general.name) "></v-switch>
-                            <span>Keep Intermediate Nodes</span>
-                          </v-list-item>
-                        </template>
-                        <span>Decide if you want to keep all edges or replace the created paths by generating one connecting your source and target nodes directly.</span>
-                      </v-tooltip>
-                    </v-col>
-                    <v-col cols="5">
-                      <v-text-field v-model="options.general.name" v-show="!options.general.keep"
-                                    label="Combined Edge Name"
-                                    :rules="[value => !!value || 'Required!',value=>$global.metagraph.edges.map(e=>e.label).indexOf(value)===-1 || 'Existing names are not possible!']"></v-text-field>
-                    </v-col>
-                  </v-row>
-                  <v-divider></v-divider>
-                  <v-card-subtitle>Node specific</v-card-subtitle>
-                  <v-divider></v-divider>
-                  <v-card-subtitle>Edge specific</v-card-subtitle>
-                </v-col>
-              </v-row>
+              </div>
+              <v-col>
+                <v-list-item-subtitle class="title">Additional Options</v-list-item-subtitle>
+                <v-card-subtitle>General</v-card-subtitle>
+                <v-row v-show="!direct">
+                  <v-col cols="7">
+                    <v-tooltip top>
+                      <template v-slot:activator="{on,attrs}">
+                        <v-list-item v-bind="attrs" v-on="on">
+                          <span>Remove Intermediate Nodes</span>
+                          <v-switch v-model="options.general.keep" style="margin-left: 5px"
+                                    @click=" print(options.general.name) "></v-switch>
+                          <span>Keep Intermediate Nodes</span>
+                        </v-list-item>
+                      </template>
+                      <span>Decide if you want to keep all edges or replace the created paths by generating one connecting your source and target nodes directly.</span>
+                    </v-tooltip>
+                  </v-col>
+                  <v-col cols="5">
+                    <v-text-field v-model="options.general.name" v-show="!options.general.keep"
+                                  label="Combined Edge Name"
+                                  :rules="[value => !!value || 'Required!',value=>$global.metagraph.edges.map(e=>e.label).indexOf(value)===-1 || 'Existing names are not possible!']"></v-text-field>
+                  </v-col>
+                </v-row>
+                <v-divider></v-divider>
+                <v-card-subtitle>Node specific</v-card-subtitle>
+                <v-divider></v-divider>
+                <v-card-subtitle>Edge specific</v-card-subtitle>
+              </v-col>
+            </v-row>
           </v-card>
           <v-btn
             @click="makeStep(2,'back')"
@@ -414,7 +414,8 @@
                   </v-progress-circular>
                 </v-card-title>
                 <template v-if="targets.length>=0">
-                  <v-data-table max-height="550px" height="550px" class="overflow-y-auto" fixed-header dense item-key="id"
+                  <v-data-table max-height="550px" height="550px" class="overflow-y-auto" fixed-header dense
+                                item-key="id"
                                 :items="targets"
                                 :headers="getHeaders()"
                                 disable-pagination show-expand :single-expand="true"
@@ -667,6 +668,7 @@ export default {
           return response.data
         }
       }).then(data => {
+        this.$emit('newGraphEvent')
         this.info = data;
         this.gid = data.id
         this.prepareLegend()
@@ -889,14 +891,14 @@ export default {
   }
   ,
   components: {
-  SuggestionAutocomplete,
+    SuggestionAutocomplete,
     NodeInput,
     Network,
     SeedTable,
     EntryDetails,
     ResultDownload,
     Legend,
-}
+  }
 
 }
 </script>

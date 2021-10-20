@@ -937,7 +937,9 @@ export default {
           this.setName(name)
         }, 500)
       else
-        this.$http.post("setGraphName", {gid: this.currentGid, name: name}).catch(console.error)
+        this.$http.post("setGraphName", {gid: this.currentGid, name: name}).then(()=>{
+          this.$emit("newGraphEvent")
+        }).catch(console.error)
     },
     waitForGraph: function (resolve) {
       if (this.$refs.graph === undefined)

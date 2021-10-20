@@ -678,8 +678,11 @@ export default {
         setTimeout(() => {
           this.setName(name)
         }, 500)
-      else
-        this.$http.post("setGraphName", {gid: this.currentGid, name: name}).catch(console.error)
+      else {
+        this.$http.post("setGraphName", {gid: this.currentGid, name: name}).then(()=>{
+          this.$emit("newGraphEvent")
+        }).catch(console.error)
+      }
     },
     getHeaders: function (seed) {
       let headers = [{text: "Name", align: "start", sortable: true, value: "displayName"}]
@@ -710,6 +713,7 @@ export default {
     },
 
     readJob: function (data, notSubbed) {
+
       let jid = data.jid
       this.currentJid = jid
       let base = data.basis

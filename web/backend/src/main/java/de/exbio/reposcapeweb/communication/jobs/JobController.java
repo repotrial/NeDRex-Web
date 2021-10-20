@@ -209,6 +209,7 @@ public class JobController {
                 boolean basisIsJob = getJobByGraphId(j.getBasisGraph()) != null;
                 graphService.applyJob(j,basisIsJob);
                 if (!basisIsJob) {
+                    j.setBasisGraph(null);
                     historyController.remove(j.getBasisGraph());
                 }
 
@@ -237,6 +238,11 @@ public class JobController {
 
     private void copyResults(String cloneJid, Job j, boolean notify) {
         Job dependent = jobs.get(cloneJid);
+        boolean keepParent = getJobByGraphId(j.getBasisGraph())!=null;
+        if(!keepParent && dependent.getBasisGraph()!=null) {
+            historyController.remove(dependent.getBasisGraph());
+            dependent.setBasisGraph(null);
+        }
         dependent.setStatus(Job.JobState.DONE);
         log.info("Finished " + dependent.getMethod().name() + " job " + dependent.getJobId() + "of user " + dependent.getUserId() + "! (Cloned from " + j.getJobId() + " to finish)");
         dependent.setDerivedGraph(graphService.cloneGraph(j.getDerivedGraph(), dependent.getUserId(), dependent.getBasisGraph()));

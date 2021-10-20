@@ -41,6 +41,7 @@
                      @showSideEvent="setSideVisible"
                      @clearURLEvent="clearURL"
                      @modifyURLEvent="modifyURL"
+                     @newGraphEvent="reloadHistory()"
                      :colors="colors" :options="options.start" :filters="startFilters"></Start>
               <Network
                 v-show="selectedTabId===1"

@@ -831,6 +831,7 @@ export default {
         if (!notSubbed)
           this.$socket.unsubscribeJob(jid)
         this.loadModuleTargetTable(this.moduleGid).then(() => {
+          this.$emit("newGraphEvent")
           this.resultProgress = 25
           // this.$refs.validation.validate()
 
@@ -1116,8 +1117,11 @@ export default {
           this.setName(name)
         }, 500)
       else {
-        this.$http.post("setGraphName", {gid: this.moduleGid, name: name}).catch(console.error)
-        this.$http.post("setGraphName", {gid: this.rankingGid, name: name}).catch(console.error)
+        this.$http.post("setGraphName", {gid: this.moduleGid, name: name}).then(() => {
+          this.$http.post("setGraphName", {gid: this.rankingGid, name: name}).then(() => {
+            this.$emit("newGraphEvent")
+          })
+        }).catch(console.error)
       }
     }
     ,

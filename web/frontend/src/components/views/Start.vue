@@ -25,8 +25,8 @@
     </v-card>
     <Quick v-if="startTab===0" @printNotificationEvent="printNotification"
            @graphLoadNewTabEvent="loadGraphNewTab" @graphLoadEvent="loadGraph" @focusEvent="focusTop" @clearURLEvent="$emit('clearURLEvent','quick')"
-           ref="quick" @showStartSelectionEvent="toggleStartSelection"></Quick>
-    <Guided v-if="startTab===1" @printNotificationEvent="printNotification"
+           ref="quick" @showStartSelectionEvent="toggleStartSelection" @newGraphEvent="$emit('newGraphEvent')"></Quick>
+    <Guided v-if="startTab===1" @printNotificationEvent="printNotification" @newGraphEvent="$emit('newGraphEvent')"
             @graphLoadEvent="loadGraph" @graphLoadNewTabEvent="loadGraphNewTab" @clearURLEvent="$emit('clearURLEvent', 'guided')" ref="guided"></Guided>
     <Advanced ref="advanced" v-if="startTab===2" :options="options" :colors="colors" :filters="filters"
               @printNotificationEvent="printNotification"

@@ -111,7 +111,7 @@
                              @graphLoadEvent="loadGraph"
                              @graphLoadNewTabEvent="loadGraphNewTab"
                              @focusEvent="focusTop"
-                             ref="drugRepurposing">
+                             ref="drugRepurposing" @newGraphEvent="$emit('newGraphEvent')">
 
         </CombinedRepurposing>
         <ModuleIdentification v-if="modus===1" :blitz="blitz" @resetEvent="modus=-1"
@@ -120,14 +120,14 @@
                               @graphLoadNewTabEvent="loadGraphNewTab"
                               @loadDrugTargetEvent="loadDrugTarget"
                               @focusEvent="focusTop"
-                              ref="moduleIdentification"
+                              ref="moduleIdentification" @newGraphEvent="$emit('newGraphEvent')"
         ></ModuleIdentification>
         <DrugRepurposing v-if="modus===2" :blitz="blitz" @resetEvent="modus=-1"
                          @printNotificationEvent="printNotification"
                          @graphLoadEvent="loadGraph"
                          @graphLoadNewTabEvent="loadGraphNewTab"
                          @focusEvent="focusTop"
-                         ref="drugRanking"
+                         ref="drugRanking" @newGraphEvent="$emit('newGraphEvent')"
         ></DrugRepurposing>
       </v-col>
     </v-row>

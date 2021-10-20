@@ -295,7 +295,7 @@ export default {
       params.experimentalOnly = this.experimentalSwitch
 
       params["addInteractions"] = true
-      params["nodesOnly"] = true
+      params["nodesOnly"] = false
 
       params['direct'] = models.onlyDirect;
       params['approved'] = models.onlyApproved;

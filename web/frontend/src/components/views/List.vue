@@ -14,26 +14,8 @@
 
         </template>
         <template v-if="!loading" v-show="!nodeTabLoading">
-          <v-card-title id="nodes" ref="nodeTitle" v-on:mouseenter="nodeOptionHover=true"
-                        v-on:mouseleave="nodeOptionHover=false">
+          <v-card-title id="nodes" ref="nodeTitle">
             Nodes
-            <v-tooltip
-              right>
-              <template v-slot:activator="{ on, attrs }">
-                <v-icon
-                  v-show="nodeOptionHover"
-                  size="17px"
-                  color="primary"
-                  dark
-                  v-bind="attrs"
-                  v-on="on"
-                  v-on:click="nodeOptions"
-                >
-                  fas fa-cog
-                </v-icon>
-              </template>
-              <span>options</span>
-            </v-tooltip>
           </v-card-title>
           <i v-if="!update.nodes && nodes!=null &&Object.keys(nodes).length === 0">no node entries</i>
           <template v-if="nodes !=null && Object.keys(nodes).length>0">
@@ -251,25 +233,7 @@
           <!--          <v-card-title>Edges</v-card-title>-->
         </template>
         <template v-if="!loading">
-          <v-card-title id="edges" ref="edgeTitle" v-on:mouseenter="edgeOptionHover=true"
-                        v-on:mouseleave="edgeOptionHover=false">Edges
-            <v-tooltip
-              right>
-              <template v-slot:activator="{ on, attrs }">
-                <v-icon
-                  v-show="edgeOptionHover"
-                  size="17px"
-                  color="primary"
-                  dark
-                  v-bind="attrs"
-                  v-on="on"
-                  v-on:click="edgeOptions"
-                >
-                  fas fa-cog
-                </v-icon>
-              </template>
-              <span>options</span>
-            </v-tooltip>
+          <v-card-title id="edges" ref="edgeTitle">Edges
           </v-card-title>
           <i v-if="edges !=null && Object.keys(edges).length === 0">no edge entries</i>
           <template v-if="edges !=null && Object.keys(edges).length>0">
@@ -907,8 +871,6 @@ export default {
       edgeTab: undefined,
       selectAllModel: {nodes: {}, edges: {}},
       nodepage: {},
-      nodeOptionHover: false,
-      edgeOptionHover: false,
       optionDialog: false,
       waiting: true,
       suggestion: false,
