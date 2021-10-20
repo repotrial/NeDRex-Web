@@ -3,7 +3,7 @@
     <div style="display: flex; justify-content: flex-end; margin-left: auto; ">
       <v-tooltip left>
         <template v-slot:activator="{on, attrs}">
-          <v-btn icon style="padding:1em" color="red darker" @click="makeStep(0,'cancel')" v-on="on" v-bind="attrs">
+          <v-btn icon style="padding:1em" color="red darker" @click="makeStep('cancel')" v-on="on" v-bind="attrs">
             <v-icon size="2em">far fa-times-circle</v-icon>
           </v-btn>
         </template>
@@ -28,18 +28,21 @@
         <v-divider></v-divider>
         <v-stepper-step step="2" :complete="step>2 || blitz">
           Module Method
-          <small v-if="step>2 && $refs.moduleAlgorithms.getAlgorithm()!=null">{{
+          <small v-if="(step>1 ||blitz) && $refs.moduleAlgorithms!=null && $refs.moduleAlgorithms.getAlgorithm() !=null">{{
               $refs.moduleAlgorithms.getAlgorithm().label
             }}</small>
         </v-stepper-step>
         <v-divider></v-divider>
         <v-stepper-step step="3" :complete="step>3 || blitz">
           Ranking Method
-          <small v-if="rankingAlgorithmSelected">{{ this.$refs.rankingAlgorithms.getAlgorithm().label }}</small>
+          <small v-if="rankingAlgorithmSelected &&(step>2 || blitz)">{{ this.$refs.rankingAlgorithms.getAlgorithm().label }}</small>
         </v-stepper-step>
         <v-divider></v-divider>
         <v-stepper-step step="4" :complete="step>4">
           Results
+          <small>{{ ((results.targets != null && results.targets.length>0) ? ("Module ("+results.targets.length+")"):"")}}<br>
+          {{((results.drugs != null && results.drugs.length>0) ? ("Candidates ("+results.drugs.length+")"):"")
+            }}</small>
         </v-stepper-step>
         <v-divider></v-divider>
         <v-stepper-step step="5">
@@ -59,7 +62,7 @@
             <v-card-subtitle style="margin-top: -25px">Add seeds to your
               list
               <span v-if="!blitz">{{ blitz ? "." : " or use an expression data based algorithm (" }}<a
-                @click="seedTypeId=0; moduleMethodModel=1; makeStep(1,'continue')">BiCoN
+                @click="seedTypeId=0; moduleMethodModel=1; makeStep('continue')">BiCoN
                 <v-icon right size="1em" style="margin-left: 0">fas fa-caret-right</v-icon>
               </a>{{ ")." }}
               </span>
@@ -238,13 +241,13 @@
           </v-card>
           <v-btn
             color="primary"
-            @click="makeStep(1,'continue')"
+            @click="makeStep('continue')"
             :disabled="seedTypeId<0 || $refs.seedTable == null || $refs.seedTable.getSeeds().length===0"
           >
             Continue
           </v-btn>
 
-          <v-btn text @click="makeStep(1,'cancel')">
+          <v-btn text @click="makeStep('cancel')">
             Cancel
           </v-btn>
         </v-stepper-content>
@@ -254,18 +257,18 @@
                              socket-event="quickRepurposeModuleFinishedEvent"
                              @algorithmSelectedEvent="acceptModuleAlgorithmSelectEvent"
                              @jobEvent="readModuleJob"></MIAlgorithmSelect>
-          <v-btn text @click="makeStep(2,'back')">
+          <v-btn text @click="makeStep('back')">
             Back
           </v-btn>
           <v-btn
-            @click="makeStep(2,'continue')"
+            @click="makeStep('continue')"
             color="primary"
             :disabled=" !moduleAlgorithmSelected  || ($refs.moduleAlgorithms.getAlgorithmMethod()==='bicon' && $refs.moduleAlgorithms.getAlgorithmModels().exprFile ===undefined)"
           >
             Run
           </v-btn>
 
-          <v-btn text @click="makeStep(2,'cancel')">
+          <v-btn text @click="makeStep('cancel')">
             Cancel
           </v-btn>
         </v-stepper-content>
@@ -276,19 +279,19 @@
                              @algorithmSelectedEvent="acceptRankingAlgorithmSelectEvent"
                              @jobEvent="readRankingJob"></DPAlgorithmSelect>
 
-          <v-btn text @click="makeStep(3,'back')">
+          <v-btn text @click="makeStep('back')">
             Back
           </v-btn>
 
           <v-btn
-            @click="makeStep(3,'continue')"
+            @click="makeStep('continue')"
             color="primary"
             :disabled="!rankingAlgorithmSelected"
           >
             Run
           </v-btn>
 
-          <v-btn text @click="makeStep(3,'cancel')">
+          <v-btn text @click="makeStep('cancel')">
             Cancel
           </v-btn>
         </v-stepper-content>
@@ -532,12 +535,12 @@
           </v-card>
           <v-btn
             color="primary"
-            @click="makeStep(4,'back')"
+            @click="makeStep('back')"
           >
             Back
           </v-btn>
 
-          <v-btn text @click="makeStep(4,'continue')" :disabled="rankingGid ==null">
+          <v-btn text @click="makeStep('continue')" :disabled="rankingGid ==null">
             Validate
           </v-btn>
         </v-stepper-content>
@@ -545,11 +548,11 @@
           <Validation ref="validation" :step="5" :seed-type-id="seedTypeId" :module="results.targets"
                       :ranking="results.drugs" @drugCountUpdate="updateDrugCount"
                       @printNotificationEvent="printNotification"></Validation>
-          <v-btn text @click="makeStep(5,'back')">
+          <v-btn text @click="makeStep('back')">
             Back
           </v-btn>
 
-          <v-btn text @click="makeStep(5,'cancel')">
+          <v-btn text @click="makeStep('cancel')">
             Restart
           </v-btn>
         </v-stepper-content>
@@ -731,7 +734,7 @@ export default {
     acceptRankingAlgorithmSelectEvent: function (value) {
       this.rankingAlgorithmSelected = value;
     },
-    makeStep: function (s, button) {
+    makeStep: function (button) {
       if (button === "continue") {
         this.step++
         if (this.step === 3)
@@ -1020,20 +1023,21 @@ export default {
       })
       await this.$http.getAllTrials(disorderNames, drugNames).then(data => {
         data.StudyFields.forEach(studie => {
-          studie.InterventionName.forEach(target => {
-            list.forEach(drug => {
-              if (target.toLowerCase().indexOf(drug.displayName.toLowerCase()) > -1) {
-                if (drug.trials == null)
-                  drug.trials = studie.NCTId
-                else {
-                  studie.NCTId.forEach(id => {
-                    if (drug.trials.indexOf(id) === -1)
-                      drug.trials.push(id)
-                  })
+          if (studie != null && studie.InterventionName != null)
+            studie.InterventionName.forEach(target => {
+              list.forEach(drug => {
+                if (target.toLowerCase().indexOf(drug.displayName.toLowerCase()) > -1) {
+                  if (drug.trials == null)
+                    drug.trials = studie.NCTId
+                  else {
+                    studie.NCTId.forEach(id => {
+                      if (drug.trials.indexOf(id) === -1)
+                        drug.trials.push(id)
+                    })
+                  }
                 }
-              }
+              })
             })
-          })
         })
       })
       list.forEach(drug => {

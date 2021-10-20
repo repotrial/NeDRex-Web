@@ -3,7 +3,7 @@
     <div style="display: flex; justify-content: flex-end; margin-left: auto; ">
       <v-tooltip left>
         <template v-slot:activator="{on, attrs}">
-          <v-btn icon style="padding:1em" color="red darker" @click="makeStep(0,'cancel')" v-on="on" v-bind="attrs">
+          <v-btn icon style="padding:1em" color="red darker" @click="makeStep('cancel')" v-on="on" v-bind="attrs">
             <v-icon size="2em">far fa-times-circle</v-icon>
           </v-btn>
         </template>
@@ -28,15 +28,18 @@
             ({{ $refs.seedTable ? $refs.seedTable.getSeeds().length : 0 }})</small>
         </v-stepper-step>
         <v-divider></v-divider>
-        <v-stepper-step step="2" :complete="step>2 || blitz">
+        <v-stepper-step step="2" :complete="step>2 || blitz" >
           Select Method
-          <small v-if=" $refs.algorithm!=null && $refs.algorithms.getAlgorithm() !=null">{{
+          <small v-if="$refs.algorithms!=null && $refs.algorithms.getAlgorithm()!=null">{{
               $refs.algorithms.getAlgorithm().label
             }}</small>
         </v-stepper-step>
         <v-divider></v-divider>
         <v-stepper-step step="3" :complete="step>3">
           Results
+          <small v-if="results.targets!=null && results.targets.length>0">Module ({{
+             results.targets.length
+            }})</small>
         </v-stepper-step>
         <v-divider></v-divider>
         <v-stepper-step step="4">
@@ -54,7 +57,7 @@
             <v-card-subtitle style="margin-top: -25px">Add seeds to your
               list
               <span v-if="!blitz">{{ blitz ? "." : " or use an expression data based algorithm (" }}<a
-                @click="seedTypeId=0; methodModel=1; makeStep(1,'continue')">BiCoN
+                @click="seedTypeId=0; methodModel=1; makeStep('continue')">BiCoN
                 <v-icon right size="1em" style="margin-left: 0">fas fa-caret-right</v-icon>
               </a>{{ ")." }}
               </span>
@@ -204,13 +207,13 @@
           </v-card>
           <v-btn
             color="primary"
-            @click="makeStep(1,'continue')"
+            @click="makeStep('continue')"
             :disabled="seedTypeId<0 || $refs.seedTable == null || $refs.seedTable.getSeeds().length===0"
           >
             Continue
           </v-btn>
 
-          <v-btn text @click="makeStep(1,'cancel')">
+          <v-btn text @click="makeStep('cancel')">
             Cancel
           </v-btn>
         </v-stepper-content>
@@ -221,19 +224,19 @@
                                socket-event="quickModuleFinishedEvent" :seed-type-id="seedTypeId"
                                @algorithmSelectedEvent="acceptAlgorithmSelectEvent"
                                @jobEvent="readJob"></MIAlgorithmSelect>
-            <v-btn text @click="makeStep(2,'back')">
+            <v-btn text @click="makeStep('back')">
               Back
             </v-btn>
 
             <v-btn
-              @click="makeStep(2,'continue')"
+              @click="makeStep('continue')"
               color="primary"
               :disabled=" !algorithmSelected  || ($refs.algorithms.getAlgorithmMethod()==='bicon' && $refs.algorithms.getAlgorithmModels().exprFile ===undefined)"
             >
               Run
             </v-btn>
 
-            <v-btn text @click="makeStep(2,'cancel')">
+            <v-btn text @click="makeStep('cancel')">
               Cancel
             </v-btn>
           </template>
@@ -412,23 +415,23 @@
           </v-card>
           <v-btn
             color="primary"
-            @click="makeStep(3,'back')"
+            @click="makeStep('back')"
           >
             Back
           </v-btn>
 
-          <v-btn text @click="makeStep(3,'continue')" :disabled="currentGid==null">
+          <v-btn text @click="makeStep('continue')" :disabled="currentGid==null">
             Validate
           </v-btn>
         </v-stepper-content>
         <v-stepper-content step="4">
           <Validation ref="validation" :step="4" :seed-type-id="seedTypeId" :module="results.targets"
                       @drugCountUpdate="updateDrugCount" @printNotificationEvent="printNotification"></Validation>
-          <v-btn text @click="makeStep(4,'back')">
+          <v-btn text @click="makeStep('back')">
             Back
           </v-btn>
 
-          <v-btn text @click="makeStep(4,'cancel')">
+          <v-btn text @click="makeStep('cancel')">
             Restart
           </v-btn>
         </v-stepper-content>
@@ -634,14 +637,15 @@ export default {
       this.$refs.graph.zoomToNode(id)
     },
 
-    makeStep: function (s, button) {
+    makeStep: function (button) {
       if (button === "continue") {
         this.step++
-        if (this.step === 2)
+        if (this.step === 2) {
           this.seeds = this.$refs.seedTable.getSeeds()
 
-        if (this.blitz)
-          this.step++
+          if (this.blitz)
+            this.step++
+        }
       }
       if (button === "back") {
         if (this.step === 3) {

@@ -494,7 +494,7 @@ export default {
       methodModel: undefined,
       rankingMethodModel: undefined,
       experimentalSwitch: true,
-      groupModel: "nw",
+      groupModel: undefined,
       showDescription:false,
       groups: [
         {
@@ -598,8 +598,10 @@ export default {
   },
 
   created() {
-    if (this.blitz)
+    if (this.blitz) {
+      this.groupModel="nw"
       this.methodModel = 0
+    }
   },
 
   watch: {

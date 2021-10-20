@@ -3,7 +3,7 @@
     <div style="display: flex; justify-content: flex-end; margin-left: auto; ">
       <v-tooltip left>
         <template v-slot:activator="{on, attrs}">
-          <v-btn icon style="padding:1em" color="red darker" @click="makeStep(0,'cancel')" v-on="on" v-bind="attrs">
+          <v-btn icon style="padding:1em" color="red darker" @click="makeStep('cancel')" v-on="on" v-bind="attrs">
             <v-icon size="2em">far fa-times-circle</v-icon>
           </v-btn>
         </template>
@@ -29,11 +29,14 @@
         <v-divider></v-divider>
         <v-stepper-step step="2" :complete="step>2 || blitz">
           Select Method
-          <small v-if="algorithmSelected">{{ this.$refs.algorithms.getAlgorithm().label }}</small>
+          <small v-if="algorithmSelected && (step>1 || blitz) ">{{ this.$refs.algorithms.getAlgorithm().label }}</small>
         </v-stepper-step>
         <v-divider></v-divider>
         <v-stepper-step step="3" :complete="step>3">
           Results
+          <small v-if="results.targets != null && results.targets.length>0">Candidates ({{
+              results.targets.length
+            }})</small>
         </v-stepper-step>
         <v-divider></v-divider>
         <v-stepper-step step="4">
@@ -199,13 +202,13 @@
           </v-card>
           <v-btn
             color="primary"
-            @click="makeStep(1,'continue')"
+            @click="makeStep('continue')"
             :disabled="seedTypeId<0 || $refs.seedTable ==null || $refs.seedTable.getSeeds().length===0"
           >
             Continue
           </v-btn>
 
-          <v-btn text @click="makeStep(1,'cancel')">
+          <v-btn text @click="makeStep('cancel')">
             Cancel
           </v-btn>
         </v-stepper-content>
@@ -215,19 +218,19 @@
                              :seed-type-id="seedTypeId"
                              @algorithmSelectedEvent="acceptAlgorithmSelectEvent"
                              @jobEvent="readJob" socket-event="quickRankingFinishedEvent"></DPAlgorithmSelect>
-          <v-btn text @click="makeStep(2,'back')">
+          <v-btn text @click="makeStep('back')">
             Back
           </v-btn>
 
           <v-btn
-            @click="makeStep(2,'continue')"
+            @click="makeStep('continue')"
             color="primary"
             :disabled=" !algorithmSelected"
           >
             Run
           </v-btn>
 
-          <v-btn text @click="makeStep(2,'cancel')">
+          <v-btn text @click="makeStep('cancel')">
             Cancel
           </v-btn>
 
@@ -442,23 +445,23 @@
           </v-card>
           <v-btn
             color="primary"
-            @click="makeStep(3,'back')"
+            @click="makeStep('back')"
           >
             Back
           </v-btn>
 
-          <v-btn text @click="makeStep(3,'continue')" :disabled="currentGid==null">
+          <v-btn text @click="makeStep('continue')" :disabled="currentGid==null">
             Validate
           </v-btn>
         </v-stepper-content>
         <v-stepper-content step="4">
           <Validation ref="validation" :step="4" :seed-type-id="seedTypeId" :ranking="results.targets"
                       @drugCountUpdate="updateDrugCount" @printNotificationEvent="printNotification"></Validation>
-          <v-btn text @click="makeStep(3,'back')">
+          <v-btn text @click="makeStep('back')">
             Back
           </v-btn>
 
-          <v-btn text @click="makeStep(4,'cancel')">
+          <v-btn text @click="makeStep('cancel')">
             Restart
           </v-btn>
         </v-stepper-content>
@@ -622,13 +625,14 @@ export default {
       }
       return out
     },
-    makeStep: function (s, button) {
+    makeStep: function (button) {
       if (button === "continue") {
         this.step++
-        if (this.step === 2)
+        if (this.step === 2) {
           this.seeds = this.$refs.seedTable.getSeeds()
-        if (this.blitz)
-          this.step++
+          if (this.blitz)
+            this.step++
+        }
       }
       if (button === "back") {
         if (this.step === 3) {
@@ -679,7 +683,7 @@ export default {
           this.setName(name)
         }, 500)
       else {
-        this.$http.post("setGraphName", {gid: this.currentGid, name: name}).then(()=>{
+        this.$http.post("setGraphName", {gid: this.currentGid, name: name}).then(() => {
           this.$emit("newGraphEvent")
         }).catch(console.error)
       }
@@ -870,20 +874,21 @@ export default {
       })
       await this.$http.getAllTrials(disorderNames, drugNames).then(data => {
         data.StudyFields.forEach(studie => {
-          studie.InterventionName.forEach(target => {
-            list.forEach(drug => {
-              if (target.toLowerCase().indexOf(drug.displayName.toLowerCase()) > -1) {
-                if (drug.trials == null)
-                  drug.trials = studie.NCTId
-                else {
-                  studie.NCTId.forEach(id => {
-                    if (drug.trials.indexOf(id) === -1)
-                      drug.trials.push(id)
-                  })
+          if (studie != null && studie.InterventionName != null)
+            studie.InterventionName.forEach(target => {
+              list.forEach(drug => {
+                if (target.toLowerCase().indexOf(drug.displayName.toLowerCase()) > -1) {
+                  if (drug.trials == null)
+                    drug.trials = studie.NCTId
+                  else {
+                    studie.NCTId.forEach(id => {
+                      if (drug.trials.indexOf(id) === -1)
+                        drug.trials.push(id)
+                    })
+                  }
                 }
-              }
+              })
             })
-          })
         })
       })
       list.forEach(drug => {
