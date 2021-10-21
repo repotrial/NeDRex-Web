@@ -197,7 +197,6 @@ export default {
   methods: {
 
     init: function () {
-      console.log("graph init")
       this.extractDefaults()
     },
 
@@ -218,7 +217,6 @@ export default {
     },
 
     reload: function () {
-      console.log("graph reset")
       this.reset();
       this.readGIDfromRoute()
       if (this.gid !== undefined)
