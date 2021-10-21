@@ -914,7 +914,7 @@ export default {
     }
     ,
     addToSuggestions: function (item) {
-      this.selectedSuggestions.push(item.value)
+      this.selectedSuggestions.push(item.text)
     },
     graphNamePopup: async function () {
       let sources = ""
