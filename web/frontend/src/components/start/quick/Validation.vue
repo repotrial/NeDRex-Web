@@ -215,7 +215,6 @@ export default {
         perms: 1000,
         onlyApproved: true,
       },
-      skipUIDs: [],
       advancedOptions: false,
       suggestionType: "",
       moduleValidationUID: "",
@@ -278,10 +277,6 @@ export default {
     },
 
     validate: function () {
-      if (this.moduleValidationUID.length > 0 && this.skipUIDs.indexOf(this.moduleValidationUID) === -1)
-        this.skipUIDs.push(this.moduleValidationUID)
-      if (this.rankingValidationUID.length > 0 && this.skipUIDs.indexOf(this.rankingValidationUID) === -1)
-        this.skipUIDs.push(this.rankingValidationUID)
       this.moduleValidationUID = ""
       this.rankingValidationUID = ""
       this.moduleValidationStatus = ""
@@ -343,8 +338,6 @@ export default {
     },
 
     checkValidationScore: function (id, type) {
-      if (this.skipUIDs.indexOf(id) > -1)
-        return
       if (this[type + "ValidationScore"] == null)
         this.$http.getValidationScore(id).then(response => {
           this.$set(this, type + "ValidationStatus", response.data.status);
