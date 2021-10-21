@@ -28,7 +28,7 @@
             ({{ $refs.seedTable ? $refs.seedTable.getSeeds().length : 0 }})</small>
         </v-stepper-step>
         <v-divider></v-divider>
-        <v-stepper-step step="2" :complete="step>2 || blitz" >
+        <v-stepper-step step="2" :complete="step>2 || blitz">
           Select Method
           <small v-if="$refs.algorithms!=null && $refs.algorithms.getAlgorithm()!=null">{{
               $refs.algorithms.getAlgorithm().label
@@ -38,7 +38,7 @@
         <v-stepper-step step="3" :complete="step>3">
           Results
           <small v-if="results.targets!=null && results.targets.length>0">Module ({{
-             results.targets.length
+              results.targets.length
             }})</small>
         </v-stepper-step>
         <v-divider></v-divider>
@@ -599,6 +599,8 @@ export default {
       this.seeds = []
       this.currentJid = undefined
       this.currentGid = undefined
+      this.graphName = undefined
+      this.nameOptions=[]
       this.results.targets = []
       this.results.drugs = []
       this.seedOrigin = {}
@@ -648,12 +650,18 @@ export default {
         }
       }
       if (button === "back") {
-        if (this.step === 3) {
+        this.step--
+        if(this.step ===3){
+          this.loadGraph(this.currentGid)
+        }
+        if (this.step === 2) {
           this.results.targets = []
+          this.graphName = undefined
+          this.currentGid=undefined
           this.$refs.graph.reload()
           this.$socket.unsubscribeJob(this.currentJid)
         }
-        this.step--
+
         if (this.step === 2 && this.blitz)
           this.step--
       }
@@ -664,7 +672,8 @@ export default {
       }
       if (this.step === 3) {
         this.$refs.algorithms.run()
-        this.graphNamePopup()
+        if (this.currentGid == null || this.currentGid === this.graphName)
+          this.graphNamePopup()
       }
 
     },
@@ -922,7 +931,7 @@ export default {
         this.selectedSuggestions.forEach(s => sources += s + "; ")
         sources = sources.substr(0, sources.length - 2)
       }
-      this.nameOptions=[]
+      this.nameOptions = []
       this.nameOptions.push(sources)
       this.nameOptions.push((sources + " (" + this.$refs.algorithms.getAlgorithmMethod() + ")"))
       this.nameOptions.push((sources + " (" + this.$refs.algorithms.getAlgorithmMethod() + ") [" + (await this.$refs.algorithms.getParamString()) + "]"))
@@ -941,7 +950,7 @@ export default {
           this.setName(name)
         }, 500)
       else
-        this.$http.post("setGraphName", {gid: this.currentGid, name: name}).then(()=>{
+        this.$http.post("setGraphName", {gid: this.currentGid, name: name}).then(() => {
           this.$emit("newGraphEvent")
         }).catch(console.error)
     },

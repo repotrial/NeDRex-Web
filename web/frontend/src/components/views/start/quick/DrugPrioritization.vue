@@ -598,6 +598,8 @@ export default {
       this.disorderIds = []
       this.validationDrugCount = 0
       this.results.target = []
+      this.graphName = undefined
+      this.nameOptions=[]
       this.seedOrigin = {}
       if (this.$refs.graph)
         this.$refs.graph.reload()
@@ -635,12 +637,18 @@ export default {
         }
       }
       if (button === "back") {
-        if (this.step === 3) {
+        this.step--
+        if(this.step ===3){
+          this.loadGraph(this.currentGid)
+        }
+        if (this.step === 2) {
           this.results.targets = []
+          this.graphName = undefined
+          this.currentGid = undefined
           this.$refs.graph.reload()
           this.$socket.unsubscribeJob(this.currentJid)
         }
-        this.step--
+
         if (this.step === 2 && this.blitz)
           this.step--
       }
@@ -652,7 +660,8 @@ export default {
       }
       if (this.step === 3) {
         this.$refs.algorithms.run()
-        this.graphNamePopup()
+        if (this.currentGid == null || this.currentGid === this.graphName)
+          this.graphNamePopup()
       }
     },
     addToSuggestions: function (item) {

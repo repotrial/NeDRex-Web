@@ -28,20 +28,24 @@
         <v-divider></v-divider>
         <v-stepper-step step="2" :complete="step>2 || blitz">
           Module Method
-          <small v-if="(step>1 ||blitz) && $refs.moduleAlgorithms!=null && $refs.moduleAlgorithms.getAlgorithm() !=null">{{
+          <small
+            v-if="(step>1 ||blitz) && $refs.moduleAlgorithms!=null && $refs.moduleAlgorithms.getAlgorithm() !=null">{{
               $refs.moduleAlgorithms.getAlgorithm().label
             }}</small>
         </v-stepper-step>
         <v-divider></v-divider>
         <v-stepper-step step="3" :complete="step>3 || blitz">
           Ranking Method
-          <small v-if="rankingAlgorithmSelected &&(step>2 || blitz)">{{ this.$refs.rankingAlgorithms.getAlgorithm().label }}</small>
+          <small v-if="rankingAlgorithmSelected &&(step>2 || blitz)">{{
+              this.$refs.rankingAlgorithms.getAlgorithm().label
+            }}</small>
         </v-stepper-step>
         <v-divider></v-divider>
         <v-stepper-step step="4" :complete="step>4">
           Results
-          <small>{{ ((results.targets != null && results.targets.length>0) ? ("Module ("+results.targets.length+")"):"")}}<br>
-          {{((results.drugs != null && results.drugs.length>0) ? ("Candidates ("+results.drugs.length+")"):"")
+          <small>{{ ((results.targets != null && results.targets.length > 0) ? ("Module (" + results.targets.length + ")") : "") }}<br>
+            {{
+              ((results.drugs != null && results.drugs.length > 0) ? ("Candidates (" + results.drugs.length + ")") : "")
             }}</small>
         </v-stepper-step>
         <v-divider></v-divider>
@@ -702,6 +706,8 @@ export default {
       this.moduleGid = undefined
       this.rankingJid = undefined
       this.rankingGid = undefined
+      this.graphName = undefined
+      this.nameOptions=[]
       this.resultProgress = 0
       this.disorderIds = []
       this.validationDrugCount = 0
@@ -749,7 +755,8 @@ export default {
         }
 
         if (this.step === 4) {
-          this.graphNamePopup()
+          if (this.rankingGid == null || this.rankingGid === this.graphName)
+            this.graphNamePopup()
           this.submitRankingAlgorithm()
         }
         this.focus()
@@ -757,10 +764,14 @@ export default {
       }
       if (button === "back") {
         this.step--
+        if(this.step===4){
+          this.loadGraph(this.rankingGid)
+        }
 
         if (this.step === 3) {
           this.results.drugs = []
           this.rankingGid = undefined
+          this.graphName = undefined
           this.$refs.graph.reload()
           this.resultProgress = 50
           if (this.rankingJid !== undefined)
