@@ -242,7 +242,7 @@
     <v-bottom-sheet inset v-model="showVersionInfo" width="60vw" :overlay-color="colors.main.bg1">
       <VersionSheet :color="colors.main.bg1"></VersionSheet>
     </v-bottom-sheet>
-    <Footer :color="colors.main.bg1"></Footer>
+    <Footer :color="colors.main.bg1" style="z-index: 1000;"></Footer>
   </v-app>
 </template>
 

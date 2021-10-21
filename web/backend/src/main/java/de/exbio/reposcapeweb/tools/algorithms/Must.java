@@ -31,7 +31,6 @@ import java.util.stream.Collectors;
 @Service
 public class Must implements Algorithm{
 
-
     private Environment env;
     private AlgorithmUtils utils;
     private NodeController nodeController;
@@ -57,7 +56,7 @@ public class Must implements Algorithm{
     }
     @Override
     public boolean integrateOriginalGraph(Job j) {
-        return false;
+        return !j.getParams().containsKey("nodesOnly") || j.getParams().get("nodesOnly").equals("false");
     }
 
     @Override
