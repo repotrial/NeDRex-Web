@@ -12,7 +12,7 @@
       <v-row style="height: 100%">
         <v-col>
           <v-card-title style="margin-left: -25px">Select the Base-Algorithm</v-card-title>
-          <v-tabs v-model="methodModel">
+          <v-tabs v-model="methodModel" optional>
             <v-tab v-for="method in methods" :key="method.id">{{ method.label }}</v-tab>
           </v-tabs>
           <div v-if="methodModel!==undefined" style="margin-left: 20px">
@@ -206,7 +206,6 @@ export default {
   data() {
     return {
       methodModel: undefined,
-      rankingMethodModel: undefined,
       experimentalSwitch: true,
       showDescription: false,
       methods: [{

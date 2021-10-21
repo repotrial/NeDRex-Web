@@ -26,7 +26,7 @@
       <v-row style="height: 100%">
         <v-col>
           <v-card-title style="margin-left: -25px">Select the Base-Algorithm</v-card-title>
-          <v-tabs v-model="methodModel" v-for="group in groups" :key="'tabs_'+group.id" v-if="group.id===groupModel">
+          <v-tabs v-model="methodModel" v-for="group in groups" :key="'tabs_'+group.id" v-if="group.id===groupModel" optional>
             <v-tab v-for="method in methods.filter(m=>m.group===group.id)" :key="method.id">{{ method.label }}</v-tab>
           </v-tabs>
           <div v-if="methodModel!==undefined" style="margin-left: 20px">
@@ -606,7 +606,7 @@ export default {
 
   watch: {
     groupModel: function (newVal, oldVal) {
-      this.methodModel = 0
+      this.methodModel = undefined
     },
 
     methodModel: function (value) {
