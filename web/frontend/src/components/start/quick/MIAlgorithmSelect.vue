@@ -652,7 +652,7 @@ export default {
       let method = this.getAlgorithmMethod()
       params.experimentalOnly = this.experimentalSwitch
       params["addInteractions"] = true
-      params["nodesOnly"] = true
+      params["nodesOnly"] = false
       if (method === 'bicon') {
         this.seeds = []
         params['lg_min'] = this.getAlgorithmModels().lg[0];
