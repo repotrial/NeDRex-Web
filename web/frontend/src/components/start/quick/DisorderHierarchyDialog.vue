@@ -4,7 +4,7 @@
             max-width="1000px"
   >
     <v-card>
-      <v-card-title>Set graph name</v-card-title>
+      <v-card-title>Adjust the disorder selection</v-card-title>
       <v-progress-circular v-if="loading" indeterminate></v-progress-circular>
       <tree ref="tree" style="height: 600px; width: 1000px;" :radius="8" :zoomable="true"
             :leafTextMargin="10" :duration="0" :identifier="(item)=>item.id" :nodeTextMargin="10" v-else :data="data"
