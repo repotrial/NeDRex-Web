@@ -97,12 +97,12 @@ public class RequestController {
     @ResponseBody
     public String getCustomDetails(@RequestBody DetailRequest req) {
         log.info("requested details" + toJson(req));
-        if(req.attributes ==null || req.attributes.isEmpty())
-            return getDetails(req.name,req.id);
+        if (req.attributes == null || req.attributes.isEmpty())
+            return getDetails(req.name, req.id);
         HashMap<String, Object> details = new HashMap<>();
         nodeController.nodeToAttributeList(Graphs.getNode(req.name), req.id).forEach((k, v) -> {
-            if(req.attributes.contains(k))
-            details.put(nodeController.getAttributeLabelMap(req.name).get(k), v);
+            if (req.attributes.contains(k))
+                details.put(nodeController.getAttributeLabelMap(req.name).get(k), v);
         });
         return toJson(details);
     }
@@ -131,7 +131,7 @@ public class RequestController {
 
     @RequestMapping(value = "/getSuggestionEntry", method = RequestMethod.GET)
     @ResponseBody
-    public String getSuggestionEntry(@RequestParam(value = "gid",required = false) String gid, @RequestParam("nodeType") String nodeName, @RequestParam("sid") String sid) {
+    public String getSuggestionEntry(@RequestParam(value = "gid", required = false) String gid, @RequestParam("nodeType") String nodeName, @RequestParam("sid") String sid) {
         try {
             log.debug("Got request for SuggestionId=" + sid);
             return objectMapper.writeValueAsString(webGraphService.getSuggestionEntry(gid, nodeName, sid));
@@ -162,12 +162,12 @@ public class RequestController {
     @RequestMapping(value = "/getConnectedNodes", method = RequestMethod.POST)
     @ResponseBody
     public String getConnectedNodes(@RequestBody HashMap<String, Object> request) {
-        Collection<Integer> ids = request.get("sugId").toString().indexOf('_') > -1 ? webGraphService.getSuggestionEntry(null, request.get("sourceType").toString(), request.get("sugId").toString()) : Collections.singletonList(Integer.parseInt(request.get("sugId").toString()));
-        if ((boolean) request.get("noloop")) {
-            LinkedList<Object> nodes = webGraphService.getDirectNodes(ids, request);
-            return toJson(nodes);
-        }
-        return toJson(webGraphService.getConnectedNodes(request.get("sourceType").toString(), request.get("targetType").toString(), ids));
+            Collection<Integer> ids = request.get("sugId") != null ? (request.get("sugId").toString().indexOf('_') > -1 ? webGraphService.getSuggestionEntry(null, request.get("sourceType").toString(), request.get("sugId").toString()) : Collections.singletonList(Integer.parseInt(request.get("sugId").toString()))): ((ArrayList<Integer>) request.get("ids"));
+            if ((boolean) request.get("noloop")) {
+                LinkedList<Object> nodes = webGraphService.getDirectNodes(ids, request);
+                return toJson(nodes);
+            }
+            return toJson(webGraphService.getConnectedNodes(request.get("sourceType").toString(), request.get("targetType").toString(), ids));
     }
 
     @RequestMapping(value = "/mapToDomainIds", method = RequestMethod.POST)
@@ -334,11 +334,12 @@ public class RequestController {
         log.debug("Got mapping request for node type: " + request.type + " and list " + toJson(request.list));
         return toJson(webGraphService.mapDomainIdsToItemList(request.type, request.list));
     }
+
     @RequestMapping(value = "/mapIdListToItems", method = RequestMethod.POST)
     @ResponseBody
     public String getIdListToItems(@RequestBody MapListRequest request) {
         log.debug("Got mapping request for node type: " + request.type + " and id list " + toJson(request.list));
-        return toJson(webGraphService.mapIdsToItemList(request.type, request.list,request.attributes));
+        return toJson(webGraphService.mapIdsToItemList(request.type, request.list, request.attributes));
     }
 
 
@@ -380,7 +381,7 @@ public class RequestController {
         File thumbnail = webGraphService.getThumbnail(gid);
         webGraphService.createThumbnail(gid, thumbnail);
         GraphHistoryDetail detail = historyController.getDetailedHistory(uid, webGraphService.getCachedGraph(gid), webGraphService.getConnectionGraph(gid), jobController.getJobGraphStatesAndTypes(uid), thumbnail);
-        if(detail.jobid!=null)
+        if (detail.jobid != null)
             detail.params.putAll(jobController.getParams(detail.jobid));
         return toJson(detail);
     }
@@ -420,6 +421,12 @@ public class RequestController {
         return toJson(j.toMap());
     }
 
+    @RequestMapping(value = "/getDisorderHierarchy", method = RequestMethod.GET)
+    @ResponseBody
+    public String getDisorderHierarch(@RequestParam("sid") String sid) {
+        return toJson(webGraphService.getDisorderHierarchy(sid));
+    }
+
     @RequestMapping(value = "/getNedrex", method = RequestMethod.POST)
     @ResponseBody
     public String getNedrex(@RequestBody NedrexRequest req) {
@@ -445,9 +452,9 @@ public class RequestController {
         return toJson(jobController.getJobGraphStatesAndTypes(uid, null));
     }
 
-    @RequestMapping(value="/getInteractingOnly", method = RequestMethod.POST)
+    @RequestMapping(value = "/getInteractingOnly", method = RequestMethod.POST)
     @ResponseBody
-    public String filterInteracting(@RequestBody FilterInteractionRequest req){
+    public String filterInteracting(@RequestBody FilterInteractionRequest req) {
         return toJson(webGraphService.filterInteracting(req.type, req.ids));
     }
 

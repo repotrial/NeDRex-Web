@@ -169,6 +169,11 @@ const ApiService = {
       }
     }
     return data
+  },
+  getDisorderHierarchy(sid){
+    return this.get("/getDisorderHierarchy?sid="+sid).then(response=>{
+      return response.data
+    })
   }
 }
 

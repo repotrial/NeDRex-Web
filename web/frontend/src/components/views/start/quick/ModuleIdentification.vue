@@ -163,10 +163,10 @@
                             through association the 'Limited' switch has to be toggled.
                           </div>
                         </v-tooltip>
-                        <SuggestionAutocomplete :suggestion-type="suggestionType" :emit-drugs="true"
+                        <SuggestionAutocomplete ref="suggestions" :suggestion-type="suggestionType" :emit-drugs="true"
                                                 @drugsEvent="$refs.validation.addDrugs"
                                                 :target-node-type="['gene', 'protein'][seedTypeId]"
-                                                @addToSelectionEvent="addToSelection"
+                                                @addToSelectionEvent="addToSelection" @subtypeSelection="subtypePopup"
                                                 @suggestionEvent="addToSuggestions"
                                                 style="justify-self: flex-end;margin-left: auto"></SuggestionAutocomplete>
                       </div>
@@ -516,6 +516,7 @@
 
       </v-dialog>
     </v-stepper>
+   <DisorderHierarchyDialog v-if="$refs.suggestions!=null" ref="disorderHierarchy" @addDisorders="$refs.suggestions.loadDisorders"></DisorderHierarchyDialog>
   </v-card>
 </template>
 
@@ -534,6 +535,7 @@ import EntryDetails from "@/components/app/EntryDetails";
 import LabeledSwitch from "@/components/app/input/LabeledSwitch";
 import MIAlgorithmSelect from "@/components/start/quick/MIAlgorithmSelect";
 import Validation from "@/components/start/quick/Validation";
+import DisorderHierarchyDialog from "@/components/start/quick/DisorderHierarchyDialog";
 
 export default {
   name: "ModuleIdentification",
@@ -581,6 +583,8 @@ export default {
       namePopup: false,
       nameOptions: [],
       graphName: "",
+
+      showSubtypeSelection: false,
     }
 
   },
@@ -684,6 +688,10 @@ export default {
     rowClicked: function (item) {
       this.focusNode(['gen_', 'pro_'][this.seedTypeId] + item.id)
 
+    },
+
+    subtypePopup: function(item){
+      this.$refs.disorderHierarchy.loadDisorder(item.sid)
     },
     resolveRankingDialog: function (apply) {
       this.drugTargetPopup = false;
@@ -994,6 +1002,7 @@ export default {
   ,
 
   components: {
+    DisorderHierarchyDialog,
     EntryDetails,
     LabeledSwitch,
     HeaderBar,

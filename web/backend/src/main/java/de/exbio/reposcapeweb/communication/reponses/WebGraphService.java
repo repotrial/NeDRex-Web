@@ -501,6 +501,36 @@ public class WebGraphService {
         return (gid == null ? nodeController.getFilter(nodeName) : getCachedGraph(gid).getNodeFilter(nodeName)).getEntry(sid).stream().map(FilterEntry::getNodeId).collect(Collectors.toSet());
     }
 
+    public HashMap<String,Object> getDisorderHierarchy(String sid) {
+        HashMap<String, Object> parent = new HashMap<>();
+        Disorder root = nodeController.findDisorder(nodeController.getFilter("disorder").getEntry(sid).stream().findFirst().get().getNodeId());
+        parent.put("id",root.getId());
+        parent.put("name", root.getDisplayName());
+        parent.put("children",getDisorderChildren(root.getId()));
+        return parent;
+    }
+
+    public List<HashMap<String, Object>> getDisorderChildren(Integer id) {
+        List<HashMap<String, Object>> children = new LinkedList<>();
+        try {
+            this.edgeController.getDisorderIsADisorderChildren(id).forEach(edge -> {
+                if(edge.getId1()==edge.getId2())
+                    return;
+                int childId = id == edge.getId1() ? edge.getId2() : edge.getId1();
+                HashMap<String, Object> child = new HashMap<>();
+                Disorder d = nodeController.findDisorder(childId);
+                child.put("name", d.getDisplayName());
+                child.put("id",d.getId());
+                List<HashMap<String, Object>> next = getDisorderChildren(childId);
+                if (next.size() > 0)
+                    child.put("children", next);
+                children.add(child);
+            });
+        }catch (NullPointerException ignore){
+        }
+        return children;
+    }
+
     public SelectionResponse getSelection(SelectionRequest request) {
         SelectionResponse selection = new SelectionResponse();
         Graph graph = getCachedGraph(request.gid);
