@@ -824,12 +824,13 @@ export default {
         scores.forEach(s => text += sep + s.name)
         text += "\n"
         this.results.targets.forEach(t => {
-            text += data[t.id] + sep + t.displayName
+          let escape = t.displayName.indexOf(sep) > -1 ? "\"" : "";
+            text += data[t.id] + sep +escape+ t.displayName+escape
             scores.forEach(s => text += sep + t[s.id])
             text += "\n"
           }
         )
-        this.download("drug_ranking-Top_" + this.models.topX + (sep === "\t" ? ".tsv" : ".csv"), text)
+        this.download("drug_ranking-Top_" + this.$refs.algorithms.getAlgorithmModels().topX + (sep === "\t" ? ".tsv" : ".csv"), text)
       }).catch(console.error)
     },
     download: function (name, content) {

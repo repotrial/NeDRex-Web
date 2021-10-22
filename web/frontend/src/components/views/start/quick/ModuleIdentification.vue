@@ -792,7 +792,8 @@ export default {
         if (!names) {
           Object.values(data).forEach(id => text += id + "\n")
         } else {
-          this.seeds.forEach(s => text += data[s.id] + sep + s.displayName + "\n")
+          let escape = s.displayName.indexOf(sep) > -1 ? "\"" : "";
+          this.seeds.forEach(s => text += data[s.id] + sep + escape +s.displayName+escape + "\n")
         }
         this.download(dlName, text)
       }).catch(console.error)
@@ -816,7 +817,8 @@ export default {
         scores.forEach(s => text += sep + s.name)
         text += "\n"
         this.results.targets.forEach(t => {
-            text += data[t.id] + (names ? sep + t.displayName : "")
+          let escape = t.displayName.indexOf(sep) > -1 ? "\"" : "";
+            text += data[t.id] + (names ? sep + escape+t.displayName+escape : "")
             scores.forEach(s => text += sep + t[s.id])
             text += "\n"
           }

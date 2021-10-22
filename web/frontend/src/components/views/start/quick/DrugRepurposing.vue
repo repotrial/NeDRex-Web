@@ -43,7 +43,9 @@
         <v-divider></v-divider>
         <v-stepper-step step="4" :complete="step>4">
           Results
-          <small>{{ ((results.targets != null && results.targets.length > 0) ? ("Module (" + results.targets.length + ")") : "") }}<br>
+          <small>{{
+              ((results.targets != null && results.targets.length > 0) ? ("Module (" + results.targets.length + ")") : "")
+            }}<br>
             {{
               ((results.drugs != null && results.drugs.length > 0) ? ("Candidates (" + results.drugs.length + ")") : "")
             }}</small>
@@ -707,7 +709,7 @@ export default {
       this.rankingJid = undefined
       this.rankingGid = undefined
       this.graphName = undefined
-      this.nameOptions=[]
+      this.nameOptions = []
       this.resultProgress = 0
       this.disorderIds = []
       this.validationDrugCount = 0
@@ -764,7 +766,7 @@ export default {
       }
       if (button === "back") {
         this.step--
-        if(this.step===4){
+        if (this.step === 4) {
           this.loadGraph(this.rankingGid)
         }
 
@@ -900,7 +902,8 @@ export default {
         if (!names) {
           Object.values(data).forEach(id => text += id + "\n")
         } else {
-          this.seeds.forEach(s => text += data[s.id] + sep + s.displayName + "\n")
+          let escape = s.displayName.indexOf(sep) > -1 ? "\"" : "";
+          this.seeds.forEach(s => text += data[s.id] + sep + escape + s.displayName + escape + "\n")
         }
         this.download(dlName, text)
       }).catch(console.error)
@@ -920,7 +923,8 @@ export default {
         scores.forEach(s => text += sep + s.name)
         text += "\n"
         this.results.targets.forEach(t => {
-            text += data[t.id] + (names ? sep + t.displayName : "")
+            let escape = t.displayName.indexOf(sep) > -1 ? "\"" : "";
+            text += data[t.id] + (names ? sep + escape + t.displayName + escape : "")
             scores.forEach(s => text += sep + t[s.id])
             text += "\n"
           }
@@ -941,7 +945,8 @@ export default {
         scores.forEach(s => text += sep + s.name)
         text += "\n"
         this.results.drugs.forEach(t => {
-            text += data[t.id] + sep + t.displayName
+            let escape = t.displayName.indexOf(sep) > -1 ? "\"" : "";
+            text += data[t.id] + sep + escape + t.displayName + escape
             scores.forEach(s => text += sep + t[s.id])
             text += "\n"
           }
