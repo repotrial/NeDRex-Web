@@ -5,7 +5,8 @@
   >
     <v-card>
       <v-card-title>Adjust the disorder selection</v-card-title>
-      <v-card-subtitle style="margin-top:5px"><i><b>Hover</b></i> nodes to read the full disorder name. <i><b>Click</b></i> a node to toggle its state. The state of all children changes accordingly.
+      <v-card-subtitle style="margin-top:5px"><i><b>Hover</b></i> nodes to read the full disorder name. <i><b>Click</b></i>
+        a node to toggle its state. The state of all children changes accordingly.
       </v-card-subtitle>
       <v-progress-circular v-if="loading" indeterminate></v-progress-circular>
       <VisNetwork ref="tree" v-if="!loading && !sizeProblem" :options="treeOptions" :nodes="nodes" :edges="edges"
@@ -74,8 +75,14 @@ export default {
           stabilization: false,
         },
         groups: {
-          disorder: {color:this.$global.metagraph.options.options.groups.disorder.color, shape:"box"}, unselected: {
-            color: {background: 'gray', border: 'black', highlight: {background: 'gray', border: 'black'}},shape:"box", font:{color:"white"}
+          disorder: {
+            color: this.$global.metagraph.options.options.groups.disorder.color,
+            shape: "box",
+            font: {color: "white"}
+          }, unselected: {
+            color: {background: 'gray', border: 'black', highlight: {background: 'gray', border: 'black'}},
+            shape: "box",
+            font: {color: "white"}
           }
         },
         nodes: {
@@ -101,8 +108,8 @@ export default {
       this.$emit('input', this.model)
       if (state) {
         this.$emit("addDisorders", this.nodes.get().filter(n => n.group === "disorder").map(n => parseInt(n.id)))
-      }else{
-        this.$emit("addDisorders",undefined)
+      } else {
+        this.$emit("addDisorders", undefined)
       }
       this.init()
     },
@@ -122,7 +129,8 @@ export default {
     prepareData: function (data) {
       data.nodes.forEach(n => {
         n.title = n.label
-        n.label = n.label.substring(0, Math.min(20, n.label.length))
+        if (n.label.length > 20)
+          n.label = n.label.substring(0, 17) + "..."
         n.selected = true
       })
       this.nodes = new DataSet(data.nodes)
@@ -137,12 +145,12 @@ export default {
       newGroup = update[0].group === "disorder" ? "unselected" : "disorder"
       let ids = [id]
       this.edges.get().filter(e => e.to === id).forEach(e => update.push(this.$refs.tree.getNode(e.from)))
-      ids = update.map(n=>n.id)
+      ids = update.map(n => n.id)
       let idSize = 1
-      while(idSize < ids.length){
-        idSize=ids.length
-        this.edges.get().filter(e => ids.indexOf(e.to)>-1 && ids.indexOf(e.from)===-1).forEach(e => update.push(this.$refs.tree.getNode(e.from)))
-        ids = update.map(n=>n.id)
+      while (idSize < ids.length) {
+        idSize = ids.length
+        this.edges.get().filter(e => ids.indexOf(e.to) > -1 && ids.indexOf(e.from) === -1).forEach(e => update.push(this.$refs.tree.getNode(e.from)))
+        ids = update.map(n => n.id)
       }
 
       update.forEach(n => n.group = newGroup)
