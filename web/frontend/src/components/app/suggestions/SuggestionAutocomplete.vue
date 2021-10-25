@@ -122,7 +122,7 @@ export default {
     },
 
     loadDisorders: function (ids) {
-      if(ids==null){
+      if (ids == null) {
         this.suggestionModel = undefined
         return
       }
@@ -135,7 +135,7 @@ export default {
         if (response.data !== undefined)
           return response.data
       }).then(data => {
-        this.loadByIds(data)
+        this.loadByIds(data,ids)
       }).catch(console.error)
     },
 
@@ -152,8 +152,8 @@ export default {
         this.loadByIds(data)
       }).catch(console.error)
     },
-    loadByIds: function (data) {
-      this.$emit("suggestionEvent",this.suggestionModel)
+    loadByIds: function (data,disorders) {
+      this.$emit("suggestionEvent", this.suggestionModel)
       let payload = {
         data: data,
         origin: "SUG:" + this.suggestionModel.text + "[" + this.suggestionType + "]",
@@ -163,17 +163,21 @@ export default {
         this.$emit("addToSelectionEvent", payload, this.index)
       else
         this.$emit("addToSelectionEvent", payload,)
-      this.emitData({...this.suggestionModel})
+      this.emitData({...this.suggestionModel}, disorders)
       this.suggestionModel = undefined
     },
-    emitData: function (val) {
+    emitData: function (val, ids) {
       if (this.emitDrugs && this.suggestionType === "disorder") {
-        this.$http.post("getConnectedNodes", {
+        let payload = {
           sourceType: this.suggestionType,
           targetType: "drug",
-          sugId: val.sid,
           noloop: false
-        }).then(response => {
+        }
+        if(ids!=null)
+          payload.ids = ids
+        else
+          payload.sugId= val.sid
+        this.$http.post("getConnectedNodes", payload).then(response => {
           if (response.data !== undefined)
             return response.data
         }).then(data => {
@@ -185,15 +189,19 @@ export default {
         }).catch(console.error)
       }
       if (this.emitDisorders && this.suggestionType === "disorder") {
-        if (val.sid.indexOf("_") > -1) {
-          this.$http.get("getSuggestionEntry?nodeType=" + this.suggestionType + "&sid=" + val.sid).then(response => {
-            if (response.data !== undefined)
-              return response.data
-          }).then(data => {
-            this.$emit("disorderEvent", data)
-          }).catch(console.error)
-        } else {
-          this.$emit("disorderEvent", [parseInt(val.sid)])
+        if (ids != null)
+          this.$emit("disorderEvent", ids)
+        else {
+          if (val.sid.indexOf("_") > -1) {
+            this.$http.get("getSuggestionEntry?nodeType=" + this.suggestionType + "&sid=" + val.sid).then(response => {
+              if (response.data !== undefined)
+                return response.data
+            }).then(data => {
+              this.$emit("disorderEvent", data)
+            }).catch(console.error)
+          } else {
+            this.$emit("disorderEvent", [parseInt(val.sid)])
+          }
         }
       }
     },
