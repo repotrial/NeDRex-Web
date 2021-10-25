@@ -153,6 +153,7 @@ export default {
       }).catch(console.error)
     },
     loadByIds: function (data) {
+      this.$emit("suggestionEvent",this.suggestionModel)
       let payload = {
         data: data,
         origin: "SUG:" + this.suggestionModel.text + "[" + this.suggestionType + "]",

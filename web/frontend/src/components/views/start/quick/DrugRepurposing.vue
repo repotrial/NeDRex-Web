@@ -201,10 +201,10 @@
                             through association the 'Limited' switch has to be toggled.
                           </div>
                         </v-tooltip>
-                        <SuggestionAutocomplete :suggestion-type="suggestionType" :emit-drugs="true"
+                        <SuggestionAutocomplete ref="suggestions" :suggestion-type="suggestionType" :emit-drugs="true"
                                                 :emit-disorders="true"
                                                 @drugsEvent="$refs.validation.addDrugs"
-                                                @disorderEvent="saveDisorders"
+                                                @disorderEvent="saveDisorders" @subtypeSelection="subtypePopup"
                                                 :target-node-type="['gene', 'protein'][seedTypeId]"
                                                 @addToSelectionEvent="addToSelection"
                                                 @suggestionEvent="addToSuggestions"
@@ -606,6 +606,7 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <DisorderHierarchyDialog v-if="$refs.suggestions!=null" ref="disorderHierarchy" @addDisorders="$refs.suggestions.loadDisorders"></DisorderHierarchyDialog>
   </v-card>
 </template>
 
@@ -624,6 +625,7 @@ import LabeledSwitch from "@/components/app/input/LabeledSwitch";
 import MIAlgorithmSelect from "@/components/start/quick/MIAlgorithmSelect";
 import DPAlgorithmSelect from "@/components/start/quick/DPAlgorithmSelect";
 import Validation from "@/components/start/quick/Validation";
+import DisorderHierarchyDialog from "@/components/start/quick/DisorderHierarchyDialog";
 
 export default {
   name: "CombinedRepurposing",
@@ -741,6 +743,9 @@ export default {
     },
     acceptRankingAlgorithmSelectEvent: function (value) {
       this.rankingAlgorithmSelected = value;
+    },
+    subtypePopup: function(item){
+      this.$refs.disorderHierarchy.loadDisorder(item.sid)
     },
     makeStep: function (button) {
       if (button === "continue") {
@@ -1228,6 +1233,7 @@ export default {
 
   components: {
     LabeledSwitch,
+    DisorderHierarchyDialog,
     Network,
     SuggestionAutocomplete,
     ValidationDrugTable,

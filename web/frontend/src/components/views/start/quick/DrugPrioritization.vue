@@ -160,10 +160,10 @@
                             through association the 'Limited' switch has to be toggled.
                           </div>
                         </v-tooltip>
-                        <SuggestionAutocomplete :suggestion-type="suggestionType" :emit-drugs="true"
+                        <SuggestionAutocomplete ref="suggestions" :suggestion-type="suggestionType" :emit-drugs="true"
                                                 :emit-disorders="true"
                                                 @drugsEvent="$refs.validation.addDrugs"
-                                                @disorderEvent="saveDisorders"
+                                                @disorderEvent="saveDisorders"  @subtypeSelection="subtypePopup"
                                                 :target-node-type="['gene', 'protein'][seedTypeId]"
                                                 @addToSelectionEvent="addToSelection"
                                                 @suggestionEvent="addToSuggestions"
@@ -508,6 +508,7 @@
       </v-dialog>
 
     </v-stepper>
+    <DisorderHierarchyDialog v-if="$refs.suggestions!=null" ref="disorderHierarchy" @addDisorders="$refs.suggestions.loadDisorders"></DisorderHierarchyDialog>
   </v-card>
 </template>
 
@@ -524,6 +525,7 @@ import EntryDetails from "@/components/app/EntryDetails";
 import LabeledSwitch from "@/components/app/input/LabeledSwitch";
 import DPAlgorithmSelect from "@/components/start/quick/DPAlgorithmSelect";
 import Validation from "@/components/start/quick/Validation";
+import DisorderHierarchyDialog from "@/components/start/quick/DisorderHierarchyDialog";
 
 export default {
   name: "DrugRepurposing",
@@ -763,6 +765,9 @@ export default {
 
     methodScores: function () {
       return this.$refs.algorithms.getHeaders()
+    },
+    subtypePopup: function(item){
+      this.$refs.disorderHierarchy.loadDisorder(item.sid)
     },
 
     setSeeds: function (seeds, type, origin) {
@@ -1011,6 +1016,7 @@ export default {
   components: {
     Validation,
     DPAlgorithmSelect,
+    DisorderHierarchyDialog,
     LabeledSwitch,
     SeedDownload,
     NodeInput,

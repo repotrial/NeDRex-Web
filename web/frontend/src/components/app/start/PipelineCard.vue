@@ -7,8 +7,7 @@
       </v-card-title>
       <v-card-subtitle :style="{color:cardHover?'white':''}">{{ subtitle }}</v-card-subtitle>
     </div>
-    <v-progress-linear v-if="loading" indeterminate></v-progress-linear>
-    <template v-show="!loading">
+    <div>
       <v-img ref='img' :class="cardHover ? 'blur': ''"
              :src="image" width="25vw" contain :style="{minWidth:minWidth}">
         <div v-show="!cardHover"
@@ -31,7 +30,7 @@
           </div>
         </div>
       </div>
-    </template>
+    </div>
   </v-card>
 </template>
 
@@ -62,10 +61,11 @@ export default {
   methods: {
     getImgHeight:function () {
       if (this.$refs.img != null && this.$refs.img.$el.clientHeight > 0 && this.$refs.img.$el.clientWidth > 0) {
+        console.log("done")
         this.loading = false
         this.imgHeight = "calc(max(25vw," + this.minWidth + ")/" + (this.$refs.img.$el.clientWidth / this.$refs.img.$el.clientHeight) + ")"
       } else
-        setTimeout(this.getImgHeight, 1000)
+        setTimeout(this.getImgHeight, 200)
     }
 
   },
