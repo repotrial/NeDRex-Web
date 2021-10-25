@@ -260,8 +260,9 @@ export default {
         } else {
           if (e.sourceDBs != null) {
             let node = ids[e.id]
-            if (node.sourceDBs != null)
-              node.sourceDBs = node.sourceDBs.concat(e.sourceDBs)
+            if (node.sourceDBs != null) {
+              node.sourceDBs = node.sourceDBs.concat(e.sourceDBs.filter(n=>node.sourceDBs.indexOf(n)===-1))
+            }
             else node.sourceDBs = [].concat(e.sourceDBs)
           }
         }
