@@ -122,6 +122,10 @@ export default {
     },
 
     loadDisorders: function (ids) {
+      if(ids==null){
+        this.suggestionModel = undefined
+        return
+      }
       this.$http.post("getConnectedNodes", {
         sourceType: this.suggestionType,
         targetType: this.targetNodeType,

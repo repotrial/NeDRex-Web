@@ -502,33 +502,30 @@ public class WebGraphService {
     }
 
     public HashMap<String,Object> getDisorderHierarchy(String sid) {
-        HashMap<String, Object> parent = new HashMap<>();
+        HashMap<String, Object> graph = new HashMap<>();
+        HashMap<Integer,WebNode> nodes = new HashMap<>();
+        LinkedList<WebEdge> edges = new LinkedList<>();
         Disorder root = nodeController.findDisorder(nodeController.getFilter("disorder").getEntry(sid).stream().findFirst().get().getNodeId());
-        parent.put("id",root.getId());
-        parent.put("name", root.getDisplayName());
-        parent.put("children",getDisorderChildren(root.getId()));
-        return parent;
+        nodes.put(root.getId(),new WebNode(root.getId(),root.getDisplayName(),"disorder"));
+        getDisorderChildren(root.getId(),nodes, edges);
+        graph.put("nodes",new LinkedList(nodes.values()));
+        graph.put("edges",edges);
+        return graph;
     }
 
-    public List<HashMap<String, Object>> getDisorderChildren(Integer id) {
-        List<HashMap<String, Object>> children = new LinkedList<>();
+    public void getDisorderChildren(Integer id, HashMap<Integer,WebNode> nodes, LinkedList<WebEdge> edges) {
         try {
             this.edgeController.getDisorderIsADisorderChildren(id).forEach(edge -> {
                 if(edge.getId1()==edge.getId2())
                     return;
                 int childId = id == edge.getId1() ? edge.getId2() : edge.getId1();
-                HashMap<String, Object> child = new HashMap<>();
                 Disorder d = nodeController.findDisorder(childId);
-                child.put("name", d.getDisplayName());
-                child.put("id",d.getId());
-                List<HashMap<String, Object>> next = getDisorderChildren(childId);
-                if (next.size() > 0)
-                    child.put("children", next);
-                children.add(child);
+                nodes.put(d.getId(),new WebNode(d.getId(),d.getDisplayName(),"disorder"));
+                edges.add(new WebEdge(edge));
+                getDisorderChildren(childId, nodes, edges);
             });
         }catch (NullPointerException ignore){
         }
-        return children;
     }
 
     public SelectionResponse getSelection(SelectionRequest request) {
