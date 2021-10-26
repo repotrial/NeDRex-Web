@@ -52,7 +52,7 @@
                   </div>
                 </v-tooltip>
                 <SuggestionAutocomplete :suggestion-type="suggestionType"
-                                        target-node-type="drug"
+                                        target-node-type="drug" :add-all="true"
                                         @addToSelectionEvent="addToSelection"
                                         style="justify-self: flex-end;margin-left: auto"></SuggestionAutocomplete>
               </div>
@@ -249,6 +249,7 @@ export default {
         }
         return {value: node.group, text: node.label}
       })
+      out.push({value:type, text:"Drug"})
       if (!this.advancedOptions) {
         this.suggestionType = out[disorderIdx].value;
       }

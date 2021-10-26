@@ -167,7 +167,7 @@
                                                 @drugsEvent="$refs.validation.addDrugs"
                                                 :target-node-type="['gene', 'protein'][seedTypeId]"
                                                 @addToSelectionEvent="addToSelection" @subtypeSelection="subtypePopup"
-                                                @suggestionEvent="addToSuggestions"
+                                                @suggestionEvent="addToSuggestions" :add-all="true"
                                                 style="justify-self: flex-end;margin-left: auto"></SuggestionAutocomplete>
                       </div>
                       <NodeInput text="or provide Seed IDs by" @addToSelectionEvent="addToSelection"

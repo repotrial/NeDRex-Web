@@ -17,14 +17,22 @@
     <template v-slot:item="{ item }">
       <SuggestionElement :data="item" :source-type="suggestionType" :target-type="targetNodeType"></SuggestionElement>
     </template>
-    <template v-slot:append-outer v-if="sortSwitch">
-      <v-tooltip top>
+    <template v-slot:append-outer>
+      <v-tooltip top v-if="sortSwitch">
         <template v-slot:activator="{on, attrs}">
           <v-icon v-on="on" v-bind="attrs" @click="switchSorting()" style="width:25px">
             {{ sortings[sortingModel].icon }}
           </v-icon>
         </template>
         <span>{{ sortings[sortingModel].tooltip }}</span>
+      </v-tooltip>
+      <v-tooltip top v-if="addAll">
+        <template v-slot:activator="{on, attrs}">
+          <v-icon size="16pt" v-on="on" v-bind="attrs" @click="addAllSuggestions()" style="width:25px" :disabled="suggestions.data==null || suggestions.data.length===0">
+            fas fa-folder-plus
+          </v-icon>
+        </template>
+        <span>Add all of the current suggestions.</span>
       </v-tooltip>
     </template>
     <template v-slot:append-item>
@@ -50,6 +58,10 @@ export default {
   props: {
     targetNodeType: String,
     suggestionType: String,
+    addAll:{
+      type:Boolean,
+      default:false,
+    },
     index: Number,
     emitDrugs: {
       type: Boolean,
@@ -107,11 +119,7 @@ export default {
 
     suggestionModel: function (val) {
       if (val) {
-        if (this.suggestionType === "disorder" && val.type === "UMBRELLA_DISORDER") {
-          this.$emit("subtypeSelection", this.suggestionModel)
-        } else {
-          this.loadVals()
-        }
+       this.loadSuggestion()
       }
     },
   },
@@ -119,6 +127,14 @@ export default {
     switchSorting: function () {
       this.sortingModel = (this.sortingModel + 1) % this.sortings.length
       this.sortData(this.suggestions.data, this.sortings[this.sortingModel].value)
+    },
+
+    loadSuggestion: function(){
+      if (this.suggestionType === "disorder" && this.suggestionModel.type === "UMBRELLA_DISORDER") {
+        this.$emit("subtypeSelection", this.suggestionModel)
+      } else {
+        this.loadVals(this.suggestionModel)
+      }
     },
 
     loadDisorders: function (ids) {
@@ -135,35 +151,38 @@ export default {
         if (response.data !== undefined)
           return response.data
       }).then(data => {
-        this.loadByIds(data,ids)
+        this.loadByIds(data,this.suggestionModel,ids)
       }).catch(console.error)
     },
+    addAllSuggestions: function(){
+        this.suggestions.data.forEach(s=>this.loadVals(s))
+    },
 
-    loadVals: function () {
+    loadVals: function (val) {
       this.$http.post("getConnectedNodes", {
         sourceType: this.suggestionType,
         targetType: this.targetNodeType,
-        sugId: this.suggestionModel.sid,
+        sugId: val.sid,
         noloop: this.targetNodeType === this.suggestionType,
       }).then(response => {
         if (response.data !== undefined)
           return response.data
       }).then(data => {
-        this.loadByIds(data)
+        this.loadByIds(data,val)
       }).catch(console.error)
     },
-    loadByIds: function (data,disorders) {
-      this.$emit("suggestionEvent", this.suggestionModel)
+    loadByIds: function (data,val,disorders) {
+      this.$emit("suggestionEvent", val)
       let payload = {
         data: data,
-        origin: "SUG:" + this.suggestionModel.text + "[" + this.suggestionType + "]",
+        origin: "SUG:" + val.text + "[" + this.suggestionType + "]",
         source: this.suggestionType
       }
       if (this.index !== undefined)
         this.$emit("addToSelectionEvent", payload, this.index)
       else
-        this.$emit("addToSelectionEvent", payload,)
-      this.emitData({...this.suggestionModel}, disorders)
+        this.$emit("addToSelectionEvent", payload,val)
+      this.emitData({...val}, disorders)
       this.suggestionModel = undefined
     },
     emitData: function (val, ids) {

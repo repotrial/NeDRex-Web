@@ -206,7 +206,7 @@
                                                 @drugsEvent="$refs.validation.addDrugs"
                                                 @disorderEvent="saveDisorders" @subtypeSelection="subtypePopup"
                                                 :target-node-type="['gene', 'protein'][seedTypeId]"
-                                                @addToSelectionEvent="addToSelection"
+                                                @addToSelectionEvent="addToSelection" :add-all="true"
                                                 @suggestionEvent="addToSuggestions"
                                                 style="justify-self: flex-end;margin-left: auto"></SuggestionAutocomplete>
                       </div>
