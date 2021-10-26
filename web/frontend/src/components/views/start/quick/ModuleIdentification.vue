@@ -572,8 +572,8 @@ export default {
       advancedOptions: false,
       physicsOn: false,
 
-      geneDetailAttributes: ["Name", "SourceID", "SourceIDs", "Symbols", "Chromosome", "Genomic Location", "Synonyms", "Description"],
-      proteinDetailAttributes: ["Name", "SourceID", "SourceIDs", "Gene", "Synonyms", "Comments"],
+      geneDetailAttributes: ["Name", "SourceIDs", "Symbols", "Chromosome", "Genomic Location", "Synonyms", "Description"],
+      proteinDetailAttributes: ["Name", "SourceIDs", "Gene", "Synonyms", "Comments"],
 
       drugTargetPopup: false,
       rankingSelect: 1,

@@ -104,7 +104,6 @@ export default {
     if (this.options.toggled === undefined) {
       this.options.toggled = {}
     }
-    console.log(this.$global.metagraph)
   },
   methods: {
     toggleNode: function (nodeName) {

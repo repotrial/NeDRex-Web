@@ -42,7 +42,8 @@ public class GeneInteractsWithGene extends RepoTrialEdge implements Serializable
     private String nodeTwo;
 
     private String evidenceTypes;
-    private String sourceDatabases;
+//    private String sourceDatabases;
+    private String assertedBy;
 
 //    private String conservativeEvidences;
 //    @Column(columnDefinition = "TEXT")
@@ -105,7 +106,8 @@ public class GeneInteractsWithGene extends RepoTrialEdge implements Serializable
         values.put("node1", nodeOne);
         values.put("node2", nodeTwo);
         values.put("type", getType());
-        values.put("databases", getDatabases());
+//        values.put("databases", getDatabases());
+        values.put("assertedBy",getAssertedBy());
         values.put("evidenceTypes", getEvidenceTypes());
         values.put("id", id.getId1() + "-" + id.getId2());
         return values;
@@ -127,13 +129,22 @@ public class GeneInteractsWithGene extends RepoTrialEdge implements Serializable
     }
 
 
-    public List<String> getDatabases() {
-        return StringUtils.stringToList(sourceDatabases);
+//    public List<String> getDatabases() {
+//        return StringUtils.stringToList(sourceDatabases);
+//    }
+//
+//    public void setDatabases(List<String> databases) {
+//        this.sourceDatabases = StringUtils.listToString(databases);
+//    }
+
+    public List<String> getAssertedBy() {
+        return StringUtils.stringToList(assertedBy);
     }
 
-    public void setDatabases(List<String> databases) {
-        this.sourceDatabases = StringUtils.listToString(databases);
+    public void setAssertedBy(List<String> databases) {
+        this.assertedBy = StringUtils.listToString(databases);
     }
+
 
     public List<String> getEvidenceTypes() {
         return StringUtils.stringToList(evidenceTypes);
@@ -246,17 +257,30 @@ public class GeneInteractsWithGene extends RepoTrialEdge implements Serializable
         setEvidenceTypes(all);
     }
 
-    public void addDatabases(List<String> databases) {
-        List<String> all;
-        if (this.sourceDatabases == null) {
-            all = new LinkedList<>(databases);
-        } else {
-            all = getDatabases();
-            for (String t : databases) {
-                if (!all.contains(t))
-                    all.add(t);
-            }
+//    public void addDatabases(List<String> databases) {
+//        List<String> all;
+//        if (this.sourceDatabases == null) {
+//            all = new LinkedList<>(databases);
+//        } else {
+//            all = getDatabases();
+//            for (String t : databases) {
+//                if (!all.contains(t))
+//                    all.add(t);
+//            }
+//        }
+//        setDatabases(all);
+//    }
+public void addAssertedBy(List<String> databases) {
+    List<String> all;
+    if (this.assertedBy == null) {
+        all = new LinkedList<>(databases);
+    } else {
+        all = getAssertedBy();
+        for (String t : databases) {
+            if (!all.contains(t))
+                all.add(t);
         }
-        setDatabases(all);
     }
+    setAssertedBy(all);
+}
 }

@@ -146,7 +146,6 @@ const Utils =
 
     adjustMetaOptions(metagraph) {
       function drawEllipse({ctx, id, x, y, state: {selected, hover}, style, label}) {
-        console.log(style)
         return {
           // bellow arrows
           // primarily meant for nodes and the labels inside of their boundaries
@@ -168,7 +167,6 @@ const Utils =
 
       metagraph.options.options.groups.pathway["shape"] = "triangle";
       metagraph.options.options.groups.pathway["ctxRenderer"] = drawEllipse;
-      console.log(metagraph)
 
       return metagraph;
     }

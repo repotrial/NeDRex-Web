@@ -49,6 +49,8 @@ export default {
           return "DisGeNET"
         case "drugbank":
           return "DrugBank"
+        case "ctd":
+          return "CTD"
       }
       return db;
     },
@@ -67,6 +69,8 @@ export default {
           return "DisGeNET";
         case "drugbank":
           return "DrugBank"
+        case "ctd":
+          return "Comparative Toxicogenomics Database"
       }
       return db;
     }

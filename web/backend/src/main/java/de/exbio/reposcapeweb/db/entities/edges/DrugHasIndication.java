@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import de.exbio.reposcapeweb.db.entities.RepoTrialEdge;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
 import de.exbio.reposcapeweb.utils.Pair;
+import de.exbio.reposcapeweb.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,6 +18,7 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 
 
 /**
@@ -86,6 +88,8 @@ public class DrugHasIndication extends RepoTrialEdge implements Serializable {
     @Transient
     private String nodeTwo;
 
+    private String assertedBy;
+
     public DrugHasIndication() {
     }
 
@@ -118,6 +122,7 @@ public class DrugHasIndication extends RepoTrialEdge implements Serializable {
         values.put(("node1"),nodeOne);
         values.put(("node2"),nodeTwo);
         values.put(("type"),getType());
+        values.put("assertedBy",getAssertedBy());
         values.put(("id"),id.getId1()+"-"+id.getId2());
         return values;
     }
@@ -141,6 +146,14 @@ public class DrugHasIndication extends RepoTrialEdge implements Serializable {
             label2NameMap.put(allAttributes[i],attributeLabels[i]);
             name2labelMap.put(attributeLabels[i], allAttributes[i]);
         }
+    }
+
+    public List<String> getAssertedBy() {
+        return StringUtils.stringToList(assertedBy);
+    }
+
+    public void setAssertedBy(List<String> databases) {
+        this.assertedBy = StringUtils.listToString(databases);
     }
 
     public void setNodeNames(String node1, String node2){

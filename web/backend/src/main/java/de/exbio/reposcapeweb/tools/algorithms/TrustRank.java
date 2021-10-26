@@ -78,9 +78,9 @@ public class TrustRank implements Algorithm {
     public void prepareJobFiles(File tempDir, JobRequest req, Graph g, HashMap<Integer, Pair<String, String>> domainMap) {
         File seed = new File(tempDir, "seeds.list");
         if (req.selection)
-            utils.writeSeedFile(seed, req.nodes, domainMap,"",true);
+            utils.writeSeedFile(seed, req.nodes, domainMap, "", true);
         else
-            utils.writeSeedFile(req.params.get("type"), seed, g, domainMap,"",true);
+            utils.writeSeedFile(req.params.get("type"), seed, g, domainMap, "", true);
     }
 
     @Override
@@ -181,20 +181,19 @@ public class TrustRank implements Algorithm {
     private HashMap<Integer, HashMap<String, Object>> readResults(File f, HashMap<Integer, HashMap<String, Integer>> domainMap, String target) {
         HashMap<Integer, HashMap<String, Object>> out = new HashMap<>();
         HashMap<String, Integer> drugMap = domainMap.get(Graphs.getNode("drug"));
-        HashMap<String, Integer> seedMap = domainMap.get(Graphs.getNode(target));
         try (BufferedReader br = ReaderUtils.getBasicReader(f)) {
             String line = br.readLine();
             while ((line = br.readLine()) != null) {
                 LinkedList<String> split = StringUtils.split(line, "\t");
-                if (split.size() == 2) {
-                    int id = drugMap.get(split.getFirst());
+                int id = drugMap.get(split.getFirst());
+                double score = Double.parseDouble(split.get(1));
+                if (score > 0.0) {
                     out.put(id, new HashMap<>());
-                    out.get(id).put("score", Double.parseDouble(split.get(1)));
-                } else {
-                    out.put(seedMap.get(line), null);
+                    out.get(id).put("score", score);
                 }
             }
-        } catch (IOException e) {
+        } catch (
+                IOException e) {
             e.printStackTrace();
         }
         return out;

@@ -17,11 +17,11 @@ public class FilterService {
 
     public void writeToFile(NodeFilter nf, File f) {
         try {
-            BufferedWriter bw = new BufferedWriter(new FileWriter(new File(f.getAbsoluteFile() + ".distinct")));
+            BufferedWriter bw = new BufferedWriter(new FileWriter(f.getAbsoluteFile() + ".distinct"));
 
             nf.getDistinctMap().forEach((type, keys) -> keys.forEach((key, entries) -> entries.forEach(e -> {
                 try {
-                    bw.write(type.ordinal() + "\t" + nf.getDistinctID2Keys().get(type).get(key).getKey() + "\t" + nf.getDistinctID2Keys().get(type).get(key).getName()+ "\t"+ e.getNodeId() + "\t" + e.getName() + "\n");
+                    bw.write(type.ordinal() + "\t" + nf.getDistinctID2Keys().get(type).get(key).getKey() + "\t" + nf.getDistinctID2Keys().get(type).get(key).getName().trim()+ "\t"+ e.getNodeId() + "\t" + e.getName() + "\n");
                 } catch (IOException ioException) {
                     ioException.printStackTrace();
                 }
@@ -36,7 +36,7 @@ public class FilterService {
 
             nf.getUniqueMap().forEach((type, keys) -> keys.forEach((key, e) -> {
                 try {
-                    bw.write(type.ordinal() + "\t" + nf.getUniqueID2Keys().get(type).get(key).getKey() +"\t"+ nf.getUniqueID2Keys().get(type).get(key).getName()+ "\t" + e.getNodeId() + "\t" + e.getName() + "\n");
+                    bw.write(type.ordinal() + "\t" + nf.getUniqueID2Keys().get(type).get(key).getKey() +"\t"+ nf.getUniqueID2Keys().get(type).get(key).getName().trim()+ "\t" + e.getNodeId() + "\t" + e.getName() + "\n");
                 } catch (IOException ioException) {
                     ioException.printStackTrace();
                 }

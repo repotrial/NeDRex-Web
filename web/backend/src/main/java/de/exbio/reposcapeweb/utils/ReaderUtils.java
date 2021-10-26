@@ -36,7 +36,7 @@ public class ReaderUtils {
     }
 
     public static String getUrlContent(URL url) {
-        StringBuffer content = new StringBuffer();
+        StringBuilder content = new StringBuilder();
         BufferedReader br = getBufferedReader(url);
         String line = "";
         try {

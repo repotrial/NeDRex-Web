@@ -323,11 +323,14 @@ public class UpdateService {
             HashSet<String> attributes = null;
             try {
                 attributes = getAttributeNames(ReaderUtils.getUrlContent(new URL(env.getProperty("url.api.db") + n.name + "/attributes")));
-                if (!RepoTrialUtils.validateFormat(attributes, nodeController.getSourceAttributes(n.name))) {
+                if (!RepoTrialUtils.validateFormat((HashSet<String>) attributes.clone(), nodeController.getSourceAttributes(n.name))) {
                     valid.set(false);
-                    log.error("Node " + n.name + " changed schema in RepoTrialDB! please update the database-config file and internal structure.");
-                    log.error("DB-Schema: " + attributes.toString());
+                    log.error("Node " + n.name + " changed schema in NeDRexDB! please update the database-config file and internal structure.");
+                    log.error("DB-Schema: " + attributes);
                     log.error("Internal Schema: " + nodeController.getSourceAttributes(n.name));
+                    log.error("=> Missing: "+attributes.stream().filter(e->!nodeController.getSourceAttributes(n.name).contains(e)).collect(Collectors.toList()));
+                    HashSet<String> finalAttributes = attributes;
+                    log.error("=> Obsolete: "+nodeController.getSourceAttributes(n.name).stream().filter(e->!finalAttributes.contains(e)).collect(Collectors.toList()));
                 } else {
                     log.debug("Schema of " + n.name + " from RepoTrialDB is valid!");
                 }
@@ -341,11 +344,14 @@ public class UpdateService {
             if (e.original)
                 try {
                     attributes = getAttributeNames(ReaderUtils.getUrlContent(new URL(env.getProperty("url.api.db") + e.name + "/attributes")));
-                    if (!RepoTrialUtils.validateFormat(attributes, edgeController.getSourceAttributes(e.mapsTo))) {
+                    if (!RepoTrialUtils.validateFormat((HashSet<String>) attributes.clone(), edgeController.getSourceAttributes(e.mapsTo))) {
                         valid.set(false);
                         log.error("Edge " + e.name + " changed schema in RepoTrialDB! please update the database-config file and internal structure.");
                         log.error("DB-Schema: " + attributes.toString());
                         log.error("Internal Schema: " + edgeController.getSourceAttributes(e.mapsTo));
+                        log.error("=> Missing: "+attributes.stream().filter(edge->!edgeController.getSourceAttributes(e.mapsTo).contains(edge)).collect(Collectors.toList()));
+                        HashSet<String> finalAttributes = attributes;
+                        log.error("=> Obsolete: "+edgeController.getSourceAttributes(e.mapsTo).stream().filter(edge->!finalAttributes.contains(edge)).collect(Collectors.toList()));
                     } else {
                         log.debug("Schema of " + e.name + " from RepoTrialDB is valid!");
                     }
@@ -391,7 +397,7 @@ public class UpdateService {
 
         boolean updateSuccessful = true;
         File filterCacheDir = new File(env.getProperty("path.db.cache") + "filters");
-        String first = "protein_encoded_by";
+        String first = "protein_encoded_by_gene";
         HashSet<String> attributeDefinition = null;
         try {
             attributeDefinition = getAttributeNames(ReaderUtils.getUrlContent(new URL(env.getProperty("url.api.db") + first + "/attributes")));
@@ -786,6 +792,7 @@ public class UpdateService {
     public void buildMetadata() {
         try {
             String meta = ReaderUtils.getUrlContent(new URL(env.getProperty("url.api.db") + "static/metadata"));
+            System.out.println(meta);
             this.metadata = new Metadata(objectMapper.readValue(meta, HashMap.class));
             metadata.setLastCheck(this.lastCheck);
             metadata.setLastUpdate(this.lastUpdate);

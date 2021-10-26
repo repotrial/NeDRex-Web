@@ -123,7 +123,8 @@ public class ProteinInteractsWithProteinService {
                 }
                 GeneInteractsWithGene ggi = new GeneInteractsWithGene(gid1, gid2);
                 ggi.addEvidenceTypes(ppi.getEvidenceTypes());
-                ggi.addDatabases(ppi.getDatabases());
+//                ggi.addDatabases(ppi.getDatabases());
+                ggi.addAssertedBy(ppi.getAssertedBy());
                 if (!ggis.containsKey(gid1))
                     ggis.put(gid1, new HashMap<>());
                 ggis.get(gid1).put(gid2, ggi);

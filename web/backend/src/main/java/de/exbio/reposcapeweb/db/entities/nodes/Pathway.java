@@ -65,6 +65,8 @@ public class Pathway extends RepoTrialNode {
     @Column(nullable = false)
     private String displayName;
     private String domainIds;
+    private Integer taxid;
+
 
     public Pathway() {
 
@@ -77,6 +79,7 @@ public class Pathway extends RepoTrialNode {
         values.put("displayName", getDisplayName());
         values.put("type", getType());
         values.put("domainIds", getDomainIds());
+        values.put("taxid",getTaxid());
         values.put("primaryDomainId", getPrimaryDomainId());
         values.put("species", getSpecies());
         return values;
@@ -135,6 +138,14 @@ public class Pathway extends RepoTrialNode {
 
     @JsonSetter
     public void setType(String type) {
+    }
+
+    public Integer getTaxid() {
+        return taxid;
+    }
+
+    public void setTaxid(Integer taxid) {
+        this.taxid = taxid;
     }
 
     public void setValues(Pathway other) {

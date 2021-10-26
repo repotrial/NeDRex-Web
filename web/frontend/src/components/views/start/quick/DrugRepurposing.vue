@@ -669,9 +669,9 @@ export default {
       rankingGid: undefined,
       rankingJid: undefined,
       validationDrugCount: 0,
-      drugDetailAttributes: ["Name", "SourceID", "SourceIDs", "Formula", "Indication", "Description", "Synonyms"],
-      geneDetailAttributes: ["Name", "SourceID", "SourceIDs", "Symbols", "Chromosome", "Genomic Location", "Synonyms", "Description"],
-      proteinDetailAttributes: ["Name", "SourceID", "SourceIDs", "Gene", "Synonyms", "Comments"],
+      drugDetailAttributes: ["Name", "SourceIDs", "Formula", "Indication", "Description", "Synonyms"],
+      geneDetailAttributes: ["Name", "SourceIDs", "Symbols", "Chromosome", "Genomic Location", "Synonyms", "Description"],
+      proteinDetailAttributes: ["Name","SourceIDs", "Gene", "Synonyms", "Comments"],
       disorderIds: [],
 
       selectedSuggestions: [],

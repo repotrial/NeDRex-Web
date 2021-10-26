@@ -711,17 +711,17 @@ export default {
         this.$refs.tools.setSelectedNodeId(params.nodes[0])
         this.$refs.side.loadSelection(this.$refs.graph.identifyNeighbors(params.nodes[0]))
         this.$refs.side.loadDetails({
-          type: "node",
-          name: ["gene", "protein", "pathway", "disorder", "drug"][["gen", "pro", "pat", "dis", "dru"].indexOf(params.nodes[0].substring(0, 3))],
-          id: params.nodes[0].substring(4)
+          edge: false,
+          type: ["gene", "protein", "pathway", "disorder", "drug"][["gen", "pro", "pat", "dis", "dru"].indexOf(params.nodes[0].substring(0, 3))],
+          id: parseInt(params.nodes[0].substring(4))
         })
 
       } else if (params != null && params.edges != null && params.edges.length > 0) {
         this.$refs.side.loadDetails({
-          type: "edge",
-          name: params.edges[0].title,
-          id1: params.edges[0].from.substring(4),
-          id2: params.edges[0].to.substring(4)
+          edge: true,
+          type: params.edges[0].title,
+          id1: parseInt(params.edges[0].from.substring(4)),
+          id2: parseInt(params.edges[0].to.substring(4))
         })
       } else {
         this.$refs.side.loadSelection(this.$refs.graph.getAllNodes())

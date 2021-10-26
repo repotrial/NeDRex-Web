@@ -162,33 +162,7 @@ export default {
       if (item === "SourceIDs" || item === "SourceID" || item === "TargetID" || item === "TargetIDs" || item === "MemberOne" || item === "MemberTwo") {
         let split = value.split(".")
         switch (split[0]) {
-          case "entrez":
-            return split[1]
-          case "drugbank":
-            return split[1]
-          case "uniprot":
-            return split[1]
-          case "reactome":
-            return split[1]
-          case "mondo":
-            return split[1]
-          case "ncit":
-            return split[1]
-          case "mesh":
-            return split[1]
-          case "doid":
-            return split[1]
-          case "snomedct":
-            return split[1]
-          case "omim":
-            return split[1]
-          case "orpha":
-            return split[1]
-          case "umls":
-            return split[1]
-          case "meddra":
-            return split[1]
-          case "medgen":
+          case "entrez" | "drugbank" | "uniprot" | "reactome" | "mondo" | "ncit"| "mesh"| "doid"| "snomedct"| "omim"|"orpha"|"umls"|"meddra"|"medgen"|"drug_central":
             return split[1]
         }
       }
@@ -232,6 +206,8 @@ export default {
             return "BioPortal"
           case "medgen":
             return "NCBI"
+          case "drug_central":
+            return "DrugCentral"
         }
       }
       if (item === "ICD-10")
@@ -254,7 +230,7 @@ export default {
         let split = value.split(".")
         switch (split[0]) {
           case "entrez":
-            return 'https://www.ncbi.nlm.nih.gov/gene/' + split[1]
+            return 'https://www.ncbi.nlm.nih.gov/gene/?term=' + split[1]
           case "drugbank":
             return 'https://go.drugbank.com/drugs/' + split[1]
           case "uniprot":
@@ -281,6 +257,8 @@ export default {
             return "http://purl.bioontology.org/ontology/MEDDRA/" + split[1]
           case "medgen":
             return "https://www.ncbi.nlm.nih.gov/medgen/?term=" + split[1]
+          case "drug_central":
+            return "https://drugcentral.org/drugcard/"+split[1]
 
         }
       }
@@ -366,6 +344,8 @@ export default {
             return "#234979"
           case "medgen":
             return "#369"
+          case "drug_central":
+            return "#19516a"
         }
       }
 

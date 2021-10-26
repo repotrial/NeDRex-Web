@@ -104,7 +104,6 @@ public class ReposcapewebApplication extends SpringBootServletInitializer {
 
         toolService.validateTools();
         dbService.setImportInProgress(false);
-
         if (Boolean.parseBoolean(env.getProperty("update.onstartup"))) {
             updateService.scheduleDataUpdate();
         } else {

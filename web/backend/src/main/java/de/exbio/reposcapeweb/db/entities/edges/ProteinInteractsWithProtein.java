@@ -13,7 +13,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -88,7 +87,8 @@ public class ProteinInteractsWithProtein extends RepoTrialEdge implements Serial
     @Transient
     private String nodeTwo;
 
-    private String sourceDatabases;
+//    private String sourceDatabases;
+    private String assertedBy;
     private String evidenceTypes;
 
     public ProteinInteractsWithProtein() {
@@ -97,7 +97,8 @@ public class ProteinInteractsWithProtein extends RepoTrialEdge implements Serial
     @Override
     public HashMap<String, Object> getAsMap() {
         HashMap<String, Object> values = new HashMap<>();
-        values.put("databases", getDatabases());
+//        values.put("databases", getDatabases());
+        values.put("assertedBy", getAssertedBy());
         values.put("memberOne", getMemberOne());
         values.put("memberTwo", getMemberTwo());
         values.put("idOne", id.getId1());
@@ -168,12 +169,20 @@ public class ProteinInteractsWithProtein extends RepoTrialEdge implements Serial
         this.methods = StringUtils.listToString(methods);
     }
 
-    public List<String> getDatabases() {
-        return StringUtils.stringToList(sourceDatabases);
+//    public List<String> getDatabases() {
+//        return StringUtils.stringToList(sourceDatabases);
+//    }
+//
+//    public void setDatabases(List<String> databases) {
+//        this.sourceDatabases = StringUtils.listToString(databases);
+//    }
+
+    public List<String> getAssertedBy() {
+        return StringUtils.stringToList(assertedBy);
     }
 
-    public void setDatabases(List<String> databases) {
-        this.sourceDatabases = StringUtils.listToString(databases);
+    public void setAssertedBy(List<String> databases) {
+        this.assertedBy = StringUtils.listToString(databases);
     }
 
     public List<String> getEvidenceTypes() {
@@ -185,7 +194,8 @@ public class ProteinInteractsWithProtein extends RepoTrialEdge implements Serial
     }
 
     public void setValues(ProteinInteractsWithProtein other) {
-        this.sourceDatabases = other.sourceDatabases;
+//        this.sourceDatabases = other.sourceDatabases;
+        this.assertedBy = other.assertedBy;
         this.evidenceTypes = other.evidenceTypes;
         this.memberOne = other.memberOne;
         this.memberTwo = other.memberTwo;
