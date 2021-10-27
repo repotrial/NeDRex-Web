@@ -127,6 +127,7 @@ public class JobController {
                 switch (sameJob.getState()) {
                     case DONE -> {
                         copyResults(j.getJobId(), sameJob, false);
+                        createThumbnail(j);
                         return;
                     }
                     case EXECUTING, INITIALIZED, QUEUED, NOCHANGE -> {
@@ -194,7 +195,7 @@ public class JobController {
     }
 
 
-    public void finishJob(String id) {
+    public boolean finishJob(String id) {
         Job j = jobs.get(id);
         try {
             HashMap<Integer, HashMap<String, Integer>> domainIds = new HashMap<>();
@@ -218,6 +219,7 @@ public class JobController {
             log.error("Error on finishing job: " + id);
             e.printStackTrace();
             j.setStatus(Job.JobState.ERROR);
+            return false;
         }
         try {
             toolService.clearDirectories(j, historyController.getJobPath(j));
@@ -225,10 +227,12 @@ public class JobController {
             log.error("Error on finishing job: " + id);
             e.printStackTrace();
             j.setStatus(Job.JobState.ERROR);
+            return false;
         }
         save(j);
         socketController.setJobUpdate(j);
         checkWaitingJobs(j);
+        return true;
     }
 
     private void checkWaitingJobs(Job j) {
@@ -253,8 +257,16 @@ public class JobController {
             e.printStackTrace();
         }
         dependent.setUpdate(j.getUpdate());
-        if (notify)
+        if (notify) {
+                //TODO just copy thumbnail?
+            createThumbnail(dependent);
             socketController.setJobUpdate(dependent);
+        }
+    }
+
+    public void createThumbnail(Job j){
+        String gid = j.getDerivedGraph();
+        graphService.createThumbnail(gid, graphService.getThumbnail(gid));
     }
 
 

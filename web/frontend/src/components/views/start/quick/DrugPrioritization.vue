@@ -283,7 +283,7 @@
                   </v-data-table>
                 </v-col>
                 <v-col>
-                  <Network ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle"
+                  <Network ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle" :show-vis-option="showVisOption"
                            :legend="results.targets.length>0" :tools="results.targets.length>0" :secondaryViewer="true"
                            @loadIntoAdvancedEvent="$emit('graphLoadEvent',{post: {id: jobs[currentJid].result}})">
                     <template v-slot:legend v-if="results.targets.length>0">
@@ -449,7 +449,12 @@
           >
             Back
           </v-btn>
-
+          <v-tooltip top>
+            <template v-slot:activator="{attrs, on}">
+              <v-btn text v-bind="attrs" v-on="on" @click="$emit('graphLoadEvent',{post: {id: jobs[currentJid].result}})" :disabled="jobs[currentJid]==null">Advanced</v-btn>
+            </template>
+            <span>Load this result into the advanced view, which opens as a new tab.</span>
+          </v-tooltip>
           <v-btn text @click="makeStep('continue')" :disabled="currentGid==null">
             Validate
           </v-btn>
@@ -575,6 +580,7 @@ export default {
       nameOptions: [],
       graphName: "",
       loadingTrialData: false,
+      showVisOption: false
     }
   },
 
@@ -603,6 +609,7 @@ export default {
       this.graphName = undefined
       this.nameOptions=[]
       this.seedOrigin = {}
+      this.showVisOption = false
       if (this.$refs.graph)
         this.$refs.graph.reload()
     },
@@ -995,6 +1002,7 @@ export default {
         this.getGraph().then(graph => {
           graph.loadNetworkById(graphId).then(() => {
             graph.showLoops(false)
+            this.showVisOption=!this.graphConfig.visualized
           })
         })
     }

@@ -319,7 +319,7 @@
                 <v-col>
                   <Network ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle"
                            :legend="results.targets.length>0" :tools="results.targets.length>0" :secondaryViewer="true"
-                           @loadIntoAdvancedEvent="$emit('graphLoadEvent',{post: {id: currentGid}})">
+                           @loadIntoAdvancedEvent="$emit('graphLoadEvent',{post: {id: currentGid}})" :show-vis-option="showVisOption">
                     <template v-slot:legend v-if="results.targets.length>0">
                       <v-card style="width: 15vw; max-width: 17vw; padding-top: 35px">
                         <v-list>
@@ -419,7 +419,18 @@
           >
             Back
           </v-btn>
-
+          <v-tooltip top>
+            <template v-slot:activator="{attrs, on}">
+              <v-btn text v-bind="attrs" v-on="on" @click="$emit('graphLoadNewTabEvent',{post: {id: currentGid}})" :disabled="currentGid==null">Advanced</v-btn>
+            </template>
+            <span>Load this result into the advanced view, which opens as a new tab.</span>
+          </v-tooltip>
+          <v-tooltip top>
+            <template v-slot:activator="{attrs, on}">
+              <v-btn text v-bind="attrs" v-on="on" @click="loadDrugTargets" :disabled="results.targets.length===0">Drug Ranking</v-btn>
+            </template>
+            <span>Use the results of this execution to now identify potential drug candidates.</span>
+          </v-tooltip>
           <v-btn text @click="makeStep('continue')" :disabled="currentGid==null">
             Validate
           </v-btn>
@@ -555,6 +566,7 @@ export default {
       currentJid: undefined,
       currentGid: undefined,
       graphConfig: {visualized: false},
+      showVisOption: false,
       uid: undefined,
       seedTypeId: undefined,
       seeds: [],
@@ -604,6 +616,7 @@ export default {
       this.currentJid = undefined
       this.currentGid = undefined
       this.graphName = undefined
+      this.showVisOption = false
       this.nameOptions=[]
       this.results.targets = []
       this.results.drugs = []
@@ -995,6 +1008,7 @@ export default {
             graph.showLoops(false)
             let seedIds = this.seeds.map(s => s.id)
             graph.modifyGroups(this.results.targets.filter(n => seedIds.indexOf(n.id) > -1).map(n => ["gen_", "pro_"][this.seedTypeId] + n.id), ["seedGene", "seedProtein"][this.seedTypeId])
+            this.showVisOption=!this.graphConfig.visualized
           })
         })
     },

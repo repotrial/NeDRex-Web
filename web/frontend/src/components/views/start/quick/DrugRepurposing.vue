@@ -362,7 +362,7 @@
                 <v-col>
                   <Network ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle"
                            :progress="resultProgress" :legend="resultProgress===100" :tools="resultProgress===100"
-                           :secondaryViewer="true"
+                           :secondaryViewer="true" :show-vis-option="showVisOption"
                            @loadIntoAdvancedEvent="$emit('graphLoadEvent',{post: {id: rankingGid}})">
                     <template v-slot:legend v-if="results.drugs.length>0">
                       <v-card style="width: 15vw; max-width: 20vw; padding-top: 35px">
@@ -545,7 +545,12 @@
           >
             Back
           </v-btn>
-
+          <v-tooltip top>
+            <template v-slot:activator="{attrs, on}">
+              <v-btn text v-bind="attrs" v-on="on" @click="$emit('graphLoadNewTabEvent',{post: {id: rankingGid}})" :disabled="rankingGid==null">Advanced</v-btn>
+            </template>
+            <span>Load this result into the advanced view, which opens as a new tab.</span>
+          </v-tooltip>
           <v-btn text @click="makeStep('continue')" :disabled="rankingGid ==null">
             Validate
           </v-btn>
@@ -678,6 +683,7 @@ export default {
       namePopup: false,
       nameOptions: [],
       graphName: "",
+      showVisOption: false,
       loadingTrialData: false,
     }
   },
@@ -712,6 +718,7 @@ export default {
       this.rankingGid = undefined
       this.graphName = undefined
       this.nameOptions = []
+      this.showVisOption=false
       this.resultProgress = 0
       this.disorderIds = []
       this.validationDrugCount = 0
@@ -1180,6 +1187,7 @@ export default {
             this.resultProgress += 3
             graph.modifyGroups(this.results.targets.filter(n => seedIds.indexOf(n.id) > -1).map(n => ["gen_", "pro_"][this.seedTypeId] + n.id), ["seedGene", "seedProtein"][this.seedTypeId])
             this.resultProgress += 2
+            this.showVisOption=!this.graphConfig.visualized
           })
         })
       }

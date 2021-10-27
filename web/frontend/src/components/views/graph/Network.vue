@@ -16,14 +16,17 @@
           </div>
           <i v-else>No network has been selected yet!</i>
         </template>
-        <div v-else-if="!show && !loading && !secondaryViewer">
-          <v-card v-if="nodeSet !== undefined" :img="getThumbnail()" height="20vh">
+        <div v-else-if="!show && !loading && (!secondaryViewer || showVisOption)">
+          <v-card v-if="nodeSet !== undefined || showVisOption" :img="getThumbnail(this.gid)" height="20vh">
             <v-card-title>
+              <span style="background-color: rgba(255,255,255,0.9)">
               <i>Create a View for the Network</i>
               <v-btn icon @click="visualize();">
                 <v-icon>fas fa-play</v-icon>
               </v-btn>
+                </span>
             </v-card-title>
+            <v-progress-circular v-if="!thumbnailDone" indeterminate></v-progress-circular>
           </v-card>
           <div v-else>
             <i>Create a View for the Network</i>
@@ -151,6 +154,10 @@ export default {
     configuration: Object,
     startGraph: false,
     progress: Number,
+    showVisOption: {
+      type: Boolean,
+      default: false,
+    },
     secondaryViewer: false,
     windowStyle: {
       height: '75vh',
@@ -182,10 +189,12 @@ export default {
       clickParams: {t0: 0, threshold: 250},
       selectMode: false,
       keepLegends: false,
+      thumbnailDone: false,
     }
   },
 
   created() {
+    this.$socket.$on("NetworkThumbnailReady", this.thumbnailReady)
     this.physics = false
     this.colors = {bar: {backend: "#6db33f", vis: 'primary', error: 'red darken-2'}}
     this.configuration.visualized = false
@@ -213,6 +222,7 @@ export default {
       this.toggleSelectMode(false)
       this.setPhysics(false)
       this.nodeSet = undefined
+      this.thumbnailDone = false
       this.edgeSet = undefined
     },
 
@@ -260,9 +270,11 @@ export default {
       this.disableAdvancedLoading = !!disableAdvancedLoading
       if (gid === this.gid)
         return
+      this.gid = gid
       this.reset()
       this.setLoading(false)
       this.setWaiting(true)
+      this.getThumbnail(gid)
       return this.$http.getGraph(gid).then(this.setGraph).catch(err => {
         this.loadingColor = this.colors.bar.error;
         console.error(err)
@@ -533,20 +545,31 @@ export default {
       return neighbors
     },
     setSelection: function (nodes) {
-      if(this.$refs.network !=null)
-      if (nodes !== undefined && nodes[0] !== undefined) {
-        this.$refs.network.selectNodes(nodes)
-        this.identifyNeighbors(nodes[0])
-        this.zoomToNode(nodes[0])
-      } else {
-        this.$refs.network.unselectAll()
-        this.$emit("selectionEvent")
-        this.focusNode()
-      }
+      if (this.$refs.network != null)
+        if (nodes !== undefined && nodes[0] !== undefined) {
+          this.$refs.network.selectNodes(nodes)
+          this.identifyNeighbors(nodes[0])
+          this.zoomToNode(nodes[0])
+        } else {
+          this.$refs.network.unselectAll()
+          this.$emit("selectionEvent")
+          this.focusNode()
+        }
     }
     ,
-    getThumbnail: function () {
-      return CONFIG.HOST_URL + CONFIG.CONTEXT_PATH + "/api/getThumbnailPath?gid=" + this.readGIDfromRoute()
+    getThumbnail: function (gid) {
+      if (this.gid === this.readGIDfromRoute())
+        this.thumbnailDone = true;
+      if (!this.thumbnailDone) {
+        this.$socket.subscribeThumbnail(gid, "NetworkThumbnailReady")
+      } else
+        return CONFIG.HOST_URL + CONFIG.CONTEXT_PATH + "/api/getThumbnailPath?gid=" + gid
+    },
+
+    thumbnailReady: function (response) {
+      let params = JSON.parse(response)
+      this.thumbnailDone = true
+      this.$socket.unsubscribeThumbnail(params.gid)
     },
 
     getAllNodes: function () {
@@ -567,11 +590,11 @@ export default {
     },
 
     zoomToNode: function (nodeId) {
-      if(this.$refs.network !=null)
-      if (nodeId !== undefined) {
-        this.focusNode(nodeId)
-        this.$refs.network.moveTo({scale: 0.9})
-      }
+      if (this.$refs.network != null)
+        if (nodeId !== undefined) {
+          this.focusNode(nodeId)
+          this.$refs.network.moveTo({scale: 0.9})
+        }
     },
     focusNode: function (nodeId) {
 

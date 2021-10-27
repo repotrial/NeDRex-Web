@@ -162,12 +162,12 @@ public class RequestController {
     @RequestMapping(value = "/getConnectedNodes", method = RequestMethod.POST)
     @ResponseBody
     public String getConnectedNodes(@RequestBody HashMap<String, Object> request) {
-            Collection<Integer> ids = request.get("sugId") != null ? (request.get("sugId").toString().indexOf('_') > -1 ? webGraphService.getSuggestionEntry(null, request.get("sourceType").toString(), request.get("sugId").toString()) : Collections.singletonList(Integer.parseInt(request.get("sugId").toString()))): ((ArrayList<Integer>) request.get("ids"));
-            if ((boolean) request.get("noloop")) {
-                LinkedList<Object> nodes = webGraphService.getDirectNodes(ids, request);
-                return toJson(nodes);
-            }
-            return toJson(webGraphService.getConnectedNodes(request.get("sourceType").toString(), request.get("targetType").toString(), ids));
+        Collection<Integer> ids = request.get("sugId") != null ? (request.get("sugId").toString().indexOf('_') > -1 ? webGraphService.getSuggestionEntry(null, request.get("sourceType").toString(), request.get("sugId").toString()) : Collections.singletonList(Integer.parseInt(request.get("sugId").toString()))) : ((ArrayList<Integer>) request.get("ids"));
+        if ((boolean) request.get("noloop")) {
+            LinkedList<Object> nodes = webGraphService.getDirectNodes(ids, request);
+            return toJson(nodes);
+        }
+        return toJson(webGraphService.getConnectedNodes(request.get("sourceType").toString(), request.get("targetType").toString(), ids));
     }
 
     @RequestMapping(value = "/mapToDomainIds", method = RequestMethod.POST)
@@ -411,7 +411,11 @@ public class RequestController {
     @ResponseBody
     public void finishedJob(@RequestParam("id") String id) {
         log.info("Job " + id + " was just finished.");
-        jobController.finishJob(id);
+        boolean success = jobController.finishJob(id);
+        if (success) {
+            String gid = jobController.getJobById(id).getDerivedGraph();
+            webGraphService.createThumbnail(gid, webGraphService.getThumbnail(gid));
+        }
     }
 
     @RequestMapping(value = "/submitJob", method = RequestMethod.POST)

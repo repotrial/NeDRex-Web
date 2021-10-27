@@ -8,7 +8,7 @@
           }})</span></v-card-title>
         <v-container ref="history">
           <v-row>
-            <v-col :style="{width: selectedId ?'50vw':'', maxWidth: selectedId ? '50vw' :''}">
+            <v-col :style="{width: selectedId ?'45vw':'', maxWidth: selectedId ? '45vw' :''}">
               <v-treeview
                 :items="getHistoryList()"
                 hoverable
