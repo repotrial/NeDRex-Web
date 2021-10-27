@@ -205,17 +205,8 @@
 
 
           </v-card>
-          <v-btn
-            color="primary"
-            @click="makeStep('continue')"
-            :disabled="seedTypeId<0 || $refs.seedTable == null || $refs.seedTable.getSeeds().length===0"
-          >
-            Continue
-          </v-btn>
-
-          <v-btn text @click="makeStep('cancel')">
-            Cancel
-          </v-btn>
+          <ButtonCancel @click="makeStep"></ButtonCancel>
+          <ButtonNext @click="makeStep" :disabled="seedTypeId<0 || $refs.seedTable == null || $refs.seedTable.getSeeds().length===0"></ButtonNext>
         </v-stepper-content>
 
         <v-stepper-content step="2">
@@ -224,21 +215,9 @@
                                socket-event="quickModuleFinishedEvent" :seed-type-id="seedTypeId"
                                @algorithmSelectedEvent="acceptAlgorithmSelectEvent"
                                @jobEvent="readJob"></MIAlgorithmSelect>
-            <v-btn text @click="makeStep('back')">
-              Back
-            </v-btn>
-
-            <v-btn
-              @click="makeStep('continue')"
-              color="primary"
-              :disabled=" !algorithmSelected  || ($refs.algorithms.getAlgorithmMethod()==='bicon' && $refs.algorithms.getAlgorithmModels().exprFile ===undefined)"
-            >
-              Run
-            </v-btn>
-
-            <v-btn text @click="makeStep('cancel')">
-              Cancel
-            </v-btn>
+            <ButtonCancel @click="makeStep"></ButtonCancel>
+            <ButtonBack @click="makeStep"></ButtonBack>
+            <ButtonNext @click="makeStep" label="RUN" :disabled=" !algorithmSelected  || ($refs.algorithms.getAlgorithmMethod()==='bicon' && $refs.algorithms.getAlgorithmModels().exprFile ===undefined)"></ButtonNext>
           </template>
         </v-stepper-content>
 
@@ -347,104 +326,30 @@
                       </v-card>
                     </template>
                     <template v-slot:tools v-if="results.targets.length>0">
-                      <v-card elevation="3" style="width: 15vw; max-width: 17vw; padding-top: 35px">
-                        <v-container>
-                          <v-list ref="list" style="margin-top: 10px;">
-                            <v-tooltip left>
-                              <template v-slot:activator="{on, attrs}">
-                                <v-list-item v-on="on" v-bind="attrs">
-                                  <v-list-item-action>
-                                    <v-chip outlined v-on:click="$refs.graph.setSelection()">
-                                      <v-icon left>fas fa-globe</v-icon>
-                                      Overview
-                                    </v-chip>
-                                  </v-list-item-action>
-                                </v-list-item>
-                              </template>
-                              <span>Fits the view to the whole network.</span>
-                            </v-tooltip>
-                            <v-tooltip left>
-                              <template v-slot:activator="{on, attrs}">
-                                <v-list-item v-on="on" v-bind="attrs">
-                                  <v-list-item-action-text>Enable node interactions</v-list-item-action-text>
-                                  <v-list-item-action>
-                                    <v-switch v-model="physicsOn"
-                                              @click="$refs.graph.setPhysics(physicsOn)"></v-switch>
-                                  </v-list-item-action>
-                                </v-list-item>
-                              </template>
-                              <span>This option enables a physics based layouting where nodes and <br>edges interact with each other. Be careful on large graphs.</span>
-                            </v-tooltip>
-                            <v-tooltip left>
-                              <template v-slot:activator="{on, attrs}">
-                                <v-list-item v-on="on" v-bind="attrs">
-                                  <v-list-item-action>
-                                    <v-chip outlined v-if="currentGid"
-                                            style="margin-top:15px"
-                                            @click="$emit('graphLoadNewTabEvent',{post: {id: currentGid}})">
-                                      <v-icon left>fas fa-angle-double-right</v-icon>
-                                      To Advanced View
-                                    </v-chip>
-                                  </v-list-item-action>
-                                </v-list-item>
-                              </template>
-                              <span>Opens a new tab with an advanced view of the current network.</span>
-                            </v-tooltip>
-                            <v-tooltip left>
-                              <template v-slot:activator="{on, attrs}">
-                                <v-list-item v-on="on" v-bind="attrs">
-                                  <v-list-item-action>
-                                    <v-chip outlined v-show="results.targets.length>0" style="margin-top:15px"
-                                            @click="loadDrugTargets">
-                                      <v-icon left>fas fa-angle-double-right</v-icon>
-                                      Continue to Drug-Ranking
-                                    </v-chip>
-                                  </v-list-item-action>
-                                </v-list-item>
-                              </template>
-                              <span>Opens a dialog for the selection of seed nodes for a subsequent drug prioritization execution.</span>
-                            </v-tooltip>
-                          </v-list>
-                        </v-container>
-                      </v-card>
+                      <Tools :physics="true" :cc="false" :loops="false"
+                             @toggleOptionEvent="toggleToolOption" @clickOptionEvent="clickToolOption"></Tools>
                     </template>
                   </Network>
                 </v-col>
               </v-row>
             </v-container>
           </v-card>
-          <v-btn
-            color="primary"
-            @click="makeStep('back')"
-          >
-            Back
-          </v-btn>
+          <ButtonCancel @click="makeStep"></ButtonCancel>
+          <ButtonBack @click="makeStep"></ButtonBack>
+          <ButtonNext @click="makeStep" label="VALIDATE" :disabled="currentGid==null"></ButtonNext>
           <v-tooltip top>
             <template v-slot:activator="{attrs, on}">
-              <v-btn text v-bind="attrs" v-on="on" @click="$emit('graphLoadNewTabEvent',{post: {id: currentGid}})" :disabled="currentGid==null">Advanced</v-btn>
-            </template>
-            <span>Load this result into the advanced view, which opens as a new tab.</span>
-          </v-tooltip>
-          <v-tooltip top>
-            <template v-slot:activator="{attrs, on}">
-              <v-btn text v-bind="attrs" v-on="on" @click="loadDrugTargets" :disabled="results.targets.length===0">Drug Ranking</v-btn>
+              <v-btn v-bind="attrs" v-on="on" @click="loadDrugTargets" color="primary" :disabled="results.targets.length===0"><v-icon left>fas fa-angle-double-right</v-icon>Drug Ranking</v-btn>
             </template>
             <span>Use the results of this execution to now identify potential drug candidates.</span>
           </v-tooltip>
-          <v-btn text @click="makeStep('continue')" :disabled="currentGid==null">
-            Validate
-          </v-btn>
+          <ButtonAdvanced @click="$emit('graphLoadNewTabEvent',{post: {id: currentGid}})" :disabled="currentGid==null"></ButtonAdvanced>
         </v-stepper-content>
         <v-stepper-content step="4">
           <Validation ref="validation" :step="4" :seed-type-id="seedTypeId" :module="results.targets"
                       @drugCountUpdate="updateDrugCount" @printNotificationEvent="printNotification"></Validation>
-          <v-btn text @click="makeStep('back')">
-            Back
-          </v-btn>
-
-          <v-btn text @click="makeStep('cancel')">
-            Restart
-          </v-btn>
+          <ButtonCancel @click="makeStep"></ButtonCancel>
+          <ButtonBack @click="makeStep" label="RESULTS" save></ButtonBack>
         </v-stepper-content>
       </v-stepper-items>
       <v-dialog v-model="namePopup"
@@ -547,6 +452,11 @@ import LabeledSwitch from "@/components/app/input/LabeledSwitch";
 import MIAlgorithmSelect from "@/components/start/quick/MIAlgorithmSelect";
 import Validation from "@/components/start/quick/Validation";
 import DisorderHierarchyDialog from "@/components/start/quick/DisorderHierarchyDialog";
+import Tools from "@/components/views/graph/Tools";
+import ButtonNext from "@/components/start/quick/ButtonNext";
+import ButtonCancel from "@/components/start/quick/ButtonCancel";
+import ButtonBack from "@/components/start/quick/ButtonBack";
+import ButtonAdvanced from "@/components/start/quick/ButtonAdvanced";
 
 export default {
   name: "ModuleIdentification",
@@ -997,6 +907,23 @@ export default {
     focus: function () {
       this.$emit("focusEvent")
     },
+    toggleToolOption: function (option, value) {
+      if (option === "physics")
+        this.$refs.graph.setPhysics(value);
+      if (option === "loops")
+        this.$refs.graph.showLoops(value)
+      if (option === "unconnected")
+        this.$refs.graph.showUnconnected(value)
+      if (option === "isolation")
+        this.$refs.graph.graphViewEvent(value)
+      if (option === 'shadow')
+        this.$refs.graph.setShadow(value)
+    },
+
+    clickToolOption: function (option) {
+      if (option === "fit")
+        this.$refs.graph.setSelection()
+    },
     loadGraph: function (graphId) {
       if (this.namePopup)
         setTimeout(() => {
@@ -1004,6 +931,7 @@ export default {
         }, 500)
       else
         this.getGraph().then(graph => {
+          this.showVisOption=false
           graph.loadNetworkById(graphId).then(() => {
             graph.showLoops(false)
             let seedIds = this.seeds.map(s => s.id)
@@ -1016,6 +944,11 @@ export default {
   ,
 
   components: {
+    ButtonAdvanced,
+    ButtonBack,
+    ButtonCancel,
+    ButtonNext,
+    Tools,
     DisorderHierarchyDialog,
     EntryDetails,
     LabeledSwitch,

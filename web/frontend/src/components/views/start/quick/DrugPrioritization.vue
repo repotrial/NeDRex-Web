@@ -200,17 +200,8 @@
               </v-row>
             </v-container>
           </v-card>
-          <v-btn
-            color="primary"
-            @click="makeStep('continue')"
-            :disabled="seedTypeId<0 || $refs.seedTable ==null || $refs.seedTable.getSeeds().length===0"
-          >
-            Continue
-          </v-btn>
-
-          <v-btn text @click="makeStep('cancel')">
-            Cancel
-          </v-btn>
+          <ButtonCancel @click="makeStep"></ButtonCancel>
+          <ButtonNext :disabled="seedTypeId<0 || $refs.seedTable ==null || $refs.seedTable.getSeeds().length===0" @click="makeStep"></ButtonNext>
         </v-stepper-content>
 
         <v-stepper-content step="2">
@@ -218,21 +209,10 @@
                              :seed-type-id="seedTypeId"
                              @algorithmSelectedEvent="acceptAlgorithmSelectEvent"
                              @jobEvent="readJob" socket-event="quickRankingFinishedEvent"></DPAlgorithmSelect>
-          <v-btn text @click="makeStep('back')">
-            Back
-          </v-btn>
 
-          <v-btn
-            @click="makeStep('continue')"
-            color="primary"
-            :disabled=" !algorithmSelected"
-          >
-            Run
-          </v-btn>
-
-          <v-btn text @click="makeStep('cancel')">
-            Cancel
-          </v-btn>
+          <ButtonCancel @click="makeStep"></ButtonCancel>
+          <ButtonBack @click="makeStep"></ButtonBack>
+          <ButtonNext @click="makeStep" :disabled=" !algorithmSelected" label="RUN"></ButtonNext>
 
         </v-stepper-content>
 
@@ -310,52 +290,8 @@
                       </v-card>
                     </template>
                     <template v-slot:tools v-if="results.targets.length>0">
-                      <v-card elevation="3" style="width: 13vw; max-width: 13vw; padding-top: 35px">
-                        <v-container>
-                          <v-list ref="list" style="margin-top: 10px;">
-                            <v-tooltip left>
-                              <template v-slot:activator="{on, attrs}">
-                                <v-list-item v-on="on" v-bind="attrs">
-                                  <v-list-item-action>
-                                    <v-chip outlined v-on:click="$refs.graph.setSelection()">
-                                      <v-icon left>fas fa-globe</v-icon>
-                                      Overview
-                                    </v-chip>
-                                  </v-list-item-action>
-                                </v-list-item>
-                              </template>
-                              <span>Fits the view to the whole network.</span>
-                            </v-tooltip>
-                            <v-tooltip left>
-                              <template v-slot:activator="{on, attrs}">
-                                <v-list-item v-on="on" v-bind="attrs">
-                                  <v-list-item-action-text>Enable node interactions</v-list-item-action-text>
-                                  <v-list-item-action>
-                                    <v-switch v-model="physicsOn"
-                                              @click="$refs.graph.setPhysics(physicsOn)"></v-switch>
-                                  </v-list-item-action>
-                                </v-list-item>
-                              </template>
-                              <span>This option enables a physics based layouting where nodes and <br>edges interact with each other. Be careful on large graphs.</span>
-                            </v-tooltip>
-                            <v-tooltip left>
-                              <template v-slot:activator="{on, attrs}">
-                                <v-list-item v-on="on" v-bind="attrs">
-                                  <v-list-item-action>
-                                    <v-chip outlined v-if="jobs[currentJid] && jobs[currentJid].result"
-                                            style="margin-top:15px"
-                                            @click="$emit('graphLoadNewTabEvent',{post: {id: jobs[currentJid].result}})">
-                                      <v-icon left>fas fa-angle-double-right</v-icon>
-                                      To Advanced View
-                                    </v-chip>
-                                  </v-list-item-action>
-                                </v-list-item>
-                              </template>
-                              <span>Opens a new tab with an advanced view of the current network.</span>
-                            </v-tooltip>
-                          </v-list>
-                        </v-container>
-                      </v-card>
+                      <Tools :physics="true" :cc="false" :loops="false"
+                             @toggleOptionEvent="toggleToolOption" @clickOptionEvent="clickToolOption"></Tools>
                     </template>
 
                   </Network>
@@ -443,32 +379,16 @@
               </v-row>
             </v-container>
           </v-card>
-          <v-btn
-            color="primary"
-            @click="makeStep('back')"
-          >
-            Back
-          </v-btn>
-          <v-tooltip top>
-            <template v-slot:activator="{attrs, on}">
-              <v-btn text v-bind="attrs" v-on="on" @click="$emit('graphLoadEvent',{post: {id: jobs[currentJid].result}})" :disabled="jobs[currentJid]==null">Advanced</v-btn>
-            </template>
-            <span>Load this result into the advanced view, which opens as a new tab.</span>
-          </v-tooltip>
-          <v-btn text @click="makeStep('continue')" :disabled="currentGid==null">
-            Validate
-          </v-btn>
+          <ButtonCancel label="RESTART" @click="makeStep"></ButtonCancel>
+          <ButtonBack @click="makeStep"></ButtonBack>
+          <ButtonNext @click="makeStep" label="VALIDATE" :disabled="currentGid == null"></ButtonNext>
+          <ButtonAdvanced @click="$emit('graphLoadNewTabEvent',{post: {id: jobs[currentJid].result}})" :disabled="currentGid==null"></ButtonAdvanced>
         </v-stepper-content>
         <v-stepper-content step="4">
           <Validation ref="validation" :step="4" :seed-type-id="seedTypeId" :ranking="results.targets"
                       @drugCountUpdate="updateDrugCount" @printNotificationEvent="printNotification"></Validation>
-          <v-btn text @click="makeStep('back')">
-            Back
-          </v-btn>
-
-          <v-btn text @click="makeStep('cancel')">
-            Restart
-          </v-btn>
+          <ButtonCancel label="RESTART" @click="makeStep"></ButtonCancel>
+          <ButtonBack @click="makeStep" save label="RESULTS"></ButtonBack>
         </v-stepper-content>
       </v-stepper-items>
       <v-dialog v-model="namePopup"
@@ -531,6 +451,11 @@ import LabeledSwitch from "@/components/app/input/LabeledSwitch";
 import DPAlgorithmSelect from "@/components/start/quick/DPAlgorithmSelect";
 import Validation from "@/components/start/quick/Validation";
 import DisorderHierarchyDialog from "@/components/start/quick/DisorderHierarchyDialog";
+import Tools from "@/components/views/graph/Tools";
+import ButtonBack from "@/components/start/quick/ButtonBack";
+import ButtonNext from "@/components/start/quick/ButtonNext";
+import ButtonCancel from "@/components/start/quick/ButtonCancel";
+import ButtonAdvanced from "@/components/start/quick/ButtonAdvanced";
 
 export default {
   name: "DrugRepurposing",
@@ -927,6 +852,23 @@ export default {
     saveDisorders: function (list) {
       this.disorderIds = this.disorderIds.concat(list.filter(id => this.disorderIds.indexOf(id) === -1))
     },
+    toggleToolOption: function (option, value) {
+      if (option === "physics")
+        this.$refs.graph.setPhysics(value);
+      if (option === "loops")
+        this.$refs.graph.showLoops(value)
+      if (option === "unconnected")
+        this.$refs.graph.showUnconnected(value)
+      if (option === "isolation")
+        this.$refs.graph.graphViewEvent(value)
+      if (option === 'shadow')
+        this.$refs.graph.setShadow(value)
+    },
+
+    clickToolOption: function (option) {
+      if (option === "fit")
+        this.$refs.graph.setSelection()
+    },
 
     sort: function (list, attribute) {
       return attribute.order === "descending" ? list.sort((e1, e2) => e2[attribute.id] - e1[attribute.id]) : list.sort((e1, e2) => e1[attribute.id] - e2[attribute.id])
@@ -1022,6 +964,11 @@ export default {
   },
 
   components: {
+    ButtonAdvanced,
+    ButtonBack,
+    ButtonNext,
+    ButtonCancel,
+    Tools,
     Validation,
     DPAlgorithmSelect,
     DisorderHierarchyDialog,

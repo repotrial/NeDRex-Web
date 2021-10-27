@@ -17,16 +17,16 @@
           <i v-else>No network has been selected yet!</i>
         </template>
         <div v-else-if="!show && !loading && (!secondaryViewer || showVisOption)">
-          <v-card v-if="nodeSet !== undefined || showVisOption" :img="getThumbnail(this.gid)" height="20vh">
+          <v-card v-if="nodeSet !== undefined || showVisOption" :img="getThumbnail(this.gid)" :height="thumbnailDone ? '20vh':'64px'">
             <v-card-title>
               <span style="background-color: rgba(255,255,255,0.9)">
-              <i>Create a View for the Network</i>
-              <v-btn icon @click="visualize();">
-                <v-icon>fas fa-play</v-icon>
-              </v-btn>
+                <i>Create a View for the Network</i>
+                <v-btn icon @click="visualize();" v-if="!(secondaryViewer && waiting)">
+                  <v-icon>fas fa-play</v-icon>
+                </v-btn>
+                <v-progress-circular v-else indeterminate size="20" color="primary" style="margin-left: 5px"></v-progress-circular>
                 </span>
             </v-card-title>
-            <v-progress-circular v-if="!thumbnailDone" indeterminate></v-progress-circular>
           </v-card>
           <div v-else>
             <i>Create a View for the Network</i>
@@ -68,8 +68,8 @@
             <slot name="legend"></slot>
           </div>
         </div>
-        <template v-if="tools">
-          <div style="display: flex; justify-content: flex-end;">
+        <div v-if="tools">
+          <div style="display: flex; justify-content:flex-end">
             <v-btn @click="togglePanel(1)" :title="this.showPanels[1] ? 'Hide':'Show'" plain style="z-index: 201">
               <v-icon left>fas fa-tools</v-icon>
               Tools
@@ -79,7 +79,7 @@
           <div v-show="this.showPanels[1]" style="margin-top:-35px; margin-right:1px;  z-index: 200">
             <slot name="tools"></slot>
           </div>
-        </template>
+        </div>
         <template v-if="styles">
           <div style="display: flex; justify-content: flex-end;">
             <v-btn @click="togglePanel(2)" :title="this.showPanels[2] ? 'Hide':'Show'" plain style="z-index: 201">
@@ -841,10 +841,8 @@ export default {
       if (e.button === 0) {
         this.offsetLeft = e.target.getBoundingClientRect().left
         this.offsetTop = e.target.getBoundingClientRect().top
-        // this.selectedNodes = e.ctrlKey ? this.network.getSelectedNodes() : null;
         this.saveDrawingSurface();
         this.rect = {}
-        // let that = this;
         this.rect.startX = e.pageX - this.offsetLeft;
         this.rect.startY = e.pageY - this.offsetTop;
         this.drag = true;
@@ -876,10 +874,6 @@ export default {
 
     dialogResolve: function (vis) {
       this.sizeDialog = false;
-      if (this.secondaryViewer && !this.disableAdvancedLoading && !vis) {
-        this.keepLegends = true;
-        this.togglePanel(1);
-      }
       this.configuration.sizeWarning = !vis;
       if (vis) {
         this.visualize()

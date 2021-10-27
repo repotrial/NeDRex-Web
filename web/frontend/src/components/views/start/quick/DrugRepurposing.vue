@@ -245,17 +245,8 @@
 
 
           </v-card>
-          <v-btn
-            color="primary"
-            @click="makeStep('continue')"
-            :disabled="seedTypeId<0 || $refs.seedTable == null || $refs.seedTable.getSeeds().length===0"
-          >
-            Continue
-          </v-btn>
-
-          <v-btn text @click="makeStep('cancel')">
-            Cancel
-          </v-btn>
+          <ButtonCancel @click="makeStep"></ButtonCancel>
+          <ButtonNext  @click="makeStep" :disabled="seedTypeId<0 || $refs.seedTable == null || $refs.seedTable.getSeeds().length===0"></ButtonNext>
         </v-stepper-content>
 
         <v-stepper-content step="2">
@@ -263,20 +254,10 @@
                              socket-event="quickRepurposeModuleFinishedEvent"
                              @algorithmSelectedEvent="acceptModuleAlgorithmSelectEvent"
                              @jobEvent="readModuleJob"></MIAlgorithmSelect>
-          <v-btn text @click="makeStep('back')">
-            Back
-          </v-btn>
-          <v-btn
-            @click="makeStep('continue')"
-            color="primary"
-            :disabled=" !moduleAlgorithmSelected  || ($refs.moduleAlgorithms.getAlgorithmMethod()==='bicon' && $refs.moduleAlgorithms.getAlgorithmModels().exprFile ===undefined)"
-          >
-            Run
-          </v-btn>
+          <ButtonCancel @click="makeStep"></ButtonCancel>
+          <ButtonBack @click="makeStep"></ButtonBack>
+          <ButtonNext  @click="makeStep"  :disabled=" !moduleAlgorithmSelected  || ($refs.moduleAlgorithms.getAlgorithmMethod()==='bicon' && $refs.moduleAlgorithms.getAlgorithmModels().exprFile ===undefined)"></ButtonNext>
 
-          <v-btn text @click="makeStep('cancel')">
-            Cancel
-          </v-btn>
         </v-stepper-content>
 
         <v-stepper-content step="3">
@@ -284,22 +265,10 @@
                              socket-event="quickRepurposeRankingFinishedEvent"
                              @algorithmSelectedEvent="acceptRankingAlgorithmSelectEvent"
                              @jobEvent="readRankingJob"></DPAlgorithmSelect>
+          <ButtonCancel @click="makeStep"></ButtonCancel>
+          <ButtonBack @click="makeStep"></ButtonBack>
+          <ButtonNext  @click="makeStep" label="RESULTS" :disabled="!rankingAlgorithmSelected"></ButtonNext>
 
-          <v-btn text @click="makeStep('back')">
-            Back
-          </v-btn>
-
-          <v-btn
-            @click="makeStep('continue')"
-            color="primary"
-            :disabled="!rankingAlgorithmSelected"
-          >
-            Run
-          </v-btn>
-
-          <v-btn text @click="makeStep('cancel')">
-            Cancel
-          </v-btn>
         </v-stepper-content>
 
         <v-stepper-content step="4">
@@ -361,10 +330,10 @@
                 </v-col>
                 <v-col>
                   <Network ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle"
-                           :progress="resultProgress" :legend="resultProgress===100" :tools="resultProgress===100"
+                           :progress="resultProgress" :legend="resultProgress>=50" :tools="resultProgress===100"
                            :secondaryViewer="true" :show-vis-option="showVisOption"
                            @loadIntoAdvancedEvent="$emit('graphLoadEvent',{post: {id: rankingGid}})">
-                    <template v-slot:legend v-if="results.drugs.length>0">
+                    <template v-slot:legend v-if="results.targets.length>0">
                       <v-card style="width: 15vw; max-width: 20vw; padding-top: 35px">
                         <v-list dense>
                           <v-list-item>
@@ -405,53 +374,9 @@
                         </v-list>
                       </v-card>
                     </template>
-                    <template v-slot:tools v-if="results.targets.length>0">
-                      <v-card elevation="3" style="width: 15vw; max-width: 17vw; padding-top: 35px">
-                        <v-container>
-                          <v-list ref="list" style="margin-top: 10px;">
-                            <v-tooltip left>
-                              <template v-slot:activator="{on, attrs}">
-                                <v-list-item v-on="on" v-bind="attrs">
-                                  <v-list-item-action>
-                                    <v-chip outlined v-on:click="$refs.graph.setSelection()">
-                                      <v-icon left>fas fa-globe</v-icon>
-                                      Overview
-                                    </v-chip>
-                                  </v-list-item-action>
-                                </v-list-item>
-                              </template>
-                              <span>Fits the view to the whole network.</span>
-                            </v-tooltip>
-                            <v-tooltip left>
-                              <template v-slot:activator="{on, attrs}">
-                                <v-list-item v-on="on" v-bind="attrs">
-                                  <v-list-item-action-text>Enable node interactions</v-list-item-action-text>
-                                  <v-list-item-action>
-                                    <v-switch v-model="physicsOn"
-                                              @click="$refs.graph.setPhysics(physicsOn)"></v-switch>
-                                  </v-list-item-action>
-                                </v-list-item>
-                              </template>
-                              <span>This option enables a physics based layouting where nodes and <br>edges interact with each other. Be careful on large graphs.</span>
-                            </v-tooltip>
-                            <v-tooltip left>
-                              <template v-slot:activator="{on, attrs}">
-                                <v-list-item v-on="on" v-bind="attrs">
-                                  <v-list-item-action>
-                                    <v-chip outlined v-if="rankingJid!=null && rankingGid !=null"
-                                            style="margin-top:15px"
-                                            @click="$emit('graphLoadNewTabEvent',{post: {id: rankingGid}})">
-                                      <v-icon left>fas fa-angle-double-right</v-icon>
-                                      To Advanced View
-                                    </v-chip>
-                                  </v-list-item-action>
-                                </v-list-item>
-                              </template>
-                              <span>Opens a new tab with an advanced view of the current network.</span>
-                            </v-tooltip>
-                          </v-list>
-                        </v-container>
-                      </v-card>
+                    <template v-slot:tools v-if="results.drugs.length>0">
+                      <Tools :physics="true" ref="tools" :cc="false" :loops="false"
+                             @toggleOptionEvent="toggleToolOption" @clickOptionEvent="clickToolOption"></Tools>
                     </template>
                   </Network>
                 </v-col>
@@ -539,33 +464,17 @@
               </v-row>
             </v-container>
           </v-card>
-          <v-btn
-            color="primary"
-            @click="makeStep('back')"
-          >
-            Back
-          </v-btn>
-          <v-tooltip top>
-            <template v-slot:activator="{attrs, on}">
-              <v-btn text v-bind="attrs" v-on="on" @click="$emit('graphLoadNewTabEvent',{post: {id: rankingGid}})" :disabled="rankingGid==null">Advanced</v-btn>
-            </template>
-            <span>Load this result into the advanced view, which opens as a new tab.</span>
-          </v-tooltip>
-          <v-btn text @click="makeStep('continue')" :disabled="rankingGid ==null">
-            Validate
-          </v-btn>
+          <ButtonCancel @click="makeStep"></ButtonCancel>
+          <ButtonBack @click="makeStep"></ButtonBack>
+          <ButtonNext @click="makeStep" label="VALIDATE" :disabled="rankingGid ==null"></ButtonNext>
+          <ButtonAdvanced @click="$emit('graphLoadNewTabEvent',{post: {id: rankingGid}})" :disabled="rankingGid==null">Advanced ></ButtonAdvanced>
         </v-stepper-content>
         <v-stepper-content step="5">
           <Validation ref="validation" :step="5" :seed-type-id="seedTypeId" :module="results.targets"
                       :ranking="results.drugs" @drugCountUpdate="updateDrugCount"
                       @printNotificationEvent="printNotification"></Validation>
-          <v-btn text @click="makeStep('back')">
-            Back
-          </v-btn>
-
-          <v-btn text @click="makeStep('cancel')">
-            Restart
-          </v-btn>
+          <ButtonCancel @click="makeStep"></ButtonCancel>
+          <ButtonBack @click="makeStep" label="RESULTS" save></ButtonBack>
         </v-stepper-content>
       </v-stepper-items>
 
@@ -611,7 +520,8 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-    <DisorderHierarchyDialog v-if="$refs.suggestions!=null" ref="disorderHierarchy" @addDisorders="$refs.suggestions.loadDisorders"></DisorderHierarchyDialog>
+    <DisorderHierarchyDialog v-if="$refs.suggestions!=null" ref="disorderHierarchy"
+                             @addDisorders="$refs.suggestions.loadDisorders"></DisorderHierarchyDialog>
   </v-card>
 </template>
 
@@ -631,6 +541,11 @@ import MIAlgorithmSelect from "@/components/start/quick/MIAlgorithmSelect";
 import DPAlgorithmSelect from "@/components/start/quick/DPAlgorithmSelect";
 import Validation from "@/components/start/quick/Validation";
 import DisorderHierarchyDialog from "@/components/start/quick/DisorderHierarchyDialog";
+import Tools from "@/components/views/graph/Tools";
+import ButtonCancel from "@/components/start/quick/ButtonCancel";
+import ButtonNext from "@/components/start/quick/ButtonNext";
+import ButtonBack from "@/components/start/quick/ButtonBack";
+import ButtonAdvanced from "@/components/start/quick/ButtonAdvanced";
 
 export default {
   name: "CombinedRepurposing",
@@ -676,7 +591,7 @@ export default {
       validationDrugCount: 0,
       drugDetailAttributes: ["Name", "SourceIDs", "Formula", "Indication", "Description", "Synonyms"],
       geneDetailAttributes: ["Name", "SourceIDs", "Symbols", "Chromosome", "Genomic Location", "Synonyms", "Description"],
-      proteinDetailAttributes: ["Name","SourceIDs", "Gene", "Synonyms", "Comments"],
+      proteinDetailAttributes: ["Name", "SourceIDs", "Gene", "Synonyms", "Comments"],
       disorderIds: [],
 
       selectedSuggestions: [],
@@ -718,7 +633,7 @@ export default {
       this.rankingGid = undefined
       this.graphName = undefined
       this.nameOptions = []
-      this.showVisOption=false
+      this.showVisOption = false
       this.resultProgress = 0
       this.disorderIds = []
       this.validationDrugCount = 0
@@ -751,7 +666,7 @@ export default {
     acceptRankingAlgorithmSelectEvent: function (value) {
       this.rankingAlgorithmSelected = value;
     },
-    subtypePopup: function(item){
+    subtypePopup: function (item) {
       this.$refs.disorderHierarchy.loadDisorder(item.sid)
     },
     makeStep: function (button) {
@@ -771,6 +686,8 @@ export default {
         if (this.step === 4) {
           if (this.rankingGid == null || this.rankingGid === this.graphName)
             this.graphNamePopup()
+          if (this.moduleGid != null && this.resultProgress===50)
+            this.loadGraph(this.moduleGid, true,true)
           this.submitRankingAlgorithm()
         }
         this.focus()
@@ -843,6 +760,23 @@ export default {
       else
         resolve()
     },
+    toggleToolOption: function (option, value) {
+      if (option === "physics")
+        this.$refs.graph.setPhysics(value);
+      if (option === "loops")
+        this.$refs.graph.showLoops(value)
+      if (option === "unconnected")
+        this.$refs.graph.showUnconnected(value)
+      if (option === "isolation")
+        this.$refs.graph.graphViewEvent(value)
+      if (option === 'shadow')
+        this.$refs.graph.setShadow(value)
+    },
+
+    clickToolOption: function (option) {
+      if (option === "fit")
+        this.$refs.graph.setSelection()
+    },
     submitRankingAlgorithm: function () {
       let ctx = this
       new Promise(resolve => this.waitForModuleJob(resolve)).then(() => {
@@ -850,7 +784,7 @@ export default {
       })
     },
 
-    readModuleJob: function (data, notSubbed, dirty) {
+    readModuleJob: function (data, notSubbed) {
       this.resultProgress += 5
       let jid = data.jid
       this.moduleJid = jid
@@ -861,8 +795,6 @@ export default {
         this.loadModuleTargetTable(this.moduleGid).then(() => {
           this.$emit("newGraphEvent")
           this.resultProgress = 25
-          // this.$refs.validation.validate()
-
           this.loadGraph(this.moduleGid, true)
         })
       }
@@ -883,7 +815,6 @@ export default {
         if (!unsubscribed)
           this.$socket.unsubscribeJob(this.rankingJid)
         this.loadRankingTargetTable(this.rankingGid).then(() => {
-          // this.$refs.validation.validate()
           this.loadGraph(this.rankingGid)
         })
 
@@ -1172,22 +1103,26 @@ export default {
       })
     }
     ,
-    loadGraph: function (graphId, disableSkipToAdvanced) {
+    loadGraph: function (graphId, disableSkipToAdvanced, noProg) {
       if (this.namePopup) {
         setTimeout(() => {
-          this.loadGraph(graphId, disableSkipToAdvanced)
+          this.loadGraph(graphId, disableSkipToAdvanced, noProg)
         }, 500)
       } else if (this.rankingGid == null || graphId === this.rankingGid) {
         this.getGraph().then(graph => {
-          this.resultProgress += 5
+          if (!noProg)
+            this.resultProgress += 5
           graph.loadNetworkById(graphId, disableSkipToAdvanced).then(() => {
-            this.resultProgress += 15
+            if (!noProg)
+              this.resultProgress += 15
             graph.showLoops(false)
             let seedIds = this.seeds.map(s => s.id)
-            this.resultProgress += 3
+            if (!noProg)
+              this.resultProgress += 3
             graph.modifyGroups(this.results.targets.filter(n => seedIds.indexOf(n.id) > -1).map(n => ["gen_", "pro_"][this.seedTypeId] + n.id), ["seedGene", "seedProtein"][this.seedTypeId])
-            this.resultProgress += 2
-            this.showVisOption=!this.graphConfig.visualized
+            if (!noProg)
+              this.resultProgress += 2
+            this.showVisOption = !this.graphConfig.visualized
           })
         })
       }
@@ -1240,6 +1175,11 @@ export default {
   },
 
   components: {
+    ButtonAdvanced,
+    ButtonBack,
+    ButtonNext,
+    ButtonCancel,
+    Tools,
     LabeledSwitch,
     DisorderHierarchyDialog,
     Network,

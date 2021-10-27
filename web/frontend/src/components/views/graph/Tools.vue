@@ -25,7 +25,7 @@
           </template>
         </ToolSwitch>
 
-        <ToolSwitch v-model="loopsOn" icon="fas fa-undo-alt" label="Show Self-loops" @click="$emit('toggleOptionEvent','loops',loopsOn)">
+        <ToolSwitch v-model="loopsOn" icon="fas fa-undo-alt" label="Show Self-loops" @click="$emit('toggleOptionEvent','loops',loopsOn)" v-if="loops">
           <template v-slot:tooltip>
             <span>Enable or disable the visibility of edges having the same source and target node.</span>
           </template>
@@ -36,7 +36,7 @@
             <span>Enable or disable the visualization of unconnected nodes.</span>
           </template>
         </ToolSwitch>
-        <ToolSwitch v-model="isolationOn" :disabled="selectedNodeId==null" label="Isolate Component" icon="fas fa-link" @click="emitIsolation()">
+        <ToolSwitch v-model="isolationOn" :disabled="selectedNodeId==null" label="Isolate Component" icon="fas fa-link" @click="emitIsolation()" v-if="cc">
           <template v-slot:tooltip>
             <span>Reduce the visibility to the connected component of the currently selected node only. <br> If no node is selected this option is disabled.</span>
           </template>
@@ -60,6 +60,14 @@ export default {
     entityGraph: undefined,
     physicsDisabled: Boolean,
     options: Object,
+    cc:{
+      default: true,
+      type: Boolean
+    },
+    loops:{
+      default: true,
+      type: Boolean
+    }
   },
   name: "Tools",
   data() {

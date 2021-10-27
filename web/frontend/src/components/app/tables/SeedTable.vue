@@ -273,7 +273,7 @@ export default {
           this.origins[e.id] = [entries.origin]
       })
       this.updateAttributes()
-      this.$emit("printNotificationEvent", "Added " + entries.data.length + "from " + entries.origin + " (" + count + " new) seeds!", 1)
+      this.$emit("printNotificationEvent", "Added " + entries.data.length + " from " + entries.origin + " (" + count + " new) seeds!", 1)
     },
 
     getSeeds() {
