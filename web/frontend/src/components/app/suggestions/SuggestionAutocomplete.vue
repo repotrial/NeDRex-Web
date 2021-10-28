@@ -58,6 +58,10 @@ export default {
   props: {
     targetNodeType: String,
     suggestionType: String,
+    disorderSelect: {
+      type: Boolean,
+      default: false,
+    },
     addAll:{
       type:Boolean,
       default:false,
@@ -130,7 +134,7 @@ export default {
     },
 
     loadSuggestion: function(){
-      if (this.suggestionType === "disorder" && this.suggestionModel.type === "UMBRELLA_DISORDER") {
+      if (this.suggestionType === "disorder" && this.suggestionModel.type === "UMBRELLA_DISORDER" && this.disorderSelect) {
         this.$emit("subtypeSelection", this.suggestionModel)
       } else {
         this.loadVals(this.suggestionModel)

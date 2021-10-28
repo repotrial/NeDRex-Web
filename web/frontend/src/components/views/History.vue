@@ -1,48 +1,46 @@
 <template>
   <div>
-    <v-container style="max-width: 90vw !important; min-width: 900px">
-      <v-card style="margin:5px;">
+    <v-container style="max-width: 90vw !important; min-width: 900px; display: flex">
+      <v-card style="margin:5px;" :width="selectedId ?'45vw':''" :style="{maxWidth: selectedId ? '45vw' :''}">
         <v-card-title>History<span
           style="color:gray; padding-left: 7px"> ({{
             options.favos ? "Favourites" : options.chronological ? "List" : "Tree"
           }})</span></v-card-title>
-        <v-container ref="history">
-          <v-row>
-            <v-col :style="{width: selectedId ?'45vw':'', maxWidth: selectedId ? '45vw' :''}">
-              <v-treeview
-                :items="getHistoryList()"
-                hoverable
-                activatable
-                dense
-                shaped
-                :active="selection"
-                expand-icon="fas fa-angle-down"
-                :transition="true"
-                v-on:update:active="handleSelection"
-              >
-                <template v-slot:prepend="{item}">
-                  <v-list-item>
-                    <v-tooltip top>
-                      <template v-slot:activator="{ on, attrs }">
-                        <v-btn
-                          icon
-                          :disabled="item.id === current || (item.state !== undefined &&item.state !== 'DONE')"
-                          @click="loadGraph(item.id)"
-                          v-bind="attrs"
-                          v-on="on"
-                        >
-                          <v-icon
-                            :color="item.id === current ? 'gray': item.state===undefined ?'primary':'green'"
-                          >
-                            far fa-play-circle
-                          </v-icon>
-                        </v-btn>
-                      </template>
-                      <span>{{ item.state !== undefined ? item.method : "MANUAL" }}</span>
-                    </v-tooltip>
+        <div>
+          <v-treeview
+            :items="getHistoryList()"
+            hoverable
+            activatable
+            dense
+            shaped
+            :active="selection"
+            expand-icon="fas fa-angle-down"
+            :transition="true"
+            v-on:update:active="handleSelection"
+          >
+            <template v-slot:prepend="{item}">
+              <v-list-item>
+                <v-tooltip top>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn
+                      icon
+                      :disabled="item.id === current || (item.state !== undefined &&item.state !== 'DONE')"
+                      @click="loadGraph(item.id)"
+                      v-bind="attrs"
+                      v-on="on"
+                    >
+                      <v-icon
+                        :color="item.id === current ? 'gray': item.state===undefined ?'primary':'green'"
+                      >
+                        far fa-play-circle
+                      </v-icon>
+                    </v-btn>
+                  </template>
+                  <span>{{ item.state !== undefined ? item.method : "MANUAL" }}</span>
+                </v-tooltip>
 
-                    <v-divider vertical style="margin: 10px"></v-divider>
-                    <span style="color: darkgray; font-size: 10pt">
+                <v-divider vertical style="margin: 10px"></v-divider>
+                <span style="color: darkgray; font-size: 10pt">
                     <v-tooltip top>
                       <template v-slot:activator="{ on, attrs }">
                         <v-icon
@@ -60,218 +58,221 @@
 
                     ({{ formatTime(item.created)[1] }} ago)
                   </span>
-                  </v-list-item>
-                </template>
-                <template v-slot:label="{item}"
-                >
-                  <span class="noselect; cut-text; text-button">{{ getName(item) }}</span>
-                </template>
+              </v-list-item>
+            </template>
+            <template v-slot:label="{item}"
+            >
+              <span class="noselect; cut-text; text-button">{{ getName(item) }}</span>
+            </template>
 
-              </v-treeview>
-            </v-col>
-            <v-divider vertical></v-divider>
-            <v-col v-if="selectedId!==undefined">
-              <div style="position: fixed; overflow-y: auto; max-height: 75vh; max-width:29vw; width: 29vw; margin-top: -70px">
-              <v-card v-if="selected===undefined" style="padding-bottom: 15px;">
-                <v-card-title >{{ selectedId }}</v-card-title>
-                <v-progress-circular
-                  color="primary"
-                  size="50"
-                  width="5"
-                  indeterminate
-                ></v-progress-circular>
-              </v-card>
-              <v-card v-else style="padding-bottom: 15px">
-                <v-container>
-                  <v-row v-if="selected.parentId !=null">
-                    <v-timeline align-top dense
-                                style="margin-top: 10px; padding-top: 7px; margin-bottom: -29px; margin-left: -25px">
-                      <v-timeline-item
-                        right
-                        :small="!hoveringTimeline('parent')"
-                        :color="selected.parentMethod !=null? 'green':'primary'"
-                      >
-                        <v-btn plain style="color: gray; margin-left: -15px; margin-bottom:-25px; margin-top:-25px"
-                               @click="handleSelection([selected.parentId])">{{ selected.parentName }}
-                        </v-btn>
-                        <br><br>
-                        <template v-slot:icon>
-                          <v-btn icon @click="loadGraph(selected.parentId)">
-                            <v-icon x-small color="white">
-                              fas fa-play
-                            </v-icon>
-                          </v-btn>
-                        </template>
-                      </v-timeline-item>
-                    </v-timeline>
-                  </v-row>
-                  <v-row dense>
-                    <v-col cols="1">
-                      <v-btn icon :color="selected.method!=null ? 'green':'primary'" x-large
-                             style="background-color: white; margin-top: 5px;" @click="loadGraph(selectedId)">
-                        <v-icon>far fa-play-circle</v-icon>
-                      </v-btn>
-                    </v-col>
-                    <v-col cols="9">
-                      <v-card-title v-if="!edit">{{ selected.name }}</v-card-title>
-                      <v-text-field v-else :placeholder="selected.name" :value="selected.name" label="Name"
-                                    @change="setName" style="margin-left: 20px"></v-text-field>
-                    </v-col>
-                    <v-col cols="2" style="padding-top: 15px">
-                      <v-btn v-show="selected.owner = $cookies.get('uid')" icon style="margin-top:10px" x-small
-                             @click="toggleEdit()">
-                        <v-icon>{{ edit ? "fas fa-check" : "fas fa-edit" }}</v-icon>
-                      </v-btn>
-                      <v-btn icon style="margin-top:10px" @mouseover="hover.star=true"
-                             @mouseleave="hover.star=false"
-                             x-small
-                             @click="toggleStar">
-                        <v-icon v-if="showStar(false)">far fa-star</v-icon>
-                        <v-icon v-if="showStar(true)">fas fa-star</v-icon>
-                      </v-btn>
-                      <v-btn v-show="selected.owner = $cookies.get('uid')" icon style="margin-top:10px" x-small
-                             @click="deletePopup=true">
-                        <v-icon>
-                          fas fa-trash
+          </v-treeview>
+        </div>
+      </v-card>
+
+      <v-card v-if="selectedId!==undefined" style="position: fixed; overflow-y: auto; max-height: 77vh; max-width:29vw; width: 29vw; margin-top: 5px; left: 49vw; z-index: 1000">
+        <div
+        >
+          <v-card v-if="selected===undefined" style="padding-bottom: 15px;">
+            <v-card-title>{{ selectedId }}</v-card-title>
+            <v-progress-circular
+              color="primary"
+              size="50"
+              width="5"
+              indeterminate
+            ></v-progress-circular>
+          </v-card>
+          <v-card v-else style="padding-bottom: 15px">
+            <v-container>
+              <v-row v-if="selected.parentId !=null">
+                <v-timeline align-top dense
+                            style="margin-top: 10px; padding-top: 7px; margin-bottom: -29px; margin-left: -25px">
+                  <v-timeline-item
+                    right
+                    :small="!hoveringTimeline('parent')"
+                    :color="selected.parentMethod !=null? 'green':'primary'"
+                  >
+                    <v-btn plain style="color: gray; margin-left: -15px; margin-bottom:-25px; margin-top:-25px"
+                           @click="handleSelection([selected.parentId])">{{ selected.parentName }}
+                    </v-btn>
+                    <br><br>
+                    <template v-slot:icon>
+                      <v-btn icon @click="loadGraph(selected.parentId)">
+                        <v-icon x-small color="white">
+                          fas fa-play
                         </v-icon>
                       </v-btn>
+                    </template>
+                  </v-timeline-item>
+                </v-timeline>
+              </v-row>
+              <v-row dense>
+                <v-col cols="1">
+                  <v-btn icon :color="selected.method!=null ? 'green':'primary'" x-large
+                         style="background-color: white; margin-top: 5px;" @click="loadGraph(selectedId)">
+                    <v-icon>far fa-play-circle</v-icon>
+                  </v-btn>
+                </v-col>
+                <v-col cols="9">
+                  <v-card-title v-if="!edit">{{ selected.name }}</v-card-title>
+                  <v-text-field v-else :placeholder="selected.name" :value="selected.name" label="Name"
+                                @change="setName" style="margin-left: 20px"></v-text-field>
+                </v-col>
+                <v-col cols="2" style="padding-top: 15px">
+                  <v-btn v-show="selected.owner = $cookies.get('uid')" icon style="margin-top:10px" x-small
+                         @click="toggleEdit()">
+                    <v-icon>{{ edit ? "fas fa-check" : "fas fa-edit" }}</v-icon>
+                  </v-btn>
+                  <v-btn icon style="margin-top:10px" @mouseover="hover.star=true"
+                         @mouseleave="hover.star=false"
+                         x-small
+                         @click="toggleStar">
+                    <v-icon v-if="showStar(false)">far fa-star</v-icon>
+                    <v-icon v-if="showStar(true)">fas fa-star</v-icon>
+                  </v-btn>
+                  <v-btn v-show="selected.owner = $cookies.get('uid')" icon style="margin-top:10px" x-small
+                         @click="deletePopup=true">
+                    <v-icon>
+                      fas fa-trash
+                    </v-icon>
+                  </v-btn>
+                </v-col>
+              </v-row>
+
+              <v-divider
+                style="margin: -10px 15px -10px 10px;"></v-divider>
+              <v-row dense v-if="Object.keys(selected.children).length>0">
+                <v-timeline align-top dense
+                            style="margin-top: 10px; padding-top: 7px; padding-bottom: 0px; margin-left: 5px">
+                  <v-timeline-item small right v-for="child in Object.keys(selected.children)" :key="child"
+                                   :color="selected.children[child].method !==undefined ? 'green':'primary'"
+                  >
+                    <v-btn plain style="color: gray; margin-left: -15px; margin-bottom:-25px; margin-top:-25px"
+                           @click="handleSelection([child])">{{ selected.children[child].name }}
+                    </v-btn>
+                    <template v-slot:icon>
+                      <v-btn icon @click="loadGraph(child)" style="margin-left:2px">
+                        <v-icon x-small color="white">
+                          fas fa-play
+                        </v-icon>
+                      </v-btn>
+                    </template>
+                  </v-timeline-item>
+                </v-timeline>
+              </v-row>
+              <v-row style="margin: 25px"></v-row>
+              <v-row style="margin: 25px" v-if="selected.jobid!=null">
+                <v-chip v-show="selected.params!=null" outlined style="margin-right: 7px"
+                        @click="showParams=!showParams">Chosen Parameters
+                  <v-icon right>{{ showParams ? 'fas fa-caret-up' : 'fas fa-caret-down' }}</v-icon>
+                </v-chip>
+                <v-chip outlined @click="downloadJob(selected.jobid)">
+                  {{ selected.method }} Results
+                  <v-icon right>fas fa-download</v-icon>
+                </v-chip>
+              </v-row>
+              <v-row v-if="selected.params">
+                <v-col style="max-width: 300px">
+                  <v-simple-table v-show="showParams">
+                    <template v-slot:default>
+                      <thead>
+                      <tr>
+                        <th class="text-left">
+                          Parameter
+                        </th>
+                        <th class="text-left">Value</th>
+                      </tr>
+                      </thead>
+                      <tbody>
+                      <tr v-for="(param,key) in selected.params"
+                          v-if="['nodesOnly','addInteractions','type'].indexOf(key)===-1">
+                        <td class="text-left">{{ key }}</td>
+                        <td class="text-left">{{ param }}</td>
+                      </tr>
+                      </tbody>
+                    </template>
+                  </v-simple-table>
+                </v-col>
+              </v-row>
+              <v-row v-if="$global.metagraph!=null &&selected!==undefined">
+                <v-container>
+                  <v-row>
+                    <v-col>
+                      <v-list>
+                        <v-list-item>
+                          <b>Nodes ({{ getCounts('nodes') }})</b>
+                        </v-list-item>
+                        <v-list-item v-for="node in Object.keys(selected.counts.nodes)"
+                                     :key="node">
+                          <v-chip outlined>
+                            <v-icon left :color="getExtendedColoring('nodes',node)">fas fa-genderless</v-icon>
+                            {{ node }} ({{ selected.counts.nodes[node] }})
+                          </v-chip>
+                        </v-list-item>
+
+                      </v-list>
+                    </v-col>
+                    <v-col>
+                      <v-list>
+                        <v-list-item>
+                          <b>Edges ({{ getCounts('edges') }})</b>
+                        </v-list-item>
+                        <v-list-item v-for="edge in Object.keys(selected.counts.edges)" :key="edge">
+                          <v-chip outlined>
+                            <v-icon left :color="getExtendedColoring('edges',edge)[0]">fas fa-genderless</v-icon>
+                            <template v-if="directionExtended(edge)===0">
+                              <v-icon left>fas fa-undo-alt</v-icon>
+                            </template>
+                            <template v-else>
+                              <v-icon v-if="directionExtended(edge)===1" left>fas fa-long-arrow-alt-right</v-icon>
+                              <v-icon v-else left>fas fa-arrows-alt-h</v-icon>
+                              <v-icon left :color="getExtendedColoring('edges',edge)[1]">fas fa-genderless</v-icon>
+                            </template>
+                            {{ edge }} ({{ selected.counts.edges[edge] }})
+
+                          </v-chip>
+
+                        </v-list-item>
+                      </v-list>
                     </v-col>
                   </v-row>
 
-                  <v-divider
-                    style="margin: -10px 15px -10px 10px;"></v-divider>
-                  <v-row dense v-if="Object.keys(selected.children).length>0">
-                    <v-timeline align-top dense
-                                style="margin-top: 10px; padding-top: 7px; padding-bottom: 0px; margin-left: 5px">
-                      <v-timeline-item small right v-for="child in Object.keys(selected.children)" :key="child"
-                                       :color="selected.children[child].method !==undefined ? 'green':'primary'"
-                      >
-                        <v-btn plain style="color: gray; margin-left: -15px; margin-bottom:-25px; margin-top:-25px"
-                               @click="handleSelection([child])">{{ selected.children[child].name }}
-                        </v-btn>
-                        <template v-slot:icon>
-                          <v-btn icon @click="loadGraph(child)" style="margin-left:2px">
-                            <v-icon x-small color="white">
-                              fas fa-play
-                            </v-icon>
-                          </v-btn>
-                        </template>
-                      </v-timeline-item>
-                    </v-timeline>
-                  </v-row>
-                  <v-row style="margin: 25px"></v-row>
-                  <v-row style="margin: 25px" v-if="selected.jobid!=null">
-                    <v-chip v-show="selected.params!=null" outlined style="margin-right: 7px" @click="showParams=!showParams">Chosen Parameters <v-icon right>{{showParams ? 'fas fa-caret-up':'fas fa-caret-down'}}</v-icon></v-chip>
-                    <v-chip outlined @click="downloadJob(selected.jobid)">
-                      {{ selected.method }} Results
-                      <v-icon right>fas fa-download</v-icon>
-                    </v-chip>
-                  </v-row>
-                  <v-row v-if="selected.params">
-                    <v-col style="max-width: 300px" >
-                      <v-simple-table v-show="showParams">
-                        <template v-slot:default>
-                          <thead>
-                          <tr>
-                            <th class="text-left">
-                              Parameter
-                            </th>
-                            <th class="text-left">Value</th>
-                          </tr>
-                          </thead>
-                          <tbody>
-                          <tr v-for="(param,key) in selected.params" v-if="['nodesOnly','addInteractions','type'].indexOf(key)===-1">
-                            <td class="text-left">{{key}}</td>
-                            <td class="text-left">{{param}}</td>
-                          </tr>
-                          </tbody>
-                        </template>
-                      </v-simple-table>
-                    </v-col>
-                  </v-row>
-                  <v-row v-if="$global.metagraph!=null &&selected!==undefined">
-                    <v-container>
-                      <v-row>
-                        <v-col>
-                          <v-list>
-                            <v-list-item>
-                              <b>Nodes ({{ getCounts('nodes') }})</b>
-                            </v-list-item>
-                            <v-list-item v-for="node in Object.keys(selected.counts.nodes)"
-                                         :key="node">
-                              <v-chip outlined>
-                                <v-icon left :color="getExtendedColoring('nodes',node)">fas fa-genderless</v-icon>
-                                {{ node }} ({{ selected.counts.nodes[node] }})
-                              </v-chip>
-                            </v-list-item>
 
-                          </v-list>
-                        </v-col>
-                        <v-col>
-                          <v-list>
-                            <v-list-item>
-                              <b>Edges ({{ getCounts('edges') }})</b>
-                            </v-list-item>
-                            <v-list-item v-for="edge in Object.keys(selected.counts.edges)" :key="edge">
-                              <v-chip outlined>
-                                <v-icon left :color="getExtendedColoring('edges',edge)[0]">fas fa-genderless</v-icon>
-                                <template v-if="directionExtended(edge)===0">
-                                  <v-icon left>fas fa-undo-alt</v-icon>
-                                </template>
-                                <template v-else>
-                                  <v-icon v-if="directionExtended(edge)===1" left>fas fa-long-arrow-alt-right</v-icon>
-                                  <v-icon v-else left>fas fa-arrows-alt-h</v-icon>
-                                  <v-icon left :color="getExtendedColoring('edges',edge)[1]">fas fa-genderless</v-icon>
-                                </template>
-                                {{ edge }} ({{ selected.counts.edges[edge] }})
-
-                              </v-chip>
-
-                            </v-list-item>
-                          </v-list>
-                        </v-col>
-                      </v-row>
-
-
-                    </v-container>
-                  </v-row>
-                  <v-divider></v-divider>
-                  <v-row v-if="selected.thumbnailReady" style="padding:15px;display: flex;justify-content: center">
-                    <v-img max-height="28vw" max-width="28vw" :src="getThumbnail(selectedId)">
-                    </v-img>
-                  </v-row>
-                  <v-row v-else style="padding:15px;display: flex;justify-content: center" >
-                    <i style="color:gray">creating preview...</i>
-                    <v-progress-linear
-                      indeterminate
-                      color="primary"
-                    ></v-progress-linear>
-                  </v-row>
-                  <v-row style="margin-top:10px">
-                      <v-textarea outlined label="Description" @change="updateDesc" :value="description" rows="5"
-                                  no-resize style="margin: 15px">
-                        <template v-slot:append>
-                          <v-container style="margin-right: -5px">
-                            <v-row>
-                              <v-btn icon @click="saveDescription(true)" :disabled="!showSaveDescription()">
-                                <v-icon color="green">fas fa-check</v-icon>
-                              </v-btn>
-                            </v-row>
-                            <v-row>
-                              <v-btn icon @click="saveDescription(false)" :disabled="!showSaveDescription()">
-                                <v-icon color="red">far fa-times-circle</v-icon>
-                              </v-btn>
-                            </v-row>
-                          </v-container>
-                        </template>
-                      </v-textarea>
-                  </v-row>
                 </v-container>
-              </v-card>
-              </div>
-            </v-col>
-          </v-row>
-        </v-container>
+              </v-row>
+              <v-divider></v-divider>
+              <v-row v-if="selected.thumbnailReady" style="padding:15px;display: flex;justify-content: center">
+                <v-img max-height="28vw" max-width="28vw" :src="getThumbnail(selectedId)">
+                </v-img>
+              </v-row>
+              <v-row v-else style="padding:15px;display: flex;justify-content: center">
+                <i style="color:gray">creating preview...</i>
+                <v-progress-linear
+                  indeterminate
+                  color="primary"
+                ></v-progress-linear>
+              </v-row>
+              <v-row style="margin-top:10px">
+                <v-textarea outlined label="Description" @change="updateDesc" :value="description" rows="5"
+                            no-resize style="margin: 15px">
+                  <template v-slot:append>
+                    <v-container style="margin-right: -5px">
+                      <v-row>
+                        <v-btn icon @click="saveDescription(true)" :disabled="!showSaveDescription()">
+                          <v-icon color="green">fas fa-check</v-icon>
+                        </v-btn>
+                      </v-row>
+                      <v-row>
+                        <v-btn icon @click="saveDescription(false)" :disabled="!showSaveDescription()">
+                          <v-icon color="red">far fa-times-circle</v-icon>
+                        </v-btn>
+                      </v-row>
+                    </v-container>
+                  </template>
+                </v-textarea>
+              </v-row>
+            </v-container>
+          </v-card>
+        </div>
       </v-card>
     </v-container>
     <v-dialog
@@ -329,7 +330,7 @@ export default {
       description: "",
       selectedId: undefined,
       selected: undefined,
-      showParams:false,
+      showParams: false,
       hover: {star: false, timeline: {parent: false, children: {}}},
       edit: false,
       deletePopup: false,
@@ -402,13 +403,14 @@ export default {
     handleSelection: function (selected) {
       if (selected == null || selected[0] === undefined || this.selectedId === selected[0]) {
         this.selection = undefined
-        this.selected=undefined;
-        this.selectedId= undefined;
+        this.selected = undefined;
+        this.selectedId = undefined;
         return
       }
       this.selection = selected
       this.selected = undefined;
       this.selectedId = selected[0]
+      this.$set(this,"selectedId", selected[0])
       this.$http.get("getGraphHistory?gid=" + this.selectedId + "&uid=" + this.$cookies.get("uid")).then(response => {
         if (response.data !== undefined)
           return response.data
@@ -479,8 +481,8 @@ export default {
     },
 
     toggleStar: function () {
-      this.$set(this.selected,"starred",!this.selected.starred);
-      this.$set(this.list.filter(e=>e.id===this.selectedId)[0],"starred",this.selected.starred)
+      this.$set(this.selected, "starred", !this.selected.starred);
+      this.$set(this.list.filter(e => e.id === this.selectedId)[0], "starred", this.selected.starred)
       this.$http.get("toggleStarred?uid=" + this.$cookies.get("uid") + "&gid=" + this.selectedId).catch(console.error)
     },
 
@@ -510,7 +512,7 @@ export default {
       }
       if (this.options.favos) {
         this.handleSelection(undefined)
-        out = this.getChronologicalList().filter(l=>l.starred)
+        out = this.getChronologicalList().filter(l => l.starred)
       }
       return out
 
@@ -525,7 +527,7 @@ export default {
 
 
     getThumbnail: function (graph_id) {
-      return CONFIG.HOST_URL+CONFIG.CONTEXT_PATH+"/api/getThumbnailPath?gid=" + graph_id
+      return CONFIG.HOST_URL + CONFIG.CONTEXT_PATH + "/api/getThumbnailPath?gid=" + graph_id
     },
 
     // thumbnailExists: function (graph_id) {
@@ -541,7 +543,7 @@ export default {
     //   }
     // },
     downloadJob: function (jobid) {
-      window.open(CONFIG.HOST_URL+CONFIG.CONTEXT_PATH+'/api/downloadJobResult?jid=' + jobid)
+      window.open(CONFIG.HOST_URL + CONFIG.CONTEXT_PATH + '/api/downloadJobResult?jid=' + jobid)
     },
 
     reverseList: function () {

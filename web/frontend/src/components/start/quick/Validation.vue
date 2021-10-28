@@ -256,6 +256,7 @@ export default {
       return out
     },
     addToSelection: function (data) {
+      console.log(data)
       this.$refs.drugTable.addSeeds(data)
     }
     ,

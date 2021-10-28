@@ -161,7 +161,7 @@
                           </div>
                         </v-tooltip>
                         <SuggestionAutocomplete ref="suggestions" :suggestion-type="suggestionType" :emit-drugs="true"
-                                                :emit-disorders="true"
+                                                :emit-disorders="true" :disorder-select="true"
                                                 @drugsEvent="$refs.validation.addDrugs" :add-all="true"
                                                 @disorderEvent="saveDisorders"  @subtypeSelection="subtypePopup"
                                                 :target-node-type="['gene', 'protein'][seedTypeId]"
