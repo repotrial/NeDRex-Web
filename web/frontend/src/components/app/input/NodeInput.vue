@@ -23,6 +23,7 @@
     </div>
     <v-dialog v-model="seedInput"
               persistent
+              style="z-index: 1001"
               max-width="500">
       <v-card>
         <v-card-title>Paste Nodes</v-card-title>

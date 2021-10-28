@@ -277,6 +277,7 @@
     <v-dialog
       v-model="deletePopup"
       persistent
+      style="z-index: 1001"
       max-width="500"
     >
       <v-card>

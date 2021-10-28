@@ -403,7 +403,7 @@
       persistent
       max-width="500"
       ref="extensionDialog"
-      style="z-index: 1000"
+      style="z-index: 1001"
     >
       <v-card v-if="extension.show">
         <v-card-title class="headline">
@@ -471,7 +471,7 @@
       v-model="collapse.show"
       persistent
       max-width="500"
-      style="z-index: 1000"
+      style="z-index: 1001"
     >
       <v-card v-if="collapse.show" ref="dialog">
         <v-card-title class="headline">
@@ -632,7 +632,7 @@
       v-model="optionDialog"
       persistent
       max-width="500"
-      style="z-index: 1000"
+      style="z-index: 1001"
     >
       <v-card
         v-if="options !== undefined && options.type != null && options.attributes !=null && attributes[options.type]!=null">
@@ -684,7 +684,7 @@
       v-model="selectionDialog.show"
       persistent
       max-width="500"
-      style="z-index: 1000"
+      style="z-index: 1001"
     >
       <v-card v-if="selectionDialog.show && selectionDialog.type !== undefined">
         <v-list>
@@ -790,7 +790,7 @@
       v-model="selectionColor.show"
       persistent
       max-width="500"
-      style="z-index: 1000"
+      style="z-index: 1001"
     >
       <v-card>
         <v-card-title class="headline">

@@ -1,17 +1,14 @@
 <template>
-  <v-dialog v-model="show"
-            persistent
-            max-width="1000px"
-  >
-    <v-card>
+  <div v-show="show" style="z-index: 1001;position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; background-color: rgba(0,0,0,0.45)">
+    <v-card style="max-width:1000px; align-self: center; margin-top: auto; margin-bottom: auto;z-index: 1002;">
       <v-card-title>Adjust the disorder selection</v-card-title>
       <v-card-subtitle style="margin-top:5px"><i><b>Hover</b></i> nodes to read the full disorder name. <i><b>Click</b></i>
         a node to toggle its state. The state of all children changes accordingly.
       </v-card-subtitle>
       <v-progress-circular v-if="loading" indeterminate></v-progress-circular>
-      <VisNetwork ref="tree" v-if="!loading && !sizeProblem" :options="treeOptions" :nodes="nodes" :edges="edges"
-                  :events="['click','mousedown']"
-                  @click="nodeClick"></VisNetwork>
+      <VisNetwork ref="tree" v-if="!loading && !sizeProblem&& nodes!=null && nodes.length>0" :options="treeOptions" :nodes="nodes" :edges="edges"
+                  :events="['click']"
+                  @click="nodeClick" style="position: sticky;"></VisNetwork>
       <v-card-subtitle v-if="sizeProblem">The disorder hierarchy contains more than 500 disorders. A graphical selection
         at this point is not feasible!
       </v-card-subtitle>
@@ -33,7 +30,7 @@
         </v-btn>
       </v-card-actions>
     </v-card>
-  </v-dialog>
+  </div>
 </template>
 
 <script>
@@ -62,6 +59,9 @@ export default {
         autoResize: true,
         height: '500px',
         clickToUse: false,
+        interaction: {
+          zoomView: true,
+        },
         layout: {
           hierarchical: {
             direction: 'DU',

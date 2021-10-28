@@ -120,6 +120,7 @@
               v-if="listWarnObject !== undefined"
               persistent
               max-width="500"
+              style="z-index: 1001"
             >
               <v-card>
                 <v-card-title class="headline">

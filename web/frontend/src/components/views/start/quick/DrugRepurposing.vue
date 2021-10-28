@@ -483,6 +483,7 @@
     <v-dialog v-model="namePopup"
               persistent
               max-width="500px"
+              style="z-index: 1001"
     >
       <v-card>
         <v-card-title>Set graph name</v-card-title>

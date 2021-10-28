@@ -100,7 +100,7 @@
         v-model="sizeDialog"
         persistent
         max-width="350"
-        style="z-index: 202"
+        style="z-index: 1001"
       >
         <v-card>
           <v-card-title class="headline">
