@@ -17,22 +17,23 @@
           <i v-else>No network has been selected yet!</i>
         </template>
         <div v-else-if="!show && !loading && (!secondaryViewer || showVisOption)">
-          <v-card v-if="nodeSet !== undefined || showVisOption" :img="getThumbnail(this.gid)" :height="thumbnailDone ? '20vh':'64px'">
+          <v-card v-if="nodeSet !== undefined || showVisOption" :img="getThumbnail(this.gid)"
+                  :height="thumbnailDone ? '20vh':'64px'">
             <v-card-title>
               <span style="background-color: rgba(255,255,255,0.9)">
                 <i>Create a View for the Network</i>
                 <v-btn icon @click="visualize();" v-if="!(secondaryViewer && waiting)">
                   <v-icon>fas fa-play</v-icon>
                 </v-btn>
-                <v-progress-circular v-else indeterminate size="20" color="primary" style="margin-left: 5px"></v-progress-circular>
+                <v-progress-circular v-else indeterminate size="20" color="primary"
+                                     style="margin-left: 5px"></v-progress-circular>
                 </span>
             </v-card-title>
           </v-card>
           <div v-else>
-            <i>Create a View for the Network</i>
-            <v-btn icon @click="visualize();">
-              <v-icon>fas fa-play</v-icon>
-            </v-btn>
+            <i>Creating the Network</i>
+            <v-progress-circular indeterminate size="20" color="primary"
+                                 style="margin-left: 5px"></v-progress-circular>
           </div>
         </div>
         <div v-show="show">
@@ -274,7 +275,7 @@ export default {
       this.reset()
       this.setLoading(false)
       this.setWaiting(true)
-      this.getThumbnail(gid)
+      this.checkThumbnail(gid)
       return this.$http.getGraph(gid).then(this.setGraph).catch(err => {
         this.loadingColor = this.colors.bar.error;
         console.error(err)
@@ -328,6 +329,7 @@ export default {
       let sum = (this.nodeSet != null ? this.nodeSet.length : 0) + (this.edgeSet != null ? this.edgeSet.length : 0);
       this.$emit("disablePhysicsEvent", sum > 20000)
       this.$set(this.configuration, "sizeWarning", (this.nodeSet !== undefined && this.nodeSet.length > 1000) || (this.edgeSet !== undefined && this.edgeSet.length > 1000))
+      this.$set(this.configuration,"sizeCheck",true)
     },
     showLoops: function (state) {
       let updates = Object.values(this.edgeSet.get({
@@ -402,9 +404,10 @@ export default {
     }
     ,
     visualize: function () {
+      this.setVisualized(false)
       if (this.configuration.sizeWarning)
         this.sizeDialog = true
-      else {
+      else if(this.configuration.sizeCheck){
         this.prepare()
         this.show = true
         if (this.nodeSet != null) {
@@ -557,13 +560,19 @@ export default {
         }
     }
     ,
+    checkThumbnail: async function (gid) {
+      this.$http.get("/getThumbnailState?gid=" + gid).then(resp => {
+        return resp.data
+      }).then(state => {
+        if (state === "ready")
+          this.thumbnailDone = true
+        else
+          this.$socket.subscribeThumbnail(gid, "NetworkThumbnailReady")
+      })
+    },
     getThumbnail: function (gid) {
-      if (this.gid === this.readGIDfromRoute())
-        this.thumbnailDone = true;
-      if (!this.thumbnailDone) {
-        this.$socket.subscribeThumbnail(gid, "NetworkThumbnailReady")
-      } else
-        return CONFIG.HOST_URL + CONFIG.CONTEXT_PATH + "/api/getThumbnailPath?gid=" + gid
+      return CONFIG.HOST_URL + CONFIG.CONTEXT_PATH + "/api/getThumbnailPath?gid=" + gid
+
     },
 
     thumbnailReady: function (response) {

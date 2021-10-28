@@ -127,7 +127,7 @@ public class JobController {
                 switch (sameJob.getState()) {
                     case DONE -> {
                         copyResults(j.getJobId(), sameJob, false);
-                        createThumbnail(j);
+                        copyThumbnailAndLayout(j.getDerivedGraph(), sameJob.getDerivedGraph());
                         return;
                     }
                     case EXECUTING, INITIALIZED, QUEUED, NOCHANGE -> {
@@ -208,7 +208,7 @@ public class JobController {
                 j.setDerivedGraph(j.getBasisGraph());
             } else {
                 boolean basisIsJob = getJobByGraphId(j.getBasisGraph()) != null;
-                graphService.applyJob(j,basisIsJob);
+                graphService.applyJob(j, basisIsJob);
                 if (!basisIsJob) {
                     j.setBasisGraph(null);
                     historyController.remove(j.getBasisGraph());
@@ -242,8 +242,8 @@ public class JobController {
 
     private void copyResults(String cloneJid, Job j, boolean notify) {
         Job dependent = jobs.get(cloneJid);
-        boolean keepParent = getJobByGraphId(j.getBasisGraph())!=null;
-        if(!keepParent && dependent.getBasisGraph()!=null) {
+        boolean keepParent = getJobByGraphId(j.getBasisGraph()) != null;
+        if (!keepParent && dependent.getBasisGraph() != null) {
             historyController.remove(dependent.getBasisGraph());
             dependent.setBasisGraph(null);
         }
@@ -258,16 +258,34 @@ public class JobController {
         }
         dependent.setUpdate(j.getUpdate());
         if (notify) {
-                //TODO just copy thumbnail?
-            createThumbnail(dependent);
+            copyThumbnailAndLayout(dependent.getDerivedGraph(), j.getDerivedGraph());
             socketController.setJobUpdate(dependent);
         }
     }
 
-    public void createThumbnail(Job j){
-        String gid = j.getDerivedGraph();
-        graphService.createThumbnail(gid, graphService.getThumbnail(gid));
+    public void copyThumbnailAndLayout(String derivedId, String originalId) {
+        File copy = historyController.getThumbnailPath(derivedId);
+        copy.getParentFile().mkdirs();
+        File old = historyController.getThumbnailPath(originalId);
+        if (old.exists()) {
+            try {
+                Files.copy(old.toPath(), copy.toPath());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        copy = historyController.getLayoutPath(derivedId);
+        old = historyController.getLayoutPath(originalId);
+        copy.getParentFile().mkdirs();
+        if (old.exists()) {
+            try {
+                Files.copy(old.toPath(), copy.toPath());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
+
 
 
     public File getDownload(String id) {
@@ -275,7 +293,7 @@ public class JobController {
     }
 
     public String getJobByGraphId(String gid) {
-        Optional<Job> j = jobs.values().stream().filter(job -> job!=null && job.getDerivedGraph()!= null && job.getDerivedGraph().equals(gid)).findFirst();
+        Optional<Job> j = jobs.values().stream().filter(job -> job != null && job.getDerivedGraph() != null && job.getDerivedGraph().equals(gid)).findFirst();
         return j.map(Job::getJobId).orElse(null);
     }
 

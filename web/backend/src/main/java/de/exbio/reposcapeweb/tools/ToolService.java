@@ -262,6 +262,15 @@ public class ToolService {
         }
     }
 
+    public void createLayoutAndThumbnail(File graphml, File layout, File thumb){
+        layout.getParentFile().mkdirs();
+        try {
+            ProcessUtils.executeProcessWait(new ProcessBuilder("python3", new File(scriptDir, "computeLayouting.py").getAbsolutePath(), graphml.getAbsolutePath(), "2", layout.getAbsolutePath(), thumb.getAbsolutePath(), DBConfig.getConfFile().getAbsolutePath()));
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void createLayout(File graphml, File layout) {
         layout.getParentFile().mkdirs();
         try {

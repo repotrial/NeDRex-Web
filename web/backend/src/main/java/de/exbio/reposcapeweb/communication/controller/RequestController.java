@@ -386,6 +386,12 @@ public class RequestController {
         return toJson(detail);
     }
 
+    @RequestMapping(value= "/getThumbnailState", method=RequestMethod.GET)
+    @ResponseBody
+    public String getThumbnailState(@RequestParam("gid") String gid){
+        return toJson(webGraphService.getThumbnailState(gid));
+    }
+
     @RequestMapping(value = "/getThumbnailPath", method = RequestMethod.GET)
     @ResponseBody
     public ResponseEntity<byte[]> isThumbnailReady(@RequestParam("gid") String gid) throws IOException {
@@ -411,11 +417,7 @@ public class RequestController {
     @ResponseBody
     public void finishedJob(@RequestParam("id") String id) {
         log.info("Job " + id + " was just finished.");
-        boolean success = jobController.finishJob(id);
-        if (success) {
-            String gid = jobController.getJobById(id).getDerivedGraph();
-            webGraphService.createThumbnail(gid, webGraphService.getThumbnail(gid));
-        }
+        jobController.finishJob(id);
     }
 
     @RequestMapping(value = "/submitJob", method = RequestMethod.POST)

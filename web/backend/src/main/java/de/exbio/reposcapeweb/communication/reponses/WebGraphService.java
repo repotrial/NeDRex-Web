@@ -1261,7 +1261,14 @@ public class WebGraphService {
                 }
             } else {
                 layoutGenerating.add(g.getId());
-                toolService.createLayout(getDownload(g.getId()), lay);
+                if(!this.getThumbnail(g.getId()).exists()) {
+                    thumbnailGenerating.add(g.getId());
+                    toolService.createLayoutAndThumbnail(getDownload(g.getId()), lay, getThumbnail(g.getId()));
+                    thumbnailGenerating.remove(g.getId());
+                    socketController.setThumbnailReady(g.getId());
+                }else{
+                    toolService.createLayout(getDownload(g.getId()), lay);
+                }
                 layoutGenerating.remove(g.getId());
             }
         }
@@ -1548,5 +1555,14 @@ public class WebGraphService {
                 out.add(node);
         });
         return out;
+    }
+
+    public String getThumbnailState(String gid) {
+        File thumb = getThumbnail(gid);
+        if(thumb.exists())
+            return "ready";
+        if(thumbnailGenerating.contains(gid))
+            return "running";
+        return "not requested";
     }
 }
