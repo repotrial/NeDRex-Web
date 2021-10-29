@@ -298,7 +298,7 @@ export default {
     },
 
     validateModule: async function (targets, validationDrugs, approved, type) {
-      //necessary to avoid errors for the time being
+      //FIXME remove when fixed; necessary to avoid errors for the time being
       let filtered = await this.$http.getInteractingOnly(type, targets.map(n => n.id)).catch(console.error)
       this.moduleValidationStatus = "preparing"
       let refDrugs = Object.values(validationDrugs).map(d => d.primaryDomainId);
