@@ -114,7 +114,7 @@
                 </v-list-item-action>
               </v-col>
             </v-row>
-            <ExampleSeeds :seedTypeId="seedTypeId" @addSeedsEvent="addToSelection"></ExampleSeeds>
+            <ExampleSeeds v-if="$refs.validation" :seedTypeId="seedTypeId" @addSeedsEvent="addToSelection" @addSuggestionEvent="addToSuggestions" @addDrugsEvent="$refs.validation.addDrugs" @addDisorderEvent="saveDisorders"></ExampleSeeds>
             <v-container style="height: 560px; margin-top: 15px; max-width: 100%">
               <v-row style="height: 100%">
                 <v-col cols="6">

@@ -117,14 +117,28 @@ public class RequestController {
     @RequestMapping(value = "/getQuickExample", method = RequestMethod.GET)
     @ResponseBody
     public String getQuickExample(@RequestParam("nr") int nr, @RequestParam("nodeType") String nodeName) {
+        HashMap<String, Object> out = new HashMap<>();
         LinkedList<Object> nodes = new LinkedList<>();
         if (nr == 2) {
             webGraphService.getQuickExample(nodeName, nr).forEach(n -> {
                 nodes.add(nodeController.getNode(nodeName, n).getAsMap(new HashSet<>(Arrays.asList("id", "displayName", "primaryDomainId"))));
             });
-            return toJson(nodes);
+            out.put("data", nodes);
+            out.put("drugs", new LinkedList<>());
+            out.put("disorders", new LinkedList<>());
+            return toJson(out);
         } else {
-            return toJson(webGraphService.getConnectedNodes(nr == 0 ? "disorder" : "drug", nodeName, webGraphService.getQuickExample(nodeName, nr)));
+            LinkedList<Integer> disorderIds = webGraphService.getQuickExample(nodeName, nr);
+            out.put("data", webGraphService.getConnectedNodes(nr == 0 ? "disorder" : "drug", nodeName, disorderIds));
+            if (nr == 1) {
+                out.put("drugs", webGraphService.getDirectNodes(webGraphService.getQuickExample(nodeName,nr),"drug"));
+                out.put("disorders",new LinkedList<>());
+            }
+            if(nr==0){
+                out.put("drugs",webGraphService.getConnectedNodes("disorder","drug",disorderIds));
+                out.put("disorders",disorderIds);
+            }
+            return toJson(out);
         }
 
     }
@@ -386,9 +400,9 @@ public class RequestController {
         return toJson(detail);
     }
 
-    @RequestMapping(value= "/getThumbnailState", method=RequestMethod.GET)
+    @RequestMapping(value = "/getThumbnailState", method = RequestMethod.GET)
     @ResponseBody
-    public String getThumbnailState(@RequestParam("gid") String gid){
+    public String getThumbnailState(@RequestParam("gid") String gid) {
         return toJson(webGraphService.getThumbnailState(gid));
     }
 

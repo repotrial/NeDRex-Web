@@ -32,26 +32,42 @@
 <script>
 export default {
   name: "ExampleSeeds",
-  props:{
+  props: {
     seedTypeId: Number,
-    disabled:{
+    disabled: {
       type: Boolean,
       default: false,
     }
   },
 
 
-  methods:{
-    loadExample: async function(nr){
-      let example = await this.$http.getQuickExample(nr, ["gene","protein"][this.seedTypeId])
-      let origin = "Example "+(nr+1)+": ("
-      switch (nr){
-        case 0: origin+="Alzheimer"; break;
-        case 1: origin+="Breast Cancer Resistance Protein Inhibitors"; break;
-        case 2: origin+="Cancer Genes"; break;
+  methods: {
+    loadExample: async function (nr) {
+      let example = await this.$http.getQuickExample(nr, ["gene", "protein"][this.seedTypeId])
+      let origin = "Example " + (nr + 1) + ": ("
+      let text = ""
+      switch (nr) {
+        case 0: {
+          origin += "Alzheimer";
+          text = "Example (Alzheimer)"
+          break;
+        }
+        case 1: {
+          origin += "Breast Cancer Resistance Protein Inhibitors";
+          text = "Example (Breast Cancer Resistance Protein Inhibitors)"
+          break;
+        }
+        case 2: {
+          origin += "Cancer Genes";
+          text = "Example (Cancer Genes)"
+          break;
+        }
       }
-      origin+=")"
-      this.$emit("addSeedsEvent",{data:example, origin:origin})
+      origin += ")"
+      this.$emit("addSeedsEvent", {data: example.data, origin: origin})
+      this.$emit("addSuggestionEvent", {text: text})
+      this.$emit("addDrugsEvent",{data:example.drugs,origin:text})
+      this.$emit("addDisorderEvent",example.disorders)
     },
 
 

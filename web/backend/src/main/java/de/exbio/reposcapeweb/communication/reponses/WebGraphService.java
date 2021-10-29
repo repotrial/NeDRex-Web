@@ -1505,7 +1505,10 @@ public class WebGraphService {
     }
 
     public LinkedList<Object> getDirectNodes(Collection<Integer> ids, HashMap<String, Object> request) {
-        String sourceType = request.get("sourceType").toString();
+       return getDirectNodes(ids, request.get("sourceType").toString());
+    }
+
+    public LinkedList<Object> getDirectNodes(Collection<Integer> ids, String sourceType){
         HashSet<Integer> addedIds = new HashSet<>();
         LinkedList<Object> nodes = new LinkedList<>();
         AtomicReference<LinkedList<String>> edgeSource = new AtomicReference<>(null);
