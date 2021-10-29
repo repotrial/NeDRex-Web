@@ -207,9 +207,7 @@ public class JobController {
             if ((j.getResult().getNodes().isEmpty()) & (!j.getParams().containsKey("nodesOnly") || !j.getParams().get("nodesOnly").equals("true"))) {
                 j.setDerivedGraph(j.getBasisGraph());
             } else {
-                System.out.println("Removing basisjob");
                 boolean basisIsJob = getJobByGraphId(j.getBasisGraph()) != null;
-                System.out.println("remove?" +!basisIsJob);
                 graphService.applyJob(j, basisIsJob);
                 if (!basisIsJob) {
                     historyController.remove(j.getBasisGraph());
