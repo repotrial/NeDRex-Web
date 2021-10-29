@@ -164,8 +164,8 @@
                           </div>
                         </v-tooltip>
                         <SuggestionAutocomplete ref="suggestions" :suggestion-type="suggestionType" :emit-drugs="true"
-                                                @drugsEvent="$refs.validation.addDrugs" :disorder-select="true"
-                                                :target-node-type="['gene', 'protein'][seedTypeId]"
+                                                @drugsEvent="$refs.validation.addDrugs" :disorder-select="true" :emit-disorders="true"
+                                                :target-node-type="['gene', 'protein'][seedTypeId]" @disorderEvent="saveDisorders"
                                                 @addToSelectionEvent="addToSelection" @subtypeSelection="subtypePopup"
                                                 @suggestionEvent="addToSuggestions" :add-all="true"
                                                 style="justify-self: flex-end;margin-left: auto"></SuggestionAutocomplete>
@@ -467,6 +467,7 @@ export default {
     blitz: Boolean,
   },
   sugQuery: undefined,
+  disorderIds: [],
 
   data() {
     return {
@@ -534,6 +535,7 @@ export default {
       this.results.drugs = []
       this.seedOrigin = {}
       this.validationDrugCount = 0
+      this.disorderIds= []
       if (this.$refs.graph)
         this.$refs.graph.reload()
     },
@@ -638,8 +640,11 @@ export default {
           this.seeds.forEach(s => drugSeeds.splice(drugSeeds.indexOf(s.id), 1))
         }
       }
-      this.$emit("loadDrugTargetEvent", this.blitz, drugSeeds, ["gene", "protein"][this.seedTypeId], "Module Identification: " + this.$refs.algorithms.getAlgorithm().label)
+      this.$emit("loadDrugTargetEvent", {blitz:this.blitz, seeds:drugSeeds, type:["gene", "protein"][this.seedTypeId], origin:"Module Identification: " + this.$refs.algorithms.getAlgorithm().label, disorders:this.disorderIds, drugs:this.$refs.validation.getDrugs(), suggestions: this.selectedSuggestions})
       this.init()
+    },
+    saveDisorders: function (list) {
+      this.disorderIds = this.disorderIds.concat(list.filter(id => this.disorderIds.indexOf(id) === -1))
     }
     ,
     getHeaders: function (seeds) {

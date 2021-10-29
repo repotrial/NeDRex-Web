@@ -195,11 +195,14 @@ export default {
     loadGraphNewTab: function (gid) {
       this.$emit("graphLoadNewTabEvent", gid)
     },
-    loadDrugTarget: function (blitz, seeds, type, origin) {
-      this.blitz = blitz;
+    loadDrugTarget: function (data) {
+      this.blitz = data.blitz;
       this.modus = 2
       setTimeout(function () {
-        this.$refs.drugRanking.setSeeds(seeds, type, origin)
+        this.$refs.drugRanking.setSeeds(data.seeds, data.type, data.origin)
+        this.$refs.drugRanking.setDisorders(data.disorders)
+        this.$refs.drugRanking.setDrugs(data.drugs, data.origin)
+        this.$refs.drugRanking.setSuggestions(data.suggestions)
       }.bind(this), 500)
 
     },

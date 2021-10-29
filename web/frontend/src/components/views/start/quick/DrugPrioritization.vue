@@ -163,7 +163,7 @@
                         <SuggestionAutocomplete ref="suggestions" :suggestion-type="suggestionType" :emit-drugs="true"
                                                 :emit-disorders="true" :disorder-select="true"
                                                 @drugsEvent="$refs.validation.addDrugs" :add-all="true"
-                                                @disorderEvent="saveDisorders"  @subtypeSelection="subtypePopup"
+                                                @disorderEvent="saveDisorders" @subtypeSelection="subtypePopup"
                                                 :target-node-type="['gene', 'protein'][seedTypeId]"
                                                 @addToSelectionEvent="addToSelection"
                                                 @suggestionEvent="addToSuggestions"
@@ -201,7 +201,8 @@
             </v-container>
           </v-card>
           <ButtonCancel @click="makeStep"></ButtonCancel>
-          <ButtonNext :disabled="seedTypeId<0 || $refs.seedTable ==null || $refs.seedTable.getSeeds().length===0" @click="makeStep"></ButtonNext>
+          <ButtonNext :disabled="seedTypeId<0 || $refs.seedTable ==null || $refs.seedTable.getSeeds().length===0"
+                      @click="makeStep"></ButtonNext>
         </v-stepper-content>
 
         <v-stepper-content step="2">
@@ -263,7 +264,8 @@
                   </v-data-table>
                 </v-col>
                 <v-col>
-                  <Network ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle" :show-vis-option="showVisOption"
+                  <Network ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle"
+                           :show-vis-option="showVisOption"
                            :legend="results.targets.length>0" :tools="results.targets.length>0" :secondaryViewer="true"
                            @loadIntoAdvancedEvent="$emit('graphLoadEvent',{post: {id: jobs[currentJid].result}})">
                     <template v-slot:legend v-if="results.targets.length>0">
@@ -382,7 +384,8 @@
           <ButtonCancel label="RESTART" @click="makeStep"></ButtonCancel>
           <ButtonBack @click="makeStep"></ButtonBack>
           <ButtonNext @click="makeStep" label="VALIDATE" :disabled="currentGid == null"></ButtonNext>
-          <ButtonAdvanced @click="$emit('graphLoadNewTabEvent',{post: {id: jobs[currentJid].result}})" :disabled="currentGid==null"></ButtonAdvanced>
+          <ButtonAdvanced @click="$emit('graphLoadNewTabEvent',{post: {id: jobs[currentJid].result}})"
+                          :disabled="currentGid==null"></ButtonAdvanced>
         </v-stepper-content>
         <v-stepper-content step="4">
           <Validation ref="validation" :step="4" :seed-type-id="seedTypeId" :ranking="results.targets"
@@ -434,7 +437,8 @@
       </v-dialog>
 
     </v-stepper>
-    <DisorderHierarchyDialog v-if="$refs.suggestions!=null" ref="disorderHierarchy" @addDisorders="$refs.suggestions.loadDisorders"></DisorderHierarchyDialog>
+    <DisorderHierarchyDialog v-if="$refs.suggestions!=null" ref="disorderHierarchy"
+                             @addDisorders="$refs.suggestions.loadDisorders"></DisorderHierarchyDialog>
   </v-card>
 </template>
 
@@ -533,7 +537,7 @@ export default {
       this.validationDrugCount = 0
       this.results.target = []
       this.graphName = undefined
-      this.nameOptions=[]
+      this.nameOptions = []
       this.seedOrigin = {}
       this.showVisOption = false
       if (this.$refs.graph)
@@ -573,7 +577,7 @@ export default {
       }
       if (button === "back") {
         this.step--
-        if(this.step ===3){
+        if (this.step === 3) {
           this.loadGraph(this.currentGid)
         }
         if (this.step === 2) {
@@ -700,7 +704,7 @@ export default {
     methodScores: function () {
       return this.$refs.algorithms.getHeaders()
     },
-    subtypePopup: function(item){
+    subtypePopup: function (item) {
       this.$refs.disorderHierarchy.loadDisorder(item.sid)
     },
 
@@ -709,6 +713,21 @@ export default {
       this.$nextTick(() => {
         this.addToSelection({data: seeds, origin: origin})
       })
+    },
+    setDisorders: function (disorders) {
+      disorders.forEach(d=>this.disorderIds.push(d))
+    },
+
+    setDrugs: function (drugs, origin) {
+      if (this.$refs != null)
+        this.$refs.validation.addDrugs({data:drugs,origin:origin})
+      else
+        setTimeout(() => {
+          this.setDrugs(drugs,origin)
+        })
+    },
+    setSuggestions: function (suggestions) {
+      suggestions.forEach(s=>this.selectedSuggestions.push(s))
     },
 
     onFileSelected: function (file) {
@@ -763,8 +782,8 @@ export default {
         scores.forEach(s => text += sep + s.name)
         text += "\n"
         this.results.targets.forEach(t => {
-          let escape = t.displayName.indexOf(sep) > -1 ? "\"" : "";
-            text += data[t.id] + sep +escape+ t.displayName+escape
+            let escape = t.displayName.indexOf(sep) > -1 ? "\"" : "";
+            text += data[t.id] + sep + escape + t.displayName + escape
             scores.forEach(s => text += sep + t[s.id])
             text += "\n"
           }
@@ -946,7 +965,7 @@ export default {
         this.getGraph().then(graph => {
           graph.loadNetworkById(graphId).then(() => {
             graph.showLoops(false)
-            this.showVisOption=!this.graphConfig.visualized
+            this.showVisOption = !this.graphConfig.visualized
           })
         })
     }

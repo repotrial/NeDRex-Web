@@ -288,6 +288,7 @@ export default {
       return this.$refs.drugTable.getSeeds();
     },
 
+
     validate: function () {
       this.resetValidation()
       if (this.module != null && this.module.length > 0)
