@@ -37,14 +37,14 @@
             </v-list-item>
             <v-list-item>
               <v-list-item-title>Nodes
-                ({{
-                  Object.values(options.list.countMap.nodes).map(s => s.selected).reduce((s, v) => s + v)
-                }}/{{ Object.values(graphInfo.counts.nodes).reduce((s, v) => s + v) }})
+                ({{ getSelectedNumberOfNodes() }}/{{ getTotalNumberOfNodes() }})
               </v-list-item-title>
             </v-list-item>
             <v-list-item v-for="(count,name) in graphInfo.counts.nodes" :key="name" class="nedrex-list-item">
               <v-list-item-avatar>
-                <v-icon left :color="getExtendedColoring('nodes',name,'light')">fas fa-genderless</v-icon>
+                <v-icon left :color="getEntityGraph().nodes !=null ? getExtendedColoring('nodes',name,'light'):''">fas
+                  fa-genderless
+                </v-icon>
               </v-list-item-avatar>
               <v-list-item-subtitle>{{ name }}</v-list-item-subtitle>
               <v-list-item-subtitle style="min-width: 2rem; max-width: 3rem">{{
@@ -55,8 +55,8 @@
             <v-list-item>
               <v-list-item-title>Edges
                 ({{
-                  Object.values(options.list.countMap.edges).map(s => s.selected).reduce((s, v) => s + v)
-                }}/{{ Object.values(graphInfo.counts.edges).reduce((s, v) => s + v) }})
+                  getSelectedNumberOfEdges()
+                }}/{{ getTotalNumberOfEdges() }})
               </v-list-item-title>
             </v-list-item>
             <v-list-item v-for="(count,name) in graphInfo.counts.edges" :key="name" class="nedrex-list-item">
@@ -64,7 +64,7 @@
                 <v-icon class="nedrex-list-icon" size="15" :color="getExtendedColoring('edges',name,'light')[0]">fas
                   fa-genderless
                 </v-icon>
-                <template v-if="directionExtended(name)===0">
+                <template v-if=" directionExtended(name)===0">
                   <v-icon class="nedrex-list-icon" size="15">fas fa-undo-alt</v-icon>
                 </template>
                 <template v-else>
@@ -300,20 +300,20 @@
           </v-container>
         </v-list>
       </v-card>
-<!--      <v-card elevation="3" style="margin:15px" v-if="selectedTab ===3">-->
-<!--        <v-list-item @click="show.filter=!show.filter">-->
-<!--          <v-list-item-title>-->
-<!--            <v-icon left>{{ show.filter ? "far fa-minus-square" : "far fa-plus-square" }}</v-icon>-->
-<!--            Filter-->
-<!--          </v-list-item-title>-->
-<!--        </v-list-item>-->
-<!--        <v-divider></v-divider>-->
-<!--        <v-list>-->
-<!--          <v-container v-if="show.filter">-->
-<!--            content-->
-<!--          </v-container>-->
-<!--        </v-list>-->
-<!--        </v-card>-->
+      <!--      <v-card elevation="3" style="margin:15px" v-if="selectedTab ===3">-->
+      <!--        <v-list-item @click="show.filter=!show.filter">-->
+      <!--          <v-list-item-title>-->
+      <!--            <v-icon left>{{ show.filter ? "far fa-minus-square" : "far fa-plus-square" }}</v-icon>-->
+      <!--            Filter-->
+      <!--          </v-list-item-title>-->
+      <!--        </v-list-item>-->
+      <!--        <v-divider></v-divider>-->
+      <!--        <v-list>-->
+      <!--          <v-container v-if="show.filter">-->
+      <!--            content-->
+      <!--          </v-container>-->
+      <!--        </v-list>-->
+      <!--        </v-card>-->
 
       <template v-if="(selectedTab===1 && options.graph.visualized)" :options="options.graph.selection">
         <Selection ref="selection" :options="options.graph.selection"
@@ -429,7 +429,7 @@ export default {
         detail: false,
         algorithms: false,
         jobs: false,
-        filter:true,
+        filter: true,
       },
 
       menu: {
@@ -499,6 +499,34 @@ export default {
       this.$emit("reloadHistoryEvent")
     },
 
+    getTotalNumberOfEdges: function () {
+      let totalEdges = Object.values(this.graphInfo.counts.edges)
+      if (totalEdges.length > 0)
+        return totalEdges.reduce((s, v) => s + v)
+      return 0
+    },
+
+    getSelectedNumberOfEdges: function () {
+      let selectedEdges = Object.values(this.options.list.countMap.edges).map(s => s.selected)
+      if (selectedEdges.length === 0)
+        return 0
+      return selectedEdges.reduce((s, v) => s + v)
+    },
+
+    getSelectedNumberOfNodes: function () {
+      let selectedNodes = Object.values(this.options.list.countMap.nodes).map(s => s.selected);
+      if (selectedNodes.length === 0)
+        return 0
+      return selectedNodes.reduce((s, v) => s + v)
+    },
+
+    getTotalNumberOfNodes: function () {
+      let totalNodes = Object.values(this.graphInfo.counts.nodes)
+      if (totalNodes.length > 0)
+        return totalNodes.reduce((s, v) => s + v)
+      return 0
+    },
+
 
     openExternal: function (item, i) {
       window.open(this.getUrl(item, i), '_blank')
@@ -508,14 +536,28 @@ export default {
       return this.$utils.getColoring(this.$global.metagraph, type, name)
     },
 
+    getEntityGraph: function () {
+      return this.options.list.entityGraph
+    },
+
     getExtendedColoring: function (type, name, style) {
-      return this.$utils.getColoringExtended(this.$global.metagraph, this.options.list.entityGraph, type, name, style)
+      try {
+        return this.$utils.getColoringExtended(this.$global.metagraph, this.options.list.entityGraph, type, name, style)
+      }catch (e){
+        console.warn("entityGraph might have not been fully initialized")
+        return ''
+      }
     },
     directionExtended: function (edge) {
-      let e = Object.values(this.options.list.entityGraph.edges).filter(e => e.name === edge)[0];
-      if (e.node1 === e.node2)
+      try {
+        let e = Object.values(this.options.list.entityGraph.edges).filter(e => e.name === edge)[0];
+        if (e.node1 === e.node2)
+          return 0
+        return e.directed ? 1 : 2
+      } catch (e) {
+        console.warn("entityGraph might have not been fully initialized")
         return 0
-      return e.directed ? 1 : 2
+      }
     },
 
     saveGraphName: function () {
@@ -537,8 +579,8 @@ export default {
     }
     ,
     loadDetails: function (req) {
-        this.show.detail = req!=null;
-        this.$refs.details.loadDetails(req)
+      this.show.detail = req != null;
+      this.$refs.details.loadDetails(req)
     },
 
     loadFilter: function (data) {

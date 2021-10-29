@@ -26,16 +26,18 @@
       <v-row style="height: 100%">
         <v-col>
           <v-card-title style="margin-left: -25px">Select the Base-Algorithm</v-card-title>
-          <v-tabs v-model="methodModel" v-for="group in groups" :key="'tabs_'+group.id" v-if="group.id===groupModel" optional>
+          <v-tabs v-model="methodModel" v-for="group in groups" :key="'tabs_'+group.id" v-if="group.id===groupModel"
+                  optional>
             <v-tab v-for="method in methods.filter(m=>m.group===group.id)" :key="method.id">{{ method.label }}</v-tab>
           </v-tabs>
           <div v-if="methodModel!==undefined" style="margin-left: 20px">
             <div v-for="method in methods" :key="'desc_'+method.id" v-show="method.id===getAlgorithmMethod()">
-              <v-card-title style="margin-left:-15px; padding-top:10px; padding-bottom: 5px" @click="showDescription = !showDescription">{{ method.descType }}
-                <v-icon right>{{showDescription ? 'fas fa-angle-up':'fas fa-angle-down'}}</v-icon>
+              <v-card-title style="margin-left:-15px; padding-top:10px; padding-bottom: 5px"
+                            @click="showDescription = !showDescription">{{ method.descType }}
+                <v-icon right>{{ showDescription ? 'fas fa-angle-up' : 'fas fa-angle-down' }}</v-icon>
               </v-card-title>
               <div style="display: flex; justify-content: left; margin-left: 15px" v-show="showDescription">
-                <div  style="text-align: justify; color: dimgray">
+                <div style="text-align: justify; color: dimgray">
                   {{ getAlgorithm().description }}
                   <v-chip outlined><a :href="getAlgorithm().link" target="_blank" style="text-decoration: none">Read
                     more
@@ -482,7 +484,7 @@ export default {
   props: {
     seeds: Array,
     seedTypeId: Number,
-    socketEvent:String,
+    socketEvent: String,
     blitz: {
       type: Boolean,
       default: false
@@ -495,7 +497,7 @@ export default {
       rankingMethodModel: undefined,
       experimentalSwitch: true,
       groupModel: undefined,
-      showDescription:false,
+      showDescription: false,
       groups: [
         {
           id: "nw",
@@ -599,14 +601,16 @@ export default {
 
   created() {
     if (this.blitz) {
-      this.groupModel="nw"
+      this.groupModel = "nw"
       this.methodModel = 0
+      this.$emit("algorithmSelectedEvent", true)
     }
   },
 
   watch: {
-    groupModel: function (newVal, oldVal) {
-      this.methodModel = undefined
+    groupModel: function () {
+      if (!this.blitz)
+        this.methodModel = undefined
     },
 
     methodModel: function (value) {
