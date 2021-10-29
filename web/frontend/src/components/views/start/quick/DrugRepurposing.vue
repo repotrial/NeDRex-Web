@@ -374,8 +374,8 @@
                         </v-list>
                       </v-card>
                     </template>
-                    <template v-slot:tools v-if="results.drugs.length>0">
-                      <Tools :physics="true" ref="tools" :cc="false" :loops="false"
+                    <template v-slot:tools>
+                      <Tools :physics="true" ref="tools" :cc="false" :loops="false" v-if="results.drugs.length>0"
                              @toggleOptionEvent="toggleToolOption" @clickOptionEvent="clickToolOption"></Tools>
                     </template>
                   </Network>
@@ -688,7 +688,7 @@ export default {
           if (this.rankingGid == null || this.rankingGid === this.graphName)
             this.graphNamePopup()
           if (this.moduleGid != null && this.resultProgress===50)
-            this.loadGraph(this.moduleGid, true,true)
+            this.loadGraph(this.moduleGid, true)
           this.submitRankingAlgorithm()
         }
         this.focus()
@@ -697,7 +697,7 @@ export default {
       if (button === "back") {
         this.step--
         if (this.step === 4) {
-          this.loadGraph(this.rankingGid)
+          this.loadGraph(this.rankingGid,false,true)
         }
 
         if (this.step === 3) {
@@ -705,6 +705,7 @@ export default {
           this.rankingGid = undefined
           this.graphName = undefined
           this.$refs.graph.reload()
+          this.$refs.validation.resetValidation();
           this.resultProgress = 50
           if (this.rankingJid !== undefined)
             this.$socket.unsubscribeJob(this.rankingJid)

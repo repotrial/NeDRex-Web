@@ -588,6 +588,7 @@ export default {
           this.graphName = undefined
           this.currentGid=undefined
           this.$refs.graph.reload()
+          this.$refs.validation.resetValidation();
           this.$socket.unsubscribeJob(this.currentJid)
         }
 

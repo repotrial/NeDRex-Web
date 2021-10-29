@@ -329,7 +329,7 @@ export default {
       let sum = (this.nodeSet != null ? this.nodeSet.length : 0) + (this.edgeSet != null ? this.edgeSet.length : 0);
       this.$emit("disablePhysicsEvent", sum > 20000)
       this.$set(this.configuration, "sizeWarning", (this.nodeSet !== undefined && this.nodeSet.length > 1000) || (this.edgeSet !== undefined && this.edgeSet.length > 1000))
-      this.$set(this.configuration,"sizeCheck",true)
+      this.$set(this.configuration, "sizeCheck", true)
     },
     showLoops: function (state) {
       let updates = Object.values(this.edgeSet.get({
@@ -407,7 +407,7 @@ export default {
       this.setVisualized(false)
       if (this.configuration.sizeWarning)
         this.sizeDialog = true
-      else if(this.configuration.sizeCheck){
+      else if (this.configuration.sizeCheck) {
         this.prepare()
         this.show = true
         if (this.nodeSet != null) {
@@ -571,8 +571,9 @@ export default {
       })
     },
     getThumbnail: function (gid) {
-      return CONFIG.HOST_URL + CONFIG.CONTEXT_PATH + "/api/getThumbnailPath?gid=" + gid
-
+      if (this.thumbnailDone)
+        return CONFIG.HOST_URL + CONFIG.CONTEXT_PATH + "/api/getThumbnailPath?gid=" + gid
+      else return ""
     },
 
     thumbnailReady: function (response) {

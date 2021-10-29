@@ -255,8 +255,18 @@ export default {
       }
       return out
     },
+    resetValidation: function(){
+      this.moduleValidationUID = ""
+      this.rankingValidationUID = ""
+      this.moduleValidationStatus = ""
+      this.rankingValidationStatus = ""
+      this.moduleValidationScore = undefined
+      this.rankingValidationScore = undefined
+      this.moduleValidationError = ""
+      this.rankingValidationError = ""
+    },
+
     addToSelection: function (data) {
-      console.log(data)
       this.$refs.drugTable.addSeeds(data)
     }
     ,
@@ -279,14 +289,7 @@ export default {
     },
 
     validate: function () {
-      this.moduleValidationUID = ""
-      this.rankingValidationUID = ""
-      this.moduleValidationStatus = ""
-      this.rankingValidationStatus = ""
-      this.moduleValidationScore = undefined
-      this.rankingValidationScore = undefined
-      this.moduleValidationError = ""
-      this.rankingValidationError = ""
+      this.resetValidation()
       if (this.module != null && this.module.length > 0)
         this.validateModule(this.module, this.getDrugs(), this.moduleApproved, ["gene", "protein"][this.seedTypeId])
       if (this.ranking != null && this.ranking.length > 0)
