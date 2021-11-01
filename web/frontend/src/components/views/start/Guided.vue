@@ -14,11 +14,15 @@
             The resulting network is then <b>visualized</b> with all source and target nodes and the selected connections which
             also can be <b>exported</b> in the form of <b>edge-lists</b> on request.
           </div>
+          <div>
           <v-img style="justify-self: flex-end; margin-left: auto; cursor: pointer ; margin-right: 5px;"
                  :gradient="imgHover?'to top right, rgba(69,69,69,.3),rgba(69,69,69,.3)':''"
                  :src="$config.STATIC_PATH+'/assets/guided_visual_description.png'" max-width="20vw" width="20vw"
                  @mouseenter="imgHover=true" @mouseleave="imgHover=false"
                  @click="imagePopup"></v-img>
+            <v-card-subtitle style="padding:1px"><i>click to view</i></v-card-subtitle>
+          </div>
+
         </v-card-text>
         <v-btn @click="modus=1" color="primary" style="margin-bottom: 15px">Start
           <v-icon right>fas fa-angle-double-right</v-icon>
