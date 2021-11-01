@@ -443,7 +443,7 @@
                     </template>
                     <template v-slot:expanded-item="{ headers, item }">
                       <td :colspan="headers.length">
-                        <EntryDetails :max-width="headers.length"
+                        <EntryDetails max-width="280px"
                                       :detail-request="{edge:false, type: nodeList[sourceTypeId].value, id:item.id}"></EntryDetails>
                       </td>
                     </template>

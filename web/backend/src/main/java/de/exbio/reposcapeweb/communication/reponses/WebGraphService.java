@@ -240,10 +240,13 @@ public class WebGraphService {
                             distinctAttrs.forEach(attr -> {
                                 Object value = edgeAttrs.get(attr);
                                 try {
-                                    if (value instanceof String)
-                                        distinctValues.get(attr).add((String) value);
-                                    else
-                                        distinctValues.get(attr).addAll((LinkedList<String>) value);
+                                    if (value != null)
+                                        if (value instanceof String)
+                                            distinctValues.get(attr).add((String) value);
+                                        if (value instanceof Integer)
+                                            distinctValues.get(attr).add(value+"");
+                                        else
+                                            distinctValues.get(attr).addAll((LinkedList<String>) value);
                                 } catch (NullPointerException ignore) {
                                 }
                             });
@@ -501,30 +504,30 @@ public class WebGraphService {
         return (gid == null ? nodeController.getFilter(nodeName) : getCachedGraph(gid).getNodeFilter(nodeName)).getEntry(sid).stream().map(FilterEntry::getNodeId).collect(Collectors.toSet());
     }
 
-    public HashMap<String,Object> getDisorderHierarchy(String sid) {
+    public HashMap<String, Object> getDisorderHierarchy(String sid) {
         HashMap<String, Object> graph = new HashMap<>();
-        HashMap<Integer,WebNode> nodes = new HashMap<>();
+        HashMap<Integer, WebNode> nodes = new HashMap<>();
         LinkedList<WebEdge> edges = new LinkedList<>();
         Disorder root = nodeController.findDisorder(nodeController.getFilter("disorder").getEntry(sid).stream().findFirst().get().getNodeId());
-        nodes.put(root.getId(),new WebNode(root.getId(),root.getDisplayName(),"disorder"));
-        getDisorderChildren(root.getId(),nodes, edges);
-        graph.put("nodes",new LinkedList(nodes.values()));
-        graph.put("edges",edges);
+        nodes.put(root.getId(), new WebNode(root.getId(), root.getDisplayName(), "disorder"));
+        getDisorderChildren(root.getId(), nodes, edges);
+        graph.put("nodes", new LinkedList(nodes.values()));
+        graph.put("edges", edges);
         return graph;
     }
 
-    public void getDisorderChildren(Integer id, HashMap<Integer,WebNode> nodes, LinkedList<WebEdge> edges) {
+    public void getDisorderChildren(Integer id, HashMap<Integer, WebNode> nodes, LinkedList<WebEdge> edges) {
         try {
             this.edgeController.getDisorderIsADisorderChildren(id).forEach(edge -> {
-                if(edge.getId1()==edge.getId2())
+                if (edge.getId1() == edge.getId2())
                     return;
                 int childId = id == edge.getId1() ? edge.getId2() : edge.getId1();
                 Disorder d = nodeController.findDisorder(childId);
-                nodes.put(d.getId(),new WebNode(d.getId(),d.getDisplayName(),"disorder"));
+                nodes.put(d.getId(), new WebNode(d.getId(), d.getDisplayName(), "disorder"));
                 edges.add(new WebEdge(edge));
                 getDisorderChildren(childId, nodes, edges);
             });
-        }catch (NullPointerException ignore){
+        } catch (NullPointerException ignore) {
         }
     }
 
@@ -1261,12 +1264,12 @@ public class WebGraphService {
                 }
             } else {
                 layoutGenerating.add(g.getId());
-                if(!this.getThumbnail(g.getId()).exists()) {
+                if (!this.getThumbnail(g.getId()).exists()) {
                     thumbnailGenerating.add(g.getId());
                     toolService.createLayoutAndThumbnail(getDownload(g.getId()), lay, getThumbnail(g.getId()));
                     thumbnailGenerating.remove(g.getId());
                     socketController.setThumbnailReady(g.getId());
-                }else{
+                } else {
                     toolService.createLayout(getDownload(g.getId()), lay);
                 }
                 layoutGenerating.remove(g.getId());
@@ -1505,10 +1508,10 @@ public class WebGraphService {
     }
 
     public LinkedList<Object> getDirectNodes(Collection<Integer> ids, HashMap<String, Object> request) {
-       return getDirectNodes(ids, request.get("sourceType").toString());
+        return getDirectNodes(ids, request.get("sourceType").toString());
     }
 
-    public LinkedList<Object> getDirectNodes(Collection<Integer> ids, String sourceType){
+    public LinkedList<Object> getDirectNodes(Collection<Integer> ids, String sourceType) {
         HashSet<Integer> addedIds = new HashSet<>();
         LinkedList<Object> nodes = new LinkedList<>();
         AtomicReference<LinkedList<String>> edgeSource = new AtomicReference<>(null);
@@ -1562,9 +1565,9 @@ public class WebGraphService {
 
     public String getThumbnailState(String gid) {
         File thumb = getThumbnail(gid);
-        if(thumb.exists())
+        if (thumb.exists())
             return "ready";
-        if(thumbnailGenerating.contains(gid))
+        if (thumbnailGenerating.contains(gid))
             return "running";
         return "not requested";
     }

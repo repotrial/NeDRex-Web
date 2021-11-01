@@ -230,7 +230,7 @@ export default {
         "failed": ["red", "far fa-times-circle"],
         "completed": ["green", "fas fa-check"]
       },
-      scoreIds: ["empirical DCG-based p-value", "empirical p-value without considering ranks", "empircal (precision-based) p-value", "emprirical p-value"]
+      scoreIds: ["empirical DCG-based p-value", "empirical p-value without considering ranks", "empirical (precision-based) p-value", "empirical p-value"]
     }
   },
 
