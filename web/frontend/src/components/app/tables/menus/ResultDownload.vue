@@ -12,7 +12,7 @@
       <v-menu v-if="seeds" right offset-x transition="slide-x-transition" open-on-hover>
         <template v-slot:activator="{on,attrs}">
           <v-list-item v-bind="attrs" v-on="on">
-            Seeds
+            {{label}}
             <v-icon right>fas fa-caret-right</v-icon>
           </v-list-item>
         </template>
@@ -75,6 +75,9 @@ export default {
     seeds: Boolean,
     results: Boolean,
     raw: Boolean,
+    label:{
+      default: "Seeds"
+    }
   }
 }
 </script>

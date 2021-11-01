@@ -162,6 +162,7 @@ export default {
         this.suggestions.data.forEach(s=>this.loadVals(s))
     },
 
+
     loadVals: function (val) {
       this.$http.post("getConnectedNodes", {
         sourceType: this.suggestionType,

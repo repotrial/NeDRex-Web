@@ -56,8 +56,8 @@
           <v-card
             v-show="step===1"
             class="mb-4"
-            max-height="980px"
-            height="980px"
+            max-height="1010px"
+            height="1010px"
           >
 
             <v-card-subtitle class="headline">Node Configuration</v-card-subtitle>
@@ -68,8 +68,8 @@
               Manually adjust the list. <i>Optional:</i> Also specify the target nodes in the same way in case only
               specific connections might be of interest.
             </v-card-subtitle>
-
-            <div style="height: 960px; display: flex">
+            <GuidedExamples @exampleEvent="applyExample" @addNodesEvent="addToSelection"></GuidedExamples>
+            <div style="height: 960px; display: flex; margin-top:10px;">
               <div style="justify-self: flex-start; width: 48%;">
                 <div style="display: flex; justify-content: flex-start;">
                   <div class="title" style="padding-top: 16px;">1a. Select the source node type:</div>
@@ -144,16 +144,10 @@
               </div>
             </div>
           </v-card>
-          <v-btn
-            color="primary"
-            @click="makeStep('continue')"
+          <ButtonNext
             :disabled="sourceTypeId===undefined || targetTypeId===undefined  ||  ($refs.sourceTable &&$refs.sourceTable.getSeeds().length<1)"
-          >
-            Continue
-          </v-btn>
-          <v-btn text @click="makeStep('cancel')">
-            Reset
-          </v-btn>
+            @click="makeStep"></ButtonNext>
+          <ButtonCancel @click="makeStep"></ButtonCancel>
         </v-stepper-content>
         <v-stepper-content step="2">
           <v-card
@@ -288,22 +282,25 @@
               </v-col>
             </v-row>
           </v-card>
-          <v-btn
-            @click="makeStep('back')"
-          >
-            Back
-          </v-btn>
-          <v-btn
-            color="primary"
-            @click="makeStep('continue')"
-            :disabled="(selectedPath === undefined || selectedPath.length === 0) || (!options.general.keep&&!direct && (options.general.name === undefined || options.general.name.length===0))"
-          >
-            Continue
-          </v-btn>
-
-          <v-btn text @click="makeStep('cancel')">
-            Cancel
-          </v-btn>
+          <ButtonBack @click="makeStep"></ButtonBack>
+          <!--          <v-btn-->
+          <!--            @click="makeStep('back')"-->
+          <!--          >-->
+          <!--            Back-->
+          <!--          </v-btn>-->
+          <ButtonNext @click="makeStep"
+                      :disabled="(selectedPath === undefined || selectedPath.length === 0) || (!options.general.keep&&!direct && (options.general.name === undefined || options.general.name.length===0))"></ButtonNext>
+          <!--          <v-btn-->
+          <!--            color="primary"-->
+          <!--            @click="makeStep('continue')"-->
+          <!--            -->
+          <!--          >-->
+          <!--            Continue-->
+          <!--          </v-btn>-->
+          <ButtonCancel @click="makeStep"></ButtonCancel>
+          <!--          <v-btn text @click="makeStep('cancel')">-->
+          <!--            Cancel-->
+          <!--          </v-btn>-->
         </v-stepper-content>
         <v-stepper-content step="3">
           <v-card
@@ -316,7 +313,7 @@
             </v-card-subtitle>
 
             <v-row>
-              <v-col cols="2" style="padding: 0">
+              <v-col style="padding: 0; max-width: 360px;">
                 <v-card-title class="subtitle-1">Sources ({{ sources.length }})
                 </v-card-title>
                 <v-data-table max-height="550px" height="550px" class="overflow-y-auto" fixed-header dense item-key="id"
@@ -340,14 +337,14 @@
                   </template>
                   <template v-slot:expanded-item="{ headers, item }">
                     <td :colspan="headers.length">
-                      <EntryDetails :max-width="headers.length"
+                      <EntryDetails max-width="280px"
                                     :detail-request="{edge:false, type: nodeList[sourceTypeId].value, id:item.id}"></EntryDetails>
                     </td>
                   </template>
                   <template v-slot:footer>
                     <div style="display: flex; justify-content: center; margin-left: auto">
                       <div style="padding-top: 16px; padding-bottom: 8px">
-                        <ResultDownload v-show="sources !=null && sources.length>0" seeds
+                        <ResultDownload v-show="sources !=null && sources.length>0" seeds label="Sources"
                                         @downloadEvent="downloadSourceList"></ResultDownload>
                       </div>
                     </div>
@@ -416,7 +413,7 @@
 
                 </Network>
               </v-col>
-              <v-col cols="2" style="padding: 0 10px 0 0">
+              <v-col style="padding: 0 10px 0 0; max-width: 360px">
                 <v-card-title class="subtitle-1"> Targets{{
                     (targets.length > 0 ? (" (" + (targets.length) + ")") : ": Processing")
                   }}
@@ -453,7 +450,7 @@
                     <template v-slot:footer>
                       <div style="display: flex; justify-content: center; margin-left: auto">
                         <div style="padding-top: 16px;padding-bottom: 8px">
-                          <ResultDownload v-show="targets !=null && targets.length>0" seeds
+                          <ResultDownload v-show="targets !=null && targets.length>0" seeds label="Targets"
                                           @downloadEvent="downloadTargetList"></ResultDownload>
                         </div>
                       </div>
@@ -463,14 +460,10 @@
               </v-col>
             </v-row>
           </v-card>
-          <v-btn style="margin-bottom: 10px"
-                 @click="makeStep('back')"
-          >
-            Back
-          </v-btn>
-          <v-btn style="margin-bottom: 10px" text @click="makeStep('cancel')">
-            Restart
-          </v-btn>
+          <div style="padding-top: 10px">
+            <ButtonBack @click="makeStep"></ButtonBack>
+            <ButtonCancel @click="makeStep"></ButtonCancel>
+          </div>
         </v-stepper-content>
       </v-stepper-items>
     </v-stepper>
@@ -485,6 +478,10 @@ import ResultDownload from "@/components/app/tables/menus/ResultDownload";
 import NodeInput from "@/components/app/input/NodeInput";
 import Legend from "@/components/views/graph/Legend";
 import EntryDetails from "@/components/app/EntryDetails";
+import ButtonNext from "@/components/start/quick/ButtonNext";
+import ButtonBack from "@/components/start/quick/ButtonBack";
+import ButtonCancel from "@/components/start/quick/ButtonCancel";
+import GuidedExamples from "@/components/start/guided/GuidedExamples";
 
 
 export default {
@@ -541,7 +538,8 @@ export default {
         countMap: {},
         entityGraph: {},
         options: {}
-      }
+      },
+      example: undefined,
 
     }
   },
@@ -567,6 +565,12 @@ export default {
         this.direct = false
         this.options.general.keep = false
       }
+      if (this.example != null)
+        if (this.example.compress) {
+          this.options.general.name = this.example.edge
+        } else {
+          this.options.general.keep = true
+        }
     }
 
 
@@ -589,6 +593,8 @@ export default {
       this.selectedPath = []
       this.pathModel = -1
       this.clearPaths()
+
+      this.example = undefined
 
       this.options.general.keep = false
       this.options.general.name = undefined
@@ -646,15 +652,33 @@ export default {
             this.$global.metagraph.edges.forEach(e2 => {
               if (e2.to === i1 || e2.from === i1) {
                 let i2 = (e2.to === i1) ? e2.from : e2.to
-                if (i2 === targetId)
-                  this.paths[1].push([{label: e1.label, direction: e1.from === sourceId}, {
+                if (i2 === targetId) {
+                  let via = this.$global.metagraph.nodes.filter(n => n.id === (e2.to === targetId ? e2.from : e2.to))[0].group
+                  this.paths[1].push([{label: e1.label, connector: via, direction: e1.from === sourceId}, {
                     label: e2.label,
+                    connector: via,
                     direction: e2.to === targetId
                   }])
+                }
               }
             })
         }
       })
+      if (this.example != null) {
+        if (this.example.connector != null) {
+          let nr = this.paths[0].length
+          for (let i = 0; i < this.paths[1].length; i++) {
+            if (this.paths[1][i][0].connector === this.example.connector) {
+              nr += i
+              break;
+            }
+          }
+          this.pathModel = nr;
+        } else {
+          this.printNotification("not implemented yet", 2)
+        }
+      }
+
     },
 
     focusNode: function (id) {
@@ -799,7 +823,7 @@ export default {
           return response.data
       }).then(data => {
         let text = "#ID" + (names ? sep + "Name" : "") + "\n";
-        let dlName = nodeType + "_seeds." + (!names ? "list" : (sep === '\t' ? "tsv" : "csv"))
+        let dlName = nodeType + "_" + ["seeds", "targets"][index] + "." + (!names ? "list" : (sep === '\t' ? "tsv" : "csv"))
         if (!names) {
           Object.values(data).forEach(id => text += id + "\n")
         } else {
@@ -819,6 +843,16 @@ export default {
       document.body.removeChild(dl)
     }
     ,
+    applyExample: function (example) {
+      this.reset()
+      this.example = example
+      for (let i = 0; i < this.nodeList.length; i++) {
+        if (this.nodeList[i].value === example.source)
+          this.sourceTypeId = i
+        if (this.nodeList[i].value === example.target)
+          this.targetTypeId = i
+      }
+    },
 
     makeStep: async function (button) {
       if (button === "continue") {
@@ -901,6 +935,10 @@ export default {
   }
   ,
   components: {
+    GuidedExamples,
+    ButtonCancel,
+    ButtonNext,
+    ButtonBack,
     SuggestionAutocomplete,
     NodeInput,
     Network,
