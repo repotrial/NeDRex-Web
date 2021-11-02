@@ -61,7 +61,7 @@
           <v-card
             v-show="step===1"
             class="mb-4"
-            max-height="85vh"
+            min-height="85vh"
           >
 
             <v-card-subtitle class="headline">1. Seed Configuration</v-card-subtitle>
@@ -275,7 +275,8 @@
           <v-card
             v-if="step===4"
             class="mb-4"
-            height="80vh"
+            min-height="80vh"
+            max-height="775px"
           >
             <v-card-subtitle class="headline">4. Drug Repurposing Results</v-card-subtitle>
             <v-divider style="margin: 15px;"></v-divider>
@@ -317,7 +318,7 @@
                     </template>
                     <template v-slot:footer>
                       <div style="display: flex; justify-content: center; margin-left: auto">
-                        <div style="padding-top: 16px">
+                        <div style="padding-top: 16px;margin-bottom: 8px;">
                           <ResultDownload v-show="seeds !=null && seeds.length>0 && results.targets !=null" raw results
                                           seeds
                                           @downloadEvent="downloadSeedList"
@@ -451,7 +452,7 @@
                       </template>
                       <template v-slot:footer>
                         <div style="display: flex; justify-content: center">
-                          <div style="padding-top: 16px">
+                          <div style="padding-top: 16px; margin-bottom: 8px;">
                             <ResultDownload v-show="results.drugs.length>0" raw results
                                             @downloadResultsEvent="downloadRankingResultList"
                                             @downloadRawEvent="downloadFullResultList(rankingJid)"></ResultDownload>
