@@ -115,17 +115,24 @@
             <v-card-subtitle v-if="moduleValidationStatus !=null" class="title">Module Validation Result:
             </v-card-subtitle>
             <v-card-subtitle style="margin-top: -25px">
-              <v-chip v-if="styleMap[moduleValidationStatus]!=null" style="margin-left: 10px"
-                      :color="styleMap[moduleValidationStatus][0]"><a style="color: white;text-decoration: none"
-                                                                      target="_blank"
-                                                                      :href="'https://api.nedrex.net/validation/status?uid='+moduleValidationUID">
-                {{ moduleValidationStatus }}
-                <v-icon right size="10pt">{{ styleMap[moduleValidationStatus][1] }}</v-icon>
-              </a>
-              </v-chip>
+              <v-tooltip bottom v-if="styleMap[moduleValidationStatus]!=null">
+                <template v-slot:activator="{attrs, on}">
+                  <v-chip style="margin-left: 10px" v-on="on" v-bind="attrs"
+                          :color="styleMap[moduleValidationStatus][0]"><a style="color: white;text-decoration: none"
+                                                                          target="_blank"
+                                                                          :href="'http://82.148.225.92:8022/validation/status?uid='+moduleValidationUID">
+                    {{ moduleValidationStatus }}
+                    <v-icon size="10pt">{{ styleMap[moduleValidationStatus][1] }}</v-icon>
+                  </a>
+                  </v-chip>
+                </template>
+                <div><b>Current State: </b>{{ moduleValidationStatus }}<br><i>Click here to show the raw server
+                  response!</i></div>
+              </v-tooltip>
             </v-card-subtitle>
             <div style="display: flex; justify-content: center; width: 100%">
-              <v-simple-table v-if="moduleValidationError.length===0" style="max-width: 400px;">
+              <v-simple-table v-if="moduleValidationError == null || moduleValidationError.length===0"
+                              style="max-width: 400px;">
                 <template v-slot:default>
                   <thead>
                   <tr>
@@ -142,28 +149,35 @@
                   </tbody>
                 </template>
               </v-simple-table>
-            <div v-else>
-              Error:
-              <div style="color: dimgray">{{ moduleValidationError }}</div>
-            </div>
+              <div v-else>
+                Error:
+                <div style="color: dimgray">{{ moduleValidationError }}</div>
+              </div>
             </div>
           </div>
           <div v-if="ranking!=null">
             <v-card-subtitle v-if="rankingValidationStatus !=null" class="title">Ranking Validation Result:
             </v-card-subtitle>
             <v-card-subtitle style="margin-top: -25px">
-              <v-chip v-if="styleMap[rankingValidationStatus]!=null" style="color: white; margin-left: 10px"
-                      :color="styleMap[rankingValidationStatus][0]"><a style="color: white;text-decoration: none"
-                                                                       target="_blank"
-                                                                       :href="'https://api.nedrex.net/validation/status?uid='+rankingValidationUID">
-                {{ rankingValidationStatus }}
-                <v-icon right size="10pt">{{ styleMap[rankingValidationStatus][1] }}</v-icon>
-              </a>
-              </v-chip>
+              <v-tooltip bottom v-if="styleMap[rankingValidationStatus]!=null">
+                <template v-slot:activator="{attrs, on}">
+                  <v-chip style="color: white; margin-left: 10px" v-on="on" v-bind="attrs"
+                          :color="styleMap[rankingValidationStatus][0]"><a style="color: white;text-decoration: none"
+                                                                           target="_blank"
+                                                                           :href="'http://82.148.225.92:8022/validation/status?uid='+rankingValidationUID">
+                    {{ rankingValidationStatus }}
+                    <v-icon size="10pt">{{ styleMap[rankingValidationStatus][1] }}</v-icon>
+                  </a>
+                  </v-chip>
+                </template>
+                <div><b>Current State: </b>{{ rankingValidationStatus }}<br><i>Click here to show the raw server
+                  response!</i></div>
+              </v-tooltip>
             </v-card-subtitle>
 
             <div style="display: flex; justify-content: center; width: 100%">
-              <v-simple-table v-if="rankingValidationError.length===0" style="max-width: 400px;">
+              <v-simple-table v-if="rankingValidationError == null ||rankingValidationError.length===0"
+                              style="max-width: 400px;">
                 <template v-slot:default>
                   <thead>
                   <tr>
@@ -226,6 +240,7 @@ export default {
       moduleValidationError: "",
       rankingValidationError: "",
       styleMap: {
+        "submitted": ["warning", "fas fa-hourglass-start"],
         "running": ["primary", "fas fa-circle-notch fa-spin"],
         "failed": ["red", "far fa-times-circle"],
         "completed": ["green", "fas fa-check"]
@@ -249,13 +264,13 @@ export default {
         }
         return {value: node.group, text: node.label}
       })
-      out.push({value:type, text:"Drug"})
+      out.push({value: type, text: "Drug"})
       if (!this.advancedOptions) {
         this.suggestionType = out[disorderIdx].value;
       }
       return out
     },
-    resetValidation: function(){
+    resetValidation: function () {
       this.moduleValidationUID = ""
       this.rankingValidationUID = ""
       this.moduleValidationStatus = ""
@@ -300,6 +315,7 @@ export default {
     validateModule: async function (targets, validationDrugs, approved, type) {
       //FIXME remove when fixed; necessary to avoid errors for the time being
       let filtered = await this.$http.getInteractingOnly(type, targets.map(n => n.id)).catch(console.error)
+      // let filtered = targets.map(n=>n.id)
       this.moduleValidationStatus = "preparing"
       let refDrugs = Object.values(validationDrugs).map(d => d.primaryDomainId);
       if (refDrugs.length === 0) {
@@ -320,7 +336,7 @@ export default {
       }).catch(console.error)
     },
 
-    validateDrugs: function (targets, validationDrugs, approved) {
+    validateDrugs: function (targets, validationDrugs) {
       this.rankingValidationStatus = "preparing"
       let refDrugs = Object.values(validationDrugs).map(d => d.primaryDomainId);
       if (refDrugs.length === 0) {
@@ -347,7 +363,7 @@ export default {
       if (this[type + "ValidationScore"] == null)
         this.$http.getValidationScore(id).then(response => {
           this.$set(this, type + "ValidationStatus", response.data.status);
-          if (this[type + "ValidationStatus"] === "running")
+          if (this[type + "ValidationStatus"] === "running" || this[type + "ValidationStatus"] === "submitted")
             setTimeout(() => {
               this.checkValidationScore(id, type)
             }, 5000)
