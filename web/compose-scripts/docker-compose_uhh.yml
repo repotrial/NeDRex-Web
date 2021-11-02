@@ -28,7 +28,7 @@ services:
       - "db"
     build: backend
     environment:
-      - spring_profiles_active=exbio
+      - spring_profiles_active=uhh
     volumes:
       - nedrex-cache-volume:/etc/data/db
       - nedrex-usr-volume:/etc/data/usr

@@ -77,6 +77,22 @@
           "detail": true,
           "id": false,
           "label": "Type"
+        },
+        {
+          "name": "created",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Created"
+        },
+        {
+          "name": "updated",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Updated"
         }
       ]
     },
@@ -210,16 +226,7 @@
           "label": "Indication"
         },
         {
-          "name": "_cls",
-          "source": true,
-          "list": false,
-          "detail": true,
-          "id": false,
-          "label": "Drug-CLS",
-          "disctinct": true
-        },
-        {
-          "name": "sequences",
+          "name": "sequence",
           "source": true,
           "list": false,
           "detail": true,
@@ -252,6 +259,22 @@
           "detail": true,
           "id": false,
           "label": "Type"
+        },
+        {
+          "name": "created",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Created"
+        },
+        {
+          "name": "updated",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Updated"
         }
       ]
     },
@@ -366,6 +389,22 @@
           "detail": true,
           "id": false,
           "label": "Type"
+        },
+        {
+          "name": "created",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Created"
+        },
+        {
+          "name": "updated",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Updated"
         }
       ]
     },
@@ -422,12 +461,36 @@
           "label": "Species"
         },
         {
+          "name": "taxid",
+          "source": true,
+          "list": false,
+          "id": false,
+          "detail": true,
+          "label": "TaxID"
+        },
+        {
           "name": "type",
           "source": true,
           "list": false,
           "detail": true,
           "id": false,
           "label": "Type"
+        },
+        {
+          "name": "created",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Created"
+        },
+        {
+          "name": "updated",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Updated"
         }
       ]
     },
@@ -525,6 +588,22 @@
           "detail": true,
           "id": false,
           "label": "Type"
+        },
+        {
+          "name": "created",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Created"
+        },
+        {
+          "name": "updated",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Updated"
         }
       ]
     }
@@ -634,7 +713,24 @@
           "id": false,
           "label": "Type",
           "distinct": false
+        },
+        {
+          "name": "created",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Created"
+        },
+        {
+          "name": "updated",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Updated"
         }
+
       ]
     },
     {
@@ -713,6 +809,22 @@
           "id": false,
           "label": "Type",
           "distinct": false
+        },
+        {
+          "name": "created",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Created"
+        },
+        {
+          "name": "updated",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Updated"
         }
       ]
     },
@@ -813,13 +925,13 @@
           "distinct": true
         },
         {
-          "name": "databases",
+          "name": "assertedBy",
           "source": true,
           "list": false,
           "detail": true,
           "id": false,
           "type": "array",
-          "label": "Databases",
+          "label": "AssertedBy",
           "distinct": true
         },
         {
@@ -831,6 +943,22 @@
           "type": "array",
           "label": "Methods",
           "distinct": false
+        },
+        {
+          "name": "created",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Created"
+        },
+        {
+          "name": "updated",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Updated"
         }
       ]
     },
@@ -919,12 +1047,28 @@
           "id": false,
           "label": "Type",
           "distinct": false
+        },
+        {
+          "name": "created",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Created"
+        },
+        {
+          "name": "updated",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Updated"
         }
       ]
     },
     {
       "id": 4,
-      "name": "protein_encoded_by",
+      "name": "protein_encoded_by_gene",
       "label": "ProteinEncodedBy",
       "original": true,
       "directed": true,
@@ -1007,6 +1151,22 @@
           "id": false,
           "label": "Type",
           "distinct": false
+        },
+        {
+          "name": "created",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Created"
+        },
+        {
+          "name": "updated",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Updated"
         }
       ]
     },
@@ -1104,6 +1264,22 @@
           "type": "array",
           "label": "AssertedBy",
           "distinct": true
+        },
+        {
+          "name": "created",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Created"
+        },
+        {
+          "name": "updated",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Updated"
         }
       ]
     },
@@ -1202,6 +1378,31 @@
           "type": "array",
           "label": "Databases",
           "distinct": true
+        },
+        {
+          "name": "assertedBy",
+          "list": true,
+          "detail": true,
+          "id": false,
+          "type": "array",
+          "label": "AssertedBy",
+          "distinct": true
+        },
+        {
+          "name": "created",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Created"
+        },
+        {
+          "name": "updated",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Updated"
         }
       ]
     },
@@ -1310,6 +1511,42 @@
           "type": "array",
           "label": "assertedBy",
           "distinct": true
+        },
+        {
+          "name": "omimFlags",
+          "source": true,
+          "list": false,
+          "detail": true,
+          "id": false,
+          "type": "array",
+          "label": "OMIM-Flags",
+          "distinct": true
+        },
+        {
+          "name": "omimMappingCode",
+          "source": true,
+          "list": false,
+          "detail": true,
+          "id": false,
+          "type": "numeric",
+          "label": "OMIM-MappingCode",
+          "distinct": true
+        },
+        {
+          "name": "created",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Created"
+        },
+        {
+          "name": "updated",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Updated"
         }
       ]
     },
@@ -1439,6 +1676,22 @@
           "type": "numeric",
           "label": "RR-21",
           "distinct": false
+        },
+        {
+          "name": "created",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Created"
+        },
+        {
+          "name": "updated",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Updated"
         }
       ]
     },
@@ -1527,6 +1780,22 @@
           "id": false,
           "label": "Type",
           "distinct": false
+        },
+        {
+          "name": "created",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Created"
+        },
+        {
+          "name": "updated",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Updated"
         }
       ]
     },
@@ -1608,6 +1877,16 @@
           "distinct": false
         },
         {
+          "name": "assertedBy",
+          "source": true,
+          "list": true,
+          "detail": true,
+          "id": false,
+          "type": "array",
+          "label": "assertedBy",
+          "distinct": true
+        },
+        {
           "name": "type",
           "source": true,
           "list": false,
@@ -1615,6 +1894,22 @@
           "id": false,
           "label": "Type",
           "distinct": false
+        },
+        {
+          "name": "created",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Created"
+        },
+        {
+          "name": "updated",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Updated"
         }
       ]
     },
@@ -1696,6 +1991,16 @@
           "distinct": false
         },
         {
+          "name": "assertedBy",
+          "source": true,
+          "list": true,
+          "detail": true,
+          "id": false,
+          "type": "array",
+          "label": "assertedBy",
+          "distinct": true
+        },
+        {
           "name": "type",
           "source": true,
           "list": false,
@@ -1703,6 +2008,22 @@
           "id": false,
           "label": "Type",
           "distinct": false
+        },
+        {
+          "name": "created",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Created"
+        },
+        {
+          "name": "updated",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Updated"
         }
       ]
     }
