@@ -17,6 +17,14 @@
           </v-list-item>
         </v-list>
       </v-menu>
+      <v-tooltip right>
+        <template v-slot:activator="{attrs, on}">
+          <v-icon right color="gray" size="10pt" v-on="on" v-bind="attrs">far fa-question-circle</v-icon>
+        </template>
+        <div>Select an example and this and all further steps are automatically defined.<br> You can still adjust
+          anything you want or just <b>continue</b> straight to the result page!
+        </div>
+      </v-tooltip>
     </v-col>
   </v-row>
 </template>
@@ -62,9 +70,9 @@ export default {
           sourceQuery: "Antidepressive Agents",
           sourceType: "category",
           source: "drug",
-          target:"disorder",
-          targetType:"umbrella_disorder",
-          targetQuery:"depressive disorder",
+          target: "disorder",
+          targetType: "umbrella_disorder",
+          targetQuery: "depressive disorder",
           compress: true,
           edge: "Indirect antidepressant effect"
         }
@@ -86,13 +94,18 @@ export default {
         }
       }).then(data => {
         let entry = data.suggestions.filter(d => d.text === example.sourceQuery && d.type.toLowerCase() === example.sourceType)[0]
-        this.loadRequest({suggestionType:example.source, targetNodeType: example.source, sid: entry.sid, sourceQuery: example.sourceQuery}).then(data=>{
+        this.loadRequest({
+          suggestionType: example.source,
+          targetNodeType: example.source,
+          sid: entry.sid,
+          sourceQuery: example.sourceQuery
+        }).then(data => {
           data.origin = "Example " + (nr + 1) + ": (" + example.sourceQuery + ")"
-          this.$emit("addNodesEvent",data,0)
+          this.$emit("addNodesEvent", data, 0)
         })
       })
 
-      if(example.targetQuery){
+      if (example.targetQuery) {
         this.$http.post("getSuggestions", {
           name: example.target,
           query: example.targetQuery
@@ -102,9 +115,14 @@ export default {
           }
         }).then(data => {
           let entry = data.suggestions.filter(d => d.text === example.targetQuery && d.type.toLowerCase() === example.targetType)[0]
-          this.loadRequest({suggestionType:example.target, targetNodeType: example.target, sid: entry.sid, sourceQuery: example.targetQuery}).then(data=>{
+          this.loadRequest({
+            suggestionType: example.target,
+            targetNodeType: example.target,
+            sid: entry.sid,
+            sourceQuery: example.targetQuery
+          }).then(data => {
             data.origin = "Example " + (nr + 1) + ": (" + example.targetQuery + ")"
-            this.$emit("addNodesEvent",data,1)
+            this.$emit("addNodesEvent", data, 1)
           })
         })
 

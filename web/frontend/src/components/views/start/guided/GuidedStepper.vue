@@ -68,7 +68,7 @@
               Manually adjust the list. <i>Optional:</i> Also specify the target nodes in the same way in case only
               specific connections might be of interest.
             </v-card-subtitle>
-            <GuidedExamples @exampleEvent="applyExample" @addNodesEvent="addToSelection"></GuidedExamples>
+            <GuidedExamples @exampleEvent="applyExample" @addNodesEvent="addToSelection" />
             <div style="height: 960px; display: flex; margin-top:10px;">
               <div style="justify-self: flex-start; width: 48%;">
                 <div style="display: flex; justify-content: flex-start;">
@@ -429,7 +429,7 @@
                     <template v-slot:expanded-item="{ headers, item }">
                       <td :colspan="headers.length">
                         <EntryDetails max-width="280px"
-                                      :detail-request="{edge:false, type: nodeList[sourceTypeId].value, id:item.id}"></EntryDetails>
+                                      :detail-request="{edge:false, type: nodeList[targetTypeId].value, id:item.id}"></EntryDetails>
                       </td>
                     </template>
                     <template v-slot:footer>

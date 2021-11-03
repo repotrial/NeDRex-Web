@@ -456,10 +456,10 @@ export default {
 
     getDetailDotColor: function (attribute) {
       if (this.detailedObject.node)
-        return this.getColoring('nodes', this.detailedObject["Type"]);
+        return this.getColoring('nodes', this.detailedObject["Type"],"light");
       if (this.detailedObject.edge) {
         let basic = "#464e53";
-        let colors = this.getExtendedColoring('edges', this.detailedObject["Type"]);
+        let colors = this.getExtendedColoring('edges', this.detailedObject["Type"],"light");
         if (["Source", "Node1", "SourceDomainID", "SourceID", "SourceDomainIDs", "IDOne", "MemberOne"].indexOf(attribute) > -1)
           return colors[0]
         if (["Target", "Node2", "TargetDomainID", "TargetID", "TargetDomainIDs", "IDTwo", "MemberTwo"].indexOf(attribute) > -1)
@@ -468,8 +468,8 @@ export default {
       }
     },
 
-    getColoring: function (type, name) {
-      return this.$utils.getColoring(this.$global.metagraph, type, name)
+    getColoring: function (type, name,style) {
+      return this.$utils.getColoring(this.$global.metagraph, type, name, style)
     },
 
     getExtendedColoring: function (type, name, style) {
