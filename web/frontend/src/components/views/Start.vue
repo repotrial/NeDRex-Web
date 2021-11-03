@@ -46,6 +46,7 @@ export default {
   props: {
     options: Object,
     filters: Object,
+    jid: String,
     colors: {
       type: Object
     },
@@ -53,6 +54,7 @@ export default {
   data() {
     return {
       startTab: 0,
+      job: this.jid,
       showStartSelection: true,
     }
   },
@@ -60,12 +62,15 @@ export default {
     startTab: function (val) {
       this.$emit("showSideEvent", val === 2)
       this.focusTop()
-    }
+    },
   },
   created() {
     if (this.$route.path.split("/").indexOf("start") > -1)
       this.$emit("showSideEvent", this.startTab === 2)
     this.setView()
+    this.job = this.$route.params["job"]
+    if(this.job!=null)
+      this.loadJob();
   },
   mounted() {
   },
@@ -75,6 +80,16 @@ export default {
       this.startTab = 0;
     }
     ,
+    reload: function(){
+      if(this.job!=null)
+        this.loadJob();
+    },
+
+    loadJob: function(){
+      this.$http.get("getJob?id="+this.job).then(response=>{
+        console.log(response.data)
+      })
+    },
 
     resetIndex: function (idx) {
       if (idx === 0 && this.$refs.quick)

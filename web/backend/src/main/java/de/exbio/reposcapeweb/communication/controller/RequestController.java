@@ -466,6 +466,12 @@ public class RequestController {
         return toJson(jobController.getJobGraphStatesAndTypes(uid, gid));
     }
 
+    @RequestMapping(value="/getJob", method = RequestMethod.GET)
+    @ResponseBody
+    public String getJob(@RequestParam("id") String id){
+        return toJson(jobController.getJobById(id));
+    }
+
     @RequestMapping(value = "/getUserJobs", method = RequestMethod.GET)
     @ResponseBody
     public String getJobs(@RequestParam("uid") String uid) {

@@ -28,7 +28,8 @@
         </template>
       </v-toolbar>
     </v-card>
-    <v-container align-self="start" v-if="metaLoaded" style="width: 100%; max-width:95vw; margin-left: 1%; margin-right: 1%">
+    <v-container align-self="start" v-if="metaLoaded"
+                 style="width: 100%; max-width:95vw; margin-left: 1%; margin-right: 1%">
       <v-row>
         <v-col :cols="sideHidden ? 12:10">
           <v-main app style="padding-top: 0">
@@ -42,7 +43,7 @@
                      @clearURLEvent="clearURL"
                      @modifyURLEvent="modifyURL"
                      @newGraphEvent="reloadHistory()"
-                     :colors="colors" :options="options.start" :filters="startFilters"></Start>
+                     :colors="colors" :options="options.start" :filters="startFilters" :jid="jid"></Start>
               <Network
                 v-show="selectedTabId===1"
                 ref="graph"
@@ -300,6 +301,7 @@ export default {
       },
       showLegend: false,
       physicsDisabled: false,
+      jid: undefined,
     }
   },
   created() {
@@ -312,8 +314,17 @@ export default {
       this.applyUrlTab(true)
       this.setView()
       if (new_gid && new_gid !== this.gid) {
+        this.jid = null
         this.gid = new_gid
         this.reloadAll()
+      }
+      if (this.$route.params["job"] != null) {
+        let new_jid = this.$route.params["job"]
+        if (this.jid !== new_jid) {
+          this.gid = null
+          this.jid = new_jid
+          this.reloadAll()
+        }
       }
     },
   },
@@ -392,7 +403,7 @@ export default {
       this.$refs.list.reload()
       this.$refs.history.reload()
       this.$refs.side.reload()
-
+      this.$refs.start.reload()
     }
     ,
     setView: function () {
@@ -423,7 +434,8 @@ export default {
     }
     ,
     applyUrlTab: function (skipReroute) {
-      let new_tab = this.$route.params["tab"]
+
+      let new_tab = this.$route.params["job"] != null ? "quick" : this.$route.params["tab"]
       if (new_tab !== this.tab) {
         this.tab = new_tab
         this.setTabId(new_tab, skipReroute)
@@ -761,9 +773,9 @@ export default {
       this.selectedTabId = tabid;
       if (!skipReroute) {
         let route = ""
-        if (this.gid !== undefined)
+        if (this.gid != null)
           route = ("/explore/" + ['quick/start', 'advanced/graph', 'advanced/list', 'advanced/history'][tabid] + "/" + this.gid)
-        if (this.gid === undefined)
+        else
           route = ("/" + ['home', 'home', 'home', 'history'][tabid])
         if (this.$route.path !== route)
           this.$router.push(route)

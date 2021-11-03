@@ -9,6 +9,7 @@ const router = new Router({
     mode: "history",
     base: CONFIG.PATH_PREFIX,
     routes: [
+      // {path:"/explore/:view/result/:job", component:App},
       {path:"/explore/:view/:tab/:gid", component:App},
       {path:"/", redirect:"/home"},
       {path: "/home", component: App}
