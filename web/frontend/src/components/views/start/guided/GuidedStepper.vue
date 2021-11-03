@@ -283,24 +283,9 @@
             </v-row>
           </v-card>
           <ButtonBack @click="makeStep"></ButtonBack>
-          <!--          <v-btn-->
-          <!--            @click="makeStep('back')"-->
-          <!--          >-->
-          <!--            Back-->
-          <!--          </v-btn>-->
           <ButtonNext @click="makeStep"
                       :disabled="(selectedPath === undefined || selectedPath.length === 0) || (!options.general.keep&&!direct && (options.general.name === undefined || options.general.name.length===0))"></ButtonNext>
-          <!--          <v-btn-->
-          <!--            color="primary"-->
-          <!--            @click="makeStep('continue')"-->
-          <!--            -->
-          <!--          >-->
-          <!--            Continue-->
-          <!--          </v-btn>-->
           <ButtonCancel @click="makeStep"></ButtonCancel>
-          <!--          <v-btn text @click="makeStep('cancel')">-->
-          <!--            Cancel-->
-          <!--          </v-btn>-->
         </v-stepper-content>
         <v-stepper-content step="3">
           <v-card
