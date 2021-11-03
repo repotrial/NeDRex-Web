@@ -23,7 +23,7 @@ import de.exbio.reposcapeweb.filter.FilterEntry;
 import de.exbio.reposcapeweb.filter.FilterType;
 import de.exbio.reposcapeweb.filter.NodeFilter;
 import de.exbio.reposcapeweb.tools.ToolService;
-import de.exbio.reposcapeweb.tools.algorithms.*;
+import de.exbio.reposcapeweb.tools.algorithms.Algorithm;
 import de.exbio.reposcapeweb.utils.*;
 import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.slf4j.Logger;
@@ -243,10 +243,10 @@ public class WebGraphService {
                                     if (value != null)
                                         if (value instanceof String)
                                             distinctValues.get(attr).add((String) value);
-                                        if (value instanceof Integer)
-                                            distinctValues.get(attr).add(value+"");
-                                        else
-                                            distinctValues.get(attr).addAll((LinkedList<String>) value);
+                                    if (value instanceof Integer)
+                                        distinctValues.get(attr).add(value + "");
+                                    else
+                                        distinctValues.get(attr).addAll((LinkedList<String>) value);
                                 } catch (NullPointerException ignore) {
                                 }
                             });
@@ -627,7 +627,7 @@ public class WebGraphService {
             HashSet<String> added = new HashSet<>();
             requestedEdges.forEach(e -> {
                 added.add(e);
-                extendGraph(g, e, inducedEdges.contains(e), switched.contains(e));
+                extendGraph(g, e, inducedEdges.contains(e), switched.contains(e), false, null);
             });
             if (added.isEmpty())
                 break;
@@ -635,17 +635,41 @@ public class WebGraphService {
         }
     }
 
-    public void extendGraph(Graph g, String e, boolean induced, boolean switched) {
+    public void extendGraph(Graph g, String e, boolean induced, boolean switched, boolean drugTargetActionFilter, Double disorderGenomeAssociationCutoff) {
         int edgeId = g.getEdge(e);
         boolean extend = !induced;
         Pair<Integer, Integer> nodeIds = g.getNodesfromEdge(edgeId);
         LinkedList<Edge> edges = new LinkedList<>();
         HashSet<Integer> nodes = new HashSet<>();
-
         if (g.getNodes().containsKey(nodeIds.first) & nodeIds.first.equals(nodeIds.second)) {
             g.getNodes().get(nodeIds.first).keySet().forEach(nodeId1 -> {
                 try {
-                    edgeController.getEdges(edgeId, nodeIds.first, nodeId1, switched).forEach(id -> {
+                    HashSet<PairId> edgeIds = edgeController.getEdges(edgeId, nodeIds.first, nodeId1, switched);
+                    if (edgeIds == null || edgeIds.isEmpty())
+                        return;
+                    if (drugTargetActionFilter) {
+                        if (e.equals("DrugTargetGene"))
+                            edgeController.findAllDrugHasTargetGene(edgeIds).forEach(edge -> {
+                                if (edge.getActions().size() == 0) edgeIds.remove(edge.getPrimaryIds());
+                            });
+                        if (e.equals("DrugTargetProtein"))
+                            edgeController.findAllDrugHasTargetProtein(edgeIds).forEach(edge -> {
+                                if (edge.getActions().size() == 0) edgeIds.remove(edge.getPrimaryIds());
+                            });
+                    }
+                    if (disorderGenomeAssociationCutoff != null && disorderGenomeAssociationCutoff > 0) {
+                        if (e.equals("GeneAssociatedWithDisorder"))
+                            edgeController.findAllGeneAssociatedWithDisorder(edgeIds).forEach(edge -> {
+                                if (edge.getScore() < disorderGenomeAssociationCutoff)
+                                    edgeIds.remove(edge.getPrimaryIds());
+                            });
+                        if (e.equals("ProteinAssociatedWithDisorder"))
+                            edgeController.findAllProteinAssociatedWithDisorder(edgeIds).forEach(edge -> {
+                                if (edge.getScore() < disorderGenomeAssociationCutoff)
+                                    edgeIds.remove(edge.getPrimaryIds());
+                            });
+                    }
+                    edgeIds.forEach(id -> {
                         Set<Integer> existing = g.getNodes().get(nodeIds.first).keySet();
                         boolean existing1 = existing.contains(id.getId1());
                         boolean existing2 = existing.contains(id.getId2());
@@ -681,7 +705,32 @@ public class WebGraphService {
             adding = new int[]{adding[0], existing[0]};
             g.getNodes().get(nodeIds.first).keySet().forEach(nodeId1 -> {
                 try {
-                    edgeController.getEdges(edgeId, nodeIds.first, nodeId1, switched).forEach(id -> {
+                    HashSet<PairId> edgeIds = edgeController.getEdges(edgeId, nodeIds.first, nodeId1, switched);
+                    if (edgeIds == null || edgeIds.isEmpty())
+                        return;
+                    if (drugTargetActionFilter) {
+                        if (e.equals("DrugTargetGene"))
+                            edgeController.findAllDrugHasTargetGene(edgeIds).forEach(edge -> {
+                                if (edge.getActions().size() == 0) edgeIds.remove(edge.getPrimaryIds());
+                            });
+                        if (e.equals("DrugTargetProtein"))
+                            edgeController.findAllDrugHasTargetProtein(edgeIds).forEach(edge -> {
+                                if (edge.getActions().size() == 0) edgeIds.remove(edge.getPrimaryIds());
+                            });
+                    }
+                    if (disorderGenomeAssociationCutoff != null && disorderGenomeAssociationCutoff > 0) {
+                        if (e.equals("GeneAssociatedWithDisorder"))
+                            edgeController.findAllGeneAssociatedWithDisorder(edgeIds).forEach(edge -> {
+                                if (edge.getScore() < disorderGenomeAssociationCutoff)
+                                    edgeIds.remove(edge.getPrimaryIds());
+                            });
+                        if (e.equals("ProteinAssociatedWithDisorder"))
+                            edgeController.findAllProteinAssociatedWithDisorder(edgeIds).forEach(edge -> {
+                                if (edge.getScore() < disorderGenomeAssociationCutoff)
+                                    edgeIds.remove(edge.getPrimaryIds());
+                            });
+                    }
+                    edgeIds.forEach(id -> {
                         if (g.getNodes().get(nodeIds.second).containsKey(id.getId2()) && g.getNodes().get(nodeIds.first).containsKey(id.getId1()))
                             edges.add(new Edge(id));
                     });
@@ -698,15 +747,40 @@ public class WebGraphService {
             int node1 = existing[i];
             g.getNodes().get(node1).keySet().forEach(nodeId1 -> {
                 try {
-                    HashSet<PairId> add = new HashSet<>(edgeController.getEdges(edgeId, node1, nodeId1, switched));
+                    HashSet<PairId> edgeIds = new HashSet<>(edgeController.getEdges(edgeId, node1, nodeId1, switched));
+                    if (edgeIds.isEmpty())
+                        return;
+                    if (drugTargetActionFilter) {
+                        if (e.equals("DrugTargetGene"))
+                            edgeController.findAllDrugHasTargetGene(edgeIds).forEach(edge -> {
+                                if (edge.getActions().size() == 0) edgeIds.remove(edge.getPrimaryIds());
+                            });
+                        if (e.equals("DrugTargetProtein"))
+                            edgeController.findAllDrugHasTargetProtein(edgeIds).forEach(edge -> {
+                                if (edge.getActions().size() == 0) edgeIds.remove(edge.getPrimaryIds());
+                            });
+                    }
+                    if (disorderGenomeAssociationCutoff != null && disorderGenomeAssociationCutoff > 0) {
+                        if (e.equals("GeneAssociatedWithDisorder"))
+                            edgeController.findAllGeneAssociatedWithDisorder(edgeIds).forEach(edge -> {
+                                if (edge.getScore() < disorderGenomeAssociationCutoff)
+                                    edgeIds.remove(edge.getPrimaryIds());
+                            });
+                        if (e.equals("ProteinAssociatedWithDisorder"))
+                            edgeController.findAllProteinAssociatedWithDisorder(edgeIds).forEach(edge -> {
+                                if (edge.getScore() < disorderGenomeAssociationCutoff)
+                                    edgeIds.remove(edge.getPrimaryIds());
+                            });
+                    }
+
                     if (node1 == nodeIds.getFirst())
-                        add.forEach(id -> {
+                        edgeIds.forEach(id -> {
                                     edges.add(new Edge(id));
                                     nodes.add(id.getId2());
                                 }
                         );
                     else
-                        add.forEach(id -> {
+                        edgeIds.forEach(id -> {
                                     edges.add(new Edge(id));
                                     nodes.add(id.getId1());
                                 }
@@ -1417,12 +1491,57 @@ public class WebGraphService {
         return g;
     }
 
+    public HashSet<Integer> getElementFilteredDrugs(Collection<Integer> drugs) {
+        HashSet<Integer> out = new HashSet<>();
+        for (Drug d : nodeController.findDrugs(drugs)) {
+            HashSet<String> cats = new HashSet<>(d.getDrugCategories());
+            if ((cats.contains("Elements") | cats.contains("Metal Cations") | cats.contains("Zinc Compounds") | cats.contains("Metals") | cats.contains("Mineral Supplements") | cats.contains("Minerals")))
+                continue;
+            out.add(d.getId());
+        }
+        return out;
+    }
+
+    public HashSet<Integer> getApprovedOnlyDrugs(Collection<Integer> drugs) {
+        HashSet<Integer> out = new HashSet<>();
+        for (Drug d : nodeController.findDrugs(drugs)) {
+            if (d.getDrugGroups().contains("approved"))
+                out.add(d.getId());
+        }
+        return out;
+    }
+
+    public HashSet<Integer> getOnlyCodingGenes(Collection<Integer> genes) {
+        HashSet<Integer> out = new HashSet<>();
+        for (Gene g : nodeController.findGenes(genes)) {
+            if (g.getGeneType().equals("protein-coding"))
+                out.add(g.getId());
+        }
+        return out;
+    }
+
     public WebGraphInfo getGuidedGraph(GuidedRequest request) {
         Graph g = new Graph(historyController.getGraphId());
         cache.put(g.getId(), g);
         int sourceTypeId = Graphs.getNode(request.sourceType);
 
-        NodeFilter nfs = new NodeFilter(nodeController.getFilter(request.sourceType), request.sources);
+        Collection<Integer> sids = request.sources;
+        boolean elementFilter = (boolean) request.params.get("nodes").get("filterElementDrugs");
+        boolean approvedFilter = (boolean) request.params.get("nodes").get("approvedDrugsOnly");
+        boolean codingFilter = (boolean) request.params.get("nodes").get("codingGenesOnly");
+
+        boolean drugTargetWithAction = (boolean) request.params.get("edges").get("drugTargetsWithAction");
+        double disorderAssociationCutoff = Double.parseDouble(request.params.get("edges").get("disorderAssociationCutoff").toString());
+
+
+        if (request.sourceType.equals("drug") & (elementFilter | approvedFilter)) {
+            sids = elementFilter ? getElementFilteredDrugs(sids) : sids;
+            sids = approvedFilter ? getApprovedOnlyDrugs(sids) : sids;
+        }
+        if (request.sourceType.equals("gene") & (codingFilter))
+            sids = getOnlyCodingGenes(sids);
+
+        NodeFilter nfs = new NodeFilter(nodeController.getFilter(request.sourceType), sids);
         g.addNodes(sourceTypeId, nodeFilterToNode(nfs));
         g.saveNodeFilter(request.sourceType, nfs);
 
@@ -1430,11 +1549,40 @@ public class WebGraphService {
             boolean endDefined = p == request.path.size() - 1 & request.targets.size() > 0;
             if (endDefined) {
                 int targetTypeId = Graphs.getNode(request.targetType);
-                NodeFilter nft = new NodeFilter(nodeController.getFilter(request.targetType), request.targets);
+                NodeFilter nft;
+                Collection<Integer> tids = request.targets;
+                if (request.targetType.equals("drug") & (elementFilter | approvedFilter)) {
+                    tids = elementFilter ? getElementFilteredDrugs(tids) : tids;
+                    tids = approvedFilter ? getApprovedOnlyDrugs(tids) : tids;
+                }
+                if (request.targetType.equals("gene") & codingFilter) {
+                    tids = getOnlyCodingGenes(tids);
+                }
+                nft = new NodeFilter(nodeController.getFilter(request.targetType), tids);
                 g.addNodes(targetTypeId, nodeFilterToNode(nft));
                 g.saveNodeFilter(request.targetType, nft);
             }
-            extendGraph(g, request.path.get(p).get("label"), endDefined, false);
+            String edgeName = request.path.get(p).get("label");
+            boolean drugTargetFilter = drugTargetWithAction && (edgeName.equals("DrugTargetGene") | edgeName.equals("DrugTargetProtein"));
+            this.extendGraph(g, edgeName, endDefined, false, drugTargetFilter, disorderAssociationCutoff);
+
+            String connector = request.path.get(p).get("connector");
+            if (connector != null) {
+                HashMap<Integer, Node> nodes = g.getNodes().get(Graphs.getNode(connector));
+                Collection<Integer> ids = nodes.keySet();
+                if (connector.equals("drug") && (elementFilter || approvedFilter)) {
+                    ids = elementFilter ? getElementFilteredDrugs(nodes.keySet()) : ids;
+                    ids = approvedFilter ? getApprovedOnlyDrugs(ids) : ids;
+                }
+                if (connector.equals("gene") & codingFilter) {
+                    ids = getOnlyCodingGenes(ids);
+                }
+                if (ids.size() < nodes.size()) {
+                    NodeFilter nf = new NodeFilter(nodeController.getFilter(connector), ids);
+                    g.getNodes().put(Graphs.getNode(connector), nodeFilterToNode(nf));
+                    g.saveNodeFilter(connector, nf);
+                }
+            }
         }
 
         if (!(boolean) request.params.get("general").get("keep")) {
@@ -1454,11 +1602,8 @@ public class WebGraphService {
         }
 
         addGraphToHistory(request.uid, g.getId());
-
-
         return g.toInfo();
     }
-
 
     public String cloneGraph(String gid, String uid, String parent) {
         Graph g = getCachedGraph(gid);

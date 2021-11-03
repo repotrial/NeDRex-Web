@@ -68,7 +68,7 @@
               Manually adjust the list. <i>Optional:</i> Also specify the target nodes in the same way in case only
               specific connections might be of interest.
             </v-card-subtitle>
-            <GuidedExamples @exampleEvent="applyExample" @addNodesEvent="addToSelection" />
+            <GuidedExamples @exampleEvent="applyExample" @addNodesEvent="addToSelection"/>
             <div style="height: 960px; display: flex; margin-top:10px;">
               <div style="justify-self: flex-start; width: 48%;">
                 <div style="display: flex; justify-content: flex-start;">
@@ -150,35 +150,40 @@
           <ButtonCancel @click="makeStep"></ButtonCancel>
         </v-stepper-content>
         <v-stepper-content step="2">
-          <v-card
-            v-if="step===2"
-            class="mb-4"
-            max-height="75vh"
-          >
-            <v-card-subtitle class="headline">Path Selection</v-card-subtitle>
-            <v-card-subtitle style="margin-top: -25px">Select a path connecting
-              {{ nodeList[sourceTypeId].text + ' and ' + nodeList[targetTypeId].text }}. Further decide to keep the
-              intermediate node (in case an indirect path is selected) or to create a new edge type given a user defined
-              name. Additional path specific configuration may be available.
-            </v-card-subtitle>
-            <v-row style="min-height: 35vh; margin-bottom: 15px">
-              <v-col cols="3">
-                <v-radio-group v-model="pathModel">
-                  <v-list-item-subtitle class="title">Direct-Paths</v-list-item-subtitle>
-                  <v-list>
-                    <v-list-item v-for="(path,idx) in paths[0]" :key="idx" v-if="paths[0].length>0">
-                      <v-list-item-title>
-                        <v-tooltip top>
-                          <template v-slot:activator="{on,attrs}">
-                            <v-icon v-on="on" v-bind="attrs"
-                                    :color="getColoring('nodes',nodeList[sourceTypeId].value,'light')"
-                                    size="30px">
-                              fas fa-genderless
-                            </v-icon>
-                          </template>
-                          <span>{{ nodeList[sourceTypeId].text }}</span>
-                        </v-tooltip>
-                        <span v-for="(edge,idx2) in path" :key="'0_'+idx+'_'+idx2+'_'+edge.label">
+          <div style="display: flex">
+            <v-card
+              v-if="step===2"
+              class="mb-4"
+              max-height="75vh"
+              max-width="1300px"
+              flat
+              style="justify-content: center; margin-right: auto; margin-left: auto"
+            >
+              <v-card-subtitle class="headline">Path Selection</v-card-subtitle>
+              <v-card-subtitle style="margin-top: -25px">Select a path connecting
+                {{ nodeList[sourceTypeId].text + ' and ' + nodeList[targetTypeId].text }}. Further decide to keep the
+                intermediate node (in case an indirect path is selected) or to create a new edge type given a user
+                defined
+                name. Additional path specific configuration may be available.
+              </v-card-subtitle>
+              <v-row style="min-height: 35vh; margin-bottom: 15px; margin-top: 15px">
+                <v-col cols="3">
+                  <v-radio-group v-model="pathModel">
+                    <v-list-item-subtitle class="title">Direct-Paths</v-list-item-subtitle>
+                    <v-list>
+                      <v-list-item v-for="(path,idx) in paths[0]" :key="idx" v-if="paths[0].length>0">
+                        <v-list-item-title>
+                          <v-tooltip top>
+                            <template v-slot:activator="{on,attrs}">
+                              <v-icon v-on="on" v-bind="attrs"
+                                      :color="getColoring('nodes',nodeList[sourceTypeId].value,'light')"
+                                      size="30px">
+                                fas fa-genderless
+                              </v-icon>
+                            </template>
+                            <span>{{ nodeList[sourceTypeId].text }}</span>
+                          </v-tooltip>
+                          <span v-for="(edge,idx2) in path" :key="'0_'+idx+'_'+idx2+'_'+edge.label">
                             <v-tooltip top>
                                <template v-slot:activator="{ on, attrs }">
                                   <v-icon v-bind="attrs"
@@ -198,29 +203,29 @@
                         <span>{{ getNodeLabel(edge.label, [edge.direction ? 1 : 0]) }}</span>
                       </v-tooltip>
                       </span>
-                      </v-list-item-title>
-                      <v-list-item-action>
-                        <v-radio></v-radio>
-                      </v-list-item-action>
-                    </v-list-item>
-                    <v-list-item v-if="paths[0].length===0">
-                      <v-list-item-subtitle>no direct path available</v-list-item-subtitle>
-                    </v-list-item>
-                  </v-list>
-                  <v-list-item-subtitle class="title">Indirect-Paths</v-list-item-subtitle>
-                  <v-list>
-                    <v-list-item v-for="(path,idx) in paths[1]" :key="idx">
-                      <v-list-item-title>
-                        <v-tooltip top>
-                          <template v-slot:activator="{on,attrs}">
-                            <v-icon v-on="on" v-bind="attrs" size="30px"
-                                    :color="getColoring('nodes',nodeList[sourceTypeId].value,'light')">
-                              fas fa-genderless
-                            </v-icon>
-                          </template>
-                          <span>{{ nodeList[sourceTypeId].text }}</span>
-                        </v-tooltip>
-                        <span v-for="(edge,idx2) in path" :key="'1_'+idx+'_'+idx2+'_'+edge.label">
+                        </v-list-item-title>
+                        <v-list-item-action>
+                          <v-radio></v-radio>
+                        </v-list-item-action>
+                      </v-list-item>
+                      <v-list-item v-if="paths[0].length===0">
+                        <v-list-item-subtitle><i>no direct path available</i></v-list-item-subtitle>
+                      </v-list-item>
+                    </v-list>
+                    <v-list-item-subtitle class="title">Indirect-Paths</v-list-item-subtitle>
+                    <v-list>
+                      <v-list-item v-for="(path,idx) in paths[1]" :key="idx">
+                        <v-list-item-title>
+                          <v-tooltip top>
+                            <template v-slot:activator="{on,attrs}">
+                              <v-icon v-on="on" v-bind="attrs" size="30px"
+                                      :color="getColoring('nodes',nodeList[sourceTypeId].value,'light')">
+                                fas fa-genderless
+                              </v-icon>
+                            </template>
+                            <span>{{ nodeList[sourceTypeId].text }}</span>
+                          </v-tooltip>
+                          <span v-for="(edge,idx2) in path" :key="'1_'+idx+'_'+idx2+'_'+edge.label">
                             <v-tooltip top>
                                <template v-slot:activator="{ on, attrs }">
                                   <v-icon v-bind="attrs"
@@ -240,48 +245,116 @@
                         <span>{{ getNodeLabel(edge.label, [edge.direction ? 1 : 0]) }}</span>
                       </v-tooltip>
                       </span>
-                      </v-list-item-title>
-                      <v-list-item-action>
-                        <v-radio>
-                        </v-radio>
+                        </v-list-item-title>
+                        <v-list-item-action>
+                          <v-radio>
+                          </v-radio>
+                        </v-list-item-action>
+                      </v-list-item>
+                    </v-list>
+                  </v-radio-group>
+                </v-col>
+                <div style="margin-bottom: 20px">
+                  <v-divider vertical></v-divider>
+                </div>
+                <v-col v-show="pathModel!=null && pathModel>-1">
+                  <v-list-item-subtitle class="title">Additional Options</v-list-item-subtitle>
+                  <v-card-subtitle>General</v-card-subtitle>
+                  <v-list>
+                    <v-list-item top v-show="!direct">
+                      <v-list-item-content>
+                        <v-tooltip>
+                          <template v-slot:activator="{on,attrs}">
+                            <LabeledSwitch label-off="Remove Connector Nodes" label-on="Keep Connector Nodes"
+                                           v-model="options.general.keep" v-bind="attrs" v-on="on"></LabeledSwitch>
+                          </template>
+                          <span>Decide if you want to keep all edges or replace the created paths by generating one connecting your source and target nodes directly.</span>
+                        </v-tooltip>
+                      </v-list-item-content>
+                      <v-list-item-action style="min-width: 400px">
+                        <v-text-field v-model="options.general.name" v-show="!options.general.keep"
+                                      label="Combined Edge Name"
+                                      :rules="[value => !!value || 'Required!',value=>$global.metagraph.edges.map(e=>e.label).indexOf(value)===-1 || 'Existing names are not possible!']"></v-text-field>
                       </v-list-item-action>
                     </v-list-item>
+
                   </v-list>
-                </v-radio-group>
-              </v-col>
-              <div style="margin-bottom: 20px">
-                <v-divider vertical></v-divider>
-              </div>
-              <v-col>
-                <v-list-item-subtitle class="title">Additional Options</v-list-item-subtitle>
-                <v-card-subtitle>General</v-card-subtitle>
-                <v-row v-show="!direct">
-                  <v-col cols="7">
-                    <v-tooltip top>
-                      <template v-slot:activator="{on,attrs}">
-                        <v-list-item v-bind="attrs" v-on="on">
-                          <span>Remove Intermediate Nodes</span>
-                          <v-switch v-model="options.general.keep" style="margin-left: 5px"
-                                    @click=" print(options.general.name) "></v-switch>
-                          <span>Keep Intermediate Nodes</span>
-                        </v-list-item>
-                      </template>
-                      <span>Decide if you want to keep all edges or replace the created paths by generating one connecting your source and target nodes directly.</span>
-                    </v-tooltip>
-                  </v-col>
-                  <v-col cols="5">
-                    <v-text-field v-model="options.general.name" v-show="!options.general.keep"
-                                  label="Combined Edge Name"
-                                  :rules="[value => !!value || 'Required!',value=>$global.metagraph.edges.map(e=>e.label).indexOf(value)===-1 || 'Existing names are not possible!']"></v-text-field>
-                  </v-col>
-                </v-row>
-                <v-divider></v-divider>
-                <v-card-subtitle>Node specific</v-card-subtitle>
-                <v-divider></v-divider>
-                <v-card-subtitle>Edge specific</v-card-subtitle>
-              </v-col>
-            </v-row>
-          </v-card>
+                  <v-divider></v-divider>
+                  <v-card-subtitle>Node specific</v-card-subtitle>
+                  <v-list>
+                    <v-list-item v-if="isPathNode('gene')">
+                      <v-list-item-title style="padding-top: 5px; padding-bottom: 3px">
+                        <LabeledSwitch label-on="Coding Genes Only" label-off="All Genes"
+                                       v-model="options.nodes.codingGenesOnly"></LabeledSwitch>
+                      </v-list-item-title>
+                    </v-list-item>
+                    <v-list-item v-if="isPathNode('drug')">
+                      <v-list-item-title style="padding-top: 5px; padding-bottom: 3px">
+                        <LabeledSwitch label-on="Approved Drugs Only" label-off="All Drugs"
+                                       v-model="options.nodes.approvedDrugsOnly"></LabeledSwitch>
+                      </v-list-item-title>
+                    </v-list-item>
+                    <v-list-item v-if="isPathNode('drug')">
+                      <v-list-item-title style="padding-top: 5px; padding-bottom: 3px">
+                        <LabeledSwitch label-on="Filter Element Drugs" label-off="No Filter"
+                                       v-model="options.nodes.filterElementDrugs"></LabeledSwitch>
+                      </v-list-item-title>
+                    </v-list-item>
+                  </v-list>
+                  <v-divider></v-divider>
+                  <v-card-subtitle>Edge specific</v-card-subtitle>
+                  <v-list>
+                    <v-list-item v-if="isPathEdge('DrugTargetGene') || isPathEdge('DrugTargetProtein')">
+                      <v-list-item-title style="padding-top: 5px; padding-bottom: 3px">
+                        <LabeledSwitch label-on="Only with known Drug-Target action"
+                                       label-off="All Drug-Target connections"
+                                       v-model="options.edges.drugTargetsWithAction"></LabeledSwitch>
+                      </v-list-item-title>
+                    </v-list-item>
+                    <v-list-item
+                      v-if="isPathEdge('GeneAssociatedWithDisorder') || isPathEdge('ProteinAssociatedWithDisorder')">
+                      <v-list-item-content style="padding-top: 32px;padding-left: 20px; padding-right: 20px">
+                        <v-slider
+                          hide-details
+                          class="align-center"
+                          min="0"
+                          step="0.01"
+                          thumb-size="30"
+                          thumb-color="primary"
+                          thumb-label="always"
+                          v-model="options.edges.disorderAssociationCutoff"
+                          max="1"
+                        >
+                          <template v-slot:label>
+                            Association Score Cutoff
+                            <v-tooltip left>
+                              <template v-slot:activator="{ on, attrs }">
+                                <a style="text-decoration: none"
+                                  href="https://www.disgenet.org/help#:~:text=The%20DisGeNET%20score%20for%20GDAs,range%20from%200%20to%201."
+                                  target="_blank">
+                                  <v-icon
+                                    v-bind="attrs"
+                                    v-on="on"
+                                    style="margin-top: -3px"> far fa-question-circle
+                                  </v-icon>
+                                </a>
+                              </template>
+                              <span>A cutoff for the DisGeNet score of how strongly associated the {{
+                                  isPathEdge('GeneAssociatedWithDisorder') ? "Gene" : "Protein"
+                                }} {{
+                                  (isPathEdge('GeneAssociatedWithDisorder') && isPathEdge('ProteinAssociatedWithDisorder') ? 'and Protein' : '')
+                                }} nodes are.<br>
+                              <i>Click here to see how this score is defined</i></span>
+                            </v-tooltip>
+                          </template>
+                        </v-slider>
+                      </v-list-item-content>
+                    </v-list-item>
+                  </v-list>
+                </v-col>
+              </v-row>
+            </v-card>
+          </div>
           <ButtonBack @click="makeStep"></ButtonBack>
           <ButtonNext @click="makeStep"
                       :disabled="(selectedPath === undefined || selectedPath.length === 0) || (!options.general.keep&&!direct && (options.general.name === undefined || options.general.name.length===0))"></ButtonNext>
@@ -300,6 +373,15 @@
             <v-row>
               <v-col style="padding: 0; max-width: 360px;">
                 <v-card-title class="subtitle-1">Sources ({{ sources.length }})
+                  <v-tooltip top>
+                    <template v-slot:activator="{attrs, on}">
+                      <v-icon right size="12pt" v-on="on" v-bind="attrs">far fa-question-circle</v-icon>
+                    </template>
+                    <div>This is the number of initially selected source entries.<br>
+                      If this number is different to the number in the graph, some filter you applied removed some
+                      entries!
+                    </div>
+                  </v-tooltip>
                 </v-card-title>
                 <v-data-table max-height="550px" height="550px" class="overflow-y-auto" fixed-header dense item-key="id"
                               :items="sources"
@@ -347,53 +429,8 @@
                     </Legend>
                   </template>
                   <template v-slot:tools v-if="$refs.graph!==undefined">
-                    <v-card elevation="3"
-                            style="width: 13vw; max-width: 13vw; min-width: 250px; padding-top: 35px; display:flex; justify-self: flex-end;margin-left: auto">
-                      <v-container>
-                        <v-list ref="list" style="margin-top: 10px;">
-                          <v-tooltip left>
-                            <template v-slot:activator="{on, attrs}">
-                              <v-list-item v-on="on" v-bind="attrs">
-                                <v-list-item-action>
-                                  <v-chip outlined v-on:click="$refs.graph.setSelection()">
-                                    <v-icon left>fas fa-globe</v-icon>
-                                    Overview
-                                  </v-chip>
-                                </v-list-item-action>
-                              </v-list-item>
-                            </template>
-                            <span>Fits the view to the whole network.</span>
-                          </v-tooltip>
-                          <v-tooltip left>
-                            <template v-slot:activator="{on, attrs}">
-                              <v-list-item v-on="on" v-bind="attrs">
-                                <v-list-item-action-text>Enable node interactions</v-list-item-action-text>
-                                <v-list-item-action>
-                                  <v-switch v-model="physicsOn"
-                                            @click="$refs.graph.setPhysics(physicsOn)"></v-switch>
-                                </v-list-item-action>
-                              </v-list-item>
-                            </template>
-                            <span>This option enables a physics based layouting where nodes and <br>edges interact with each other. Be careful on large graphs.</span>
-                          </v-tooltip>
-                          <v-tooltip left>
-                            <template v-slot:activator="{on, attrs}">
-                              <v-list-item v-on="on" v-bind="attrs">
-                                <v-list-item-action>
-                                  <v-chip outlined v-if="gid!==undefined"
-                                          style="margin-top:10px"
-                                          @click="$emit('graphLoadNewTabEvent',{post: {id: gid}})">
-                                    <v-icon left>fas fa-angle-double-right</v-icon>
-                                    To Advanced View
-                                  </v-chip>
-                                </v-list-item-action>
-                              </v-list-item>
-                            </template>
-                            <span>Opens a new tab with an advanced view of the current network.</span>
-                          </v-tooltip>
-                        </v-list>
-                      </v-container>
-                    </v-card>
+                    <Tools physics :cc="false" loops
+                           @toggleOptionEvent="toggleToolOption" @clickOptionEvent="clickToolOption"></Tools>
                   </template>
 
                 </Network>
@@ -404,6 +441,15 @@
                   }}
                   <v-progress-circular indeterminate v-if="targets.length===0" style="margin-left:15px">
                   </v-progress-circular>
+                  <v-tooltip top v-else>
+                    <template v-slot:activator="{attrs, on}">
+                      <v-icon right size="12pt" v-on="on" v-bind="attrs">far fa-question-circle</v-icon>
+                    </template>
+                    <div>This is the target entries.<br>
+                      If there was an initial selection of those and this number is different to the number in the
+                      graph, some filter you applied removed some entries!
+                    </div>
+                  </v-tooltip>
                 </v-card-title>
                 <template v-if="targets.length>=0">
                   <v-data-table max-height="550px" height="550px" class="overflow-y-auto" fixed-header dense
@@ -448,6 +494,8 @@
           <div style="padding-top: 10px">
             <ButtonBack @click="makeStep"></ButtonBack>
             <ButtonCancel @click="makeStep"></ButtonCancel>
+            <ButtonAdvanced @click="$emit('graphLoadNewTabEvent',{post: {id: gid}})"
+                            :disabled="gid==null"></ButtonAdvanced>
           </div>
         </v-stepper-content>
       </v-stepper-items>
@@ -467,6 +515,9 @@ import ButtonNext from "@/components/start/quick/ButtonNext";
 import ButtonBack from "@/components/start/quick/ButtonBack";
 import ButtonCancel from "@/components/start/quick/ButtonCancel";
 import GuidedExamples from "@/components/start/guided/GuidedExamples";
+import LabeledSwitch from "@/components/app/input/LabeledSwitch";
+import ButtonAdvanced from "@/components/start/quick/ButtonAdvanced";
+import Tools from "@/components/views/graph/Tools";
 
 
 export default {
@@ -516,8 +567,15 @@ export default {
           keep: false,
           name: undefined,
         },
-        nodes: {},
-        edges: {}
+        nodes: {
+          codingGenesOnly: false,
+          approvedDrugsOnly: false,
+          filterElementDrugs: true
+        },
+        edges: {
+          drugTargetsWithAction: false,
+          disorderAssociationCutoff: 0,
+        }
       },
       legend: {
         countMap: {},
@@ -581,8 +639,21 @@ export default {
 
       this.example = undefined
 
-      this.options.general.keep = false
-      this.options.general.name = undefined
+      this.options= {
+        general: {
+          keep: false,
+            name: undefined,
+        },
+        nodes: {
+          codingGenesOnly: false,
+            approvedDrugsOnly: false,
+            filterElementDrugs: true
+        },
+        edges: {
+          drugTargetsWithAction: false,
+            disorderAssociationCutoff: 0,
+        }
+      }
 
       this.info = undefined
       if (this.$refs.sourceTable != null)
@@ -598,10 +669,6 @@ export default {
     },
     reset: function () {
       this.init()
-    },
-
-    print: function (message) {
-      console.log(message)
     },
 
     clearPaths: function () {
@@ -790,6 +857,44 @@ export default {
     }
     ,
 
+    getPathEdges: function () {
+      if (this.selectedPath == null || this.selectedPath.length === 0)
+        return []
+      return this.selectedPath.map(p => p.label)
+    },
+
+    getPathNodes: function () {
+      if (this.selectedPath == null || this.selectedPath.length === 0)
+        return []
+      return (this.selectedPath[0].connector ? this.selectedPath.map(p => p.connector) : []).concat([this.nodeList[this.sourceTypeId].value, this.nodeList[this.targetTypeId].value])
+    },
+
+    isPathEdge: function (edge) {
+      return this.getPathEdges().indexOf(edge) > -1;
+    },
+
+    toggleToolOption: function (option, value) {
+      if (option === "physics")
+        this.$refs.graph.setPhysics(value);
+      if (option === "loops")
+        this.$refs.graph.showLoops(value)
+      if (option === "unconnected")
+        this.$refs.graph.showUnconnected(value)
+      if (option === "isolation")
+        this.$refs.graph.graphViewEvent(value)
+      if (option === 'shadow')
+        this.$refs.graph.setShadow(value)
+    },
+
+    clickToolOption: function (option) {
+      if (option === "fit")
+        this.$refs.graph.setSelection()
+    },
+
+    isPathNode: function (node) {
+      return this.getPathNodes().indexOf(node) > -1
+    },
+
     downloadSourceList: function (names, sep) {
       this.downloadList(0, names, sep)
     }
@@ -920,6 +1025,8 @@ export default {
   }
   ,
   components: {
+    ButtonAdvanced,
+    LabeledSwitch,
     GuidedExamples,
     ButtonCancel,
     ButtonNext,
@@ -931,6 +1038,7 @@ export default {
     EntryDetails,
     ResultDownload,
     Legend,
+    Tools
   }
 
 }

@@ -70,7 +70,7 @@ public class StringUtils {
             char c = l.charAt(i);
             switch (c) {
                 case 'á', 'ä', 'à' -> out.append('a');
-                case 'é', 'è','ê' -> out.append('e');
+                case 'é', 'è', 'ê' -> out.append('e');
                 case 'ï', 'í', 'ì' -> out.append('i');
                 case 'ñ' -> out.append('n');
                 case 'ö', 'ó', 'ò', 'ø' -> out.append('o');
@@ -93,21 +93,21 @@ public class StringUtils {
                 case '⁰' -> out.append("0");
                 case '¹' -> out.append("1");
                 case '²' -> out.append("2");
-                case '³','₃' -> out.append("3");
+                case '³', '₃' -> out.append("3");
                 case '⁴' -> out.append("4");
                 case '⁵' -> out.append("5");
                 case '⁶' -> out.append("6");
                 case '⁷' -> out.append("7");
                 case '⁸' -> out.append("8");
                 case '⁹' -> out.append("9");
-                case '/','*',';','&',':','<','>','$','+','�','_','?',' ',',','@','~','^','|','#','=','→','±','%' -> out.append(' ');
-                case '\"','’','′'-> out.append('\'');
-                case '-','(',')','\'','.','[',']','{','}' -> out.append(c);
-                case '−','\u00AD','—' -> out.append("-");
+                case '/', '*', ';', '&', ':', '<', '>', '$', '+', '�', '_', '?', ' ', ',', '@', '~', '^', '|', '#', '=', '→', '±', '%' -> out.append(' ');
+                case '\"', '’', '′' -> out.append('\'');
+                case '-', '(', ')', '\'', '.', '[', ']', '{', '}' -> out.append(c);
+                case '−', '\u00AD', '—' -> out.append("-");
                 default -> {
                     if (c >= 'a' && c <= 'z' || c >= '0' && c <= '9') {
                         out.append(c);
-                    } else if(c==8202){
+                    } else if (c == 8202) {
                         out.append(' ');
                     }
 //                    else{
@@ -137,14 +137,15 @@ public class StringUtils {
     }
 
     public static LinkedList<String> split(String line, char separator) {
-        LinkedList<String> v = new LinkedList<String>();
-        char tab = separator;
+        LinkedList<String> v = new LinkedList<>();
 
         int lastTab = 0;
         while (true) {
-            int nextTab = line.indexOf(tab, lastTab);
+            int nextTab = line.indexOf(separator, lastTab);
             if (nextTab == -1) {
-                v.add(line.substring(lastTab));
+                String sub = line.substring(lastTab);
+                if (sub.length() > 0)
+                    v.add(sub);
                 break;
             }
             v.add(line.substring(lastTab, nextTab));
@@ -209,27 +210,27 @@ public class StringUtils {
     }
 
     public static String listToString(List<String> list) {
-        return replaceAll(list.toString(),", ",",");
+        return replaceAll(list.toString(), ", ", ",");
     }
 
     public static LinkedList<String> stringToList(String s) {
         return split(s.substring(s.charAt(0) == '[' ? 1 : 0, s.charAt(s.length() - 1) == ']' ? s.length() - 1 : s.length()), ',');
     }
 
-    public static HashMap<String,String> stringToMap(String s){
-        HashMap<String,String> out = new HashMap<>();
-        stringToList(s).forEach(i->{
-            LinkedList<String> e = split(i,':');
-            out.put(e.get(0),e.get(1));
+    public static HashMap<String, String> stringToMap(String s) {
+        HashMap<String, String> out = new HashMap<>();
+        stringToList(s).forEach(i -> {
+            LinkedList<String> e = split(i, ':');
+            out.put(e.get(0), e.get(1));
         });
         return out;
     }
 
-    public static String mapToString(HashMap<String,String> map){
-        return listToString(map.entrySet().stream().map(e->e.getKey()+":"+e.getValue()).collect(Collectors.toList()));
+    public static String mapToString(HashMap<String, String> map) {
+        return listToString(map.entrySet().stream().map(e -> e.getKey() + ":" + e.getValue()).collect(Collectors.toList()));
     }
 
-    public static LinkedList<String> convertBase64(String data){
+    public static LinkedList<String> convertBase64(String data) {
         if (data.indexOf(',') > -1)
             data = StringUtils.split(data, ',').get(1);
         return StringUtils.split(new String(Base64.getDecoder().decode(data)), '\n');

@@ -803,6 +803,24 @@
           "distinct": false
         },
         {
+          "name": "actions",
+          "list": true,
+          "detail": true,
+          "id": false,
+          "type": "array",
+          "label": "Actions",
+          "distinct": false
+        },
+        {
+          "name": "databases",
+          "list": false,
+          "detail": true,
+          "id": false,
+          "type": "array",
+          "label": "Databases",
+          "distinct": false
+        },
+        {
           "name": "type",
           "list": false,
           "detail": true,

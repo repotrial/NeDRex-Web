@@ -54,7 +54,7 @@ public class ProteinAssociatedWithDisorder extends RepoTrialEdge implements Seri
     private String nodeTwo;
 
 
-    private String score;
+    private Float score;
 
     private String assertedBy;
 
@@ -149,7 +149,7 @@ public class ProteinAssociatedWithDisorder extends RepoTrialEdge implements Seri
         return "ProteinAssociatedWithDisorder";
     }
 
-    public String getScore() {
+    public Float getScore() {
         return score;
     }
 

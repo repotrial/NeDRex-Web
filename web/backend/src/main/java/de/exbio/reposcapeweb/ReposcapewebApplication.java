@@ -87,7 +87,6 @@ public class ReposcapewebApplication extends SpringBootServletInitializer {
 
     @EventListener(ApplicationReadyEvent.class)
     public void postConstruct() throws IOException {
-
         long start = System.currentTimeMillis();
         updateService.readMetadata();
         dbService.setImportInProgress(true);

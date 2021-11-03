@@ -436,7 +436,6 @@ export default {
         }).catch(err => {
           console.error(err)
         })
-
       } else {
         this.$http.get("getEdgeDetails?name=" + detailRequest.type + "&id1=" + detailRequest.id1 + "&id2=" + detailRequest.id2 + "&gid=" + this.gid).then(response => {
           if (response.data !== undefined) {
