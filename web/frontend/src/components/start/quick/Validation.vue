@@ -237,6 +237,9 @@ export default {
       rankingValidationStatus: "",
       moduleValidationScore: undefined,
       rankingValidationScore: undefined,
+      moduleResubmissions: 0,
+      rankingResubmissions: 0,
+      resubmissionCount: 3,
       moduleValidationError: "",
       rankingValidationError: "",
       styleMap: {
@@ -279,6 +282,8 @@ export default {
       this.rankingValidationScore = undefined
       this.moduleValidationError = ""
       this.rankingValidationError = ""
+      this.rankingResubmissions = 0;
+      this.moduleResubmissions = 0;
     },
 
     addToSelection: function (data) {
@@ -360,7 +365,7 @@ export default {
     },
 
     checkValidationScore: function (id, type) {
-      if (this[type + "ValidationScore"] == null)
+      if (this[type + "ValidationScore"] == null && this[type +"ValidationUID"]===id)
         this.$http.getValidationScore(id).then(response => {
           this.$set(this, type + "ValidationStatus", response.data.status);
           if (this[type + "ValidationStatus"] === "running" || this[type + "ValidationStatus"] === "submitted")
@@ -373,12 +378,28 @@ export default {
               this.scoreIds.forEach(id => this.$set(this[type + "ValidationScore"], id, response.data[id]))
             } else {
               this.$set(this, type + "ValidationScore", {})
-              this.$set(this, type + "ValidationError", response.data.error);
+              if (response.data.error != null && response.data.error.length > 0) {
+                this.checkResubmission(response.data, type)
+              }
             }
           }
         }).catch(console.error)
     },
+  },
 
+
+  checkResubmission: function (data, type) {
+    console.log("Checking for resubmission...")
+    if (this[type + "Resubmissions"] < this.resubmissionCount) {
+      console.log("Resubmitting "+this[type + "Resubmissions"])
+      this.$set(this, type + "Resubmissions", this[type + "Resubmissions"] + 1)
+      this.$http.postNedrex("/admin/resubmit/validation/" + this[type + "ValidationUID"]).then(() => {
+        this.checkValidationScore(this[type + "ValidationUID"], type)
+      }).catch(console.error)
+    } else {
+      console.log("No more resubmissions!")
+      this.$set(this, type + "ValidationError", data.error);
+    }
   },
 
   components: {

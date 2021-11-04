@@ -9,6 +9,7 @@ import de.exbio.reposcapeweb.communication.jobs.JobController;
 import de.exbio.reposcapeweb.communication.jobs.JobRequest;
 import de.exbio.reposcapeweb.communication.reponses.*;
 import de.exbio.reposcapeweb.communication.requests.*;
+import de.exbio.reposcapeweb.configs.DBConfig;
 import de.exbio.reposcapeweb.db.DbCommunicationService;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
 import de.exbio.reposcapeweb.db.history.GraphHistoryDetail;
@@ -30,6 +31,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import java.io.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Controller for the incoming requests on the RepoScape-WEB application.
@@ -80,12 +82,14 @@ public class RequestController {
     @RequestMapping(value = "/getNodeDetails", method = RequestMethod.GET)
     @ResponseBody
     public String getDetails(@RequestParam("name") String name, @RequestParam("id") int id) {
+        //TODO make static detailAttributeLabels in Node classes
         log.info("requested details for node " + name + " with id " + id);
         String out = "";
         HashMap<String, Object> details = new HashMap<>();
-        nodeController.nodeToAttributeList(Graphs.getNode(name), id).forEach((k, v) -> details.put(nodeController.getAttributeLabelMap(name).get(k), v));
+        HashSet<String> attrs = DBConfig.getConfig().nodes.get(Graphs.getNode(name)).getDetailAttributes().stream().map(a -> a.name).collect(Collectors.toCollection(HashSet::new));
+        nodeController.nodeToAttributeList(Graphs.getNode(name), id,attrs).forEach((k, v) -> details.put(nodeController.getAttributeLabelMap(name).get(k), v));
         try {
-            details.put("order", nodeController.getAttributeLabels(Graphs.getNode(name)));
+            details.put("order", nodeController.getDetailAttributeLabels(Graphs.getNode(name)));
             out = objectMapper.writeValueAsString(details);
         } catch (JsonProcessingException e) {
             e.printStackTrace();

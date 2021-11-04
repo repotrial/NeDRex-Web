@@ -45,6 +45,10 @@ public class DrugHasTargetGene extends RepoTrialEdge implements Serializable {
     private String sourceDomainId;
 
     @Transient
+    @JsonIgnore
+    public static Boolean[] detailAttributes;
+
+    @Transient
     private String nodeOne;
     @Transient
     private String nodeTwo;

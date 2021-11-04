@@ -55,6 +55,10 @@ public class GeneAssociatedWithDisorder extends RepoTrialEdge implements Seriali
 
     @Transient
     @JsonIgnore
+    public static Boolean[] detailAttributes;
+
+    @Transient
+    @JsonIgnore
     public static String[] attributeLabels;
 
     @Transient

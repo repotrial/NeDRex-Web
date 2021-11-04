@@ -1,6 +1,8 @@
 package de.exbio.reposcapeweb.db.services.controller;
 
 import de.exbio.reposcapeweb.communication.cache.Graphs;
+import de.exbio.reposcapeweb.configs.DBConfig;
+import de.exbio.reposcapeweb.configs.schema.AttributeConfig;
 import de.exbio.reposcapeweb.db.entities.RepoTrialEntity;
 import de.exbio.reposcapeweb.db.entities.nodes.*;
 import de.exbio.reposcapeweb.db.services.nodes.*;
@@ -9,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class NodeController {
@@ -162,6 +165,17 @@ public class NodeController {
         };
     }
 
+    public HashMap<String, Object> nodeToAttributeList(Integer typeId, Integer id, HashSet<String> attributes) {
+        return switch (Graphs.getNode(typeId)) {
+            case "disorder" -> findDisorder(id).getAsMap(attributes);
+            case "drug" -> findDrug(id).getAsMap(attributes);
+            case "gene" -> findGene(id).getAsMap(attributes);
+            case "pathway" -> findPathway(id).getAsMap(attributes);
+            case "protein" -> findProtein(id).getAsMap(attributes);
+            default -> null;
+        };
+    }
+
     public String[] getAttributes(Integer typeId) {
         return switch (Graphs.getNode(typeId)) {
             case "disorder" -> Disorder.allAttributes;
@@ -182,6 +196,21 @@ public class NodeController {
             case "protein" -> Protein.attributeLabels;
             default -> null;
         };
+    }
+
+    public String[] getDetailAttributeLabels(Integer typeId) {
+        HashSet<String> attrs = DBConfig.getConfig().nodes.get(typeId).getDetailAttributes().stream().map(a -> a.label).collect(Collectors.toCollection(HashSet::new));
+        String[] labels = switch (Graphs.getNode(typeId)) {
+            case "disorder" -> Disorder.attributeLabels;
+            case "drug" -> Drug.attributeLabels;
+            case "gene" -> Gene.attributeLabels;
+            case "pathway" -> Pathway.attributeLabels;
+            case "protein" -> Protein.attributeLabels;
+            default -> null;
+        };
+        if(labels==null)
+            return null;
+        return Arrays.stream(labels).filter(attrs::contains).collect(Collectors.toList()).toArray(new String[]{});
     }
 
     public String[] getAttributeTypes(Integer typeId) {

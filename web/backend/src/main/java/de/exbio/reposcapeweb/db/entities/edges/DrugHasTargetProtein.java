@@ -39,7 +39,6 @@ public class DrugHasTargetProtein extends RepoTrialEdge implements Serializable 
     @JsonIgnore
     private final Logger log = LoggerFactory.getLogger(DrugHasTargetProtein.class);
 
-//    @JsonIgnore
     @EmbeddedId
     private PairId id;
 
@@ -58,6 +57,10 @@ public class DrugHasTargetProtein extends RepoTrialEdge implements Serializable 
     @Transient
     @JsonIgnore
     public static HashMap<String,String> name2labelMap;
+
+    @Transient
+    @JsonIgnore
+    public static Boolean[] detailAttributes;
 
     @Transient
     @JsonIgnore

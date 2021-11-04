@@ -42,15 +42,8 @@ public class GeneInteractsWithGene extends RepoTrialEdge implements Serializable
     private String nodeTwo;
 
     private String evidenceTypes;
-//    private String sourceDatabases;
     private String assertedBy;
 
-//    private String conservativeEvidences;
-//    @Column(columnDefinition = "TEXT")
-//    private String methods;
-//
-//    private String sourceDatabases;
-//    private String evidenceTypes;
 
     public GeneInteractsWithGene() {
     }
@@ -81,6 +74,10 @@ public class GeneInteractsWithGene extends RepoTrialEdge implements Serializable
 
     @Transient
     @JsonIgnore
+    public static Boolean[] detailAttributes;
+
+    @Transient
+    @JsonIgnore
     public static HashMap<String, String> name2labelMap;
 
     @Transient
@@ -106,7 +103,6 @@ public class GeneInteractsWithGene extends RepoTrialEdge implements Serializable
         values.put("node1", nodeOne);
         values.put("node2", nodeTwo);
         values.put("type", getType());
-//        values.put("databases", getDatabases());
         values.put("assertedBy",getAssertedBy());
         values.put("evidenceTypes", getEvidenceTypes());
         values.put("id", id.getId1() + "-" + id.getId2());
@@ -129,14 +125,6 @@ public class GeneInteractsWithGene extends RepoTrialEdge implements Serializable
     }
 
 
-//    public List<String> getDatabases() {
-//        return StringUtils.stringToList(sourceDatabases);
-//    }
-//
-//    public void setDatabases(List<String> databases) {
-//        this.sourceDatabases = StringUtils.listToString(databases);
-//    }
-
     public List<String> getAssertedBy() {
         return StringUtils.stringToList(assertedBy);
     }
@@ -153,15 +141,6 @@ public class GeneInteractsWithGene extends RepoTrialEdge implements Serializable
     public void setEvidenceTypes(List<String> evidenceTypes) {
         this.evidenceTypes = StringUtils.listToString(evidenceTypes);
     }
-
-//    public List<String> getConservativeEvidences() {
-//        return StringUtils.stringToList(conservativeEvidences);
-//    }
-//
-//    public void setConservativeEvidences(List<String> conservativeEvidences) {
-//        this.conservativeEvidences = StringUtils.listToString(conservativeEvidences);
-//    }
-
 
     public static void setUpNameMaps() {
         label2NameMap = new HashMap<>();
@@ -189,36 +168,9 @@ public class GeneInteractsWithGene extends RepoTrialEdge implements Serializable
     public void setType(String type) {
     }
 
-//    public List<String> getMethods() {
-//        return StringUtils.stringToList(methods);
-//    }
-//
-//    public void setMethods(List<String> methods) {
-//        this.methods = StringUtils.listToString(methods);
-//    }
-//
-//    public List<String> getDatabases() {
-//        return StringUtils.stringToList(sourceDatabases);
-//    }
-//
-//    public void setDatabases(List<String> databases) {
-//        this.sourceDatabases = StringUtils.listToString(databases);
-//    }
-//
-//    public List<String> getEvidenceTypes() {
-//        return StringUtils.stringToList(evidenceTypes);
-//    }
-//
-//    public void setEvidenceTypes(List<String> evidenceTypes) {
-//        this.evidenceTypes = StringUtils.listToString(evidenceTypes);
-//    }
-
     public void setValues(GeneInteractsWithGene other) {
-//        this.sourceDatabases = other.sourceDatabases;
-//        this.evidenceTypes = other.evidenceTypes;
         this.memberOne = other.memberOne;
         this.memberTwo = other.memberTwo;
-//        this.methods = other.methods;
     }
 
     @Override
@@ -257,19 +209,6 @@ public class GeneInteractsWithGene extends RepoTrialEdge implements Serializable
         setEvidenceTypes(all);
     }
 
-//    public void addDatabases(List<String> databases) {
-//        List<String> all;
-//        if (this.sourceDatabases == null) {
-//            all = new LinkedList<>(databases);
-//        } else {
-//            all = getDatabases();
-//            for (String t : databases) {
-//                if (!all.contains(t))
-//                    all.add(t);
-//            }
-//        }
-//        setDatabases(all);
-//    }
 public void addAssertedBy(List<String> databases) {
     List<String> all;
     if (this.assertedBy == null) {

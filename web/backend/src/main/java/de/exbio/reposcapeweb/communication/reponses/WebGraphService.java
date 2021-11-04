@@ -11,6 +11,7 @@ import de.exbio.reposcapeweb.communication.jobs.Job;
 import de.exbio.reposcapeweb.communication.requests.*;
 import de.exbio.reposcapeweb.configs.DBConfig;
 import de.exbio.reposcapeweb.configs.VisConfig;
+import de.exbio.reposcapeweb.configs.schema.AttributeConfig;
 import de.exbio.reposcapeweb.db.DbCommunicationService;
 import de.exbio.reposcapeweb.db.entities.RepoTrialNode;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
@@ -984,9 +985,10 @@ public class WebGraphService {
         if (edgeId < 0)
             return getCustomEdgeAttributeList(graph, edgeId, p);
         else {
+            //TODO just add detailAttributeList as static to edges
             HashMap<String, Object> details = new HashMap<>();
-            edgeController.edgeToAttributeList(edgeId, p).forEach((k, v) -> details.put(edgeController.getAttributeLabelMap(name).get(k), v));
-            details.put("order", Arrays.stream(edgeController.getAttributes(edgeId)).map(a -> edgeController.getAttributeLabelMap(name).get(a)).collect(Collectors.toList()));
+            edgeController.edgeToAttributeList(edgeId, p,new HashSet<>(Arrays.asList(edgeController.getDetailAttributes(edgeId)))).forEach((k, v) -> details.put(edgeController.getAttributeLabelMap(name).get(k), v));
+            details.put("order", edgeController.getDetailLabels(edgeId));
             details.put("Type", EdgeController.edgeLabel2NameMap.get(details.get("Type").toString()));
             return details;
         }

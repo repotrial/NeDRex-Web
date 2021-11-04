@@ -1388,16 +1388,6 @@
           "distinct": true
         },
         {
-          "name": "databases",
-          "source": true,
-          "list": true,
-          "detail": true,
-          "id": false,
-          "type": "array",
-          "label": "Databases",
-          "distinct": true
-        },
-        {
           "name": "assertedBy",
           "list": true,
           "detail": true,

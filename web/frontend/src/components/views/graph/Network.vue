@@ -59,7 +59,7 @@
            v-if=" (!waiting && show )|| keepLegends">
         <div v-if="legend">
           <v-btn @click="togglePanel(0)" :title="this.showPanels[0] ? 'Hide':'Show'" plain
-                 style="display: flex; justify-content: flex-end; margin-left: auto; z-index: 201">
+                 style="display: flex; justify-content: flex-end; margin-left: auto; z-index: 201; background-color: rgba(255,255,255,0.5)">
             <v-icon left>fas fa-scroll</v-icon>
             Legend
             <v-icon right>{{ this.showPanels[0] ? "fas fa-angle-up" : "fas fa-angle-down" }}</v-icon>

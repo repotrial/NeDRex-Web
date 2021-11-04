@@ -18,7 +18,7 @@
             <template v-slot:activator="{ on, attrs }">
               <v-icon
                 left
-                :color="getColoring('nodes',detailedObject['Type'])"
+                :color="getColoring('nodes',detailedObject['Type'],'light')"
                 v-bind="attrs"
                 v-on="on"
                 :size="hover.node1?'45px':'35px'"
@@ -39,7 +39,7 @@
           <v-tooltip left>
             <template v-slot:activator="{ on, attrs }">
               <v-icon
-                :color="getExtendedColoring('edges',detailedObject['Type'])[0]"
+                :color="getExtendedColoring('edges',detailedObject['Type'], 'light')[0]"
                 v-bind="attrs"
                 v-on="on"
                 :size="hover.node1?'45px':'35px'"
@@ -73,7 +73,7 @@
           <v-tooltip left>
             <template v-slot:activator="{ on, attrs }">
               <v-icon
-                :color="getExtendedColoring('edges',detailedObject['Type'])[1]"
+                :color="getExtendedColoring('edges',detailedObject['Type'], 'light')[1]"
                 v-bind="attrs"
                 v-on="on"
                 :size="hover.node2?'45px':'35px'"

@@ -520,6 +520,24 @@ public class EdgeController {
         };
     }
 
+    public HashMap<String, Object> edgeToAttributeList(Integer type, PairId id, HashSet<String> attributes) {
+        return switch (Graphs.getEdge(type)) {
+            case "GeneAssociatedWithDisorder" -> findGeneAssociatedWithDisorder(id).getAsMap(attributes);
+            case "DrugTargetGene" -> findDrugHasTargetGene(id).getAsMap(attributes);
+            case "ProteinEncodedBy" -> findProteinEncodedBy(id).getAsMap(attributes);
+            case "DrugIndication" -> findDrugHasIndication(id).getAsMap(attributes);
+            case "DrugContraindication" -> findDrugHasContraindication(id).getAsMap(attributes);
+            case "DrugTargetProtein" -> findDrugHasTargetProtein(id).getAsMap(attributes);
+            case "ProteinProteinInteraction" -> findProteinInteractsWithProtein(id).getAsMap(attributes);
+            case "GeneGeneInteraction" -> findGeneInteractsWithGene(id).getAsMap(attributes);
+            case "ProteinPathway" -> findProteinInPathway(id).getAsMap(attributes);
+            case "ProteinAssociatedWithDisorder" -> findProteinAssociatedWithDisorder(id).getAsMap(attributes);
+            case "DisorderHierarchy" -> findDisorderIsADisorder(id).getAsMap(attributes);
+            case "DisorderComorbidity" -> findDisorderComorbidWithDisorder(id).getAsMap(attributes);
+            default -> null;
+        };
+    }
+
     public String[] getAttributes(Integer type) {
         return switch (Graphs.getEdge(type)) {
             case "GeneAssociatedWithDisorder" -> GeneAssociatedWithDisorder.allAttributes;
@@ -534,6 +552,33 @@ public class EdgeController {
             case "DisorderHierarchy" -> DisorderIsADisorder.allAttributes;
             case "DisorderComorbidity" -> DisorderComorbidWithDisorder.allAttributes;
             case "GeneGeneInteraction" -> GeneInteractsWithGene.allAttributes;
+            default -> null;
+        };
+    }
+
+    public String[] apply(String[] values, Boolean[] booleans){
+        LinkedList<String> out = new LinkedList<>();
+        for (int i = 0; i < values.length; i++) {
+            if(booleans[i])
+                out.add(values[i]);
+        }
+        return out.toArray(new String[]{});
+    }
+
+    public String[] getDetailLabels(Integer type) {
+        return switch (Graphs.getEdge(type)) {
+            case "GeneAssociatedWithDisorder" -> apply(GeneAssociatedWithDisorder.attributeLabels, GeneAssociatedWithDisorder.detailAttributes);
+            case "DrugTargetGene" -> apply(DrugHasTargetGene.attributeLabels, DrugHasTargetGene.detailAttributes);
+            case "ProteinEncodedBy" -> apply(ProteinEncodedBy.attributeLabels, ProteinEncodedBy.detailAttributes);
+            case "DrugIndication" -> apply(DrugHasIndication.attributeLabels, DrugHasIndication.detailAttributes);
+            case "DrugContraindication" -> apply(DrugHasContraindication.attributeLabels, DrugHasContraindication.detailAttributes);
+            case "DrugTargetProtein" -> apply(DrugHasTargetProtein.attributeLabels, DrugHasTargetProtein.detailAttributes);
+            case "ProteinProteinInteraction" -> apply(ProteinInteractsWithProtein.attributeLabels, ProteinInteractsWithProtein.detailAttributes);
+            case "ProteinPathway" -> apply(ProteinInPathway.attributeLabels, ProteinInPathway.detailAttributes);
+            case "ProteinAssociatedWithDisorder" -> apply(ProteinAssociatedWithDisorder.attributeLabels, ProteinAssociatedWithDisorder.detailAttributes);
+            case "DisorderHierarchy" -> apply(DisorderIsADisorder.attributeLabels, DisorderIsADisorder.detailAttributes);
+            case "DisorderComorbidity" -> apply(DisorderComorbidWithDisorder.attributeLabels, DisorderComorbidWithDisorder.detailAttributes);
+            case "GeneGeneInteraction" -> apply(GeneInteractsWithGene.attributeLabels, GeneInteractsWithGene.detailAttributes);
             default -> null;
         };
     }
@@ -684,6 +729,24 @@ public class EdgeController {
             case "ProteinPathway" -> ProteinInPathway.sourceAttributes;
             case "DisorderHierarchy" -> DisorderIsADisorder.sourceAttributes;
             case "DisorderComorbidity" -> DisorderComorbidWithDisorder.sourceAttributes;
+            default -> null;
+        };
+    }
+
+    public String[] getDetailAttributes(int edgeId) {
+        return switch (Graphs.getEdge(edgeId)) {
+            case "GeneAssociatedWithDisorder" -> apply(GeneAssociatedWithDisorder.allAttributes, GeneAssociatedWithDisorder.detailAttributes);
+            case "DrugTargetGene" -> apply(DrugHasTargetGene.allAttributes, DrugHasTargetGene.detailAttributes);
+            case "ProteinEncodedBy" -> apply(ProteinEncodedBy.allAttributes, ProteinEncodedBy.detailAttributes);
+            case "DrugIndication" -> apply(DrugHasIndication.allAttributes, DrugHasIndication.detailAttributes);
+            case "DrugContraindication" -> apply(DrugHasContraindication.allAttributes, DrugHasContraindication.detailAttributes);
+            case "DrugTargetProtein" -> apply(DrugHasTargetProtein.allAttributes, DrugHasTargetProtein.detailAttributes);
+            case "ProteinProteinInteraction" -> apply(ProteinInteractsWithProtein.allAttributes, ProteinInteractsWithProtein.detailAttributes);
+            case "ProteinPathway" -> apply(ProteinInPathway.allAttributes, ProteinInPathway.detailAttributes);
+            case "ProteinAssociatedWithDisorder" -> apply(ProteinAssociatedWithDisorder.allAttributes, ProteinAssociatedWithDisorder.detailAttributes);
+            case "DisorderHierarchy" -> apply(DisorderIsADisorder.allAttributes, DisorderIsADisorder.detailAttributes);
+            case "DisorderComorbidity" -> apply(DisorderComorbidWithDisorder.allAttributes, DisorderComorbidWithDisorder.detailAttributes);
+            case "GeneGeneInteraction" -> apply(GeneInteractsWithGene.allAttributes, GeneInteractsWithGene.detailAttributes);
             default -> null;
         };
     }

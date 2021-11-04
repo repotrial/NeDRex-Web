@@ -44,6 +44,10 @@ public class DisorderIsADisorder extends RepoTrialEdge implements Serializable {
 
     @Transient
     @JsonIgnore
+    public static Boolean[] detailAttributes;
+
+    @Transient
+    @JsonIgnore
     public static String[] allAttributes;
 
     @Transient

@@ -69,6 +69,10 @@ public class ProteinAssociatedWithDisorder extends RepoTrialEdge implements Seri
 
     @Transient
     @JsonIgnore
+    public static Boolean[] detailAttributes;
+
+    @Transient
+    @JsonIgnore
     public static Boolean[] idAttributes;
 
     @Transient

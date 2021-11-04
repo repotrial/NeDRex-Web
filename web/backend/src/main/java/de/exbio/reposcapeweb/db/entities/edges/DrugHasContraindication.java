@@ -51,6 +51,10 @@ public class DrugHasContraindication extends RepoTrialEdge implements Serializab
 
     @Transient
     @JsonIgnore
+    public static Boolean[] detailAttributes;
+
+    @Transient
+    @JsonIgnore
     public static String[] allAttributeTypes;
 
     @Transient
