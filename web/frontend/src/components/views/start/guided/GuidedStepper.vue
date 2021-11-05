@@ -549,7 +549,7 @@ export default {
       physicsOn: false,
 
       suggestionType: [undefined, undefined],
-      pathModel: -1,
+      pathModel: undefined,
 
       gid: undefined,
 
@@ -599,6 +599,8 @@ export default {
   watch: {
 
     pathModel: function (val) {
+      if(this.pathModel ==null)
+        return
       if (val < this.paths[0].length) {
         this.selectedPath = this.paths[0][val]
         this.direct = true
@@ -634,7 +636,7 @@ export default {
       this.suggestionType = [undefined, undefined]
 
       this.selectedPath = []
-      this.pathModel = -1
+      this.pathModel = undefined
       this.clearPaths()
 
       this.example = undefined
@@ -672,7 +674,7 @@ export default {
     },
 
     clearPaths: function () {
-
+      this.pathModel= undefined
       this.paths[0] = []
       this.paths[1] = []
     },
