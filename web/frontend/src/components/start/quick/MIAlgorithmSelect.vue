@@ -589,7 +589,7 @@ export default {
             id: "occs_abs",
             name: "Occs (Abs)",
             order: "descending",
-            seed: -1
+            seed: "n/a"
           }, {
             id: "occs_rel", group: "nw", name: "Occs (%)",
             primary: true, decimal: true, order: "descending", seed: 1

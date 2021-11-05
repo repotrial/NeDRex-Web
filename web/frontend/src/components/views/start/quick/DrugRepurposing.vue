@@ -246,7 +246,8 @@
 
           </v-card>
           <ButtonCancel @click="makeStep"></ButtonCancel>
-          <ButtonNext  @click="makeStep" :disabled="seedTypeId<0 || $refs.seedTable == null || $refs.seedTable.getSeeds().length===0"></ButtonNext>
+          <ButtonNext @click="makeStep"
+                      :disabled="seedTypeId<0 || $refs.seedTable == null || $refs.seedTable.getSeeds().length===0"></ButtonNext>
         </v-stepper-content>
 
         <v-stepper-content step="2">
@@ -256,7 +257,8 @@
                              @jobEvent="readModuleJob"></MIAlgorithmSelect>
           <ButtonCancel @click="makeStep"></ButtonCancel>
           <ButtonBack @click="makeStep"></ButtonBack>
-          <ButtonNext  @click="makeStep"  :disabled=" !moduleAlgorithmSelected  || ($refs.moduleAlgorithms.getAlgorithmMethod()==='bicon' && $refs.moduleAlgorithms.getAlgorithmModels().exprFile ===undefined)"></ButtonNext>
+          <ButtonNext @click="makeStep"
+                      :disabled=" !moduleAlgorithmSelected  || ($refs.moduleAlgorithms.getAlgorithmMethod()==='bicon' && $refs.moduleAlgorithms.getAlgorithmModels().exprFile ===undefined)"></ButtonNext>
 
         </v-stepper-content>
 
@@ -267,7 +269,7 @@
                              @jobEvent="readRankingJob"></DPAlgorithmSelect>
           <ButtonCancel @click="makeStep"></ButtonCancel>
           <ButtonBack @click="makeStep"></ButtonBack>
-          <ButtonNext  @click="makeStep" label="RESULTS" :disabled="!rankingAlgorithmSelected"></ButtonNext>
+          <ButtonNext @click="makeStep" label="RESULTS" :disabled="!rankingAlgorithmSelected"></ButtonNext>
 
         </v-stepper-content>
 
@@ -383,17 +385,17 @@
                 </v-col>
                 <v-col style="padding:0; max-width: 31%; width: 31%">
                   <v-card-title class="subtitle-1"> Drugs{{
-                      (results.drugs.length !== undefined && results.drugs.length > 0 ? (" (" + (results.drugs.length) + ")") : ": Processing")
+                      (results.drugs.length !== undefined && (results.drugs.length > 0 || rankingGid != null) ? (" (" + (results.drugs.length) + ")") : ": Processing")
                     }}
                     <span v-show="loadingTrialData">: Loading Trial
                       Data</span>
                     <v-progress-circular indeterminate
                                          size="25"
-                                         v-if="results.drugs.length===0 || loadingTrialData"
+                                         v-if="(results.drugs.length === 0 && rankingGid ==null) || loadingTrialData"
                                          style="margin-left:15px; z-index:50">
                     </v-progress-circular>
                   </v-card-title>
-                  <template v-if="results.drugs.length>0">
+                  <template v-if="results.drugs.length>=0">
                     <v-data-table max-height="50vh" height="50vh" class="overflow-y-auto" fixed-header dense
                                   item-key="id" show-expand :single-expand="true"
                                   :items="results.drugs"
@@ -453,7 +455,7 @@
                       <template v-slot:footer>
                         <div style="display: flex; justify-content: center">
                           <div style="padding-top: 16px; margin-bottom: 8px;">
-                            <ResultDownload v-show="results.drugs.length>0" raw results
+                            <ResultDownload v-if="results.drugs.length>0" raw results
                                             @downloadResultsEvent="downloadRankingResultList"
                                             @downloadRawEvent="downloadFullResultList(rankingJid)"></ResultDownload>
                           </div>
@@ -468,7 +470,9 @@
           <ButtonCancel @click="makeStep"></ButtonCancel>
           <ButtonBack @click="makeStep"></ButtonBack>
           <ButtonNext @click="makeStep" label="VALIDATE" :disabled="rankingGid ==null"></ButtonNext>
-          <ButtonAdvanced @click="$emit('graphLoadNewTabEvent',{post: {id: rankingGid}})" :disabled="rankingGid==null">Advanced ></ButtonAdvanced>
+          <ButtonAdvanced @click="$emit('graphLoadNewTabEvent',{post: {id: rankingGid}})" :disabled="rankingGid==null">
+            Advanced >
+          </ButtonAdvanced>
         </v-stepper-content>
         <v-stepper-content step="5">
           <Validation ref="validation" :step="5" :seed-type-id="seedTypeId" :module="results.targets"
@@ -566,8 +570,6 @@ export default {
         height: '60vh',
         'min-height': '60vh',
       },
-      targetColorStyle: {},
-      drugColorStyle: {},
       graphConfig: {visualized: false},
       uid: undefined,
       seedTypeId: undefined,
@@ -688,7 +690,7 @@ export default {
         if (this.step === 4) {
           if (this.rankingGid == null || this.rankingGid === this.graphName)
             this.graphNamePopup()
-          if (this.moduleGid != null && this.resultProgress===50)
+          if (this.moduleGid != null && this.resultProgress === 50)
             this.loadGraph(this.moduleGid, true)
           this.submitRankingAlgorithm()
         }
@@ -698,7 +700,7 @@ export default {
       if (button === "back") {
         this.step--
         if (this.step === 4) {
-          this.loadGraph(this.rankingGid,false,true)
+          this.loadGraph(this.rankingGid, false, true)
         }
 
         if (this.step === 3) {
@@ -923,36 +925,39 @@ export default {
 
     loadModuleTargetTable: function () {
       let seedType = ['gene', 'protein'][this.seedTypeId]
-      this.targetColorStyle = {'background-color': this.$global.metagraph.colorMap[seedType].light}
       return this.$http.get("/getGraphList?id=" + this.moduleGid).then(response => {
         if (response.data !== undefined)
           return response.data
       }).then(data => {
-        data.nodes[seedType].forEach(n => n.displayName = this.$utils.adjustLabels(n.displayName))
+        if (data.nodes[seedType] != null) {
+          data.nodes[seedType].forEach(n => n.displayName = this.$utils.adjustLabels(n.displayName))
 
-        let method = this.$refs.moduleAlgorithms.getAlgorithm()
-
-        let primaryAttribute = method.scores.filter(s => s.primary)[0]
-        this.seedValueReplacement(data.nodes[seedType], method)
-        this.results.targets = this.sort(data.nodes[seedType], primaryAttribute)
-        this.rank(this.results.targets, primaryAttribute)
-        this.normalize(this.results.targets, method)
-        this.round(this.results.targets, method)
+          let method = this.$refs.moduleAlgorithms.getAlgorithm()
+          let primaryAttribute = method.scores.filter(s => s.primary)[0]
+          this.seedValueReplacement(data.nodes[seedType], method)
+          this.results.targets = this.sort(data.nodes[seedType], primaryAttribute)
+          this.rank(this.results.targets, primaryAttribute)
+          this.normalize(this.results.targets, method)
+          this.round(this.results.targets, method)
+        }
       }).catch(console.error)
     },
     loadRankingTargetTable: function () {
-      this.drugColorStyle = {'background-color': this.$global.metagraph.colorMap['drug'].light}
       return this.$http.get("/getGraphList?id=" + this.rankingGid).then(response => {
         if (response.data !== undefined)
           return response.data
       }).then(data => {
-        let method = this.$refs.rankingAlgorithms.getAlgorithm()
-        let primaryAttribute = method.scores.filter(s => s.primary)[0]
-        this.results.drugs = this.sort(data.nodes.drug, primaryAttribute)
-        this.rank(this.results.drugs, primaryAttribute)
-        this.normalize(this.results.drugs, method)
-        this.round(this.results.drugs, method)
-        this.addTrialsNumber(this.results.drugs, method)
+        if (this.$refs.rankingAlgorithms) {
+          let method = this.$refs.rankingAlgorithms.getAlgorithm()
+          let primaryAttribute = method.scores.filter(s => s.primary)[0]
+          if (data.nodes.drug != null) {
+            this.results.drugs = this.sort(data.nodes.drug, primaryAttribute)
+            this.rank(this.results.drugs, primaryAttribute)
+            this.normalize(this.results.drugs, method)
+            this.round(this.results.drugs, method)
+            this.addTrialsNumber(this.results.drugs, method)
+          }
+        }
       }).catch(console.error)
     },
 
@@ -984,23 +989,24 @@ export default {
         return data.map(d => d.displayName)
       })
       await this.$http.getAllTrials(disorderNames, drugNames).then(data => {
-        data.StudyFields.forEach(studie => {
-          if (studie != null && studie.InterventionName != null)
-            studie.InterventionName.forEach(target => {
-              list.forEach(drug => {
-                if (target.toLowerCase().indexOf(drug.displayName.toLowerCase()) > -1) {
-                  if (drug.trials == null)
-                    drug.trials = studie.NCTId
-                  else {
-                    studie.NCTId.forEach(id => {
-                      if (drug.trials.indexOf(id) === -1)
-                        drug.trials.push(id)
-                    })
+        if (data.StudyFields != null)
+          data.StudyFields.forEach(studie => {
+            if (studie != null && studie.InterventionName != null)
+              studie.InterventionName.forEach(target => {
+                list.forEach(drug => {
+                  if (target.toLowerCase().indexOf(drug.displayName.toLowerCase()) > -1) {
+                    if (drug.trials == null)
+                      drug.trials = studie.NCTId
+                    else {
+                      studie.NCTId.forEach(id => {
+                        if (drug.trials.indexOf(id) === -1)
+                          drug.trials.push(id)
+                      })
+                    }
                   }
-                }
+                })
               })
-            })
-        })
+          })
       })
       list.forEach(drug => {
         if (drug.trials != null) {
@@ -1115,18 +1121,22 @@ export default {
         this.getGraph().then(graph => {
           if (!noProg)
             this.resultProgress += 5
-          graph.loadNetworkById(graphId, disableSkipToAdvanced).then(() => {
-            if (!noProg)
-              this.resultProgress += 15
-            graph.showLoops(false)
-            let seedIds = this.seeds.map(s => s.id)
-            if (!noProg)
-              this.resultProgress += 3
-            graph.modifyGroups(this.results.targets.filter(n => seedIds.indexOf(n.id) > -1).map(n => ["gen_", "pro_"][this.seedTypeId] + n.id), ["seedGene", "seedProtein"][this.seedTypeId])
-            if (!noProg)
-              this.resultProgress += 2
-            this.showVisOption = !this.graphConfig.visualized
-          })
+          if (this.rankingGid == null || this.results.drugs.length > 0) {
+            graph.loadNetworkById(graphId, disableSkipToAdvanced).then(() => {
+              if (!noProg)
+                this.resultProgress += 15
+              graph.showLoops(false)
+              let seedIds = this.seeds.map(s => s.id)
+              if (!noProg)
+                this.resultProgress += 3
+              graph.modifyGroups(this.results.targets.filter(n => seedIds.indexOf(n.id) > -1).map(n => ["gen_", "pro_"][this.seedTypeId] + n.id), ["seedGene", "seedProtein"][this.seedTypeId])
+              if (!noProg)
+                this.resultProgress += 2
+              this.showVisOption = !this.graphConfig.visualized
+            })
+          } else {
+            this.resultProgress = 100
+          }
         })
       }
     }

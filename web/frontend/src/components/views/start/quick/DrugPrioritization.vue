@@ -300,13 +300,13 @@
                 </v-col>
                 <v-col style="padding: 0; width: 28%; max-width: 28%">
                   <v-card-title class="subtitle-1"> Drugs{{
-                      (results.targets.length !== undefined && results.targets.length > 0 ? (" (" + (results.targets.length) + ")") : ": Processing")
+                      (results.targets.length !== undefined && (results.targets.length > 0 || currentGid != null) ? (" (" + (results.targets.length) + ")") : ": Processing")
                     }}
                     <span v-show="loadingTrialData">: Loading Trial
                       Data</span>
                     <v-progress-circular indeterminate
                                          size="25"
-                                         v-if="results.targets.length===0 || loadingTrialData"
+                                         v-if="(results.targets.length===0 && currentGid==null) || loadingTrialData"
                                          style="margin-left:15px; z-index:50">
                     </v-progress-circular>
                   </v-card-title>
@@ -367,9 +367,10 @@
                         <v-icon v-show="isExpanded" @click="expand(false)">fas fa-angle-up</v-icon>
                       </template>
                       <template v-slot:footer>
-                        <div style="display: flex; justify-content: center" v-show="results.targets.length>0">
+                        <div style="display: flex; justify-content: center">
                           <div style="padding-top: 16px">
-                            <ResultDownload raw results @downloadResultsEvent="downloadResultList"
+                            <ResultDownload v-if="results.targets.length>0" raw results
+                                            @downloadResultsEvent="downloadResultList"
                                             @downloadRawEvent="downloadFullResultList"></ResultDownload>
                           </div>
                         </div>
@@ -478,7 +479,6 @@ export default {
         'min-height': '60vh',
       },
       graphConfig: {visualized: false},
-      targetColorStyle: {},
       uid: undefined,
       seedTypeId: undefined,
       seeds: [],
@@ -684,7 +684,6 @@ export default {
           this.$socket.unsubscribeJob(jid)
         this.jobs[jid].result = result
         this.loadTargetTable(result).then(() => {
-          // this.$refs.validation.validate(this.results.targets, this.$refs.validation.getDrugs(), this.$refs.algorithms.getAlgorithmModels().onlyApproved)
           this.loadGraph(result)
         })
       }
@@ -715,19 +714,19 @@ export default {
       })
     },
     setDisorders: function (disorders) {
-      disorders.forEach(d=>this.disorderIds.push(d))
+      disorders.forEach(d => this.disorderIds.push(d))
     },
 
     setDrugs: function (drugs, origin) {
       if (this.$refs != null)
-        this.$refs.validation.addDrugs({data:drugs,origin:origin})
+        this.$refs.validation.addDrugs({data: drugs, origin: origin})
       else
         setTimeout(() => {
-          this.setDrugs(drugs,origin)
+          this.setDrugs(drugs, origin)
         })
     },
     setSuggestions: function (suggestions) {
-      suggestions.forEach(s=>this.selectedSuggestions.push(s))
+      suggestions.forEach(s => this.selectedSuggestions.push(s))
     },
 
     onFileSelected: function (file) {
@@ -805,18 +804,21 @@ export default {
       this.readJob(data)
     },
     loadTargetTable: function (gid) {
-      this.targetColorStyle = {'background-color': this.$global.metagraph.colorMap['drug'].light}
       return this.$http.get("/getGraphList?id=" + gid).then(response => {
         if (response.data !== undefined)
           return response.data
       }).then(data => {
-        let method = this.$refs.algorithms.getAlgorithm()
-        let primaryAttribute = method.scores.filter(s => s.primary)[0]
-        this.results.targets = this.sort(data.nodes.drug, primaryAttribute)
-        this.rank(this.results.targets, primaryAttribute.id)
-        this.normalize(this.results.targets, method)
-        this.round(this.results.targets, method)
-        this.addTrialsNumber(this.results.targets, method)
+        if (this.$refs.algorithms) {
+          let method = this.$refs.algorithms.getAlgorithm()
+          let primaryAttribute = method.scores.filter(s => s.primary)[0]
+          if (data.nodes.drug != null) {
+            this.results.targets = this.sort(data.nodes.drug, primaryAttribute)
+            this.rank(this.results.targets, primaryAttribute.id)
+            this.normalize(this.results.targets, method)
+            this.round(this.results.targets, method)
+            this.addTrialsNumber(this.results.targets, method)
+          }
+        }
       }).catch(console.error)
     },
     clearList: function () {
@@ -841,6 +843,7 @@ export default {
         return data.map(d => d.displayName)
       })
       await this.$http.getAllTrials(disorderNames, drugNames).then(data => {
+        if (data.StudyFields != null)
         data.StudyFields.forEach(studie => {
           if (studie != null && studie.InterventionName != null)
             studie.InterventionName.forEach(target => {
@@ -961,13 +964,14 @@ export default {
         setTimeout(() => {
           this.loadGraph(graphId)
         }, 500)
-      else
+      else {
         this.getGraph().then(graph => {
           graph.loadNetworkById(graphId).then(() => {
             graph.showLoops(false)
             this.showVisOption = !this.graphConfig.visualized
           })
         })
+      }
     }
     ,
     focus: function () {

@@ -164,7 +164,7 @@ const ApiService = {
           if(data===undefined)
             data = resp
           else
-            data.StudyFields = data.StudyFields.concat(resp.StudyFields)
+            data.StudyFields = data.StudyFields !=null ? data.StudyFields.concat(resp.StudyFields) : []
         }).catch(console.error)
       }
     }
