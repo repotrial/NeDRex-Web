@@ -385,22 +385,22 @@ export default {
           }
         }).catch(console.error)
     },
+
+    checkResubmission: function (data, type) {
+      if (this[type + "Resubmissions"] < this.resubmissionCount) {
+        this.$set(this, type + "Resubmissions", this[type + "Resubmissions"] + 1)
+        this.$http.postNedrex("/admin/resubmit/validation/" + this[type + "ValidationUID"]).then(() => {
+          this[type + "ValidationScore"] = undefined
+          this.checkValidationScore(this[type + "ValidationUID"], type)
+        }).catch(console.error)
+      } else {
+        this.$set(this, type + "ValidationError", data.error);
+      }
+    },
   },
 
 
-  checkResubmission: function (data, type) {
-    console.log("Checking for resubmission...")
-    if (this[type + "Resubmissions"] < this.resubmissionCount) {
-      console.log("Resubmitting "+this[type + "Resubmissions"])
-      this.$set(this, type + "Resubmissions", this[type + "Resubmissions"] + 1)
-      this.$http.postNedrex("/admin/resubmit/validation/" + this[type + "ValidationUID"]).then(() => {
-        this.checkValidationScore(this[type + "ValidationUID"], type)
-      }).catch(console.error)
-    } else {
-      console.log("No more resubmissions!")
-      this.$set(this, type + "ValidationError", data.error);
-    }
-  },
+
 
   components: {
     LabeledSwitch,
