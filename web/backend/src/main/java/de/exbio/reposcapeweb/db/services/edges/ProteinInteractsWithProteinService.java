@@ -146,7 +146,6 @@ public class ProteinInteractsWithProteinService {
 
     public void importEdges() {
         findAllProteins().forEach(edge -> importProteinEdge(edge.getPrimaryIds(), edge.getEvidenceTypes().contains("exp")));
-
         findAllGenes().forEach(edge -> importGeneEdge(edge.getPrimaryIds(),edge.getEvidenceTypes().contains("exp")));
     }
 

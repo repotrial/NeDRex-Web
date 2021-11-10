@@ -318,8 +318,9 @@ export default {
     },
 
     validateModule: async function (targets, validationDrugs, approved, type) {
-      //FIXME remove when fixed; necessary to avoid errors for the time being
-      let filtered = await this.$http.getInteractingOnly(type, targets.map(n => n.id)).catch(console.error)
+      let nodes = targets.map(n => n.id)
+      //FIXME remove when fixed; necessary to avoid errors for the time being ; also filtering non-experimental edges now
+      nodes = await this.$http.getInteractingOnly(type, targets.map(n => n.id)).catch(console.error)
       // let filtered = targets.map(n=>n.id)
       this.moduleValidationStatus = "preparing"
       let refDrugs = Object.values(validationDrugs).map(d => d.primaryDomainId);
@@ -327,7 +328,7 @@ export default {
         this.moduleValidationStatus = "no drugs"
         return;
       }
-      let module = Object.values(targets).filter(n => filtered.indexOf(n.id) !== -1).map(node => node.primaryDomainId)
+      let module = Object.values(targets).filter(n => nodes.indexOf(n.id) !== -1).map(node => node.primaryDomainId)
       let data = {
         module_members: module,
         module_member_type: type,

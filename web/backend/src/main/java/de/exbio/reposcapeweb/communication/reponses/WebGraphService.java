@@ -14,6 +14,8 @@ import de.exbio.reposcapeweb.configs.VisConfig;
 import de.exbio.reposcapeweb.configs.schema.AttributeConfig;
 import de.exbio.reposcapeweb.db.DbCommunicationService;
 import de.exbio.reposcapeweb.db.entities.RepoTrialNode;
+import de.exbio.reposcapeweb.db.entities.edges.GeneInteractsWithGene;
+import de.exbio.reposcapeweb.db.entities.edges.ProteinInteractsWithProtein;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
 import de.exbio.reposcapeweb.db.entities.nodes.*;
 import de.exbio.reposcapeweb.db.history.GraphHistory;
@@ -987,7 +989,7 @@ public class WebGraphService {
         else {
             //TODO just add detailAttributeList as static to edges
             HashMap<String, Object> details = new HashMap<>();
-            edgeController.edgeToAttributeList(edgeId, p,new HashSet<>(Arrays.asList(edgeController.getDetailAttributes(edgeId)))).forEach((k, v) -> details.put(edgeController.getAttributeLabelMap(name).get(k), v));
+            edgeController.edgeToAttributeList(edgeId, p, new HashSet<>(Arrays.asList(edgeController.getDetailAttributes(edgeId)))).forEach((k, v) -> details.put(edgeController.getAttributeLabelMap(name).get(k), v));
             details.put("order", edgeController.getDetailLabels(edgeId));
             details.put("Type", EdgeController.edgeLabel2NameMap.get(details.get("Type").toString()));
             return details;
@@ -1699,9 +1701,14 @@ public class WebGraphService {
             AtomicBoolean interacting = new AtomicBoolean(false);
             try {
                 edgeController.getEdges(edgeId, nodeId, node, false).forEach(edge -> {
-                    if (edge.getId1() != edge.getId2())
+                    if (edge.getId1() != edge.getId2() && edgeController.isExperimental(edgeId, edge.getId1(), edge.getId2()))
                         interacting.set(true);
                 });
+                if (!interacting.get())
+                    edgeController.getEdges(edgeId, nodeId, node, true).forEach(edge -> {
+                        if (edge.getId1() != edge.getId2() && edgeController.isExperimental(edgeId, edge.getId1(), edge.getId2()))
+                            interacting.set(true);
+                    });
             } catch (NullPointerException ignore) {
             }
             if (interacting.get())
