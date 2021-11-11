@@ -262,8 +262,10 @@
                         <span v-else>{{ item.displayName }}</span>
                       </template>
                       <template v-slot:item.data-table-expand="{expand, item,isExpanded}">
-                        <v-icon v-show="!isExpanded" @click="expand(true)">fas fa-angle-down</v-icon>
-                        <v-icon v-show="isExpanded" @click="expand(false)">fas fa-angle-up</v-icon>
+                        <v-icon v-show="!isExpanded" @click="expand(true)" :color="getColor(item)">fas fa-angle-down
+                        </v-icon>
+                        <v-icon v-show="isExpanded" @click="expand(false)" :color="getColor(item)">fas fa-angle-up
+                        </v-icon>
                       </template>
                       <template v-slot:expanded-item="{ headers, item }">
                         <td :colspan="headers.length">
@@ -289,8 +291,8 @@
                                 :single-expand="true"
                                 hide-default-footer @click:row="rowClicked">
                     <template v-slot:item.data-table-expand="{expand, item,isExpanded}">
-                      <v-icon v-show="!isExpanded" @click="expand(true)">fas fa-angle-down</v-icon>
-                      <v-icon v-show="isExpanded" @click="expand(false)">fas fa-angle-up</v-icon>
+                      <v-icon v-show="!isExpanded" @click="expand(true)" color="#e4ca02">fas fa-angle-down</v-icon>
+                      <v-icon v-show="isExpanded" @click="expand(false)" color="#e4ca02">fas fa-angle-up</v-icon>
                     </template>
                     <template v-slot:expanded-item="{ headers, item }">
                       <td :colspan="headers.length">
@@ -826,7 +828,8 @@ export default {
 
     seedValueReplacement: function (list, method) {
       let seedIds = this.seeds.map(n => n.id)
-      let seeds = list.filter(n => seedIds.indexOf(n.id > -1))
+      let seeds = list.filter(n => seedIds.indexOf(n.id) > -1)
+      seeds.forEach(s => s.isSeed = true)
       method.scores.forEach(score => seeds.filter(n => n[score.id] == null).forEach(n => n[score.id] = score.seed))
     },
 
@@ -923,6 +926,11 @@ export default {
       return new Promise(resolve => this.waitForGraph(resolve)).then(() => {
         return this.$refs.graph;
       })
+    },
+    getColor: function (item) {
+      if (item.isSeed)
+        return "#e4ca02"
+      return this.getColoring('nodes', ['gene', 'protein'][this.seedTypeId])
     },
     getColoring: function (entity, name, style) {
       return this.$utils.getColoring(this.$global.metagraph, entity, name, style);

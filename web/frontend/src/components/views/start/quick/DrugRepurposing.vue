@@ -310,8 +310,10 @@
                       <span v-else>{{ item.displayName }}</span>
                     </template>
                     <template v-slot:item.data-table-expand="{expand, item,isExpanded}">
-                      <v-icon v-show="!isExpanded" @click="expand(true)">fas fa-angle-down</v-icon>
-                      <v-icon v-show="isExpanded" @click="expand(false)">fas fa-angle-up</v-icon>
+                      <v-icon v-show="!isExpanded" @click="expand(true)" :color="getColor(item)">fas fa-angle-down
+                      </v-icon>
+                      <v-icon v-show="isExpanded" @click="expand(false)" :color="getColor(item)">fas fa-angle-up
+                      </v-icon>
                     </template>
                     <template v-slot:expanded-item="{ headers, item }">
                       <td :colspan="headers.length">
@@ -444,8 +446,12 @@
 
                       </template>
                       <template v-slot:item.data-table-expand="{expand, item,isExpanded}">
-                        <v-icon v-show="!isExpanded" @click="expand(true)">fas fa-angle-down</v-icon>
-                        <v-icon v-show="isExpanded" @click="expand(false)">fas fa-angle-up</v-icon>
+                        <v-icon v-show="!isExpanded" @click="expand(true)" :color="getColoring('nodes','drug')">fas
+                          fa-angle-down
+                        </v-icon>
+                        <v-icon v-show="isExpanded" @click="expand(false)" :color="getColoring('nodes','drug')">fas
+                          fa-angle-up
+                        </v-icon>
                       </template>
                       <template v-slot:expanded-item="{ headers, item }">
                         <td :colspan="headers.length">
@@ -617,7 +623,7 @@ export default {
     this.init()
   },
   destroyed() {
-      //TODO maybe add destroyed function to be save that all data is removed
+    //TODO maybe add destroyed function to be save that all data is removed
   },
 
   methods: {
@@ -767,6 +773,12 @@ export default {
         setTimeout(this.waitForModuleJob, 100, resolve)
       else
         resolve()
+    },
+
+    getColor: function (item) {
+      if (item.isSeed)
+        return "#e4ca02"
+      return this.getColoring('nodes', ['gene', 'protein'][this.seedTypeId])
     },
     toggleToolOption: function (option, value) {
       if (option === "physics")
@@ -922,7 +934,8 @@ export default {
     ,
     seedValueReplacement: function (list, method) {
       let seedIds = this.seeds.map(n => n.id)
-      let seeds = list.filter(n => seedIds.indexOf(n.id > -1))
+      let seeds = list.filter(n => seedIds.indexOf(n.id) > -1)
+      seeds.forEach(s => s.isSeed = true)
       method.scores.forEach(score => seeds.filter(n => n[score.id] == null).forEach(n => n[score.id] = score.seed))
     },
 
@@ -1147,7 +1160,7 @@ export default {
               if (!noProg)
                 this.resultProgress += 2
               this.showVisOption = !this.graphConfig.visualized
-              this.resultProgress = this.rankingGid==null ? 50:100
+              this.resultProgress = this.rankingGid == null ? 50 : 100
             })
           } else {
             this.resultProgress = 100

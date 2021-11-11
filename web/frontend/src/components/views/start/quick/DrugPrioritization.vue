@@ -247,8 +247,8 @@
                       <span v-else>{{ item.displayName }}</span>
                     </template>
                     <template v-slot:item.data-table-expand="{expand, item,isExpanded}">
-                      <v-icon v-show="!isExpanded" @click="expand(true)">fas fa-angle-down</v-icon>
-                      <v-icon v-show="isExpanded" @click="expand(false)">fas fa-angle-up</v-icon>
+                      <v-icon v-show="!isExpanded" @click="expand(true)" :color="getColoring('nodes',['gene','protein'][seedTypeId])">fas fa-angle-down</v-icon>
+                      <v-icon v-show="isExpanded" @click="expand(false)" :color="getColoring('nodes',['gene','protein'][seedTypeId])">fas fa-angle-up</v-icon>
                     </template>
                     <template v-slot:expanded-item="{ headers, item }">
                       <td :colspan="headers.length">
@@ -276,7 +276,7 @@
                         <v-list>
                           <v-list-item>
                             <v-list-item-icon>
-                              <v-icon left :color="getColoring('nodes',['gene','protein'][seedTypeId],'light')">fas
+                              <v-icon left :color="getColoring('nodes',['gene','protein'][seedTypeId])">fas
                                 fa-genderless
                               </v-icon>
                             </v-list-item-icon>
@@ -366,8 +366,8 @@
                         </td>
                       </template>
                       <template v-slot:item.data-table-expand="{expand, item,isExpanded}">
-                        <v-icon v-show="!isExpanded" @click="expand(true)">fas fa-angle-down</v-icon>
-                        <v-icon v-show="isExpanded" @click="expand(false)">fas fa-angle-up</v-icon>
+                        <v-icon v-show="!isExpanded" @click="expand(true)" :color="getColoring('nodes','drug','light')">fas fa-angle-down</v-icon>
+                        <v-icon v-show="isExpanded" @click="expand(false)" :color="getColoring('nodes','drug','light')">fas fa-angle-up</v-icon>
                       </template>
                       <template v-slot:footer>
                         <div style="display: flex; justify-content: center">
