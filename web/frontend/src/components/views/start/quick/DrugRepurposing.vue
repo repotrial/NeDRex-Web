@@ -703,6 +703,7 @@ export default {
       if (button === "back") {
         this.step--
         if (this.step === 4) {
+          this.resultProgress = 100
           this.loadGraph(this.rankingGid, false, true)
         }
 
@@ -712,7 +713,6 @@ export default {
           this.graphName = undefined
           this.$refs.graph.reload()
           this.$refs.validation.resetValidation();
-          this.resultProgress = 50
           if (this.rankingJid !== undefined)
             this.$socket.unsubscribeJob(this.rankingJid)
         }
@@ -1147,6 +1147,7 @@ export default {
               if (!noProg)
                 this.resultProgress += 2
               this.showVisOption = !this.graphConfig.visualized
+              this.resultProgress = this.rankingGid==null ? 50:100
             })
           } else {
             this.resultProgress = 100

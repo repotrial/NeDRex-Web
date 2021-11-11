@@ -71,7 +71,7 @@
         </div>
         <div v-if="tools">
           <div style="display: flex; justify-content:flex-end">
-            <v-btn @click="togglePanel(1)" :title="this.showPanels[1] ? 'Hide':'Show'" plain style="z-index: 201">
+            <v-btn @click="togglePanel(1)" :title="this.showPanels[1] ? 'Hide':'Show'" plain style="z-index: 201; background-color: rgba(255,255,255,0.5)">
               <v-icon left>fas fa-tools</v-icon>
               Tools
               <v-icon right>{{ this.showPanels[1] ? "fas fa-angle-up" : "fas fa-angle-down" }}</v-icon>
