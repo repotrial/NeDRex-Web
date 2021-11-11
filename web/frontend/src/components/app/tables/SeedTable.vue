@@ -182,7 +182,16 @@ export default {
       this.nodes.splice(index, 1)
       this.$emit("remove", this.origins[id])
       delete this.origins[id]
+      this.$emit("updateCount")
     },
+
+    setValues(origins, nodes, attributes){
+      this.origins= {...origins}
+      this.$set(this,"nodes",[...nodes])
+      this.$set(this,"attributes",{...attributes})
+      this.$emit("updateCount")
+    },
+
 
     removeNodes: function (data) {
       let all = data.all;
@@ -190,6 +199,7 @@ export default {
       let value = data.value;
       this.nodes.filter(n => (n[attribute] != null && (n[attribute].indexOf(value) > -1 && (n[attribute].length === 1 || all)))).map(n => n.id).forEach(this.removeNode)
       this.updateAttributes()
+      this.$emit("updateCount")
     },
 
     filterNodes: function (data) {
@@ -198,6 +208,7 @@ export default {
       let value = data.value;
       this.nodes.filter(n => !(n[attribute] != null && n[attribute].indexOf(value) > -1 && (n[attribute].length === 1 || all))).map(n => n.id).forEach(this.removeNode)
       this.updateAttributes()
+      this.$emit("updateCount")
     },
 
     updateAttributes: function () {
@@ -217,6 +228,7 @@ export default {
     clear: function () {
       this.nodes = []
       this.origins = {}
+      this.$emit("updateCount")
     },
 
     downloadNodes: function (names, sep) {
@@ -274,11 +286,21 @@ export default {
       })
       this.updateAttributes()
       this.$emit("printNotificationEvent", "Added " + entries.data.length + " from " + entries.origin + " (" + count + " new) seeds!", 1)
+      this.$emit("updateCount")
     },
 
     getSeeds() {
       return this.nodes;
     },
+
+    allOrigins(){
+      return this.origins
+    },
+
+    getAttributes(){
+      return this.attributes
+    },
+
 
     keepIntersection: function () {
       let remove = []
@@ -289,6 +311,7 @@ export default {
         }
       })
       this.nodes = this.nodes.filter(s => remove.indexOf(s.id) === -1)
+      this.$emit("updateCount")
     },
 
   },

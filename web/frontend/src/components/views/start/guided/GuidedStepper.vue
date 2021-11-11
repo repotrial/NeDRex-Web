@@ -69,6 +69,16 @@
               specific connections might be of interest.
             </v-card-subtitle>
             <GuidedExamples @exampleEvent="applyExample" @addNodesEvent="addToSelection"/>
+            <v-tooltip top>
+              <template v-slot:activator="{on, attrs}">
+                <v-btn @click="copySourcesToTargets" outlined icon style="margin-top: 5px" v-bind="attrs" v-on="on"
+                       :disabled="sourceTypeId==null || (targetTypeId!=null && sourceTypeId !== targetTypeId) || (targetTypeId!=null && sourceTypeId===targetTypeId && ($refs.targetTable !=null  &&$refs.targetTable.getSeeds().length>0))|| ($refs.sourceTable == null || $refs.sourceTable.getSeeds().length===0)">
+                  <v-icon>fas fa-exchange-alt</v-icon>
+                </v-btn>
+              </template>
+              <div>Set target list to the source list.</div>
+            </v-tooltip>
+
             <div style="height: 960px; display: flex; margin-top:10px;">
               <div style="justify-self: flex-start; width: 48%;">
                 <div style="display: flex; justify-content: flex-start;">
@@ -99,15 +109,15 @@
                   <SeedTable ref="sourceTable" v-show="sourceTypeId!==undefined" :download="true" :remove="true"
                              :filter="true"
                              @printNotificationEvent="printNotification"
-                             height="360px"
-                             :title="'Source nodes ('+($refs.sourceTable ? $refs.sourceTable.getSeeds().length : 0)+')'"
+                             height="360px" @updateCount="updateSourceCount"
+                             :title="'Source nodes ('+sourceCount+')'"
                              :nodeName="nodeList[sourceTypeId].value"></SeedTable>
                 </div>
               </div>
               <div style="justify-self: center; margin-left: auto; padding-bottom:120px">
                 <v-divider vertical></v-divider>
               </div>
-              <div style="justify-self: flex-end; margin-left: auto; width: 48%;">
+              <div ref="targetSide" style="justify-self: flex-end; margin-left: auto; width: 48%;">
                 <div style="display: flex; justify-content: flex-start;">
                   <div class="title" style="padding-top: 16px;">2a. Select the target node type:</div>
                   <v-select item-value="id" :items="nodeList" v-model="targetTypeId"
@@ -138,7 +148,7 @@
                   <SeedTable ref="targetTable" v-show="targetTypeId!==undefined" :download="true" :remove="true"
                              @printNotificationEvent="printNotification"
                              height="360px"
-                             :title="'Target nodes ('+($refs.targetTable ? $refs.targetTable.getSeeds().length : 0)+')'"
+                             :title="'Target nodes ('+targetCount+')'" @updateCount="updateTargetCount"
                              :nodeName="nodeList[targetTypeId].value"></SeedTable>
                 </div>
               </div>
@@ -330,8 +340,8 @@
                             <v-tooltip left>
                               <template v-slot:activator="{ on, attrs }">
                                 <a style="text-decoration: none"
-                                  href="https://www.disgenet.org/help#:~:text=The%20DisGeNET%20score%20for%20GDAs,range%20from%200%20to%201."
-                                  target="_blank">
+                                   href="https://www.disgenet.org/help#:~:text=The%20DisGeNET%20score%20for%20GDAs,range%20from%200%20to%201."
+                                   target="_blank">
                                   <v-icon
                                     v-bind="attrs"
                                     v-on="on"
@@ -527,6 +537,8 @@ export default {
 
   data() {
     return {
+      targetCount: 0,
+      sourceCount: 0,
 
       sugQuery: [undefined, undefined],
       graphWindowStyle: {
@@ -599,7 +611,7 @@ export default {
   watch: {
 
     pathModel: function (val) {
-      if(this.pathModel ==null)
+      if (this.pathModel == null)
         return
       if (val < this.paths[0].length) {
         this.selectedPath = this.paths[0][val]
@@ -636,24 +648,26 @@ export default {
       this.suggestionType = [undefined, undefined]
 
       this.selectedPath = []
+      this.targetCount = 0;
+      this.sourcecount = 0;
       this.pathModel = undefined
       this.clearPaths()
 
       this.example = undefined
 
-      this.options= {
+      this.options = {
         general: {
           keep: false,
-            name: undefined,
+          name: undefined,
         },
         nodes: {
           codingGenesOnly: false,
-            approvedDrugsOnly: false,
-            filterElementDrugs: true
+          approvedDrugsOnly: false,
+          filterElementDrugs: true
         },
         edges: {
           drugTargetsWithAction: false,
-            disorderAssociationCutoff: 0,
+          disorderAssociationCutoff: 0,
         }
       }
 
@@ -669,12 +683,16 @@ export default {
       }
 
     },
+    getTargetCount(){
+      return this.$refs.targetTable ? this.$refs.targetTable.getSeeds().length : 0
+    },
+
     reset: function () {
       this.init()
     },
 
     clearPaths: function () {
-      this.pathModel= undefined
+      this.pathModel = undefined
       this.paths[0] = []
       this.paths[1] = []
     },
@@ -733,6 +751,22 @@ export default {
         }
       }
 
+    },
+
+    copySourcesToTargets: function () {
+      this.targetTypeId = this.sourceTypeId;
+      this.$nextTick(() => {
+        this.$refs.targetTable.setValues(this.$refs.sourceTable.allOrigins(), this.$refs.sourceTable.getSeeds(), this.$refs.sourceTable.getAttributes())
+      })
+      this.updateTargetCount();
+    },
+
+    updateTargetCount: function (){
+      this.targetCount = this.$refs.targetTable ? this.$refs.targetTable.getSeeds().length : 0;
+    },
+
+    updateSourceCount: function (){
+      this.$set(this,"sourceCount",this.$refs.sourceTable ? this.$refs.sourceTable.getSeeds().length : 0);
     },
 
     focusNode: function (id) {
