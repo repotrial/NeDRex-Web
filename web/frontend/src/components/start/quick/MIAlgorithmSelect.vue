@@ -622,9 +622,30 @@ export default {
   methods: {
 
     getAlgorithm: function () {
-      if (this.methodModel != null)
+      if (this.methodModel != null) {
         return this.methods.filter(m => m.group === this.groupModel)[this.methodModel]
+      }
       return undefined;
+    },
+
+    setNWMethod: async function (method, params) {
+      this.groupModel = "nw"
+      this.$nextTick(() => {
+        let algos = this.methods.filter(m => m.group === this.groupModel)
+        for (let i = 0; i < algos.length; i++) {
+          if (algos[i].id === method) {
+            this.methodModel = i
+            return
+          }
+        }
+      })
+      this.$nextTick(() => {
+        let models = this.getAlgorithmModels()
+        Object.keys(models).forEach(key => {
+          if (params[key] !=null)
+            models[key] = params[key]
+        })
+      })
     },
 
     getAlgorithmModels: function () {

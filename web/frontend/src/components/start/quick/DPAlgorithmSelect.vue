@@ -288,6 +288,22 @@ export default {
       return undefined
     },
 
+    setMethod: async function (method, params) {
+      let algos = this.methods.filter(m => m.group === this.groupModel)
+      for (let i = 0; i < algos.length; i++) {
+        if (algos[i].id === method) {
+          this.methodModel = i
+          break
+        }
+      }
+      let models = this.getAlgorithmModels()
+      Object.keys(models).forEach(key => {
+        if (params[key] != null) {
+          models[key] = params[key]
+        }
+      })
+    },
+
     getParams: async function () {
       let params = {}
       let models = this.getAlgorithmModels()

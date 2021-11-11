@@ -151,8 +151,10 @@
                 </v-list-item-action>
               </v-col>
             </v-row>
-            <ExampleSeeds :seedTypeId="seedTypeId" @addSeedsEvent="addToSelection"
-            ></ExampleSeeds>
+            <QuickExamples v-if="$refs.validation" :seedType="['gene','protein'][seedTypeId]"
+                           @drugsEvent="$refs.validation.addDrugs" @exampleEvent="applyExample"
+                           @disorderEvent="saveDisorders" @suggestionEvent="addToSuggestions"
+                           @addNodesEvent="addToSelection"></QuickExamples>
             <v-container style="height: 560px;margin: 15px;max-width: 100%">
               <v-row style="height: 100%">
                 <v-col cols="6">
@@ -538,7 +540,6 @@ import SuggestionAutocomplete from "@/components/app/suggestions/SuggestionAutoc
 import SeedTable from "@/components/app/tables/SeedTable";
 import ResultDownload from "@/components/app/tables/menus/ResultDownload";
 import NodeInput from "@/components/app/input/NodeInput";
-import ExampleSeeds from "@/components/start/quick/ExampleSeeds";
 import ValidationBox from "@/components/start/quick/ValidationBox";
 import ValidationDrugTable from "@/components/app/tables/ValidationDrugTable";
 import EntryDetails from "@/components/app/EntryDetails";
@@ -552,6 +553,7 @@ import ButtonCancel from "@/components/start/quick/ButtonCancel";
 import ButtonNext from "@/components/start/quick/ButtonNext";
 import ButtonBack from "@/components/start/quick/ButtonBack";
 import ButtonAdvanced from "@/components/start/quick/ButtonAdvanced";
+import QuickExamples from "@/components/start/quick/QuickExamples";
 
 export default {
   name: "CombinedRepurposing",
@@ -615,16 +617,17 @@ export default {
     this.init()
   },
   destroyed() {
-
+      //TODO maybe add destroyed function to be save that all data is removed
   },
 
   methods: {
 
-    init: function () {
+    init: function (keepSeedId) {
       this.method = undefined;
       this.sourceType = undefined
       this.step = 1
-      this.seedTypeId = undefined
+      if (!keepSeedId)
+        this.seedTypeId = undefined
       this.seeds = []
       this.results.targets = []
       this.results.drugs = []
@@ -642,8 +645,8 @@ export default {
       this.disorderIds = []
       this.validationDrugCount = 0
     },
-    reset: function () {
-      this.init()
+    reset: function (keepSeedId) {
+      this.init(keepSeedId)
     },
     getSuggestionSelection: function () {
       let type = ["gene", "protein"][this.seedTypeId]
@@ -942,6 +945,17 @@ export default {
         }
       }).catch(console.error)
     },
+
+    applyExample: function (example) {
+      this.reset(true)
+      this.example = example
+      this.$nextTick(() => {
+        this.$refs.moduleAlgorithms.setNWMethod(example.mi.algorithm, example.mi.params)
+        this.$refs.rankingAlgorithms.setMethod(example.dp.algorithm, example.dp.params)
+      })
+
+    },
+
     loadRankingTargetTable: function () {
       return this.$http.get("/getGraphList?id=" + this.rankingGid).then(response => {
         if (response.data !== undefined)
@@ -1201,7 +1215,7 @@ export default {
     NodeInput,
     SeedTable,
     ResultDownload,
-    ExampleSeeds,
+    QuickExamples,
     ValidationBox,
     EntryDetails,
     MIAlgorithmSelect,

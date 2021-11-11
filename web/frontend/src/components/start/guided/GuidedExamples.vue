@@ -125,10 +125,7 @@ export default {
             this.$emit("addNodesEvent", data, 1)
           })
         })
-
       }
-
-
     },
 
     loadRequest: function (val) {
@@ -142,15 +139,12 @@ export default {
           return response.data
       }).then(data => {
         this.$emit("suggestionEvent", val)
-        let payload = {
+        return {
           data: data,
           source: val.suggestionType
         }
-        return payload
       }).catch(console.error)
     },
-
-
   }
 }
 </script>

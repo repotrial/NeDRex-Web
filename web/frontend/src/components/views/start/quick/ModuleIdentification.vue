@@ -114,7 +114,10 @@
                 </v-list-item-action>
               </v-col>
             </v-row>
-            <ExampleSeeds v-if="$refs.validation" :seedTypeId="seedTypeId" @addSeedsEvent="addToSelection" @addSuggestionEvent="addToSuggestions" @addDrugsEvent="$refs.validation.addDrugs" @addDisorderEvent="saveDisorders"></ExampleSeeds>
+            <QuickExamples v-if="$refs.validation" :seedType="['gene','protein'][seedTypeId]"
+                           @drugsEvent="$refs.validation.addDrugs" @exampleEvent="applyExample"
+                           @disorderEvent="saveDisorders" @suggestionEvent="addToSuggestions"
+                           @addNodesEvent="addToSelection"></QuickExamples>
             <v-container style="height: 560px; margin-top: 15px; max-width: 100%">
               <v-row style="height: 100%">
                 <v-col cols="6">
@@ -164,8 +167,10 @@
                           </div>
                         </v-tooltip>
                         <SuggestionAutocomplete ref="suggestions" :suggestion-type="suggestionType" :emit-drugs="true"
-                                                @drugsEvent="$refs.validation.addDrugs" :disorder-select="true" :emit-disorders="true"
-                                                :target-node-type="['gene', 'protein'][seedTypeId]" @disorderEvent="saveDisorders"
+                                                @drugsEvent="$refs.validation.addDrugs" :disorder-select="true"
+                                                :emit-disorders="true"
+                                                :target-node-type="['gene', 'protein'][seedTypeId]"
+                                                @disorderEvent="saveDisorders"
                                                 @addToSelectionEvent="addToSelection" @subtypeSelection="subtypePopup"
                                                 @suggestionEvent="addToSuggestions" :add-all="true"
                                                 style="justify-self: flex-end;margin-left: auto"></SuggestionAutocomplete>
@@ -206,7 +211,8 @@
 
           </v-card>
           <ButtonCancel @click="makeStep"></ButtonCancel>
-          <ButtonNext @click="makeStep" :disabled="seedTypeId<0 || $refs.seedTable == null || $refs.seedTable.getSeeds().length===0"></ButtonNext>
+          <ButtonNext @click="makeStep"
+                      :disabled="seedTypeId<0 || $refs.seedTable == null || $refs.seedTable.getSeeds().length===0"></ButtonNext>
         </v-stepper-content>
 
         <v-stepper-content step="2">
@@ -217,7 +223,8 @@
                                @jobEvent="readJob"></MIAlgorithmSelect>
             <ButtonCancel @click="makeStep"></ButtonCancel>
             <ButtonBack @click="makeStep"></ButtonBack>
-            <ButtonNext @click="makeStep" label="RUN" :disabled=" !algorithmSelected  || ($refs.algorithms.getAlgorithmMethod()==='bicon' && $refs.algorithms.getAlgorithmModels().exprFile ===undefined)"></ButtonNext>
+            <ButtonNext @click="makeStep" label="RUN"
+                        :disabled=" !algorithmSelected  || ($refs.algorithms.getAlgorithmMethod()==='bicon' && $refs.algorithms.getAlgorithmModels().exprFile ===undefined)"></ButtonNext>
           </template>
         </v-stepper-content>
 
@@ -298,7 +305,8 @@
                 <v-col>
                   <Network ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle"
                            :legend="results.targets.length>0" :tools="results.targets.length>0" :secondaryViewer="true"
-                           @loadIntoAdvancedEvent="$emit('graphLoadEvent',{post: {id: currentGid}})" :show-vis-option="showVisOption">
+                           @loadIntoAdvancedEvent="$emit('graphLoadEvent',{post: {id: currentGid}})"
+                           :show-vis-option="showVisOption">
                     <template v-slot:legend v-if="results.targets.length>0">
                       <v-card style="width: 15vw; max-width: 17vw; padding-top: 35px">
                         <v-list>
@@ -339,11 +347,16 @@
           <ButtonNext @click="makeStep" label="VALIDATE" :disabled="currentGid==null"></ButtonNext>
           <v-tooltip top>
             <template v-slot:activator="{attrs, on}">
-              <v-btn v-bind="attrs" v-on="on" @click="loadDrugTargets" color="primary" :disabled="results.targets.length===0"><v-icon left>fas fa-angle-double-right</v-icon>Drug Ranking</v-btn>
+              <v-btn v-bind="attrs" v-on="on" @click="loadDrugTargets" color="primary"
+                     :disabled="results.targets.length===0">
+                <v-icon left>fas fa-angle-double-right</v-icon>
+                Drug Ranking
+              </v-btn>
             </template>
             <span>Use the results of this execution to now identify potential drug candidates.</span>
           </v-tooltip>
-          <ButtonAdvanced @click="$emit('graphLoadNewTabEvent',{post: {id: currentGid}})" :disabled="currentGid==null"></ButtonAdvanced>
+          <ButtonAdvanced @click="$emit('graphLoadNewTabEvent',{post: {id: currentGid}})"
+                          :disabled="currentGid==null"></ButtonAdvanced>
         </v-stepper-content>
         <v-stepper-content step="4">
           <Validation ref="validation" :step="4" :seed-type-id="seedTypeId" :module="results.targets"
@@ -434,7 +447,8 @@
 
       </v-dialog>
     </v-stepper>
-   <DisorderHierarchyDialog v-if="$refs.suggestions!=null" ref="disorderHierarchy" @addDisorders="$refs.suggestions.loadDisorders"></DisorderHierarchyDialog>
+    <DisorderHierarchyDialog v-if="$refs.suggestions!=null" ref="disorderHierarchy"
+                             @addDisorders="$refs.suggestions.loadDisorders"></DisorderHierarchyDialog>
   </v-card>
 </template>
 
@@ -448,7 +462,6 @@ import SeedTable from "@/components/app/tables/SeedTable";
 import ResultDownload from "@/components/app/tables/menus/ResultDownload";
 import HeaderBar from "@/components/app/Header";
 import NodeInput from "@/components/app/input/NodeInput";
-import ExampleSeeds from "@/components/start/quick/ExampleSeeds";
 import EntryDetails from "@/components/app/EntryDetails";
 import LabeledSwitch from "@/components/app/input/LabeledSwitch";
 import MIAlgorithmSelect from "@/components/start/quick/MIAlgorithmSelect";
@@ -459,6 +472,7 @@ import ButtonNext from "@/components/start/quick/ButtonNext";
 import ButtonCancel from "@/components/start/quick/ButtonCancel";
 import ButtonBack from "@/components/start/quick/ButtonBack";
 import ButtonAdvanced from "@/components/start/quick/ButtonAdvanced";
+import QuickExamples from "@/components/start/quick/QuickExamples";
 
 export default {
   name: "ModuleIdentification",
@@ -475,6 +489,7 @@ export default {
         height: '60vh',
         'min-height': '60vh',
       },
+      example: undefined,
       targetColorStyle: {},
       currentJid: undefined,
       currentGid: undefined,
@@ -521,27 +536,29 @@ export default {
   },
 
   methods: {
-    init: function () {
+    init: function (keepSeedType) {
+      if (!keepSeedType)
+        this.seedTypeId = undefined
       this.sourceType = undefined
       this.step = 1
-      this.seedTypeId = undefined
       this.seeds = []
       this.currentJid = undefined
       this.currentGid = undefined
       this.graphName = undefined
       this.showVisOption = false
-      this.nameOptions=[]
+      this.example = undefined
+      this.nameOptions = []
       this.results.targets = []
       this.results.drugs = []
       this.seedOrigin = {}
       this.validationDrugCount = 0
-      this.disorderIds= []
-      if (this.$refs.graph)
-        this.$refs.graph.reload()
+      this.disorderIds = []
+      // if (this.$refs.graph)
+      //   this.$refs.graph.reload()
     },
 
-    reset: function () {
-      this.init()
+    reset: function (keepSeedType) {
+      this.init(keepSeedType)
     },
 
     getSuggestionSelection: function () {
@@ -582,13 +599,13 @@ export default {
       }
       if (button === "back") {
         this.step--
-        if(this.step ===3){
+        if (this.step === 3) {
           this.loadGraph(this.currentGid)
         }
         if (this.step === 2) {
           this.results.targets = []
           this.graphName = undefined
-          this.currentGid=undefined
+          this.currentGid = undefined
           this.$refs.graph.reload()
           this.$refs.validation.resetValidation();
           this.$socket.unsubscribeJob(this.currentJid)
@@ -618,7 +635,7 @@ export default {
 
     },
 
-    subtypePopup: function(item){
+    subtypePopup: function (item) {
       this.$refs.disorderHierarchy.loadDisorder(item.sid)
     },
     resolveRankingDialog: function (apply) {
@@ -640,7 +657,15 @@ export default {
           this.seeds.forEach(s => drugSeeds.splice(drugSeeds.indexOf(s.id), 1))
         }
       }
-      this.$emit("loadDrugTargetEvent", {blitz:this.blitz, seeds:drugSeeds, type:["gene", "protein"][this.seedTypeId], origin:"Module Identification: " + this.$refs.algorithms.getAlgorithm().label, disorders:this.disorderIds, drugs:this.$refs.validation.getDrugs(), suggestions: this.selectedSuggestions})
+      this.$emit("loadDrugTargetEvent", {
+        blitz: this.blitz,
+        seeds: drugSeeds,
+        type: ["gene", "protein"][this.seedTypeId],
+        origin: "Module Identification: " + this.$refs.algorithms.getAlgorithm().label,
+        disorders: this.disorderIds,
+        drugs: this.$refs.validation.getDrugs(),
+        suggestions: this.selectedSuggestions
+      })
       this.init()
     },
     saveDisorders: function (list) {
@@ -670,23 +695,14 @@ export default {
     }
     ,
 
-    loadExample: async function (nr) {
-      let example = await this.$http.getQuickExample(nr, ["gene", "protein"][this.seedTypeId])
-      let origin = "Example " + (nr + 1) + ": ("
-      switch (nr) {
-        case 0:
-          origin += "Alzheimer)";
-          break;
-        case 1:
-          origin += "Somatostatine and Analogues";
-          break;
-        case 2:
-          origin += "Cancer Genes";
-          break;
-      }
-      origin += ")"
-      this.addToSelection({data: example, origin: origin})
+    applyExample: function (example) {
+      this.reset(true)
+      this.example = example
+      this.$nextTick(() => {
+        this.$refs.algorithms.setNWMethod(example.mi.algorithm, example.mi.params)
+      })
     },
+
 
     readJob: function (data, notSubbed) {
       let jid = data.jid
@@ -696,7 +712,6 @@ export default {
         if (!notSubbed)
           this.$socket.unsubscribeJob(jid)
         this.loadTargetTable(this.currentGid).then(() => {
-          // this.$refs.validation.validate(this.results.targets, this.$refs.validation.getDrugs(), false, ["gene", "protein"][this.seedTypeId])
           this.loadGraph(this.currentGid)
         })
       }
@@ -732,7 +747,7 @@ export default {
           Object.values(data).forEach(id => text += id + "\n")
         } else {
           let escape = s.displayName.indexOf(sep) > -1 ? "\"" : "";
-          this.seeds.forEach(s => text += data[s.id] + sep + escape +s.displayName+escape + "\n")
+          this.seeds.forEach(s => text += data[s.id] + sep + escape + s.displayName + escape + "\n")
         }
         this.download(dlName, text)
       }).catch(console.error)
@@ -756,8 +771,8 @@ export default {
         scores.forEach(s => text += sep + s.name)
         text += "\n"
         this.results.targets.forEach(t => {
-          let escape = t.displayName.indexOf(sep) > -1 ? "\"" : "";
-            text += data[t.id] + (names ? sep + escape+t.displayName+escape : "")
+            let escape = t.displayName.indexOf(sep) > -1 ? "\"" : "";
+            text += data[t.id] + (names ? sep + escape + t.displayName + escape : "")
             scores.forEach(s => text += sep + t[s.id])
             text += "\n"
           }
@@ -939,12 +954,12 @@ export default {
         }, 500)
       else
         this.getGraph().then(graph => {
-          this.showVisOption=false
+          this.showVisOption = false
           graph.loadNetworkById(graphId).then(() => {
             graph.showLoops(false)
             let seedIds = this.seeds.map(s => s.id)
             graph.modifyGroups(this.results.targets.filter(n => seedIds.indexOf(n.id) > -1).map(n => ["gen_", "pro_"][this.seedTypeId] + n.id), ["seedGene", "seedProtein"][this.seedTypeId])
-            this.showVisOption=!this.graphConfig.visualized
+            this.showVisOption = !this.graphConfig.visualized
           })
         })
     },
@@ -952,6 +967,7 @@ export default {
   ,
 
   components: {
+    QuickExamples,
     ButtonAdvanced,
     ButtonBack,
     ButtonCancel,
@@ -969,7 +985,6 @@ export default {
     ResultDownload,
     Network,
     MIAlgorithmSelect,
-    ExampleSeeds,
     Validation
   }
 }

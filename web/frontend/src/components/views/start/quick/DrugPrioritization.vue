@@ -111,7 +111,10 @@
 
               </v-col>
             </v-row>
-            <ExampleSeeds :seedTypeId="seedTypeId" @addSeedsEvent="addToSelection"></ExampleSeeds>
+            <QuickExamples v-if="$refs.validation" :seedType="['gene','protein'][seedTypeId]"
+                           @drugsEvent="$refs.validation.addDrugs" @exampleEvent="applyExample"
+                           @disorderEvent="saveDisorders" @suggestionEvent="addToSuggestions"
+                           @addNodesEvent="addToSelection"></QuickExamples>
             <v-container style="height: 560px; margin: 15px; max-width: 100%">
               <v-row style="height: 100%">
                 <v-col cols="6">
@@ -451,7 +454,6 @@ import SeedTable from "@/components/app/tables/SeedTable";
 import ResultDownload from "@/components/app/tables/menus/ResultDownload";
 import SeedDownload from "@/components/app/tables/menus/SeedDownload";
 import NodeInput from "@/components/app/input/NodeInput";
-import ExampleSeeds from "@/components/start/quick/ExampleSeeds";
 import EntryDetails from "@/components/app/EntryDetails";
 import LabeledSwitch from "@/components/app/input/LabeledSwitch";
 import DPAlgorithmSelect from "@/components/start/quick/DPAlgorithmSelect";
@@ -462,6 +464,7 @@ import ButtonBack from "@/components/start/quick/ButtonBack";
 import ButtonNext from "@/components/start/quick/ButtonNext";
 import ButtonCancel from "@/components/start/quick/ButtonCancel";
 import ButtonAdvanced from "@/components/start/quick/ButtonAdvanced";
+import QuickExamples from "@/components/start/quick/QuickExamples";
 
 export default {
   name: "DrugRepurposing",
@@ -522,11 +525,12 @@ export default {
 
   methods: {
 
-    init: function () {
+    init: function (keepTypeId) {
       this.method = undefined;
       this.sourceType = undefined
       this.step = 1
-      this.seedTypeId = undefined
+      if (!keepTypeId)
+        this.seedTypeId = undefined
       this.seeds = []
       this.methodModel = undefined
       this.validationDrugs = {}
@@ -543,8 +547,8 @@ export default {
       if (this.$refs.graph)
         this.$refs.graph.reload()
     },
-    reset: function () {
-      this.init()
+    reset: function (keepTypeId) {
+      this.init(keepTypeId)
     },
 
     getSuggestionSelection: function () {
@@ -826,6 +830,14 @@ export default {
       this.seedOrigin = {}
     },
 
+    applyExample: function (example) {
+      this.reset(true)
+      this.example = example
+      this.$nextTick(() => {
+        this.$refs.algorithms.setMethod(example.dp.algorithm, example.dp.params)
+      })
+    },
+
     addTrialsNumber: async function (list, method) {
       if (this.disorderIds == null || this.disorderIds.length === 0) {
         return
@@ -844,23 +856,23 @@ export default {
       })
       await this.$http.getAllTrials(disorderNames, drugNames).then(data => {
         if (data.StudyFields != null)
-        data.StudyFields.forEach(studie => {
-          if (studie != null && studie.InterventionName != null)
-            studie.InterventionName.forEach(target => {
-              list.forEach(drug => {
-                if (target.toLowerCase().indexOf(drug.displayName.toLowerCase()) > -1) {
-                  if (drug.trials == null)
-                    drug.trials = studie.NCTId
-                  else {
-                    studie.NCTId.forEach(id => {
-                      if (drug.trials.indexOf(id) === -1)
-                        drug.trials.push(id)
-                    })
+          data.StudyFields.forEach(studie => {
+            if (studie != null && studie.InterventionName != null)
+              studie.InterventionName.forEach(target => {
+                list.forEach(drug => {
+                  if (target.toLowerCase().indexOf(drug.displayName.toLowerCase()) > -1) {
+                    if (drug.trials == null)
+                      drug.trials = studie.NCTId
+                    else {
+                      studie.NCTId.forEach(id => {
+                        if (drug.trials.indexOf(id) === -1)
+                          drug.trials.push(id)
+                      })
+                    }
                   }
-                }
+                })
               })
-            })
-        })
+          })
       })
       list.forEach(drug => {
         if (drug.trials != null) {
@@ -993,6 +1005,7 @@ export default {
     ButtonBack,
     ButtonNext,
     ButtonCancel,
+    QuickExamples,
     Tools,
     Validation,
     DPAlgorithmSelect,
@@ -1004,7 +1017,6 @@ export default {
     Network,
     SeedTable,
     ResultDownload,
-    ExampleSeeds,
     EntryDetails,
   }
 }
