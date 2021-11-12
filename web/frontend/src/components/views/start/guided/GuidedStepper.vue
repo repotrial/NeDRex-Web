@@ -636,6 +636,7 @@ export default {
         return
       this.options.general.keep = false
       if (val < this.paths[0].length) {
+        this.options.general.keep = true
         this.selectedPath = this.paths[0][val]
         this.direct = true
         this.connectorTypeId = undefined

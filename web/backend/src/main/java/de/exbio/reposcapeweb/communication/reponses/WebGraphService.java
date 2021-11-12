@@ -1595,6 +1595,16 @@ public class WebGraphService {
                     g.getNodes().put(Graphs.getNode(connector), nodeFilterToNode(nf));
                     g.saveNodeFilter(connector, nf);
                 }
+                if (secondPath) {
+                    HashSet<Integer> targets;
+                    if(endDefined)
+                        targets = request.targets;
+                    else {
+                        targets = new HashSet<>(g.getNodes().get(Graphs.getNode(request.targetType)).keySet());
+                        targets.removeAll(request.sources);
+                    }
+                    removeNonConnectingNodes(g, Graphs.getNode(connector), request.sources, Graphs.getNode(request.sourceType),targets ,Graphs.getNode(request.targetType));
+                }
             }
             if (secondPath && !endDefined) {
                 this.removeUnconnectedNodes(g, Graphs.getNode(request.targetType));
@@ -1638,6 +1648,39 @@ public class WebGraphService {
             nf.removeByNodeIds(ids);
             g.getNodes().put(node, nodeFilterToNode(nf));
             g.saveNodeFilter(Graphs.getNode(node), nf);
+        }
+    }
+
+    private void removeNonConnectingNodes(Graph g, int connectType, Collection<Integer> set1, int type1,Collection<Integer> set2, int type2) {
+        if (!g.getNodes().containsKey(connectType))
+            return;
+        HashSet<Integer> set1Connectors = new HashSet<>();
+        HashSet<Integer> set2Connectors = new HashSet<>();
+        g.getEdges().forEach((key, vals) -> {
+            Pair<Integer, Integer> edge = Graphs.getNodesfromEdge(key);
+            if (edge.first == connectType) {
+                if(edge.second==type1)
+                    vals.stream().filter(e->set1.contains(e.getId2())).forEach(e->set1Connectors.add(e.getId1()));
+                if(edge.second==type2)
+                    vals.stream().filter(e->set2.contains(e.getId2())).forEach(e->set2Connectors.add(e.getId1()));
+            }
+            if (edge.second == connectType) {
+                if(edge.first==type1)
+                    vals.stream().filter(e->set1.contains(e.getId1())).forEach(e->set1Connectors.add(e.getId2()));
+                if(edge.first==type2)
+                    vals.stream().filter(e->set2.contains(e.getId1())).forEach(e->set2Connectors.add(e.getId2()));
+            }
+        });
+
+        HashSet<Integer> connectors = set1Connectors.stream().filter(set2Connectors::contains).collect(Collectors.toCollection(HashSet::new));
+        set1Connectors.removeAll(connectors);
+        set2Connectors.removeAll(connectors);
+        set1Connectors.addAll(set2Connectors);
+        if (!set1Connectors.isEmpty()) {
+            NodeFilter nf = g.getNodeFilter(Graphs.getNode(connectType));
+            nf.removeByNodeIds(set1Connectors);
+            g.getNodes().put(connectType, nodeFilterToNode(nf));
+            g.saveNodeFilter(Graphs.getNode(connectType), nf);
         }
     }
 

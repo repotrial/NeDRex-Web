@@ -8,8 +8,8 @@ public class GuidedRequest {
     public String uid;
     public String sourceType;
     public String targetType;
-    public LinkedList<Integer> sources;
-    public LinkedList<Integer> targets;
+    public HashSet<Integer> sources;
+    public HashSet<Integer> targets;
     public LinkedList<HashMap<String,String>> path;
     public HashMap<String,HashMap<String,Object>> params;
     public Boolean excludeConnectors;
