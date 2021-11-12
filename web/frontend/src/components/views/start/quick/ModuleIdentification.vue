@@ -755,8 +755,10 @@ export default {
         if (!names) {
           Object.values(data).forEach(id => text += id + "\n")
         } else {
-          let escape = s.displayName.indexOf(sep) > -1 ? "\"" : "";
-          this.seeds.forEach(s => text += data[s.id] + sep + escape + s.displayName + escape + "\n")
+          this.seeds.forEach(s => {
+            let escape = s.displayName.indexOf(sep) > -1 ? "\"" : "";
+            text += data[s.id] + sep + escape + s.displayName + escape + "\n"
+          })
         }
         this.download(dlName, text)
       }).catch(console.error)

@@ -79,7 +79,7 @@
                 :size="hover.node2?'45px':'35px'"
                 @mouseleave.native="hover.node2=false"
                 @mouseover.native="hover.node2=true"
-                @click="redirect( {edge:false,type:getExtendedNodeNames(detailedObject['Type'])[0],id:detailedObject['ID'].split('-')[0]},{type: 'edge', name:detailedObject['Type'],id:detailedObject['ID'].split('-')[0]})"
+                @click="redirect( {edge:false,type:getExtendedNodeNames(detailedObject['Type'])[1],id:detailedObject['ID'].split('-')[1]},{type: 'edge', name:detailedObject['Type'],id:detailedObject['ID'].split('-')[1]})"
               >
                 > fas fa-genderless
               </v-icon>

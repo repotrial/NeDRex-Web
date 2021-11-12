@@ -1,5 +1,9 @@
 <template>
   <v-card style="margin-bottom: 35px">
+    <ConnectorDialog ref="connectors" :node-source-type="nodeIdTypeList[connectorTypeId]"
+                     :node-type="connectorTypeId!=null ? nodeList[connectorTypeId].value: undefined"
+                     @printNotification="printNotification"
+                     @updateConnectorCount="connectorCount=$refs.connectors && $refs.connectors.getList() ? $refs.connectors.getList().length :0"></ConnectorDialog>
     <div style="display: flex; justify-content: flex-end; margin-left: auto; ">
       <v-tooltip left>
         <template v-slot:activator="{on, attrs}">
@@ -56,8 +60,8 @@
           <v-card
             v-show="step===1"
             class="mb-4"
-            max-height="1010px"
-            height="1010px"
+            max-height="1050px"
+            height="1050px"
           >
 
             <v-card-subtitle class="headline">Node Configuration</v-card-subtitle>
@@ -79,7 +83,7 @@
               <div>Set target list to the source list.</div>
             </v-tooltip>
 
-            <div style="height: 960px; display: flex; margin-top:10px;">
+            <div style="height: 940px; display: flex; margin-top:10px;">
               <div style="justify-self: flex-start; width: 48%;">
                 <div style="display: flex; justify-content: flex-start;">
                   <div class="title" style="padding-top: 16px;">1a. Select the source node type:</div>
@@ -164,7 +168,7 @@
             <v-card
               v-if="step===2"
               class="mb-4"
-              max-height="75vh"
+              max-height="85vh"
               max-width="1300px"
               flat
               style="justify-content: center; margin-right: auto; margin-left: auto"
@@ -271,11 +275,11 @@
                   <v-list-item-subtitle class="title">Additional Options</v-list-item-subtitle>
                   <v-card-subtitle>General</v-card-subtitle>
                   <v-list>
-                    <v-list-item top v-show="!direct">
+                    <v-list-item v-show="!direct">
                       <v-list-item-content>
-                        <v-tooltip>
+                        <v-tooltip top>
                           <template v-slot:activator="{on,attrs}">
-                            <LabeledSwitch label-off="Remove Connector Nodes" label-on="Keep Connector Nodes"
+                            <LabeledSwitch label-off="Hide Connector Nodes" label-on="Keep Connector Nodes"
                                            v-model="options.general.keep" v-bind="attrs" v-on="on"></LabeledSwitch>
                           </template>
                           <span>Decide if you want to keep all edges or replace the created paths by generating one connecting your source and target nodes directly.</span>
@@ -286,8 +290,22 @@
                                       label="Combined Edge Name"
                                       :rules="[value => !!value || 'Required!',value=>$global.metagraph.edges.map(e=>e.label).indexOf(value)===-1 || 'Existing names are not possible!']"></v-text-field>
                       </v-list-item-action>
-                    </v-list-item>
 
+                    </v-list-item>
+                    <v-list-item v-show="!direct">
+                      <v-list-item-content>
+                        <LabeledSwitch :disabled="connectorCount ===0" label-off="Exclude selected connectors"
+                                       label-on="Use only selected" v-model="connectorModel"></LabeledSwitch>
+                      </v-list-item-content>
+                      <v-list-item-action>
+                        <div>
+                          <v-btn @click="$refs.connectors.show()" outlined style="margin-top:-30px;">
+                            Define connectors ({{ connectorCount }})
+                            <v-icon right>fas fa-link</v-icon>
+                          </v-btn>
+                        </div>
+                      </v-list-item-action>
+                    </v-list-item>
                   </v-list>
                   <v-divider></v-divider>
                   <v-card-subtitle>Node specific</v-card-subtitle>
@@ -409,8 +427,8 @@
                     <span v-else>{{ item.displayName }}</span>
                   </template>
                   <template v-slot:item.data-table-expand="{expand, item,isExpanded}">
-                    <v-icon v-show="!isExpanded" @click="expand(true)">fas fa-angle-down</v-icon>
-                    <v-icon v-show="isExpanded" @click="expand(false)">fas fa-angle-up</v-icon>
+                    <v-icon v-show="!isExpanded" @click="expand(true)" :color="getColoring('nodes',nodeList[sourceTypeId].value)">fas fa-angle-down</v-icon>
+                    <v-icon v-show="isExpanded" @click="expand(false)" :color="getColoring('nodes',nodeList[sourceTypeId].value)">fas fa-angle-up</v-icon>
                   </template>
                   <template v-slot:expanded-item="{ headers, item }">
                     <td :colspan="headers.length">
@@ -479,8 +497,8 @@
                       <span v-else>{{ item.displayName }}</span>
                     </template>
                     <template v-slot:item.data-table-expand="{expand, item,isExpanded}">
-                      <v-icon v-show="!isExpanded" @click="expand(true)">fas fa-angle-down</v-icon>
-                      <v-icon v-show="isExpanded" @click="expand(false)">fas fa-angle-up</v-icon>
+                      <v-icon v-show="!isExpanded" @click="expand(true)" :color="getColoring('nodes',nodeList[targetTypeId].value)">fas fa-angle-down</v-icon>
+                      <v-icon v-show="isExpanded" @click="expand(false)" :color="getColoring('nodes',nodeList[targetTypeId].value)">fas fa-angle-up</v-icon>
                     </template>
                     <template v-slot:expanded-item="{ headers, item }">
                       <td :colspan="headers.length">
@@ -528,6 +546,7 @@ import GuidedExamples from "@/components/start/guided/GuidedExamples";
 import LabeledSwitch from "@/components/app/input/LabeledSwitch";
 import ButtonAdvanced from "@/components/start/quick/ButtonAdvanced";
 import Tools from "@/components/views/graph/Tools";
+import ConnectorDialog from "@/components/views/start/guided/ConnectorDialog";
 
 
 export default {
@@ -595,7 +614,9 @@ export default {
         options: {}
       },
       example: undefined,
-
+      connectorTypeId: undefined,
+      connectorCount: 0,
+      connectorModel:false,
     }
   },
 
@@ -613,14 +634,15 @@ export default {
     pathModel: function (val) {
       if (this.pathModel == null)
         return
+      this.options.general.keep = false
       if (val < this.paths[0].length) {
         this.selectedPath = this.paths[0][val]
         this.direct = true
-        this.options.general.keep = true
+        this.connectorTypeId = undefined
       } else {
         this.selectedPath = this.paths[1][val - this.paths[0].length]
         this.direct = false
-        this.options.general.keep = false
+        this.connectorTypeId = Object.values(this.nodeList).filter(n => n.value === this.selectedPath[0].connector)[0].id
       }
       if (this.example != null)
         if (this.example.compress) {
@@ -628,6 +650,7 @@ export default {
         } else {
           this.options.general.keep = true
         }
+      this.$refs.connectors.clear()
     }
 
 
@@ -650,6 +673,7 @@ export default {
       this.selectedPath = []
       this.targetCount = 0;
       this.sourcecount = 0;
+      this.connectorModel = false
       this.pathModel = undefined
       this.clearPaths()
 
@@ -683,7 +707,7 @@ export default {
       }
 
     },
-    getTargetCount(){
+    getTargetCount() {
       return this.$refs.targetTable ? this.$refs.targetTable.getSeeds().length : 0
     },
 
@@ -761,12 +785,12 @@ export default {
       this.updateTargetCount();
     },
 
-    updateTargetCount: function (){
+    updateTargetCount: function () {
       this.targetCount = this.$refs.targetTable ? this.$refs.targetTable.getSeeds().length : 0;
     },
 
-    updateSourceCount: function (){
-      this.$set(this,"sourceCount",this.$refs.sourceTable ? this.$refs.sourceTable.getSeeds().length : 0);
+    updateSourceCount: function () {
+      this.$set(this, "sourceCount", this.$refs.sourceTable ? this.$refs.sourceTable.getSeeds().length : 0);
     },
 
     focusNode: function (id) {
@@ -777,15 +801,20 @@ export default {
     },
 
     submitGraphGeneration: function () {
-      this.$http.post("/getGuidedGraph", {
+      let payload = {
         uid: this.$cookies.get("uid"),
         sourceType: this.nodeList[this.sourceTypeId].value,
         targetType: this.nodeList[this.targetTypeId].value,
         sources: this.sources.map(n => n.id),
-        targets: this.targets.map(n => n.id),
+        targets: this.$refs.targetTable.getSeeds().map(n => n.id),
         path: this.selectedPath,
         params: this.options,
-      }).then(response => {
+      }
+      if(this.connectorCount>0){
+        payload.excludeConnectors = !this.connectorModel
+        payload.connectors = this.$refs.connectors.getList().map(c=>c.id)
+      }
+      this.$http.post("/getGuidedGraph", payload).then(response => {
         if (response.data !== undefined) {
           return response.data
         }
@@ -999,6 +1028,7 @@ export default {
           if (this.$refs.graph !== undefined)
             this.$refs.graph.reload()
           this.info = undefined
+          this.targets= {}
         }
         if (this.step === 1)
           this.clearPaths()
@@ -1061,6 +1091,7 @@ export default {
   }
   ,
   components: {
+    ConnectorDialog,
     ButtonAdvanced,
     LabeledSwitch,
     GuidedExamples,

@@ -1550,8 +1550,9 @@ public class WebGraphService {
         g.saveNodeFilter(request.sourceType, nfs);
 
         for (int p = 0; p < request.path.size(); p++) {
-            boolean endDefined = p == request.path.size() - 1 & request.targets.size() > 0;
-            if (endDefined) {
+            boolean secondPath = p == request.path.size() - 1;
+            boolean endDefined = request.targets.size() > 0;
+            if (secondPath & endDefined) {
                 int targetTypeId = Graphs.getNode(request.targetType);
                 NodeFilter nft;
                 Collection<Integer> tids = request.targets;
@@ -1573,7 +1574,15 @@ public class WebGraphService {
             String connector = request.path.get(p).get("connector");
             if (connector != null) {
                 HashMap<Integer, Node> nodes = g.getNodes().get(Graphs.getNode(connector));
-                Collection<Integer> ids = nodes.keySet();
+                HashSet<Integer> ids = new HashSet<>(nodes.keySet());
+                if (request.connectors != null) {
+                    if (request.excludeConnectors) {
+                        request.connectors.forEach(ids::remove);
+                    } else {
+                        ids = request.connectors;
+                    }
+                }
+
                 if (connector.equals("drug") && (elementFilter || approvedFilter)) {
                     ids = elementFilter ? getElementFilteredDrugs(nodes.keySet()) : ids;
                     ids = approvedFilter ? getApprovedOnlyDrugs(ids) : ids;
@@ -1586,6 +1595,9 @@ public class WebGraphService {
                     g.getNodes().put(Graphs.getNode(connector), nodeFilterToNode(nf));
                     g.saveNodeFilter(connector, nf);
                 }
+            }
+            if (secondPath && !endDefined) {
+                this.removeUnconnectedNodes(g, Graphs.getNode(request.targetType));
             }
         }
 
@@ -1604,9 +1616,29 @@ public class WebGraphService {
                 collapseGraph(g, nodes.first == sourceTypeId ? nodes.second : nodes.first, edge1, edge2, edgeName, false, false);
             }
         }
-
         addGraphToHistory(request.uid, g.getId());
         return g.toInfo();
+    }
+
+    private void removeUnconnectedNodes(Graph g, int node) {
+        if (!g.getNodes().containsKey(node))
+            return;
+        HashSet<Integer> ids = new HashSet<>(g.getNodes().get(node).keySet());
+        g.getEdges().forEach((key, vals) -> {
+            Pair<Integer, Integer> edge = Graphs.getNodesfromEdge(key);
+            if (edge.first == node) {
+                vals.forEach(e -> ids.remove(e.getId1()));
+            }
+            if (edge.second == node) {
+                vals.forEach(e -> ids.remove(e.getId2()));
+            }
+        });
+        if (!ids.isEmpty()) {
+            NodeFilter nf = g.getNodeFilter(Graphs.getNode(node));
+            nf.removeByNodeIds(ids);
+            g.getNodes().put(node, nodeFilterToNode(nf));
+            g.saveNodeFilter(Graphs.getNode(node), nf);
+        }
     }
 
     public String cloneGraph(String gid, String uid, String parent) {
