@@ -253,6 +253,7 @@ export default {
   },
 
   methods: {
+
     getSuggestionSelection: function () {
       let type = "drug"
       let nodeId = this.$global.metagraph.nodes.filter(n => n.group === type)[0].id
@@ -301,6 +302,11 @@ export default {
 
     updateCount: function () {
       this.validationDrugCount = this.getDrugs().length
+      this.$emit("drugCountUpdate")
+    },
+
+    clear: function(){
+      this.$refs.drugTable.clear();
       this.$emit("drugCountUpdate")
     },
 

@@ -193,7 +193,7 @@
                   </v-tooltip>
                   <SeedTable ref="seedTable" v-show="seedTypeId!=null" :download="true"
                              :remove="true"
-                             :filter="true"
+                             :filter="true" @clearEvent="clearData"
                              @printNotificationEvent="printNotification"
                              height="405px"
                              :title="'Selected Seeds ('+($refs.seedTable ? $refs.seedTable.getSeeds().length : 0)+')'"
@@ -531,22 +531,31 @@ export default {
       this.step = 1
       if (!keepTypeId)
         this.seedTypeId = undefined
-      this.seeds = []
+      if (this.$refs.seedTable)
+        this.$refs.seedTable.clear()
+      else this.clearData()
+      // this.seeds = []
       this.methodModel = undefined
-      this.validationDrugs = {}
+      // this.validationDrugs = {}
       if (this.blitz) {
         this.methodModel = 1
       }
-      this.disorderIds = []
       this.validationDrugCount = 0
       this.results.target = []
       this.graphName = undefined
-      this.nameOptions = []
       this.seedOrigin = {}
       this.showVisOption = false
       if (this.$refs.graph)
         this.$refs.graph.reload()
     },
+
+    clearData: function () {
+      this.selectedSuggestions= []
+      this.disorderIds = []
+      if (this.$refs.validation)
+        this.$refs.validation.clear()
+    },
+
     reset: function (keepTypeId) {
       this.init(keepTypeId)
     },

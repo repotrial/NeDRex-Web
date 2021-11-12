@@ -235,7 +235,7 @@
                   </v-tooltip>
                   <SeedTable ref="seedTable" v-show="seedTypeId!=null" :download="true"
                              :remove="true"
-                             :filter="true"
+                             :filter="true" @clearEvent="clearData"
                              @printNotificationEvent="printNotification"
                              height="405px"
                              :title="'Selected Seeds ('+($refs.seedTable ? $refs.seedTable.getSeeds().length : 0)+')'"
@@ -634,6 +634,9 @@ export default {
       this.step = 1
       if (!keepSeedId)
         this.seedTypeId = undefined
+      if (this.$refs.seedTable)
+        this.$refs.seedTable.clear()
+      else this.clearData()
       this.seeds = []
       this.results.targets = []
       this.results.drugs = []
@@ -653,6 +656,13 @@ export default {
     },
     reset: function (keepSeedId) {
       this.init(keepSeedId)
+    },
+
+    clearData: function () {
+      this.selectedSuggestions= []
+      this.disorderIds = []
+      if (this.$refs.validation)
+        this.$refs.validation.clear()
     },
     getSuggestionSelection: function () {
       let type = ["gene", "protein"][this.seedTypeId]

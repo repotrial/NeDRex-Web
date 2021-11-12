@@ -157,7 +157,6 @@ export default {
   },
 
   methods: {
-
     getOrigins: function (id) {
       if (this.origins[id] === undefined)
         return ["?"]
@@ -228,6 +227,7 @@ export default {
     clear: function () {
       this.nodes = []
       this.origins = {}
+      this.$emit("clearEvent")
       this.$emit("updateCount")
     },
 

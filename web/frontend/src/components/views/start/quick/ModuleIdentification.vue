@@ -198,7 +198,7 @@
                   </v-tooltip>
                   <SeedTable ref="seedTable" v-show="seedTypeId!=null" :download="true"
                              :remove="true"
-                             :filter="true"
+                             :filter="true" @clearEvent="clearData"
                              @printNotificationEvent="printNotification"
                              height="405px"
                              :title="'Selected Seeds ('+($refs.seedTable ? $refs.seedTable.getSeeds().length : 0)+')'"
@@ -459,7 +459,6 @@ import Network from "../../graph/Network";
 import * as CONFIG from "../../../../Config"
 import SuggestionAutocomplete from "@/components/app/suggestions/SuggestionAutocomplete";
 import SeedDownload from "@/components/app/tables/menus/SeedDownload";
-import SeedRemove from "@/components/app/tables/menus/SeedRemove";
 import SeedTable from "@/components/app/tables/SeedTable";
 import ResultDownload from "@/components/app/tables/menus/ResultDownload";
 import HeaderBar from "@/components/app/Header";
@@ -500,7 +499,7 @@ export default {
       uid: undefined,
       seedTypeId: undefined,
       seeds: [],
-      seedOrigin: {},
+      // seedOrigin: {},
       sourceType: undefined,
       step: 1,
       suggestionType: undefined,
@@ -541,6 +540,9 @@ export default {
     init: function (keepSeedType) {
       if (!keepSeedType)
         this.seedTypeId = undefined
+      if (this.$refs.seedTable)
+        this.$refs.seedTable.clear()
+      else this.clearData()
       this.sourceType = undefined
       this.step = 1
       this.seeds = []
@@ -549,18 +551,21 @@ export default {
       this.graphName = undefined
       this.showVisOption = false
       this.example = undefined
-      this.nameOptions = []
       this.results.targets = []
       this.results.drugs = []
-      this.seedOrigin = {}
       this.validationDrugCount = 0
-      this.disorderIds = []
-      // if (this.$refs.graph)
-      //   this.$refs.graph.reload()
+
     },
 
     reset: function (keepSeedType) {
       this.init(keepSeedType)
+    },
+
+    clearData: function () {
+      this.selectedSuggestions= []
+      this.disorderIds = []
+      if (this.$refs.validation)
+        this.$refs.validation.clear()
     },
 
     getSuggestionSelection: function () {
@@ -720,7 +725,9 @@ export default {
     }
     ,
     updateDrugCount: function () {
-      this.validationDrugCount = this.$refs.validation.getDrugs().length;
+      if (this.$refs.validation)
+        console.log(this.$refs.validation.getDrugs().length)
+      this.validationDrugCount = this.$refs.validation ? this.$refs.validation.getDrugs().length : 0;
     },
     getTargetCount: function () {
       let seedids = this.seeds.map(s => s.id)
@@ -988,7 +995,6 @@ export default {
     SuggestionAutocomplete,
     NodeInput,
     SeedDownload,
-    SeedRemove,
     SeedTable,
     ResultDownload,
     Network,
