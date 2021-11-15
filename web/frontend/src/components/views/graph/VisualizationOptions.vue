@@ -17,11 +17,16 @@
 <!--        </v-tooltip>-->
         <ToolSwitch v-model="nodeShadows" icon="fas fa-eye" label="Node shadow"
                     @click="$emit('toggleOptionEvent','shadow',nodeShadows)">
-          <template v-slot:tooltip:disabled>
-            <span>This option is disabled because there are too many <br>entities in the graph. As a result your browser might crash.</span>
-          </template>
           <template v-slot:tooltip>
             <span>Enable or Disable shadows behind the nodes.</span>
+          </template>
+        </ToolSwitch>
+        <ToolSwitch v-model="nodeLabels" icon="fas fa-tags" label="Node labels" :disabled="style==='ellipse'" @click="$emit('toggleOptionEvent','label',nodeLabels)">
+          <template v-slot:tooltip:disabled>
+            <span>Hiding the labels for the current node shape style does not make much sense.</span>
+          </template>
+          <template v-slot:tooltip>
+            <span>Enable or Disable the node labels.</span>
           </template>
         </ToolSwitch>
         <ToolDropdown label="Node Shapes" icon="fas fa-shapes" :items="[{text:'Default', value:'shapes'},{text:'Only ellipses', value:'ellipse'},{text:'Only dots',value:'dot'}]" @change="switchNodeStyle">
@@ -69,12 +74,15 @@ export default {
     return {
       show: true,
       nodeShadows: true,
+      nodeLabels: true,
+      style: "shapes"
     }
   },
   created() {
   },
   methods: {
     switchNodeStyle: function(style){
+      this.stye = style;
       this.$emit('switchOptionEvent','nodeStyle',style)
     }
   }

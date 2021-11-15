@@ -71,7 +71,8 @@
         </div>
         <div v-if="tools">
           <div style="display: flex; justify-content:flex-end">
-            <v-btn @click="togglePanel(1)" :title="this.showPanels[1] ? 'Hide':'Show'" plain style="z-index: 201; background-color: rgba(255,255,255,0.5)">
+            <v-btn @click="togglePanel(1)" :title="this.showPanels[1] ? 'Hide':'Show'" plain
+                   style="z-index: 201; background-color: rgba(255,255,255,0.5)">
               <v-icon left>fas fa-tools</v-icon>
               Tools
               <v-icon right>{{ this.showPanels[1] ? "fas fa-angle-up" : "fas fa-angle-down" }}</v-icon>
@@ -489,6 +490,20 @@ export default {
       this.saveLayout()
       this.options.nodes.shadow.enabled = state;
       this.reloadOptions()
+    },
+
+    showLabels: function (show) {
+      this.saveLayout()
+      let updates = []
+      if (!show)
+        updates = this.nodeSet.get().map(n => {
+          return {id: n.id, label: "", _label: n.label}
+        })
+      else
+        updates = this.nodeSet.get().map(n => {
+          return {id: n.id, label: n._label, _label: undefined}
+        })
+      this.updateNodes(updates)
     },
 
     saveLayout: function () {

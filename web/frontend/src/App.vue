@@ -573,6 +573,8 @@ export default {
         this.$refs.graph.graphViewEvent(value)
       if (option === 'shadow')
         this.$refs.graph.setShadow(value)
+      if(option ==='label')
+        this.$refs.graph.showLabels(value)
     },
 
     clickToolOption: function (option) {
