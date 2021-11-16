@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-container>
+    <v-container >
       <v-card style="margin:5px;padding-bottom: 15px" :loading="loading">
         <template slot="progress">
           <v-card-title>Nodes</v-card-title>

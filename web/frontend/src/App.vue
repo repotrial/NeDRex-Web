@@ -28,12 +28,13 @@
         </template>
       </v-toolbar>
     </v-card>
-    <v-container align-self="start" v-if="metaLoaded"
-                 style="width: 100%; max-width:95vw; margin-left: 1%; margin-right: 1%">
+    <v-container ref="mainContainer" align-self="start" v-if="metaLoaded"
+                 style="width: 100%; max-width:95vw; margin-left: 1%; margin-right: 1%" @mouseup="resizeUp">
       <v-row>
-        <v-col :cols="sideHidden ? 12:10">
+        <v-col v-resize="setMainWidth"
+               :style="{width: (mainWidth - (sideHidden ? 0 :sideCardWidth))+'px', minWidth: (mainWidth  - (sideHidden? 0 :sideCardWidth))+'px'}">
           <v-main app style="padding-top: 0">
-            <v-container fluid>
+            <v-container fluid style="margin-right:0; padding-right: 0">
 
               <Start v-show="selectedTabId===0" ref="start"
                      v-on:graphLoadEvent="loadGraph"
@@ -100,8 +101,9 @@
                     :configuration="options.list"
               ></List>
             </v-container>
-            <v-container v-show="selectedTabId===3" fluid>
+            <v-container v-show="selectedTabId===3" fluid style="margin-right:0; padding-right: 0">
               <History ref="history"
+                       :width="mainWidth-sideCardWidth"
                        v-on:graphLoadEvent="loadGraph"
                        v-on:printNotificationEvent="printNotification"
                        v-on:reloadEvent=""
@@ -182,7 +184,17 @@
             </v-dialog>
           </v-main>
         </v-col>
-        <v-col cols="2" v-show="!sideHidden" style="margin-left:-40px; margin-right: 0">
+        <v-col v-show="!sideHidden"
+               style="width: 5px; min-width: 5px; max-width: 5px;margin: 0; padding:0; height: 100%;">
+          <div
+            :style="{position: 'fixed', height: '100%', right: sideCardWidth ,marginLeft:'-10px', top: '50vh', zIndex: 1000}">
+            <v-icon style="cursor:col-resize;" @mousedown="resizeDown">fas
+              fa-grip-lines-vertical
+            </v-icon>
+          </div>
+        </v-col>
+        <v-col v-show="!sideHidden"
+               :style="{marginLeft:'-40px', marginRight: 0, width: sideCardWidth, minWidth: sideCardWidth}">
           <SideCard ref="side"
                     v-on:printNotificationEvent="printNotification"
                     v-on:nodeSelectionEvent="setSelectedNode"
@@ -206,6 +218,7 @@
                     :options="options"
                     :selected-tab="selectedTabId"
                     :filters="startFilters"
+                    :side-width="sideCardWidth"
           ></SideCard>
         </v-col>
       </v-row>
@@ -302,12 +315,19 @@ export default {
       showLegend: false,
       physicsDisabled: false,
       jid: undefined,
+      hoverResizer: false,
+      sideCardWidth: 0,
+      mainWidth: 0,
+      resizeStart: undefined
     }
   },
   created() {
+    this.sideCardWidth = window.document.body.getBoundingClientRect().width * 0.2
+    this.mainWidth = window.document.body.getBoundingClientRect().width
     this.loadUser()
     this.init()
   },
+
   watch: {
     '$route'(to, from) {
       let new_gid = this.$route.params["gid"]
@@ -450,6 +470,12 @@ export default {
       }
     },
 
+    setMainWidth: function () {
+      this.mainWidth = window.document.body.getBoundingClientRect().width
+      if (this.sideCardWidth > this.mainWidth * 0.4)
+        this.sideCardWidth = this.mainWidth * 0.4
+    },
+
     scheduleVisualization: function (id) {
       if (this.$refs.graph == null)
         setTimeout(this.scheduleVisualization, 100, id)
@@ -573,7 +599,7 @@ export default {
         this.$refs.graph.graphViewEvent(value)
       if (option === 'shadow')
         this.$refs.graph.setShadow(value)
-      if(option ==='label')
+      if (option === 'label')
         this.$refs.graph.showLabels(value)
     },
 
@@ -676,6 +702,31 @@ export default {
         this.$refs.graph.visualize()
     }
     ,
+    resizeDown: function (e) {
+      this.resizeStart = e
+      this.$refs.mainContainer.addEventListener("mousemove", this.resizeMove)
+    },
+
+    resizeUp: function (e) {
+      this.resizeStart = undefined
+      this.$refs.mainContainer.removeEventListener("mousemove", this.resizeMove)
+    },
+
+    resizeMove: function (e) {
+      let size = this.sideCardWidth - (e.clientX - this.resizeStart.clientX);
+      if (size < 700) {
+        if (size < 0.4 * this.mainWidth) {
+          this.sideCardWidth = size
+          this.resizeStart = e;
+        } else {
+          this.sideCardWidth = this.mainWidth * 0.4
+        }
+      } else {
+        this.sideCardWidth = 700;
+      }
+    },
+
+
     listModification: function (event) {
       this.$refs.list.receiveEvent(event)
     }
@@ -898,7 +949,6 @@ ul
 li
   display: inline-block
   margin: 0 10px
-
 
 a
   color: #42b983

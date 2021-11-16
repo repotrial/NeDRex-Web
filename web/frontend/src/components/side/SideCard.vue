@@ -1,5 +1,5 @@
 <template>
-  <v-container style="position: fixed; width: 20%">
+  <v-container :style="{position: 'fixed', width: sideWidth+'px' ,right: 0}">
 
     <v-card elevation="3" style="padding-top: 15px; overflow-y: auto; max-height: 80vh">
       <v-card elevation="3" style="margin:15px"
@@ -406,6 +406,7 @@ export default {
     options: Object,
     selectedTab: Number,
     filters: Object,
+    sideWidth: Number,
   },
   name: "SideCard",
   title: "",

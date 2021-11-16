@@ -1,7 +1,7 @@
 <template>
   <div>
-    <v-container style="max-width: 90vw !important; min-width: 900px; display: flex">
-      <v-card style="margin:5px;" :width="selectedId ?'45vw':''" :style="{maxWidth: selectedId ? '45vw' :''}">
+    <v-container :style="{maxWidth: width+'px', display: 'flex'}">
+      <v-card style="margin:5px;" :width="width*(selectedId?0.5:1)+'px'" :style="{maxWidth: width*(selectedId?0.5:1)+'px'}">
         <v-card-title>History<span
           style="color:gray; padding-left: 7px"> ({{
             options.favos ? "Favourites" : options.chronological ? "List" : "Tree"
@@ -69,9 +69,8 @@
         </div>
       </v-card>
 
-      <v-card v-if="selectedId!==undefined" style="position: fixed; overflow-y: auto; max-height: 77vh; max-width:29vw; width: 29vw; margin-top: 5px; left: 49vw; z-index: 1000">
-        <div
-        >
+      <v-card v-if="selectedId!==undefined" :style="{position: 'fixed', overflowY: 'auto', maxHeight: '77vh', maxWidth: width*0.45+'px', width: width*0.45+'px', marginTop: '5px', left: width*0.55+'px', zIndex: 1000}">
+        <div>
           <v-card v-if="selected===undefined" style="padding-bottom: 15px;">
             <v-card-title>{{ selectedId }}</v-card-title>
             <v-progress-circular
@@ -319,6 +318,7 @@ import * as CONFIG from "../../Config"
 export default {
   name: "History.vue",
   props: {
+    width:Number,
     options: Object,
   },
   data() {
