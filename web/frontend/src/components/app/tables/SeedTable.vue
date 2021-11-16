@@ -12,10 +12,10 @@
         </div>
       </template>
       <template v-slot:item.displayName="{item}">
-        <v-tooltip v-if="item.displayName.length>16" right>
+        <v-tooltip v-if="item.displayName.length>36" right>
           <template v-slot:activator="{attr,on }">
                           <span v-bind="attr" v-on="on"
-                                style="color: dimgray">{{ item.displayName.substr(0, 16) }}...</span>
+                                style="color: dimgray">{{ item.displayName.substr(0, 33) }}...</span>
           </template>
           <span>{{ item.displayName }}</span>
         </v-tooltip>
