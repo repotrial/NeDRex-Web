@@ -185,16 +185,12 @@
           </v-main>
         </v-col>
         <v-col v-show="!sideHidden"
-               style="width: 5px; min-width: 5px; max-width: 5px;margin: 0; padding:0; height: 100%;">
-          <div
-            :style="{position: 'fixed', height: '100%', right: sideCardWidth ,marginLeft:'-10px', top: '50vh', zIndex: 1000}">
-            <v-icon style="cursor:col-resize;" @mousedown="resizeDown">fas
+               :style="{marginLeft:'-40px', marginRight: 0, width: sideCardWidth, minWidth: sideCardWidth}">
+          <div :style="{position: 'fixed', top:'50vh',right:sideCardWidth-25+'px', zIndex:1000}">
+            <v-icon style="cursor:col-resize; z-index: 1000" @mousedown="resizeDown">fas
               fa-grip-lines-vertical
             </v-icon>
           </div>
-        </v-col>
-        <v-col v-show="!sideHidden"
-               :style="{marginLeft:'-40px', marginRight: 0, width: sideCardWidth, minWidth: sideCardWidth}">
           <SideCard ref="side"
                     v-on:printNotificationEvent="printNotification"
                     v-on:nodeSelectionEvent="setSelectedNode"
@@ -671,7 +667,6 @@ export default {
         this.$http.get("/archiveHistory?uid=" + this.$cookies.get("uid") + "&gid=" + info.id).then(() => {
           this.loadGraphURL(info.id, tab)
         }).catch(err => console.error(err))
-
       }
     }
     ,
@@ -714,15 +709,15 @@ export default {
 
     resizeMove: function (e) {
       let size = this.sideCardWidth - (e.clientX - this.resizeStart.clientX);
-      if (size < 700) {
-        if (size < 0.4 * this.mainWidth) {
-          this.sideCardWidth = size
-          this.resizeStart = e;
-        } else {
-          this.sideCardWidth = this.mainWidth * 0.4
-        }
+      if (size < 700 && size < 0.4 * this.mainWidth) {
+          if (size > 300) {
+            this.sideCardWidth = size
+            this.resizeStart = e;
+          } else {
+            this.sideCardWidth = 300
+          }
       } else {
-        this.sideCardWidth = 700;
+        this.sideCardWidth = Math.min(700, 0.4 * this.mainWidth);
       }
     },
 
