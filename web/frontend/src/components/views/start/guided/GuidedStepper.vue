@@ -280,27 +280,50 @@
                         <v-tooltip top>
                           <template v-slot:activator="{on,attrs}">
                             <LabeledSwitch label-off="Hide Connector Nodes" label-on="Keep Connector Nodes"
-                                           v-model="options.general.keep" v-bind="attrs" v-on="on"></LabeledSwitch>
+                                           v-model="options.general.keep" v-bind="attrs" v-on="on">
+                              <template v-slot:tooltip>
+                                <div>
+                                  Defines if transitive edges are created from the successful paths <br>or if the graph
+                                  remains unchanged.
+                                </div>
+                              </template>
+                            </LabeledSwitch>
                           </template>
                           <span>Decide if you want to keep all edges or replace the created paths by generating one connecting your source and target nodes directly.</span>
                         </v-tooltip>
                       </v-list-item-content>
-                      <v-list-item-action style="min-width: 400px">
-                        <v-text-field v-model="options.general.name" v-show="!options.general.keep"
+                      <v-list-item-action style="min-width: 400px" v-if="!options.general.keep">
+                        <v-text-field v-model="options.general.name"
                                       label="Combined Edge Name"
                                       :rules="[value => !!value || 'Required!',value=>$global.metagraph.edges.map(e=>e.label).indexOf(value)===-1 || 'Existing names are not possible!']"></v-text-field>
                       </v-list-item-action>
-
+                      <v-list-item-content v-else>
+                        <LabeledSwitch label-off="Keep partial paths"
+                                       label-on="Keep only complete paths" v-model="options.general.removePartial">
+                          <template v-slot:tooltip>
+                            <div> Defines if edges will be added that are only connecting from specified source<br> or
+                              target
+                              nodes to connector-type nodes but not connecting source and target sets.
+                            </div>
+                          </template>
+                        </LabeledSwitch>
+                      </v-list-item-content>
                     </v-list-item>
                     <v-list-item v-show="!direct">
                       <v-list-item-content>
                         <LabeledSwitch :disabled="connectorCount ===0" label-off="Exclude selected connectors"
-                                       label-on="Use only selected" v-model="connectorModel"></LabeledSwitch>
+                                       label-on="Use only selected" v-model="connectorModel">
+                          <template v-slot:tooltip>
+                            <div>Defines if the user-defined list of connectors is used to exclude them <br>from graph
+                              selection or if exclusively the selection is used.
+                            </div>
+                          </template>
+                        </LabeledSwitch>
                       </v-list-item-content>
                       <v-list-item-action>
                         <div>
                           <v-btn @click="$refs.connectors.show()" outlined style="margin-top:-30px;">
-                            Define connectors ({{ connectorCount }})
+                            Specify connectors ({{ connectorCount }})
                             <v-icon right>fas fa-link</v-icon>
                           </v-btn>
                         </div>
@@ -313,30 +336,65 @@
                     <v-list-item v-if="isPathNode('gene')">
                       <v-list-item-title style="padding-top: 5px; padding-bottom: 3px">
                         <LabeledSwitch label-on="Coding Genes Only" label-off="All Genes"
-                                       v-model="options.nodes.codingGenesOnly"></LabeledSwitch>
+                                       v-model="options.nodes.codingGenesOnly">
+                          <template v-slot:tooltip>
+                            <div>If activated, applies filter on genes, such that only coding genes are used.</div>
+                          </template>
+                        </LabeledSwitch>
                       </v-list-item-title>
                     </v-list-item>
                     <v-list-item v-if="isPathNode('drug')">
                       <v-list-item-title style="padding-top: 5px; padding-bottom: 3px">
                         <LabeledSwitch label-on="Approved Drugs Only" label-off="All Drugs"
-                                       v-model="options.nodes.approvedDrugsOnly"></LabeledSwitch>
+                                       v-model="options.nodes.approvedDrugsOnly">
+                          <template v-slot:tooltip>
+                            <div>If activated, applies filter on drugs, such that only approved drugs are used.</div>
+                          </template>
+                        </LabeledSwitch>
                       </v-list-item-title>
                     </v-list-item>
                     <v-list-item v-if="isPathNode('drug')">
                       <v-list-item-title style="padding-top: 5px; padding-bottom: 3px">
                         <LabeledSwitch label-on="Filter Element Drugs" label-off="No Filter"
-                                       v-model="options.nodes.filterElementDrugs"></LabeledSwitch>
+                                       v-model="options.nodes.filterElementDrugs">
+                          <template v-slot:tooltip>
+                            <div>If activated, applies filter on drugs, such that only complex drugs are used.
+                              <br>Element drugs are:
+                              <br><b>chemical element:</b> <i>Gold, Zinc, ...</i>
+                              <br><b>metals and metal cations:</b> <i>Cupric Chloride, Aluminium acetoactetate, ...</i>
+                              <br><b>minerals and mineral supplements:</b> <i>Calcium silicate, Sodium chloride, ...</i>
+                            </div>
+                          </template>
+                        </LabeledSwitch>
                       </v-list-item-title>
                     </v-list-item>
                   </v-list>
                   <v-divider></v-divider>
                   <v-card-subtitle>Edge specific</v-card-subtitle>
                   <v-list>
+                    <v-list-item v-if="isPathEdge('DisorderHierarchy')">
+                      <v-list-item-title style="padding-top: 5px; padding-bottom: 3px">
+                        <LabeledSwitch label-on="Find parent disorder"
+                                       label-off="Find subtypes"
+                                       v-model="options.edges.disorderParents">
+                          <template v-slot:tooltip>
+                            <div>Defines the direction of the disorder hierarchy edge type.
+                            </div>
+                          </template>
+                        </LabeledSwitch>
+                      </v-list-item-title>
+                    </v-list-item>
                     <v-list-item v-if="isPathEdge('DrugTargetGene') || isPathEdge('DrugTargetProtein')">
                       <v-list-item-title style="padding-top: 5px; padding-bottom: 3px">
                         <LabeledSwitch label-on="Only with known Drug-Target action"
                                        label-off="All Drug-Target connections"
-                                       v-model="options.edges.drugTargetsWithAction"></LabeledSwitch>
+                                       v-model="options.edges.drugTargetsWithAction">
+                          <template v-slot:tooltip>
+                            <div>If activated, applies filter on gene/protein - drug edges, such that only edges with
+                              known actions are used.
+                            </div>
+                          </template>
+                        </LabeledSwitch>
                       </v-list-item-title>
                     </v-list-item>
                     <v-list-item
@@ -427,8 +485,12 @@
                     <span v-else>{{ item.displayName }}</span>
                   </template>
                   <template v-slot:item.data-table-expand="{expand, item,isExpanded}">
-                    <v-icon v-show="!isExpanded" @click="expand(true)" :color="getColoring('nodes',nodeList[sourceTypeId].value)">fas fa-angle-down</v-icon>
-                    <v-icon v-show="isExpanded" @click="expand(false)" :color="getColoring('nodes',nodeList[sourceTypeId].value)">fas fa-angle-up</v-icon>
+                    <v-icon v-show="!isExpanded" @click="expand(true)"
+                            :color="getColoring('nodes',nodeList[sourceTypeId].value)">fas fa-angle-down
+                    </v-icon>
+                    <v-icon v-show="isExpanded" @click="expand(false)"
+                            :color="getColoring('nodes',nodeList[sourceTypeId].value)">fas fa-angle-up
+                    </v-icon>
                   </template>
                   <template v-slot:expanded-item="{ headers, item }">
                     <td :colspan="headers.length">
@@ -465,9 +527,9 @@
               </v-col>
               <v-col style="padding: 0 10px 0 0; max-width: 360px">
                 <v-card-title class="subtitle-1"> Targets{{
-                    (targets.length > 0 ? (" (" + (targets.length) + ")") : ": Processing")
+                    (gid != null && targets.length != null ? (" (" + (targets.length) + ")") : ": Processing")
                   }}
-                  <v-progress-circular indeterminate v-if="targets.length===0" style="margin-left:15px">
+                  <v-progress-circular indeterminate v-if="gid==null || targets.length==null" style="margin-left:15px">
                   </v-progress-circular>
                   <v-tooltip top v-else>
                     <template v-slot:activator="{attrs, on}">
@@ -479,7 +541,7 @@
                     </div>
                   </v-tooltip>
                 </v-card-title>
-                <template v-if="targets.length>=0">
+                <template v-if="gid!=null && targets.length>0">
                   <v-data-table max-height="550px" height="550px" class="overflow-y-auto" fixed-header dense
                                 item-key="id"
                                 :items="targets"
@@ -497,8 +559,12 @@
                       <span v-else>{{ item.displayName }}</span>
                     </template>
                     <template v-slot:item.data-table-expand="{expand, item,isExpanded}">
-                      <v-icon v-show="!isExpanded" @click="expand(true)" :color="getColoring('nodes',nodeList[targetTypeId].value)">fas fa-angle-down</v-icon>
-                      <v-icon v-show="isExpanded" @click="expand(false)" :color="getColoring('nodes',nodeList[targetTypeId].value)">fas fa-angle-up</v-icon>
+                      <v-icon v-show="!isExpanded" @click="expand(true)"
+                              :color="getColoring('nodes',nodeList[targetTypeId].value)">fas fa-angle-down
+                      </v-icon>
+                      <v-icon v-show="isExpanded" @click="expand(false)"
+                              :color="getColoring('nodes',nodeList[targetTypeId].value)">fas fa-angle-up
+                      </v-icon>
                     </template>
                     <template v-slot:expanded-item="{ headers, item }">
                       <td :colspan="headers.length">
@@ -597,6 +663,7 @@ export default {
         general: {
           keep: false,
           name: undefined,
+          removePartial: true,
         },
         nodes: {
           codingGenesOnly: false,
@@ -606,6 +673,7 @@ export default {
         edges: {
           drugTargetsWithAction: false,
           disorderAssociationCutoff: 0,
+          disorderParents: false,
         }
       },
       legend: {
@@ -616,7 +684,7 @@ export default {
       example: undefined,
       connectorTypeId: undefined,
       connectorCount: 0,
-      connectorModel:false,
+      connectorModel: false,
     }
   },
 
@@ -684,6 +752,7 @@ export default {
         general: {
           keep: false,
           name: undefined,
+          removePartial: true,
         },
         nodes: {
           codingGenesOnly: false,
@@ -693,6 +762,7 @@ export default {
         edges: {
           drugTargetsWithAction: false,
           disorderAssociationCutoff: 0,
+          disorderParents: false,
         }
       }
 
@@ -811,9 +881,9 @@ export default {
         path: this.selectedPath,
         params: this.options,
       }
-      if(this.connectorCount>0){
+      if (this.connectorCount > 0) {
         payload.excludeConnectors = !this.connectorModel
-        payload.connectors = this.$refs.connectors.getList().map(c=>c.id)
+        payload.connectors = this.$refs.connectors.getList().map(c => c.id)
       }
       this.$http.post("/getGuidedGraph", payload).then(response => {
         if (response.data !== undefined) {
@@ -870,9 +940,18 @@ export default {
         this.targets = data.nodes[groupName].map(n => {
           return {id: n.id, displayName: n.displayName}
         })
+        if (this.$refs.targetTable.getSeeds().length > 0) {
+          let ids = this.$refs.targetTable.getSeeds().map(s => s.id)
+          if (this.targets)
+            this.targets = this.targets.filter(n => ids.indexOf(n.id) > -1)
+        }
+        if (this.sourceTypeId === this.targetTypeId) {
+          let ids = this.$refs.sourceTable.getSeeds().map(s => s.id)
+          if (this.targets)
+            this.targets = this.targets.filter(n => ids.indexOf(n.id) === -1)
+        }
       }).catch(console.error)
-    }
-    ,
+    },
 
     getOrigins: function (id, index) {
       if (this.nodeOrigins[index][id] === undefined)
@@ -920,8 +999,7 @@ export default {
         }
       })
       this[["sources", "targets"][index]] = seeds.filter(s => remove.indexOf(s.id) === -1)
-    }
-    ,
+    },
 
     getPathEdges: function () {
       if (this.selectedPath == null || this.selectedPath.length === 0)
@@ -1026,10 +1104,11 @@ export default {
       if (button === "back") {
         this.step--
         if (this.step === 2) {
+          this.gid = undefined
           if (this.$refs.graph !== undefined)
             this.$refs.graph.reload()
           this.info = undefined
-          this.targets= {}
+          this.targets = {}
         }
         if (this.step === 1)
           this.clearPaths()

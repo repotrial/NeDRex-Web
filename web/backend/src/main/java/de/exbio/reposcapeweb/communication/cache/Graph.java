@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.exbio.reposcapeweb.communication.reponses.WebGraph;
 import de.exbio.reposcapeweb.communication.reponses.WebGraphInfo;
 import de.exbio.reposcapeweb.communication.reponses.WebGraphList;
+import de.exbio.reposcapeweb.communication.reponses.WebNode;
 import de.exbio.reposcapeweb.filter.NodeFilter;
 import de.exbio.reposcapeweb.utils.Pair;
 import org.slf4j.Logger;
@@ -24,7 +25,7 @@ public class Graph {
     private String parent;
     private HashMap<Integer, HashMap<Integer, Node>> nodes;
     private HashMap<Integer, LinkedList<Edge>> edges;
-    private HashMap<String,HashMap<Integer,Object>> marks;
+    private HashMap<String, HashMap<Integer, Object>> marks;
 
     private HashMap<Integer, String> customEdges;
     private HashMap<Integer, Pair<Integer, Integer>> customEdgeNodes;
@@ -68,7 +69,7 @@ public class Graph {
         return parent;
     }
 
-    public WebGraph toWebGraph(HashMap<String, Object> colors, HashMap<Integer,HashMap<Integer, Point2D>> layout) {
+    public WebGraph toWebGraph(HashMap<String, Object> colors, HashMap<Integer, HashMap<Integer, Point2D>> layout) {
         if (webgraph == null) {
             int nodeCount = nodes.values().stream().mapToInt(HashMap::size).sum();
             int edgeCount = edges.values().stream().mapToInt(LinkedList::size).sum();
@@ -79,7 +80,15 @@ public class Graph {
                 String prefix = Graphs.getPrefix(typeId);
                 String group = Graphs.getNode(typeId);
                 boolean adjustment = group.equals("protein");
-                webgraph.addNodes(nodeMap.values().stream().map(node -> node.toWebNode().setPrefix(prefix).setGroup(group).adjustLabel(adjustment).setPosition(coords.get(node.getId()))).collect(Collectors.toSet()));
+                Set<WebNode> nodes = nodeMap.values().stream().map(node -> {
+                    WebNode n = node.toWebNode().setPrefix(prefix).setGroup(group).adjustLabel(adjustment);
+                    try {
+                        n.setPosition(coords.get(node.getId()));
+                    } catch (NullPointerException ignore) {
+                    }
+                    return n;
+                }).collect(Collectors.toSet());
+                webgraph.addNodes(nodes);
             });
             edges.forEach((typeId, edges) -> {
                 String name = getEdge(typeId);
@@ -347,11 +356,11 @@ public class Graph {
     }
 
     public void addNodeMarks(Integer type, Collection<Integer> nodes) {
-        addMarks("nodes",type,new LinkedList<>(nodes));
+        addMarks("nodes", type, new LinkedList<>(nodes));
     }
 
-    public void addEdgeMarks(Integer type, HashMap<Integer,List<Integer>> edges) {
-        addMarks("edges",type,edges);
+    public void addEdgeMarks(Integer type, HashMap<Integer, List<Integer>> edges) {
+        addMarks("edges", type, edges);
     }
 
     public void addMarks(String entity, Integer type, Object marks) {

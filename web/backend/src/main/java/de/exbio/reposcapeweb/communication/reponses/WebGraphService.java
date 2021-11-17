@@ -630,7 +630,7 @@ public class WebGraphService {
             HashSet<String> added = new HashSet<>();
             requestedEdges.forEach(e -> {
                 added.add(e);
-                extendGraph(g, e, inducedEdges.contains(e), switched.contains(e), false, null);
+                extendGraph(g, e, inducedEdges.contains(e), switched.contains(e), false, null, switched.contains(e) && e.equals("DisorderHierarchy"));
             });
             if (added.isEmpty())
                 break;
@@ -638,7 +638,7 @@ public class WebGraphService {
         }
     }
 
-    public void extendGraph(Graph g, String e, boolean induced, boolean switched, boolean drugTargetActionFilter, Double disorderGenomeAssociationCutoff) {
+    public void extendGraph(Graph g, String e, boolean induced, boolean switched, boolean drugTargetActionFilter, Double disorderGenomeAssociationCutoff, boolean getDisorderParents) {
         int edgeId = g.getEdge(e);
         boolean extend = !induced;
         Pair<Integer, Integer> nodeIds = g.getNodesfromEdge(edgeId);
@@ -647,7 +647,12 @@ public class WebGraphService {
         if (g.getNodes().containsKey(nodeIds.first) & nodeIds.first.equals(nodeIds.second)) {
             g.getNodes().get(nodeIds.first).keySet().forEach(nodeId1 -> {
                 try {
-                    HashSet<PairId> edgeIds = edgeController.getEdges(edgeId, nodeIds.first, nodeId1, switched);
+                    HashSet<PairId> edgeIds;
+                    if (e.equals("DisorderHierarchy")) {
+                        edgeIds = getDisorderParents ? edgeController.getDisorderIsADisorderParents(nodeId1) : edgeController.getDisorderIsADisorderChildren(nodeId1);
+                    } else {
+                        edgeIds = edgeController.getEdges(edgeId, nodeIds.first, nodeId1, switched);
+                    }
                     if (edgeIds == null || edgeIds.isEmpty())
                         return;
                     if (drugTargetActionFilter) {
@@ -1533,10 +1538,11 @@ public class WebGraphService {
         boolean elementFilter = (boolean) request.params.get("nodes").get("filterElementDrugs");
         boolean approvedFilter = (boolean) request.params.get("nodes").get("approvedDrugsOnly");
         boolean codingFilter = (boolean) request.params.get("nodes").get("codingGenesOnly");
+        boolean fullPaths = (boolean) request.params.get("general").get("removePartial");
 
         boolean drugTargetWithAction = (boolean) request.params.get("edges").get("drugTargetsWithAction");
         double disorderAssociationCutoff = Double.parseDouble(request.params.get("edges").get("disorderAssociationCutoff").toString());
-
+        boolean getDisorderParents = (boolean) request.params.get("edges").get("disorderParents");
 
         if (request.sourceType.equals("drug") & (elementFilter | approvedFilter)) {
             sids = elementFilter ? getElementFilteredDrugs(sids) : sids;
@@ -1569,7 +1575,7 @@ public class WebGraphService {
             }
             String edgeName = request.path.get(p).get("label");
             boolean drugTargetFilter = drugTargetWithAction && (edgeName.equals("DrugTargetGene") | edgeName.equals("DrugTargetProtein"));
-            this.extendGraph(g, edgeName, endDefined, false, drugTargetFilter, disorderAssociationCutoff);
+            this.extendGraph(g, edgeName, endDefined, false, drugTargetFilter, disorderAssociationCutoff, getDisorderParents);
 
             String connector = request.path.get(p).get("connector");
             if (connector != null) {
@@ -1595,19 +1601,19 @@ public class WebGraphService {
                     g.getNodes().put(Graphs.getNode(connector), nodeFilterToNode(nf));
                     g.saveNodeFilter(connector, nf);
                 }
-                if (secondPath) {
+                if (secondPath && fullPaths) {
                     HashSet<Integer> targets;
-                    if(endDefined)
+                    if (endDefined)
                         targets = request.targets;
                     else {
                         targets = new HashSet<>(g.getNodes().get(Graphs.getNode(request.targetType)).keySet());
                         targets.removeAll(request.sources);
                     }
-                    removeNonConnectingNodes(g, Graphs.getNode(connector), request.sources, Graphs.getNode(request.sourceType),targets ,Graphs.getNode(request.targetType));
+                    removeNonConnectingNodes(g, Graphs.getNode(connector), request.sources, Graphs.getNode(request.sourceType), targets, Graphs.getNode(request.targetType));
                 }
             }
             if (secondPath && !endDefined) {
-                this.removeUnconnectedNodes(g, Graphs.getNode(request.targetType));
+                this.removeUnconnectedNodes(g, Graphs.getNode(request.targetType), request.targetType.equals(request.sourceType) ? request.sources : null);
             }
         }
 
@@ -1630,10 +1636,12 @@ public class WebGraphService {
         return g.toInfo();
     }
 
-    private void removeUnconnectedNodes(Graph g, int node) {
+    private void removeUnconnectedNodes(Graph g, int node, HashSet<Integer> except) {
         if (!g.getNodes().containsKey(node))
             return;
         HashSet<Integer> ids = new HashSet<>(g.getNodes().get(node).keySet());
+        if (except != null)
+            ids.removeAll(except);
         g.getEdges().forEach((key, vals) -> {
             Pair<Integer, Integer> edge = Graphs.getNodesfromEdge(key);
             if (edge.first == node) {
@@ -1651,24 +1659,47 @@ public class WebGraphService {
         }
     }
 
-    private void removeNonConnectingNodes(Graph g, int connectType, Collection<Integer> set1, int type1,Collection<Integer> set2, int type2) {
+    private void removeNonConnectingNodes(Graph g, int connectType, Collection<Integer> set1, int type1, Collection<Integer> set2, int type2) {
         if (!g.getNodes().containsKey(connectType))
             return;
         HashSet<Integer> set1Connectors = new HashSet<>();
         HashSet<Integer> set2Connectors = new HashSet<>();
+        HashMap<Integer, HashMap<Integer, HashSet<Edge>>> connectorEdges = new HashMap<>();
         g.getEdges().forEach((key, vals) -> {
+            HashMap<Integer, HashSet<Edge>> edges = new HashMap<>();
+            connectorEdges.put(key, edges);
             Pair<Integer, Integer> edge = Graphs.getNodesfromEdge(key);
             if (edge.first == connectType) {
-                if(edge.second==type1)
-                    vals.stream().filter(e->set1.contains(e.getId2())).forEach(e->set1Connectors.add(e.getId1()));
-                if(edge.second==type2)
-                    vals.stream().filter(e->set2.contains(e.getId2())).forEach(e->set2Connectors.add(e.getId1()));
+                if (edge.second == type1)
+                    vals.stream().filter(e -> set1.contains(e.getId2())).forEach(e -> {
+                        set1Connectors.add(e.getId1());
+                        if (!edges.containsKey(e.getId1()))
+                            edges.put(e.getId1(), new HashSet<>());
+                        edges.get(e.getId1()).add(e);
+                    });
+                if (edge.second == type2)
+                    vals.stream().filter(e -> set2.contains(e.getId2())).forEach(e -> {
+                        set2Connectors.add(e.getId1());
+                        if (!edges.containsKey(e.getId1()))
+                            edges.put(e.getId1(), new HashSet<>());
+                        edges.get(e.getId1()).add(e);
+                    });
             }
             if (edge.second == connectType) {
-                if(edge.first==type1)
-                    vals.stream().filter(e->set1.contains(e.getId1())).forEach(e->set1Connectors.add(e.getId2()));
-                if(edge.first==type2)
-                    vals.stream().filter(e->set2.contains(e.getId1())).forEach(e->set2Connectors.add(e.getId2()));
+                if (edge.first == type1)
+                    vals.stream().filter(e -> set1.contains(e.getId1())).forEach(e -> {
+                        set1Connectors.add(e.getId2());
+                        if (!edges.containsKey(e.getId2()))
+                            edges.put(e.getId2(), new HashSet<>());
+                        edges.get(e.getId2()).add(e);
+                    });
+                if (edge.first == type2)
+                    vals.stream().filter(e -> set2.contains(e.getId1())).forEach(e -> {
+                        set2Connectors.add(e.getId2());
+                        if (!edges.containsKey(e.getId2()))
+                            edges.put(e.getId2(), new HashSet<>());
+                        edges.get(e.getId2()).add(e);
+                    });
             }
         });
 
@@ -1681,6 +1712,8 @@ public class WebGraphService {
             nf.removeByNodeIds(set1Connectors);
             g.getNodes().put(connectType, nodeFilterToNode(nf));
             g.saveNodeFilter(Graphs.getNode(connectType), nf);
+            connectorEdges.forEach((type, vals) ->
+                    g.getEdges().get(type).removeAll(vals.entrySet().stream().filter(e -> set1Connectors.contains(e.getKey())).map(Map.Entry::getValue).flatMap(Collection::stream).collect(Collectors.toSet())));
         }
     }
 
