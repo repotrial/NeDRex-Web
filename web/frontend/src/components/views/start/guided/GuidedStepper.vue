@@ -458,7 +458,8 @@
 
             <v-row>
               <v-col style="padding: 0; max-width: 360px;">
-                <v-card-title class="subtitle-1">Sources ({{ sources.length }})
+                <v-card-title class="subtitle-1">{{ resultTableModel !== 2 ? 'Sources' : 'Connectors' }}
+                  ({{ sources.length }})
                   <v-tooltip top>
                     <template v-slot:activator="{attrs, on}">
                       <v-icon right size="12pt" v-on="on" v-bind="attrs">far fa-question-circle</v-icon>
@@ -470,7 +471,7 @@
                   </v-tooltip>
                 </v-card-title>
                 <v-data-table max-height="550px" height="550px" class="overflow-y-auto" fixed-header dense item-key="id"
-                              :items="sources"
+                              :items="resultTableModel !==2 ? sources :connectors"
                               :headers="getHeaders()" show-expand :single-expand="true"
                               disable-pagination
                               hide-default-footer @click:row="seedClicked">
@@ -486,22 +487,22 @@
                   </template>
                   <template v-slot:item.data-table-expand="{expand, item,isExpanded}">
                     <v-icon v-show="!isExpanded" @click="expand(true)"
-                            :color="getColoring('nodes',nodeList[sourceTypeId].value)">fas fa-angle-down
+                            :color="getColoring('nodes',options.general.keep && resultTableModel ===2 ? getConnectorType() :nodeList[sourceTypeId].value)">fas fa-angle-down
                     </v-icon>
                     <v-icon v-show="isExpanded" @click="expand(false)"
-                            :color="getColoring('nodes',nodeList[sourceTypeId].value)">fas fa-angle-up
+                            :color="getColoring('nodes',options.general.keep && resultTableModel ===2 ? getConnectorType() :nodeList[sourceTypeId].value)">fas fa-angle-up
                     </v-icon>
                   </template>
                   <template v-slot:expanded-item="{ headers, item }">
                     <td :colspan="headers.length">
                       <EntryDetails max-width="280px"
-                                    :detail-request="{edge:false, type: nodeList[sourceTypeId].value, id:item.id}"></EntryDetails>
+                                    :detail-request="{edge:false, type: options.general.keep && resultTableModel ===2 ? getConnectorType() :nodeList[sourceTypeId].value, id:item.id}"></EntryDetails>
                     </td>
                   </template>
                   <template v-slot:footer>
                     <div style="display: flex; justify-content: center; margin-left: auto">
                       <div style="padding-top: 16px; padding-bottom: 8px">
-                        <ResultDownload v-show="sources !=null && sources.length>0" seeds label="Sources"
+                        <ResultDownload v-show="getNodesForSourceTable() !=null && getNodesForSourceTable().length>0" seeds :label="options.general.keep && resultTableModel===2 ? 'Connectors' :'Sources'"
                                         @downloadEvent="downloadSourceList"></ResultDownload>
                       </div>
                     </div>
@@ -509,7 +510,28 @@
                 </v-data-table>
               </v-col>
               <v-col>
-                <Network ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle" :show-vis-option="showVisOption"
+                <div style="width: 100%; display: flex; padding-left: 50px; padding-right: 50px; margin-bottom: 16px"
+                     v-if="options.general.keep">
+                  <v-chip :color="resultTableModel===0? 'green':'primary'" style="justify-self: left; margin-right: auto; color: white"
+                          @click="resultTableModel=0">{{ nodeList[sourceTypeId].text }}
+                    <v-icon size="18" style="margin-left: 5px; margin-right: 5px">fas fa-angle-right</v-icon>
+                    {{ getNodeLabel(selectedPath[0].label, [selectedPath[0].direction ? 1 : 0]) }}
+                  </v-chip>
+                  <v-chip :color="resultTableModel===1? 'green':'primary'"
+                          style="justify-self: center; margin-left: auto; margin-right: auto; color: white"
+                          @click="resultTableModel=1">{{ nodeList[sourceTypeId].text }}
+                    <v-icon size="18" style="margin-left: 5px; margin-right: 5px">fas fa-angle-double-right</v-icon>
+                    {{ nodeList[targetTypeId].text }}
+                  </v-chip>
+                  <v-chip :color="resultTableModel===2? 'green':'primary'" style="justify-self: right; margin-left: auto;color: white"
+                          @click="resultTableModel=2">
+                    {{ getNodeLabel(selectedPath[0].label, [selectedPath[0].direction ? 1 : 0]) }}
+                    <v-icon size="18" style="margin-left: 5px; margin-right: 5px">fas fa-angle-right</v-icon>
+                    {{ nodeList[targetTypeId].text }}
+                  </v-chip>
+                </div>
+                <Network ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle"
+                         :show-vis-option="showVisOption"
                          :legend="$refs.graph!==undefined" :tools="$refs.graph!==undefined" secondaryViewer="true"
                          @loadIntoAdvancedEvent="$emit('graphLoadEvent',{post: {id: gid}})">
                   <template v-slot:legend>
@@ -526,7 +548,7 @@
                 </Network>
               </v-col>
               <v-col style="padding: 0 10px 0 0; max-width: 360px">
-                <v-card-title class="subtitle-1"> Targets{{
+                <v-card-title class="subtitle-1"> {{ resultTableModel !== 0 ? 'Targets' : 'Connectors' }} {{
                     (gid != null && targets.length != null ? (" (" + (targets.length) + ")") : ": Processing")
                   }}
                   <v-progress-circular indeterminate v-if="gid==null || targets.length==null" style="margin-left:15px">
@@ -544,7 +566,7 @@
                 <template v-if="gid!=null && targets.length>0">
                   <v-data-table max-height="550px" height="550px" class="overflow-y-auto" fixed-header dense
                                 item-key="id"
-                                :items="targets"
+                                :items="resultTableModel !==0 ? targets :connectors"
                                 :headers="getHeaders()"
                                 disable-pagination show-expand :single-expand="true"
                                 hide-default-footer @click:row="targetClicked">
@@ -560,22 +582,22 @@
                     </template>
                     <template v-slot:item.data-table-expand="{expand, item,isExpanded}">
                       <v-icon v-show="!isExpanded" @click="expand(true)"
-                              :color="getColoring('nodes',nodeList[targetTypeId].value)">fas fa-angle-down
+                              :color="getColoring('nodes',options.general.keep && resultTableModel ===0 ? getConnectorType() :nodeList[targetTypeId].value)">fas fa-angle-down
                       </v-icon>
                       <v-icon v-show="isExpanded" @click="expand(false)"
-                              :color="getColoring('nodes',nodeList[targetTypeId].value)">fas fa-angle-up
+                              :color="getColoring('nodes',options.general.keep && resultTableModel ===0 ? getConnectorType() :nodeList[targetTypeId].value)">fas fa-angle-up
                       </v-icon>
                     </template>
                     <template v-slot:expanded-item="{ headers, item }">
                       <td :colspan="headers.length">
                         <EntryDetails max-width="280px"
-                                      :detail-request="{edge:false, type: nodeList[targetTypeId].value, id:item.id}"></EntryDetails>
+                                      :detail-request="{edge:false, type: options.general.keep && resultTableModel ===0 ? getConnectorType() :nodeList[targetTypeId].value, id:item.id}"></EntryDetails>
                       </td>
                     </template>
                     <template v-slot:footer>
                       <div style="display: flex; justify-content: center; margin-left: auto">
                         <div style="padding-top: 16px;padding-bottom: 8px">
-                          <ResultDownload v-show="targets !=null && targets.length>0" seeds label="Targets"
+                          <ResultDownload v-show="getNodesForTargetTable() !=null && getNodesForTargetTable().length>0" seeds :label="options.general.keep && resultTableModel ===0 ? 'Connectors' :'Targets'"
                                           @downloadEvent="downloadTargetList"></ResultDownload>
                         </div>
                       </div>
@@ -633,6 +655,7 @@ export default {
       graphConfig: {visualized: false},
 
       sources: [],
+      connectors: [],
       targets: [],
       nodeOrigins: [{}, {}],
       fileInputModel: [undefined, undefined],
@@ -685,6 +708,7 @@ export default {
       connectorTypeId: undefined,
       connectorCount: 0,
       connectorModel: false,
+      resultTableModel: 1
     }
   },
 
@@ -735,6 +759,7 @@ export default {
       this.sourceTypeId = undefined
       this.targetTypeId = undefined
       this.sources = []
+      this.connectors = []
       this.targets = []
       this.nodeOrigins = [{}, {}]
       this.suggestionType = [undefined, undefined]
@@ -744,7 +769,8 @@ export default {
       this.sourcecount = 0;
       this.connectorModel = false
       this.pathModel = undefined
-      this.showVisOption= false
+      this.showVisOption = false
+      this.resultTableModel = 1
       this.clearPaths()
 
       this.example = undefined
@@ -872,6 +898,14 @@ export default {
       this.$refs.graph.zoomToNode(id)
     },
 
+    getNodesForSourceTable: function(){
+      return this.options.general.keep && this.resultTableModel ===2 ? this.connectors: this.sources;
+    },
+
+    getNodesForTargetTable: function(){
+      return this.options.general.keep && this.resultTableModel ===0 ? this.connectors: this.targets;
+    },
+
     submitGraphGeneration: function () {
       let payload = {
         uid: this.$cookies.get("uid"),
@@ -895,7 +929,7 @@ export default {
         this.info = data;
         this.gid = data.id
         this.prepareLegend()
-        this.$refs.graph.loadNetworkById(this.gid).then(()=>{
+        this.$refs.graph.loadNetworkById(this.gid).then(() => {
           this.$refs.graph.showLoops(false)
           this.showVisOption = !this.graphConfig.visualized
         })
@@ -956,13 +990,26 @@ export default {
             this.targets = this.targets.filter(n => ids.indexOf(n.id) === -1)
         }
         let sourceDegrees = {}
-        data.nodes[sourceGroupName].forEach(n=>{sourceDegrees[n.id]=n.degree})
-        this.sources.forEach(n=>{
+        data.nodes[sourceGroupName].forEach(n => {
+          sourceDegrees[n.id] = n.degree
+        })
+        this.sources.forEach(n => {
           n.degree = sourceDegrees[n.id]
         })
-        this.sources.sort((o1,o2)=>o2.degree-o1.degree)
-        this.targets.sort((o1,o2)=>o2.degree-o1.degree)
+        if (this.options.general.keep) {
+          let connectorGroupName = this.getConnectorType()
+          this.connectors = data.nodes[connectorGroupName].map(n => {
+            return {id: n.id, displayName: n.displayName, degree: n.degree}
+          })
+          this.connectors.sort((o1, o2) => o2.degree - o1.degree)
+        }
+        this.sources.sort((o1, o2) => o2.degree - o1.degree)
+        this.targets.sort((o1, o2) => o2.degree - o1.degree)
       }).catch(console.error)
+    },
+
+    getConnectorType: function () {
+      return this.$utils.getNodes(this.$global.metagraph, this.selectedPath[0].label)[this.selectedPath[0].direction ? 1 : 0]
     },
 
     getOrigins: function (id, index) {
@@ -1052,28 +1099,31 @@ export default {
     },
 
     downloadSourceList: function (names, sep) {
-      this.downloadList(0, names, sep)
+
+      this.downloadList(this.options.general.keep && this.resultTableModel===2 ?1 : 0, names, sep)
     }
     ,
     downloadTargetList: function (names, sep) {
-      this.downloadList(1, names, sep)
+      this.downloadList(this.options.general.keep && this.resultTableModel===0 ?1 : 2, names, sep)
     }
     ,
     downloadList: function (index, names, sep) {
-      let nodeType = this.nodeList[[this.sourceTypeId, this.targetTypeId][index]].value
+      let nodeType = [this.nodeList[this.sourceTypeId].value,this.getConnectorType(),this.nodeList[this.targetTypeId].value][index]
+      let list = [this.sources,this.connectors, this.targets][index]
+      let name = ["seeds", "connectors","targets"][index]
       this.$http.post("mapToDomainIds", {
         type: nodeType,
-        ids: [this.sources, this.targets][index].map(n => n.id)
+        ids: list.map(n => n.id)
       }).then(response => {
         if (response.data !== undefined)
           return response.data
       }).then(data => {
         let text = "#ID" + (names ? sep + "Name" : "") + "\n";
-        let dlName = nodeType + "_" + ["seeds", "targets"][index] + "." + (!names ? "list" : (sep === '\t' ? "tsv" : "csv"))
+        let dlName = nodeType + "_" + name + "." + (!names ? "list" : (sep === '\t' ? "tsv" : "csv"))
         if (!names) {
           Object.values(data).forEach(id => text += id + "\n")
         } else {
-          [this.sources, this.targets][index].forEach(s => text += data[s.id] + sep + s.displayName + "\n")
+          list.forEach(s => text += data[s.id] + sep + s.displayName + "\n")
         }
         this.download(dlName, text)
       }).catch(console.error)
@@ -1136,18 +1186,25 @@ export default {
     }
     ,
     getHeaders: function () {
-      return [{text:"Deg.", align: "end", sortable: true, value: "degree", width:"75px"},{text: "Name", align: "start", sortable: true, value: "displayName"}, {
+      return [{text: "Deg.", align: "end", sortable: true, value: "degree", width: "75px"}, {
+        text: "Name",
+        align: "start",
+        sortable: true,
+        value: "displayName"
+      }, {
         text: "",
         value: "data-table-expand"
       }]
     }
     ,
     seedClicked: function (item) {
-      this.focusNode(this.nodeList[this.sourceTypeId].value.substring(0, 3) + '_' + item.id)
+      let nodeType = this.options.general.keep && this.resultTableModel===2 ? this.getConnectorType():this.nodeList[this.sourceTypeId].value
+      this.focusNode(nodeType.substring(0, 3) + '_' + item.id)
     }
     ,
     targetClicked: function (item) {
-      this.focusNode(this.nodeList[this.targetTypeId].value.substring(0, 3) + '_' + item.id)
+      let nodeType = this.options.general.keep && this.resultTableModel===0 ? this.getConnectorType():this.nodeList[this.targetTypeId].value
+      this.focusNode(nodeType.substring(0, 3) + '_' + item.id)
     }
     ,
 
