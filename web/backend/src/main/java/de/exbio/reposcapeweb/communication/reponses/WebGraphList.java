@@ -93,6 +93,12 @@ public class WebGraphList {
         this.setListAttributes(entity, type, attributes);
     }
 
+    public void addListAttribute(String entity, String type, String attribute, String label) {
+        HashMap<String, String> labelMap = new HashMap<>();
+        labelMap.put(attribute, label);
+        this.addListAttributes(entity, type, new String[]{attribute}, labelMap);
+    }
+
     public void setListAttributes(String entity, String type, String[] attributes) {
         HashSet<String> attrSet = new HashSet<>(Arrays.asList(attributes));
         this.attributes.get(entity).get(type).stream().filter(s -> attrSet.contains(s.name)).forEach(WebAttribute::isListAttribute);

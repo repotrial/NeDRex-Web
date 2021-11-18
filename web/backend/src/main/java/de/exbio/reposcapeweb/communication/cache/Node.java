@@ -7,6 +7,7 @@ public class Node {
     private int id;
     private String name;
     private boolean hasEdge =false;
+    private int degree = 0;
 
 
     public Node(){
@@ -57,5 +58,17 @@ public class Node {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public int getDegree() {
+        return degree;
+    }
+
+    public void setDegree(int degree) {
+        this.degree = degree;
+    }
+
+    public void addDegree() {
+        this.degree++;
     }
 }

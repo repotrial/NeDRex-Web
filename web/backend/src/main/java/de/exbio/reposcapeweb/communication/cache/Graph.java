@@ -95,7 +95,6 @@ public class Graph {
                 Pair<Integer, Integer> ns = getNodesfromEdge(typeId);
                 String pref1 = Graphs.getPrefix(ns.first);
                 String pref2 = Graphs.getPrefix(ns.second);
-                //TODO add directional?
                 webgraph.addEdges(edges.stream().map(edge -> edge.toWebEdge().setTitle(name).addPrefixes(pref1, pref2)).collect(Collectors.toSet()));
             });
         }
@@ -371,5 +370,33 @@ public class Graph {
 
     public HashMap<String, HashMap<Integer, Object>> getMarks() {
         return marks;
+    }
+
+    public void calculateDegrees() {
+        this.getEdges().forEach((edgeId, vals) -> {
+            Pair<Integer, Integer> nodes = getNodesfromEdge(edgeId);
+            vals.forEach(edge -> {
+                try {
+                    this.getNodes().get(nodes.first).get(edge.getId1()).addDegree();
+                    this.getNodes().get(nodes.second).get(edge.getId2()).addDegree();
+                } catch (NullPointerException e) {
+                    e.printStackTrace();
+                }
+            });
+        });
+        HashMap<Integer, HashMap<Integer, HashMap<String, Object>>> degrees = new HashMap<>();
+        this.getNodes().forEach((nid, vals) -> {
+            HashMap<Integer, HashMap<String, Object>> nodeTypeDegrees = new HashMap<>();
+            degrees.put(nid, nodeTypeDegrees);
+            vals.forEach((id, n) -> {
+                HashMap<String, Object> degree = new HashMap<>();
+                degree.put("degree", n.getDegree());
+                nodeTypeDegrees.put(id, degree);
+            });
+        });
+        degrees.forEach((nid, vals) -> {
+            addCustomNodeAttributeType(nid, "degree", "numeric");
+            addCustomNodeAttribute(nid, vals);
+        });
     }
 }

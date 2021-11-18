@@ -257,7 +257,6 @@ public class WebGraphService {
                         finalList.setDistinctAttributes("edges", stringType, distinctValues);
                     } catch (NullPointerException e) {
                     }
-
                 }
             });
 
@@ -1632,6 +1631,7 @@ public class WebGraphService {
                 collapseGraph(g, nodes.first == sourceTypeId ? nodes.second : nodes.first, edge1, edge2, edgeName, false, false);
             }
         }
+        g.calculateDegrees();
         addGraphToHistory(request.uid, g.getId());
         return g.toInfo();
     }

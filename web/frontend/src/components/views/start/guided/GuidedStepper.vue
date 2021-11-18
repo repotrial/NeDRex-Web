@@ -475,10 +475,10 @@
                               disable-pagination
                               hide-default-footer @click:row="seedClicked">
                   <template v-slot:item.displayName="{item}">
-                    <v-tooltip v-if="item.displayName.length>30" right>
+                    <v-tooltip v-if="item.displayName.length>32" right>
                       <template v-slot:activator="{attr,on }">
                           <span v-bind="attr" v-on="on"
-                                style="color: dimgray">{{ item.displayName.substr(0, 30) }}...</span>
+                                style="color: dimgray">{{ item.displayName.substr(0, 29) }}...</span>
                       </template>
                       <span>{{ item.displayName }}</span>
                     </v-tooltip>
@@ -549,10 +549,10 @@
                                 disable-pagination show-expand :single-expand="true"
                                 hide-default-footer @click:row="targetClicked">
                     <template v-slot:item.displayName="{item}">
-                      <v-tooltip v-if="item.displayName.length>30" right>
+                      <v-tooltip v-if="item.displayName.length>32" right>
                         <template v-slot:activator="{attr,on }">
                           <span v-bind="attr" v-on="on"
-                                style="color: dimgray">{{ item.displayName.substr(0, 30) }}...</span>
+                                style="color: dimgray">{{ item.displayName.substr(0, 29) }}...</span>
                         </template>
                         <span>{{ item.displayName }}</span>
                       </v-tooltip>
@@ -895,7 +895,7 @@ export default {
         this.gid = data.id
         this.prepareLegend()
         this.$refs.graph.loadNetworkById(this.gid)
-        this.loadTargetTable(this.gid)
+        this.loadTables(this.gid)
       }).catch(console.error)
     },
 
@@ -931,14 +931,15 @@ export default {
       this.$refs[["sourceTable", "targetTable"][index]].addSeeds(list)
     }
     ,
-    loadTargetTable: function (gid) {
-      let groupName = this.nodeList[this.targetTypeId].value
+    loadTables: function (gid) {
+      let targetGroupName = this.nodeList[this.targetTypeId].value
+      let sourceGroupName = this.nodeList[this.sourceTypeId].value
       return this.$http.get("/getGraphList?id=" + gid).then(response => {
         if (response.data !== undefined)
           return response.data
       }).then(data => {
-        this.targets = data.nodes[groupName].map(n => {
-          return {id: n.id, displayName: n.displayName}
+        this.targets = data.nodes[targetGroupName].map(n => {
+          return {id: n.id, displayName: n.displayName, degree: n.degree}
         })
         if (this.$refs.targetTable.getSeeds().length > 0) {
           let ids = this.$refs.targetTable.getSeeds().map(s => s.id)
@@ -950,6 +951,13 @@ export default {
           if (this.targets)
             this.targets = this.targets.filter(n => ids.indexOf(n.id) === -1)
         }
+        let sourceDegrees = {}
+        data.nodes[sourceGroupName].forEach(n=>{sourceDegrees[n.id]=n.degree})
+        this.sources.forEach(n=>{
+          n.degree = sourceDegrees[n.id]
+        })
+        this.sources.sort((o1,o2)=>o2.degree-o1.degree)
+        this.targets.sort((o1,o2)=>o2.degree-o1.degree)
       }).catch(console.error)
     },
 
@@ -1124,7 +1132,7 @@ export default {
     }
     ,
     getHeaders: function () {
-      return [{text: "Name", align: "start", sortable: true, value: "displayName"}, {
+      return [{text:"Degree", align: "end", sortable: true, value: "degree"},{text: "Name", align: "start", sortable: true, value: "displayName"}, {
         text: "",
         value: "data-table-expand"
       }]
