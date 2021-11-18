@@ -225,12 +225,6 @@
                                indeterminate
           ></v-progress-circular>
           <i v-else>No data available!</i>
-          <!--          <v-progress-linear-->
-          <!--            color="primary"-->
-          <!--            height="5"-->
-          <!--            indeterminate-->
-          <!--          ></v-progress-linear>-->
-          <!--          <v-card-title>Edges</v-card-title>-->
         </template>
         <template v-if="!loading">
           <v-card-title id="edges" ref="edgeTitle">Edges
@@ -273,11 +267,9 @@
                 </template>
                 <template v-slot:top>
                   <v-container style="margin-top: 15px;margin-bottom: -40px">
-                    <v-row>
-                      <v-col
-                        cols="2"
-                      >
-                        <v-select
+                    <div style="display: flex;width: 100%">
+                      <div style="justify-self: flex-start; margin-left: 16px; margin-right: 8px">
+                      <v-select
                           :items="headerNames('edges',Object.keys(edges)[edgeTab])"
                           label="Attribute"
                           v-model="filters.edges.attribute.name"
@@ -285,12 +277,8 @@
                           outlined
                           style="width: 100%"
                         ></v-select>
-                      </v-col>
-                      <v-col
-                        cols="1"
-                        v-if="!filters.edges.suggestions"
-                      >
-
+                      </div>
+                     <div style="justify-self: flex-start; width: 20%; margin-left: 8px; margin-right: 8px">
                         <v-select
                           v-if="filters.edges.attribute.name === undefined || filters.edges.attribute.name == null || !isDistinctAttribute('edges',filters.edges.attribute.name)"
                           v-model="filters.edges.attribute.operator"
@@ -310,9 +298,9 @@
                           style="width: 100%"
                         >
                         </v-select>
-                      </v-col>
-                      <v-col
-                        cols="9"
+                      </div>
+                      <div
+                        style="display: flex; justify-self: flex-start; justify-content: center; width: 100%; margin-left: 8px; margin-right: 16px"
                       >
                         <v-text-field
                           :disabled="filters.edges.attribute.name == null || filters.edges.attribute.name.length ===0 || filters.edges.attribute.operator == null|| filters.edges.attribute.dist"
@@ -321,12 +309,8 @@
                           label="Query (case sensitive)"
                           class="mx-4"
                         ></v-text-field>
-                      </v-col>
-                      <v-col
-                        cols="2"
-                      >
-                      </v-col>
-                    </v-row>
+                      </div>
+                    </div>
                   </v-container>
                 </template>
                 <template v-slot:item.selected="{item}">
