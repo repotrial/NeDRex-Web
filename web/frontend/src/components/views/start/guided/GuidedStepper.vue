@@ -509,7 +509,7 @@
                 </v-data-table>
               </v-col>
               <v-col>
-                <Network ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle"
+                <Network ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle" :show-vis-option="showVisOption"
                          :legend="$refs.graph!==undefined" :tools="$refs.graph!==undefined" secondaryViewer="true"
                          @loadIntoAdvancedEvent="$emit('graphLoadEvent',{post: {id: gid}})">
                   <template v-slot:legend>
@@ -658,7 +658,7 @@ export default {
       direct: false,
 
       paths: {0: [], 1: []},
-
+      showVisOption: false,
       options: {
         general: {
           keep: false,
@@ -744,6 +744,7 @@ export default {
       this.sourcecount = 0;
       this.connectorModel = false
       this.pathModel = undefined
+      this.showVisOption= false
       this.clearPaths()
 
       this.example = undefined
@@ -894,7 +895,10 @@ export default {
         this.info = data;
         this.gid = data.id
         this.prepareLegend()
-        this.$refs.graph.loadNetworkById(this.gid)
+        this.$refs.graph.loadNetworkById(this.gid).then(()=>{
+          this.$refs.graph.showLoops(false)
+          this.showVisOption = !this.graphConfig.visualized
+        })
         this.loadTables(this.gid)
       }).catch(console.error)
     },
