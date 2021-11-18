@@ -11,11 +11,8 @@ import de.exbio.reposcapeweb.communication.jobs.Job;
 import de.exbio.reposcapeweb.communication.requests.*;
 import de.exbio.reposcapeweb.configs.DBConfig;
 import de.exbio.reposcapeweb.configs.VisConfig;
-import de.exbio.reposcapeweb.configs.schema.AttributeConfig;
 import de.exbio.reposcapeweb.db.DbCommunicationService;
 import de.exbio.reposcapeweb.db.entities.RepoTrialNode;
-import de.exbio.reposcapeweb.db.entities.edges.GeneInteractsWithGene;
-import de.exbio.reposcapeweb.db.entities.edges.ProteinInteractsWithProtein;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
 import de.exbio.reposcapeweb.db.entities.nodes.*;
 import de.exbio.reposcapeweb.db.history.GraphHistory;
@@ -23,7 +20,6 @@ import de.exbio.reposcapeweb.db.history.HistoryController;
 import de.exbio.reposcapeweb.db.services.controller.EdgeController;
 import de.exbio.reposcapeweb.db.services.controller.NodeController;
 import de.exbio.reposcapeweb.filter.FilterEntry;
-import de.exbio.reposcapeweb.filter.FilterType;
 import de.exbio.reposcapeweb.filter.NodeFilter;
 import de.exbio.reposcapeweb.tools.ToolService;
 import de.exbio.reposcapeweb.tools.algorithms.Algorithm;
@@ -156,7 +152,7 @@ public class WebGraphService {
                 g.getEdges().keySet().forEach(k -> {
                     if (!finalReq.attributes.containsKey("edges"))
                         finalReq.attributes.put("edges", new HashMap<>());
-                    finalReq.attributes.get("edges").put(g.getEdge(k), k < 0 ? g.getCustomListAttributes(k) : edgeController.getListAttributes(k));
+                    finalReq.attributes.get("edges").put(g.getEdge(k), k < 0 ? g.getCustomEdgeListAttributes(k) : edgeController.getListAttributes(k));
                 });
             }
             log.debug("Converting nodes from Graph to WebList for " + id);
@@ -183,8 +179,11 @@ public class WebGraphService {
                     });
                 } catch (NullPointerException ignore) {
                 }
-                finalList.addListAttributes("nodes", stringType, attributes.toArray(new String[]{}), nodeController.getAttributeLabelMap(stringType));
-                finalList.addAttributes("nodes", stringType, allAttributes.toArray(new String[]{}), nodeController.getAttributeLabelMap(stringType));
+                HashMap<String, String> attributeLabelMap = nodeController.getAttributeLabelMap(stringType);
+                if (g.getCustomNodeAttributeLabels().containsKey(type))
+                    attributeLabelMap.putAll(g.getCustomNodeAttributeLabels().get(type));
+                finalList.addListAttributes("nodes", stringType, attributes.toArray(new String[]{}), attributeLabelMap);
+                finalList.addAttributes("nodes", stringType, allAttributes.toArray(new String[]{}), attributeLabelMap);
                 finalList.addNodes(stringType, nodeController.nodesToAttributeList(type, nodeMap.keySet(), new HashSet<>(attributes), g.getCustomNodeAttributes().get(type)));
                 finalList.setTypes("nodes", stringType, nodeController.getAttributes(type), nodeController.getAttributeTypes(type), nodeController.getIdAttributes(type), g.getCustomNodeAttributeTypes().get(type));
 
@@ -220,18 +219,21 @@ public class WebGraphService {
                 }
                 String[] attributes = finalReq1.attributes.get("edges").get(stringType);
                 HashSet<String> attrs = new HashSet<>(Arrays.asList(attributes));
-                finalList.addListAttributes("edges", stringType, attributes, edgeController.getAttributeLabelMap(stringType));
+                HashMap<String, String> attributeLabelMap = edgeController.getAttributeLabelMap(stringType);
+                if (g.getCustomEdgeAttributeLabels().containsKey(type))
+                    attributeLabelMap.putAll(g.getCustomEdgeAttributeLabels().get(type));
+                finalList.addListAttributes("edges", stringType, attributes, attributeLabelMap);
                 List<PairId> edges = edgeList.stream().map(e -> new PairId(e.getId1(), e.getId2())).collect(Collectors.toList());
                 if (type < 0) {
-                    String[] attributeArray = g.getCustomListAttributes(type);
-                    finalList.addAttributes("edges", stringType, attributeArray, edgeController.getAttributeLabelMap(stringType));
+                    String[] attributeArray = g.getCustomEdgeListAttributes(type);
+                    finalList.addAttributes("edges", stringType, attributeArray, attributeLabelMap);
 
                     LinkedList<HashMap<String, Object>> attrMaps = edges.stream().map(p -> getCustomEdgeAttributeList(g, type, p)).collect(toCollection(LinkedList::new));
                     finalList.addEdges(stringType, attrMaps);
-                    finalList.setTypes("edges", stringType, attributeArray, g.getCustomListAttributeTypes(type), g.areCustomListAttributeIds(type), g.getCustomEdgeAttributeTypes().get(type));
+                    finalList.setTypes("edges", stringType, attributeArray, g.getCustomEdgeListAttributeTypes(type), g.areCustomListAttributeIds(type), g.getCustomEdgeAttributeTypes().get(type));
                 } else {
                     String[] attributeArray = edgeController.getAttributes(type);
-                    finalList.addAttributes("edges", stringType, attributeArray, edgeController.getAttributeLabelMap(stringType));
+                    finalList.addAttributes("edges", stringType, attributeArray, attributeLabelMap);
                     LinkedList<HashMap<String, Object>> attrMaps = edgeController.edgesToAttributeList(type, edges, attrs);
                     finalList.addEdges(stringType, attrMaps);
                     finalList.setTypes("edges", stringType, attributeArray, edgeController.isExperimental(type), edgeController.getIdAttributes(type), g.getCustomEdgeAttributeTypes().get(type));
@@ -303,7 +305,7 @@ public class WebGraphService {
                 Pair<Integer, Integer> nodeIds = basis.getNodesfromEdge(typeId);
                 g.addCustomEdge(nodeIds.getFirst(), nodeIds.getSecond(), type, basis.getEdges().get(typeId).stream().filter(e -> edgeIds.contains(e.getId1() + "-" + e.getId2())).collect(toCollection(LinkedList::new)));
                 int newId = g.getEdge(basis.getEdge(typeId));
-                g.addCustomEdgeAttributeTypes(newId, basis.getCustomAttributeTypes(typeId));
+                g.addCustomEdgeAttributeTypes(newId, basis.getCustomEdgeAttributeTypes(typeId), basis.getCustomEdgeAttributeLabels().get(typeId));
                 g.addCustomEdgeAttribute(newId, basis.getCustomAttributes(typeId));
             } else {
                 g.addEdges(typeId, basis.getEdges().get(typeId).stream().filter(e -> edgeIds.contains(e.getId1() + "-" + e.getId2())).collect(toCollection(LinkedList::new)));
@@ -491,15 +493,15 @@ public class WebGraphService {
         return suggestions;
     }
 
-    public LinkedList<Integer> getQuickExample(String nodeName, int nr) {
-        HashSet<Integer> ids = new HashSet<>();
-        switch (nr) {
-            case 0 -> ids.addAll(nodeController.filterDisorder().distinctMatches(FilterType.UMBRELLA_DISORDER, "alzheimer disease").entrySet().stream().findFirst().get().getValue().stream().map(FilterEntry::getNodeId).collect(Collectors.toSet()));
-            case 1 -> ids.addAll(nodeController.filterDrugs().distinctMatches(FilterType.CATEGORY, "breast cancer resistance protein inhibitors").entrySet().stream().findFirst().get().getValue().stream().map(FilterEntry::getNodeId).collect(Collectors.toSet()));
-            case 2 -> ids.addAll(nodeController.filterGenes().matches("(pten|brca1|brca2)").toList(-1).stream().filter(i -> !i.getName().startsWith("entrez")).map(FilterEntry::getNodeId).collect(Collectors.toSet()));
-        }
-        return new LinkedList(ids);
-    }
+//    public LinkedList<Integer> getQuickExample(String nodeName, int nr) {
+//        HashSet<Integer> ids = new HashSet<>();
+//        switch (nr) {
+//            case 0 -> ids.addAll(nodeController.filterDisorder().distinctMatches(FilterType.UMBRELLA_DISORDER, "alzheimer disease").entrySet().stream().findFirst().get().getValue().stream().map(FilterEntry::getNodeId).collect(Collectors.toSet()));
+//            case 1 -> ids.addAll(nodeController.filterDrugs().distinctMatches(FilterType.CATEGORY, "breast cancer resistance protein inhibitors").entrySet().stream().findFirst().get().getValue().stream().map(FilterEntry::getNodeId).collect(Collectors.toSet()));
+//            case 2 -> ids.addAll(nodeController.filterGenes().matches("(pten|brca1|brca2)").toList(-1).stream().filter(i -> !i.getName().startsWith("entrez")).map(FilterEntry::getNodeId).collect(Collectors.toSet()));
+//        }
+//        return new LinkedList(ids);
+//    }
 
     public Collection<Integer> getSuggestionEntry(String gid, String nodeName, String sid) {
 
@@ -940,7 +942,7 @@ public class WebGraphService {
 
     public String[] getCustomEdgeAttributes(Graph g, int edgeId) {
         LinkedList<String> list = new LinkedList<>(Arrays.asList("ID", "IDOne", "IDTwo", "Node1", "Node2", "MemberOne", "MemberTwo"));
-        list.addAll(g.getCustomAttributeTypes(edgeId).keySet());
+        list.addAll(g.getCustomEdgeAttributeTypes(edgeId).keySet());
         list.add("Type");
         return list.toArray(new String[]{});
     }
@@ -956,7 +958,7 @@ public class WebGraphService {
         as.put("MemberOne", nodeController.getDomainId(nodeIds.first, p.getId1()));
         as.put("MemberTwo", nodeController.getDomainId(nodeIds.second, p.getId2()));
         ArrayList<String> order = new ArrayList<>(Arrays.asList("ID", "IDOne", "IDTwo", "Node1", "Node2", "MemberOne", "MemberTwo"));
-        graph.getCustomAttributeTypes(edgeId).keySet().forEach(attrName -> {
+        graph.getCustomEdgeAttributeTypes(edgeId).keySet().forEach(attrName -> {
             as.put(attrName, graph.getCustomAttributes(edgeId).get(p.getId1()).get(p.getId2()).get(attrName));
             order.add(attrName);
         });

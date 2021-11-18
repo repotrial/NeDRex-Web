@@ -133,7 +133,7 @@ public class TrustRank implements Algorithm {
 
         int otherTypeId = nodeTypeId;
 
-        derived.addCustomNodeAttributeType(otherTypeId, "score", "numeric");
+        derived.addCustomNodeAttributeType(otherTypeId, "score", "numeric", "Score");
         HashMap<Integer, HashMap<String, Object>> idMap = new HashMap<>();
         j.getResult().getNodes().forEach((k, v) -> {
             if (newNodeIDs.contains(k))

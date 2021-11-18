@@ -31,8 +31,10 @@ public class Graph {
     private HashMap<Integer, Pair<Integer, Integer>> customEdgeNodes;
     private HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<String, Object>>>> customEdgeAttributes;
     private HashMap<Integer, HashMap<String, String>> customEdgeAttributeTypes;
+    private HashMap<Integer, HashMap<String, String>> customEdgeAttributeLabels;
 
     private HashMap<Integer, HashMap<String, String>> customNodeAttributeTypes;
+    private HashMap<Integer, HashMap<String, String>> customNodeAttributeLabels;
     private HashMap<Integer, HashMap<String, HashMap<Integer, Object>>> customNodeAttributes;
 
     @JsonIgnore
@@ -53,12 +55,13 @@ public class Graph {
         customEdgeAttributeTypes = new HashMap<>();
         customNodeAttributes = new HashMap<>();
         customNodeAttributeTypes = new HashMap<>();
+        customEdgeAttributeLabels = new HashMap<>();
+        customNodeAttributeLabels = new HashMap<>();
     }
 
     public Graph(String id) {
         this();
         this.id = id;
-
     }
 
     public void setParent(String id) {
@@ -114,10 +117,10 @@ public class Graph {
         edges.forEach(g::addEdges);
         customEdgeNodes.forEach((k, v) -> g.addCustomEdge(v.getFirst(), v.getSecond(), customEdges.get(k), new LinkedList<>()));
         g.setParent(this.id);
-        getCustomEdgeAttributeTypes().forEach(g::addCustomEdgeAttributeTypes);
+        getCustomEdgeAttributeTypes().forEach((eid, vals) -> g.addCustomEdgeAttributeTypes(eid, vals, this.customEdgeAttributeLabels.get(eid)));
         getCustomEdgeAttributes().forEach(g::addCustomEdgeAttribute);
 
-        getCustomNodeAttributeTypes().forEach(g::addCustomNodeAttributeTypes);
+        getCustomNodeAttributeTypes().forEach((nid, vals) -> g.addCustomNodeAttributeTypes(nid, vals, this.customEdgeAttributeLabels.get(nid)));
         getCustomNodeAttributes().forEach(g::addCustomNodeAttributes);
         return g;
     }
@@ -267,16 +270,23 @@ public class Graph {
         });
     }
 
-    public void addCustomNodeAttributeType(int nid, String name, String type) {
-        if (!customNodeAttributeTypes.containsKey(nid))
+    public void addCustomNodeAttributeType(int nid, String name, String type, String label) {
+        if (!customNodeAttributeTypes.containsKey(nid)) {
             customNodeAttributeTypes.put(nid, new HashMap<>());
+            customNodeAttributeLabels.put(nid, new HashMap<>());
+        }
         customNodeAttributeTypes.get(nid).put(name, type);
+        customNodeAttributeLabels.get(nid).put(name, label);
     }
 
-    public void addCustomNodeAttributeTypes(int nid, HashMap<String, String> v) {
-        if (!customNodeAttributeTypes.containsKey(nid))
+    public void addCustomNodeAttributeTypes(int nid, HashMap<String, String> v, HashMap<String, String> labels) {
+        if (!customNodeAttributeTypes.containsKey(nid)) {
             customNodeAttributeTypes.put(nid, new HashMap<>());
+            customNodeAttributeLabels.put(nid, new HashMap<>());
+        }
         customNodeAttributeTypes.get(nid).putAll(v);
+        if (labels != null)
+            customNodeAttributeLabels.get(nid).putAll(labels);
     }
 
 
@@ -288,10 +298,22 @@ public class Graph {
         return customNodeAttributes;
     }
 
-    public void addCustomEdgeAttributeTypes(int eid, HashMap<String, String> v) {
-        if (!customEdgeAttributeTypes.containsKey(eid))
+    public void addCustomEdgeAttributeTypes(int eid, HashMap<String, String> v, HashMap<String, String> labels) {
+        if (!customEdgeAttributeTypes.containsKey(eid)) {
             customEdgeAttributeTypes.put(eid, new HashMap<>());
+            customEdgeAttributeLabels.put(eid, new HashMap<>());
+        }
         customEdgeAttributeTypes.get(eid).putAll(v);
+        if(labels!=null)
+        customEdgeAttributeLabels.get(eid).putAll(labels);
+    }
+
+    public HashMap<Integer, HashMap<String, String>> getCustomEdgeAttributeLabels() {
+        return customEdgeAttributeLabels;
+    }
+
+    public HashMap<Integer, HashMap<String, String>> getCustomNodeAttributeLabels() {
+        return customNodeAttributeLabels;
     }
 
     public void addCustomEdge(int node1, int node2, String edgeName, LinkedList<Edge> edges) {
@@ -310,23 +332,23 @@ public class Graph {
     }
 
 
-    public HashMap<String, String> getCustomAttributeTypes(int eid) {
+    public HashMap<String, String> getCustomEdgeAttributeTypes(int eid) {
         return customEdgeAttributeTypes.get(eid);
     }
 
-    public HashMap<String, String> getCustomAttributeTypes(String eid) {
-        return getCustomAttributeTypes(getEdge(eid));
+    public HashMap<String, String> getCustomEdgeAttributeTypes(String eid) {
+        return getCustomEdgeAttributeTypes(getEdge(eid));
     }
 
-    public String[] getCustomListAttributes(int eid) {
+    public String[] getCustomEdgeListAttributes(int eid) {
         ArrayList<String> list = new ArrayList<>(Arrays.asList("id", "Node1", "Node2"));
-        list.addAll(getCustomAttributeTypes(eid).keySet());
+        list.addAll(getCustomEdgeAttributeTypes(eid).keySet());
         return list.toArray(new String[list.size()]);
     }
 
-    public String[] getCustomListAttributeTypes(int eid) {
+    public String[] getCustomEdgeListAttributeTypes(int eid) {
         ArrayList<String> list = new ArrayList<>(Arrays.asList("", "", ""));
-        list.addAll(getCustomAttributeTypes(eid).values());
+        list.addAll(getCustomEdgeAttributeTypes(eid).values());
         return list.toArray(new String[list.size()]);
     }
 
@@ -340,7 +362,7 @@ public class Graph {
 
     public Boolean[] areCustomListAttributeIds(int eid) {
         ArrayList<Boolean> list = new ArrayList<>(Arrays.asList(true, false, false));
-        getCustomAttributeTypes(eid).forEach((k, v) -> list.add(false));
+        getCustomEdgeAttributeTypes(eid).forEach((k, v) -> list.add(false));
         return list.toArray(new Boolean[list.size()]);
     }
 
@@ -395,7 +417,7 @@ public class Graph {
             });
         });
         degrees.forEach((nid, vals) -> {
-            addCustomNodeAttributeType(nid, "degree", "numeric");
+            addCustomNodeAttributeType(nid, "degree", "numeric", "Degree");
             addCustomNodeAttribute(nid, vals);
         });
     }
