@@ -2,7 +2,8 @@
   <v-app-bar app elevation="0" :height="prominent? 100:50" color="#383838">
     <div v-show="prominent" id="particles-js"></div>
     <div id="title-div" style="position:fixed">
-      <img :src="getConfig().STATIC_PATH+'nedrex-web-logo-transparent.png'" :width="prominent?350:250" :style="{'padding-top':'25px', cursor: 'pointer'}" @click="$emit('redirectEvent','/home',true)">
+      <img :src="getConfig().STATIC_PATH+'nedrex-web-logo-transparent.png'" :width="prominent?350:250"
+           :style="{'padding-top':'25px', cursor: 'pointer'}" @click="$emit('redirectEvent','/home',true)">
     </div>
     <v-row>
       <v-col cols="11"></v-col>
@@ -19,25 +20,54 @@
               </template>
               <v-list color="#383838">
                 <v-list-item>
-                  <v-btn icon small @click="$emit('showVersionEvent')" style="background-color: #383838">
-                    <v-icon color="primary">
-                      fas fa-info-circle
-                    </v-icon>
-                  </v-btn>
+                  <v-tooltip left>
+                    <template v-slot:activator="{on, attrs}">
+                      <v-btn icon small @click="$emit('showVersionEvent')" style="background-color: #383838" v-on="on"
+                             v-bind="attrs">
+                        <v-icon color="primary">
+                          fas fa-info-circle
+                        </v-icon>
+                      </v-btn>
+                    </template>
+                    Source Information
+                  </v-tooltip>
                 </v-list-item>
                 <v-list-item>
-                  <v-btn small icon @click="$emit('showBugEvent')" style="background-color:  #383838">
-                    <v-icon color="primary">
-                      fas fa-bug
-                    </v-icon>
-                  </v-btn>
+                  <v-tooltip left>
+                    <template v-slot:activator="{on, attrs}">
+                      <v-btn small icon @click="$emit('showBugEvent')" style="background-color:  #383838" v-on="on"
+                             v-bind="attrs">
+                        <v-icon color="primary">
+                          fas fa-bug
+                        </v-icon>
+                      </v-btn>
+                    </template>
+                    Report Bug
+                  </v-tooltip>
                 </v-list-item>
                 <v-list-item>
-                  <v-btn small icon @click="$emit('showHelpEvent')" style="background-color:  #383838">
-                    <v-icon color="primary">
-                      fas fa-question-circle
-                    </v-icon>
-                  </v-btn>
+                  <v-tooltip left>
+                    <template v-slot:activator="{on, attrs}">
+                      <v-btn small icon @click="$emit('showHelpEvent')" style="background-color:  #383838" v-on="on" v-bind="attrs">
+                        <v-icon color="primary">
+                          fas fa-question-circle
+                        </v-icon>
+                      </v-btn>
+                    </template>
+                    Contact & Help
+                  </v-tooltip>
+                </v-list-item>
+                <v-list-item>
+                  <v-tooltip left>
+                    <template v-slot:activator="{on, attrs}">
+                      <v-btn small icon @click="$emit('showCompatability')" style="background-color:  #383838" v-on="on" v-bind="attrs">
+                        <v-icon color="primary">
+                          fas fa-laptop-code
+                        </v-icon>
+                      </v-btn>
+                    </template>
+                    Browser Compatability
+                  </v-tooltip>
                 </v-list-item>
               </v-list>
             </v-menu>
@@ -61,7 +91,7 @@ export default {
     this.initParticles()
   },
   methods: {
-    getConfig: function(){
+    getConfig: function () {
       return CONFIG
     },
     initParticles() {

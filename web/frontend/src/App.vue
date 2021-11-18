@@ -1,6 +1,6 @@
 <template style="overflow-y: hidden">
   <v-app :style="{marginTop:selectedTabId===0 ? '60px': '0px'}" id="app">
-    <headerBar @showVersionEvent="showVersionInfo=true" @showBugEvent="showBugInfo=true" @showHelpEvent="showHelp=true"
+    <headerBar @showVersionEvent="showVersionInfo=true" @showBugEvent="showBugInfo=true" @showHelpEvent="showHelp=true" @showCompatability="showCompatability=true"
                @redirectEvent="redirect"
                :prominent="selectedTabId===0" style="z-index: 1000;"/>
     <v-card style="position: sticky ; top: 0; margin-top: -10px; z-index: 999 ">
@@ -253,6 +253,9 @@
     <v-bottom-sheet inset v-model="showVersionInfo" width="60vw" :overlay-color="colors.main.bg1" style="z-index: 1001">
       <VersionSheet :color="colors.main.bg1"></VersionSheet>
     </v-bottom-sheet>
+    <v-bottom-sheet inset v-model="showCompatability" width="60vw" :overlay-color="colors.main.bg1" style="z-index:1001">
+      <CompatabilitySheet :color="colors.main.bg1"></CompatabilitySheet>
+    </v-bottom-sheet>
     <Footer :color="colors.main.bg1" style="z-index: 1000;"></Footer>
   </v-app>
 </template>
@@ -273,6 +276,7 @@ import Network from "@/components/views/graph/Network";
 import VisualizationOptions from "@/components/views/graph/VisualizationOptions";
 import * as CONFIG from "@/Config";
 import Tools from "@/components/views/graph/Tools";
+import CompatabilitySheet from "@/components/app/sheets/CompatabilitySheet";
 
 export default {
   name: 'app',
@@ -303,6 +307,7 @@ export default {
       showVersionInfo: false,
       showBugInfo: false,
       showHelp: false,
+      showCompatability : false,
       sideHidden: true,
       graphWindowStyle: {
         height: '75vh',
@@ -902,6 +907,7 @@ export default {
     Footer,
     BugSheet,
     HelpSheet,
+    CompatabilitySheet,
     VersionSheet,
     VisualizationOptions,
   }
