@@ -1132,7 +1132,7 @@ export default {
     }
     ,
     getHeaders: function () {
-      return [{text:"Degree", align: "end", sortable: true, value: "degree"},{text: "Name", align: "start", sortable: true, value: "displayName"}, {
+      return [{text:"Deg.", align: "end", sortable: true, value: "degree", width:"75px"},{text: "Name", align: "start", sortable: true, value: "displayName"}, {
         text: "",
         value: "data-table-expand"
       }]
