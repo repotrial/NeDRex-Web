@@ -190,6 +190,17 @@ public class HistoryController {
         return null;
     }
 
+    public File getTriLayoutPath(String id) {
+        String cachedir = env.getProperty("path.usr.cache");
+        GraphHistory history = getHistory(id);
+        try {
+            return new File(cachedir, "users/" + history.getUserId() + "/layouts/" + id + "_tripartite.tsv");
+        } catch (NullPointerException e) {
+            log.warn("Broken history request!");
+        }
+        return null;
+    }
+
     public File getJobPath(Job j) {
         String cachedir = env.getProperty("path.usr.cache");
         if (toolService.getAlgorithms().get(j.getMethod()).hasMultipleResultFiles())

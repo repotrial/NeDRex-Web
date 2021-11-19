@@ -24,10 +24,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.Arrays;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.*;
 
 @Service
 public class ToolService {
@@ -279,6 +276,14 @@ public class ToolService {
             e.printStackTrace();
         }
     }
+    public void createTripartiteLayout(File graphml, File layout, File sources, File targets) {
+        layout.getParentFile().mkdirs();
+        try {
+            ProcessUtils.executeProcessWait(new ProcessBuilder("python3", new File(scriptDir, "tripartiteLayout.py").getAbsolutePath(), graphml.getAbsolutePath(), layout.getAbsolutePath(), sources.getAbsolutePath(), targets.getAbsolutePath(), DBConfig.getConfFile().getAbsolutePath()));
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
 
     public EnumMap<Tool, Algorithm> getAlgorithms() {
         return algorithms;
@@ -291,6 +296,8 @@ public class ToolService {
             algorithm.createIndex();
         });
     }
+
+
 
     public enum Tool {
         DIAMOND, BICON, TRUSTRANK, CENTRALITY, MUST, DOMINO, ROBUST

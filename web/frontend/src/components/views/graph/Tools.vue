@@ -44,6 +44,7 @@
             <span>This option is disabled because no node is selected to define a connected component on.</span>
           </template>
         </ToolSwitch>
+        <slot name="append"></slot>
       </v-list>
     </v-container>
   </v-card>

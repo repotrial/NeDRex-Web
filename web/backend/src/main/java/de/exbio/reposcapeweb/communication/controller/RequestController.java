@@ -308,6 +308,11 @@ public class RequestController {
                 .body(resource);
     }
 
+    @RequestMapping(value="/getLayout", method=RequestMethod.GET)
+    public @ResponseBody String getLayout(@RequestParam("gid") String gid, @RequestParam("type") String type){
+        return toJson(webGraphService.loadLayout(gid, type));
+    }
+
 
     @RequestMapping(value = "/getGraph", method = RequestMethod.POST)
     @ResponseBody

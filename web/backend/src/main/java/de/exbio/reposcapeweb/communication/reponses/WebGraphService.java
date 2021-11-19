@@ -1028,6 +1028,16 @@ public class WebGraphService {
         }
     }
 
+    public void removeTempDir(File wd) {
+        if (wd.exists()) {
+            try {
+                FileUtils.deleteDirectory(wd);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     public void cacheCleanup(String uid, String gid) {
         if (userGraph.containsKey(uid)) {
             String oldId = userGraph.get(uid);
@@ -1218,7 +1228,14 @@ public class WebGraphService {
     }
 
     public File getDownload(String gid) {
-        File wd = getGraphWD(gid);
+        return getDownload(gid, getGraphWD(gid), false);
+    }
+
+    public File getDownload(String gid, boolean basic) {
+        return getDownload(gid, getGraphWD(gid), basic);
+    }
+
+    public File getDownload(String gid, File wd, boolean basic) {
         File graphml = new File(wd, gid + ".graphml");
 
         if (!graphml.exists()) {
@@ -1233,13 +1250,18 @@ public class WebGraphService {
                 g.getNodes().keySet().forEach(type -> {
                     if (!req.attributes.containsKey("nodes"))
                         req.attributes.put("nodes", new HashMap<>());
-                    req.attributes.get("nodes").put(Graphs.getNode(type), nodeController.getAttributes(type));
+                    req.attributes.get("nodes").put(Graphs.getNode(type), basic ? new String[]{"primaryDomainId", "id", "type"} : nodeController.getAttributes(type));
                 });
 
                 g.getEdges().keySet().forEach(type -> {
                     if (!req.attributes.containsKey("edges"))
                         req.attributes.put("edges", new HashMap<>());
-                    req.attributes.get("edges").put(g.getEdge(type), type < 0 ? getCustomEdgeAttributes(g, type) : edgeController.getAttributes(type));
+                    if (basic && type >= 0) {
+                        HashSet<String> basicAttributes = new HashSet<>(Arrays.asList("sourceDomainId", "targetDomainId", "type", "memberOne", "memberTwo"));
+                        req.attributes.get("edges").put(g.getEdge(type), Arrays.stream(edgeController.getAttributes(type)).filter(basicAttributes::contains).collect(Collectors.toList()).toArray(new String[]{}));
+                    }
+                    else
+                        req.attributes.get("edges").put(g.getEdge(type), type < 0 ? getCustomEdgeAttributes(g, type) : edgeController.getAttributes(type));
                 });
 
                 WebGraphList list = getList(gid, req);
@@ -1334,10 +1356,14 @@ public class WebGraphService {
         if (thumb.exists() || thumbnailGenerating.contains(gid))
             return;
         thumbnailGenerating.add(gid);
-        toolService.createThumbnail(getDownload(gid), thumb);
+        toolService.createThumbnail(getDownload(gid, true), thumb);
         socketController.setThumbnailReady(gid);
         thumbnailGenerating.remove(gid);
         removeTempDir(gid);
+    }
+
+    public HashMap<Integer, HashMap<Integer, Point2D>> getLayout(Graph g) {
+     return getLayout(g,historyController.getLayoutPath(g.getId()));
     }
 
     public HashMap<Integer, HashMap<Integer, Point2D>> getLayout(Graph g, File lay) {
@@ -1350,11 +1376,11 @@ public class WebGraphService {
                 layoutGenerating.add(g.getId());
                 if (!this.getThumbnail(g.getId()).exists()) {
                     thumbnailGenerating.add(g.getId());
-                    toolService.createLayoutAndThumbnail(getDownload(g.getId()), lay, getThumbnail(g.getId()));
+                    toolService.createLayoutAndThumbnail(getDownload(g.getId(), true), lay, getThumbnail(g.getId()));
                     thumbnailGenerating.remove(g.getId());
                     socketController.setThumbnailReady(g.getId());
                 } else {
-                    toolService.createLayout(getDownload(g.getId()), lay);
+                    toolService.createLayout(getDownload(g.getId(), true), lay);
                 }
                 layoutGenerating.remove(g.getId());
             }
@@ -1534,6 +1560,7 @@ public class WebGraphService {
         Graph g = new Graph(historyController.getGraphId());
         cache.put(g.getId(), g);
         int sourceTypeId = Graphs.getNode(request.sourceType);
+        int targetTypeId = Graphs.getNode(request.targetType);
 
         Collection<Integer> sids = request.sources;
         boolean elementFilter = (boolean) request.params.get("nodes").get("filterElementDrugs");
@@ -1560,7 +1587,6 @@ public class WebGraphService {
             boolean secondPath = p == request.path.size() - 1;
             boolean endDefined = request.targets.size() > 0;
             if (secondPath & endDefined) {
-                int targetTypeId = Graphs.getNode(request.targetType);
                 NodeFilter nft;
                 Collection<Integer> tids = request.targets;
                 if (request.targetType.equals("drug") & (elementFilter | approvedFilter)) {
@@ -1635,7 +1661,58 @@ public class WebGraphService {
         }
         g.calculateDegrees();
         addGraphToHistory(request.uid, g.getId());
+        if (request.path.size() > 1 && (boolean) request.params.get("general").get("keep")) {
+            List<Integer> targets;
+            if (request.targets != null && request.targets.size() > 0)
+                targets = new LinkedList<>(request.targets);
+            else {
+                targets = new LinkedList<>(g.getNodes().get(Graphs.getNode(request.targetType)).keySet());
+                targets.removeAll(sids);
+            }
+            List<Integer> sources = new LinkedList<>(sids);
+            sources.sort(Comparator.comparingInt(o -> g.getNodes().get(sourceTypeId).get(o).getDegree()).reversed());
+            targets.sort(Comparator.comparingInt(o -> g.getNodes().get(targetTypeId).get(o).getDegree()).reversed());
+            this.createTripartiteLayout(g, historyController.getTriLayoutPath(g.getId()), sourceTypeId, sources, targetTypeId, targets);
+        }
         return g.toInfo();
+    }
+
+    public void createTripartiteLayout(Graph g, File lay, int sourceTypeId, Collection<Integer> sources, int targetTypeId, Collection<Integer> targets) {
+        if (!lay.exists()) {
+            File wd = new File(getGraphWD(g.getId()).getAbsolutePath() + "_tri");
+            lay.getParentFile().mkdirs();
+            File sourceFile = new File(wd, "sources.tsv");
+            WriterUtils.writeTo(sourceFile, sources.stream().map(s -> nodeController.getDomainId(sourceTypeId, s) + "\t" + g.getNodes().get(sourceTypeId).get(s).getDegree() + "\n").collect(Collectors.joining()));
+            File targetFile = new File(wd, "targets.tsv");
+            WriterUtils.writeTo(targetFile, targets.stream().map(s -> nodeController.getDomainId(targetTypeId, s) + "\t" + g.getNodes().get(targetTypeId).get(s).getDegree() + "\n").collect(Collectors.joining()));
+            toolService.createTripartiteLayout(getDownload(g.getId(), wd, true), lay, sourceFile, targetFile);
+            removeTempDir(wd);
+        }
+    }
+
+    public HashMap<Integer, HashMap<Integer, Point2D>> getTripartiteLayout(Graph g) {
+        File lay = historyController.getTriLayoutPath(g.getId());
+        HashMap<Integer, HashMap<Integer, Point2D>> coords = new HashMap<>();
+        if (!lay.exists()) {
+            return coords;
+        }
+
+        try (BufferedReader br = ReaderUtils.getBasicReader(lay)) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                LinkedList<String> l = StringUtils.split(line, "\t");
+                if (l.getFirst().length() == 0)
+                    continue;
+                int typeId = Graphs.getNode(l.getFirst());
+                int nodeid = nodeController.getId(l.getFirst(), l.get(1));
+                if (!coords.containsKey(typeId))
+                    coords.put(typeId, new HashMap<>());
+                coords.get(typeId).put(nodeid, new Point2D.Double(Double.parseDouble(l.get(2)), Double.parseDouble(l.get(3))));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return coords;
     }
 
     private void removeUnconnectedNodes(Graph g, int node, HashSet<Integer> except) {
@@ -1834,5 +1911,14 @@ public class WebGraphService {
         if (thumbnailGenerating.contains(gid))
             return "running";
         return "not requested";
+    }
+
+    public Object loadLayout(String gid, String type) {
+        Graph g = getCachedGraph(gid);
+        if(type.equals("default"))
+            return getLayout(g);
+        if(type.equals("tripartite"))
+            return getTripartiteLayout(g);
+        return new HashMap<>();
     }
 }

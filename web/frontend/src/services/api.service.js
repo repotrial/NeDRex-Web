@@ -174,6 +174,11 @@ const ApiService = {
     return this.get("/getDisorderHierarchy?sid="+sid).then(response=>{
       return response.data
     })
+  },
+  getLayout(gid, type) {
+    return this.get("/getLayout?gid="+gid+"&type="+type).then(response=>{
+      return response.data
+    })
   }
 }
 

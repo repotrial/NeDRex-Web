@@ -304,8 +304,8 @@ public class Graph {
             customEdgeAttributeLabels.put(eid, new HashMap<>());
         }
         customEdgeAttributeTypes.get(eid).putAll(v);
-        if(labels!=null)
-        customEdgeAttributeLabels.get(eid).putAll(labels);
+        if (labels != null)
+            customEdgeAttributeLabels.get(eid).putAll(labels);
     }
 
     public HashMap<Integer, HashMap<String, String>> getCustomEdgeAttributeLabels() {

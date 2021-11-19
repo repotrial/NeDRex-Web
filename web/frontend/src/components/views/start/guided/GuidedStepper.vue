@@ -542,7 +542,11 @@
                   </template>
                   <template v-slot:tools v-if="$refs.graph!==undefined">
                     <Tools physics :cc="false" loops
-                           @toggleOptionEvent="toggleToolOption" @clickOptionEvent="clickToolOption"></Tools>
+                           @toggleOptionEvent="toggleToolOption" @clickOptionEvent="clickToolOption">
+                      <template v-slot:append v-if="options.general.keep">
+                        <ToolDropdown :items="[{value:'default', text:'Default'},{value:'tripartite',text:'Tripartite'}]" label="Layout" icon="fas fa-project-diagram" @change="$refs.graph.loadLayout"></ToolDropdown>
+                      </template>
+                    </Tools>
                   </template>
 
                 </Network>
@@ -635,6 +639,7 @@ import LabeledSwitch from "@/components/app/input/LabeledSwitch";
 import ButtonAdvanced from "@/components/start/quick/ButtonAdvanced";
 import Tools from "@/components/views/graph/Tools";
 import ConnectorDialog from "@/components/views/start/guided/ConnectorDialog";
+import ToolDropdown from "@/components/views/graph/tools/ToolDropdown";
 
 
 export default {
@@ -1240,6 +1245,7 @@ export default {
   }
   ,
   components: {
+    ToolDropdown,
     ConnectorDialog,
     ButtonAdvanced,
     LabeledSwitch,

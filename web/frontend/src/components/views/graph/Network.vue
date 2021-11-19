@@ -268,6 +268,20 @@ export default {
       this.loading = bool;
     },
 
+    loadLayout: function(type){
+      this.$http.getLayout(this.gid, type).then(data=>{
+        let groupMap = {}
+        this.$global.metagraph.nodes.forEach(n=>groupMap[n.group]=parseInt(n.id))
+        let updates = this.nodeSet.get().map(n=>{
+          let pos = data[groupMap[n.group]][parseInt(n.id.substring(4))]
+          n.x = pos.x
+          n.y = pos.y
+          return n
+        })
+        this.updateNodes(updates)
+      })
+    },
+
     loadNetworkById: function (gid, disableAdvancedLoading) {
       this.disableAdvancedLoading = !!disableAdvancedLoading
       if (gid === this.gid)
