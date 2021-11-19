@@ -271,11 +271,11 @@
                 <div style="margin-bottom: 20px">
                   <v-divider vertical></v-divider>
                 </div>
-                <v-col v-show="pathModel!=null && pathModel>-1">
+                <v-col v-if="pathModel!=null && pathModel>-1">
                   <v-list-item-subtitle class="title">Additional Options</v-list-item-subtitle>
                   <v-card-subtitle>General</v-card-subtitle>
                   <v-list>
-                    <v-list-item v-show="!direct">
+                    <v-list-item v-if="!direct">
                       <v-list-item-content>
                         <v-tooltip top>
                           <template v-slot:activator="{on,attrs}">
@@ -726,9 +726,9 @@ export default {
     pathModel: function (val) {
       if (this.pathModel == null)
         return
-      this.options.general.keep = false
+      this.$set(this.options.general,"keep",false)
       if (val < this.paths[0].length) {
-        this.options.general.keep = true
+        this.$set(this.options.general,"keep",true)
         this.selectedPath = this.paths[0][val]
         this.direct = true
         this.connectorTypeId = undefined
@@ -741,7 +741,7 @@ export default {
         if (this.example.compress) {
           this.options.general.name = this.example.edge
         } else {
-          this.options.general.keep = true
+          this.$set(this.options.general,"keep",true)
         }
       this.$refs.connectors.clear()
     }
@@ -929,9 +929,9 @@ export default {
         this.info = data;
         this.gid = data.id
         this.prepareLegend()
+        this.showVisOption = !this.graphConfig.visualized
         this.$refs.graph.loadNetworkById(this.gid).then(() => {
           this.$refs.graph.showLoops(false)
-          this.showVisOption = !this.graphConfig.visualized
         })
         this.loadTables(this.gid)
       }).catch(console.error)

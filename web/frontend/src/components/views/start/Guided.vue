@@ -101,7 +101,6 @@ export default {
       this.$emit('graphLoadNewTabEvent', data)
     },
     imagePopup: function () {
-      console.log("show big image")
       this.bigImage = true;
     }
   }
