@@ -26,7 +26,7 @@ if mode == "2":
     makeImage = True
 
 g = load_graph(file)
-pos = sfdp_layout(g)
+pos = sfdp_layout(g, C=0.15, p=1.5, r=2, K=6)
 
 colorMap = {'default': Colors.to_rgba('#ffffff')}
 
@@ -50,16 +50,21 @@ for x in g.vertices():
         except:
             plot_color[x] = colorMap["default"]
 
-scale = abs(math.log10(nodeCount / 100))
+edgeCount = 0
+for e in g.edges():
+    edgeCount+=1
+
+scale = edgeCount/nodeCount
 imageHeight = int(math.sqrt(nodeCount) * 10 + min(500, int(500 / scale)))
 
 if makeLayout:
+    layoutScale = 50
     with open(out, 'w') as fh:
         for x in g.vertices():
             fh.write(
                 g.properties[('v', "type")][x] + "\t" + str(g.properties[('v', "primaryDomainId")][x]) + "\t" + str(
-                    pos[x][0] * 200 * scale) + "\t" + str(pos[x][1] * 200 * scale) + "\n")
+                    pos[x][0] * layoutScale) + "\t" + str(pos[x][1] * layoutScale) + "\n")
 
 if makeImage:
     graph_draw(g, pos=pos, output=thumb, vertex_fill_color=g.vertex_properties['plot_color'],
-               output_size=(imageHeight, imageHeight), vertex_size=int(10 - scale), fit_view=scale,  fit_view_ink=True)
+               output_size=(imageHeight, imageHeight), vertex_size=int(scale),  fit_view_ink=True)

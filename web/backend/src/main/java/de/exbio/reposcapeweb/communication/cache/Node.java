@@ -1,5 +1,6 @@
 package de.exbio.reposcapeweb.communication.cache;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.exbio.reposcapeweb.communication.reponses.WebNode;
 
 public class Node {
@@ -55,13 +56,14 @@ public class Node {
         this.name = name;
     }
 
+    @JsonIgnore
     public int getDegree() {
         return degree;
     }
-
-    public void setDegree(int degree) {
-        this.degree = degree;
-    }
+//
+//    public void setDegree(int degree) {
+//        this.degree = degree;
+//    }
 
     public void addDegree() {
         this.degree++;
