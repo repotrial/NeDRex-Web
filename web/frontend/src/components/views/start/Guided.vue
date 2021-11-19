@@ -2,24 +2,28 @@
   <v-container :style="{maxWidth: modus===0? '50vw':'95vw'}">
     <template v-if="modus===0">
       <v-card>
-        <v-card-title style="display: flex; justify-content: center; font-size: x-large; margin-bottom: 15px;" >Guided Network Exploration
+        <v-card-title style="display: flex; justify-content: center; font-size: x-large; margin-bottom: 15px;">Guided
+          Network Exploration
         </v-card-title>
         <v-card-text style="display: flex;">
           <div style="text-align: justify; margin: 15px">
             This <b>Guided Exploration</b> provides an easy way to explore some initial input set of any supported type.
-            <b>Direct</b> or <b>indirect (transitive) associations</b> to any data type we have can be constructed with or without
-            limiting the target entries. Out of a proposed list of <b>available direct and indirect paths</b> connecting the source and
+            <b>Direct</b> or <b>indirect (transitive) associations</b> to any data type we have can be constructed with
+            or without
+            limiting the target entries. Out of a proposed list of <b>available direct and indirect paths</b> connecting
+            the source and
             target entries the current path of interest can be selected. This path can be kept unchanged or already <b>condensed</b>
             into a <b>new connection-type</b> containing this inferred/transitive association.<br>
-            The resulting network is then <b>visualized</b> with all source and target nodes and the selected connections which
+            The resulting network is then <b>visualized</b> with all source and target nodes and the selected
+            connections which
             also can be <b>exported</b> in the form of <b>edge-lists</b> on request.
           </div>
           <div>
-          <v-img style="justify-self: flex-end; margin-left: auto; cursor: pointer ; margin-right: 5px;"
-                 :gradient="imgHover?'to top right, rgba(69,69,69,.3),rgba(69,69,69,.3)':''"
-                 :src="$config.STATIC_PATH+'/assets/guided_visual_description.png'" max-width="20vw" width="20vw"
-                 @mouseenter="imgHover=true" @mouseleave="imgHover=false"
-                 @click="imagePopup"></v-img>
+            <v-img style="justify-self: flex-end; margin-left: auto; cursor: pointer ; margin-right: 5px;"
+                   :gradient="imgHover?'to top right, rgba(69,69,69,.3),rgba(69,69,69,.3)':''"
+                   :src="$config.STATIC_PATH+'/assets/guided_visual_description.png'" max-width="20vw" width="20vw"
+                   @mouseenter="imgHover=true" @mouseleave="imgHover=false"
+                   @click="imagePopup"></v-img>
             <v-card-subtitle style="padding:1px"><i>click to view</i></v-card-subtitle>
           </div>
 
@@ -29,7 +33,7 @@
         </v-btn>
       </v-card>
     </template>
-    <GuidedStepper v-if="modus===1"
+    <GuidedStepper ref="guidedSteps" v-if="modus===1"
                    @resetEvent="reset()"
                    @printNotificationEvent="printNotification"
                    @graphLoadEvent="graphLoadEvent"
@@ -83,7 +87,8 @@ export default {
   methods: {
     reset: function () {
       this.modus = 0;
-      this.printNotification("Reset of the Guided Exploration pipeline successful!", 1)
+      if (this.$refs.guidedSteps)
+        this.$refs.guidedSteps.init()
     },
     printNotification: function (message, type) {
       this.$emit('printNotificationEvent', message, type)

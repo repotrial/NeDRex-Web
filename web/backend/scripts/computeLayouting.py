@@ -67,4 +67,4 @@ if makeLayout:
 
 if makeImage:
     graph_draw(g, pos=pos, output=thumb, vertex_fill_color=g.vertex_properties['plot_color'],
-               output_size=(imageHeight, imageHeight), vertex_size=int(scale),  fit_view_ink=True)
+               output_size=(imageHeight, imageHeight), vertex_size=int(10 / math.log10(nodeCount)),  fit_view_ink=True)

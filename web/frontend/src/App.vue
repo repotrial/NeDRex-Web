@@ -1,22 +1,23 @@
 <template style="overflow-y: hidden">
   <v-app :style="{marginTop:selectedTabId===0 ? '60px': '0px'}" id="app">
-    <headerBar @showVersionEvent="showVersionInfo=true" @showBugEvent="showBugInfo=true" @showHelpEvent="showHelp=true" @showCompatability="showCompatability=true"
+    <headerBar @showVersionEvent="showVersionInfo=true" @showBugEvent="showBugInfo=true" @showHelpEvent="showHelp=true"
+               @showCompatability="showCompatability=true"
                @redirectEvent="redirect"
                :prominent="selectedTabId===0" style="z-index: 1000;"/>
     <v-card style="position: sticky ; top: 0; margin-top: -10px; z-index: 999 ">
       <v-toolbar flat :color="colors.main.bg1">
         <template v-slot:extension>
           <v-tabs
-            fixed-tabs
-            v-model="selectedTabId"
-            :color="colors.main.primary"
+              fixed-tabs
+              v-model="selectedTabId"
+              :color="colors.main.primary"
           >
             <v-tabs-slider></v-tabs-slider>
             <v-tab v-for="tab in tabslist" class="primary--text" v-on:click="selectTab(tab.id)" :key=tab.id>
               <v-badge
-                dot
-                :color="colors.main.primary"
-                :value="tab.note"
+                  dot
+                  :color="colors.main.primary"
+                  :value="tab.note"
               >
                 <i :style="{color:tab.color}">
                   <v-icon dense :color="tab.color">{{ tab.icon }}</v-icon>
@@ -36,7 +37,7 @@
           <v-main app style="padding-top: 0">
             <v-container fluid style="margin-right:0; padding-right: 0">
 
-              <Start v-show="selectedTabId===0" ref="start"
+              <Start v-if="selectedTabId===0" ref="start"
                      v-on:graphLoadEvent="loadGraph"
                      @graphLoadNewTabEvent="loadGraphNewTab"
                      v-on:printNotificationEvent="printNotification"
@@ -46,25 +47,25 @@
                      @newGraphEvent="reloadHistory()"
                      :colors="colors" :options="options.start" :filters="startFilters" :jid="jid"></Start>
               <Network
-                v-show="selectedTabId===1"
-                ref="graph"
-                :configuration="options.graph"
-                :window-style="graphWindowStyle"
-                :legend="showLegend"
-                :tools="showLegend"
-                :styles="showLegend"
-                style="position: sticky; "
-                @finishedEvent="setTabNotification(1)"
-                @multiSelectionEvent="setMultiSelection"
-                @printNotificationEvent="printNotification"
-                @selectionEvent="loadSelection"
-                @sizeWarnEvent="sizeWarning"
-                @setGlobalGidEvent="setGlobalGid"
-                @visualizationEvent="visualizationEvent"
-                @disableLoadingEvent="disableLoadingEvent(1)"
-                @disablePhysicsEvent="disablePhysics"
-                @toggleNodeSelectEvent="toggleNodeSelection"
-                @toggleedgeSelectEvent="toggleEdgeSelection"
+                  v-show="selectedTabId===1"
+                  ref="graph"
+                  :configuration="options.graph"
+                  :window-style="graphWindowStyle"
+                  :legend="showLegend"
+                  :tools="showLegend"
+                  :styles="showLegend"
+                  style="position: sticky; "
+                  @finishedEvent="setTabNotification(1)"
+                  @multiSelectionEvent="setMultiSelection"
+                  @printNotificationEvent="printNotification"
+                  @selectionEvent="loadSelection"
+                  @sizeWarnEvent="sizeWarning"
+                  @setGlobalGidEvent="setGlobalGid"
+                  @visualizationEvent="visualizationEvent"
+                  @disableLoadingEvent="disableLoadingEvent(1)"
+                  @disablePhysicsEvent="disablePhysics"
+                  @toggleNodeSelectEvent="toggleNodeSelection"
+                  @toggleedgeSelectEvent="toggleEdgeSelection"
               >
                 <template v-slot:legend>
                   <Legend v-if="showLegend" :countMap="options.list.countMap" ref="legend"
@@ -119,11 +120,11 @@
               {{ notifications.style2.message }}
             </v-snackbar>
             <v-dialog
-              v-model="listDialog"
-              v-if="listWarnObject !== undefined"
-              persistent
-              max-width="500"
-              style="z-index: 1001"
+                v-model="listDialog"
+                v-if="listWarnObject !== undefined"
+                persistent
+                max-width="500"
+                style="z-index: 1001"
             >
               <v-card>
                 <v-card-title class="headline">
@@ -135,8 +136,8 @@
                 <v-card-subtitle style="font-size: 15pt; margin-top: 10px;">Nodes:</v-card-subtitle>
                 <v-list class="transparent">
                   <v-list-item
-                    v-for="item in Object.keys(listWarnObject.nodes)"
-                    :key="item"
+                      v-for="item in Object.keys(listWarnObject.nodes)"
+                      :key="item"
                   >
                     <v-list-item-title>{{ item.toLocaleUpperCase() }}
                     </v-list-item-title>
@@ -150,8 +151,8 @@
                 <v-card-subtitle style="font-size: 15pt; margin-top: 10px;">Edges:</v-card-subtitle>
                 <v-list class="transparent">
                   <v-list-item
-                    v-for="item in Object.keys(listWarnObject.edges)"
-                    :key="item"
+                      v-for="item in Object.keys(listWarnObject.edges)"
+                      :key="item"
                   >
                     <v-list-item-title>{{ item }}
                     </v-list-item-title>
@@ -172,9 +173,9 @@
                     Download
                   </v-btn>
                   <v-btn
-                    color="green darken-1"
-                    text
-                    @click="resolveWarning(listWarnObject.id, false)"
+                      color="green darken-1"
+                      text
+                      @click="resolveWarning(listWarnObject.id, false)"
                   >
                     Dismiss
                   </v-btn>
@@ -219,9 +220,9 @@
         </v-col>
       </v-row>
       <v-dialog
-        v-model="cookiesPopup"
-        persistent
-        max-width="500"
+          v-model="cookiesPopup"
+          persistent
+          max-width="500"
       >
         <v-card>
           <v-card-title>This page uses cookies</v-card-title>
@@ -233,9 +234,9 @@
 
           <v-card-actions>
             <v-btn
-              color="green darken-1"
-              text
-              @click="closeCookiePopup"
+                color="green darken-1"
+                text
+                @click="closeCookiePopup"
             >
               Accept
             </v-btn>
@@ -253,7 +254,8 @@
     <v-bottom-sheet inset v-model="showVersionInfo" width="60vw" :overlay-color="colors.main.bg1" style="z-index: 1001">
       <VersionSheet :color="colors.main.bg1"></VersionSheet>
     </v-bottom-sheet>
-    <v-bottom-sheet inset v-model="showCompatability" width="60vw" :overlay-color="colors.main.bg1" style="z-index:1001">
+    <v-bottom-sheet inset v-model="showCompatability" width="60vw" :overlay-color="colors.main.bg1"
+                    style="z-index:1001">
       <CompatabilitySheet :color="colors.main.bg1"></CompatabilitySheet>
     </v-bottom-sheet>
     <Footer :color="colors.main.bg1" style="z-index: 1000;"></Footer>
@@ -307,7 +309,7 @@ export default {
       showVersionInfo: false,
       showBugInfo: false,
       showHelp: false,
-      showCompatability : false,
+      showCompatability: false,
       sideHidden: true,
       graphWindowStyle: {
         height: '75vh',
@@ -485,7 +487,7 @@ export default {
     },
 
     setSideVisible: function (bool) {
-      this.sideHidden = !bool
+        this.$set(this, 'sideHidden', !bool)
     }
     ,
     visualizationEvent: function () {
@@ -715,12 +717,12 @@ export default {
     resizeMove: function (e) {
       let size = this.sideCardWidth - (e.clientX - this.resizeStart.clientX);
       if (size < 700 && size < 0.4 * this.mainWidth) {
-          if (size > 300) {
-            this.sideCardWidth = size
-            this.resizeStart = e;
-          } else {
-            this.sideCardWidth = 300
-          }
+        if (size > 300) {
+          this.sideCardWidth = size
+          this.resizeStart = e;
+        } else {
+          this.sideCardWidth = 300
+        }
       } else {
         this.sideCardWidth = Math.min(700, 0.4 * this.mainWidth);
       }
@@ -813,7 +815,8 @@ export default {
       if (this.selectedTabId === tabid)
         return
       if (this.selectedTabId === 0 && !skipReroute)
-        this.$refs.start.reset()
+        this.$nextTick(()=>{
+            this.$refs.start.reset()})
       let colInactive = this.colors.tabs.inactive;
       let colActive = this.colors.tabs.active;
       for (let idx in this.tabslist) {
@@ -844,8 +847,9 @@ export default {
       if (this.selectedTabId === 0) {
         this.$refs.side.loadFilter(param)
       }
-      if (this.selectedTabId === 3)
+      if (this.selectedTabId === 3) {
         this.setSideVisible(true)
+      }
       if (this.selectedTabId === 2 && this.gid == null)
         this.setSideVisible(false)
       if (this.selectedTabId === 1)
