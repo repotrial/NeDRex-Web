@@ -35,6 +35,10 @@
                     $global.metadata.lastUpdate !== undefined ? formatTimestamp($global.metadata.lastUpdate)[1] + " ago" : "?"
                   }}</span>
               </v-list-item>
+              <v-list-item>
+                <v-list-item-icon> <v-icon>far fa-question-circle</v-icon></v-list-item-icon>
+                <v-list-item-title><v-chip color="warning" outlined @click="$emit('showTOSEvent')">Terms of Service</v-chip></v-list-item-title>
+              </v-list-item>
             </v-list>
           </v-col>
           <v-divider vertical></v-divider>

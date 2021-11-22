@@ -8,16 +8,16 @@
       <v-toolbar flat :color="colors.main.bg1">
         <template v-slot:extension>
           <v-tabs
-              fixed-tabs
-              v-model="selectedTabId"
-              :color="colors.main.primary"
+            fixed-tabs
+            v-model="selectedTabId"
+            :color="colors.main.primary"
           >
             <v-tabs-slider></v-tabs-slider>
             <v-tab v-for="tab in tabslist" class="primary--text" v-on:click="selectTab(tab.id)" :key=tab.id>
               <v-badge
-                  dot
-                  :color="colors.main.primary"
-                  :value="tab.note"
+                dot
+                :color="colors.main.primary"
+                :value="tab.note"
               >
                 <i :style="{color:tab.color}">
                   <v-icon dense :color="tab.color">{{ tab.icon }}</v-icon>
@@ -47,25 +47,25 @@
                      @newGraphEvent="reloadHistory()"
                      :colors="colors" :options="options.start" :filters="startFilters" :jid="jid"></Start>
               <Network
-                  v-show="selectedTabId===1"
-                  ref="graph"
-                  :configuration="options.graph"
-                  :window-style="graphWindowStyle"
-                  :legend="showLegend"
-                  :tools="showLegend"
-                  :styles="showLegend"
-                  style="position: sticky; "
-                  @finishedEvent="setTabNotification(1)"
-                  @multiSelectionEvent="setMultiSelection"
-                  @printNotificationEvent="printNotification"
-                  @selectionEvent="loadSelection"
-                  @sizeWarnEvent="sizeWarning"
-                  @setGlobalGidEvent="setGlobalGid"
-                  @visualizationEvent="visualizationEvent"
-                  @disableLoadingEvent="disableLoadingEvent(1)"
-                  @disablePhysicsEvent="disablePhysics"
-                  @toggleNodeSelectEvent="toggleNodeSelection"
-                  @toggleedgeSelectEvent="toggleEdgeSelection"
+                v-show="selectedTabId===1"
+                ref="graph"
+                :configuration="options.graph"
+                :window-style="graphWindowStyle"
+                :legend="showLegend"
+                :tools="showLegend"
+                :styles="showLegend"
+                style="position: sticky; "
+                @finishedEvent="setTabNotification(1)"
+                @multiSelectionEvent="setMultiSelection"
+                @printNotificationEvent="printNotification"
+                @selectionEvent="loadSelection"
+                @sizeWarnEvent="sizeWarning"
+                @setGlobalGidEvent="setGlobalGid"
+                @visualizationEvent="visualizationEvent"
+                @disableLoadingEvent="disableLoadingEvent(1)"
+                @disablePhysicsEvent="disablePhysics"
+                @toggleNodeSelectEvent="toggleNodeSelection"
+                @toggleedgeSelectEvent="toggleEdgeSelection"
               >
                 <template v-slot:legend>
                   <Legend v-if="showLegend" :countMap="options.list.countMap" ref="legend"
@@ -120,11 +120,11 @@
               {{ notifications.style2.message }}
             </v-snackbar>
             <v-dialog
-                v-model="listDialog"
-                v-if="listWarnObject !== undefined"
-                persistent
-                max-width="500"
-                style="z-index: 1001"
+              v-model="listDialog"
+              v-if="listWarnObject !== undefined"
+              persistent
+              max-width="500"
+              style="z-index: 1001"
             >
               <v-card>
                 <v-card-title class="headline">
@@ -136,8 +136,8 @@
                 <v-card-subtitle style="font-size: 15pt; margin-top: 10px;">Nodes:</v-card-subtitle>
                 <v-list class="transparent">
                   <v-list-item
-                      v-for="item in Object.keys(listWarnObject.nodes)"
-                      :key="item"
+                    v-for="item in Object.keys(listWarnObject.nodes)"
+                    :key="item"
                   >
                     <v-list-item-title>{{ item.toLocaleUpperCase() }}
                     </v-list-item-title>
@@ -151,8 +151,8 @@
                 <v-card-subtitle style="font-size: 15pt; margin-top: 10px;">Edges:</v-card-subtitle>
                 <v-list class="transparent">
                   <v-list-item
-                      v-for="item in Object.keys(listWarnObject.edges)"
-                      :key="item"
+                    v-for="item in Object.keys(listWarnObject.edges)"
+                    :key="item"
                   >
                     <v-list-item-title>{{ item }}
                     </v-list-item-title>
@@ -173,9 +173,9 @@
                     Download
                   </v-btn>
                   <v-btn
-                      color="green darken-1"
-                      text
-                      @click="resolveWarning(listWarnObject.id, false)"
+                    color="green darken-1"
+                    text
+                    @click="resolveWarning(listWarnObject.id, false)"
                   >
                     Dismiss
                   </v-btn>
@@ -219,32 +219,8 @@
           ></SideCard>
         </v-col>
       </v-row>
-      <v-dialog
-          v-model="cookiesPopup"
-          persistent
-          max-width="500"
-      >
-        <v-card>
-          <v-card-title>This page uses cookies</v-card-title>
-          <v-card-text>This network browser uses cookies to store an identification for your user. This is used to show
-            you
-            your previous explorations.
-          </v-card-text>
-          <v-divider></v-divider>
-
-          <v-card-actions>
-            <v-btn
-                color="green darken-1"
-                text
-                @click="closeCookiePopup"
-            >
-              Accept
-            </v-btn>
-          </v-card-actions>
-        </v-card>
-
-      </v-dialog>
     </v-container>
+    <LegalDialog ref="tos" v-model="cookiesPopup" @initUserEvent="initUser()"></LegalDialog>
     <v-bottom-sheet inset v-model="showBugInfo" width="30vw" :overlay-color="colors.main.bg1" style="z-index: 1001">
       <BugSheet :color="colors.main.bg1"></BugSheet>
     </v-bottom-sheet>
@@ -252,7 +228,7 @@
       <HelpSheet :color="colors.main.bg1"></HelpSheet>
     </v-bottom-sheet>
     <v-bottom-sheet inset v-model="showVersionInfo" width="60vw" :overlay-color="colors.main.bg1" style="z-index: 1001">
-      <VersionSheet :color="colors.main.bg1"></VersionSheet>
+      <VersionSheet :color="colors.main.bg1" @showTOSEvent="showTos(true)"></VersionSheet>
     </v-bottom-sheet>
     <v-bottom-sheet inset v-model="showCompatability" width="60vw" :overlay-color="colors.main.bg1"
                     style="z-index:1001">
@@ -279,6 +255,7 @@ import VisualizationOptions from "@/components/views/graph/VisualizationOptions"
 import * as CONFIG from "@/Config";
 import Tools from "@/components/views/graph/Tools";
 import CompatabilitySheet from "@/components/app/sheets/CompatabilitySheet";
+import LegalDialog from "@/components/app/dialogs/LegalDialog";
 
 export default {
   name: 'app',
@@ -375,8 +352,7 @@ export default {
     disablePhysics: function (bool) {
       this.physicsDisabled = bool
     },
-    closeCookiePopup: function () {
-      this.cookiesPopup = false
+    initUser: function () {
       this.$http.get("/initUser").then(response => {
         if (response.data !== undefined) {
           return response.data;
@@ -386,9 +362,16 @@ export default {
         this.$router.go()
       }).catch(console.error)
     },
+    showTos: function () {
+      if (this.$refs.tos)
+        this.$refs.tos.show()
+      else
+        setTimeout(()=>{this.showTos()},500)
+    },
+
     loadUser: function () {
       if (this.$cookies.get("uid") === null) {
-        this.cookiesPopup = true
+        this.showTos()
       } else {
         this.$http.get("/getUser?user=" + this.$cookies.get("uid")).then(response => {
           if (response.data !== undefined)
@@ -487,7 +470,7 @@ export default {
     },
 
     setSideVisible: function (bool) {
-        this.$set(this, 'sideHidden', !bool)
+      this.$set(this, 'sideHidden', !bool)
     }
     ,
     visualizationEvent: function () {
@@ -815,8 +798,9 @@ export default {
       if (this.selectedTabId === tabid)
         return
       if (this.selectedTabId === 0 && !skipReroute)
-        this.$nextTick(()=>{
-            this.$refs.start.reset()})
+        this.$nextTick(() => {
+          this.$refs.start.reset()
+        })
       let colInactive = this.colors.tabs.inactive;
       let colActive = this.colors.tabs.active;
       for (let idx in this.tabslist) {
@@ -899,6 +883,7 @@ export default {
   }
   ,
   components: {
+    LegalDialog,
     headerBar,
     Network,
     SideCard,

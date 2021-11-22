@@ -309,6 +309,8 @@ public class UpdateService {
                 this.lastCheck = LocalDateTime.now().toEpochSecond(ZoneOffset.ofTotalSeconds(0));
                 updateMetadata(this.lastCheck);
             }
+            log.info("Update Licence text");
+            updateLicenceText();
             overrideOldData(cacheDir);
         } else {
             log.warn("Database update is skipped due to errors!");
@@ -792,7 +794,6 @@ public class UpdateService {
     public void buildMetadata() {
         try {
             String meta = ReaderUtils.getUrlContent(new URL(env.getProperty("url.api.db") + "static/metadata"));
-            System.out.println(meta);
             this.metadata = new Metadata(objectMapper.readValue(meta, HashMap.class));
             metadata.setLastCheck(this.lastCheck);
             metadata.setLastUpdate(this.lastUpdate);
@@ -810,6 +811,31 @@ public class UpdateService {
         this.metadata.setLastCheck(checked);
         this.metadata.setLastUpdate(updated);
         saveMetadata();
+    }
+
+    public File getLicenceFile(){
+        return new File(env.getProperty("path.db.cache"), "NeDRex_licence.txt");
+    }
+
+    public String getLicenceText(){
+        File licenceFile = getLicenceFile();
+        if(!licenceFile.exists())
+            updateLicenceText();
+        String licenceText = ReaderUtils.getFileContent(getLicenceFile());
+        if(licenceText.length()==0){
+            this.updateLicenceText();
+            return getLicenceText();
+        }
+        return licenceText;
+    }
+
+    public void updateLicenceText(){
+        try {
+            String licenceText = ReaderUtils.getUrlContent(new URL(env.getProperty("url.api.db")+"static/licence"));
+            WriterUtils.writeTo(getLicenceFile(),licenceText);
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
     }
 
     public void saveMetadata() {

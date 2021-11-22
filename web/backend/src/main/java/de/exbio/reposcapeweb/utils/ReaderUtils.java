@@ -50,4 +50,17 @@ public class ReaderUtils {
     }
 
 
+    public static String getFileContent(File licenceFile) {
+        StringBuilder content = new StringBuilder();
+        try {
+            BufferedReader br = getBasicReader(licenceFile);
+            String line = "";
+            while ((line = br.readLine()) != null) {
+                content.append(line).append("\n");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return content.toString();
+    }
 }
