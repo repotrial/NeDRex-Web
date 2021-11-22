@@ -1,9 +1,9 @@
 {
   "name": "nedrex",
-  "description": "A Vue Frontend for Exploration of the RepoTrial-Database",
+  "description": "A Vue Frontend for Exploration of the NeDRex-Database",
   "version": "1.0.0",
   "author": "Andreas Maier",
-  "license": "MIT",
+  "license": "GPL-3.0",
   "private": true,
   "homepage": "",
   "scripts": {
