@@ -133,6 +133,7 @@ export default {
         this.loadRequest(vals).then(data => {
           data.origin = "Example " + (nr + 1) + ": (" + example.targetQuery + ")"
           this.$emit("addNodesEvent", data, 1)
+          vals.origin = data.origin
           this.emitData(vals)
         })
 
@@ -171,7 +172,7 @@ export default {
             return response.data
         }).then(data => {
           this.$emit("drugsEvent", {
-            origin: "SUG:" + val.text + "[" + val.suggestionType + "]",
+            origin: val.origin,
             data: data,
             source: val.suggestionType
           })
