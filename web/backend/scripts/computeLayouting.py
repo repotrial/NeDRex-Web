@@ -55,10 +55,10 @@ for e in g.edges():
     edgeCount+=1
 
 scale = edgeCount/nodeCount
-imageHeight = int(math.sqrt(nodeCount) * 10 + min(500, int(500 / scale)))
+imageHeight = max(500,int(math.sqrt(nodeCount) * 10 + max(500, int(500 / scale))))
 
 if makeLayout:
-    layoutScale = 50
+    layoutScale = min(200,max(25,10*math.log2(edgeCount)))
     with open(out, 'w') as fh:
         for x in g.vertices():
             fh.write(
@@ -67,4 +67,4 @@ if makeLayout:
 
 if makeImage:
     graph_draw(g, pos=pos, output=thumb, vertex_fill_color=g.vertex_properties['plot_color'],
-               output_size=(imageHeight, imageHeight), vertex_size=int(10 / math.log10(nodeCount)),  fit_view_ink=True)
+               output_size=(imageHeight, imageHeight), vertex_size=int(10 / math.log10(nodeCount)),fit_view_ink=True)

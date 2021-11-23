@@ -372,6 +372,18 @@
                   <v-divider></v-divider>
                   <v-card-subtitle>Edge specific</v-card-subtitle>
                   <v-list>
+                    <v-list-item v-if="isPathEdge('GeneGeneInteraction') || isPathEdge('ProteinProteinInteraction')">
+                      <v-list-item-title style="padding-top: 5px; padding-bottom: 3px">
+                        <LabeledSwitch label-on="Use experimentally validated"
+                                       label-off="Use all interactions"
+                                       v-model="options.edges.experimentalInteraction">
+                          <template v-slot:tooltip>
+                            <div>Defines if only experimentally validated interaction edges are used.
+                            </div>
+                          </template>
+                        </LabeledSwitch>
+                      </v-list-item-title>
+                    </v-list-item>
                     <v-list-item v-if="isPathEdge('DisorderHierarchy')">
                       <v-list-item-title style="padding-top: 5px; padding-bottom: 3px">
                         <LabeledSwitch label-on="Find parent disorder"
@@ -487,10 +499,12 @@
                   </template>
                   <template v-slot:item.data-table-expand="{expand, item,isExpanded}">
                     <v-icon v-show="!isExpanded" @click="expand(true)"
-                            :color="getColoring('nodes',options.general.keep && resultTableModel ===2 ? getConnectorType() :nodeList[sourceTypeId].value)">fas fa-angle-down
+                            :color="getColoring('nodes',options.general.keep && resultTableModel ===2 ? getConnectorType() :nodeList[sourceTypeId].value)">
+                      fas fa-angle-down
                     </v-icon>
                     <v-icon v-show="isExpanded" @click="expand(false)"
-                            :color="getColoring('nodes',options.general.keep && resultTableModel ===2 ? getConnectorType() :nodeList[sourceTypeId].value)">fas fa-angle-up
+                            :color="getColoring('nodes',options.general.keep && resultTableModel ===2 ? getConnectorType() :nodeList[sourceTypeId].value)">
+                      fas fa-angle-up
                     </v-icon>
                   </template>
                   <template v-slot:expanded-item="{ headers, item }">
@@ -502,7 +516,9 @@
                   <template v-slot:footer>
                     <div style="display: flex; justify-content: center; margin-left: auto">
                       <div style="padding-top: 16px; padding-bottom: 8px">
-                        <ResultDownload v-show="getNodesForSourceTable() !=null && getNodesForSourceTable().length>0" seeds :label="options.general.keep && resultTableModel===2 ? 'Connectors' :'Sources'"
+                        <ResultDownload v-show="getNodesForSourceTable() !=null && getNodesForSourceTable().length>0"
+                                        seeds
+                                        :label="options.general.keep && resultTableModel===2 ? 'Connectors' :'Sources'"
                                         @downloadEvent="downloadSourceList"></ResultDownload>
                       </div>
                     </div>
@@ -511,8 +527,9 @@
               </v-col>
               <v-col>
                 <div style="width: 100%; display: flex; padding-left: 50px; padding-right: 50px; margin-bottom: 16px"
-                     v-if="options.general.keep">
-                  <v-chip :color="resultTableModel===0? 'green':'primary'" style="justify-self: left; margin-right: auto; color: white"
+                     v-if="options.general.keep && selectedPath!=null && selectedPath.length>1">
+                  <v-chip :color="resultTableModel===0? 'green':'primary'"
+                          style="justify-self: left; margin-right: auto; color: white"
                           @click="resultTableModel=0">{{ nodeList[sourceTypeId].text }}
                     <v-icon size="18" style="margin-left: 5px; margin-right: 5px">fas fa-angle-right</v-icon>
                     {{ getNodeLabel(selectedPath[0].label, [selectedPath[0].direction ? 1 : 0]) }}
@@ -523,7 +540,8 @@
                     <v-icon size="18" style="margin-left: 5px; margin-right: 5px">fas fa-angle-double-right</v-icon>
                     {{ nodeList[targetTypeId].text }}
                   </v-chip>
-                  <v-chip :color="resultTableModel===2? 'green':'primary'" style="justify-self: right; margin-left: auto;color: white"
+                  <v-chip :color="resultTableModel===2? 'green':'primary'"
+                          style="justify-self: right; margin-left: auto;color: white"
                           @click="resultTableModel=2">
                     {{ getNodeLabel(selectedPath[0].label, [selectedPath[0].direction ? 1 : 0]) }}
                     <v-icon size="18" style="margin-left: 5px; margin-right: 5px">fas fa-angle-right</v-icon>
@@ -544,7 +562,9 @@
                     <Tools physics :cc="false" loops
                            @toggleOptionEvent="toggleToolOption" @clickOptionEvent="clickToolOption">
                       <template v-slot:append v-if="options.general.keep">
-                        <ToolDropdown :items="[{value:'default', text:'Default'},{value:'tripartite',text:'Tripartite'}]" label="Layout" icon="fas fa-project-diagram" @change="$refs.graph.loadLayout"></ToolDropdown>
+                        <ToolDropdown
+                          :items="[{value:'default', text:'Default'},{value:'tripartite',text:'Tripartite'}]"
+                          label="Layout" icon="fas fa-project-diagram" @change="$refs.graph.loadLayout"></ToolDropdown>
                       </template>
                     </Tools>
                   </template>
@@ -586,10 +606,12 @@
                     </template>
                     <template v-slot:item.data-table-expand="{expand, item,isExpanded}">
                       <v-icon v-show="!isExpanded" @click="expand(true)"
-                              :color="getColoring('nodes',options.general.keep && resultTableModel ===0 ? getConnectorType() :nodeList[targetTypeId].value)">fas fa-angle-down
+                              :color="getColoring('nodes',options.general.keep && resultTableModel ===0 ? getConnectorType() :nodeList[targetTypeId].value)">
+                        fas fa-angle-down
                       </v-icon>
                       <v-icon v-show="isExpanded" @click="expand(false)"
-                              :color="getColoring('nodes',options.general.keep && resultTableModel ===0 ? getConnectorType() :nodeList[targetTypeId].value)">fas fa-angle-up
+                              :color="getColoring('nodes',options.general.keep && resultTableModel ===0 ? getConnectorType() :nodeList[targetTypeId].value)">
+                        fas fa-angle-up
                       </v-icon>
                     </template>
                     <template v-slot:expanded-item="{ headers, item }">
@@ -601,7 +623,9 @@
                     <template v-slot:footer>
                       <div style="display: flex; justify-content: center; margin-left: auto">
                         <div style="padding-top: 16px;padding-bottom: 8px">
-                          <ResultDownload v-show="getNodesForTargetTable() !=null && getNodesForTargetTable().length>0" seeds :label="options.general.keep && resultTableModel ===0 ? 'Connectors' :'Targets'"
+                          <ResultDownload v-show="getNodesForTargetTable() !=null && getNodesForTargetTable().length>0"
+                                          seeds
+                                          :label="options.general.keep && resultTableModel ===0 ? 'Connectors' :'Targets'"
                                           @downloadEvent="downloadTargetList"></ResultDownload>
                         </div>
                       </div>
@@ -702,6 +726,7 @@ export default {
           drugTargetsWithAction: false,
           disorderAssociationCutoff: 0,
           disorderParents: false,
+          experimentalInteraction: false,
         }
       },
       legend: {
@@ -731,9 +756,9 @@ export default {
     pathModel: function (val) {
       if (this.pathModel == null)
         return
-      this.$set(this.options.general,"keep",false)
+      this.$set(this.options.general, "keep", false)
       if (val < this.paths[0].length) {
-        this.$set(this.options.general,"keep",true)
+        this.$set(this.options.general, "keep", true)
         this.selectedPath = this.paths[0][val]
         this.direct = true
         this.connectorTypeId = undefined
@@ -746,7 +771,7 @@ export default {
         if (this.example.compress) {
           this.options.general.name = this.example.edge
         } else {
-          this.$set(this.options.general,"keep",true)
+          this.$set(this.options.general, "keep", true)
         }
       this.$refs.connectors.clear()
     }
@@ -795,6 +820,7 @@ export default {
           drugTargetsWithAction: false,
           disorderAssociationCutoff: 0,
           disorderParents: false,
+          experimentalInteraction: false,
         }
       }
 
@@ -835,7 +861,7 @@ export default {
         return {value: node.group, text: node.label}
       })
       if (!selfAdded)
-        typeList.push({value: type, text: this.nodeList[[this.sourceTypeId, this.targetTypeId][index]].text})
+        typeList.push({value: type, text: this.nodeList[[ this.sourceTypeId, this.targetTypeId][index]].text})
       return typeList
     },
 
@@ -903,12 +929,12 @@ export default {
       this.$refs.graph.zoomToNode(id)
     },
 
-    getNodesForSourceTable: function(){
-      return this.options.general.keep && this.resultTableModel ===2 ? this.connectors: this.sources;
+    getNodesForSourceTable: function () {
+      return this.options.general.keep && this.resultTableModel === 2 ? this.connectors : this.sources;
     },
 
-    getNodesForTargetTable: function(){
-      return this.options.general.keep && this.resultTableModel ===0 ? this.connectors: this.targets;
+    getNodesForTargetTable: function () {
+      return this.options.general.keep && this.resultTableModel === 0 ? this.connectors : this.targets;
     },
 
     submitGraphGeneration: function () {
@@ -991,8 +1017,13 @@ export default {
         }
         if (this.sourceTypeId === this.targetTypeId) {
           let ids = this.$refs.sourceTable.getSeeds().map(s => s.id)
-          if (this.targets)
-            this.targets = this.targets.filter(n => ids.indexOf(n.id) === -1)
+          if (this.targets) {
+            let target_ids = this.$refs.targetTable.getSeeds().map(s => s.id)
+            if (target_ids.length > 0)
+              this.targets = this.targets.filter(n => target_ids.indexOf(n.id) > -1)
+            else
+              this.targets = this.targets.filter(n => ids.indexOf(n.id) === -1)
+          }
         }
         let sourceDegrees = {}
         data.nodes[sourceGroupName].forEach(n => {
@@ -1105,17 +1136,17 @@ export default {
 
     downloadSourceList: function (names, sep) {
 
-      this.downloadList(this.options.general.keep && this.resultTableModel===2 ?1 : 0, names, sep)
+      this.downloadList(this.options.general.keep && this.resultTableModel === 2 ? 1 : 0, names, sep)
     }
     ,
     downloadTargetList: function (names, sep) {
-      this.downloadList(this.options.general.keep && this.resultTableModel===0 ?1 : 2, names, sep)
+      this.downloadList(this.options.general.keep && this.resultTableModel === 0 ? 1 : 2, names, sep)
     }
     ,
     downloadList: function (index, names, sep) {
-      let nodeType = [this.nodeList[this.sourceTypeId].value,this.getConnectorType(),this.nodeList[this.targetTypeId].value][index]
-      let list = [this.sources,this.connectors, this.targets][index]
-      let name = ["seeds", "connectors","targets"][index]
+      let nodeType = [this.nodeList[this.sourceTypeId].value, this.getConnectorType(), this.nodeList[this.targetTypeId].value][index]
+      let list = [this.sources, this.connectors, this.targets][index]
+      let name = ["seeds", "connectors", "targets"][index]
       this.$http.post("mapToDomainIds", {
         type: nodeType,
         ids: list.map(n => n.id)
@@ -1203,12 +1234,12 @@ export default {
     }
     ,
     seedClicked: function (item) {
-      let nodeType = this.options.general.keep && this.resultTableModel===2 ? this.getConnectorType():this.nodeList[this.sourceTypeId].value
+      let nodeType = this.options.general.keep && this.resultTableModel === 2 ? this.getConnectorType() : this.nodeList[this.sourceTypeId].value
       this.focusNode(nodeType.substring(0, 3) + '_' + item.id)
     }
     ,
     targetClicked: function (item) {
-      let nodeType = this.options.general.keep && this.resultTableModel===0 ? this.getConnectorType():this.nodeList[this.targetTypeId].value
+      let nodeType = this.options.general.keep && this.resultTableModel === 0 ? this.getConnectorType() : this.nodeList[this.targetTypeId].value
       this.focusNode(nodeType.substring(0, 3) + '_' + item.id)
     }
     ,

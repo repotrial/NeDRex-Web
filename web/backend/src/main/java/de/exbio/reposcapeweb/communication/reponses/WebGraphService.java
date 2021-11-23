@@ -631,7 +631,7 @@ public class WebGraphService {
             HashSet<String> added = new HashSet<>();
             requestedEdges.forEach(e -> {
                 added.add(e);
-                extendGraph(g, e, inducedEdges.contains(e), switched.contains(e), false, null, switched.contains(e) && e.equals("DisorderHierarchy"));
+                extendGraph(g, e, inducedEdges.contains(e), switched.contains(e), false, null, switched.contains(e) && e.equals("DisorderHierarchy"), false);
             });
             if (added.isEmpty())
                 break;
@@ -639,9 +639,9 @@ public class WebGraphService {
         }
     }
 
-    public void extendGraph(Graph g, String e, boolean induced, boolean switched, boolean drugTargetActionFilter, Double disorderGenomeAssociationCutoff, boolean getDisorderParents) {
+    public void extendGraph(Graph g, String e, boolean endDefined, boolean switched, boolean drugTargetActionFilter, Double disorderGenomeAssociationCutoff, boolean getDisorderParents, boolean interactionFilter) {
         int edgeId = g.getEdge(e);
-        boolean extend = !induced;
+        boolean extend = !endDefined;
         Pair<Integer, Integer> nodeIds = g.getNodesfromEdge(edgeId);
         LinkedList<Edge> edges = new LinkedList<>();
         HashSet<Integer> nodes = new HashSet<>();
@@ -656,6 +656,10 @@ public class WebGraphService {
                     }
                     if (edgeIds == null || edgeIds.isEmpty())
                         return;
+                    if (interactionFilter & (e.equals("GeneGeneInteraction") | e.equals("ProteinProteinInteraction"))) {
+                        edgeIds.removeAll(edgeIds.stream().filter(p -> edgeController.isExperimental(edgeId, p.getId1(), p.getId2())).collect(Collectors.toSet()));
+                    }
+
                     if (drugTargetActionFilter) {
                         if (e.equals("DrugTargetGene"))
                             edgeController.findAllDrugHasTargetGene(edgeIds).forEach(edge -> {
@@ -1259,8 +1263,7 @@ public class WebGraphService {
                     if (basic && type >= 0) {
                         HashSet<String> basicAttributes = new HashSet<>(Arrays.asList("sourceDomainId", "targetDomainId", "type", "memberOne", "memberTwo"));
                         req.attributes.get("edges").put(g.getEdge(type), Arrays.stream(edgeController.getAttributes(type)).filter(basicAttributes::contains).collect(Collectors.toList()).toArray(new String[]{}));
-                    }
-                    else
+                    } else
                         req.attributes.get("edges").put(g.getEdge(type), type < 0 ? getCustomEdgeAttributes(g, type) : edgeController.getAttributes(type));
                 });
 
@@ -1363,7 +1366,7 @@ public class WebGraphService {
     }
 
     public HashMap<Integer, HashMap<Integer, Point2D>> getLayout(Graph g) {
-     return getLayout(g,historyController.getLayoutPath(g.getId()));
+        return getLayout(g, historyController.getLayoutPath(g.getId()));
     }
 
     public HashMap<Integer, HashMap<Integer, Point2D>> getLayout(Graph g, File lay) {
@@ -1568,6 +1571,7 @@ public class WebGraphService {
         boolean codingFilter = (boolean) request.params.get("nodes").get("codingGenesOnly");
         boolean fullPaths = (boolean) request.params.get("general").get("removePartial");
 
+        boolean expInteractions = (boolean) request.params.get("edges").get("experimentalInteraction");
         boolean drugTargetWithAction = (boolean) request.params.get("edges").get("drugTargetsWithAction");
         double disorderAssociationCutoff = Double.parseDouble(request.params.get("edges").get("disorderAssociationCutoff").toString());
         boolean getDisorderParents = (boolean) request.params.get("edges").get("disorderParents");
@@ -1602,7 +1606,8 @@ public class WebGraphService {
             }
             String edgeName = request.path.get(p).get("label");
             boolean drugTargetFilter = drugTargetWithAction && (edgeName.equals("DrugTargetGene") | edgeName.equals("DrugTargetProtein"));
-            this.extendGraph(g, edgeName, endDefined, false, drugTargetFilter, disorderAssociationCutoff, getDisorderParents);
+            boolean interactionFilter = expInteractions && (edgeName.equals("GeneGeneInteraction") | edgeName.equals("ProteinProteinInteraction"));
+            this.extendGraph(g, edgeName, endDefined, false, drugTargetFilter, disorderAssociationCutoff, getDisorderParents, interactionFilter);
 
             String connector = request.path.get(p).get("connector");
             if (connector != null) {
@@ -1627,6 +1632,7 @@ public class WebGraphService {
                     NodeFilter nf = new NodeFilter(nodeController.getFilter(connector), ids);
                     g.getNodes().put(Graphs.getNode(connector), nodeFilterToNode(nf));
                     g.saveNodeFilter(connector, nf);
+                    removeUnconnectedEdges(g, edgeName);
                 }
                 if (secondPath && fullPaths) {
                     HashSet<Integer> targets;
@@ -1677,6 +1683,7 @@ public class WebGraphService {
         return g.toInfo();
     }
 
+
     public void createTripartiteLayout(Graph g, File lay, int sourceTypeId, Collection<Integer> sources, int targetTypeId, Collection<Integer> targets) {
         if (!lay.exists()) {
             File wd = new File(getGraphWD(g.getId()).getAbsolutePath() + "_tri");
@@ -1713,6 +1720,22 @@ public class WebGraphService {
             e.printStackTrace();
         }
         return coords;
+    }
+
+    private void removeUnconnectedEdges(Graph g, String edgeName) {
+        removeUnconnectedEdges(g, g.getEdge(edgeName));
+    }
+
+    private void removeUnconnectedEdges(Graph g, Integer edgeId) {
+        HashSet<Edge> rem = new HashSet<>();
+        Pair<Integer, Integer> nodes = g.getNodesfromEdge(edgeId);
+        Set<Integer> set1 = g.getNodes().get(nodes.first).keySet();
+        Set<Integer> set2 = g.getNodes().get(nodes.second).keySet();
+        g.getEdges().get(edgeId).forEach(e -> {
+            if (!set1.contains(e.getId1()) | !set2.contains(e.getId2()))
+                rem.add(e);
+        });
+        g.getEdges().get(edgeId).removeAll(rem);
     }
 
     private void removeUnconnectedNodes(Graph g, int node, HashSet<Integer> except) {
@@ -1915,9 +1938,9 @@ public class WebGraphService {
 
     public Object loadLayout(String gid, String type) {
         Graph g = getCachedGraph(gid);
-        if(type.equals("default"))
+        if (type.equals("default"))
             return getLayout(g);
-        if(type.equals("tripartite"))
+        if (type.equals("tripartite"))
             return getTripartiteLayout(g);
         return new HashMap<>();
     }

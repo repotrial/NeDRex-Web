@@ -9,7 +9,7 @@ file = sys.argv[1]
 layout = sys.argv[2]
 set1 = sys.argv[3]
 set2 = sys.argv[4]
-config = sys.argv[5]
+#config = sys.argv[5]
 
 g = load_graph(file)
 pos = sfdp_layout(g, C=0.15, p=1.5, r=2, K=6)
@@ -78,24 +78,24 @@ for v in targets:
     pos[v]=(x_max,i)
     i+=target_step
 
-colorMap = {'default': Colors.to_rgba('#ffffff')}
+#colorMap = {'default': Colors.to_rgba('#ffffff')}
 pos = sfdp_layout(g, C=0.15, p=1.5, r=2, K=6, pos=pos, pin=pin)
 
-with open(config) as fh:
-    conf = json.load(fh)
-    for vals in conf["nodes"]:
-        colorMap[vals["name"]] = Colors.to_rgba(vals["colors"]["light"])
-plot_color = g.new_vertex_property('vector<double>')
-g.vertex_properties['plot_color'] = plot_color
+#with open(config) as fh:
+#    conf = json.load(fh)
+#    for vals in conf["nodes"]:
+#        colorMap[vals["name"]] = Colors.to_rgba(vals["colors"]["light"])
+#plot_color = g.new_vertex_property('vector<double>')
+#g.vertex_properties['plot_color'] = plot_color
 
 nodeCount = 0
 
 for x in g.vertices():
     nodeCount += 1
-    try:
-        plot_color[x] = colorMap[g.properties[('v', "type")][x]]
-    except:
-        plot_color[x] = colorMap["default"]
+#    try:
+#        plot_color[x] = colorMap[g.properties[('v', "type")][x]]
+#    except:
+#        plot_color[x] = colorMap["default"]
 
 #thumb = "/tmp/test.png"
 
@@ -112,6 +112,6 @@ with open(layout, 'w') as fh:
             g.properties[('v', "type")][x] + "\t" + str(g.properties[('v', "primaryDomainId")][x]) + "\t" + str(
                 pos[x][0] * 50) + "\t" + str(pos[x][1] * 50) + "\n")
 
+
 #graph_draw(g, pos=pos, output=thumb, vertex_fill_color=g.vertex_properties['plot_color'],
- #          output_size=(imageHeight, imageHeight), vertex_size=int(10 / math.log10(nodeCount)), fit_view_ink=True,
-  #         bg_color="white")
+#               output_size=(5000, 5000), vertex_size=40,fit_view_ink=True)
