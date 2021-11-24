@@ -56,8 +56,8 @@ const ApiService = {
   },
 
 
-  getNodes(type,ids,attrs){
-    return this.post("/mapIdListToItems",{type:type, list:ids, attributes: attrs}).then(response=>{
+  getNodes(type, ids, attrs) {
+    return this.post("/mapIdListToItems", {type: type, list: ids, attributes: attrs}).then(response => {
       return response.data;
     }).catch(console.error)
   },
@@ -115,70 +115,126 @@ const ApiService = {
     })
   },
   getInteractingOnly(type, nodeIDs) {
-    return this.post("/getInteractingOnly",{type:type, ids:nodeIDs}).then(response=>{
+    return this.post("/getInteractingOnly", {type: type, ids: nodeIDs}).then(response => {
       return response.data
     })
 
   },
-  getTrials(disorders, drugs,lower,upper) {
-    return this.get("https://clinicaltrials.gov/api/query/study_fields?expr=("+disorders+")+AND+("+drugs+")&min_rnk="+lower+"&max_rnk="+upper+"&fields=NCTId,InterventionName,Condition&fmt=json").then(response=>{
+  getTrials(disorders, drugs, lower, upper) {
+    return this.get("https://clinicaltrials.gov/api/query/study_fields?expr=(" + disorders + ")+AND+(" + drugs + ")&min_rnk=" + lower + "&max_rnk=" + upper + "&fields=NCTId,InterventionName,Condition&fmt=json").then(response => {
       return response.data["StudyFieldsResponse"]
     }).catch(console.error)
   },
 
-  createTrialRequestStrings(list){
+  createTrialRequestStrings(list) {
     let requests = [""]
-    let current =0
-    list.forEach(d=>{
+    let current = 0
+    list.forEach(d => {
       let cl = requests[current].length;
-      if(cl+4+d.length>500) {
+      if (cl + 4 + d.length > 500) {
         requests.push("")
         cl = 0
         current++
       }
-      if(cl!==0)
-        requests[current]+="+OR+"
-      requests[current]+=d
+      if (cl !== 0)
+        requests[current] += "+OR+"
+      requests[current] += d
     })
     for (let i = 0; i < requests.length; i++) {
-      requests[i]=requests[i].replaceAll(" ","+")
+      requests[i] = requests[i].replaceAll(" ", "+")
     }
     return requests;
   },
 
-  async getAllTrials(disorders, drugs){
+  async getAllTrials(disorders, drugs) {
     let disorderStrings = this.createTrialRequestStrings(disorders)
     let drugStrings = this.createTrialRequestStrings(drugs)
     let data = undefined
     for (const disorderString of disorderStrings) {
       for (const drugString of drugStrings) {
-       await this.getTrials(disorderString,drugString,1,1000).then(async data => {
-         let total = data.NStudiesFound
-         for (let i = 1; i * 1000 < total; i += 1) {
-           await this.getTrials(disorderString, drugString, i * 1000 + 1, (i + 1) * 1000).then(data2 => {
-             data.StudyFields = data.StudyFields.concat(data2.StudyFields)
-           })
-         }
-         return data
-       }).then(resp=>{
-          if(data===undefined)
+        await this.getTrials(disorderString, drugString, 1, 1000).then(async data => {
+          let total = data.NStudiesFound
+          for (let i = 1; i * 1000 < total; i += 1) {
+            await this.getTrials(disorderString, drugString, i * 1000 + 1, (i + 1) * 1000).then(data2 => {
+              data.StudyFields = data.StudyFields.concat(data2.StudyFields)
+            })
+          }
+          return data
+        }).then(resp => {
+          if (data === undefined)
             data = resp
           else
-            data.StudyFields = data.StudyFields !=null ? data.StudyFields.concat(resp.StudyFields) : []
+            data.StudyFields = data.StudyFields != null ? data.StudyFields.concat(resp.StudyFields) : []
         }).catch(console.error)
       }
     }
     return data
   },
-  getDisorderHierarchy(sid){
-    return this.get("/getDisorderHierarchy?sid="+sid).then(response=>{
+  getDisorderHierarchy(sid) {
+    return this.get("/getDisorderHierarchy?sid=" + sid).then(response => {
       return response.data
     })
   },
   getLayout(gid, type) {
-    return this.get("/getLayout?gid="+gid+"&type="+type).then(response=>{
+    return this.get("/getLayout?gid=" + gid + "&type=" + type).then(response => {
       return response.data
     })
+  },
+
+  getLicense() {
+    return this.get("getLicence").then(response => {
+      if (response.data != null) {
+        return response.data
+      }
+    }).then(text => {
+      let eula = []
+      let lastHeader = undefined
+      let lastContent = undefined
+      let bulletPointIndent = false;
+      let bulletPointDoubleIntent = false;
+      text.split("\n").forEach(line => {
+        if (line.indexOf("====") > -1) {
+          if (lastHeader != null) {
+            if(bulletPointDoubleIntent)
+              lastContent = lastContent+"</div>"
+            if(bulletPointIndent)
+              lastContent = lastContent+"</div>"
+            bulletPointDoubleIntent=false;
+            eula.push({title: lastHeader, content: this.formatEULA(lastContent)})
+          }
+          lastHeader = line.replaceAll("=", "").trim()
+          lastContent = ""
+        } else {
+          line = line.trim()
+          if (new RegExp("^[0-9]","i").test(line)) {
+            if (bulletPointDoubleIntent)
+              lastContent += "</div>"
+            if(bulletPointIndent)
+              lastContent+="</div>"
+            bulletPointIndent=true
+
+            bulletPointDoubleIntent=new RegExp("^[0-9]\.[0-9]","i").test(line);
+            if(bulletPointDoubleIntent){
+              line="<div style=\"margin-left:50px\">"+line
+            }else{
+              line = "<div style=\"margin-left:25px\">"+line
+            }
+          }
+          lastContent += line + "<br>"
+        }
+      })
+      if (lastHeader != null) {
+        eula.push({title: lastHeader, content: this.formatEULA(lastContent)})
+      }
+      return eula
+    })
+
+  },
+
+  formatEULA: function (text) {
+    if (text.indexOf("https:\/\/omim\.org\/downloads"))
+      text = text.replace("https:\/\/omim\.org\/downloads", "<a href='https://omim.org/downloads' target='_blank'>https://omim.org/downloads")
+    return text
   }
 }
 

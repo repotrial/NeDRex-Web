@@ -1,6 +1,7 @@
 <template style="overflow-y: hidden">
   <v-app :style="{marginTop:selectedTabId===0 ? '60px': '0px'}" id="app">
-    <headerBar @showVersionEvent="showVersionInfo=true" @showBugEvent="showBugInfo=true" @showHelpEvent="showHelp=true"
+    <headerBar @showVersionEvent="showVersionInfo=true" @showBugEvent="showBugInfo=true"
+               @showHelpEvent="showHelp=true"
                @showCompatability="showCompatability=true"
                @redirectEvent="redirect"
                :prominent="selectedTabId===0" style="z-index: 1000;"/>
@@ -227,7 +228,8 @@
     <v-bottom-sheet inset v-model="showHelp" width="30vw" :overlay-color="colors.main.bg1" style="z-index: 1001">
       <HelpSheet :color="colors.main.bg1"></HelpSheet>
     </v-bottom-sheet>
-    <v-bottom-sheet inset v-model="showVersionInfo" width="60vw" :overlay-color="colors.main.bg1" style="z-index: 1001">
+    <v-bottom-sheet inset v-model="showVersionInfo" width="60vw" :overlay-color="colors.main.bg1"
+                    style="z-index: 1001">
       <VersionSheet :color="colors.main.bg1" @showTOSEvent="showTos(true)"></VersionSheet>
     </v-bottom-sheet>
     <v-bottom-sheet inset v-model="showCompatability" width="60vw" :overlay-color="colors.main.bg1"
@@ -243,7 +245,6 @@ import Start from './components/views/Start.vue';
 import History from "./components/views/History";
 import List from './components/views/List.vue'
 import SideCard from './components/side/SideCard.vue'
-import Home from './components/views/Home.vue'
 import headerBar from './components/app/Header.vue'
 import Legend from "./components/views/graph/Legend";
 import Footer from "@/components/app/Footer";
@@ -366,7 +367,9 @@ export default {
       if (this.$refs.tos)
         this.$refs.tos.show()
       else
-        setTimeout(()=>{this.showTos()},500)
+        setTimeout(() => {
+          this.showTos()
+        }, 500)
     },
 
     loadUser: function () {
@@ -390,7 +393,7 @@ export default {
       this.gid = undefined
       if (this.$router.currentRoute.fullPath.length > 1) {
         if (!view)
-          this.$router.push("/home")
+          this.$router.push("/explore/")
         else {
           let path = "/explore/" + view + "/start"
           if (this.$route.fullPath !== path)
@@ -404,12 +407,18 @@ export default {
     reloadAll: function () {
       this.tabslist[1].icon = "fas fa-project-diagram"
       this.tabslist[2].icon = "fas fa-list-ul"
-      this.$refs.list.setLoading(true)
-      this.$refs.graph.reload()
-      this.$refs.list.reload()
-      this.$refs.history.reload()
-      this.$refs.side.reload()
-      this.$refs.start.reload()
+      if (this.$refs.list)
+        this.$refs.list.setLoading(true)
+      if (this.$refs.graph)
+        this.$refs.graph.reload()
+      if (this.$refs.list)
+        this.$refs.list.reload()
+      if (this.$refs.history)
+        this.$refs.history.reload()
+      if (this.$refs.side)
+        this.$refs.side.reload()
+      if (this.$refs.start)
+        this.$refs.start.reload()
     }
     ,
     setView: function () {
@@ -816,7 +825,7 @@ export default {
         if (this.gid != null)
           route = ("/explore/" + ['quick/start', 'advanced/graph', 'advanced/list', 'advanced/history'][tabid] + "/" + this.gid)
         else
-          route = ("/" + ['home', 'home', 'home', 'history'][tabid])
+          route = ("/" + ['explore', 'explore', 'explore', 'history'][tabid])
         if (this.$route.path !== route)
           this.$router.push(route)
       }
@@ -892,7 +901,6 @@ export default {
     History,
     Legend,
     Tools,
-    Home,
     Footer,
     BugSheet,
     HelpSheet,

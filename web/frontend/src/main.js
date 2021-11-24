@@ -1,6 +1,6 @@
 
 import Vue from 'vue'
-import App from './App.vue'
+import Page from './Page.vue'
 
 import router from './router'
 import vuetify from './plugins/vuetify'
@@ -36,5 +36,5 @@ new Vue({
   router,
   vuetify,
   globalVariables: global,
-  render: h => h(App)
+  render: h => h(Page)
 }).$mount("#app")
