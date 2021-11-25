@@ -409,6 +409,32 @@
         </v-card>
       </v-dialog>
       <v-dialog
+        v-model="error"
+        max-width="300"
+        style="z-index: 1001"
+      >
+        <v-card>
+          <v-card-title>Error</v-card-title>
+          <v-card-text>
+            <div>
+              Unfortunately there was an error during the execution of your job. That can sometimes be the case when
+              choosing compatible parameters. <br>
+              So you might either reach out to us or retry with slightly adjusted parameters.
+            </div>
+          </v-card-text>
+          <v-card-actions>
+            <v-btn
+              text
+              @click="error=false"
+            >
+              Close
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+
+
+      </v-dialog>
+      <v-dialog
         v-model="drugTargetPopup"
         persistent
         max-width="500"
@@ -526,6 +552,7 @@ export default {
       graphName: "",
 
       showSubtypeSelection: false,
+      error: false,
     }
 
   },
@@ -562,7 +589,7 @@ export default {
     },
 
     clearData: function () {
-      this.selectedSuggestions= []
+      this.selectedSuggestions = []
       this.disorderIds = []
       if (this.$refs.validation)
         this.$refs.validation.clear()
@@ -722,11 +749,12 @@ export default {
           this.loadGraph(this.currentGid)
         })
       }
+      if (this.currentGid != null && data.state === "ERROR") {
+        this.error = true;
+      }
     }
     ,
     updateDrugCount: function () {
-      if (this.$refs.validation)
-        console.log(this.$refs.validation.getDrugs().length)
       this.validationDrugCount = this.$refs.validation ? this.$refs.validation.getDrugs().length : 0;
     },
     getTargetCount: function () {

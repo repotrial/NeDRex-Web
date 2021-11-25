@@ -534,6 +534,32 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <v-dialog
+      v-model="error"
+      max-width="300"
+      style="z-index: 1001"
+    >
+      <v-card>
+        <v-card-title>Error</v-card-title>
+        <v-card-text>
+          <div>
+            Unfortunately there was an error during the execution of your job. That can sometimes be the case when
+            choosing compatible parameters. <br>
+            So you might either reach out to us or retry with slightly adjusted parameters.
+          </div>
+        </v-card-text>
+        <v-card-actions>
+          <v-btn
+            text
+            @click="error=false"
+          >
+            Close
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+
+
+    </v-dialog>
     <DisorderHierarchyDialog v-if="$refs.suggestions!=null" ref="disorderHierarchy"
                              @addDisorders="$refs.suggestions.loadDisorders"></DisorderHierarchyDialog>
   </v-card>
@@ -612,6 +638,7 @@ export default {
       graphName: "",
       showVisOption: false,
       loadingTrialData: false,
+      error: false,
     }
   },
 
@@ -828,6 +855,9 @@ export default {
           this.loadGraph(this.moduleGid, true)
         })
       }
+      if (this.moduleGid != null && data.state === "ERROR") {
+        this.error = true;
+      }
     },
     saveDisorders: function (list) {
       this.disorderIds = this.disorderIds.concat(list.filter(id => this.disorderIds.indexOf(id) === -1))
@@ -848,6 +878,9 @@ export default {
           this.loadGraph(this.rankingGid)
         })
 
+      }
+      if (this.rankingGid != null && data.state === "ERROR") {
+        this.error = true;
       }
     },
 

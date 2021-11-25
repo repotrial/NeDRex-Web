@@ -368,6 +368,77 @@
 
 
                 </template>
+                <template v-if="getAlgorithmMethod() ==='kpm'">
+                  <div>
+                    <v-slider
+                      hide-details
+                      class="align-center"
+                      v-model="getAlgorithmModels().k"
+                      min="0"
+                      max="20"
+                    >
+                      <template v-slot:prepend>
+                        <v-text-field
+                          v-model="getAlgorithmModels().k"
+                          class="mt-0 pt-0"
+                          type="number"
+                          style="width: 70px"
+                          label="Gene exceptions"
+                        ></v-text-field>
+                      </template>
+                      <template v-slot:append>
+                        <v-tooltip left>
+                          <template v-slot:activator="{ on, attrs }">
+                            <v-icon
+                              v-bind="attrs"
+                              v-on="on"
+                              left> far fa-question-circle
+                            </v-icon>
+                          </template>
+                          <div>Max. Gene Exceptions (K) - the maximum number of exception genes each pathway is<br>
+                            allowed to have. You can also provide a range to compute pathways with different K values.
+                          </div>
+                        </v-tooltip>
+                      </template>
+                    </v-slider>
+                  </div>
+                  <div>
+                    <v-slider
+                      hide-details
+                      class="align-center"
+                      v-model="getAlgorithmModels().l"
+                      min="0"
+                      max="20"
+                    >
+                      <template v-slot:prepend>
+                        <v-text-field
+                          v-model="getAlgorithmModels().l"
+                          class="mt-0 pt-0"
+                          type="number"
+                          style="width: 70px"
+                          label="Case exceptions"
+                        ></v-text-field>
+                      </template>
+                      <template v-slot:append>
+                        <v-tooltip left>
+                          <template v-slot:activator="{ on, attrs }">
+                            <v-icon
+                              v-bind="attrs"
+                              v-on="on"
+                              left> far fa-question-circle
+                            </v-icon>
+                          </template>
+                          <div>Max. Case Exceptions (L) - In INEs it represents the maximum number of non-differentially<br>
+                            expressed cases a gene is allowed to have in order to not be considered an exception gene.<br>
+                            In GloNE it represents the maximum number of non-differentially expressed cases over all<br>
+                            genes contained in a solution. You can also provide a range to compute pathways with<br>
+                            different L values
+                          </div>
+                        </v-tooltip>
+                      </template>
+                    </v-slider>
+                  </div>
+                </template>
                 <template v-if="getAlgorithmMethod()==='must'">
                   <div>
                     <v-slider
@@ -568,6 +639,15 @@ export default {
           link: "https://en.wikipedia.org/wiki/Steiner_tree_problem"
         },
           {
+            id: "kpm", group: "nw", label: "KPM", scores: [], models: {
+              l: 0,
+              k: 1,
+            },
+            descType: "Abstract",
+            description: "Identifying functional modules or novel active pathways, recently termed de novo pathway enrichment, is a computational systems biology challenge that has gained much attention during the last decade. Given a large biological interaction network, KeyPathwayMiner extracts connected subnetworks that are enriched for differentially active entities from a series of molecular profiles encoded as binary indicator matrices. [...]",
+            link: "https://exbio.wzw.tum.de/keypathwayminer/"
+          },
+          {
             id: "domino",
             group: "nw",
             label: "DOMINO",
@@ -720,6 +800,11 @@ export default {
         params["initFract"] = this.getAlgorithmModels().initFract;
         params["threshold"] = this.getAlgorithmModels().threshold;
         params["reductionFactor"] = this.getAlgorithmModels().reductionFactor;
+      }
+      if(method==='kpm'){
+        Object.keys(this.getAlgorithmModels()).forEach(key=>{
+          params[key]=this.getAlgorithmModels()[key]
+        })
       }
       params['type'] = ["gene", "protein"][this.seedTypeId]
       return params;

@@ -32,17 +32,21 @@ public class AlgorithmUtils {
         writeSeedFile(file, g.getNodes().get(Graphs.getNode(type)).keySet(), domainMap, prefix, domainName);
     }
 
+    public void writeSeedFile(String type, File file, Graph g, HashMap<Integer, Pair<String, String>> domainMap, String prefix,String suffix, boolean domainName) {
+        writeSeedFile(file, g.getNodes().get(Graphs.getNode(type)).keySet(), domainMap, prefix, suffix, domainName);
+    }
+
     public File getIndexDirectory(){
         File indexDir = new File(dataDir,"index");
         indexDir.mkdirs();
         return indexDir;
     }
 
-    public void writeSeedFile(File file, Collection<Integer> nodeIds, HashMap<Integer, Pair<String, String>> domainMap, String prefix, boolean domainName) {
+    public void writeSeedFile(File file, Collection<Integer> nodeIds, HashMap<Integer, Pair<String, String>> domainMap, String prefix, String suffix, boolean domainName) {
         BufferedWriter bw = WriterUtils.getBasicWriter(file);
         nodeIds.forEach(node -> {
             try {
-                bw.write(prefix+ (domainName ?domainMap.get(node).getFirst() : node) + "\n");
+                bw.write(prefix+ (domainName ?domainMap.get(node).getFirst() : node) +suffix+ "\n");
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -52,5 +56,9 @@ public class AlgorithmUtils {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void writeSeedFile(File file, Collection<Integer> nodeIds, HashMap<Integer, Pair<String, String>> domainMap, String prefix, boolean domainName) {
+       writeSeedFile(file, nodeIds, domainMap, prefix, "", domainName);
     }
 }

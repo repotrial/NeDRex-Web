@@ -65,7 +65,6 @@ public class Domino implements Algorithm {
     @Override
     public void prepareJobFiles(File tempDir, JobRequest req, Graph g, HashMap<Integer, Pair<String, String>> domainMap) {
         File seed = new File(tempDir, "seeds.list");
-        //TODO accept and write activity scores
         if (req.selection)
             utils.writeSeedFile(seed, req.nodes, domainMap, "_", false);
         else

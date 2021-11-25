@@ -197,6 +197,7 @@ public class JobController {
 
     public boolean finishJob(String id) {
         Job j = jobs.get(id);
+        boolean state = true;
         try {
             HashMap<Integer, HashMap<String, Integer>> domainIds = new HashMap<>();
             domainIds.put(Graphs.getNode("gene"), geneService.getDomainToIdMap());
@@ -219,20 +220,21 @@ public class JobController {
             log.error("Error on finishing job: " + id);
             e.printStackTrace();
             j.setStatus(Job.JobState.ERROR);
-            return false;
+            state = false;
         }
-        try {
-            toolService.clearDirectories(j, historyController.getJobPath(j));
-        } catch (Exception e) {
-            log.error("Error on finishing job: " + id);
-            e.printStackTrace();
-            j.setStatus(Job.JobState.ERROR);
-            return false;
-        }
+        if (state)
+            try {
+                toolService.clearDirectories(j, historyController.getJobPath(j));
+            } catch (Exception e) {
+                log.error("Error on finishing job: " + id);
+                e.printStackTrace();
+                j.setStatus(Job.JobState.ERROR);
+                state = false;
+            }
         save(j);
         socketController.setJobUpdate(j);
         checkWaitingJobs(j);
-        return true;
+        return state;
     }
 
     private void checkWaitingJobs(Job j) {
@@ -285,7 +287,6 @@ public class JobController {
             }
         }
     }
-
 
 
     public File getDownload(String id) {

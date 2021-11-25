@@ -18,9 +18,9 @@ export default {
   },
 
   created() {
-    if (this.$route.path === "/" || this.$route.path === "/home")
-      this.homePage = true
-    console.log(this.homePage)
+    //TODO comment back in when landing page should be enabled
+    // if (this.$route.path === "/" || this.$route.path === "/home")
+    //   this.homePage = true
   }
 
 }

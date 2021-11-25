@@ -398,6 +398,32 @@
           <ButtonBack @click="makeStep" save label="RESULTS"></ButtonBack>
         </v-stepper-content>
       </v-stepper-items>
+      <v-dialog
+        v-model="error"
+        max-width="300"
+        style="z-index: 1001"
+      >
+        <v-card>
+          <v-card-title>Error</v-card-title>
+          <v-card-text>
+            <div>
+              Unfortunately there was an error during the execution of your job. That can sometimes be the case when
+              choosing compatible parameters. <br>
+              So you might either reach out to us or retry with slightly adjusted parameters.
+            </div>
+          </v-card-text>
+          <v-card-actions>
+            <v-btn
+              text
+              @click="error=false"
+            >
+              Close
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+
+
+      </v-dialog>
       <v-dialog v-model="namePopup"
                 persistent
                 max-width="500px"
@@ -513,7 +539,8 @@ export default {
       nameOptions: [],
       graphName: "",
       loadingTrialData: false,
-      showVisOption: false
+      showVisOption: false,
+      error: false,
     }
   },
 
@@ -699,6 +726,9 @@ export default {
         this.loadTargetTable(result).then(() => {
           this.loadGraph(result)
         })
+      }
+      if (result != null && data.state === "ERROR") {
+        this.error = true;
       }
     },
 

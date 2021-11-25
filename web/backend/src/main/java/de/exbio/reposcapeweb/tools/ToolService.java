@@ -44,14 +44,14 @@ public class ToolService {
     private Logger log = LoggerFactory.getLogger(ToolService.class);
 
     @Autowired
-    public ToolService(Robust robust, Domino domino, TrustRank trustrank, ClosenessCentrality cc, Bicon bicon, Must must, Diamond diamond, ProteinService proteinService, GeneService geneService, Environment env, ProteinInteractsWithProteinService interactionService) {
+    public ToolService(KPM kpm, Robust robust, Domino domino, TrustRank trustrank, ClosenessCentrality cc, Bicon bicon, Must must, Diamond diamond, ProteinService proteinService, GeneService geneService, Environment env, ProteinInteractsWithProteinService interactionService) {
         this.env = env;
         this.interactionService = interactionService;
         this.proteinService = proteinService;
         this.geneService = geneService;
 
         Algorithm[] algorithms = new Algorithm[]
-                {diamond, must, bicon, cc, trustrank, domino, robust};
+                {diamond, must, bicon, cc, trustrank, domino, robust, kpm};
         for (Algorithm algorithm : algorithms) {
             this.algorithms.put(algorithm.getEnum(), algorithm);
         }
@@ -300,6 +300,6 @@ public class ToolService {
 
 
     public enum Tool {
-        DIAMOND, BICON, TRUSTRANK, CENTRALITY, MUST, DOMINO, ROBUST
+        DIAMOND, BICON, TRUSTRANK, CENTRALITY, MUST, DOMINO, ROBUST, KPM;
     }
 }
