@@ -249,7 +249,13 @@
                               left> far fa-question-circle
                             </v-icon>
                           </template>
-                          <span>initial fraction</span>
+                          <div>The parameter α ∈ (0, 1] modifies the initial values for integrating<br>
+                            non-seeds into the tree. This implicitly represents the allowed diversion<br>
+                            from the cheapest Steiner tree. For α = 0, the algorithm would only<br>
+                            return the best Steiner tree it can find but not allow any diversion from<br>
+                            it. The larger α, the more diverse and but also more expensive the<br>
+                            returned Steiner trees are allowed to become.
+                          </div>
                         </v-tooltip>
                       </template>
                     </v-slider>
@@ -281,7 +287,14 @@
                               left> far fa-question-circle
                             </v-icon>
                           </template>
-                          <span>reduction factor</span>
+                          <div>The parameter β ∈ [0, 1) modifies the decrease of the values for<br>
+                            integrating non-seeds into the trees. Setting β = 0 will only give<br>
+                            a value to a non-seed until its first appearance in one tree. This can<br>
+                            quickly exhaust the available non-seeds and then has the same problem<br>
+                            as α = 0. A too high value, on the other hand, might not be able<br>
+                            to reduce the values sufficiently to make the other non-seeds more<br>
+                            attractive. Hence, more trees need to be generated to achieve diversity.
+                          </div>
                         </v-tooltip>
                       </template>
                     </v-slider>
@@ -291,12 +304,12 @@
                       hide-details
                       class="align-center"
                       v-model="getAlgorithmModels().threshold"
-                      min="-100"
-                      max="0"
+                      min="0"
+                      step="0.001"
+                      max="1"
                     >
                       <template v-slot:prepend>
                         <v-text-field
-                          prefix="10^"
                           v-model="getAlgorithmModels().threshold"
                           class="mt-0 pt-0"
                           type="number"
@@ -313,7 +326,10 @@
                               left> far fa-question-circle
                             </v-icon>
                           </template>
-                          <span>Threshold</span>
+                          <div>The threshold τ ∈ (0, 1] provides a trade-off between robustness and<br>
+                            explorativeness. The larger τ , the more robust but less explorative the<br>
+                            disease module computed by ROBUST
+                          </div>
                         </v-tooltip>
                       </template>
                     </v-slider>
@@ -583,7 +599,7 @@ export default {
             initFract: 0.25,
             reductionFactor: 0.9,
             trees: 30,
-            threshold: -1
+            threshold: 0.1
           },
           scores: [{
             id: "occs_abs",
@@ -642,7 +658,7 @@ export default {
       this.$nextTick(() => {
         let models = this.getAlgorithmModels()
         Object.keys(models).forEach(key => {
-          if (params[key] !=null)
+          if (params[key] != null)
             models[key] = params[key]
         })
       })
@@ -702,7 +718,7 @@ export default {
       if (method === 'robust') {
         params["trees"] = this.getAlgorithmModels().trees;
         params["initFract"] = this.getAlgorithmModels().initFract;
-        params["threshold"] = Math.pow(10, this.getAlgorithmModels().threshold);
+        params["threshold"] = this.getAlgorithmModels().threshold;
         params["reductionFactor"] = this.getAlgorithmModels().reductionFactor;
       }
       params['type'] = ["gene", "protein"][this.seedTypeId]
