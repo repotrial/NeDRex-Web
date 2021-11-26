@@ -12,7 +12,7 @@ const router = new Router({
       // {path:"/explore/:view/result/:job", component:App},
       {path:"/", redirect:"/home"},
       {path: "/home", component: Page},
-      {path:"/explore/:view/:tab/:gid", component:Page},
+      {path:"/explore/:view/:tab/:gid", component:Page}
     ]
   },
 

@@ -42,8 +42,7 @@ fi
 
 if [ $tool == 'kpm' ]
 then
-  echo "max_solutions = $9" >> kpm.properties
-  java -jar $4 -graphFile=$5 -matrix1=$6 -L1=$7 -K=$8
+  java -jar $4 -graphFile=$5 -matrix1=$6 -L1=$7 -K=$8 -removeBens
 fi
 curl $response
 

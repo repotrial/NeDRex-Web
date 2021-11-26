@@ -74,7 +74,7 @@ public class KPM implements Algorithm {
 
     @Override
     public String createCommand(File[] interactions, JobRequest request) {
-        return "kpm KPM-4.0.jar " + interactions[0].getName() + " seeds.matrix " + request.getParams().get("l") + " " + request.getParams().get("k");
+        return "kpm KPM-5.jar " + interactions[0].getName() + " seeds.matrix 0 " + request.getParams().get("k");
     }
 
     @Override
@@ -98,16 +98,24 @@ public class KPM implements Algorithm {
                 if (line.startsWith("EDGES"))
                     node_part = false;
                 if (node_part && line.charAt(0) == '_')
-                    nodes.put(Integer.parseInt(StringUtils.split(line.strip(),'\t').get(0).substring(1)), null);
+                    nodes.put(Integer.parseInt(StringUtils.split(line.strip(), '\t').get(0).substring(1)), null);
             }
-        } catch (IOException e) {
+        } catch (IOException | NullPointerException e) {
             e.printStackTrace();
+            throw new IOException();
         }
     }
 
     @Override
     public File getResultFile(File tempDir) {
-        return new File(tempDir, "results/pathways-.txt");
+        File results = new File(tempDir, "results");
+        results = results.listFiles()[0];
+        results = results.listFiles()[0];
+        for (File file : results.listFiles()) {
+            if (file.getName().startsWith("pathways") & !file.getName().startsWith("pathways_stats"))
+                return file;
+        }
+        return null;
     }
 
     @Override
@@ -126,7 +134,7 @@ public class KPM implements Algorithm {
         if (g.getNodes().containsKey(nodeTypeId))
             allNodes.addAll(g.getNodes().get(nodeTypeId).keySet());
         int beforeCount = allNodes.size();
-        Set<Integer> newNodeIDs = j.getResult().getNodes().entrySet().stream().filter(e -> e.getValue() != null).map(Map.Entry::getKey).collect(Collectors.toSet());
+        Set<Integer> newNodeIDs = new HashSet<>(j.getResult().getNodes().keySet());
         allNodes.addAll(newNodeIDs);
         derived.addNodeMarks(nodeTypeId, newNodeIDs);
         j.setUpdate("" + (allNodes.size() - beforeCount));

@@ -28,7 +28,7 @@
           </div>
 
         </v-card-text>
-        <v-btn @click="modus=1" color="primary" style="margin-bottom: 15px">Start
+        <v-btn @click="modus=1; $emit('clearURLEvent')" color="primary" style="margin-bottom: 15px">Start
           <v-icon right>fas fa-angle-double-right</v-icon>
         </v-btn>
       </v-card>
@@ -39,7 +39,6 @@
                    @graphLoadEvent="graphLoadEvent"
                    @graphLoadNewTabEvent="graphLoadNewTabEvent"
                    @newGraphEvent="$emit('newGraphEvent')"
-                   @clearURLEvent="$emit('clearURLEvent')"
     ></GuidedStepper>
     <v-dialog v-model="bigImage"
               style="z-index: 1001; max-height: 70vh" max-width="700px">

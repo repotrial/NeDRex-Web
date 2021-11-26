@@ -10,25 +10,37 @@ public class ProcessUtils {
 
     private static Logger log = LoggerFactory.getLogger(ToolService.class);
 
-    public static void executeProcessWait(ProcessBuilder pb) throws IOException, InterruptedException {
+    public static void executeProcessWait(ProcessBuilder pb, boolean print) throws IOException, InterruptedException {
         pb.redirectErrorStream(true);
         log.debug("Waiting for process: " + pb.command());
         Process p = pb.start();
         BufferedReader bw = new BufferedReader(new InputStreamReader(p.getInputStream()));
-        while (bw.readLine() != null) {
+        String line = "";
+        while ((line = bw.readLine()) != null) {
+            if (print)
+                System.out.println(line);
         }
         p.waitFor();
     }
 
-    public static void executeProcessWait(String[] command) throws IOException, InterruptedException {
-        executeProcessWait(new ProcessBuilder(command));
+    public static Process executeProcess(ProcessBuilder pb) throws IOException, InterruptedException {
+        pb.redirectErrorStream(true);
+        pb.redirectOutput(new File("/dev/null"));
+        return pb.start();
     }
 
-    public static void executeProcessWait(String command) throws IOException, InterruptedException {
+    public static void executeProcessWait(String[] command, boolean print) throws IOException, InterruptedException {
+        executeProcessWait(new ProcessBuilder(command), print);
+    }
+
+    public static void executeProcessWait(String command, boolean print) throws IOException, InterruptedException {
         log.debug("Waiting for process: " + command);
         Process p = Runtime.getRuntime().exec(command);
         BufferedReader bw = new BufferedReader(new InputStreamReader(p.getInputStream()));
-        while (bw.readLine() != null) {
+        String line = "";
+        while ((line = bw.readLine()) != null) {
+            if (print)
+                System.out.println(line);
         }
         p.waitFor();
     }

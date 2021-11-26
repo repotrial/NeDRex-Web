@@ -53,7 +53,7 @@ public class DBUtils {
         log.debug("Executing dump for " + table + " to " + dest.getAbsolutePath());
         ProcessBuilder pb = new ProcessBuilder(tableToFile.getAbsolutePath(), queryExecuter.getParent(), dest.getAbsolutePath(), table, "SELECT id, primary_domain_id FROM " + table + ";");
         try {
-            ProcessUtils.executeProcessWait(pb);
+            ProcessUtils.executeProcessWait(pb, false);
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }

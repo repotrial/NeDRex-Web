@@ -739,6 +739,10 @@ export default {
 
 
     readJob: function (data, notSubbed) {
+      if (data.state === "ERROR") {
+        this.error = true;
+        return;
+      }
       let jid = data.jid
       this.currentJid = jid
       this.currentGid = data.gid
@@ -749,9 +753,7 @@ export default {
           this.loadGraph(this.currentGid)
         })
       }
-      if (this.currentGid != null && data.state === "ERROR") {
-        this.error = true;
-      }
+
     }
     ,
     updateDrugCount: function () {

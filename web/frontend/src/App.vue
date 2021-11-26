@@ -395,29 +395,29 @@ export default {
         if (!view)
           this.$router.push("/explore/")
         else {
+
           let path = "/explore/" + view + "/start"
           if (this.$route.fullPath !== path)
             this.$router.push(path)
-          this.reloadAll()
-          this.$refs.graph.reload()
+          this.reloadAll(["start"])
         }
       }
     }
     ,
-    reloadAll: function () {
+    reloadAll: function (except) {
       this.tabslist[1].icon = "fas fa-project-diagram"
       this.tabslist[2].icon = "fas fa-list-ul"
-      if (this.$refs.list)
+      if (this.$refs.list && (except == null ||except.indexOf("list")===-1)) {
         this.$refs.list.setLoading(true)
-      if (this.$refs.graph)
+        this.$refs.list.reload();
+      }
+      if (this.$refs.graph&& (except == null ||except.indexOf("graph")===-1))
         this.$refs.graph.reload()
-      if (this.$refs.list)
-        this.$refs.list.reload()
-      if (this.$refs.history)
+      if (this.$refs.history&& (except == null ||except.indexOf("history")===-1))
         this.$refs.history.reload()
-      if (this.$refs.side)
+      if (this.$refs.side&& (except == null ||except.indexOf("side")===-1))
         this.$refs.side.reload()
-      if (this.$refs.start)
+      if (this.$refs.start&& (except == null ||except.indexOf("start")===-1))
         this.$refs.start.reload()
     }
     ,
@@ -451,7 +451,7 @@ export default {
     applyUrlTab: function (skipReroute) {
 
       let new_tab = this.$route.params["job"] != null ? "quick" : this.$route.params["tab"]
-      if (new_tab !== this.tab) {
+      if (new_tab && new_tab !== this.tab) {
         this.tab = new_tab
         this.setTabId(new_tab, skipReroute)
       }

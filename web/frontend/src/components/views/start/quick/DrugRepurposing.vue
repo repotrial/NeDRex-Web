@@ -842,6 +842,10 @@ export default {
     },
 
     readModuleJob: function (data, notSubbed) {
+      if (data.state === "ERROR") {
+        this.error = true;
+        return
+      }
       this.resultProgress += 5
       let jid = data.jid
       this.moduleJid = jid
@@ -855,9 +859,7 @@ export default {
           this.loadGraph(this.moduleGid, true)
         })
       }
-      if (this.moduleGid != null && data.state === "ERROR") {
-        this.error = true;
-      }
+
     },
     saveDisorders: function (list) {
       this.disorderIds = this.disorderIds.concat(list.filter(id => this.disorderIds.indexOf(id) === -1))

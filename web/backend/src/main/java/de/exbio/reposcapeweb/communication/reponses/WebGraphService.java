@@ -219,8 +219,8 @@ public class WebGraphService {
                 }
                 String[] attributes = finalReq1.attributes.get("edges").get(stringType);
                 HashSet<String> attrs = new HashSet<>(Arrays.asList(attributes));
-                HashMap<String, String> attributeLabelMap = edgeController.getAttributeLabelMap(stringType);
-                if (g.getCustomEdgeAttributeLabels().containsKey(type))
+                HashMap<String, String> attributeLabelMap = type<0 ? g.getCustomEdgeAttributeLabels().get(type) :edgeController.getAttributeLabelMap(stringType);
+                if (g.getCustomEdgeAttributeLabels().get(type)!=null)
                     attributeLabelMap.putAll(g.getCustomEdgeAttributeLabels().get(type));
                 finalList.addListAttributes("edges", stringType, attributes, attributeLabelMap);
                 List<PairId> edges = edgeList.stream().map(e -> new PairId(e.getId1(), e.getId2())).collect(Collectors.toList());

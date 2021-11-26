@@ -274,7 +274,7 @@
                           v-model="getAlgorithmModels().reductionFactor"
                           class="mt-0 pt-0"
                           type="number"
-                          style="width: 80px"
+                          style="width: 100px"
                           label="Reduction Factor"
                         ></v-text-field>
                       </template>
@@ -375,14 +375,14 @@
                       class="align-center"
                       v-model="getAlgorithmModels().k"
                       min="0"
-                      max="20"
+                      max="50"
                     >
                       <template v-slot:prepend>
                         <v-text-field
                           v-model="getAlgorithmModels().k"
                           class="mt-0 pt-0"
                           type="number"
-                          style="width: 70px"
+                          style="width: 100px"
                           label="Gene exceptions"
                         ></v-text-field>
                       </template>
@@ -402,42 +402,42 @@
                       </template>
                     </v-slider>
                   </div>
-                  <div>
-                    <v-slider
-                      hide-details
-                      class="align-center"
-                      v-model="getAlgorithmModels().l"
-                      min="0"
-                      max="20"
-                    >
-                      <template v-slot:prepend>
-                        <v-text-field
-                          v-model="getAlgorithmModels().l"
-                          class="mt-0 pt-0"
-                          type="number"
-                          style="width: 70px"
-                          label="Case exceptions"
-                        ></v-text-field>
-                      </template>
-                      <template v-slot:append>
-                        <v-tooltip left>
-                          <template v-slot:activator="{ on, attrs }">
-                            <v-icon
-                              v-bind="attrs"
-                              v-on="on"
-                              left> far fa-question-circle
-                            </v-icon>
-                          </template>
-                          <div>Max. Case Exceptions (L) - In INEs it represents the maximum number of non-differentially<br>
-                            expressed cases a gene is allowed to have in order to not be considered an exception gene.<br>
-                            In GloNE it represents the maximum number of non-differentially expressed cases over all<br>
-                            genes contained in a solution. You can also provide a range to compute pathways with<br>
-                            different L values
-                          </div>
-                        </v-tooltip>
-                      </template>
-                    </v-slider>
-                  </div>
+<!--                  <div>-->
+<!--                    <v-slider-->
+<!--                      hide-details-->
+<!--                      class="align-center"-->
+<!--                      v-model="getAlgorithmModels().l"-->
+<!--                      min="0"-->
+<!--                      max="20"-->
+<!--                    >-->
+<!--                      <template v-slot:prepend>-->
+<!--                        <v-text-field-->
+<!--                          v-model="getAlgorithmModels().l"-->
+<!--                          class="mt-0 pt-0"-->
+<!--                          type="number"-->
+<!--                          style="width: 100px"-->
+<!--                          label="Case exceptions"-->
+<!--                        ></v-text-field>-->
+<!--                      </template>-->
+<!--                      <template v-slot:append>-->
+<!--                        <v-tooltip left>-->
+<!--                          <template v-slot:activator="{ on, attrs }">-->
+<!--                            <v-icon-->
+<!--                              v-bind="attrs"-->
+<!--                              v-on="on"-->
+<!--                              left> far fa-question-circle-->
+<!--                            </v-icon>-->
+<!--                          </template>-->
+<!--                          <div>Max. Case Exceptions (L) - In INEs it represents the maximum number of non-differentially<br>-->
+<!--                            expressed cases a gene is allowed to have in order to not be considered an exception gene.<br>-->
+<!--                            In GloNE it represents the maximum number of non-differentially expressed cases over all<br>-->
+<!--                            genes contained in a solution. You can also provide a range to compute pathways with<br>-->
+<!--                            different L values-->
+<!--                          </div>-->
+<!--                        </v-tooltip>-->
+<!--                      </template>-->
+<!--                    </v-slider>-->
+<!--                  </div>-->
                 </template>
                 <template v-if="getAlgorithmMethod()==='must'">
                   <div>
@@ -640,7 +640,7 @@ export default {
         },
           {
             id: "kpm", group: "nw", label: "KPM", scores: [], models: {
-              l: 0,
+              // l: 0,
               k: 1,
             },
             descType: "Abstract",

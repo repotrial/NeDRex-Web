@@ -22,7 +22,7 @@ public class FileUtils {
         log.debug("Downloading " + url + " to " + fileName);
         ProcessBuilder pb = new ProcessBuilder("wget", "-O", fileName, url);
         try {
-            ProcessUtils.executeProcessWait(pb);
+            ProcessUtils.executeProcessWait(pb, false);
         } catch (IOException | InterruptedException e) {
             log.error("Error executing download!");
             e.printStackTrace();
@@ -43,7 +43,7 @@ public class FileUtils {
     public static void formatJson(File jsonReformatter, File file) {
         ProcessBuilder pb = new ProcessBuilder(jsonReformatter.getAbsolutePath(), file.getAbsolutePath());
         try {
-            ProcessUtils.executeProcessWait(pb);
+            ProcessUtils.executeProcessWait(pb, false);
         } catch (IOException | InterruptedException e) {
             log.error("Error converting json file!");
             e.printStackTrace();
