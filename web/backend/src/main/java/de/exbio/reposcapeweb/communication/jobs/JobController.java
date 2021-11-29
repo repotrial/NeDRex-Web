@@ -74,8 +74,11 @@ public class JobController {
         Job j = createJob(req);
 
         j.addParam("experimentalOnly", req.experimentalOnly);
-        for (String param : req.getParams().keySet())
-            j.addParam(param, req.getParams().get(param));
+        for (String param : req.getParams().keySet()) {
+            if (!param.equals("exprData"))
+                j.addParam(param, req.getParams().get(param));
+        }
+
 
         //TODO can be moved to frontend
         j.addParam("pcutoff", req.getParams().containsKey("pcutoff") ? Math.pow(10, Double.parseDouble(req.getParams().get("pcutoff"))) : 1);

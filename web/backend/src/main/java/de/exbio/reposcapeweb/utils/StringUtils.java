@@ -46,6 +46,19 @@ public class StringUtils {
         return v;
     }
 
+    public static LinkedList<String> splitFirst(String line, char sep) {
+        LinkedList<String> v = new LinkedList<>();
+        int idx = line.indexOf(sep);
+        if (idx > -1) {
+            v.add(line.substring(0, idx));
+            v.add(line.substring(idx));
+        } else {
+            v.add(line);
+        }
+
+        return v;
+    }
+
     public static ArrayList<String> split(String line, String separator, int lineSize) {
         ArrayList<String> v = new ArrayList<String>(lineSize);
         String tab = separator;
@@ -187,6 +200,17 @@ public class StringUtils {
         return sb.toString();
     }
 
+    public static String concatAll(Collection<String> words, char separator) {
+        Iterator<String> wordIt = words.iterator();
+        StringBuilder sb = new StringBuilder();
+        while (wordIt.hasNext()) {
+            sb.append(wordIt.next());
+            if (wordIt.hasNext())
+                sb.append(separator);
+        }
+        return sb.toString();
+    }
+
     public static String replaceAll(String line, String replace, String replaceWith) {
         return concatAll(split(line, replace), replaceWith);
     }
@@ -219,10 +243,11 @@ public class StringUtils {
 
     public static HashMap<String, String> stringToMap(String s) {
         HashMap<String, String> out = new HashMap<>();
-        stringToList(s).forEach(i -> {
-            LinkedList<String> e = split(i, ':');
+        stringToList(s).forEach(i->{
+            LinkedList<String> e = splitFirst(i, ':');
             out.put(e.get(0), e.get(1));
         });
+
         return out;
     }
 

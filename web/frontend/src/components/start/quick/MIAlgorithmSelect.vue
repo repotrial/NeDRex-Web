@@ -402,42 +402,42 @@
                       </template>
                     </v-slider>
                   </div>
-<!--                  <div>-->
-<!--                    <v-slider-->
-<!--                      hide-details-->
-<!--                      class="align-center"-->
-<!--                      v-model="getAlgorithmModels().l"-->
-<!--                      min="0"-->
-<!--                      max="20"-->
-<!--                    >-->
-<!--                      <template v-slot:prepend>-->
-<!--                        <v-text-field-->
-<!--                          v-model="getAlgorithmModels().l"-->
-<!--                          class="mt-0 pt-0"-->
-<!--                          type="number"-->
-<!--                          style="width: 100px"-->
-<!--                          label="Case exceptions"-->
-<!--                        ></v-text-field>-->
-<!--                      </template>-->
-<!--                      <template v-slot:append>-->
-<!--                        <v-tooltip left>-->
-<!--                          <template v-slot:activator="{ on, attrs }">-->
-<!--                            <v-icon-->
-<!--                              v-bind="attrs"-->
-<!--                              v-on="on"-->
-<!--                              left> far fa-question-circle-->
-<!--                            </v-icon>-->
-<!--                          </template>-->
-<!--                          <div>Max. Case Exceptions (L) - In INEs it represents the maximum number of non-differentially<br>-->
-<!--                            expressed cases a gene is allowed to have in order to not be considered an exception gene.<br>-->
-<!--                            In GloNE it represents the maximum number of non-differentially expressed cases over all<br>-->
-<!--                            genes contained in a solution. You can also provide a range to compute pathways with<br>-->
-<!--                            different L values-->
-<!--                          </div>-->
-<!--                        </v-tooltip>-->
-<!--                      </template>-->
-<!--                    </v-slider>-->
-<!--                  </div>-->
+                  <!--                  <div>-->
+                  <!--                    <v-slider-->
+                  <!--                      hide-details-->
+                  <!--                      class="align-center"-->
+                  <!--                      v-model="getAlgorithmModels().l"-->
+                  <!--                      min="0"-->
+                  <!--                      max="20"-->
+                  <!--                    >-->
+                  <!--                      <template v-slot:prepend>-->
+                  <!--                        <v-text-field-->
+                  <!--                          v-model="getAlgorithmModels().l"-->
+                  <!--                          class="mt-0 pt-0"-->
+                  <!--                          type="number"-->
+                  <!--                          style="width: 100px"-->
+                  <!--                          label="Case exceptions"-->
+                  <!--                        ></v-text-field>-->
+                  <!--                      </template>-->
+                  <!--                      <template v-slot:append>-->
+                  <!--                        <v-tooltip left>-->
+                  <!--                          <template v-slot:activator="{ on, attrs }">-->
+                  <!--                            <v-icon-->
+                  <!--                              v-bind="attrs"-->
+                  <!--                              v-on="on"-->
+                  <!--                              left> far fa-question-circle-->
+                  <!--                            </v-icon>-->
+                  <!--                          </template>-->
+                  <!--                          <div>Max. Case Exceptions (L) - In INEs it represents the maximum number of non-differentially<br>-->
+                  <!--                            expressed cases a gene is allowed to have in order to not be considered an exception gene.<br>-->
+                  <!--                            In GloNE it represents the maximum number of non-differentially expressed cases over all<br>-->
+                  <!--                            genes contained in a solution. You can also provide a range to compute pathways with<br>-->
+                  <!--                            different L values-->
+                  <!--                          </div>-->
+                  <!--                        </v-tooltip>-->
+                  <!--                      </template>-->
+                  <!--                    </v-slider>-->
+                  <!--                  </div>-->
                 </template>
                 <template v-if="getAlgorithmMethod()==='must'">
                   <div>
@@ -744,6 +744,27 @@ export default {
       })
     },
 
+    setExpMethod: async function (method, params) {
+      this.groupModel = "exp"
+      this.$nextTick(() => {
+        let algos = this.methods.filter(m => m.group === this.groupModel)
+        for (let i = 0; i < algos.length; i++) {
+          if (algos[i].id === method) {
+            this.methodModel = i
+            return
+          }
+        }
+      })
+      if (params != null)
+        this.$nextTick(() => {
+          let models = this.getAlgorithmModels()
+          Object.keys(models).forEach(key => {
+            if (params[key] != null)
+              models[key] = params[key]
+          })
+        })
+    },
+
     getAlgorithmModels: function () {
       if (this.methodModel == null)
         return undefined;
@@ -762,7 +783,11 @@ export default {
       delete params.addInteractions
       let str = ""
       Object.keys(params).forEach(key => {
-        str += key + "=" + params[key] + ", "
+        if (key === "exprData")
+          str += "Expression-File="+this.getAlgorithmModels().exprFile.name
+        else
+          str += key + "=" + params[key]
+        str+= ", "
       })
       str = str.substring(0, str.length - 2)
       return str
@@ -801,16 +826,16 @@ export default {
         params["threshold"] = this.getAlgorithmModels().threshold;
         params["reductionFactor"] = this.getAlgorithmModels().reductionFactor;
       }
-      if(method==='kpm'){
-        Object.keys(this.getAlgorithmModels()).forEach(key=>{
-          params[key]=this.getAlgorithmModels()[key]
+      if (method === 'kpm') {
+        Object.keys(this.getAlgorithmModels()).forEach(key => {
+          params[key] = this.getAlgorithmModels()[key]
         })
       }
       params['type'] = ["gene", "protein"][this.seedTypeId]
       return params;
     },
     biconFile: function (file) {
-      this.models.bicon.exprFile = file
+      this.getAlgorithmModels().exprFile = file
     }
     ,
     getHeaders: function () {

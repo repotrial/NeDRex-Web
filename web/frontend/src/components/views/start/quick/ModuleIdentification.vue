@@ -57,7 +57,7 @@
             <v-card-subtitle style="margin-top: -25px">Add seeds to your
               list
               <span v-if="!blitz">{{ blitz ? "." : " or use an expression data based algorithm (" }}<a
-                @click="seedTypeId=0; methodModel=1; makeStep('continue')">BiCoN
+                @click="seedTypeId=0; methodModel=1; makeStep('continue'); setBicon()">BiCoN
                 <v-icon right size="1em" style="margin-left: 0">fas fa-caret-right</v-icon>
               </a>{{ ")." }}
               </span>
@@ -728,6 +728,10 @@ export default {
       this.$refs.graph.setPhysics(this.graph.physics)
     }
     ,
+
+    setBicon: function(){
+      this.$refs.algorithms.setExpMethod("bicon")
+    },
 
     applyExample: function (example) {
       this.reset(true)

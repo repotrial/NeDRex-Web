@@ -68,7 +68,7 @@
             <v-card-subtitle style="margin-top: -25px">Add seeds to your
               list
               <span v-if="!blitz">{{ blitz ? "." : " or use an expression data based algorithm (" }}<a
-                @click="seedTypeId=0; moduleMethodModel=1; makeStep('continue')">BiCoN
+                @click="seedTypeId=0; moduleMethodModel=1; makeStep('continue'); setBicon()">BiCoN
                 <v-icon right size="1em" style="margin-left: 0">fas fa-caret-right</v-icon>
               </a>{{ ")." }}
               </span>
@@ -863,6 +863,10 @@ export default {
     },
     saveDisorders: function (list) {
       this.disorderIds = this.disorderIds.concat(list.filter(id => this.disorderIds.indexOf(id) === -1))
+    },
+
+    setBicon: function(){
+      this.$refs.algorithms.setExpMethod("bicon")
     },
     updateDrugCount: function () {
       this.validationDrugCount = this.$refs.validation.getDrugs().length;

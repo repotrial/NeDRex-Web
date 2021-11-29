@@ -14,6 +14,7 @@ import java.util.*;
 public class Job {
 
 
+
     public enum JobState {
         INITIALIZED, QUEUED, EXECUTING, DONE, NOCHANGE, ERROR, TIMEOUT,LIMITED, WAITING
     }
@@ -28,6 +29,9 @@ public class Job {
     private String params;
     @Transient
     private TreeSet<Integer> seeds;
+
+    @Transient
+    private String expressionData;
 
     @Enumerated(EnumType.ORDINAL)
     private ToolService.Tool method = null;
@@ -120,6 +124,15 @@ public class Job {
 //    public JobRequest getRequest() {
 //        return request;
 //    }
+
+
+    public String getExpressionData() {
+        return expressionData;
+    }
+
+    public void setExpressionData(String expressionData) {
+        this.expressionData = expressionData;
+    }
 
     public LocalDateTime getCreated() {
         return created;
