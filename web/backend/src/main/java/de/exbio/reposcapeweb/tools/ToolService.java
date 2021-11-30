@@ -203,8 +203,8 @@ public class ToolService {
     public Process executeJob(String command, Tool algo) {
         try {
             ProcessBuilder pb = algorithms.get(algo).getExecutionEnvironment((executor.getAbsolutePath() + " " + command).split(" "));
-            ProcessUtils.executeProcessWait(pb,true);
-//          return ProcessUtils.executeProcess(pb);
+//            ProcessUtils.executeProcessWait(pb,true);
+          return ProcessUtils.executeProcess(pb);
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }

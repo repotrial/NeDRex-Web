@@ -73,6 +73,9 @@
               <div>
 
                 <template v-if="getAlgorithmMethod()==='bicon'">
+                  <div style="width: 200px">
+                    <v-select :items="exprIds" item-text="id" item-value="id" v-model="getAlgorithmModels().exprIDType"></v-select>
+                  </div>
                   <div style="justify-self: flex-end">
                     <v-file-input
                       v-on:change="biconFile"
@@ -585,6 +588,7 @@ export default {
       experimentalSwitch: true,
       groupModel: undefined,
       showDescription: false,
+      exprIds: undefined,
       groups: [
         {
           id: "nw",
@@ -620,6 +624,7 @@ export default {
         }, {
           id: "bicon", group: "exp", label: "BiCoN", scores: [], models: {
             exprFile: undefined,
+            exprIDType: 'entrez',
             lg: [10, 15]
           },
           descType: "Abstract",
@@ -701,6 +706,7 @@ export default {
       this.methodModel = 0
       this.$emit("algorithmSelectedEvent", true)
     }
+    this.getExprIDTypes()
   },
 
   watch: {
@@ -784,10 +790,10 @@ export default {
       let str = ""
       Object.keys(params).forEach(key => {
         if (key === "exprData")
-          str += "Expression-File="+this.getAlgorithmModels().exprFile.name
+          str += "Expression-File=" + this.getAlgorithmModels().exprFile.name
         else
           str += key + "=" + params[key]
-        str+= ", "
+        str += ", "
       })
       str = str.substring(0, str.length - 2)
       return str
@@ -803,10 +809,13 @@ export default {
         this.seeds = []
         params['lg_min'] = this.getAlgorithmModels().lg[0];
         params['lg_max'] = this.getAlgorithmModels().lg[1];
+        //TODO maybe make just dependent on typeID
         params['type'] = "gene"
+        params['exprIDType']=this.getAlgorithmModels().exprIDType
         await this.$utils.readFile(this.getAlgorithmModels().exprFile).then(content => {
           params['exprData'] = content
         })
+        console.log(params)
         return params
       }
       if (method === 'diamond') {
@@ -868,10 +877,19 @@ export default {
         }
         ctx.$emit("jobSubmitted")
       }).catch(console.error)
+    },
+
+
+
+    getExprIDTypes: function () {
+      this.$http.get("/getAllowedExpressionIDs").then(response => {
+        if (response.data != null)
+          return response.data
+      }).then(data => {
+        this.exprIds = data.map(id=> {return {id:id}})
+      }).catch(console.error)
     }
-
-  }
-
+  },
 }
 </script>
 

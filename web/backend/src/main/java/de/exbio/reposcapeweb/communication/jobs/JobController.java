@@ -150,14 +150,18 @@ public class JobController {
 
     private void prepareExpressionFile(JobRequest req) {
         String data = req.getParams().get("exprData");
+        String idType = req.getParams().get("exprIDType");
         if (data.indexOf(',') > -1)
             data = StringUtils.split(data, ',').get(1);
         final boolean[] header = {true};
         char tab = '\t';
         char n = '\n';
         StringBuilder mapped = new StringBuilder();
+
+        HashMap<String, String> idMap = geneService.getDomainIdTypes().contains(idType) ? geneService.getSecondaryDomainToIDMap(idType) : proteinService.getSecondaryDomainToIDMap(idType);
+
         StringUtils.split(new String(Base64.getDecoder().decode(data)), '\n').forEach(line -> {
-                    if (line.length() == 0 || line.charAt(0) == '!') {
+                    if (line.length() == 0 || line.charAt(0) == '!' || line.charAt(0) == '#') {
                         return;
                     }
                     if (header[0]) {
@@ -166,15 +170,16 @@ public class JobController {
                         return;
                     }
                     LinkedList<String> split = StringUtils.split(line, "\t");
-                    String entrez = split.get(0);
-                    if (entrez.charAt(0) == '"')
-                        entrez = entrez.substring(1, entrez.length() - 1);
+                    String id = split.get(0);
+                    if (id.charAt(0) == '"')
+                        id = id.substring(1, id.length() - 1);
 
-                    if (!entrez.startsWith("entrez."))
-                        entrez = "entrez." + entrez;
-                    Integer id = geneService.getDomainToIdMap().get(entrez);
-                    if (id != null) {
-                        mapped.append(id);
+                    if (id.startsWith(idType + "."))
+                        id = id.substring(idType.length() + 1);
+                    id = id.toLowerCase();
+                    String strID = idMap.get(id);
+                    if (strID != null) {
+                        mapped.append(strID);
                         split.subList(1, split.size()).forEach(e -> mapped.append(tab).append(e));
                         mapped.append(n);
                     }

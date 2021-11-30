@@ -219,8 +219,8 @@ public class WebGraphService {
                 }
                 String[] attributes = finalReq1.attributes.get("edges").get(stringType);
                 HashSet<String> attrs = new HashSet<>(Arrays.asList(attributes));
-                HashMap<String, String> attributeLabelMap = type<0 ? g.getCustomEdgeAttributeLabels().get(type) :edgeController.getAttributeLabelMap(stringType);
-                if (g.getCustomEdgeAttributeLabels().get(type)!=null)
+                HashMap<String, String> attributeLabelMap = type < 0 ? g.getCustomEdgeAttributeLabels().get(type) : edgeController.getAttributeLabelMap(stringType);
+                if (g.getCustomEdgeAttributeLabels().get(type) != null)
                     attributeLabelMap.putAll(g.getCustomEdgeAttributeLabels().get(type));
                 finalList.addListAttributes("edges", stringType, attributes, attributeLabelMap);
                 List<PairId> edges = edgeList.stream().map(e -> new PairId(e.getId1(), e.getId2())).collect(Collectors.toList());
@@ -1104,10 +1104,14 @@ public class WebGraphService {
 
         algorithm.createGraph(derived, j, nodeTypeId, g);
 
-        //TODO maybe as an option
-        //if (!algorithm.hasCustomEdges())
-        updateEdges(derived, j, nodeTypeId);
+        if (algorithm.getEnum().equals(ToolService.Tool.BICON)) {
+            extendGraph(derived, "GeneGeneInteraction", true, false, false, 0.0, false, false);
+        } else {
 
+            //TODO maybe as an option
+            //if (!algorithm.hasCustomEdges())
+            updateEdges(derived, j, nodeTypeId);
+        }
         AtomicInteger size = new AtomicInteger();
         derived.getNodes().forEach((k, v) -> size.addAndGet(v.size()));
         derived.getEdges().forEach((k, v) -> size.addAndGet(v.size()));

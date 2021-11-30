@@ -7,6 +7,7 @@ import de.exbio.reposcapeweb.db.services.NodeService;
 import de.exbio.reposcapeweb.db.updates.UpdateOperation;
 import de.exbio.reposcapeweb.filter.NodeFilter;
 import de.exbio.reposcapeweb.utils.Pair;
+import de.exbio.reposcapeweb.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +45,7 @@ public class ProteinService extends NodeService {
             allFilter.removeByNodeIds(updates.get(UpdateOperation.Deletion).values().stream().map(Protein::getId).collect(Collectors.toSet()));
         }
 
-        LinkedList<Protein> toSave = updates.get(UpdateOperation.Insertion).values().stream().filter(p -> p.taxid > -1).collect(Collectors.toCollection( LinkedList::new));
+        LinkedList<Protein> toSave = updates.get(UpdateOperation.Insertion).values().stream().filter(p -> p.taxid > -1).collect(Collectors.toCollection(LinkedList::new));
         int insertCount = toSave.size();
         if (updates.containsKey(UpdateOperation.Alteration)) {
             HashMap<String, Protein> toUpdate = updates.get(UpdateOperation.Alteration);
@@ -106,7 +107,7 @@ public class ProteinService extends NodeService {
         return Protein.sourceAttributes.toArray(String[]::new);
     }
 
-    public Iterable<Protein> findAll(){
+    public Iterable<Protein> findAll() {
         return proteinRepository.findAll();
     }
 
@@ -122,17 +123,40 @@ public class ProteinService extends NodeService {
 
     @Override
     public void readIdDomainMapsFromDb() {
-        findAll().forEach(n->{
-            domainToIdMap.put(n.getPrimaryDomainId(),n.getId());
-            idToDomainMap.put(n.getId(),new Pair<>(n.getPrimaryDomainId(),n.getDisplayName()));
+        findAll().forEach(n -> {
+            domainToIdMap.put(n.getPrimaryDomainId(), n.getId());
+            idToDomainMap.put(n.getId(), new Pair<>(n.getPrimaryDomainId(), n.getDisplayName()));
         });
     }
 
     @Override
-    public void readFilterFromDB(){
+    public void readFilterFromDB() {
         allFilter = new NodeFilter();
-        findAll().forEach(n->{
-            allFilter.add(n.toDistinctFilter(),n.toUniqueFilter());
+        findAll().forEach(n -> {
+            allFilter.add(n.toDistinctFilter(), n.toUniqueFilter());
         });
+    }
+
+    public HashMap<String, String> getSecondaryDomainToIDMap(String idType) {
+//        TODO make cleaner with cached map maybe
+        HashMap<String, String> map = new HashMap<>();
+        findAll().forEach(g -> {
+            g.getDomainIds().forEach(id -> {
+                if (id.startsWith(idType))
+                    map.put(StringUtils.splitFirst(id, '.').get(1).toLowerCase(), g.getPrimaryDomainId());
+
+            });
+        });
+        return map;
+    }
+
+    public HashSet<String> getDomainIdTypes() {
+        HashSet<String> set = new HashSet<>();
+        findAll().forEach(g -> {
+            g.getDomainIds().forEach(id -> {
+                set.add(StringUtils.splitFirst(id, '.').get(0));
+            });
+        });
+        return set;
     }
 }

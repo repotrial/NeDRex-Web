@@ -15,6 +15,8 @@ import de.exbio.reposcapeweb.db.entities.ids.PairId;
 import de.exbio.reposcapeweb.db.history.GraphHistoryDetail;
 import de.exbio.reposcapeweb.db.history.HistoryController;
 import de.exbio.reposcapeweb.db.services.controller.NodeController;
+import de.exbio.reposcapeweb.db.services.nodes.GeneService;
+import de.exbio.reposcapeweb.db.services.nodes.ProteinService;
 import de.exbio.reposcapeweb.db.updates.UpdateService;
 import de.exbio.reposcapeweb.tools.ToolService;
 import de.exbio.reposcapeweb.utils.Pair;
@@ -453,6 +455,21 @@ public class RequestController {
     public String submitJob(@RequestBody JobRequest request) {
         Job j = jobController.registerJob(request);
         return toJson(j.toMap());
+    }
+
+    @Autowired
+    GeneService geneService;
+
+    @Autowired
+    ProteinService proteinService;
+
+    @RequestMapping(value="/getAllowedExpressionIDs", method=RequestMethod.GET)
+    @ResponseBody
+    public String getAllowedExpressionIDs(){
+        HashSet<String> allIds = new HashSet<>();
+        allIds.addAll(geneService.getDomainIdTypes());
+//        allIds.addAll(proteinService.getDomainIdTypes());
+        return toJson(allIds);
     }
 
     @RequestMapping(value = "/getDisorderHierarchy", method = RequestMethod.GET)
