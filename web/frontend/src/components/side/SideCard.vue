@@ -1,7 +1,7 @@
 <template>
   <v-container :style="{position: 'fixed', width: sideWidth+'px' ,right: 0}">
 
-    <v-card elevation="3" style="padding-top: 15px; overflow-y: auto; max-height: 80vh">
+    <v-card ref="scrollCard" elevation="3" style="padding-top: 15px; overflow-y: auto; max-height: 80vh">
       <v-card elevation="3" style="margin:15px"
               v-if="gid!==undefined && graphInfo !=null && Object.keys(options.list.entityGraph).length >0">
 
@@ -100,7 +100,7 @@
               <v-list-item-action>
                 <v-chip
                   outlined
-                  @click="copyLink"
+                  @click="copyLink; printNotification('Copied graph link to clipboard!',1)"
                 >
                   <v-icon
                     left
@@ -593,7 +593,24 @@ export default {
     ,
     loadDetails: function (req) {
       this.show.detail = req != null;
-      this.$refs.details.loadDetails(req)
+      try {
+        this.$refs.details.loadDetails(req).then(() => {
+          this.$nextTick(() => {
+            this.focusTop(this.$refs.detail)
+          })
+        })
+      }catch (ignore){
+
+      }
+    },
+
+    focusTop: function (element) {
+      this.scroll(element.$el.offsetTop)
+    },
+
+    scroll : function(offset) {
+      const panel = this.$refs.scrollCard
+      panel.$el.scrollTo({top: offset, behavior: "smooth"})
     },
 
     loadFilter: function (data) {

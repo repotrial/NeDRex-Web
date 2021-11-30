@@ -424,8 +424,10 @@ export default {
       this.redirected = redirect != null && redirect
       if (!this.redirected)
         this.lastReq = detailRequest;
+      if(detailRequest==null)
+        return
       if (!detailRequest.edge) {
-        this.$http.get("getNodeDetails?name=" + detailRequest.type + "&id=" + detailRequest.id).then(response => {
+        return this.$http.get("getNodeDetails?name=" + detailRequest.type + "&id=" + detailRequest.id).then(response => {
           if (response.data !== undefined) {
             this.detailedObject = response.data
             this.detailedObject.node = true;
@@ -437,7 +439,7 @@ export default {
           console.error(err)
         })
       } else {
-        this.$http.get("getEdgeDetails?name=" + detailRequest.type + "&id1=" + detailRequest.id1 + "&id2=" + detailRequest.id2 + "&gid=" + this.gid).then(response => {
+        return this.$http.get("getEdgeDetails?name=" + detailRequest.type + "&id1=" + detailRequest.id1 + "&id2=" + detailRequest.id2 + "&gid=" + this.gid).then(response => {
           if (response.data !== undefined) {
             this.detailedObject = response.data
             this.detailedObject.edge = true;
