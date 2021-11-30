@@ -1112,6 +1112,7 @@ public class WebGraphService {
             //if (!algorithm.hasCustomEdges())
             updateEdges(derived, j, nodeTypeId);
         }
+        derived.calculateDegrees();
         AtomicInteger size = new AtomicInteger();
         derived.getNodes().forEach((k, v) -> size.addAndGet(v.size()));
         derived.getEdges().forEach((k, v) -> size.addAndGet(v.size()));

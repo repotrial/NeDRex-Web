@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-container :style="{maxWidth: width+'px', display: 'flex'}">
-      <v-card style="margin:5px;" :width="width*(selectedId?0.5:1)+'px'" :style="{maxWidth: width*(selectedId?0.5:1)+'px'}">
+      <v-card style="margin:5px;" :width="width*(selectedId?0.5:1)+'px'" :style="{maxWidth: width*(selectedId?0.5:1)-(selectedId?0:60)+'px'}">
         <v-card-title>History<span
           style="color:gray; padding-left: 7px"> ({{
             options.favos ? "Favourites" : options.chronological ? "List" : "Tree"

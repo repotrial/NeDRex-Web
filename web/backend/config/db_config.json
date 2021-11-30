@@ -171,7 +171,7 @@
         {
           "name": "molecularFormula",
           "source": true,
-          "list": true,
+          "list": false,
           "detail": true,
           "id": false,
           "label": "Formula"
