@@ -220,7 +220,7 @@
             <MIAlgorithmSelect ref="algorithms" :blitz="blitz" type="mi" :seeds="seeds"
                                socket-event="quickModuleFinishedEvent" :seed-type-id="seedTypeId"
                                @algorithmSelectedEvent="acceptAlgorithmSelectEvent"
-                               @jobEvent="readJob"></MIAlgorithmSelect>
+                               @jobEvent="readJob" @clearSeedsEvent="seeds = []"></MIAlgorithmSelect>
             <ButtonCancel @click="makeStep"></ButtonCancel>
             <ButtonBack @click="makeStep"></ButtonBack>
             <ButtonNext @click="makeStep" label="RUN"

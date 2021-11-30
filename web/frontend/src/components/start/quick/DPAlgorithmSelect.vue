@@ -350,6 +350,10 @@ export default {
       }
 
       payload.experimentalOnly = params.experimentalOnly
+      if (this.seeds.length === 0 && gid == null) {
+        this.printNotification("Cannot execute " + this.getAlgorithm().label + " without seed nodes!", 1)
+        return;
+      }
       payload.selection = gid == null
       if (gid != null) {
         payload.graphId = gid
@@ -357,10 +361,7 @@ export default {
         payload["nodes"] = this.seeds.map(n => n.id)
       }
       let ctx = this
-      if (this.seeds.length === 0) {
-        this.printNotification("Cannot execute " + this.getAlgorithm().label + " without seed nodes!", 1)
-        return;
-      }
+
       this.$http.post("/submitJob", payload).then(response => {
         if (response.data !== undefined)
           return response.data
@@ -372,9 +373,10 @@ export default {
           ctx.$emit("jobEvent", data)
         }
       }).catch(console.error)
-
-    }
-
+    },
+    printNotification(message, type) {
+      this.$emit("printNotification", message, type)
+    },
   }
 
 }

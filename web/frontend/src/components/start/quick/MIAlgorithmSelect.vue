@@ -806,7 +806,7 @@ export default {
       params["addInteractions"] = true
       params["nodesOnly"] = false
       if (method === 'bicon') {
-        this.seeds = []
+        this.$emit("clearSeedsEvent")
         params['lg_min'] = this.getAlgorithmModels().lg[0];
         params['lg_max'] = this.getAlgorithmModels().lg[1];
         //TODO maybe make just dependent on typeID

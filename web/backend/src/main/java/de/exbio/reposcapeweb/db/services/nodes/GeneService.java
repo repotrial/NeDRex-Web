@@ -22,6 +22,7 @@ public class GeneService extends NodeService {
 
     private HashMap<Integer, Pair<String, String>> idToDomainMap = new HashMap<>();
     private HashMap<String, Integer> domainToIdMap = new HashMap<>();
+    private HashSet<String> idTypes;
 
     private NodeFilter allFilter;
 
@@ -29,6 +30,7 @@ public class GeneService extends NodeService {
     public GeneService(GeneRepository geneRepository) {
         this.geneRepository = geneRepository;
         allFilter = new NodeFilter();
+        idTypes = this.getDomainIdTypes();
     }
 
     public boolean submitUpdates(EnumMap<UpdateOperation, HashMap<String, Gene>> updates) {
@@ -157,12 +159,16 @@ public class GeneService extends NodeService {
 
     public HashSet<String> getDomainIdTypes() {
         HashSet<String> set = new HashSet<>();
-        findAll().forEach(g -> {
-            g.getDomainIds().forEach(id -> {
-                set.add(StringUtils.splitFirst(id, '.').get(0));
+        if (idTypes == null) {
+            findAll().forEach(g -> {
+                g.getDomainIds().forEach(id -> {
+                    set.add(StringUtils.splitFirst(id, '.').get(0));
+                });
             });
-        });
-        set.add("symbol");
-        return set;
+            set.add("symbol");
+            return set;
+        }
+        return idTypes;
+
     }
 }

@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import java.io.*;
 import java.nio.file.Files;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 public class JobController {
@@ -154,12 +155,13 @@ public class JobController {
         if (data.indexOf(',') > -1)
             data = StringUtils.split(data, ',').get(1);
         final boolean[] header = {true};
-        char tab = '\t';
         char n = '\n';
         StringBuilder mapped = new StringBuilder();
 
         HashMap<String, String> idMap = geneService.getDomainIdTypes().contains(idType) ? geneService.getSecondaryDomainToIDMap(idType) : proteinService.getSecondaryDomainToIDMap(idType);
 
+        AtomicReference<Character> sep = new AtomicReference<>(null);
+        char[] seps = new char[]{'\t',',',';'};
         StringUtils.split(new String(Base64.getDecoder().decode(data)), '\n').forEach(line -> {
                     if (line.length() == 0 || line.charAt(0) == '!' || line.charAt(0) == '#') {
                         return;
@@ -169,7 +171,20 @@ public class JobController {
                         header[0] = false;
                         return;
                     }
-                    LinkedList<String> split = StringUtils.split(line, "\t");
+                    if(sep.get() ==null){
+                        int maxAmount = 0;
+                        char bestChar = '\t';
+                        for (char c : seps) {
+                            int nr = StringUtils.split(line,c).size();
+                            if(nr>maxAmount){
+                                maxAmount=nr;
+                                bestChar=c;
+                            }
+                        }
+                        sep.set(bestChar);
+                    }
+
+                    LinkedList<String> split = StringUtils.splitFirst(line, sep.get());
                     String id = split.get(0);
                     if (id.charAt(0) == '"')
                         id = id.substring(1, id.length() - 1);
@@ -179,9 +194,7 @@ public class JobController {
                     id = id.toLowerCase();
                     String strID = idMap.get(id);
                     if (strID != null) {
-                        mapped.append(strID);
-                        split.subList(1, split.size()).forEach(e -> mapped.append(tab).append(e));
-                        mapped.append(n);
+                        mapped.append(strID).append(sep.get()).append(split.get(1)).append(n);
                     }
                 }
         );

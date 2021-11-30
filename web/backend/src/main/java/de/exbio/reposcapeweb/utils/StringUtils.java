@@ -51,11 +51,10 @@ public class StringUtils {
         int idx = line.indexOf(sep);
         if (idx > -1) {
             v.add(line.substring(0, idx));
-            v.add(line.substring(idx));
+            v.add(line.substring(idx+1));
         } else {
             v.add(line);
         }
-
         return v;
     }
 
@@ -243,18 +242,16 @@ public class StringUtils {
 
     public static HashMap<String, String> stringToMap(String s) {
         HashMap<String, String> out = new HashMap<>();
-        stringToList(s).forEach(i->{
-            LinkedList<String> e = splitFirst(i, ':');
+        stringToList(s).forEach(i -> {
+            LinkedList<String> e = split(i, ':');
             out.put(e.get(0), e.get(1));
         });
-
         return out;
     }
 
     public static String mapToString(HashMap<String, String> map) {
         return listToString(map.entrySet().stream().map(e -> e.getKey() + ":" + e.getValue()).collect(Collectors.toList()));
     }
-
     public static LinkedList<String> convertBase64(String data) {
         if (data.indexOf(',') > -1)
             data = StringUtils.split(data, ',').get(1);

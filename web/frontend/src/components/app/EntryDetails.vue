@@ -118,7 +118,7 @@
               fa-external-link-alt
             </v-icon>
           </v-chip>
-          <span v-else>{{ format(item, detailedObject[item]) }}</span>
+          <div v-else v-html="format(item, detailedObject[item])"></div>
         </div>
       </v-timeline-item>
     </v-timeline>

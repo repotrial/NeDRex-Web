@@ -256,7 +256,7 @@
           <MIAlgorithmSelect ref="moduleAlgorithms" :blitz="blitz" :seeds="seeds" :seed-type-id="seedTypeId"
                              socket-event="quickRepurposeModuleFinishedEvent"
                              @algorithmSelectedEvent="acceptModuleAlgorithmSelectEvent"
-                             @jobEvent="readModuleJob"></MIAlgorithmSelect>
+                             @jobEvent="readModuleJob" @clearSeedsEvent="seeds = []"></MIAlgorithmSelect>
           <ButtonCancel @click="makeStep"></ButtonCancel>
           <ButtonBack @click="makeStep"></ButtonBack>
           <ButtonNext @click="makeStep"
@@ -866,7 +866,7 @@ export default {
     },
 
     setBicon: function(){
-      this.$refs.algorithms.setExpMethod("bicon")
+      this.$refs.moduleAlgorithms.setExpMethod("bicon")
     },
     updateDrugCount: function () {
       this.validationDrugCount = this.$refs.validation.getDrugs().length;
