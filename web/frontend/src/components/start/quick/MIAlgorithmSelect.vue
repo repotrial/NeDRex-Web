@@ -15,7 +15,7 @@
         <v-radio-group row v-model="groupModel">
           <v-tooltip bottom v-for="group in groups" :key="group.id">
             <template v-slot:activator="{attrs, on}">
-              <v-radio :label="group.label" :value="group.id" v-on="on" v-bind="attrs">
+              <v-radio :label="group.label" :value="group.id" v-on="on" v-bind="attrs" :disabled="group.id==='nw' && (seeds==null || seeds.length ===0)">
               </v-radio>
             </template>
             <span>{{ group.tooltip }}</span>
