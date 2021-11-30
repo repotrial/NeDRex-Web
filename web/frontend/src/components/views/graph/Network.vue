@@ -426,6 +426,7 @@ export default {
         this.prepare()
         this.show = true
         if (this.nodeSet != null) {
+          Object.keys(this.options.groups).forEach(g => this.options.groups[g].shape = this.groups[g].shape)
           this.showLoops(false)
           this.setVisualized(true)
           this.$emit("visualizationEvent")

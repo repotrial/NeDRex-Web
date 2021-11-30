@@ -27,17 +27,19 @@ export default {
     items: Array,
     label: String,
     icon: String,
+    value: String,
   },
 
   data() {
     return {
-      model: this.items[0]
+      model: this.value
     }
   },
 
   methods: {
     emitEvent: function (event) {
-      this.$emit("change", event)
+      this.$emit("input",this.model)
+      this.$emit("change", this.model)
     }
   }
 }
