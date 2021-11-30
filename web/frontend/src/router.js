@@ -10,8 +10,8 @@ const router = new Router({
     base: CONFIG.PATH_PREFIX,
     routes: [
       // {path:"/explore/:view/result/:job", component:App},
-      {path:"/", redirect:"/home"},
-      {path: "/home", component: Page},
+      // {path:"/", redirect:"/home"},
+      {path: "/", component: Page},
       {path:"/explore/:view/:tab/:gid", component:Page}
     ]
   },

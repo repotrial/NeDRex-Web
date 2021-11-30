@@ -3,7 +3,7 @@
     <div v-show="prominent" id="particles-js"></div>
     <div id="title-div" style="position:fixed">
       <img :src="getConfig().STATIC_PATH+'nedrex-web-logo-transparent.png'" :width="prominent?350:250"
-           :style="{'padding-top':'25px', cursor: 'pointer'}" @click="$emit('redirectEvent','/home',true)">
+           :style="{'padding-top':'25px', cursor: 'pointer'}" @click="$emit('redirectEvent','/',true)">
     </div>
     <v-row>
       <v-col cols="11"></v-col>

@@ -4,7 +4,7 @@
       Cite
     </v-card-title>
     <v-card-text>
-      <div>TODO citation blabla</div>
+      <div>Information on how to cite NeDRex-web will be added in the future.</div>
     </v-card-text>
   </v-card>
 </template>
