@@ -20,10 +20,10 @@
         </v-card-text>
         <v-divider></v-divider>
         <v-card-subtitle>Data Licensing</v-card-subtitle>
-        <v-card-text v-if="licence!=null">
-          <div v-html="licence" style="text-align: justify">
-          </div>
-        </v-card-text>
+        <template v-if="licence!=null" v-for="entry in licence">
+          <v-card-title>{{entry.title}}</v-card-title>
+          <v-card-text><div v-html="entry.content" style="text-align: justify"></div></v-card-text>
+        </template>
         <v-divider></v-divider>
 
         <v-card-actions>
@@ -61,9 +61,8 @@ export default {
       }
     },
     loadLegalText: function () {
-      this.$http.get("getLicence").then(response => {
-        if (response.data != null)
-          this.licence = response.data.replaceAll("\n", "<br>");
+      this.$http.getLicense().then(data => {
+          this.licence =data;
       })
     },
     show: function(){
