@@ -13,16 +13,18 @@ import java.util.HashMap;
 public class JobCache {
 
     private EnumMap<ToolService.Tool, HashMap<Integer, String>> cache = new EnumMap<>(ToolService.Tool.class);
+    private EnumMap<ToolService.Tool, HashMap<String, Integer>> cacheHash = new EnumMap<>(ToolService.Tool.class);
     private ObjectMapper objectMapper;
 
     @Autowired
-    public JobCache(ObjectMapper objectMapper){
-        this.objectMapper=objectMapper;
+    public JobCache(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
     }
 
     public String getCached(Job j) {
         if (!cache.containsKey(j.getMethod())) {
             cache.put(j.getMethod(), new HashMap<>());
+            cacheHash.put(j.getMethod(), new HashMap<>());
             addToCache(j);
             return null;
         }
@@ -35,7 +37,15 @@ public class JobCache {
 
     private void addToCache(Job j) {
         cache.get(j.getMethod()).put(j.hashCode(), j.getJobId());
+        cacheHash.get(j.getMethod()).put(j.getJobId(), j.hashCode());
     }
 
 
+    public void remove(Job j) {
+        if (j != null && cacheHash.get(j.getMethod())!=null) {
+            Integer hash = cacheHash.get(j.getMethod()).remove(j.getJobId());
+            if (hash != null)
+                cache.get(j.getMethod()).remove(hash);
+        }
+    }
 }

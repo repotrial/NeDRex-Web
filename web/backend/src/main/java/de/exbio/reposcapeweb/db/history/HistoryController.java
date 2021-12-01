@@ -41,7 +41,7 @@ public class HistoryController {
     public HistoryController(HistoryRepository historyRepository, ObjectMapper objectMapper, Environment env, ToolService toolService) {
         this.historyRepository = historyRepository;
         this.objectMapper = objectMapper;
-        this.toolService=toolService;
+        this.toolService = toolService;
         this.env = env;
     }
 
@@ -288,7 +288,9 @@ public class HistoryController {
                 g.getParent().getDerived().remove(idx);
             }
             g.getDerived().forEach(child -> {
-                g.getParent().addDerivate(child);
+                if (g.getParent() != null) {
+                    g.getParent().addDerivate(child);
+                }
                 child.setParent(g.getParent());
             });
             historyRepository.saveAll(g.getDerived());
@@ -300,8 +302,9 @@ public class HistoryController {
                 FileUtils.deleteDirectory(cached.getParentFile());
         }
         userMap.forEach((u, m) -> m.remove(gid));
-        if (g != null)
+        if (g != null) {
             historyRepository.delete(g);
+        }
         graphMap.remove(gid);
     }
 }

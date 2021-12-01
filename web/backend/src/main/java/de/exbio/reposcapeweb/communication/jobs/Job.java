@@ -246,6 +246,6 @@ public class Job {
     //FIXME can overflow but unlikely to cause collisions
     @Override
     public int hashCode() {
-        return Objects.hash(params, Arrays.hashCode(seeds.toArray()),dbVersion);
+        return Objects.hash(params, Arrays.hashCode(seeds==null ? new Integer[]{} : seeds.toArray()),dbVersion);
     }
 }

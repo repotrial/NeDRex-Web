@@ -1342,6 +1342,7 @@ public class WebGraphService {
     public void remove(String gid) {
         removeTempDir(gid);
         cache.remove(gid);
+
         AtomicReference<String> user = new AtomicReference<>(null);
         userGraph.forEach((u, g) -> {
             if (gid.equals(g))
@@ -1352,6 +1353,9 @@ public class WebGraphService {
         File thumb = historyController.getThumbnailPath(gid);
         if (thumb != null && thumb.exists())
             thumb.delete();
+        File layout = historyController.getLayoutPath(gid);
+        if (layout != null && layout.exists())
+            layout.delete();
         historyController.remove(gid);
     }
 

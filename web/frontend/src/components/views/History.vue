@@ -420,6 +420,7 @@ export default {
           return response.data
       }).then(data => {
         this.selected = data
+        console.log(data)
         this.description = data.comment
       }).then(() => {
         if (!this.selected.thumbnailReady) {

@@ -161,7 +161,7 @@ public class JobController {
         HashMap<String, String> idMap = geneService.getDomainIdTypes().contains(idType) ? geneService.getSecondaryDomainToIDMap(idType) : proteinService.getSecondaryDomainToIDMap(idType);
 
         AtomicReference<Character> sep = new AtomicReference<>(null);
-        char[] seps = new char[]{'\t',',',';'};
+        char[] seps = new char[]{'\t', ',', ';'};
         StringUtils.split(new String(Base64.getDecoder().decode(data)), '\n').forEach(line -> {
                     if (line.length() == 0 || line.charAt(0) == '!' || line.charAt(0) == '#') {
                         return;
@@ -171,14 +171,14 @@ public class JobController {
                         header[0] = false;
                         return;
                     }
-                    if(sep.get() ==null){
+                    if (sep.get() == null) {
                         int maxAmount = 0;
                         char bestChar = '\t';
                         for (char c : seps) {
-                            int nr = StringUtils.split(line,c).size();
-                            if(nr>maxAmount){
-                                maxAmount=nr;
-                                bestChar=c;
+                            int nr = StringUtils.split(line, c).size();
+                            if (nr > maxAmount) {
+                                maxAmount = nr;
+                                bestChar = c;
                             }
                         }
                         sep.set(bestChar);
@@ -347,5 +347,16 @@ public class JobController {
         return j.getParams();
 
 
+    }
+
+    public void removeJob(String jobId) {
+        Job j = getJobById(jobId);
+        jobCache.remove(j);
+        if (j.isResultFile()) {
+            File result = getDownload(j.getJobId());
+            if (result != null && result.exists())
+                result.delete();
+        }
+        jobRepository.delete(j);
     }
 }

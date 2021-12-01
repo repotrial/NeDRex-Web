@@ -89,7 +89,7 @@ public class RequestController {
         String out = "";
         HashMap<String, Object> details = new HashMap<>();
         HashSet<String> attrs = DBConfig.getConfig().nodes.get(Graphs.getNode(name)).getDetailAttributes().stream().map(a -> a.name).collect(Collectors.toCollection(HashSet::new));
-        nodeController.nodeToAttributeList(Graphs.getNode(name), id,attrs).forEach((k, v) -> details.put(nodeController.getAttributeLabelMap(name).get(k), v));
+        nodeController.nodeToAttributeList(Graphs.getNode(name), id, attrs).forEach((k, v) -> details.put(nodeController.getAttributeLabelMap(name).get(k), v));
         try {
             details.put("order", nodeController.getDetailAttributeLabels(Graphs.getNode(name)));
             out = objectMapper.writeValueAsString(details);
@@ -310,13 +310,15 @@ public class RequestController {
                 .body(resource);
     }
 
-    @RequestMapping(value="getLicence", method = RequestMethod.GET)
-    public @ResponseBody String getLicence(){
+    @RequestMapping(value = "getLicence", method = RequestMethod.GET)
+    public @ResponseBody
+    String getLicence() {
         return updateService.getLicenceText();
     }
 
-    @RequestMapping(value="/getLayout", method=RequestMethod.GET)
-    public @ResponseBody String getLayout(@RequestParam("gid") String gid, @RequestParam("type") String type){
+    @RequestMapping(value = "/getLayout", method = RequestMethod.GET)
+    public @ResponseBody
+    String getLayout(@RequestParam("gid") String gid, @RequestParam("type") String type) {
         return toJson(webGraphService.loadLayout(gid, type));
     }
 
@@ -376,6 +378,9 @@ public class RequestController {
     @RequestMapping(value = "/removeGraph", method = RequestMethod.GET)
     @ResponseBody
     public void removeGraph(@RequestParam("gid") String gid) {
+        String jid = jobController.getJobByGraphId(gid);
+        if (jid != null)
+            jobController.removeJob(jid);
         webGraphService.remove(gid);
     }
 
@@ -463,9 +468,9 @@ public class RequestController {
     @Autowired
     ProteinService proteinService;
 
-    @RequestMapping(value="/getAllowedExpressionIDs", method=RequestMethod.GET)
+    @RequestMapping(value = "/getAllowedExpressionIDs", method = RequestMethod.GET)
     @ResponseBody
-    public String getAllowedExpressionIDs(){
+    public String getAllowedExpressionIDs() {
         HashSet<String> allIds = new HashSet<>();
         allIds.addAll(geneService.getDomainIdTypes());
 //        allIds.addAll(proteinService.getDomainIdTypes());
@@ -497,9 +502,9 @@ public class RequestController {
         return toJson(jobController.getJobGraphStatesAndTypes(uid, gid));
     }
 
-    @RequestMapping(value="/getJob", method = RequestMethod.GET)
+    @RequestMapping(value = "/getJob", method = RequestMethod.GET)
     @ResponseBody
-    public String getJob(@RequestParam("id") String id){
+    public String getJob(@RequestParam("id") String id) {
         return toJson(jobController.getJobById(id));
     }
 
