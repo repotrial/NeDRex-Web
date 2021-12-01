@@ -129,21 +129,20 @@
                             {{ ['genes', 'proteins'][this.seedTypeId] }} associated to
                           </v-card-title>
                         </div>
-                        <v-tooltip top>
-                          <template v-slot:activator="{on,attrs}">
-                            <div v-on="on" v-bind="attrs" style="justify-content: flex-end; margin-left: auto">
-                              <LabeledSwitch v-model="advancedOptions"
-                                             @click="suggestionType = advancedOptions ? suggestionType : 'disorder'"
-                                             label-off="Limited" label-on="Full" v-on="on"
-                                             v-bind="attrs"></LabeledSwitch>
-                            </div>
-                          </template>
-                          <div style="width: 300px"><b>Limited Mode:</b><br>The options are limited to the most
-                            interesting and generally used ones to not overcomplicate the user interface <br>
-                            <b>Full Mode:</b><br> The full mode provides a wider list of options to select from for more
-                            specific queries.
-                          </div>
-                        </v-tooltip>
+                        <div v-on="on" v-bind="attrs" style="justify-content: flex-end; margin-left: auto">
+                          <LabeledSwitch v-model="advancedOptions"
+                                         @click="suggestionType = advancedOptions ? suggestionType : 'disorder'"
+                                         label-off="Limited" label-on="Full">
+                            <template v-slot:tooltip>
+                              <div style="width: 300px"><b>Limited Mode:</b><br>The options are limited to the most
+                                interesting and generally used ones to not overcomplicate the user interface <br>
+                                <b>Full Mode:</b><br> The full mode provides a wider list of options to select from for
+                                more
+                                specific queries.
+                              </div>
+                            </template>
+                          </LabeledSwitch>
+                        </div>
                       </div>
 
                       <div style="display: flex">
@@ -729,7 +728,7 @@ export default {
     }
     ,
 
-    setBicon: function(){
+    setBicon: function () {
       this.$refs.algorithms.setExpMethod("bicon")
     },
 

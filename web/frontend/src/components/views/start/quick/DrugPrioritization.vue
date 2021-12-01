@@ -126,21 +126,20 @@
                             {{ ['genes', 'proteins'][this.seedTypeId] }} associated to
                           </v-card-title>
                         </div>
-                        <v-tooltip top>
-                          <template v-slot:activator="{on,attrs}">
-                            <div v-on="on" v-bind="attrs" style="justify-content: flex-end; margin-left: auto">
-                              <LabeledSwitch v-model="advancedOptions"
-                                             @click="suggestionType = advancedOptions ? suggestionType : 'disorder'"
-                                             label-off="Limited" label-on="Full" v-on="on"
-                                             v-bind="attrs"></LabeledSwitch>
-                            </div>
-                          </template>
-                          <div style="width: 300px"><b>Limited Mode:</b><br>The options are limited to the most
-                            interesting and generally used ones to not overcomplicate the user interface <br>
-                            <b>Full Mode:</b><br> The full mode provides a wider list of options to select from for more
-                            specific queries.
-                          </div>
-                        </v-tooltip>
+                        <div v-on="on" v-bind="attrs" style="justify-content: flex-end; margin-left: auto">
+                          <LabeledSwitch v-model="advancedOptions"
+                                         @click="suggestionType = advancedOptions ? suggestionType : 'disorder'"
+                                         label-off="Limited" label-on="Full">
+                            <template v-slot:tooltip>
+                              <div style="width: 300px"><b>Limited Mode:</b><br>The options are limited to the most
+                                interesting and generally used ones to not overcomplicate the user interface <br>
+                                <b>Full Mode:</b><br> The full mode provides a wider list of options to select from for
+                                more
+                                specific queries.
+                              </div>
+                            </template>
+                          </LabeledSwitch>
+                        </div>
                       </div>
                       <div style="display: flex">
 
@@ -247,8 +246,12 @@
                       <span v-else>{{ item.displayName }}</span>
                     </template>
                     <template v-slot:item.data-table-expand="{expand, item,isExpanded}">
-                      <v-icon v-show="!isExpanded" @click="expand(true)" :color="getColoring('nodes',['gene','protein'][seedTypeId])">fas fa-angle-down</v-icon>
-                      <v-icon v-show="isExpanded" @click="expand(false)" :color="getColoring('nodes',['gene','protein'][seedTypeId])">fas fa-angle-up</v-icon>
+                      <v-icon v-show="!isExpanded" @click="expand(true)"
+                              :color="getColoring('nodes',['gene','protein'][seedTypeId])">fas fa-angle-down
+                      </v-icon>
+                      <v-icon v-show="isExpanded" @click="expand(false)"
+                              :color="getColoring('nodes',['gene','protein'][seedTypeId])">fas fa-angle-up
+                      </v-icon>
                     </template>
                     <template v-slot:expanded-item="{ headers, item }">
                       <td :colspan="headers.length">
@@ -366,8 +369,12 @@
                         </td>
                       </template>
                       <template v-slot:item.data-table-expand="{expand, item,isExpanded}">
-                        <v-icon v-show="!isExpanded" @click="expand(true)" :color="getColoring('nodes','drug','light')">fas fa-angle-down</v-icon>
-                        <v-icon v-show="isExpanded" @click="expand(false)" :color="getColoring('nodes','drug','light')">fas fa-angle-up</v-icon>
+                        <v-icon v-show="!isExpanded" @click="expand(true)" :color="getColoring('nodes','drug','light')">
+                          fas fa-angle-down
+                        </v-icon>
+                        <v-icon v-show="isExpanded" @click="expand(false)" :color="getColoring('nodes','drug','light')">
+                          fas fa-angle-up
+                        </v-icon>
                       </template>
                       <template v-slot:footer>
                         <div style="display: flex; justify-content: center">
@@ -577,7 +584,7 @@ export default {
     },
 
     clearData: function () {
-      this.selectedSuggestions= []
+      this.selectedSuggestions = []
       this.disorderIds = []
       if (this.$refs.validation)
         this.$refs.validation.clear()

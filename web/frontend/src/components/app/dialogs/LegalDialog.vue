@@ -25,7 +25,6 @@
           <v-card-text><div v-html="entry.content" style="text-align: justify"></div></v-card-text>
         </template>
         <v-divider></v-divider>
-
         <v-card-actions>
           <v-btn
             color="green darken-1"
