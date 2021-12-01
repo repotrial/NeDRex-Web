@@ -815,7 +815,6 @@ export default {
         await this.$utils.readFile(this.getAlgorithmModels().exprFile).then(content => {
           params['exprData'] = content
         })
-        console.log(params)
         return params
       }
       if (method === 'diamond') {
