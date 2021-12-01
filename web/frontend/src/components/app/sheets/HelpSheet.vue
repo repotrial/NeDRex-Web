@@ -17,7 +17,7 @@
           <v-icon left>fas fa-at</v-icon>
         </v-list-item-icon>
         <v-list-item-title>By Mail:</v-list-item-title>
-        <v-list-item-subtitle><v-chip outlined><a :href="'mailto:andreas.maier-1@uni-hamburg.de?subject='+getMailSubject()">andreas.maier-1(at)uni-hamburg.de</a>
+        <v-list-item-subtitle><v-chip outlined><a :href="'mailto:andreas.maier-1@uni-hamburg.de?subject='+getMailSubject()">andreas.maier-1(_at_]uni-hamburg.de</a>
         </v-chip>
         </v-list-item-subtitle>
       </v-list-item>

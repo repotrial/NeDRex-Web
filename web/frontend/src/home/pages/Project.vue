@@ -1,6 +1,6 @@
 <template>
   <v-card dark :color="bgColor" elevation="5">
-    <v-card-title>NeDRex-Web</v-card-title>
+    <v-card-title style="font-size: xx-large">NeDRex-Web</v-card-title>
     <v-card-text>
       <b>NeDRex-Web</b> is build upon the <b>NeDRex platform</b> and aims to deliver a web-based user interface for
       easy and
@@ -14,7 +14,7 @@
         </v-btn>
       </div>
     </v-card-text>
-    <v-card-title>NeDRex</v-card-title>
+    <v-card-title style="font-size: x-large">NeDRex</v-card-title>
     <v-card-text>
       <div>NeDRex is an interactive network medicine platform for disease module identification and drug repurposing. It
         is build of three main components: a knowledgebase (<b>NeDRexDB</b>), a Cytoscape app (<b>NeDRexApp</b>), and an API
