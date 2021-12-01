@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-container >
+    <v-container>
       <v-card style="margin:5px;padding-bottom: 15px" :loading="loading">
         <template slot="progress">
           <v-card-title>Nodes</v-card-title>
@@ -46,7 +46,8 @@
                 <template v-slot:header.selected>
                   <v-tooltip right>
                     <template v-slot:activator="{attrs, on}">
-                      <v-btn small style="margin-left: -10px; margin-top: -2px;" icon v-bind="attrs" v-on="on" @click="nodeOptions">
+                      <v-btn small style="margin-left: -10px; margin-top: -2px;" icon v-bind="attrs" v-on="on"
+                             @click="nodeOptions">
                         <v-icon small>fas fa-cog</v-icon>
                       </v-btn>
                     </template>
@@ -55,7 +56,7 @@
                   Select
                 </template>
                 <template v-slot:top>
-                  <v-container style="margin-top: 15px;margin-bottom: -40px">
+                  <v-container style="margin-top: 15px;margin-bottom: -20px">
                     <v-row>
                       <v-col
                       >
@@ -71,15 +72,16 @@
                     <div style="display: flex;width: 100%">
                       <div
                         v-show="!filters.nodes.suggestions"
-                        style="justify-self: flex-start; margin-left: 16px; margin-right: 8px"
+                        style="justify-self: flex-start; margin-left: 16px; margin-right: 8px; width: 25%"
                       >
                         <v-select
+                          dense
                           :items="headerNames('nodes',Object.keys(nodes)[nodeTab])"
                           label="Attribute"
                           v-model="filters.nodes.attribute.name"
                           @change="resetFilter('nodes')"
                           outlined
-                          style="width: 20%; min-width: 150px;"
+                          style="width: 100%; min-width: 150px;"
                         ></v-select>
                       </div>
                       <div
@@ -87,6 +89,7 @@
                         style="justify-self: flex-start; width: 20%; margin-left: 8px; margin-right: 8px"
                       >
                         <v-select
+                          dense
                           v-if="filters.nodes.attribute.name === undefined || filters.nodes.attribute.name == null || !isDistinctAttribute('nodes',filters.nodes.attribute.name)"
                           v-model="filters.nodes.attribute.operator"
                           :disabled="filters.nodes.attribute.name === undefined || filters.nodes.attribute.name == null || filters.nodes.attribute.name.length ===0"
@@ -97,6 +100,7 @@
                         ></v-select>
                         <v-select
                           v-else
+                          dense
                           v-model="filters.nodes.attribute.operator"
                           @change="filters.nodes.attribute.dist=true"
                           :items="attributes.nodes[Object.keys(nodes)[nodeTab]].filter(a=>a.label===filters.nodes.attribute.name)[0].values"
@@ -110,6 +114,7 @@
                         style="display: flex; justify-self: flex-start; justify-content: center; width: 100%; margin-left: 8px; margin-right: 16px"
                       >
                         <v-text-field
+                          dense
                           :disabled="filters.nodes.attribute.name == null || filters.nodes.attribute.name.length ===0 || filters.nodes.attribute.operator == null|| filters.nodes.attribute.dist"
                           clearable
                           v-show="!filters.nodes.suggestions"
@@ -118,6 +123,7 @@
                           class="mx-4"
                         ></v-text-field>
                         <v-autocomplete
+                          dense
                           chips
                           :search-input.sync="findNodeSuggestions"
                           v-show="filters.nodes.suggestions"
@@ -128,7 +134,7 @@
                           item-value="key"
                           label="Query (case insensitive)"
                           class="mx-4"
-                          style="max-width: 500px"
+                          style="max-width: 500px; margin-bottom: 4px"
                         >
                           <template v-slot:item="{ item }">
                             <SuggestionElement :data="item"></SuggestionElement>
@@ -204,7 +210,7 @@
                             fas fa-info-circle
                           </v-icon>
                         </template>
-                        <span>id:{{ item.id }}</span>
+                        <span>Details (ID:{{ item.id }})</span>
                       </v-tooltip>
                     </v-col>
                   </v-row>
@@ -257,7 +263,8 @@
                 <template v-slot:header.selected>
                   <v-tooltip right>
                     <template v-slot:activator="{attrs, on}">
-                      <v-btn small style="margin-left: -10px; margin-top: -2px;" icon v-bind="attrs" v-on="on" @click="edgeOptions">
+                      <v-btn small style="margin-left: -10px; margin-top: -2px;" icon v-bind="attrs" v-on="on"
+                             @click="edgeOptions">
                         <v-icon small>fas fa-cog</v-icon>
                       </v-btn>
                     </template>
@@ -266,10 +273,11 @@
                   Select
                 </template>
                 <template v-slot:top>
-                  <v-container style="margin-top: 15px;margin-bottom: -40px">
+                  <v-container style="margin-top: 15px;margin-bottom: -30px">
                     <div style="display: flex;width: 100%">
-                      <div style="justify-self: flex-start; margin-left: 16px; margin-right: 8px">
-                      <v-select
+                      <div style="justify-self: flex-start; margin-left: 16px; margin-right: 8px; width:25%">
+                        <v-select
+                          dense
                           :items="headerNames('edges',Object.keys(edges)[edgeTab])"
                           label="Attribute"
                           v-model="filters.edges.attribute.name"
@@ -278,8 +286,9 @@
                           style="width: 100%"
                         ></v-select>
                       </div>
-                     <div style="justify-self: flex-start; width: 20%; margin-left: 8px; margin-right: 8px">
+                      <div style="justify-self: flex-start; width: 20%; margin-left: 8px; margin-right: 8px">
                         <v-select
+                          dense
                           v-if="filters.edges.attribute.name === undefined || filters.edges.attribute.name == null || !isDistinctAttribute('edges',filters.edges.attribute.name)"
                           v-model="filters.edges.attribute.operator"
                           :items="operatorNames('edges',Object.keys(edges)[edgeTab],filters.edges.attribute.name)"
@@ -289,6 +298,7 @@
                           style="width: 100%"
                         ></v-select>
                         <v-select
+                          dense
                           v-else
                           v-model="filters.edges.attribute.operator"
                           @change="filters.edges.attribute.dist=true"
@@ -305,6 +315,7 @@
                         <v-text-field
                           :disabled="filters.edges.attribute.name == null || filters.edges.attribute.name.length ===0 || filters.edges.attribute.operator == null|| filters.edges.attribute.dist"
                           clearable
+                          dense
                           v-model="filters.edges.query"
                           label="Query (case sensitive)"
                           class="mx-4"
@@ -370,7 +381,7 @@
                             fas fa-info-circle
                           </v-icon>
                         </template>
-                        <span>id:{{ item.id }}</span>
+                        <span>Details (ID:{{ item.id }})</span>
                       </v-tooltip>
                     </v-col>
                   </v-row>
@@ -1774,7 +1785,7 @@ export default {
     }
     ,
     headers: function (entity, node) {
-      let out = [{text: "Select", align: 'start', sortable: false, value: "selected",width:"90px"}]
+      let out = [{text: "Select", align: 'start', sortable: false, value: "selected", width: "90px"}]
       this.attributes[entity][node].forEach(attr => {
         if (!attr.list)
           return
