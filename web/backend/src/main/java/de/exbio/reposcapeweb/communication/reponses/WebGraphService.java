@@ -1281,7 +1281,6 @@ public class WebGraphService {
                 while (graphmlGenerating.contains(gid)) {
                 }
             }
-
         }
         return graphml;
     }

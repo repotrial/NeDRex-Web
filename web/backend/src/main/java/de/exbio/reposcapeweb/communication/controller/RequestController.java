@@ -302,6 +302,7 @@ public class RequestController {
     @RequestMapping(value = "/downloadGraph", method = RequestMethod.GET, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public @ResponseBody
     ResponseEntity<Resource> downloadGraph(@RequestParam("gid") String gid, HttpServletRequest request) {
+        log.info("Requested graphml download of "+gid);
         File f = webGraphService.getDownload(gid);
         Resource resource = new FileSystemResource(f);
         return ResponseEntity.ok()

@@ -407,17 +407,17 @@ export default {
     reloadAll: function (except) {
       this.tabslist[1].icon = "fas fa-project-diagram"
       this.tabslist[2].icon = "fas fa-list-ul"
-      if (this.$refs.list && (except == null ||except.indexOf("list")===-1)) {
+      if (this.$refs.list && (except == null || except.indexOf("list") === -1)) {
         this.$refs.list.setLoading(true)
         this.$refs.list.reload();
       }
-      if (this.$refs.graph&& (except == null ||except.indexOf("graph")===-1))
+      if (this.$refs.graph && (except == null || except.indexOf("graph") === -1))
         this.$refs.graph.reload()
-      if (this.$refs.history&& (except == null ||except.indexOf("history")===-1))
+      if (this.$refs.history && (except == null || except.indexOf("history") === -1))
         this.$refs.history.reload()
-      if (this.$refs.side&& (except == null ||except.indexOf("side")===-1))
+      if (this.$refs.side && (except == null || except.indexOf("side") === -1))
         this.$refs.side.reload()
-      if (this.$refs.start&& (except == null ||except.indexOf("start")===-1))
+      if (this.$refs.start && (except == null || except.indexOf("start") === -1))
         this.$refs.start.reload()
     }
     ,
@@ -856,8 +856,10 @@ export default {
     resolveWarning: async function (id, download) {
       if (download)
         await window.open(CONFIG.HOST_URL + CONFIG.CONTEXT_PATH + '/api/downloadGraph?gid=' + id)
-      this.$http.removeGraph(id)
-      this.listDialog = false;
+      else {
+        this.listDialog = false;
+        this.$http.removeGraph(id)
+      }
     },
     printNotification: function (message, style) {
       if (style === 1) {
