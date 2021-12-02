@@ -855,7 +855,7 @@ export default {
     ,
     resolveWarning: async function (id, download) {
       if (download)
-        await window.open(CONFIG.HOST_URL + CONFIG.CONTEXT_PATH + '/api/downloadGraph?gid=' + this.gid)
+        await window.open(CONFIG.HOST_URL + CONFIG.CONTEXT_PATH + '/api/downloadGraph?gid=' + id)
       this.$http.removeGraph(id)
       this.listDialog = false;
     },
