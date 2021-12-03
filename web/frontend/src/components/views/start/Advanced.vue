@@ -10,8 +10,7 @@
         <v-list-item>
           <div class="v-card__subtitle">
             Create a specified starting network by selecting the nodes and edge types it should contain.
-            Apply filters by clicking on the node to apply the filter on in the right panel. To adjust some entity
-            specific parameters...
+            Apply filters by clicking on the node to apply the filter on in the right panel.
           </div>
         </v-list-item>
       </v-list>
