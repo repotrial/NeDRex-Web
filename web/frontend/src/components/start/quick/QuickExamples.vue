@@ -131,7 +131,7 @@ export default {
           sourceQuery: example.sourceQuery
         }
         this.loadRequest(vals).then(data => {
-          data.origin = "Example " + (nr + 1) + ": (" + example.targetQuery + ")"
+          data.origin = "Example " + (nr + 1) + ": (" + example.sourceQuery + ")"
           this.$emit("addNodesEvent", data, 1)
           vals.origin = data.origin
           this.emitData(vals)
