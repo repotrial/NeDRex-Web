@@ -245,7 +245,15 @@
             >
               <v-tabs-slider color="blue"></v-tabs-slider>
               <v-tab v-for="edge in Object.keys(edges)" :key="edge">
+                <template v-if="edge.length<36">
                 {{ edge }}
+                </template>
+                <v-tooltip v-else top>
+                  <template v-slot:activator="{on, attrs}">
+                    <span v-on="on" v-bind="attrs">{{edge.substring(0,32)}}...</span>
+                  </template>
+                  {{edge}}
+                </v-tooltip>
               </v-tab>
             </v-tabs>
             <v-tabs-items>
