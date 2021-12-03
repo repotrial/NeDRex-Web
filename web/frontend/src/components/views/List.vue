@@ -1300,7 +1300,6 @@ export default {
 
       this.options["attributes"] = {}
       for (let node in Object.keys(this.attributes.nodes)) {
-        console.log(this.attributes.nodes[Object.keys(this.attributes.nodes)[node]])
         let models = []
         this.attributes.nodes[Object.keys(this.attributes.nodes)[node]].forEach(attr => {
           models.push({name: attr.name, label: attr.label, selected: attr.list})

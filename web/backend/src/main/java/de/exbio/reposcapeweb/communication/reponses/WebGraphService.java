@@ -312,6 +312,7 @@ public class WebGraphService {
             }
         });
 
+        g.calculateDegrees();
         cache.put(g.getId(), g);
         return g.toInfo();
     }
@@ -821,6 +822,7 @@ public class WebGraphService {
         HashSet<String> requestedEdges = new HashSet<>(Arrays.asList(request.edges));
         HashSet<String> switched = new HashSet<>(Arrays.asList(request.switchDirection));
         extendGraph(g, requestedEdges, inducedEdges, switched);
+        g.calculateDegrees();
         return g.toInfo();
     }
 
@@ -845,6 +847,7 @@ public class WebGraphService {
         Graph g = getCachedGraph(request.gid).clone(historyController.getGraphId());
         cache.put(g.getId(), g);
         collapseGraph(g, Graphs.getNode(request.node), g.getEdge(request.edge1), g.getEdge(request.edge2), request.edgeName, request.self, request.keep);
+        g.calculateDegrees();
         return g.toInfo();
     }
 
