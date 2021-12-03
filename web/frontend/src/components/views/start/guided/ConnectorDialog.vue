@@ -7,7 +7,7 @@
           <template>
             <div style="display: flex">
               <div style="justify-content: flex-start">
-                <v-card-title style="margin-left: -25px;" class="subtitle-1">Add drugs associated to
+                <v-card-title style="margin-left: -25px;" class="subtitle-1">Add {{nodeType}} nodes associated to
                 </v-card-title>
               </div>
               <div style="justify-content: flex-end; margin-left: auto">
@@ -59,8 +59,8 @@
                      :filter="true"
                      @printNotificationEvent="printNotification"
                      height="405px"
-                     :title="'Selected Drugs ('+($refs.connectorTable ? $refs.connectorTable.getSeeds().length : 0)+')'"
-                     nodeName="drug"
+                     :title="'Selected Connectors ('+($refs.connectorTable ? $refs.connectorTable.getSeeds().length : 0)+')'"
+                     :nodeName="nodeType"
           ></SeedTable>
         </div>
       </v-card-text>

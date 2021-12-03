@@ -132,7 +132,7 @@
 
                 <v-list-item>
                   <v-col>
-                    <v-switch v-model="options.start.onlyConnected" label="Hide unconnected"></v-switch>
+                    <v-switch v-model="options.start.onlyConnected" label="Remove unconnected"></v-switch>
                   </v-col>
                 </v-list-item>
                 <v-list-item>
