@@ -523,10 +523,20 @@ export default {
       }
     }
     ,
-    downloadEntries: function (entity, name) {
-      if (this.$refs.list != null)
-        this.$refs.list.downloadFromLegend(entity, name)
+    downloadEntries: async function (entity, name) {
+      let table = await this.$http.getTableDownload(this.gid, entity, name, ["primaryDomainId", "displayName"])
+      this.download(this.gid + "_" + name + "-" + entity + ".tsv", table)
     },
+    download: function (name, content) {
+      let dl = document.createElement('a')
+      dl.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(content))
+      dl.setAttribute('download', name)
+      dl.style.direction = 'none'
+      document.body.appendChild(dl)
+      dl.click()
+      document.body.removeChild(dl)
+    }
+    ,
     initComponents: function () {
       this.options.start = {skipVis: true, onlyConnected: true, selectedElements: []}
       this.options.graph = {

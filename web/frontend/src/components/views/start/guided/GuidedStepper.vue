@@ -1262,9 +1262,7 @@ export default {
     downloadfromLegend: async function (entity, name) {
       let table = await this.$http.getTableDownload(this.gid, entity, name, ["primaryDomainId", "displayName"])
       this.download(this.gid + "_" + name + "-" + entity + ".tsv", table)
-
-    }
-    ,
+    },
 
     getExtendedNodes: function (name, not) {
       let nodes = this.$utils.getNodesExtended(this.configuration.entityGraph, name)
