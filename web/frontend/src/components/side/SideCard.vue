@@ -144,7 +144,7 @@
                   <v-container>
                     <v-row>
                       <v-col>
-                        <v-chip outlined color="green" @click="$emit('applyEvent',true); $emit('applyEvent',false)">
+                        <v-chip outlined color="green" @click="$emit('applyEvent',true)">
                           Apply Subnetwork
                           <v-icon right>far fa-check-circle</v-icon>
                         </v-chip>

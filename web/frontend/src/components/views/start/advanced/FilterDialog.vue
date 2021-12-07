@@ -16,6 +16,38 @@
       </v-card-subtitle>
       <v-divider></v-divider>
       <v-card-text style="max-height: 700px; overflow-y: auto">
+        <v-card-title style="margin-left: -25px; margin-bottom: -25px" class="subtitle-1;"
+                      v-show="['gene','drug'].indexOf(nodeList[nodeId].value)>-1">General options
+        </v-card-title>
+        <div>
+          <LabeledSwitch v-if="nodeList[nodeId].value ==='gene'" label-on="Coding Genes Only" label-off="All Genes"
+                         v-model="options.codingGenesOnly">
+            <template v-slot:tooltip>
+              <div>If activated, applies filter on genes, such that only coding genes are used.</div>
+            </template>
+          </LabeledSwitch>
+        </div>
+        <div>
+          <LabeledSwitch v-if="nodeList[nodeId].value === 'drug'" label-on="Approved Drugs Only" label-off="All Drugs"
+                         v-model="options.approvedDrugsOnly">
+            <template v-slot:tooltip>
+              <div>If activated, applies filter on drugs, such that only approved drugs are used.</div>
+            </template>
+          </LabeledSwitch>
+        </div>
+        <div>
+          <LabeledSwitch v-if="nodeList[nodeId].value === 'drug'" label-on="Filter Element Drugs" label-off="No Filter"
+                         v-model="options.filterElementDrugs">
+            <template v-slot:tooltip>
+              <div>If activated, applies filter on drugs, such that only complex drugs are used.
+                <br>Element drugs are:
+                <br><b>chemical element:</b> <i>Gold, Zinc, ...</i>
+                <br><b>metals and metal cations:</b> <i>Cupric Chloride, Aluminium acetoactetate, ...</i>
+                <br><b>minerals and mineral supplements:</b> <i>Calcium silicate, Sodium chloride, ...</i>
+              </div>
+            </template>
+          </LabeledSwitch>
+        </div>
         <div style="height: 800px; max-height: 800px;" v-show="!filterType[nodeList[nodeId].value]">
           <template>
             <div style="display: flex">
@@ -78,7 +110,7 @@
           ></SeedTable>
         </div>
         <div style="height: 800px; max-height: 800px;" v-show="filterType[nodeList[nodeId].value]">
-          <v-card-title>Filters</v-card-title>
+          <v-card-title style="margin-left: -25px;" class="subtitle-1">Filters</v-card-title>
           <v-simple-table fixed-header ref="filterTable">
             <template v-slot:default>
               <thead>
@@ -168,6 +200,11 @@ export default {
       filterLabel: "",
       filterTypeModel: [],
       filters: {},
+      options: {
+        codingGenesOnly: false,
+        approvedDrugsOnly: false,
+        filterElementDrugs: true
+      }
     }
   },
 
@@ -186,6 +223,11 @@ export default {
     clear: function (all) {
       if (all) {
         this.filters = {}
+        this.options = {
+          codingGenesOnly: false,
+          approvedDrugsOnly: false,
+          filterElementDrugs: true
+        }
       } else {
         if (this.$refs.table && this.$refs.table[this.nodeId]) {
           this.$refs.table[this.nodeId].clear();
@@ -194,6 +236,7 @@ export default {
               this.removeFilter(i)
             }
         }
+        this.resetOptions(this.nodeList[this.nodeId].value)
         this.$emit("updateNodeCount", {node: this.nodeList[this.nodeId].value, count: 0})
       }
     },
@@ -240,7 +283,10 @@ export default {
         return {value: node.group, text: node.label}
       })
       out.push({value: type, text: type.substring(0, 1).toUpperCase() + type.substring(1)})
-      if (!this.advancedOptions) {
+      if (disorderIdx < 0) {
+        this.suggestionType = out[0].value
+      } else (!this.advancedOptions)
+      {
         this.suggestionType = out[disorderIdx].value;
       }
       return out
@@ -258,6 +304,18 @@ export default {
       return undefined
     },
 
+    resetOptions: function (value) {
+      if (value === 'gene') {
+        this.options.codingGenesOnly = false
+      }
+      if (value === 'drug') {
+        this.options.approvedDrugsOnly = false
+        this.options.filterElementDrugs = true
+      }
+    },
+    getOptions: function () {
+      return this.options;
+    },
     resolve: function (state) {
       this.model = false
       if (!state) {
@@ -269,7 +327,7 @@ export default {
         node: node,
         count: this.filterType[node] || !this.$refs.table[this.nodeId] ? 0 : this.$refs.table[this.nodeId].getSeeds().length
       })
-    },
+    }
   }
 }
 </script>

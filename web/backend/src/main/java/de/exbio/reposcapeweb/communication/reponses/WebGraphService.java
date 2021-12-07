@@ -43,6 +43,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toCollection;
+import static java.util.stream.Collectors.toSet;
 
 @Service
 public class WebGraphService {
@@ -353,105 +354,110 @@ public class WebGraphService {
 
         cache.put(g.getId(), g);
 
-        TreeMap<Integer, HashMap<Integer, Node>> nodeIds = new TreeMap<>();
         HashMap<Integer, Boolean> nodesExtendable = new HashMap<>();
         Graph finalG = g;
+
+        HashMap<String, Object> nodeOptions = request.options.get("nodes");
+        boolean drugsFilterElements = (boolean) nodeOptions.get("filterElementDrugs");
+        boolean genesOnlyCoding = (boolean) nodeOptions.get("codingGenesOnly");
+        boolean drugsApprovedOnly = (boolean) nodeOptions.get("approvedDrugsOnly");
+
+        HashMap<String, Object> edgeOptions = request.options.get("edges");
+        boolean drugTargetsWithAction = (boolean) edgeOptions.get("drugTargetsWithAction");
+        boolean disorderParents = (boolean) edgeOptions.get("disorderParents");
+        boolean extendPPI = (boolean) edgeOptions.get("extendPPI");
+        boolean extendGGI = (boolean) edgeOptions.get("extendGGI");
+        boolean experimentalInteraction = (boolean) edgeOptions.get("experimentalInteraction");
+        double disorderAssociationCutoff = Double.parseDouble(edgeOptions.get("disorderAssociationCutoff").toString());
+
+        HashSet<Integer> connectedNodes = new HashSet<>();
+
         request.nodes.forEach((k, v) -> {
             nodesExtendable.put(Graphs.getNode(k), true);
             NodeFilter nf = nodeController.getFilter(k);
+            boolean filtered = false;
             if (v.ids != null) {
+                filtered = true;
                 nf = new NodeFilter(nf, v.ids);
                 nodesExtendable.put(Graphs.getNode(k), false);
-            } else if (v.filters != null)
+            } else if (v.filters != null) {
                 for (Filter filter : v.filters) {
+                    filtered = true;
                     nf = nf.apply(filter);
                     nodesExtendable.put(Graphs.getNode(k), false);
                 }
-            finalG.saveNodeFilter(k, nf);
-            HashMap<Integer, Node> ids = new HashMap<>();
-            nodeIds.put(Graphs.getNode(k), ids);
+            }
 
-            nf.toList(-1).forEach(entry -> {
-                ids.put(entry.getNodeId(), new Node(entry.getNodeId(), entry.getName()));
-            });
-        });
-        HashSet<Integer> connectedNodes = new HashSet<>();
-        request.edges.forEach((edgeName, filters) -> {
-
-            HashSet<Integer> externalNodes = new HashSet<>();
-            int edgeId = Graphs.getEdge(edgeName);
-            Pair<Integer, Integer> edgeNodes = Graphs.getNodesfromEdge(edgeId);
-            boolean loop = edgeNodes.first.equals(edgeNodes.second);
-            boolean internalOnly = loop && request.edges.containsKey(Graphs.getEdge(edgeId)) && ((HashMap<String, Object>) request.edges.get(Graphs.getEdge(edgeId))).containsKey("filters") && (boolean) ((HashMap<String, Object>) request.edges.get(Graphs.getEdge(edgeId)).get("filters")).get("internalOnly");
-            int nodeType1 = edgeNodes.first;
-            int nodeType2 = edgeNodes.second;
-            boolean experimental = (request.interactions.containsKey(Graphs.getEdge(edgeId)) && !request.interactions.get(Graphs.getEdge(edgeId)));
-            if (request.edges.containsKey(Graphs.getEdge(edgeId))) {
-                LinkedList<Edge> edges = new LinkedList<>();
-
-                nodeIds.get(nodeType1).forEach((id1, v1) -> {
-                    try {
-                        if (request.connectedOnly & connectedNodes.contains(nodeType1) & !v1.hasEdge()) {
-                            return;
-                        }
-                        edgeController.getEdges(edgeId, nodeType1, id1, false).forEach(id -> {
-                            try {
-                                if ((!loop | internalOnly) && ((request.connectedOnly & connectedNodes.contains(nodeType2) & !nodeIds.get(nodeType2).get(id.getId2()).hasEdge()) | (experimental && !edgeController.isExperimental(edgeId, id.getId1(), id.getId2()))))
-                                    return;
-                                if (!loop || (internalOnly && nodeIds.get(nodeType2).containsKey(id.getId2()) && nodeIds.get(nodeType2).containsKey(id.getId1()))) {
-                                    nodeIds.get(nodeType2).get(v1.getId() == id.getId1() ? id.getId2() : id.getId1()).setHasEdge(true);
-                                    v1.setHasEdge(true);
-                                    edges.add(new Edge(id.getId1(), id.getId2()));
-                                } else if (!internalOnly) {
-                                    int nonNodeId = v1.getId() == id.getId1() ? id.getId2() : id.getId1();
-                                    if (!nodeIds.get(nodeType2).containsKey(nonNodeId)) {
-                                        externalNodes.add(nonNodeId);
-                                    } else {
-                                        nodeIds.get(nodeType2).get(nonNodeId).setHasEdge(true);
-                                    }
-                                    v1.setHasEdge(true);
-                                    edges.add(new Edge(id.getId1(), id.getId2()));
-                                }
-                            } catch (NullPointerException ignore) {
-                            }
-                        });
-                    } catch (NullPointerException ignore) {
-                    }
-                });
-                finalG.addEdges(edgeId, edges);
-                if (loop && !internalOnly && nodesExtendable.get(nodeType1)) {
-                    HashSet<Integer> newNodes = new HashSet<>(nodeIds.get(nodeType1).keySet());
-                    newNodes.addAll(externalNodes);
-                    NodeFilter nf = new NodeFilter(nodeController.getFilter(Graphs.getNode(nodeType1)), newNodes);
-                    finalG.saveNodeFilter(Graphs.getNode(nodeType1), nf);
-                    HashMap<Integer, Node> ids = nodeIds.get(nodeType1);
-                    nf.toList(-1).stream().filter(entry -> !ids.containsKey(entry.getNodeId())).forEach(entry -> ids.put(entry.getNodeId(), new Node(entry.getNodeId(), entry.getName(), true)));
+            if (k.equals("drug")) {
+                if (drugsFilterElements) {
+                    nf = new NodeFilter(nf, getElementFilteredDrugs(nf.toList(-1).stream().map(FilterEntry::getNodeId).collect(Collectors.toList())));
                 }
-                if (request.nodes.get(Graphs.getNode(nodeType1)).filters != null && request.nodes.get(Graphs.getNode(nodeType1)).filters.length == 0) {
-                    connectedNodes.add(nodeType1);
-                }
-                if (request.nodes.get(Graphs.getNode(nodeType2)).filters != null && request.nodes.get(Graphs.getNode(nodeType2)).filters.length == 0) {
-                    connectedNodes.add(nodeType2);
+                if (drugsApprovedOnly) {
+                    nf = new NodeFilter(nf, getApprovedOnlyDrugs(nf.toList(-1).stream().map(FilterEntry::getNodeId).collect(Collectors.toList())));
                 }
             }
-//            });
-//                }
-//            }
+            if (k.equals("gene") & genesOnlyCoding) {
+                nf = new NodeFilter(nf, getOnlyCodingGenes(nf.toList(-1).stream().map(FilterEntry::getNodeId).collect(Collectors.toList())));
+            }
+            if (filtered) {
+                connectedNodes.add(Graphs.getNode(k));
+                finalG.saveNodeFilter(k, nf);
+                HashMap<Integer, Node> ids = new HashMap<>();
+                nf.toList(-1).forEach(entry -> {
+                    ids.put(entry.getNodeId(), new Node(entry.getNodeId(), entry.getName()));
+                });
+                finalG.addNodes(Graphs.getNode(k), ids);
+            }
         });
-//        }
-        if (request.connectedOnly) {
-            nodeIds.forEach((type, nodeMap) -> nodeMap.entrySet().stream().filter(e -> e.getValue().hasEdge()).forEach(e -> finalG.addNode(type, e.getValue())));
-            finalG.getNodes().forEach((nid, nids) -> {
-                NodeFilter nf = new NodeFilter(finalG.getNodeFilter(Graphs.getNode(nid)), nids.keySet());
-                finalG.saveNodeFilter(Graphs.getNode(nid), nf);
-            });
-        } else
-            nodeIds.forEach((type, nodeMap) -> nodeMap.forEach((key, value) -> finalG.addNode(type, value)));
 
-//        Graph finalG1 = g;
-//        g.getEdges().keySet().forEach(edgeId->{
-//            removeUnconnectedEdges(finalG1, edgeId);
-//        });
+        HashSet<String> addedEdges = new HashSet<>();
+        LinkedList<String> edgeList = new LinkedList<>();
+
+        request.edges.keySet().stream().filter(e -> connectedNodes.contains(Graphs.getNodesfromEdge(Graphs.getEdge(e)).first) & connectedNodes.contains(Graphs.getNodesfromEdge(Graphs.getEdge(e)).second)).forEach(edgeList::add);
+        request.edges.keySet().stream().filter(e -> !edgeList.contains(e)).filter(e -> connectedNodes.contains(Graphs.getNodesfromEdge(Graphs.getEdge(e)).first) | connectedNodes.contains(Graphs.getNodesfromEdge(Graphs.getEdge(e)).second)).forEach(edgeList::add);
+        request.edges.keySet().stream().filter(e -> !edgeList.contains(e)).forEach(edgeList::add);
+
+
+        while (!edgeList.isEmpty()) {
+            String edgeName = edgeList.getFirst();
+            addedEdges.add(edgeName);
+            Pair<Integer, Integer> edgeNodes = Graphs.getNodesfromEdge(edgeName);
+            boolean extend = (extendPPI & edgeName.equals("ProteinProteinInteraction")) | (extendGGI & edgeName.equals("GeneGeneInteraction")) | edgeName.equals("DisorderHierarchy") | (!Objects.equals(edgeNodes.first, edgeNodes.second) & !connectedNodes.contains(Graphs.getNodesfromEdge(Graphs.getEdge(edgeName)).first) & connectedNodes.contains(Graphs.getNodesfromEdge(Graphs.getEdge(edgeName)).second));
+            extendGraph(finalG, edgeName, !extend, false, drugTargetsWithAction, disorderAssociationCutoff, disorderParents, experimentalInteraction);
+            if (request.connectedOnly) {
+                request.nodes.forEach((k, v) -> removeUnconnectedNodes(finalG, Graphs.getNode(k), null));
+            }
+
+            LinkedList<String> nodes = new LinkedList<>(Arrays.asList(Graphs.getNode(edgeNodes.first), Graphs.getNode(edgeNodes.second)));
+            nodes.forEach(nodeName -> {
+                connectedNodes.add(Graphs.getNode(nodeName));
+                FilterGroup req = request.nodes.get(nodeName);
+                if (req.ids != null | (req.filters != null && req.filters.length > 0)) {
+                    HashSet<Integer> nodeIds = new HashSet<>(finalG.getNodes().get(Graphs.getNode(nodeName)).keySet());
+                    if (nodeName.equals("drug")) {
+                        if (drugsFilterElements) {
+                            getElementFilteredDrugs(nodeIds);
+                        }
+                        if (drugsApprovedOnly) {
+                            getApprovedOnlyDrugs(nodeIds);
+                        }
+                    }
+                    if (nodeName.equals("gene") & genesOnlyCoding) {
+                        getOnlyCodingGenes(nodeIds);
+                    }
+                    if (nodeIds.size() < finalG.getNodes().get(Graphs.getNode(nodeName)).size()) {
+                        NodeFilter nf = new NodeFilter(finalG.getNodeFilter(nodeName), nodeIds);
+                        finalG.saveNodeFilter(nodeName, nf);
+                        finalG.getNodes().put(Graphs.getNode(nodeName), nodeFilterToNode(nf));
+                    }
+                }
+            });
+            edgeList.clear();
+            request.edges.keySet().stream().filter(e -> !addedEdges.contains(e)).filter(e -> connectedNodes.contains(Graphs.getNodesfromEdge(Graphs.getEdge(e)).first) & connectedNodes.contains(Graphs.getNodesfromEdge(Graphs.getEdge(e)).second)).forEach(edgeList::add);
+            request.edges.keySet().stream().filter(e -> !addedEdges.contains(e)).filter(e -> !edgeList.contains(e)).filter(e -> connectedNodes.contains(Graphs.getNodesfromEdge(Graphs.getEdge(e)).first) | connectedNodes.contains(Graphs.getNodesfromEdge(Graphs.getEdge(e)).second)).forEach(edgeList::add);
+            request.edges.keySet().stream().filter(e -> !addedEdges.contains(e)).filter(e -> !edgeList.contains(e)).forEach(edgeList::add);
+        }
+
         return g;
     }
 

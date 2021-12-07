@@ -9,8 +9,10 @@
         </v-list-item>
         <v-list-item>
           <div class="v-card__subtitle">
-            Create a specified starting network by selecting the nodes and edge types it should contain.
-            Apply filters by clicking on the node to apply the filter on in the right panel.
+            Create a specified starting network by selecting the nodes and edge types it should contain <i>(left
+            side)</i>.
+            Apply filters by clicking on the cog icon <i>(left side)</i> or on the nodes or the edge labels to apply the
+            filter on in the <i>(right panel)</i>.
           </div>
         </v-list-item>
       </v-list>
@@ -33,9 +35,11 @@
                       $global.metagraph.weights.nodes[item.label.toLowerCase()]
                     }})</span>
                 </v-chip>
+                <v-btn icon @click="nodeSelection(item.index)" small>
+                  <v-icon v-show="nodeModel.indexOf(item.index)>-1" small>fas fa-cog</v-icon>
+                </v-btn>
               </v-list-item>
             </v-list>
-
           </v-col>
           <v-col cols="4">
             <v-list v-model="edgeModel">
@@ -61,6 +65,9 @@
                         $global.metagraph.weights.edges[item.label]
                       }})</span>
                   </v-chip>
+                  <v-btn icon @click="edgeSelection(item.index)" small>
+                    <v-icon v-show="edgeModel.indexOf(item.index)>-1" small>fas fa-cog</v-icon>
+                  </v-btn>
                 </v-list-item>
                 <v-list-item
                   v-show="edgeModel.indexOf(item.index)>-1 && (item.label==='ProteinInteractsWithProtein' ||item.label==='GeneInteractsWithGene' )">
@@ -74,7 +81,9 @@
                   >
                     all
                   </v-chip>
-
+                  <v-btn icon @click="edgeSelection(item.index)" small>
+                    <v-icon v-show="edgeModel.indexOf(item.index)>-1" small>fas fa-cog</v-icon>
+                  </v-btn>
                 </v-list-item>
               </template>
             </v-list>
@@ -88,6 +97,16 @@
       </v-container>
       <FilterDialog ref="filter" :filterType="filterTypeMap" :node-id="filterNodeId" @updateNodeCount="setNodeCount"
                     @filterTypeChangeEvent="setFilterType"></FilterDialog>
+      <OptionsDialog ref="options" :edge-id="optionEdgeId" :edges="edges"></OptionsDialog>
+      <v-dialog width="500px" v-model="missingFilterDialog" style="z-index: 1001">
+        <v-card>
+          <v-card-title>Unfiltered Request</v-card-title>
+          <v-card-text>
+            <div>You selected edges or nodes without applying any filter to the network. Please either select IDs or add a text filter by clicking on the option button beside the label or on the node in the network representation to at least one of the following nodes to proceed:</div>
+            <div v-for="node in missingFilterNodes"><b>{{node}}</b></div>
+          </v-card-text>
+        </v-card>
+      </v-dialog>
     </v-card>
   </v-container>
 </template>
@@ -95,6 +114,8 @@
 <script>
 import Network from "@/components/views/graph/Network";
 import FilterDialog from "@/components/views/start/advanced/FilterDialog";
+import OptionsDialog from "@/components/views/start/advanced/OptionsDialog";
+
 
 export default {
   name: "Advanced",
@@ -122,6 +143,9 @@ export default {
       neighborNodes: [],
       selectedEdge: Object,
       filterNodeId: undefined,
+      optionEdgeId: undefined,
+      missingFilterNodes: undefined,
+      missingFilterDialog:false,
     }
   },
   created() {
@@ -172,12 +196,76 @@ export default {
     setOptions: function (options) {
       this.options = options;
     },
+    getConnectedMetacomponents: function (edges, nodes) {
+      let allNodes = nodes.map(n => this.$global.metagraph.nodes.filter(no => no.label === n.name)[0].id)
+      let allEdges = edges.map(e => e.name)
+      let edgeObjects = edges.map(e => this.$global.metagraph.edges.filter(ed => ed.label === e.name)[0])
+      let out = []
+      edgeObjects.forEach(e => {
+        if (allNodes.indexOf(e.from) === -1)
+          allNodes.push(e.from)
+        if (allNodes.indexOf(e.to) === -1)
+          allNodes.push(e.to)
+      })
+
+      while (allNodes.length > 0) {
+        let currentNodes = [allNodes[0]]
+        let currentEdges = []
+
+        let change = true
+        while (change) {
+          change = false
+          edgeObjects.forEach(edge => {
+            if (currentNodes.indexOf(edge.from) > -1) {
+              currentEdges.push(edge.label)
+              if (currentNodes.indexOf(edge.to) === -1) {
+                currentNodes.push(edge.to)
+                change = true
+              }
+            } else if (currentNodes.indexOf(edge.to) > -1) {
+              currentEdges.push(edge.label)
+              if (currentNodes.indexOf(edge.from) === -1) {
+                currentNodes.push(edge.from)
+                change = true
+              }
+            }
+          })
+        }
+        out.push(currentNodes.map(n => this.$global.metagraph.nodes.filter(no => no.id === n)[0].label))
+        currentNodes.forEach(n => allNodes.splice(allNodes.indexOf(n), 1))
+        currentEdges.forEach(n => allEdges.splice(allEdges.indexOf(n), 1))
+      }
+      return out
+    },
+
+    graphAllowed: function () {
+      let ccs = this.getConnectedMetacomponents(this.options.selectedElements.filter(e => e.type === 'edge'), this.options.selectedElements.filter(e => e.type === 'node'))
+      this.options.selectedElements.forEach(element => {
+        if (element.type === 'node') {
+          let filter = this.$refs.filter.getFilter(element.name.toLowerCase())
+          if (!filter || (!filter.ids && filter.length === 0))
+            return
+          for (let i = 0; i < ccs.length; i++) {
+            if (ccs[i].indexOf(element.name) > -1)
+              ccs.splice(i, 1)
+          }
+        }
+      });
+      if (ccs.length > 0) {
+        this.missingFilterNodes = ccs[0]
+        this.missingFilterDialog=true
+      }
+      return ccs.length===0
+    },
+
     loadGraph: function (bool) {
       let graphLoad = {}
       if (!bool) {
         this.reset()
         return
       }
+      if (!this.graphAllowed())
+        return;
       graphLoad = {post: {nodes: {}, edges: {}}}
       this.options.selectedElements.forEach(element => {
         if (element.type === 'node') {
@@ -189,28 +277,47 @@ export default {
           else
             graphLoad.post.nodes[element.name.toLowerCase()] = {filters: filter.filters}
         } else {
-          //TODO add filter parameters
           graphLoad.post.edges[element.name] = {filters: []}
         }
       })
       graphLoad.post.connectedOnly = this.options.onlyConnected
       graphLoad.post.interactions = {...this.interactions}
+      graphLoad.post.options = {nodes: {...this.$refs.filter.getOptions()}, edges: {...this.$refs.options.getOptions()}}
       if (Object.keys(graphLoad.post.nodes).length === 0) {
         this.$emit("printNotificationEvent", "Please select some nodes/edges first!", 1)
         return
       }
       graphLoad.post["uid"] = this.$cookies.get("uid")
       graphLoad["skipVis"] = this.options.skipVis;
+      this.reset()
       this.$emit("graphLoadEvent", graphLoad)
     },
     graphSelection: function (params) {
-      if (!params || params.nodes.length === 0)
+      if (!params)
         return
-      for (let i = 0; i < this.$global.metagraph.nodes.length; i++) {
-        if (this.$global.metagraph.nodes[i].id === params.nodes[0])
-          this.$set(this, 'filterNodeId', i)
+      if (params.nodes.length > 0)
+        for (let i = 0; i < this.$global.metagraph.nodes.length; i++) {
+          if (this.$global.metagraph.nodes[i].id === params.nodes[0])
+            this.nodeSelection(i)
+        }
+      else if (params.edges.length > 0) {
+        this.edges.forEach(edge => {
+          if (edge.id === params.edges[0].id)
+            this.edgeSelection(edge.index)
+        })
       }
+    },
+
+    nodeSelection: function (idx) {
+      if (idx == null)
+        return
+      this.$set(this, 'filterNodeId', idx)
       this.$refs.filter.show()
+    },
+
+    edgeSelection: function (idx) {
+      this.optionEdgeId = idx;
+      this.$refs.options.show()
     },
 
     setFilterType: function (data) {
@@ -313,6 +420,7 @@ export default {
   }
   ,
   components: {
+    OptionsDialog,
     FilterDialog,
     Network,
   }
