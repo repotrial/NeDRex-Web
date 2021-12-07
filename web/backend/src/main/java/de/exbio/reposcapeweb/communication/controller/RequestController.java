@@ -410,6 +410,12 @@ public class RequestController {
         return toJson(info);
     }
 
+    @RequestMapping(value="/getInteractionEdges", method = RequestMethod.POST)
+    @ResponseBody
+    public String getInteractionEdges(@RequestBody EdgeRequest request){
+        return toJson(webGraphService.getInteractionEdges(request.type, request.ids));
+    }
+
     @RequestMapping(value = "/getGraphHistory", method = RequestMethod.GET)
     @ResponseBody
     public String getGraphHistory(@RequestParam("gid") String gid, @RequestParam("uid") String uid) {

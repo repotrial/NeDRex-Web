@@ -235,6 +235,12 @@ const ApiService = {
     if (text.indexOf("https:\/\/omim\.org\/downloads"))
       text = text.replace("https:\/\/omim\.org\/downloads", "<a href='https://omim.org/downloads' target='_blank'>https://omim.org/downloads")
     return text
+  },
+  getInteractionEdges: function(data) {
+    return this.post("/getInteractionEdges",data).then(response=>{
+      if(response.data!=null)
+        return response.data
+    }).catch(console.error)
   }
 }
 

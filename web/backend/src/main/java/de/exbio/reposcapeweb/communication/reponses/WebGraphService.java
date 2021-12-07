@@ -1960,4 +1960,31 @@ public class WebGraphService {
             return getTripartiteLayout(g);
         return new HashMap<>();
     }
+
+    public Object getInteractionEdges(String type, LinkedList<Integer> ids) {
+        String edgeName = type.equals("gene") ? "GeneGeneInteraction" : "ProteinProteinInteraction";
+        HashSet<Integer> existingIds = new HashSet<>(ids);
+        int edgeId = Graphs.getEdge(edgeName);
+        int nodeId = Graphs.getNode(type);
+        HashSet<PairId> edges = new HashSet<>();
+        ids.forEach(node -> {
+            try {
+                edgeController.getEdges(edgeId, nodeId, node, false).forEach(pairid -> {
+                    if (existingIds.contains(pairid.getId2()))
+                        edges.add(pairid);
+
+                });
+            } catch (NullPointerException ignore) {
+
+            }
+        });
+        Graph g = new Graph();
+        if (type.equals("gene")) {
+            nodeController.findGenes(existingIds).forEach(n -> g.addNode(nodeId, new Node(n.getId(), n.getDisplayName())));
+        } else
+            nodeController.findProteins(existingIds).forEach(n -> g.addNode(nodeId, new Node(n.getId(), n.getDisplayName())));
+
+        g.addEdges(edgeId, edges.stream().map(Edge::new).collect(Collectors.toList()));
+        return g.toWebGraph(getColorMap(g.getNodes().keySet().stream().map(Graphs::getNode).collect(Collectors.toSet())), null);
+    }
 }

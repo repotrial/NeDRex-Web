@@ -79,7 +79,7 @@ public class Graph {
             log.info("Converting Graph " + id + " (nodes:" + nodeCount + ", edges:" + edgeCount + ") to webgraph: ");
             webgraph = new WebGraph(id);
             nodes.forEach((typeId, nodeMap) -> {
-                HashMap<Integer, Point2D> coords = layout.get(typeId);
+                HashMap<Integer, Point2D> coords = layout !=null ? layout.get(typeId): null;
                 String prefix = Graphs.getPrefix(typeId);
                 String group = Graphs.getNode(typeId);
                 boolean adjustment = group.equals("protein");
@@ -175,7 +175,7 @@ public class Graph {
         return id;
     }
 
-    public void addEdges(int edgeId, LinkedList<Edge> edges) {
+    public void addEdges(int edgeId, Collection<Edge> edges) {
         if (!this.edges.containsKey(edgeId))
             this.edges.put(edgeId, new LinkedList<>());
         this.edges.get(edgeId).addAll(edges);

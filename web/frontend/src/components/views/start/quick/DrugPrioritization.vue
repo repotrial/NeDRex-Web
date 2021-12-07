@@ -126,7 +126,7 @@
                             {{ ['genes', 'proteins'][this.seedTypeId] }} associated to
                           </v-card-title>
                         </div>
-                        <div v-on="on" v-bind="attrs" style="justify-content: flex-end; margin-left: auto">
+                        <div style="justify-content: flex-end; margin-left: auto">
                           <LabeledSwitch v-model="advancedOptions"
                                          @click="suggestionType = advancedOptions ? suggestionType : 'disorder'"
                                          label-off="Limited" label-on="Full">
@@ -183,12 +183,24 @@
                   <v-tooltip left>
                     <template v-slot:activator="{attrs,on}">
                       <v-chip style="position: absolute; left:auto; right:0" v-on="on" v-bind="attrs"
-                              v-show="seedTypeId!=null" color='primary'>
+                              v-show="seedTypeId!=null"
+                              :disabled="$refs.seedTable==null || $refs.seedTable.getSeeds().length===0"
+                              color="primary" @click="showInteractionNetwork()">
+                        <v-icon>fas fa-eye</v-icon>
+                      </v-chip>
+                    </template>
+                    <span>Display an interaction network with all your current seeds</span>
+                  </v-tooltip>
+                  <v-tooltip left>
+                    <template v-slot:activator="{attrs,on}">
+                      <v-chip style="position: absolute; left:auto; right:55px" v-on="on" v-bind="attrs"
+                              v-show="seedTypeId!=null"
+                              color="primary">
                         <v-icon left>fas fa-capsules</v-icon>
                         {{ validationDrugCount }}
                       </v-chip>
                     </template>
-                    <span>There are {{ validationDrugCount }} drugs that were associated with your query.<br> These are saved for validation purposes later.<br><br><i>To see or even adjust the list, toggle this button!</i></span>
+                    <span>There are {{ validationDrugCount }} drugs that were associated with your query.<br> These are saved for validation purposes later.</span>
                   </v-tooltip>
                   <SeedTable ref="seedTable" v-show="seedTypeId!=null" :download="true"
                              :remove="true"
@@ -666,6 +678,9 @@ export default {
       this.nameOptions.push((sources + " (" + this.$refs.algorithms.getAlgorithmMethod() + ") [" + (await this.$refs.algorithms.getParamString()) + "]"))
       this.namePopup = true
 
+    },
+    showInteractionNetwork: function(){
+      this.$refs.interactionDialog.show(["gene","protein"][this.seedTypeId],this.$refs.seedTable.getSeeds().map(n=>n.id))
     },
     resolveNamingDialog: function (value) {
       this.namePopup = false

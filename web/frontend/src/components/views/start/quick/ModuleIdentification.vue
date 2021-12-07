@@ -129,14 +129,15 @@
                             {{ ['genes', 'proteins'][this.seedTypeId] }} associated to
                           </v-card-title>
                         </div>
-                        <div v-on="on" v-bind="attrs" style="justify-content: flex-end; margin-left: auto">
+                        <div style="justify-content: flex-end; margin-left: auto">
                           <LabeledSwitch v-model="advancedOptions"
                                          @click="suggestionType = advancedOptions ? suggestionType : 'disorder'"
                                          label-off="Limited" label-on="Full">
                             <template v-slot:tooltip>
                               <div style="width: 300px"><b>Limited Mode:</b><br>The options are limited to the most
                                 interesting and generally used ones to not overcomplicate the user interface <br>
-                                <b>Full Mode:</b><br> The full mode provides a wider list of options to select from for
+                                <b>Full Mode:</b><br> The full mode provides a wider list of options to select from
+                                for
                                 more
                                 specific queries.
                               </div>
@@ -188,13 +189,25 @@
                     <template v-slot:activator="{attrs,on}">
                       <v-chip style="position: absolute; left:auto; right:0" v-on="on" v-bind="attrs"
                               v-show="seedTypeId!=null"
+                              :disabled="$refs.seedTable==null || $refs.seedTable.getSeeds().length===0"
+                              color="primary" @click="showInteractionNetwork()">
+                        <v-icon>fas fa-eye</v-icon>
+                      </v-chip>
+                    </template>
+                    <span>Display an interaction network with all your current seeds</span>
+                  </v-tooltip>
+                  <v-tooltip left>
+                    <template v-slot:activator="{attrs,on}">
+                      <v-chip style="position: absolute; left:auto; right:55px" v-on="on" v-bind="attrs"
+                              v-show="seedTypeId!=null"
                               color="primary">
                         <v-icon left>fas fa-capsules</v-icon>
                         {{ validationDrugCount }}
                       </v-chip>
                     </template>
-                    <span>There are {{ validationDrugCount }} drugs that were associated with your query.<br> These are saved for validation purposes later.<br><br><i>To see or even adjust the list, toggle this button!</i></span>
+                    <span>There are {{ validationDrugCount }} drugs that were associated with your query.<br> These are saved for validation purposes later.</span>
                   </v-tooltip>
+
                   <SeedTable ref="seedTable" v-show="seedTypeId!=null" :download="true"
                              :remove="true"
                              :filter="true" @clearEvent="clearData"
@@ -476,6 +489,7 @@
     </v-stepper>
     <DisorderHierarchyDialog v-if="$refs.suggestions!=null" ref="disorderHierarchy"
                              @addDisorders="$refs.suggestions.loadDisorders"></DisorderHierarchyDialog>
+    <InteractionNetworkDialog ref="interactionDialog"></InteractionNetworkDialog>
   </v-card>
 </template>
 
@@ -499,6 +513,7 @@ import ButtonCancel from "@/components/start/quick/ButtonCancel";
 import ButtonBack from "@/components/start/quick/ButtonBack";
 import ButtonAdvanced from "@/components/start/quick/ButtonAdvanced";
 import QuickExamples from "@/components/start/quick/QuickExamples";
+import InteractionNetworkDialog from "@/components/start/quick/InteractionNetworkDialog";
 
 export default {
   name: "ModuleIdentification",
@@ -775,6 +790,9 @@ export default {
       return this.$refs.algorithms.getHeaders()
     }
     ,
+    showInteractionNetwork: function(){
+      this.$refs.interactionDialog.show(["gene","protein"][this.seedTypeId],this.$refs.seedTable.getSeeds().map(n=>n.id))
+    },
     downloadList: function (names, sep) {
       this.$http.post("mapToDomainIds", {
         type: ['gene', 'protein'][this.seedTypeId],
@@ -1017,6 +1035,7 @@ export default {
   ,
 
   components: {
+    InteractionNetworkDialog,
     QuickExamples,
     ButtonAdvanced,
     ButtonBack,
