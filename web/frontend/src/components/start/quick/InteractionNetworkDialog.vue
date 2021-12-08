@@ -68,7 +68,6 @@ export default {
   methods: {
 
     show: function (type, ids) {
-      document.getElementsByTagName("html")[0].style.overflowY="hidden"
       this.model = true;
       this.$http.getInteractionEdges({type: type, ids: ids}).then(graph => {
         this.nodeCount = graph.nodes.length
@@ -96,7 +95,6 @@ export default {
     },
 
     close: function () {
-      document.getElementsByTagName("html")[0].style.overflowY="auto"
       this.model = false
       this.loading = true
       this.nodeCount=0

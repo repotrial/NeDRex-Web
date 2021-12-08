@@ -1,5 +1,6 @@
 <template>
-  <div class="graph-window" :style="windowStyle">
+  <div class="graph-window" :style="windowStyle" @mouseenter="setGlobalScroll('hidden')"
+       @mouseleave="setGlobalScroll('auto')">
     <v-progress-linear v-if="progress ===undefined" v-show="loading && !waiting" indeterminate
                        :color=loadingColor></v-progress-linear>
     <v-progress-linear v-else v-show="progress <100" :value="progress" :color=loadingColor></v-progress-linear>
@@ -268,11 +269,11 @@ export default {
       this.loading = bool;
     },
 
-    loadLayout: function(type){
-      this.$http.getLayout(this.gid, type).then(data=>{
+    loadLayout: function (type) {
+      this.$http.getLayout(this.gid, type).then(data => {
         let groupMap = {}
-        this.$global.metagraph.nodes.forEach(n=>groupMap[n.group]=parseInt(n.id))
-        let updates = this.nodeSet.get().map(n=>{
+        this.$global.metagraph.nodes.forEach(n => groupMap[n.group] = parseInt(n.id))
+        let updates = this.nodeSet.get().map(n => {
           let pos = data[groupMap[n.group]][parseInt(n.id.substring(4))]
           n.x = pos.x
           n.y = pos.y
@@ -519,6 +520,11 @@ export default {
           return {id: n.id, label: n._label, _label: undefined}
         })
       this.updateNodes(updates)
+    },
+
+    setGlobalScroll: function (value) {
+      if (window.navigator.appVersion.toLowerCase().indexOf("mac") > -1 && window.navigator.appCodeName.indexOf("Mozilla")>-1)
+        document.getElementsByTagName("html")[0].style.overflowY = value
     },
 
     saveLayout: function () {
