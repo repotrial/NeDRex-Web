@@ -50,7 +50,7 @@ export default {
     return{
       table:[
         {os:"Linux", version:"Mint 20.2 Cinnamon", chrome:"95.0.4638.54", firefox:"93.0", safari:"n/a", edge:"95.0.1020.30-1"},
-        {os:"MacOS", version:"-", chrome:"TODO", firefox:"TODO", safari:"TODO", edge:"TODO"},
+        {os:"MacOS", version:"Big Sur 11.6.1", chrome:"96.0.4664.55", firefox:"94.0.2", safari:"15.1", edge:"n/a"},
         {os:"Windows", version:"10", chrome:"95.0.4638.54", firefox:"93.0", safari:"n/a", edge:"95.0.1020.30"}
       ]
     }
