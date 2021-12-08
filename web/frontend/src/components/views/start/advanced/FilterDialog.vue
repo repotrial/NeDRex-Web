@@ -285,7 +285,7 @@ export default {
       out.push({value: type, text: type.substring(0, 1).toUpperCase() + type.substring(1)})
       if (disorderIdx < 0) {
         this.suggestionType = out[0].value
-      } else (!this.advancedOptions)
+      } else if(!this.advancedOptions)
       {
         this.suggestionType = out[disorderIdx].value;
       }

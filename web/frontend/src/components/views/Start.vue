@@ -60,13 +60,13 @@ export default {
   },
   watch: {
     startTab: function (val) {
-      this.$emit("showSideEvent", val === 2)
+      this.$emit("showSideEvent", false)
       this.focusTop()
     },
   },
   created() {
-    if (this.$route.path.split("/").indexOf("start") > -1)
-      this.$emit("showSideEvent", this.startTab === 2)
+    // if (this.$route.path.split("/").indexOf("start") > -1)
+    //   this.$emit("showSideEvent", this.startTab === 2)
     this.setView()
     this.job = this.$route.params["job"]
     if(this.job!=null)

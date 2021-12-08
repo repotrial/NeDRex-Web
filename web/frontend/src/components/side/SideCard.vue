@@ -47,7 +47,7 @@
                 </v-icon>
               </v-list-item-avatar>
               <v-list-item-subtitle>{{ name }}</v-list-item-subtitle>
-              <v-list-item-subtitle style="min-width: 2rem; max-width: 3rem">{{
+              <v-list-item-subtitle style="min-width: 3rem; max-width: 4.5rem">{{
                   options.list.countMap.nodes[name] != null ? options.list.countMap.nodes[name].selected : 0
                 }}/{{ count }}
               </v-list-item-subtitle>
@@ -78,7 +78,7 @@
                 </template>
               </v-list-item-avatar>
               <v-list-item-subtitle>{{ name }}</v-list-item-subtitle>
-              <v-list-item-subtitle style="min-width: 2rem; max-width: 3rem">{{
+              <v-list-item-subtitle style="min-width: 3rem; max-width: 4.5rem">{{
                   options.list.countMap.nodes[name] != null ? options.list.countMap.edges[name].selected : 0
                 }}/{{ count }}
               </v-list-item-subtitle>

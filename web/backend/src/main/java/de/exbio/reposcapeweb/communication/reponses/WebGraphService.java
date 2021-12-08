@@ -12,6 +12,7 @@ import de.exbio.reposcapeweb.communication.requests.*;
 import de.exbio.reposcapeweb.configs.DBConfig;
 import de.exbio.reposcapeweb.configs.VisConfig;
 import de.exbio.reposcapeweb.db.DbCommunicationService;
+import de.exbio.reposcapeweb.db.entities.RepoTrialEdge;
 import de.exbio.reposcapeweb.db.entities.RepoTrialNode;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
 import de.exbio.reposcapeweb.db.entities.nodes.*;
@@ -422,12 +423,32 @@ public class WebGraphService {
             String edgeName = edgeList.getFirst();
             addedEdges.add(edgeName);
             Pair<Integer, Integer> edgeNodes = Graphs.getNodesfromEdge(edgeName);
-            boolean extend = (extendPPI & edgeName.equals("ProteinProteinInteraction")) | (extendGGI & edgeName.equals("GeneGeneInteraction")) | edgeName.equals("DisorderHierarchy") | (!Objects.equals(edgeNodes.first, edgeNodes.second) & !connectedNodes.contains(Graphs.getNodesfromEdge(Graphs.getEdge(edgeName)).first) & connectedNodes.contains(Graphs.getNodesfromEdge(Graphs.getEdge(edgeName)).second));
-            extendGraph(finalG, edgeName, !extend, false, drugTargetsWithAction, disorderAssociationCutoff, disorderParents, experimentalInteraction);
-            if (request.connectedOnly) {
-                request.nodes.forEach((k, v) -> removeUnconnectedNodes(finalG, Graphs.getNode(k), null));
-            }
+            if (!connectedNodes.contains(Graphs.getNodesfromEdge(Graphs.getEdge(edgeName)).first) & !connectedNodes.contains(Graphs.getNodesfromEdge(Graphs.getEdge(edgeName)).second)) {
+                HashMap<Integer, HashSet<Integer>> nodes = new HashMap<>();
+                nodes.put(edgeNodes.first, new HashSet<>());
+                nodes.put(edgeNodes.second, new HashSet<>());
+                LinkedList<Edge> edges = new LinkedList<>();
+                edgeController.findAll(Graphs.getEdge(edgeName)).forEach(e -> {
+                    PairId edge = ((RepoTrialEdge) e).getPrimaryIds();
+                    edges.add(new Edge(edge));
+                    nodes.get(edgeNodes.first).add(edge.getId1());
+                    nodes.get(edgeNodes.second).add(edge.getId2());
+                });
+                finalG.addEdges(Graphs.getEdge(edgeName), edges);
 
+                nodes.forEach((k, v) -> {
+                    NodeFilter nf = new NodeFilter(nodeController.getFilter(Graphs.getNode(k)),v);
+                    finalG.saveNodeFilter(Graphs.getNode(k), nf);
+                    finalG.addNodes(k, nodeFilterToNode(nf));
+                });
+            } else {
+                boolean extend = (extendPPI & edgeName.equals("ProteinProteinInteraction")) | (extendGGI & edgeName.equals("GeneGeneInteraction")) | edgeName.equals("DisorderHierarchy") | (!Objects.equals(edgeNodes.first, edgeNodes.second) & !(connectedNodes.contains(Graphs.getNodesfromEdge(Graphs.getEdge(edgeName)).first) & connectedNodes.contains(Graphs.getNodesfromEdge(Graphs.getEdge(edgeName)).second)));
+                extendGraph(finalG, edgeName, !extend, false, drugTargetsWithAction, disorderAssociationCutoff, disorderParents, experimentalInteraction);
+
+                if (request.connectedOnly) {
+                    request.nodes.forEach((k, v) -> removeUnconnectedNodes(finalG, Graphs.getNode(k), null));
+                }
+            }
             LinkedList<String> nodes = new LinkedList<>(Arrays.asList(Graphs.getNode(edgeNodes.first), Graphs.getNode(edgeNodes.second)));
             nodes.forEach(nodeName -> {
                 connectedNodes.add(Graphs.getNode(nodeName));

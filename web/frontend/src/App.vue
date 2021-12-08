@@ -847,9 +847,10 @@ export default {
     }
     ,
     adaptSidecard: function (param) {
-      if (this.selectedTabId === 0) {
-        this.$refs.side.loadFilter(param)
-      }
+      // if (this.selectedTabId === 0) {
+        // this.$refs.side.loadFilter(param)
+        // this.setSideVisible(false)
+      // }
       if (this.selectedTabId === 3) {
         this.setSideVisible(true)
       }
