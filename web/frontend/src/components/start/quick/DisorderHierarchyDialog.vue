@@ -105,6 +105,7 @@ export default {
     resolvePopup: function (state) {
       this.show = false
       this.model = state;
+      document.getElementsByTagName("html")[0].style.overflowY="auto"
       this.$emit('input', this.model)
       if (state) {
         this.$emit("addDisorders", this.nodes.get().filter(n => n.group === "disorder").map(n => parseInt(n.id)))
@@ -114,6 +115,7 @@ export default {
       this.init()
     },
     loadDisorder: function (sid) {
+      document.getElementsByTagName("html")[0].style.overflowY="hidden"
       this.loading = true
       this.$http.getDisorderHierarchy(sid).then(result => {
         this.data = result
