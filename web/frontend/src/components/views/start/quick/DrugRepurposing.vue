@@ -572,6 +572,7 @@
     </v-dialog>
     <DisorderHierarchyDialog v-if="$refs.suggestions!=null" ref="disorderHierarchy"
                              @addDisorders="$refs.suggestions.loadDisorders"></DisorderHierarchyDialog>
+    <InteractionNetworkDialog ref="interactionDialog"></InteractionNetworkDialog>
   </v-card>
 </template>
 
@@ -596,6 +597,7 @@ import ButtonNext from "@/components/start/quick/ButtonNext";
 import ButtonBack from "@/components/start/quick/ButtonBack";
 import ButtonAdvanced from "@/components/start/quick/ButtonAdvanced";
 import QuickExamples from "@/components/start/quick/QuickExamples";
+import InteractionNetworkDialog from "@/components/start/quick/InteractionNetworkDialog";
 
 export default {
   name: "CombinedRepurposing",
@@ -1277,6 +1279,7 @@ export default {
   },
 
   components: {
+    InteractionNetworkDialog,
     ButtonAdvanced,
     ButtonBack,
     ButtonNext,

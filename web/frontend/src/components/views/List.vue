@@ -46,9 +46,9 @@
                 <template v-slot:header.selected>
                   <v-tooltip right>
                     <template v-slot:activator="{attrs, on}">
-                      <v-btn small style="margin-left: -10px; margin-top: -2px;" icon v-bind="attrs" v-on="on"
+                      <v-btn small style="margin-left: -10px; margin-top: -2px;" icon
                              @click="nodeOptions">
-                        <v-icon small>fas fa-cog</v-icon>
+                        <v-icon small v-bind="attrs" v-on="on">fas fa-cog</v-icon>
                       </v-btn>
                     </template>
                     <span>Edit table headers</span>
@@ -271,9 +271,9 @@
                 <template v-slot:header.selected>
                   <v-tooltip right>
                     <template v-slot:activator="{attrs, on}">
-                      <v-btn small style="margin-left: -10px; margin-top: -2px;" icon v-bind="attrs" v-on="on"
+                      <v-btn small style="margin-left: -10px; margin-top: -2px;" icon
                              @click="edgeOptions">
-                        <v-icon small>fas fa-cog</v-icon>
+                        <v-icon small v-bind="attrs" v-on="on">fas fa-cog</v-icon>
                       </v-btn>
                     </template>
                     <span>Edit table headers</span>

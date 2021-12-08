@@ -488,6 +488,7 @@
     </v-stepper>
     <DisorderHierarchyDialog v-if="$refs.suggestions!=null" ref="disorderHierarchy"
                              @addDisorders="$refs.suggestions.loadDisorders"></DisorderHierarchyDialog>
+    <InteractionNetworkDialog ref="interactionDialog"></InteractionNetworkDialog>
   </v-card>
 </template>
 
@@ -510,6 +511,7 @@ import ButtonNext from "@/components/start/quick/ButtonNext";
 import ButtonCancel from "@/components/start/quick/ButtonCancel";
 import ButtonAdvanced from "@/components/start/quick/ButtonAdvanced";
 import QuickExamples from "@/components/start/quick/QuickExamples";
+import InteractionNetworkDialog from "@/components/start/quick/InteractionNetworkDialog";
 
 export default {
   name: "DrugRepurposing",
@@ -1075,6 +1077,7 @@ export default {
     LabeledSwitch,
     SeedDownload,
     NodeInput,
+    InteractionNetworkDialog,
     SuggestionAutocomplete,
     Network,
     SeedTable,

@@ -26,10 +26,9 @@
                       icon
                       :disabled="item.id === current || (item.state !== undefined &&item.state !== 'DONE')"
                       @click="loadGraph(item.id)"
-                      v-bind="attrs"
-                      v-on="on"
                     >
-                      <v-icon
+                      <v-icon  v-bind="attrs"
+                               v-on="on"
                         :color="item.id === current ? 'gray': item.state===undefined ?'primary':'green'"
                       >
                         far fa-play-circle
