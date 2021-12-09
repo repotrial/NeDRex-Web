@@ -523,7 +523,7 @@ export default {
     },
 
     setGlobalScroll: function (value) {
-      if (window.navigator.appVersion.toLowerCase().indexOf("mac") > -1 && window.navigator.appCodeName.indexOf("Mozilla")>-1)
+      if (this.$utils.isMac(window.navigator) && this.$utils.isFirefox(window.navigator))
         document.getElementsByTagName("html")[0].style.overflowY = value
     },
 

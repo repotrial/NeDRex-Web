@@ -97,10 +97,10 @@
                   Download
                 </v-chip>
               </v-list-item-action>
-              <v-list-item-action>
+              <v-list-item-action >
                 <v-chip
                   outlined
-                  @click="copyLink; printNotification('Copied graph link to clipboard!',1)"
+                  @click="copyLink(); printNotification('Copied graph link to clipboard!',1)"
                 >
                   <v-icon
                     left
@@ -478,6 +478,9 @@ export default {
         }).then(data => {
           this.graphInfo = data
         }).catch(console.error)
+    },
+    isMac: function(){
+      return this.$utils.isMac(window.navigator)
     },
 
     reload: function () {

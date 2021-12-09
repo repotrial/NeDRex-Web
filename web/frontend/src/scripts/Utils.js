@@ -83,15 +83,15 @@ const Utils =
     }
     ,
     roundScores: function (data, nodeType, scoreAttrs) {
-        data.nodes[nodeType].forEach(item => {
-          if (typeof scoreAttrs === 'object') {
-            if (scoreAttrs.id)
-              this.roundScores(item, scoreAttrs.id)
-            else
-              scoreAttrs.forEach(scoreAttr => this.roundScore(item, scoreAttr.id))
-          } else
-            this.roundScore(item, scoreAttrs)
-        })
+      data.nodes[nodeType].forEach(item => {
+        if (typeof scoreAttrs === 'object') {
+          if (scoreAttrs.id)
+            this.roundScores(item, scoreAttrs.id)
+          else
+            scoreAttrs.forEach(scoreAttr => this.roundScore(item, scoreAttr.id))
+        } else
+          this.roundScore(item, scoreAttrs)
+      })
       return data
     },
     roundValue: function (score, decimals) {
@@ -169,6 +169,14 @@ const Utils =
       metagraph.options.options.groups.pathway["ctxRenderer"] = drawEllipse;
 
       return metagraph;
+    },
+    isMac(navigator) {
+      return navigator.appVersion.toLowerCase().indexOf("mac") > -1
+    },
+
+    isFirefox(navigator){
+      return navigator.appCodeName.indexOf("Mozilla")>-1
     }
+
   }
 export default Utils
