@@ -182,7 +182,7 @@ const ApiService = {
   },
 
   getLicense() {
-    return this.get("getLicence").then(response => {
+    return this.get("getLicense").then(response => {
       if (response.data != null) {
         return response.data
       }

@@ -373,9 +373,11 @@ export default {
     },
 
     loadUser: function () {
-      if (this.$cookies.get("uid") === null) {
+      if (this.$cookies.get("uid") == null) {
         this.showTos()
       } else {
+        if(sessionStorage.getItem("tos")==null)
+          this.showTos()
         this.$http.get("/getUser?user=" + this.$cookies.get("uid")).then(response => {
           if (response.data !== undefined)
             return response.data

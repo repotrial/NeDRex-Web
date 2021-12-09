@@ -302,7 +302,7 @@ public class RequestController {
     @RequestMapping(value = "/downloadGraph", method = RequestMethod.GET, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public @ResponseBody
     ResponseEntity<Resource> downloadGraph(@RequestParam("gid") String gid, HttpServletRequest request) {
-        log.info("Requested graphml download of "+gid);
+        log.info("Requested graphml download of " + gid);
         File f = webGraphService.getDownload(gid);
         Resource resource = new FileSystemResource(f);
         return ResponseEntity.ok()
@@ -311,10 +311,12 @@ public class RequestController {
                 .body(resource);
     }
 
-    @RequestMapping(value = "getLicence", method = RequestMethod.GET)
+    @RequestMapping(value = "getLicense", method = RequestMethod.GET)
     public @ResponseBody
     String getLicence() {
-        return updateService.getLicenceText();
+//       TODO while db update is not regular
+        return updateService.queryLicenseText();
+//        return updateService.getLicenceText();
     }
 
     @RequestMapping(value = "/getLayout", method = RequestMethod.GET)
@@ -410,9 +412,9 @@ public class RequestController {
         return toJson(info);
     }
 
-    @RequestMapping(value="/getInteractionEdges", method = RequestMethod.POST)
+    @RequestMapping(value = "/getInteractionEdges", method = RequestMethod.POST)
     @ResponseBody
-    public String getInteractionEdges(@RequestBody EdgeRequest request){
+    public String getInteractionEdges(@RequestBody EdgeRequest request) {
         return toJson(webGraphService.getInteractionEdges(request.type, request.ids));
     }
 

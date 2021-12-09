@@ -159,9 +159,9 @@ public class UpdateService {
             proteinInteractsWithProteinService.getProteins().forEach((id1, map) -> map.forEach((id, vals) -> {
                 try {
                     bw.write(proteinService.map(id1) + "\t" + proteinService.map(id.getId2()) + "\t" + vals.second + "\n");
-                    String sifLine = "_"+id1+"\tpp\t_"+id.getId2()+"\n";
+                    String sifLine = "_" + id1 + "\tpp\t_" + id.getId2() + "\n";
                     bwSifa.write(sifLine);
-                    if(vals.second)
+                    if (vals.second)
                         bwSife.write(sifLine);
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -181,9 +181,9 @@ public class UpdateService {
             proteinInteractsWithProteinService.getGenes().forEach((id1, map) -> map.forEach((id, vals) -> {
                 try {
                     bw.write(geneService.map(id1) + "\t" + geneService.map(id.getId2()) + "\t" + vals.second + "\n");
-                    String sifLine = "_"+id1+"\tgg\t_"+id.getId2()+"\n";
+                    String sifLine = "_" + id1 + "\tgg\t_" + id.getId2() + "\n";
                     bwSifa.write(sifLine);
-                    if(vals.second)
+                    if (vals.second)
                         bwSife.write(sifLine);
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -330,9 +330,9 @@ public class UpdateService {
                     log.error("Node " + n.name + " changed schema in NeDRexDB! please update the database-config file and internal structure.");
                     log.error("DB-Schema: " + attributes);
                     log.error("Internal Schema: " + nodeController.getSourceAttributes(n.name));
-                    log.error("=> Missing: "+attributes.stream().filter(e->!nodeController.getSourceAttributes(n.name).contains(e)).collect(Collectors.toList()));
+                    log.error("=> Missing: " + attributes.stream().filter(e -> !nodeController.getSourceAttributes(n.name).contains(e)).collect(Collectors.toList()));
                     HashSet<String> finalAttributes = attributes;
-                    log.error("=> Obsolete: "+nodeController.getSourceAttributes(n.name).stream().filter(e->!finalAttributes.contains(e)).collect(Collectors.toList()));
+                    log.error("=> Obsolete: " + nodeController.getSourceAttributes(n.name).stream().filter(e -> !finalAttributes.contains(e)).collect(Collectors.toList()));
                 } else {
                     log.debug("Schema of " + n.name + " from RepoTrialDB is valid!");
                 }
@@ -351,9 +351,9 @@ public class UpdateService {
                         log.error("Edge " + e.name + " changed schema in RepoTrialDB! please update the database-config file and internal structure.");
                         log.error("DB-Schema: " + attributes.toString());
                         log.error("Internal Schema: " + edgeController.getSourceAttributes(e.mapsTo));
-                        log.error("=> Missing: "+attributes.stream().filter(edge->!edgeController.getSourceAttributes(e.mapsTo).contains(edge)).collect(Collectors.toList()));
+                        log.error("=> Missing: " + attributes.stream().filter(edge -> !edgeController.getSourceAttributes(e.mapsTo).contains(edge)).collect(Collectors.toList()));
                         HashSet<String> finalAttributes = attributes;
-                        log.error("=> Obsolete: "+edgeController.getSourceAttributes(e.mapsTo).stream().filter(edge->!finalAttributes.contains(edge)).collect(Collectors.toList()));
+                        log.error("=> Obsolete: " + edgeController.getSourceAttributes(e.mapsTo).stream().filter(edge -> !finalAttributes.contains(edge)).collect(Collectors.toList()));
                     } else {
                         log.debug("Schema of " + e.name + " from RepoTrialDB is valid!");
                     }
@@ -813,27 +813,35 @@ public class UpdateService {
         saveMetadata();
     }
 
-    public File getLicenceFile(){
+    public File getLicenceFile() {
         return new File(env.getProperty("path.db.cache"), "NeDRex_licence.txt");
     }
 
-    public String getLicenceText(){
+    public String getLicenceText() {
         File licenceFile = getLicenceFile();
-        if(!licenceFile.exists())
+        if (!licenceFile.exists())
             updateLicenceText();
         String licenceText = ReaderUtils.getFileContent(getLicenceFile());
-        if(licenceText.length()==0){
+        if (licenceText.length() == 0) {
             this.updateLicenceText();
             return getLicenceText();
         }
         return licenceText;
     }
 
-    public void updateLicenceText(){
+    public String queryLicenseText() {
         try {
-            String licenceText = ReaderUtils.getUrlContent(new URL(env.getProperty("url.api.db")+"static/licence"));
-            WriterUtils.writeTo(getLicenceFile(),licenceText);
+            return ReaderUtils.getUrlContent(new URL(env.getProperty("url.api.db") + "static/licence"));
         } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public void updateLicenceText() {
+        try {
+            WriterUtils.writeTo(getLicenceFile(), queryLicenseText());
+        } catch (NullPointerException e) {
             e.printStackTrace();
         }
     }
