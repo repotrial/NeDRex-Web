@@ -15,7 +15,8 @@
         <v-radio-group row v-model="groupModel">
           <v-tooltip bottom v-for="group in groups" :key="group.id">
             <template v-slot:activator="{attrs, on}">
-              <v-radio :label="group.label" :value="group.id" v-on="on" v-bind="attrs" :disabled="group.id==='nw' && (seeds==null || seeds.length ===0)">
+              <v-radio :label="group.label" :value="group.id" v-on="on" v-bind="attrs"
+                       :disabled="group.id==='nw' && (seeds==null || seeds.length ===0)">
               </v-radio>
             </template>
             <span>{{ group.tooltip }}</span>
@@ -36,13 +37,16 @@
                             @click="showDescription = !showDescription">{{ method.descType }}
                 <v-icon right>{{ showDescription ? 'fas fa-angle-up' : 'fas fa-angle-down' }}</v-icon>
               </v-card-title>
-              <div style="display: flex; justify-content: left; margin-left: 15px" v-show="showDescription">
-                <div style="text-align: justify; color: dimgray">
-                  {{ getAlgorithm().description }}
-                  <v-chip outlined><a :href="getAlgorithm().link" target="_blank" style="text-decoration: none">Read
-                    more
-                    <v-icon right>fas fa-angle-double-right</v-icon>
-                  </a></v-chip>
+              <div style="display: flex; justify-content: flex-start; margin-left: 15px" v-show="showDescription">
+                <div>
+                  <div style="text-align: justify; color: dimgray" v-html="getAlgorithm().description">
+                  </div>
+                  <div style="display: flex; justify-content: flex-start">
+                    <v-chip outlined><a :href="getAlgorithm().link" target="_blank" style="text-decoration: none">Read
+                      more
+                      <v-icon right>fas fa-angle-double-right</v-icon>
+                    </a></v-chip>
+                  </div>
                 </div>
               </div>
             </div>
@@ -74,7 +78,8 @@
 
                 <template v-if="getAlgorithmMethod()==='bicon'">
                   <div style="width: 200px">
-                    <v-select :items="exprIds" item-text="id" item-value="id" v-model="getAlgorithmModels().exprIDType"></v-select>
+                    <v-select :items="exprIds" item-text="id" item-value="id"
+                              v-model="getAlgorithmModels().exprIDType"></v-select>
                   </div>
                   <div style="justify-self: flex-end">
                     <v-file-input
@@ -606,8 +611,8 @@ export default {
           id: "diamond",
           group: "nw",
           label: "DIAMOnD",
-          descType: "Abstract",
-          description: "\"Diseases are rarely the result of an abnormality in a single gene, but involve a whole cascade of interactions between several cellular processes. To disentangle these complex interactions it is necessary to study genotype-phenotype relationships in the context of protein-protein interaction networks. Our analysis of 70 diseases shows that disease proteins are not randomly scattered within these networks, but agglomerate in specific regions, suggesting the existence of specific disease modules for each disease. The identification of these modules is the first step towards elucidating the biological mechanisms of a disease or for a targeted search of drug targets. We present a systematic analysis of the connectivity patterns of disease proteins and determine the most predictive topological property for their identification. This allows us to rationally design a reliable and efficient Disease Module Detection algorithm (DIAMOnD).\"",
+          descType: "Description",
+          description: "DIAMOnD stands for DIseAse Module Detection and it iteratively identifies the best \"addition\" to the module by calculating the <i>connectivity significance</i> of all nodes connected to at least on of the nodes within the current selection. It was developed and evaluated on the known network topologies of 70 complex disorders. The approach aims to not over prefer high-degree nodes in general but only such those that are highly connected to the input, or by each iteration extended, node list.",
           link: "https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1004120",
           models: {
             nModel: 200,
@@ -628,9 +633,7 @@ export default {
             lg: [10, 15]
           },
           descType: "Abstract",
-          description: "\"Unsupervised learning approaches are frequently employed to identify patient subgroups and biomarkers such as disease-associated genes. Biclustering is a powerful technique often used with expression data to cluster genes along with patients. However, the genes forming biclusters are often not functionally related, complicating interpretation of the results.\n" +
-            "\n" +
-            "To alleviate this, we developed the network-constrained biclustering approach BiCoN which (i) restricts biclusters to functionally related genes connected in molecular interaction networks and (ii) maximizes the expression difference between two subgroups of patients.\"",
+          description: "BiCoN (Biclustering Constrained by Networks) enriches general expression data based biclustering of genes and patients/conditions by gene interaction information. It \"restricts biclusters to functionally related genes connected in molecular interaction networks\" while \"maximizing the expression difference between two subgroups of patients\". For the module, both clusters of genes are seen as relevant under that condition and thus combined in the resulting module.",
           link: "https://biomedical-big-data.de/publication/lazareva-2020-bicon/",
         }, {
           id: "must", group: "nw", label: "MuST", scores: [], models: {
@@ -639,7 +642,7 @@ export default {
             trees: 10,
             maxit: 10,
           },
-          descType: "Explanation",
+          descType: "Description",
           description: "Minimal Steiner trees are generated, meaning a minimal scoring tree is identified that is still only one connected component. This way, minimal cost paths within the network are identified. The reasoning behind using multiple trees is, that PPI clusters are highly connected leading to several shortest path options. This means that using only one tree would not really resemble the best solution but be drawn randomly from multiple equal ones. These multiple trees are then used to derive a prioritized list of target nodes the seeds are connected to, where the number of 'visits' of a non-seed node indicates the priority or significance of it.",
           link: "https://en.wikipedia.org/wiki/Steiner_tree_problem"
         },
@@ -648,8 +651,8 @@ export default {
               // l: 0,
               k: 1,
             },
-            descType: "Abstract",
-            description: "Identifying functional modules or novel active pathways, recently termed de novo pathway enrichment, is a computational systems biology challenge that has gained much attention during the last decade. Given a large biological interaction network, KeyPathwayMiner extracts connected subnetworks that are enriched for differentially active entities from a series of molecular profiles encoded as binary indicator matrices. [...]",
+            descType: "Description",
+            description: "The network enricher <b>K</b>ey<b>P</b>athway<b>M</b>iner was developed to identify condition-specific subnetworks. Here, the seeds are used to define a \"condition\" and to let KPM identify such <i>key pathways</i> those are involved in. KPM will try to generate maximally connected subnetworks allowing at most <b><i>K</i></b> additional nodes that are not contained in the seed list.<br><i>KPM might identify unconnected mechanisms!</i>",
             link: "https://exbio.wzw.tum.de/keypathwayminer/"
           },
           {
@@ -658,27 +661,16 @@ export default {
             label: "DOMINO",
             scores: []
             ,
-            descType: "Abstract",
-            description: "\"We designed a permutation-based method that empirically evaluates GO terms reported by AMI methods. We used the method to fashion five novel AMI performance criteria. Last, we developed DOMINO, a novel AMI algorithm, that outperformed the other six algorithms in extensive testing on GE and GWAS data. Software is available at\"",
+            descType: "Description",
+            description: "<b>D</b>iscovery <b>o</b>f <b>M</b>odules <b>I</b>n <b>N</b>etworks using <b>O</b>mic is an active module identification tool that appeared to resolve the issue of by chance over-representation of specific GO terms and was validated to yield a high rate of empirically significant GO terms. DOMINO uses the seeds as \"active nodes\" and based on those identifies \"disjoint connected subnetworks\" with an over-representation of active nodes. For this first all disjoint but highly connected subnetworks are identified, before either removing this subnetwork from the list of potential results or repartitioning it and keeping it. The final list of subnetworks is returned as a result.<br><i>DOMINO might identify unconnected mechanisms!</i>",
             link: "https://www.embopress.org/doi/full/10.15252/msb.20209593"
 
           }, {
           id: "robust",
           label: "ROBUST",
           group: "nw",
-          descType: "Abstract",
-          description: "\"Disease module mining methods (DMMMs) extract subgraphs that constitute candidate\n" +
-            "disease mechanisms from molecular interaction networks such as protein-protein interaction (PPI)\n" +
-            "networks. Irrespective of the employed models, DMMMs typically include non-robust steps in their\n" +
-            "workflows, i. e., the computed subnetworks vary when running the DMMMs multiple times on equivalent\n" +
-            "input. This lack of robustness has a negative effect on the trustworthiness of the obtained subnetworks\n" +
-            "and is hence detrimental for the wide-spread adoption of DMMMs in the biomedical sciences.\n" +
-            "Results: To overcome this problem, we present a new DMMM called ROBUST (robust disease module\n" +
-            "mining via enumeration of diverse prize-collecting Steiner trees). In a large-scale empirical evaluation,\n" +
-            "we show that ROBUST outperforms competing methods in terms of robustness, scalability and, in most\n" +
-            "settings, functional relevance of the produced modules, measured via KEGG gene set enrichment scores\n" +
-            "and overlap with DisGeNET disease genes. With ROBUST, we make an important contribution to network\n" +
-            "medicine by overcoming the lack of robustness in disease module extraction.\"",
+          descType: "Description",
+          description: "ROBUST was developed as a result of the realization that other disease module identification algorithms are not robust to input permutation or not even deterministic overall. It employes \"diverse prize-collecting Steiner trees\" to reproducibly identify key nodes to add to the mdoule.",
           link: "https://github.com/bionetslab/robust",
           models: {
             initFract: 0.25,
@@ -811,7 +803,7 @@ export default {
         params['lg_max'] = this.getAlgorithmModels().lg[1];
         //TODO maybe make just dependent on typeID
         params['type'] = "gene"
-        params['exprIDType']=this.getAlgorithmModels().exprIDType
+        params['exprIDType'] = this.getAlgorithmModels().exprIDType
         await this.$utils.readFile(this.getAlgorithmModels().exprFile).then(content => {
           params['exprData'] = content
         })
@@ -879,13 +871,14 @@ export default {
     },
 
 
-
     getExprIDTypes: function () {
       this.$http.get("/getAllowedExpressionIDs").then(response => {
         if (response.data != null)
           return response.data
       }).then(data => {
-        this.exprIds = data.map(id=> {return {id:id}})
+        this.exprIds = data.map(id => {
+          return {id: id}
+        })
       }).catch(console.error)
     }
   },

@@ -21,13 +21,16 @@
                             @click="showDescription = !showDescription">{{ method.descType }}
                 <v-icon right>{{ showDescription ? 'fas fa-angle-up' : 'fas fa-angle-down' }}</v-icon>
               </v-card-title>
-              <div style="display: flex; justify-content: left; margin-left: 15px" v-show="showDescription">
-                <div style="text-align: justify; color: dimgray">
-                  {{ getAlgorithm().description }}
-                  <v-chip outlined><a :href="getAlgorithm().link" target="_blank" style="text-decoration: none">Read
-                    more
-                    <v-icon right>fas fa-angle-double-right</v-icon>
-                  </a></v-chip>
+              <div style="display: flex; justify-content: flex-start; margin-left: 15px" v-show="showDescription">
+                <div>
+                  <div style="text-align: justify; color: dimgray" v-html="getAlgorithm().description">
+                  </div>
+                  <div style="display: flex; justify-content: flex-start">
+                    <v-chip outlined><a :href="getAlgorithm().link" target="_blank" style="text-decoration: none">Read
+                      more
+                      <v-icon right>fas fa-angle-double-right</v-icon>
+                    </a></v-chip>
+                  </div>
                 </div>
               </div>
             </div>
@@ -213,7 +216,7 @@ export default {
         label: "TrustRank",
         description: "TrustRank is derived form the well known PageRank algorithm. Its  original purpose is to filter spam-sites that are not highly supported by other pages. This is achieved by assigning weights based on in- and out-going edges to favor highly and punish weakly supported nodes. In theory, these weights are iteratively propagated through the network until the assigned scores or ranks stabilize. In a biological application, the ranked websites are drugs, and the most trusted ones are drugs that have high chances of targeting a large number of seeds.",
         link: "https://en.wikipedia.org/wiki/TrustRank",
-        descType: "Explanation",
+        descType: "Description",
         models: {
           topX: 100,
           onlyApproved: true,
@@ -233,9 +236,9 @@ export default {
         {
           id: "centrality",
           label: "Closeness Centrality",
-          description: "Like the name suggests closeness centrality is one of several centrality measurements. These generally are used in network analysis to derive scores that translate to the importance of the nodes in its specific network. Closeness, in particular, is derived by calculating the sum over all shortest paths between the specific node x and any other (y) to the power of negative one. A low average shortest path is then used as an indicator for possible candidates to extend the module.",
+          description: "Like the name suggests closeness centrality is one of several centrality measurements. These generally are used in network analysis to derive scores that translate to the importance of the nodes in its specific network. Closeness, in particular, is derived by calculating the sum over all shortest paths between the specific node x and any other (y) to the power of negative one. A low average shortest path is then used as an indicator for possible candidates that target the module.",
           link: "https://en.wikipedia.org/wiki/Closeness_centrality",
-          descType: "Explanation",
+          descType: "Description",
           models: {
             topX: 100,
             onlyApproved: true,

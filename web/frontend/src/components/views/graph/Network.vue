@@ -332,7 +332,12 @@ export default {
         this.setDirected(graph.directed)
         this.setEdges(graph.edges);
         this.setNodes(graph.nodes);
-        this.setOptions(this.startGraph ? null : graph.options)
+        if (this.startGraph) {
+          this.options.interaction.multiselect = false
+          this.reloadOptions();
+        }
+        else
+          this.setOptions(graph.options)
         this.checkSizeWarning(graph)
       }
       this.setLoading(false)
