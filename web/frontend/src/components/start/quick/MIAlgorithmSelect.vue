@@ -77,19 +77,48 @@
               <div>
 
                 <template v-if="getAlgorithmMethod()==='bicon'">
-                  <div style="width: 200px">
-                    <v-select :items="exprIds" item-text="id" item-value="id"
-                              v-model="getAlgorithmModels().exprIDType"></v-select>
-                  </div>
-                  <div style="justify-self: flex-end">
-                    <v-file-input
-                      v-on:change="biconFile"
-                      show-size
-                      prepend-icon="fas fa-file-medical"
-                      label="Expression File"
-                      dense
-                    >
-                    </v-file-input>
+                  <div style="display: flex; width: 100%">
+                    <div style="width: 200px; justify-self: flex-start">
+                      <v-select :items="exprIds" item-text="id" item-value="id"
+                                v-model="getAlgorithmModels().exprIDType">
+                        <template v-slot:append-outer>
+                          <v-tooltip left>
+                            <template v-slot:activator="{ on, attrs }">
+                              <v-icon
+                                v-bind="attrs"
+                                v-on="on"
+                                left> far fa-question-circle
+                                style="flex-grow: 0"
+                              </v-icon>
+                            </template>
+                            <span>Select the gene identifiers your expression matrix uses.</span>
+                          </v-tooltip>
+                        </template>
+                      </v-select>
+                    </div>
+                    <div style="justify-self: flex-end; margin-left: auto; margin-right: auto; width: calc(100% - 400px); min-width: 250px; margin-top: 14px;">
+                      <v-file-input
+                        v-on:change="biconFile"
+                        show-size
+                        prepend-icon="fas fa-file-medical"
+                        label="Expression File"
+                        dense
+                      >
+                        <template v-slot:append-outer>
+                          <v-tooltip left>
+                            <template v-slot:activator="{ on, attrs }">
+                              <v-icon
+                                v-bind="attrs"
+                                v-on="on"
+                                left> far fa-question-circle
+                                style="flex-grow: 0"
+                              </v-icon>
+                            </template>
+                            <span>Select your expression matrix that should be uploaded. The server removes your data once the the algorithm successfully terminated.</span>
+                          </v-tooltip>
+                        </template>
+                      </v-file-input>
+                    </div>
                   </div>
 
                   <div>
@@ -120,12 +149,13 @@
                         <v-tooltip left>
                           <template v-slot:activator="{ on, attrs }">
                             <v-icon
+                              style="margin-top: -15px;"
                               v-bind="attrs"
                               v-on="on"
                               left> far fa-question-circle
                             </v-icon>
                           </template>
-                          <span>Maximal solution subnetwork size.</span>
+                          <span>Defines the minimal and maximal solution network size or genes used to bicluster the conditions / patients.</span>
                         </v-tooltip>
                       </template>
                     </v-range-slider>
@@ -190,7 +220,7 @@
                               left> far fa-question-circle
                             </v-icon>
                           </template>
-                          <span>an integer representing weight of the seeds,default
+                          <span>Integer representing the weight of the seeds,default
                        value is set to 1.</span>
                         </v-tooltip>
                       </template>
@@ -368,7 +398,7 @@
                               left> far fa-question-circle
                             </v-icon>
                           </template>
-                          <span>Number of steiner trees to be computed (Integer).</span>
+                          <span>Number of individual Steiner trees to be computed.</span>
                         </v-tooltip>
                       </template>
                     </v-slider>
@@ -403,49 +433,15 @@
                               left> far fa-question-circle
                             </v-icon>
                           </template>
-                          <div>Max. Gene Exceptions (K) - the maximum number of exception genes each pathway is<br>
-                            allowed to have. You can also provide a range to compute pathways with different K values.
+                          <div>Max. Gene Exceptions (K) - the maximum number of exception genes each pathway is
+                            allowed to have. This means the number of nodes that are allowed to be taken into
+                            consideration that are not already contained in the seeds to construct maximum connected
+                            subnetworks (key pathways).
                           </div>
                         </v-tooltip>
                       </template>
                     </v-slider>
                   </div>
-                  <!--                  <div>-->
-                  <!--                    <v-slider-->
-                  <!--                      hide-details-->
-                  <!--                      class="align-center"-->
-                  <!--                      v-model="getAlgorithmModels().l"-->
-                  <!--                      min="0"-->
-                  <!--                      max="20"-->
-                  <!--                    >-->
-                  <!--                      <template v-slot:prepend>-->
-                  <!--                        <v-text-field-->
-                  <!--                          v-model="getAlgorithmModels().l"-->
-                  <!--                          class="mt-0 pt-0"-->
-                  <!--                          type="number"-->
-                  <!--                          style="width: 100px"-->
-                  <!--                          label="Case exceptions"-->
-                  <!--                        ></v-text-field>-->
-                  <!--                      </template>-->
-                  <!--                      <template v-slot:append>-->
-                  <!--                        <v-tooltip left>-->
-                  <!--                          <template v-slot:activator="{ on, attrs }">-->
-                  <!--                            <v-icon-->
-                  <!--                              v-bind="attrs"-->
-                  <!--                              v-on="on"-->
-                  <!--                              left> far fa-question-circle-->
-                  <!--                            </v-icon>-->
-                  <!--                          </template>-->
-                  <!--                          <div>Max. Case Exceptions (L) - In INEs it represents the maximum number of non-differentially<br>-->
-                  <!--                            expressed cases a gene is allowed to have in order to not be considered an exception gene.<br>-->
-                  <!--                            In GloNE it represents the maximum number of non-differentially expressed cases over all<br>-->
-                  <!--                            genes contained in a solution. You can also provide a range to compute pathways with<br>-->
-                  <!--                            different L values-->
-                  <!--                          </div>-->
-                  <!--                        </v-tooltip>-->
-                  <!--                      </template>-->
-                  <!--                    </v-slider>-->
-                  <!--                  </div>-->
                 </template>
                 <template v-if="getAlgorithmMethod()==='must'">
                   <div>
@@ -480,7 +476,7 @@
                       </template>
                     </v-slider>
                   </div>
-                  <div>
+                  <div style="display: flex; justify-content: flex-start">
                     <v-switch
                       label="Multiple"
                       v-model="getAlgorithmModels().multiple"
@@ -494,7 +490,7 @@
                               left> far fa-question-circle
                             </v-icon>
                           </template>
-                          <span>Specify hub penalty between 0.0 and 1.0. If none is specified, there will be no hub penalty.</span>
+                          <span>Enables the generation of multiple Steiner Trees with the same parameters and the combination of the individual results.</span>
                         </v-tooltip>
                       </template>
                     </v-switch>
@@ -525,7 +521,7 @@
                               left> far fa-question-circle
                             </v-icon>
                           </template>
-                          <span>Number of Trees to be returned (Integer).</span>
+                          <span>Number of individual trees to be constructed.</span>
                         </v-tooltip>
                       </template>
                     </v-slider>
