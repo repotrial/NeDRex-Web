@@ -234,7 +234,13 @@ const ApiService = {
   formatEULA: function (text) {
     if (text.indexOf("https:\/\/omim\.org\/downloads"))
       text = text.replace("https:\/\/omim\.org\/downloads", "<a href='https://omim.org/downloads' target='_blank'>https://omim.org/downloads")
-    text.replaceAll("®","&reg")
+    text = text.replaceAll("OMIM��","OMIM®")
+    text = text.replaceAll("JHU���", "JHU'")
+    text = text.replaceAll("���claims","‘claims")
+    text = text.replaceAll("made���","made’")
+    text = text.replaceAll("UH���s","UH's")
+    text = text.replaceAll("Copyright ��", "Copyright ©")
+    text = text.replaceAll("���JHU Parties���",'“JHU Parties”')
     return text
   },
   getInteractionEdges: function(data) {

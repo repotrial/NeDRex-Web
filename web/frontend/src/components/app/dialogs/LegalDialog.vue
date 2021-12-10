@@ -1,7 +1,7 @@
 <template>
   <v-dialog
     v-model="model"
-    :persistent="$cookies.get('uid')==null"
+    :persistent="!alreadyAccepted()"
     max-width="600"
     style="z-index: 1001;"
     scrollable
