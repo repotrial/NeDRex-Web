@@ -234,6 +234,7 @@ const ApiService = {
   formatEULA: function (text) {
     if (text.indexOf("https:\/\/omim\.org\/downloads"))
       text = text.replace("https:\/\/omim\.org\/downloads", "<a href='https://omim.org/downloads' target='_blank'>https://omim.org/downloads")
+    text.replaceAll("®","&reg")
     return text
   },
   getInteractionEdges: function(data) {
