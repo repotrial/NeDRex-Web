@@ -437,7 +437,7 @@ public class WebGraphService {
                 finalG.addEdges(Graphs.getEdge(edgeName), edges);
 
                 nodes.forEach((k, v) -> {
-                    NodeFilter nf = new NodeFilter(nodeController.getFilter(Graphs.getNode(k)),v);
+                    NodeFilter nf = new NodeFilter(nodeController.getFilter(Graphs.getNode(k)), v);
                     finalG.saveNodeFilter(Graphs.getNode(k), nf);
                     finalG.addNodes(k, nodeFilterToNode(nf));
                 });
@@ -1873,15 +1873,57 @@ public class WebGraphService {
 
     private String getEdgeTableDownload(Graph g, String name, LinkedList<String> attributes) {
         StringBuilder table = new StringBuilder();
-        for (String a : attributes)
-            table.append(table.length() == 0 ? "#" : "\t").append(a).append(1).append("\t").append(a).append(2);
+        HashSet<String> edgeAttributes = new HashSet<>();
+        int edgeIdx = g.getEdge(name);
+        boolean custom = edgeIdx < 0;
+        HashMap<String, String> edgeAttributeMap = !custom ? edgeController.getAttributeLabelMap(name) : g.getCustomEdgeAttributeLabels().get(edgeIdx);
+        HashMap<String, String> nodeAttributes = new HashMap<>();
+        for (String a : attributes) {
+            table.append(table.length() == 0 ? "#" : "\t");
+            if (edgeAttributeMap.containsKey(a)) {
+                edgeAttributes.add(a);
+                table.append(a);
+            } else {
+                switch (a) {
+                    case "node1" -> nodeAttributes.put(a, "displayName_1");
+                    case "node2" -> nodeAttributes.put(a, "displayName_2");
+                    case "sourceId" -> nodeAttributes.put(a, "id_1");
+                    case "targetId" -> nodeAttributes.put(a, "id_2");
+                    case "sourceDomainId" -> nodeAttributes.put(a, "primaryDomainId_1");
+                    case "targetDomainId" -> nodeAttributes.put(a, "primaryDomainId_2");
+                    default -> nodeAttributes.put(a, a);
+                }
+                if (nodeAttributes.get(a).equals(a)) {
+                    table.append(a).append(1).append("\t").append(a).append(2);
+                } else {
+                    table.append(a);
+                }
+            }
+        }
         table.append("\n");
+
         Pair<Integer, Integer> ids = g.getNodesfromEdge(g.getEdge(name));
         g.getEdges().get(g.getEdge(name)).forEach(e -> {
+
             HashMap<String, Object> node1 = nodeController.nodeToAttributeList(ids.first, e.getId1());
             HashMap<String, Object> node2 = nodeController.nodeToAttributeList(ids.second, e.getId2());
+            HashMap<String, Object> edge = custom ? g.getCustomEdgeAttributes().get(edgeIdx).get(e.getId1()).get(e.getId2()) : edgeController.edgeToAttributeList(g.getEdge(name), new PairId(e.getId1(), e.getId2()), edgeAttributes);
             StringBuilder line = new StringBuilder();
-            attributes.forEach(a -> line.append(line.length() == 0 ? "" : "\t").append(node1.get(a)).append("\t").append(node2.get(a)).append(2));
+            attributes.forEach(a -> {
+                line.append(line.length() == 0 ? "" : "\t");
+                if (edgeAttributes.contains(a)) {
+                    line.append(edge.get(a));
+
+                } else {
+                    a = nodeAttributes.get(a);
+                    if (a.contains("_")) {
+                        LinkedList<String> spl = StringUtils.splitFirst(a, '_');
+                        line.append((spl.get(1).equals("1") ? node1 : node2).get(spl.get(0)));
+                    } else {
+                        line.append(node1.get(a)).append("\t").append(node2.get(a));
+                    }
+                }
+            });
             table.append(line).append("\n");
         });
         return table.toString();

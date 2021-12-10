@@ -14,9 +14,6 @@
 
         </template>
         <template v-if="!loading" v-show="!nodeTabLoading">
-          <v-card-title id="nodes" ref="nodeTitle">
-            Nodes
-          </v-card-title>
           <i v-if="!update.nodes && nodes!=null &&Object.keys(nodes).length === 0">no node entries</i>
           <template v-if="nodes !=null && Object.keys(nodes).length>0">
             <v-tabs next-icon="mdi-arrow-right-bold-box-outline"
@@ -25,8 +22,10 @@
                     v-model="nodeTab"
                     @change="resetFilters('nodes')"
             >
-              <v-tabs-slider color="blue"></v-tabs-slider>
-              <v-tab v-for="node in Object.keys(nodes)" :key="node">
+              <v-card-title id="nodes" ref="nodeTitle" style="color: black">
+                Nodes:
+              </v-card-title>
+              <v-tab v-for="node in Object.keys(nodes)" :key="node" style="margin-top: 16px">
                 {{ node }}
               </v-tab>
             </v-tabs>
@@ -43,6 +42,26 @@
                 :search="filters.nodes.query"
                 :custom-filter="filterNode"
               >
+                <template v-slot:header.info>
+                  <div style="display: flex">
+                    <div style="justify-self: flex-start;  margin-right: auto; margin-top: 4px;">
+                      Info
+                    </div>
+                    <div style="justify-self: flex-end; margin-left: auto;">
+                      <v-tooltip right>
+                        <template v-slot:activator="{attrs, on}">
+                          <v-btn small
+                                 style="margin-top: -2px;"
+                                 icon
+                                 @click="downloadNodeTable()">
+                            <v-icon small v-bind="attrs" v-on="on">fas fa-download</v-icon>
+                          </v-btn>
+                        </template>
+                        <span>Download table</span>
+                      </v-tooltip>
+                    </div>
+                  </div>
+                </template>
                 <template v-slot:header.selected>
                   <v-tooltip right>
                     <template v-slot:activator="{attrs, on}">
@@ -148,7 +167,7 @@
                   <v-row>
                     <v-col cols="2">
                       <v-checkbox
-                        style="margin-top: -4px"
+                        style="margin-top: -4px; margin-left:24px"
                         :key="item.id"
                         v-model="item.selected"
                         hide-details
@@ -233,8 +252,6 @@
           <i v-else>No data available!</i>
         </template>
         <template v-if="!loading">
-          <v-card-title id="edges" ref="edgeTitle">Edges
-          </v-card-title>
           <i v-if="edges !=null && Object.keys(edges).length === 0">no edge entries</i>
           <template v-if="edges !=null && Object.keys(edges).length>0">
             <v-tabs
@@ -243,16 +260,17 @@
               show-arrows
               v-model="edgeTab"
             >
-              <v-tabs-slider color="blue"></v-tabs-slider>
-              <v-tab v-for="edge in Object.keys(edges)" :key="edge">
+              <v-card-title ref="edgeTitle" style="color: black">Edges:
+              </v-card-title>
+              <v-tab v-for="edge in Object.keys(edges)" :key="edge" style="margin-top: 16px">
                 <template v-if="edge.length<36">
-                {{ edge }}
+                  {{ edge }}
                 </template>
                 <v-tooltip v-else top>
                   <template v-slot:activator="{on, attrs}">
-                    <span v-on="on" v-bind="attrs">{{edge.substring(0,32)}}...</span>
+                    <span v-on="on" v-bind="attrs">{{ edge.substring(0, 32) }}...</span>
                   </template>
-                  {{edge}}
+                  {{ edge }}
                 </v-tooltip>
               </v-tab>
             </v-tabs>
@@ -268,6 +286,26 @@
                 loading-text="Loading... Please wait"
                 item-key="id"
               >
+                <template v-slot:header.info>
+                  <div style="display: flex">
+                    <div style="justify-self: flex-start;  margin-right: auto; margin-top: 4px;">
+                      Info
+                    </div>
+                    <div style="justify-self: flex-end; margin-left: auto;">
+                      <v-tooltip right>
+                        <template v-slot:activator="{attrs, on}">
+                          <v-btn small
+                                 style="margin-top: -2px;"
+                                 icon
+                                 @click="downloadEdgeTable()">
+                            <v-icon small v-bind="attrs" v-on="on">fas fa-download</v-icon>
+                          </v-btn>
+                        </template>
+                        <span>Download table</span>
+                      </v-tooltip>
+                    </div>
+                  </div>
+                </template>
                 <template v-slot:header.selected>
                   <v-tooltip right>
                     <template v-slot:activator="{attrs, on}">
@@ -340,7 +378,7 @@
                         v-model="item.selected"
                         hide-details
                         primary
-                        style="margin-top: -4px"
+                        style="margin-top: -4px; margin-left: 24px"
                         @click="countClick('edges',edgeTab,item)"
                       ></v-checkbox>
                     </v-col>
@@ -1464,6 +1502,7 @@ export default {
     //     this.download(name + "_edges_" + edgeType[0] + "-" + edgeType[1] + "_" + this.gid + ".tsv", out)
     //   }
     // },
+
     download: function (name, content) {
       let dl = document.createElement('a')
       dl.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(content))
@@ -1604,6 +1643,23 @@ export default {
       })
     }
     ,
+    downloadEntries: async function (entity, name, attributes) {
+      let table = await this.$http.getTableDownload(this.gid, entity, name, attributes)
+      this.download(this.gid + "_" + name + "-" + entity + ".tsv", table)
+    },
+
+    downloadEdgeTable: function(){
+      let type = Object.keys(this.edges)[this.edgeTab]
+      let attributes =this.attributes.edges[type].filter(a=>a.list).map(a=>a.name)
+      console.log(attributes)
+      this.downloadEntries("edge",type,attributes)
+    },
+
+    downloadNodeTable: function(){
+      let type = Object.keys(this.nodes)[this.nodeTab]
+      this.downloadEntries("nodes",type,this.attributes.nodes[type].filter(a=>a.list).map(a=>a.name))
+    },
+
     loadSelection: function () {
 
       //TODO check if correct (nodes connected by edge)
