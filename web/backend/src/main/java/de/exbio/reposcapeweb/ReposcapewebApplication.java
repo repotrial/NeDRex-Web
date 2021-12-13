@@ -5,6 +5,7 @@ import de.exbio.reposcapeweb.communication.jobs.JobController;
 import de.exbio.reposcapeweb.communication.reponses.Suggestions;
 import de.exbio.reposcapeweb.communication.reponses.WebGraphService;
 import de.exbio.reposcapeweb.communication.requests.SuggestionRequest;
+import de.exbio.reposcapeweb.configs.DBConfig;
 import de.exbio.reposcapeweb.db.DbCommunicationService;
 import de.exbio.reposcapeweb.db.entities.edges.DrugHasIndication;
 import de.exbio.reposcapeweb.db.entities.edges.ProteinAssociatedWithDisorder;
@@ -63,8 +64,8 @@ public class ReposcapewebApplication extends SpringBootServletInitializer {
     @Autowired
     WebGraphService webGraphService;
 
-    @Autowired
-    private ProteinInteractsWithProteinService ppiService;
+//    @Autowired
+//    private ProteinInteractsWithProteinService ppiService;
 
 //    @Autowired
 //    public ReposcapewebApplication(DbCommunicationService dbService, ProteinInteractsWithProteinService proteinInteractsWithProteinService, JobController jobController, NodeController nodeController, ObjectMapper objectMapper, EdgeController edgeController, DisorderService disorderService, UpdateService updateService, Environment environment, ImportService importService, FilterService filterService, ToolService toolService, WebGraphService graphService) {
@@ -91,7 +92,9 @@ public class ReposcapewebApplication extends SpringBootServletInitializer {
         updateService.readMetadata();
         dbService.setImportInProgress(true);
         importService.importNodeData();
-
+        DBConfig.getConfig().edges.forEach(e->{
+            System.out.println(e.name);
+        });
 
 
 //        simnetmedFileCreation();

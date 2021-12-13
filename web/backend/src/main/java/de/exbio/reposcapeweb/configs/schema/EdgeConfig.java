@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 public class EdgeConfig {
     public int id;
     public String name;
+    public String paginatedName;
     public String label;
     public boolean original;
     public boolean directed;

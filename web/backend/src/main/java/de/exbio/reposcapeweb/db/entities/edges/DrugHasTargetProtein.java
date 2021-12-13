@@ -94,6 +94,8 @@ public class DrugHasTargetProtein extends RepoTrialEdge implements Serializable 
 
     private String actions;
 
+    private String tags;
+
     private String sourceDatabases;
 
     public DrugHasTargetProtein() {
@@ -112,6 +114,7 @@ public class DrugHasTargetProtein extends RepoTrialEdge implements Serializable 
         values.put("node2",nodeTwo);
         values.put("type",getType());
         values.put("actions",getActions());
+        values.put("tabs",getTags());
         values.put("databases",getDatabases());
         values.put("id",id.getId1()+"-"+id.getId2());
         return values;
@@ -166,6 +169,15 @@ public class DrugHasTargetProtein extends RepoTrialEdge implements Serializable 
         this.actions = StringUtils.listToString(actions);
     }
 
+    public List<String> getTags() {
+        return StringUtils.stringToList(tags);
+    }
+
+    public void setTags(List<String> tags) {
+        this.tags = StringUtils.listToString(tags);
+    }
+
+
     public List<String> getDatabases() {
         return StringUtils.stringToList(sourceDatabases);
     }
@@ -178,6 +190,7 @@ public class DrugHasTargetProtein extends RepoTrialEdge implements Serializable 
         this.sourceDomainId = other.sourceDomainId;
         this.targetDomainId = other.targetDomainId;
         this.actions = other.actions;
+        this.tags = other.tags;
         this.sourceDatabases = other.sourceDatabases;
     }
 

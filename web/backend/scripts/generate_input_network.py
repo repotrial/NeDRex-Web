@@ -14,7 +14,7 @@ drug_groups_map = dict()
 with open(inputFiles + '/drugs.tsv', 'r') as f:
     for i in f:
         line = i.strip().split('\t')
-        drug_groups_map[line[0]] = line[1]
+        drug_groups_map[line[0]] = line[1] if len(line)>1 else ""
 
 data = [{"name": "PPDr", "interactions": "proteinInteractsWithProtein.tsv", "targets": "drugHasTargetProtein.tsv"},
         {"name": "GGDr", "interactions": "geneInteractsWithGene.tsv", "targets": "drugHasTargetGene.tsv"}]

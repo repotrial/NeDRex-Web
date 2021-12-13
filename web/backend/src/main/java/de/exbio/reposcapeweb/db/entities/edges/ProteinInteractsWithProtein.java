@@ -85,6 +85,16 @@ public class ProteinInteractsWithProtein extends RepoTrialEdge implements Serial
     private String memberTwo;
     @Column(columnDefinition = "TEXT")
     private String methods;
+    @Column(columnDefinition = "TEXT")
+    private String developmentStages;
+    @Column(columnDefinition = "TEXT")
+    private String tissues;
+    @Column(columnDefinition = "TEXT")
+    private String subcellularLocations;
+    @Column(columnDefinition = "TEXT")
+    private String jointTissues;
+    @Column(columnDefinition = "TEXT")
+    private String brainTissues;
 
     @Transient
     private String nodeOne;
@@ -111,6 +121,11 @@ public class ProteinInteractsWithProtein extends RepoTrialEdge implements Serial
         values.put("type", getType());
         values.put("id", id.getId1() + "-" + id.getId2());
         values.put("methods",getMethods());
+        values.put("developmentStages",getDevelopmentStages());
+        values.put("tissues",getTissues());
+        values.put("subcellularLocations",getSubcellularLocations());
+        values.put("jointTissues",getJointTissues());
+        values.put("brainTissues",getBrainTissues());
         return values;
     }
 
@@ -171,6 +186,45 @@ public class ProteinInteractsWithProtein extends RepoTrialEdge implements Serial
         this.methods = StringUtils.listToString(methods);
     }
 
+    public List<String> getDevelopmentStages() {
+        return StringUtils.stringToList(developmentStages);
+    }
+
+    public void setDevelopmentStages(List<String> developmentStages) {
+        this.developmentStages = StringUtils.listToString(developmentStages);
+    }
+
+    public List<String> getTissues() {
+        return StringUtils.stringToList(tissues);
+    }
+
+    public void setTissues(List<String> tissues) {
+        this.tissues = StringUtils.listToString(tissues);
+    }
+
+    public List<String> getSubcellularLocations() {
+        return StringUtils.stringToList(subcellularLocations);
+    }
+
+    public void setSubcellularLocations(List<String> subcellularLocations) {
+        this.subcellularLocations = StringUtils.listToString(subcellularLocations);
+    }
+
+    public List<String> getJointTissues() {
+        return StringUtils.stringToList(jointTissues);
+    }
+
+    public void setJointTissues(List<String> jointTissues) {
+        this.jointTissues = StringUtils.listToString(jointTissues);
+    }
+
+    public List<String> getBrainTissues() {
+        return StringUtils.stringToList(brainTissues);
+    }
+
+    public void setBrainTissues(List<String> brainTissues) {
+        this.brainTissues = StringUtils.listToString(brainTissues);
+    }
 
     public List<String> getAssertedBy() {
         return StringUtils.stringToList(assertedBy);
@@ -194,6 +248,11 @@ public class ProteinInteractsWithProtein extends RepoTrialEdge implements Serial
         this.memberOne = other.memberOne;
         this.memberTwo = other.memberTwo;
         this.methods = other.methods;
+        this.developmentStages = other.developmentStages;
+        this.brainTissues = other.brainTissues;
+        this.jointTissues = other.jointTissues;
+        this.tissues = other.tissues;
+        this.subcellularLocations = other.subcellularLocations;
     }
 
     @Override

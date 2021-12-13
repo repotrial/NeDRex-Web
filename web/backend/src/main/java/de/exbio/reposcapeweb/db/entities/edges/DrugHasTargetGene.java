@@ -100,6 +100,8 @@ public class DrugHasTargetGene extends RepoTrialEdge implements Serializable {
 
     private String actions;
 
+    private String tags;
+
 
     public static String[] getListAttributes() {
         return listAttributes;
@@ -126,6 +128,7 @@ public class DrugHasTargetGene extends RepoTrialEdge implements Serializable {
         values.put("node2",nodeTwo);
         values.put("databases",getDatabases());
         values.put("actions",getActions());
+        values.put("tags",getTags());
         values.put("type",getType());
         values.put("id",id.getId1()+"-"+id.getId2());
         return values;
@@ -172,11 +175,21 @@ public class DrugHasTargetGene extends RepoTrialEdge implements Serializable {
         this.actions = StringUtils.listToString(actions);
     }
 
+    public List<String> getTags() {
+        return StringUtils.stringToList(tags);
+    }
+
+    public void setTags(List<String> tags) {
+        this.tags = StringUtils.listToString(tags);
+    }
+
+
     public void setValues(DrugHasTargetGene other) {
         this.sourceDomainId = other.sourceDomainId;
         this.targetDomainId = other.targetDomainId;
         this.actions = other.actions;
         this.sourceDatabases = other.sourceDatabases;
+        this.tags = other.tags;
     }
 
     public void addActions(Collection<String> actions){
@@ -191,6 +204,20 @@ public class DrugHasTargetGene extends RepoTrialEdge implements Serializable {
             }
         }
         setActions(all);
+    }
+
+    public void addTags(Collection<String> tags){
+        List<String> all;
+        if (this.tags == null) {
+            all = new LinkedList<>(tags);
+        } else {
+            all = getTags();
+            for (String t : tags) {
+                if (!all.contains(t))
+                    all.add(t);
+            }
+        }
+        setTags(all);
     }
 
     public void addDatabases(List<String> databases) {

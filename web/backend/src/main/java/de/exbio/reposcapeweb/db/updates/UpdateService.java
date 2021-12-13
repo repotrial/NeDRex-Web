@@ -1,6 +1,7 @@
 package de.exbio.reposcapeweb.db.updates;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import de.exbio.reposcapeweb.configs.DBConfig;
@@ -140,6 +141,23 @@ public class UpdateService {
         }
         dbCommunication.scheduleUpdate();
         executeDataUpdate();
+        if (!skipUpdateList().isEmpty()) {
+            DBConfig.getConfig().edges.forEach(edge -> {
+                if (!skipUpdateList().contains(edge.name))
+                    return;
+                switch (edge.mapsTo) {
+                    case "DisorderComorbidity" -> disorderComorbidWithDisorderService.importEdges();
+                    case "DisorderHierarchy" -> disorderIsADisorderService.importEdges();
+                    case "DrugIndication" -> drugHasIndicationService.importEdges();
+                    case "DrugTargetProtein" -> drugHasTargetService.importEdges();
+                    case "GeneAssociatedWithDisorder" -> associatedWithDisorderService.importEdges();
+                    case "ProteinPathway" -> proteinInPathwayService.importEdges();
+                    case "ProteinProteinInteraction" -> proteinInteractsWithProteinService.importEdges();
+                    case "ProteinEncodedBy" -> proteinEncodedByService.importEdges();
+                    case "DrugContraindication" -> drugHasContraindicationService.importEdges();
+                }
+            });
+        }
         renewDBDumps();
     }
 
@@ -289,15 +307,17 @@ public class UpdateService {
         String fileType = env.getProperty("file.collections.filetype");
         fileType = fileType.charAt(0) == '.' ? fileType : '.' + fileType;
 
-        if (validateSchema()) {
+        String partialUpdate = env.getProperty("update.partial");
+
+        if (validateSchema() || (partialUpdate != null && partialUpdate.equals("true"))) {
 
 
             log.info("Downloading database files!");
             downloadUpdates(url, updateDir, fileType);
             log.info("Validation of entity count in cached files!");
 
-            DBConfig.getConfig().nodes.forEach(node -> restructureUpdates(node.file, node.name));
-            DBConfig.getConfig().edges.stream().filter(e -> e.original).forEach(edge -> restructureUpdates(edge.file, edge.name));
+            DBConfig.getConfig().nodes.stream().filter(n->!skipUpdateList().contains(n.name)).forEach(node -> restructureUpdates(node.file, node.name));
+            DBConfig.getConfig().edges.stream().filter(e -> e.original).filter(e->!skipUpdateList().contains(e.name)).forEach(edge -> restructureUpdates(edge.file, edge.name));
 
             executingUpdates();
             log.info("Update Metadata");
@@ -322,6 +342,8 @@ public class UpdateService {
     private boolean validateSchema() {
         AtomicBoolean valid = new AtomicBoolean(true);
         DBConfig.getConfig().nodes.forEach(n -> {
+            if (skipUpdateList().contains(n.name))
+                return;
             HashSet<String> attributes = null;
             try {
                 attributes = getAttributeNames(ReaderUtils.getUrlContent(new URL(env.getProperty("url.api.db") + n.name + "/attributes")));
@@ -342,6 +364,8 @@ public class UpdateService {
         });
 
         DBConfig.getConfig().edges.forEach(e -> {
+            if (skipUpdateList().contains(e.name))
+                return;
             HashSet<String> attributes = null;
             if (e.original)
                 try {
@@ -401,20 +425,22 @@ public class UpdateService {
         File filterCacheDir = new File(env.getProperty("path.db.cache") + "filters");
         String first = "protein_encoded_by_gene";
         HashSet<String> attributeDefinition = null;
-        try {
-            attributeDefinition = getAttributeNames(ReaderUtils.getUrlContent(new URL(env.getProperty("url.api.db") + first + "/attributes")));
-//            if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, ProteinEncodedBy.sourceAttributes))
-            updateSuccessful = proteinEncodedByService.submitUpdates(runEdgeUpdates(ProteinEncodedBy.class, DBConfig.getConfig().edges.stream().filter(edge -> edge.mapsTo.equals("ProteinEncodedBy")).collect(Collectors.toList()).get(0).file, proteinEncodedByService::mapIds));
-            proteinEncodedByService.importEdges();
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
+        if (!skipUpdateList().contains(first)) {
+            try {
+                attributeDefinition = getAttributeNames(ReaderUtils.getUrlContent(new URL(env.getProperty("url.api.db") + first + "/attributes")));
+                updateSuccessful = proteinEncodedByService.submitUpdates(runEdgeUpdates(ProteinEncodedBy.class, DBConfig.getConfig().edges.stream().filter(edge -> edge.mapsTo.equals("ProteinEncodedBy")).collect(Collectors.toList()).get(0).file, proteinEncodedByService::mapIds));
+                proteinEncodedByService.importEdges();
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
+
+            if (!updateSuccessful)
+                log.error("Update execution for " + first + ": Error!");
         }
-
-        if (!updateSuccessful)
-            log.error("Update execution for " + first + ": Error!");
-
         for (EdgeConfig edge : DBConfig.getConfig().edges) {
             if (!edge.original)
+                continue;
+            if (skipUpdateList().contains(edge.name))
                 continue;
             try {
                 attributeDefinition = getAttributeNames(ReaderUtils.getUrlContent(new URL(env.getProperty("url.api.db") + edge.name + "/attributes")));
@@ -474,6 +500,15 @@ public class UpdateService {
 
     }
 
+    private HashSet<String> skipUpdateList() {
+        HashSet<String> set = new HashSet<>();
+        String skip = env.getProperty("update.skip");
+        if (skip == null)
+            return set;
+        set.addAll(StringUtils.split(skip, ","));
+        return set;
+    }
+
 
     private void importRepoTrialNodes() {
         File nodeCacheDir = new File(env.getProperty("path.db.cache") + "nodes");
@@ -481,41 +516,38 @@ public class UpdateService {
         File filterCacheDir = new File(env.getProperty("path.db.cache") + "filters");
         filterCacheDir.mkdirs();
         DBConfig.getConfig().nodes.forEach(node -> {
+            if (skipUpdateList().contains(node.name))
+                return;
             try {
                 HashSet<String> attributeDefinition = getAttributeNames(ReaderUtils.getUrlContent(new URL(env.getProperty("url.api.db") + node.name + "/attributes")));
                 boolean updateSuccessful = true;
 
                 switch (node.name) {
                     case "drug": {
-//                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, Drug.sourceAttributes))
                         updateSuccessful = drugService.submitUpdates(startNodeUpdate(Drug.class, node.file));
                         RepoTrialUtils.writeNodeMap(new File(nodeCacheDir, node.label + ".map"), drugService.getIdToDomainMap());
                         filterService.writeToFile(drugService.getFilter(), new File(filterCacheDir, node.label));
                         break;
                     }
                     case "pathway": {
-//                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, Pathway.sourceAttributes))
                         updateSuccessful = pathwayService.submitUpdates(startNodeUpdate(Pathway.class, node.file));
                         RepoTrialUtils.writeNodeMap(new File(nodeCacheDir, node.label + ".map"), pathwayService.getIdToDomainMap());
                         filterService.writeToFile(pathwayService.getFilter(), new File(filterCacheDir, node.label));
                         break;
                     }
                     case "disorder": {
-//                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, Disorder.sourceAttributes))
                         updateSuccessful = disorderService.submitUpdates(startNodeUpdate(Disorder.class, node.file));
                         RepoTrialUtils.writeNodeMap(new File(nodeCacheDir, node.label + ".map"), disorderService.getIdToDomainMap());
                         filterService.writeToFile(disorderService.getFilter(), new File(filterCacheDir, node.label));
                         break;
                     }
                     case "gene": {
-//                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, Gene.sourceAttributes))
                         updateSuccessful = geneService.submitUpdates(startNodeUpdate(Gene.class, node.file));
                         RepoTrialUtils.writeNodeMap(new File(nodeCacheDir, node.label + ".map"), geneService.getIdToDomainMap());
                         filterService.writeToFile(geneService.getFilter(), new File(filterCacheDir, node.label));
                         break;
                     }
                     case "protein": {
-//                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, Protein.sourceAttributes))
                         updateSuccessful = proteinService.submitUpdates(startNodeUpdate(Protein.class, node.file));
                         RepoTrialUtils.writeNodeMap(new File(nodeCacheDir, node.label + ".map"), proteinService.getIdToDomainMap());
                         filterService.writeToFile(proteinService.getFilter(), new File(filterCacheDir, node.label));
@@ -706,7 +738,8 @@ public class UpdateService {
     }
 
     private void restructureUpdates(File f, String name) {
-        FileUtils.formatJson(jsonReformatter, f);
+        if (!name.equals("protein_interacts_with_protein"))
+            FileUtils.formatJson(jsonReformatter, f);
         int count = 0;
         try {
             BufferedReader br = ReaderUtils.getBasicReader(f);
@@ -721,7 +754,7 @@ public class UpdateService {
         log.debug(f.getName() + " contains " + count + " entries!");
         if (count != officialCount) {
             log.error("Entry count for " + name + " does not match to official number from repotrial (" + count + " vs " + officialCount + ")");
-            throw new RuntimeException("Error while validating the entitiy counts. Maybe file format has changed.");
+            throw new RuntimeException("Error while validating the entity counts. Maybe file format has changed.");
         }
 
     }
@@ -742,7 +775,7 @@ public class UpdateService {
     }
 
     private void overrideOldData(File cacheDir) {
-        DBConfig.getConfig().nodes.forEach(node -> {
+        DBConfig.getConfig().nodes.stream().filter(n->!skipUpdateList().contains(n.name)).forEach(node -> {
             try {
                 log.debug("Moving " + node.file.toPath() + " to " + new File(cacheDir, node.file.getName()).toPath());
                 node.file = Files.move(node.file.toPath(), new File(cacheDir, node.file.getName()).toPath(), REPLACE_EXISTING).toFile();
@@ -750,7 +783,7 @@ public class UpdateService {
                 e.printStackTrace();
             }
         });
-        DBConfig.getConfig().edges.stream().filter(e -> e.original).forEach(edge -> {
+        DBConfig.getConfig().edges.stream().filter(e -> e.original).filter(e->!skipUpdateList().contains(e.name)).forEach(edge -> {
             try {
                 log.debug("Moving " + edge.file.toPath() + " to " + new File(cacheDir, edge.file.getName()).toPath());
                 edge.file = Files.move(edge.file.toPath(), new File(cacheDir, edge.file.getName()).toPath(), REPLACE_EXISTING).toFile();
@@ -764,15 +797,34 @@ public class UpdateService {
     private void downloadUpdates(String api, File destDir, String fileType) {
         destDir.mkdirs();
 
-//        importService.getCollections(collections);
-        DBConfig.getConfig().nodes.forEach(node -> node.file = FileUtils.download(createUrl(api, node.name), createFile(destDir, node.name, fileType)));
-        DBConfig.getConfig().edges.stream().filter(e -> e.original).forEach(edge -> edge.file = FileUtils.download(createUrl(api, edge.name), createFile(destDir, edge.mapsTo, fileType)));
-//        collections.forEach((k, v) -> v.setFile(FileUtils.download(createUrl(api, k), createFile(destDir, k, fileType))));
+        DBConfig.getConfig().nodes.stream().filter(n->!skipUpdateList().contains(n.name)).forEach(node -> node.file = FileUtils.download(createUrl(api, node.name), createFile(destDir, node.name, fileType)));
+        DBConfig.getConfig().edges.stream().filter(e -> e.original).filter(e->!skipUpdateList().contains(e.name)).forEach(edge -> {
+            if (edge.name.equals("protein_interacts_with_protein")) {
+                edge.file = FileUtils.downloadPaginated(createPaginatedUrl(api, edge.paginatedName), new File(env.getProperty("path.scripts.dir"), "mergeParts.sh"), createFile(destDir, edge.mapsTo, fileType), getEntryCount(api, edge.name), jsonReformatter);
+            } else
+                edge.file = FileUtils.download(createUrl(api, edge.name), createFile(destDir, edge.mapsTo, fileType));
+
+        });
+    }
+
+    private int getEntryCount(String api, String name) {
+        try {
+            String details = ReaderUtils.getUrlContent(new URL(api + name + "/details"));
+            HashMap<String, Object> map = objectMapper.readValue(details, HashMap.class);
+            return (Integer) map.get("count");
+        } catch (MalformedURLException | JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return 0;
     }
 
 
     private String createUrl(String api, String k) {
         return api + k + "/all";
+    }
+
+    private String createPaginatedUrl(String api, String k) {
+        return api + k;
     }
 
     private File createFile(File destDir, String k, String fileType) {

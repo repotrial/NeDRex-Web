@@ -125,6 +125,12 @@ public class ProteinInteractsWithProteinService {
                 ggi.addEvidenceTypes(ppi.getEvidenceTypes());
 //                ggi.addDatabases(ppi.getDatabases());
                 ggi.addAssertedBy(ppi.getAssertedBy());
+                ggi.addMethod(ppi.getMethods());
+                ggi.addJointTissues(ppi.getJointTissues());
+                ggi.addSubcellularLocations(ppi.getSubcellularLocations());
+                ggi.addTissues(ppi.getTissues());
+                ggi.addDevelopmentStages(ppi.getDevelopmentStages());
+                ggi.addBrainTissues(ppi.getBrainTissues());
                 if (!ggis.containsKey(gid1))
                     ggis.put(gid1, new HashMap<>());
                 ggis.get(gid1).put(gid2, ggi);

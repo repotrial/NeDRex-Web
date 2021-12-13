@@ -31,6 +31,31 @@ public class FileUtils {
         return fileName;
     }
 
+    public static File downloadPaginated(String url, File mergeScript, File file, int total, File jsonFormatter) {
+        int batch = 100000;
+        WriterUtils.writeTo(file, "[");
+        try {
+            for (int i = 0; i < total; i += batch) {
+                File part = new File(file.getParentFile(), file.getName() + "_" + (1 + (i / batch)));
+                log.debug("Downloading part "+(1+(i / batch))+"/"+(1+(total / batch)));
+                download(url + "?skip=" + i + "&limit=" + batch, part.getAbsolutePath()).charAt(0);
+                formatJson(jsonFormatter,part);
+                ProcessBuilder pb = new ProcessBuilder(mergeScript.getAbsolutePath(), part.getAbsolutePath(), file.getAbsolutePath());
+                if (i + batch >= total)
+                    pb.command().add("true");
+                ProcessUtils.executeProcessWait(pb, true);
+                part.delete();
+            }
+        } catch (NullPointerException e) {
+            return null;
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return file;
+    }
+
     public static File download(String url, File file) {
         try {
             download(url, file.getAbsolutePath()).charAt(0);

@@ -706,6 +706,16 @@
           "distinct": false
         },
         {
+          "name": "tags",
+          "source": true,
+          "list": true,
+          "detail": true,
+          "id": false,
+          "type": "array",
+          "label": "Tags",
+          "distinct": true
+        },
+        {
           "name": "type",
           "source": true,
           "list": false,
@@ -849,6 +859,7 @@
     {
       "id": 2,
       "name": "protein_interacts_with_protein",
+      "paginatedName": "ppi_paginated",
       "label": "ProteinInteractsWithProtein",
       "original": true,
       "directed": false,
@@ -945,12 +956,71 @@
         {
           "name": "assertedBy",
           "source": true,
-          "list": false,
+          "list": true,
           "detail": true,
           "id": false,
           "type": "array",
           "label": "AssertedBy",
           "distinct": true
+        },
+        {
+          "name": "developmentStages",
+          "source": true,
+          "list": true,
+          "detail": true,
+          "id": false,
+          "label": "Developmental Stages",
+          "distinct":true
+        },
+        {
+          "name": "developmentStages",
+          "source": true,
+          "list": true,
+          "detail": true,
+          "id": false,
+          "type": "array",
+          "label": "Developmental Stages",
+          "distinct":true
+        },
+        {
+          "name": "tissues",
+          "source": true,
+          "list": true,
+          "detail": true,
+          "id": false,
+          "type": "array",
+          "label": "Tissues",
+          "distinct":true
+        },
+        {
+          "name": "subcellularLocations",
+          "source": true,
+          "list": true,
+          "detail": true,
+          "id": false,
+          "type": "array",
+          "label": "Subcellular Locations",
+          "distinct":true
+        },
+        {
+          "name": "jointTissues",
+          "source": true,
+          "list": true,
+          "detail": true,
+          "id": false,
+          "type": "array",
+          "label": "Joint Tissues",
+          "distinct":true
+        },
+        {
+          "name": "brainTissues",
+          "source": true,
+          "list": true,
+          "detail": true,
+          "id": false,
+          "type": "array",
+          "label": "Brain Tissues",
+          "distinct":true
         },
         {
           "name": "methods",
@@ -1397,8 +1467,62 @@
           "distinct": true
         },
         {
-          "name": "created",
+          "name": "developmentStages",
+          "list": true,
+          "detail": true,
+          "id": false,
+          "type": "array",
+          "label": "Developmental Stages",
+          "distinct":true
+        },
+        {
+          "name": "tissues",
+          "list": true,
+          "detail": true,
+          "id": false,
+          "type": "array",
+          "label": "Tissues",
+          "distinct":true
+        },
+        {
+          "name": "subcellularLocations",
+          "list": true,
+          "detail": true,
+          "id": false,
+          "type": "array",
+          "label": "Subcellular Locations",
+          "distinct":true
+        },
+        {
+          "name": "jointTissues",
+          "list": true,
+          "detail": true,
+          "id": false,
+          "type": "array",
+          "label": "Joint Tissues",
+          "distinct":true
+        },
+        {
+          "name": "brainTissues",
+          "list": true,
+          "detail": true,
+          "id": false,
+          "type": "array",
+          "label": "Brain Tissues",
+          "distinct":true
+        },
+        {
+          "name": "methods",
           "source": true,
+          "list": false,
+          "detail": true,
+          "id": false,
+          "type": "array",
+          "label": "Methods",
+          "distinct": false
+        },
+        {
+          "name": "created",
           "list": false,
           "detail": false,
           "id": false,
@@ -1406,7 +1530,6 @@
         },
         {
           "name": "updated",
-          "source": true,
           "list": false,
           "detail": false,
           "id": false,
