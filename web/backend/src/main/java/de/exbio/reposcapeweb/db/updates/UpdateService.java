@@ -316,8 +316,8 @@ public class UpdateService {
             downloadUpdates(url, updateDir, fileType);
             log.info("Validation of entity count in cached files!");
 
-            DBConfig.getConfig().nodes.stream().filter(n->!skipUpdateList().contains(n.name)).forEach(node -> restructureUpdates(node.file, node.name));
-            DBConfig.getConfig().edges.stream().filter(e -> e.original).filter(e->!skipUpdateList().contains(e.name)).forEach(edge -> restructureUpdates(edge.file, edge.name));
+            DBConfig.getConfig().nodes.stream().filter(n -> !skipUpdateList().contains(n.name)).forEach(node -> restructureUpdates(node.file, node.name));
+            DBConfig.getConfig().edges.stream().filter(e -> e.original).filter(e -> !skipUpdateList().contains(e.name)).forEach(edge -> restructureUpdates(edge.file, edge.name));
 
             executingUpdates();
             log.info("Update Metadata");
@@ -407,6 +407,18 @@ public class UpdateService {
         return updates;
     }
 
+    private <T extends RepoTrialEdge> EnumMap<UpdateOperation, HashMap<PairId, T>> runEdgeUpdatesPartitioned(Class<T> valueType, File c, IdMapper mapper, int skip, int count) {
+        EnumMap<UpdateOperation, HashMap<PairId, T>> updates = new EnumMap<>(UpdateOperation.class);
+        if (RepoTrialUtils.getCachedFile(c, env.getProperty("path.db.cache")).exists()) {
+            if (!readEdgeUpdatesPartitioned(c, updates, valueType, mapper, skip, count)) {
+                updates.put(UpdateOperation.Alteration, null);
+            }
+        } else {
+            importEdgeInsertionsPartitioned(c, updates, valueType, mapper, skip, count);
+        }
+        return updates;
+    }
+
     private void executingUpdates() {
         dbCommunication.scheduleLock();
 
@@ -485,7 +497,35 @@ public class UpdateService {
                         break;
                     case "ProteinProteinInteraction":
 //                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, ProteinInteractsWithProtein.sourceAttributes))
-                        updateSuccessful = proteinInteractsWithProteinService.submitUpdates(runEdgeUpdates(ProteinInteractsWithProtein.class, edge.file, proteinInteractsWithProteinService::mapProteinIds));
+                        int skip = 0;
+                        int batch = 100_000;
+                        boolean full = !RepoTrialUtils.getCachedFile(edge.file, env.getProperty("path.db.cache")).exists();
+                        EnumMap<UpdateOperation, HashMap<PairId, ProteinInteractsWithProtein>> rest = new EnumMap<>(UpdateOperation.class);
+                        rest.put(UpdateOperation.Deletion, new HashMap<>());
+                        rest.put(UpdateOperation.Insertion, new HashMap<>());
+                        while (true) {
+                            EnumMap<UpdateOperation, HashMap<PairId, ProteinInteractsWithProtein>> updates = runEdgeUpdatesPartitioned(ProteinInteractsWithProtein.class, edge.file, proteinInteractsWithProteinService::mapProteinIds, skip, batch);
+                            if (full) {
+                                if (updates.get(UpdateOperation.Insertion).size() == 0)
+                                    break;
+                                if (!proteinInteractsWithProteinService.submitUpdates(updates))
+                                    updateSuccessful = false;
+                            } else {
+                                rest.get(UpdateOperation.Insertion).putAll(updates.remove(UpdateOperation.Insertion));
+                                rest.get(UpdateOperation.Deletion).putAll(updates.remove(UpdateOperation.Deletion));
+                                if (!proteinInteractsWithProteinService.submitUpdates(updates))
+                                    updateSuccessful = false;
+                                if (updates.get(UpdateOperation.Alteration) == null) {
+                                    if (!proteinInteractsWithProteinService.submitUpdates(rest))
+                                        updateSuccessful = false;
+                                    break;
+                                }
+                            }
+                            skip += batch;
+                        }
+                        if(updateSuccessful){
+                            updateSuccessful = proteinInteractsWithProteinService.generateGeneEntries();
+                        }
                         proteinInteractsWithProteinService.importEdges();
                         break;
                 }
@@ -669,6 +709,72 @@ public class UpdateService {
         return true;
     }
 
+    private <T extends RepoTrialEdge> boolean readEdgeUpdatesPartitioned(File c, EnumMap<UpdateOperation, HashMap<PairId, T>> updates, Class<T> valueType, IdMapper mapper, int skip, int count) {
+        File diff = new File(c.getParent(), c.getName() + "_diff");
+        File cached = RepoTrialUtils.getCachedFile(c, env.getProperty("path.db.cache"));
+        if (!diff.exists()) {
+            ProcessBuilder pb = new ProcessBuilder("diff " + cached.getAbsolutePath() + " " + c.getAbsolutePath() + " > " + diff);
+            try {
+                ProcessUtils.executeProcessWait(pb, false);
+            } catch (IOException | InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+//        pb.redirectErrorStream(true);
+        Process p = null;
+        HashMap<PairId, T> ins = new HashMap<>();
+        HashMap<PairId, T> upd = new HashMap<>();
+        HashMap<PairId, T> dels = new HashMap<>();
+        updates.put(UpdateOperation.Alteration, upd);
+        updates.put(UpdateOperation.Deletion, dels);
+        updates.put(UpdateOperation.Insertion, ins);
+
+        try {
+//            p = pb.start();
+            BufferedReader br = ReaderUtils.getBasicReader(diff);
+            String line = "";
+            int l = 0;
+            while ((line = br.readLine()) != null) {
+                char startC = line.charAt(0);
+                if (startC == '>' | startC == '<') {
+                    l++;
+                    if (l < skip)
+                        continue;
+                    int start = line.charAt(2) == '[' ? 3 : 2;
+                    T d = objectMapper.readValue(line.substring(start), valueType);
+                    d.setId(mapper.mapIds(d.getIdsToMap()));
+                    if (startC == '<') {
+                        dels.put(d.getPrimaryIds(), d);
+                    } else {
+                        ins.put(d.getPrimaryIds(), d);
+                    }
+                    if (l - skip >= count)
+                        break;
+                }
+            }
+            if (skip >= l)
+                return false;
+
+            //TODO might be problematic when not all edges are loaded at once
+            HashSet<PairId> overlap = new HashSet<>();
+            dels.keySet().forEach(id -> {
+                if (ins.containsKey(id))
+                    overlap.add(id);
+            });
+
+            overlap.forEach(id -> {
+                upd.put(id, ins.get(id));
+                dels.remove(id);
+                ins.remove(id);
+            });
+
+            p.waitFor();
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+        return true;
+    }
+
     public <T extends RepoTrialNode> void importNodeInsertions(File updateFile, EnumMap<UpdateOperation, HashMap<String, T>> updates, Class<T> valueType) {
         log.debug("Importing insertions only from " + updateFile);
         HashMap<String, T> inserts = new HashMap<>();
@@ -731,6 +837,45 @@ public class UpdateService {
         }
     }
 
+    public <T extends RepoTrialEdge> void importEdgeInsertionsPartitioned(File updateFile, EnumMap<UpdateOperation, HashMap<PairId, T>> updates, Class<T> valueType, IdMapper mapper, int skip, int count) {
+        log.debug("Importing insertions only from " + updateFile);
+        HashMap<PairId, T> inserts = new HashMap<>();
+        updates.put(UpdateOperation.Insertion, inserts);
+        try {
+            BufferedReader br = ReaderUtils.getBasicReader(updateFile);
+            String line = "";
+            boolean first = true;
+            int l = 0;
+            while ((line = br.readLine()) != null) {
+                l++;
+                if (l < skip)
+                    continue;
+                if (first) {
+                    first = false;
+                    if (line.charAt(0) == '[')
+                        line = line.substring(1);
+                }
+                try {
+                    T d = objectMapper.readValue(line, valueType);
+                    d.setId(mapper.mapIds(d.getIdsToMap()));
+                    inserts.put(d.getPrimaryIds(), d);
+                    if (inserts.size() >= count)
+                        break;
+                } catch (MismatchedInputException e) {
+                    e.printStackTrace();
+                    log.error("Malformed input line in " + updateFile.getName() + ": " + line);
+                } catch (NullPointerException e) {
+                    continue;
+                }
+                if (line.charAt(line.length() - 1) == ']')
+                    break;
+
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     private HashSet<String> getAttributeNames(String content) {
         HashSet<String> attributes = new HashSet<>();
         StringUtils.split(content.substring(1, content.length() - 2), ",").forEach(a -> attributes.add(a.substring(1, a.length() - 1)));
@@ -775,7 +920,7 @@ public class UpdateService {
     }
 
     private void overrideOldData(File cacheDir) {
-        DBConfig.getConfig().nodes.stream().filter(n->!skipUpdateList().contains(n.name)).forEach(node -> {
+        DBConfig.getConfig().nodes.stream().filter(n -> !skipUpdateList().contains(n.name)).forEach(node -> {
             try {
                 log.debug("Moving " + node.file.toPath() + " to " + new File(cacheDir, node.file.getName()).toPath());
                 node.file = Files.move(node.file.toPath(), new File(cacheDir, node.file.getName()).toPath(), REPLACE_EXISTING).toFile();
@@ -783,7 +928,7 @@ public class UpdateService {
                 e.printStackTrace();
             }
         });
-        DBConfig.getConfig().edges.stream().filter(e -> e.original).filter(e->!skipUpdateList().contains(e.name)).forEach(edge -> {
+        DBConfig.getConfig().edges.stream().filter(e -> e.original).filter(e -> !skipUpdateList().contains(e.name)).forEach(edge -> {
             try {
                 log.debug("Moving " + edge.file.toPath() + " to " + new File(cacheDir, edge.file.getName()).toPath());
                 edge.file = Files.move(edge.file.toPath(), new File(cacheDir, edge.file.getName()).toPath(), REPLACE_EXISTING).toFile();
@@ -797,8 +942,8 @@ public class UpdateService {
     private void downloadUpdates(String api, File destDir, String fileType) {
         destDir.mkdirs();
 
-        DBConfig.getConfig().nodes.stream().filter(n->!skipUpdateList().contains(n.name)).forEach(node -> node.file = FileUtils.download(createUrl(api, node.name), createFile(destDir, node.name, fileType)));
-        DBConfig.getConfig().edges.stream().filter(e -> e.original).filter(e->!skipUpdateList().contains(e.name)).forEach(edge -> {
+        DBConfig.getConfig().nodes.stream().filter(n -> !skipUpdateList().contains(n.name)).forEach(node -> node.file = FileUtils.download(createUrl(api, node.name), createFile(destDir, node.name, fileType)));
+        DBConfig.getConfig().edges.stream().filter(e -> e.original).filter(e -> !skipUpdateList().contains(e.name)).forEach(edge -> {
             if (edge.name.equals("protein_interacts_with_protein")) {
                 edge.file = FileUtils.downloadPaginated(createPaginatedUrl(api, edge.paginatedName), new File(env.getProperty("path.scripts.dir"), "mergeParts.sh"), createFile(destDir, edge.mapsTo, fileType), getEntryCount(api, edge.name), jsonReformatter);
             } else

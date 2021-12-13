@@ -92,12 +92,6 @@ public class ReposcapewebApplication extends SpringBootServletInitializer {
         updateService.readMetadata();
         dbService.setImportInProgress(true);
         importService.importNodeData();
-        DBConfig.getConfig().edges.forEach(e->{
-            System.out.println(e.name);
-        });
-
-
-//        simnetmedFileCreation();
 
         //TODO maybe move importJob and importHistory to after update?
         jobController.importJobsHistory();
@@ -122,66 +116,6 @@ public class ReposcapewebApplication extends SpringBootServletInitializer {
         log.info("Service can be used!");
 
 //        drugstoneFileCreation();
-
-    }
-
-    private void simnetmedFileCreation() {
-        System.out.println("Creating SimNetMed files");
-        BufferedWriter bw = WriterUtils.getBasicWriter(new File("/home/andim/projects/SimNetMed/data/disorders.map"));
-        HashSet<String> ids = new HashSet<>();
-        LinkedList<String> order = new LinkedList<>();
-        nodeController.findAll(Graphs.getNode("disorder")).forEach(disorder -> {
-            Disorder dis = (Disorder) disorder;
-            dis.getDomainIds().forEach(id -> {
-                String idType = id.substring(0, id.indexOf("."));
-                if(ids.add(idType))
-                    order.add(idType);
-            });
-        });
-        order.add("ICD-10");
-
-        String header = "";
-        for (String id : order) {
-            if (header.length() == 0)
-                header += "#";
-            else
-                header += "\t";
-            header += id;
-        }
-        try {
-            bw.write(header + "\n");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        nodeController.findAll(Graphs.getNode("disorder")).forEach(disorder -> {
-            Disorder dis = (Disorder) disorder;
-            HashMap<String, String> domainIds = new HashMap<>();
-            dis.getDomainIds().forEach(id -> {
-                int pos = id.indexOf(".");
-                domainIds.put(id.substring(0, pos), id.substring(pos+1));
-            });
-            String icd = StringUtils.listToString(dis.getIcd10());
-            domainIds.put("ICD-10", icd.substring(1,icd.length()-1));
-            for (String idType : order) {
-                try {
-                    if (domainIds.containsKey(idType)) {
-                        bw.write(domainIds.get(idType));
-                    }
-                    if (!idType.equals(order.getLast()))
-                        bw.write("\t");
-                    else bw.write("\n");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-        try {
-            bw.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        System.out.println("Finishing simnet file");
-
 
     }
 

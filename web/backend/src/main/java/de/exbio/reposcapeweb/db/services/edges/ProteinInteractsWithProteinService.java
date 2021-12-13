@@ -36,8 +36,8 @@ public class ProteinInteractsWithProteinService {
     private final GeneService geneService;
 
     private final boolean directed = false;
-    private final HashMap<Integer, HashMap<PairId, Pair<Boolean,Boolean>>> proteins = new HashMap<>();
-    private final HashMap<Integer, HashMap<PairId, Pair<Boolean,Boolean>>> genes = new HashMap<>();
+    private final HashMap<Integer, HashMap<PairId, Pair<Boolean, Boolean>>> proteins = new HashMap<>();
+    private final HashMap<Integer, HashMap<PairId, Pair<Boolean, Boolean>>> genes = new HashMap<>();
 
     private final DataSource dataSource;
     private final String clearQuery = "DELETE FROM gene_interacts_with_gene";
@@ -81,17 +81,13 @@ public class ProteinInteractsWithProteinService {
         proteinInteractsWithProteinRepository.saveAll(toSave);
         int changes = insertCount + (updates.containsKey(UpdateOperation.Alteration) ? updates.get(UpdateOperation.Alteration).size() : 0) + (updates.containsKey(UpdateOperation.Deletion) ? updates.get(UpdateOperation.Deletion).size() : 0);
         log.debug("Updated protein_interacts_with_protein table: " + insertCount + " Inserts, " + (updates.containsKey(UpdateOperation.Alteration) ? updates.get(UpdateOperation.Alteration).size() : 0) + " Changes, " + (updates.containsKey(UpdateOperation.Deletion) ? updates.get(UpdateOperation.Deletion).size() : 0) + " Deletions identified!");
-        log.debug("Deriving entries for gene_interacts_with_gene.");
-        if (changes > 0 && !generateGeneEntries())
-            return false;
-        log.debug("Derived " + geneInteractsWithGeneRepository.count() + " gene -> gene relations.");
 
         return true;
     }
 
     public boolean generateGeneEntries() {
         //TODO only update changed entries?
-        log.debug("Generating entries for gene_interacts_with_gene from drug_has_target(_protein).");
+        log.debug("Generating entries for gene_interacts_with_gene from protein_interacts_with_protein.");
         HashMap<Integer, HashSet<Integer>> geneProteinMap = new HashMap<>();
         HashMap<Integer, Integer> proteinGeneMap = new HashMap<>();
         proteinEncodedByService.findAll().forEach(e -> {
@@ -109,7 +105,7 @@ public class ProteinInteractsWithProteinService {
             throwables.printStackTrace();
             return false;
         }
-        HashMap<Integer, HashMap<Integer, GeneInteractsWithGene>> ggis = new HashMap<>();
+        HashMap<Integer, HashSet<Integer>> ggis = new HashMap<>();
         LinkedList<GeneInteractsWithGene> ggiList = new LinkedList<>();
 
         findAllProteins().forEach(ppi -> {
@@ -121,7 +117,16 @@ public class ProteinInteractsWithProteinService {
                     gid2 = gid1;
                     gid1 = tmp;
                 }
-                GeneInteractsWithGene ggi = new GeneInteractsWithGene(gid1, gid2);
+                GeneInteractsWithGene ggi;
+                if (ggis.containsKey(gid1) && ggis.get(gid1).contains(gid2)) {
+                    ggi = findGene(new PairId(gid1,gid2)).get();
+                } else {
+                    ggi = new GeneInteractsWithGene(gid1, gid2);
+                    if (!ggis.containsKey(gid1))
+                        ggis.put(gid1, new HashSet<>());
+                    ggis.get(gid1).add(gid2);
+                    ggiList.add(ggi);
+                }
                 ggi.addEvidenceTypes(ppi.getEvidenceTypes());
 //                ggi.addDatabases(ppi.getDatabases());
                 ggi.addAssertedBy(ppi.getAssertedBy());
@@ -131,10 +136,13 @@ public class ProteinInteractsWithProteinService {
                 ggi.addTissues(ppi.getTissues());
                 ggi.addDevelopmentStages(ppi.getDevelopmentStages());
                 ggi.addBrainTissues(ppi.getBrainTissues());
-                if (!ggis.containsKey(gid1))
-                    ggis.put(gid1, new HashMap<>());
-                ggis.get(gid1).put(gid2, ggi);
-                ggiList.add(ggi);
+
+
+                if(ggiList.size()>100_000) {
+                    geneInteractsWithGeneRepository.saveAll(ggiList);
+                    ggiList.clear();
+                }
+
             } catch (NullPointerException ignore) {
             }
         });
@@ -152,21 +160,21 @@ public class ProteinInteractsWithProteinService {
 
     public void importEdges() {
         findAllProteins().forEach(edge -> importProteinEdge(edge.getPrimaryIds(), edge.getEvidenceTypes().contains("exp")));
-        findAllGenes().forEach(edge -> importGeneEdge(edge.getPrimaryIds(),edge.getEvidenceTypes().contains("exp")));
+        findAllGenes().forEach(edge -> importGeneEdge(edge.getPrimaryIds(), edge.getEvidenceTypes().contains("exp")));
     }
 
-    private void importProteinEdge(PairId edge,boolean experimental) {
+    private void importProteinEdge(PairId edge, boolean experimental) {
         if (!proteins.containsKey(edge.getId1()))
             proteins.put(edge.getId1(), new HashMap<>());
-        proteins.get(edge.getId1()).put(edge, new Pair<>(true,experimental));
+        proteins.get(edge.getId1()).put(edge, new Pair<>(true, experimental));
 
     }
 
 
-    private void importGeneEdge(PairId edge,boolean experimental) {
+    private void importGeneEdge(PairId edge, boolean experimental) {
         if (!genes.containsKey(edge.getId1()))
             genes.put(edge.getId1(), new HashMap<>());
-        genes.get(edge.getId1()).put(edge, new Pair<>(true,experimental));
+        genes.get(edge.getId1()).put(edge, new Pair<>(true, experimental));
 
     }
 
@@ -179,10 +187,10 @@ public class ProteinInteractsWithProteinService {
     }
 
     public boolean isProteinEdge(int id1, int id2) {
-       return isProteinEdge(new PairId(id1,id2));
+        return isProteinEdge(new PairId(id1, id2));
     }
 
-    public boolean isExperimentalProtein(PairId edge){
+    public boolean isExperimentalProtein(PairId edge) {
         try {
             return proteins.get(edge.getId1()).get(edge).second;
         } catch (NullPointerException e) {
@@ -191,10 +199,10 @@ public class ProteinInteractsWithProteinService {
     }
 
     public boolean isExperimentalProtein(int id1, int id2) {
-       return isExperimentalProtein(new PairId(id1,id2));
+        return isExperimentalProtein(new PairId(id1, id2));
     }
 
-    public boolean isExperimentalGene(PairId edge){
+    public boolean isExperimentalGene(PairId edge) {
         try {
             return genes.get(edge.getId1()).get(edge).second;
         } catch (NullPointerException e) {
@@ -203,7 +211,7 @@ public class ProteinInteractsWithProteinService {
     }
 
     public boolean isExperimentalGene(int id1, int id2) {
-       return isExperimentalGene(new PairId(id1,id2));
+        return isExperimentalGene(new PairId(id1, id2));
     }
 
     public boolean isGeneEdge(PairId edge) {
@@ -215,15 +223,15 @@ public class ProteinInteractsWithProteinService {
     }
 
     public boolean isGeneEdge(int id1, int id2) {
-      return isGeneEdge(new PairId(id1,id2));
+        return isGeneEdge(new PairId(id1, id2));
     }
 
     public HashSet<PairId> getProteins(int id) {
-        return proteins.get(id).entrySet().stream().filter(e->e.getValue().first).map(Map.Entry::getKey).collect(Collectors.toCollection(HashSet::new));
+        return proteins.get(id).entrySet().stream().filter(e -> e.getValue().first).map(Map.Entry::getKey).collect(Collectors.toCollection(HashSet::new));
     }
 
     public HashSet<PairId> getGenes(int id) {
-        return genes.get(id).entrySet().stream().filter(e->e.getValue().first).map(Map.Entry::getKey).collect(Collectors.toCollection(HashSet::new));
+        return genes.get(id).entrySet().stream().filter(e -> e.getValue().first).map(Map.Entry::getKey).collect(Collectors.toCollection(HashSet::new));
     }
 
 
@@ -243,11 +251,11 @@ public class ProteinInteractsWithProteinService {
         return proteinInteractsWithProteinRepository.findProteinInteractsWithProteinsByIdIn(ids);
     }
 
-    public HashMap<Integer, HashMap<PairId, Pair<Boolean,Boolean>>> getProteins() {
+    public HashMap<Integer, HashMap<PairId, Pair<Boolean, Boolean>>> getProteins() {
         return proteins;
     }
 
-    public HashMap<Integer, HashMap<PairId, Pair<Boolean,Boolean>>> getGenes() {
+    public HashMap<Integer, HashMap<PairId, Pair<Boolean, Boolean>>> getGenes() {
         return genes;
     }
 

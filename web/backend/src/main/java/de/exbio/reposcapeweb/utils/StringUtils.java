@@ -237,6 +237,8 @@ public class StringUtils {
     }
 
     public static LinkedList<String> stringToList(String s) {
+        if(s==null)
+            return new LinkedList<>();
         return split(s.substring(s.charAt(0) == '[' ? 1 : 0, s.charAt(s.length() - 1) == ']' ? s.length() - 1 : s.length()), ',');
     }
 
