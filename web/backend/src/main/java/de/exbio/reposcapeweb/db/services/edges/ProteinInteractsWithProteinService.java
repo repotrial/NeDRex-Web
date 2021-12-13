@@ -105,7 +105,7 @@ public class ProteinInteractsWithProteinService {
             throwables.printStackTrace();
             return false;
         }
-        HashMap<Integer, HashSet<Integer>> ggis = new HashMap<>();
+        HashMap<Integer, HashMap<Integer,GeneInteractsWithGene>> ggis = new HashMap<>();
         LinkedList<GeneInteractsWithGene> ggiList = new LinkedList<>();
 
         findAllProteins().forEach(ppi -> {
@@ -118,13 +118,15 @@ public class ProteinInteractsWithProteinService {
                     gid1 = tmp;
                 }
                 GeneInteractsWithGene ggi;
-                if (ggis.containsKey(gid1) && ggis.get(gid1).contains(gid2)) {
-                    ggi = findGene(new PairId(gid1,gid2)).get();
+                if (ggis.containsKey(gid1) && ggis.get(gid1).containsKey(gid2)) {
+                    ggi = ggis.get(gid1).get(gid2);
+                    if(ggi==null)
+                        ggi = findGene(new PairId(gid1,gid2)).get();
                 } else {
                     ggi = new GeneInteractsWithGene(gid1, gid2);
                     if (!ggis.containsKey(gid1))
-                        ggis.put(gid1, new HashSet<>());
-                    ggis.get(gid1).add(gid2);
+                        ggis.put(gid1, new HashMap<>());
+                    ggis.get(gid1).put(gid2,ggi);
                     ggiList.add(ggi);
                 }
                 ggi.addEvidenceTypes(ppi.getEvidenceTypes());
@@ -140,6 +142,7 @@ public class ProteinInteractsWithProteinService {
 
                 if(ggiList.size()>100_000) {
                     geneInteractsWithGeneRepository.saveAll(ggiList);
+                    ggis.values().forEach(m->m.keySet().forEach(k->m.put(k,null)));
                     ggiList.clear();
                 }
 
