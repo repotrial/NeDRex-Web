@@ -1,27 +1,31 @@
 <template>
   <v-card dark :color="bgColor" elevation="5">
     <v-card-title>About</v-card-title>
-    <v-card-text><b>NeDRex-Web</b> is a userfriendly web interface to access data from the NeDRex project. It's main
+
+
+    <v-card-text>
+      <b>NeDRex-Web</b> is a userfriendly web interface to access data from the NeDRex project. It's main
       focus lies on module identification, drug repurposing and general network exploration. NeDRex-Web utilizes the <b>NeDRexDB</b>
       accessed through the <b>NeDRexAPI</b>.
+    </v-card-text>
+
+    <v-card-title>Disclaimer</v-card-title>
+    <v-card-text>
+      <b><i>This website is free and open to all users and there is no login requirement</i></b>
     </v-card-text>
     <v-card-title>Contact</v-card-title>
     <v-card-text>
       <v-tooltip right>
         <template v-slot:activator="{on, attrs}">
-          <v-btn icon v-on="on" v-bind="attrs"><a style="text-decoration: none"
+          <v-btn icon><a style="text-decoration: none"
                          href="mailto:andreas.maier-1@uni-hamburg.de?subject=NeDRex-Web%20contact">
-            <v-icon color="white">fas fa-envelope</v-icon>
+            <v-icon v-on="on" v-bind="attrs" color="white">fas fa-envelope</v-icon>
           </a></v-btn>
           andreas.maier-1(_at_]uni-hamburg.de
         </template>
         <div>Open in your default mail client</div>
       </v-tooltip>
     </v-card-text>
-    <v-card-title>Browser Compatability</v-card-title>
-    <div style="display: flex; justify-content: center">
-      <CompatabilityTable style="margin-bottom: 20px; width: 650px" bg-color="transparent"/>
-    </div>
     <template v-for="entry in eula">
       <v-card-title :key="entry.title+'_title'">
         {{ entry.title }}
@@ -64,7 +68,6 @@
 </template>
 
 <script>
-import CompatabilityTable from "@/components/app/tables/CompatabilityTable";
 import * as  CONFIG from "../../Config"
 
 export default {
@@ -89,9 +92,6 @@ export default {
     getConfig: function () {
       return CONFIG
     }
-  },
-  components: {
-    CompatabilityTable,
   }
 }
 </script>

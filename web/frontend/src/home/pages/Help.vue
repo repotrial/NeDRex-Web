@@ -18,16 +18,27 @@
         <div style="width: 192px; height: 108px; background-color: black; margin: 10px; color: white">Advanced</div>
       </div>
     </v-card-text>
+
+    <v-card-title>Browser Compatability</v-card-title>
+    <div style="display: flex; justify-content: center">
+      <CompatabilityTable style="margin-bottom: 20px; width: 650px" bg-color="transparent"/>
+    </div>
   </v-card>
 </template>
 
 <script>
+import CompatabilityTable from "@/components/app/tables/CompatabilityTable";
+
 export default {
   name: "Help",
+  components:{
+    CompatabilityTable,
+  },
   props: {
     bgColor: String,
     color: String,
   },
+
 }
 </script>
 

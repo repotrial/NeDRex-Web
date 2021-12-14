@@ -111,10 +111,22 @@
                                 v-bind="attrs"
                                 v-on="on"
                                 left> far fa-question-circle
-                                style="flex-grow: 0"
                               </v-icon>
                             </template>
-                            <span>Select your expression matrix that should be uploaded. The server removes your data once the the algorithm successfully terminated.</span>
+                            <div>Select your expression matrix that should be uploaded. The server removes your data once the the algorithm successfully terminated.</div>
+                          </v-tooltip>
+                          <v-tooltip left>
+                            <template v-slot:activator="{on,attrs}">
+                              <a href="https://drive.google.com/file/d/14m0LjT33OT2iP_PkoPQgczOOGKFRxOTh/view?usp=sharing" target="_blank" style="text-decoration: none">
+                              <v-icon
+                              v-bind="attrs"
+                              v-on="on"
+                              left
+                              >
+                                fas fa-download
+                              </v-icon></a>
+                            </template>
+                              <div>Download an example expression matrix from the BiCon repository.</div>
                           </v-tooltip>
                         </template>
                       </v-file-input>
