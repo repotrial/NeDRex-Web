@@ -376,6 +376,12 @@ public class Graph {
         this.customEdgeAttributeTypes.get(eid).put(attrName, type);
     }
 
+    public void addCustomAttributeLabel(int eid, String attrName, String label) {
+        if (!this.customEdgeAttributeLabels.containsKey(eid))
+            this.customEdgeAttributeLabels.put(eid, new HashMap<>());
+        this.customEdgeAttributeLabels.get(eid).put(attrName, label);
+    }
+
     public void addNodeMarks(Integer type, Collection<Integer> nodes) {
         addMarks("nodes", type, new LinkedList<>(nodes));
     }

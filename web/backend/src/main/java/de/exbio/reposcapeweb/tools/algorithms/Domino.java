@@ -135,7 +135,9 @@ public class Domino implements Algorithm {
         int eid = derived.getEdge("DOMINO_Interaction");
         derived.addCustomEdgeAttribute(eid, j.getResult().getEdges());
         derived.addCustomAttributeType(eid, "memberOne", "id");
+        derived.addCustomAttributeLabel(eid,"memberOne","ID1");
         derived.addCustomAttributeType(eid, "memberTwo", "id");
+        derived.addCustomAttributeLabel(eid,"memberTwo","ID2");
     }
 
     @Override

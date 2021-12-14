@@ -958,8 +958,10 @@ public class WebGraphService {
         int eid = g.getEdge(name);
         g.addCustomEdgeAttribute(eid, "Weight", edgeWeights);
         g.addCustomAttributeType(eid, "Weight", "numeric");
+        g.addCustomAttributeLabel(eid, "Weight", "Weight");
         g.addCustomEdgeAttribute(eid, "JaccardIndex", jaccardIndex);
         g.addCustomAttributeType(eid, "JaccardIndex", "numeric");
+        g.addCustomAttributeLabel(eid, "JaccardIndex", "Jaccard Index");
         if (!keep) {
             g.getEdges().remove(edge1);
             HashSet<Integer> otherConnectedEdges = new HashSet<>();
@@ -1882,11 +1884,11 @@ public class WebGraphService {
             table.append(table.length() == 0 ? "#" : "\t");
             if (edgeAttributeMap.containsKey(a)) {
                 edgeAttributes.add(a);
-                table.append(a);
+                table.append(edgeAttributeMap.get(a) != null ? edgeAttributeMap.get(a) : a);
             } else {
                 switch (a) {
-                    case "node1" -> nodeAttributes.put(a, "displayName_1");
-                    case "node2" -> nodeAttributes.put(a, "displayName_2");
+                    case "node1", "Node1" -> nodeAttributes.put(a, "displayName_1");
+                    case "node2", "Node2" -> nodeAttributes.put(a, "displayName_2");
                     case "sourceId" -> nodeAttributes.put(a, "id_1");
                     case "targetId" -> nodeAttributes.put(a, "id_2");
                     case "sourceDomainId" -> nodeAttributes.put(a, "primaryDomainId_1");
@@ -1931,14 +1933,24 @@ public class WebGraphService {
 
     private String getNodeTableDownload(Graph g, String name, LinkedList<String> attributes) {
         StringBuilder table = new StringBuilder();
-        for (String a : attributes)
-            table.append(table.length() == 0 ? "#" : "\t").append(a);
+        HashMap<String, String> labelMap = nodeController.getAttributeLabelMap(name);
+        HashMap<String, HashMap<Integer, Object>> customAttributes = g.getCustomNodeAttributes().containsKey(Graphs.getNode(name)) ? g.getCustomNodeAttributes().get(Graphs.getNode(name)) : new HashMap<>();
+
+        for (String a : attributes) {
+            table.append(table.length() == 0 ? "#" : "\t").append(labelMap.getOrDefault(a, g.getCustomNodeAttributeLabels().get(Graphs.getNode(name)).get(a)));
+        }
         table.append("\n");
         HashSet<Integer> ids = g.getNodes().get(Graphs.getNode(name)).values().stream().map(Node::getId).collect(toCollection(HashSet::new));
-        nodeController.nodesToAttributeList(Graphs.getNode(name), ids, new HashSet<>(attributes), null).forEach(n -> {
+
+
+        ids.forEach(id -> {
+            HashMap<String, Object> attrMap = nodeController.nodeToAttributeList(Graphs.getNode(name), id, new HashSet<>(attributes));
             StringBuilder line = new StringBuilder();
             attributes.forEach(a -> {
-                line.append(line.length() == 0 ? "" : "\t").append(n.get(a));
+                Object value = attrMap.get(a);
+                if (value == null && !attrMap.containsKey(a) && customAttributes.containsKey(a))
+                    value = customAttributes.get(a).get(id);
+                line.append(line.length() == 0 ? "" : "\t").append(value);
             });
             table.append(line).append("\n");
         });
