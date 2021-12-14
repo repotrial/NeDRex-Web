@@ -392,6 +392,7 @@
                         <div style="display: flex; justify-content: center">
                           <div style="padding-top: 16px">
                             <ResultDownload v-if="results.targets.length>0" raw results
+                                            result-label="Drug Ranking"
                                             @downloadResultsEvent="downloadResultList"
                                             @downloadRawEvent="downloadFullResultList"></ResultDownload>
                           </div>

@@ -168,7 +168,6 @@
             <v-card
               v-if="step===2"
               class="mb-4"
-              max-height="85vh"
               max-width="1300px"
               flat
               style="justify-content: center; margin-right: auto; margin-left: auto"
