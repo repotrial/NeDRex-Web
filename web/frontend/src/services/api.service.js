@@ -181,6 +181,13 @@ const ApiService = {
     })
   },
 
+
+  getExampleInputFile(type){
+    return this.get("/getExampleInputFileLink?type="+type).then(response=>{
+      return response.data;
+    })
+  },
+
   getLicense() {
     return this.get("getLicense").then(response => {
       if (response.data != null) {

@@ -60,8 +60,8 @@
           <v-card
             v-show="step===1"
             class="mb-4"
-            max-height="1050px"
-            height="1050px"
+            max-height="1100px"
+            height="1100px"
           >
 
             <v-card-subtitle class="headline">Node Configuration</v-card-subtitle>

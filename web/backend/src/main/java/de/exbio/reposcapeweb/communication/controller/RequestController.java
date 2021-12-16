@@ -179,6 +179,19 @@ public class RequestController {
 
     }
 
+    @RequestMapping(value="/getExampleInputFileLink", method=RequestMethod.GET)
+    @ResponseBody
+    public String getExampleInputFileLink(@RequestParam(value="type") String type){
+        return switch (type){
+            case "gene" -> "https://drive.google.com/file/d/1WCCSV-149fkzfma0OtH29Yw5q8Giib1j/view?usp=sharing";
+            case "protein" -> "https://drive.google.com/file/d/1NNSUAp5Tu4FJzr1GK589bZdPM57ne7cq/view?usp=sharing";
+            case "pathway" -> "https://drive.google.com/file/d/1H_PBVjDlS6afdnTHvHvwtWUGh7zLJdWc/view?usp=sharing";
+            case "drug" -> "https://drive.google.com/file/d/18R0H-y7kmsF2HABgKL2ughYLspc3lkN6/view?usp=sharing";
+            case "disorder" -> "https://drive.google.com/file/d/1x53hj-1FUb1kbWRnmLIB2qK9VZ7-gQYk/view?usp=sharing";
+            default -> null;
+        };
+    }
+
     @RequestMapping(value = "/getConnectedNodes", method = RequestMethod.POST)
     @ResponseBody
     public String getConnectedNodes(@RequestBody HashMap<String, Object> request) {

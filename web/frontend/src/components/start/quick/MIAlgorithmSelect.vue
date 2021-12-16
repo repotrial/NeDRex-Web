@@ -98,12 +98,19 @@
                     </div>
                     <div style="justify-self: flex-end; margin-left: auto; margin-right: auto; width: calc(100% - 400px); min-width: 250px; margin-top: 14px;">
                       <v-file-input
+                        ref="upload"
                         v-on:change="biconFile"
+                        outlined
+                        solo
                         show-size
                         prepend-icon="fas fa-file-medical"
-                        label="Expression File"
+                        style="width: 400px;"
                         dense
                       >
+                        <template v-slot:label>
+                          <v-icon small>fas fa-file-upload</v-icon>
+                          Upload Expression Matrix
+                        </template>
                         <template v-slot:append-outer>
                           <v-tooltip left>
                             <template v-slot:activator="{ on, attrs }">
