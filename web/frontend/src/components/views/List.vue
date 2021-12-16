@@ -176,22 +176,6 @@
                       >
                       </v-checkbox>
                     </v-col>
-                    <v-col cols="1">
-                      <v-tooltip right>
-                        <template v-slot:activator="{ on, attrs }"
-                                  v-if="marks.nodes && marks.nodes[Object.keys(attributes.nodes)[nodeTab]] &&marks.nodes[Object.keys(attributes.nodes)[nodeTab]].indexOf(item.id)>-1">
-                          <v-icon
-                            color="primary"
-                            dark
-                            v-bind="attrs"
-                            v-on="on"
-                          >
-                            fas fa-star
-                          </v-icon>
-                        </template>
-                        <span>Added by Algorithm</span>
-                      </v-tooltip>
-                    </v-col>
                   </v-row>
 
                 </template>
@@ -381,22 +365,6 @@
                         style="margin-top: -4px; margin-left: 24px"
                         @click="countClick('edges',edgeTab,item)"
                       ></v-checkbox>
-                    </v-col>
-                    <v-col cols="1">
-                      <v-tooltip right>
-                        <template v-slot:activator="{ on, attrs }"
-                                  v-if="marks.edges && marks.edges[Object.keys(attributes.edges)[edgeTab]] &&marks.edges[Object.keys(attributes.edges)[edgeTab]].indexOf(item.id)>-1">
-                          <v-icon
-                            color="primary"
-                            dark
-                            v-bind="attrs"
-                            v-on="on"
-                          >
-                            fas fa-star
-                          </v-icon>
-                        </template>
-                        <span>Added by Algorithm</span>
-                      </v-tooltip>
                     </v-col>
                   </v-row>
                 </template>
@@ -905,7 +873,6 @@ export default {
     return {
       edges: {},
       nodes: {},
-      marks: {},
       attributes: {},
       countMap: undefined,
       nodeTab: undefined,
@@ -990,7 +957,6 @@ export default {
       this.waiting = true
       this.attributes = {}
       this.edges = {}
-      this.marks = {}
       this.backup = {nodes: {}, edges: {}}
       this.gid = this.$route.params["gid"]
       if (this.gid !== undefined)
@@ -1111,7 +1077,6 @@ export default {
       this.attributes = {};
       this.edges = {};
       this.nodes = {};
-      this.marks = {};
       this.nodeTab = 0
       this.edgeTab = 0
       this.resetFilters('nodes')
@@ -1127,7 +1092,6 @@ export default {
         }
         this.edges = data.edges;
         this.nodes = data.nodes;
-        this.marks = data.marks;
         Object.keys(this.nodes).forEach(node => {
           let columns = this.attributes.nodes[node].map(n => n.name)
           let p_hyper = columns.indexOf("p_hyper") != -1
