@@ -12,10 +12,11 @@
         <b>NeDRex</b> knowledge graph with <b>NeDRex-Web</b>.
       </div>
       <div style="text-align: justify; margin-left: 16px; margin-top:8px;">
-        2. For a more detailed documentation of the features and functions of NeDRex-Web please refer to our <a
+        2. For a more detailed documentation of the features and functions of NeDRex-Web please refer to our
+        <a :style="{textDecoration: 'none', color:color}"
         href="https://docs.google.com/document/d/1BGp0wovJk_ERonojc6s9XQ7W2sV_Bgb-ljtjI7yj2bg/edit?usp=sharing"
         target="_blank">documentation sheet
-        <v-icon color="primary" small right>fas fa-external-link-alt</v-icon>
+        <v-icon :color="color" small style="margin-top: -2px;">fas fa-external-link-alt</v-icon>
       </a>
         <br>
         <i>Please not this document might be updated over time</i>
