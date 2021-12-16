@@ -20,5 +20,7 @@ export default {
 </script>
 
 <style scoped>
-
+b {
+  color: #e5e5e5;
+}
 </style>

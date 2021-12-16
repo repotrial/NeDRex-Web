@@ -226,6 +226,7 @@ const ApiService = {
       if (lastHeader != null) {
         eula.push({title: lastHeader, content: this.formatEULA(lastContent)})
       }
+      eula.push({title:"Redistribution",content:"It is prohibited to distribute downloaded data containing DrugBank drug-target information to any third party!"})
       return eula
     })
 

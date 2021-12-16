@@ -102,7 +102,7 @@ export default {
 }
 
 b {
-  color: #efeeee;
+  color: #e5e5e5;
 }
 
 .v-card__text {

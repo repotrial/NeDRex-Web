@@ -47,4 +47,7 @@ export default {
   color: #c9c8c8 !important;
   text-align: justify !important;
 }
+b {
+  color: #e5e5e5;
+}
 </style>

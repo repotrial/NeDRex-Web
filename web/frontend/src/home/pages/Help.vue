@@ -4,7 +4,22 @@
       Help
     </v-card-title>
     <v-card-text>
-      <div>TODO text intro</div>
+      <div style="text-align: justify">
+        We provide two kinds of helpful materials to make sure you will have the best experience with <b>NeDRex-Web</b>:
+      </div>
+      <div style="margin-left: 16px; margin-top:8px;text-align: justify">1. To give an overview over the <b>NeDRex-Web application</b> we provide some short
+        <i><b>video material</b></i>. The are a <i><b>general introduction</b></i> and three additional <i><b>hands-on tutorials</b></i> explaining the three <i><b>different ways of starting</b></i> to explore the
+        <b>NeDRex</b> knowledge graph with <b>NeDRex-Web</b>.
+      </div>
+      <div style="text-align: justify; margin-left: 16px; margin-top:8px;">
+        2. For a more detailed documentation of the features and functions of NeDRex-Web please refer to our <a
+        href="https://docs.google.com/document/d/1BGp0wovJk_ERonojc6s9XQ7W2sV_Bgb-ljtjI7yj2bg/edit?usp=sharing"
+        target="_blank">documentation sheet
+        <v-icon color="primary" small right>fas fa-external-link-alt</v-icon>
+      </a>
+        <br>
+        <i>Please not this document might be updated over time</i>
+      </div>
     </v-card-text>
     <v-card-title>
       Video-Tutorials
@@ -31,7 +46,7 @@ import CompatabilityTable from "@/components/app/tables/CompatabilityTable";
 
 export default {
   name: "Help",
-  components:{
+  components: {
     CompatabilityTable,
   },
   props: {
@@ -42,6 +57,8 @@ export default {
 }
 </script>
 
-<style scoped>
-
+<style scoped lang="scss">
+b {
+  color: #e5e5e5;
+}
 </style>
