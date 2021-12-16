@@ -186,7 +186,7 @@
                               v-show="seedTypeId!=null"
                               :disabled="$refs.seedTable==null || $refs.seedTable.getSeeds().length===0"
                               color="primary" @click="showInteractionNetwork()">
-                        <v-icon>fas fa-eye</v-icon>
+                        <v-icon>fas fa-project-diagram</v-icon>
                       </v-chip>
                     </template>
                     <span>Display an interaction network with all your current seeds</span>
