@@ -235,12 +235,15 @@ const ApiService = {
     if (text.indexOf("https:\/\/omim\.org\/downloads"))
       text = text.replace("https:\/\/omim\.org\/downloads", "<a href='https://omim.org/downloads' target='_blank'>https://omim.org/downloads")
     text = text.replaceAll("OMIM��","OMIM®")
+    text = text.replaceAll("OMIM Data��","OMIM®")
+    text = text.replaceAll("Online Mendelian Inheritance in Man��","Online Mendelian Inheritance in Man®")
     text = text.replaceAll("JHU���", "JHU'")
     text = text.replaceAll("���claims","‘claims")
     text = text.replaceAll("made���","made’")
     text = text.replaceAll("UH���s","UH's")
     text = text.replaceAll("Copyright ��", "Copyright ©")
     text = text.replaceAll("���JHU Parties���",'“JHU Parties”')
+    text = text.replaceAll("���prior acts���","'prior acts'")
     return text
   },
   getInteractionEdges: function(data) {

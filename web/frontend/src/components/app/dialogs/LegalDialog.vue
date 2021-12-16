@@ -58,7 +58,6 @@ export default {
   methods: {
     resolveDialog: function () {
       this.model = false;
-      // this.$emit("input", this.model)
       if (!this.alreadyAccepted()) {
         sessionStorage.setItem("tos", "true")
       }
