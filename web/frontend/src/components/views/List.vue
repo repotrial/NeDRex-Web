@@ -648,24 +648,18 @@
         <v-card-title class="headline">
           Organize {{ options.title }} Attributes
         </v-card-title>
-        <v-card-text>Adjust the attributes of the general item tables.
+        <v-card-text>Adjust the attributes of the
+          {{ options.type === "nodes" ? Object.keys(this.nodes)[this.nodeTab] : Object.keys(this.edges)[this.edgeTab] }}
+          edge table header.
         </v-card-text>
         <v-divider></v-divider>
         <template v-if="Object.keys(options.type).length>0">
-          <v-tabs v-model="optionTab">
-            <v-tabs-slider color="blue"></v-tabs-slider>
-            <v-tab v-for="name in Object.keys(options.attributes)" :key="name">
-              {{ Object.keys(attributes[options.type])[name] }}
-            </v-tab>
-          </v-tabs>
-          <v-tabs-items>
-            <v-list>
-              <v-list-item v-for="attr in options.attributes[optionTab]" :key="attr.name">
-                <v-switch v-model="attr.selected" :label="attr.label" :disabled="(attr.name === 'id')">
-                </v-switch>
-              </v-list-item>
-            </v-list>
-          </v-tabs-items>
+          <v-list>
+            <v-list-item v-for="attr in options.attributes" :key="attr.name" dense >
+              <v-switch v-model="attr.selected" dense :label="attr.label" :disabled="(attr.name === 'id')" style="margin-top: 0">
+              </v-switch>
+            </v-list-item>
+          </v-list>
         </template>
 
         <v-divider></v-divider>
@@ -1309,13 +1303,13 @@ export default {
       this.options["title"] = (Object.keys(this.nodes).length > 1) ? "Nodes" : "Node"
 
       this.options["attributes"] = {}
-      for (let node in Object.keys(this.attributes.nodes)) {
-        let models = []
-        this.attributes.nodes[Object.keys(this.attributes.nodes)[node]].forEach(attr => {
+      let models = []
+      let node = Object.keys(this.nodes)[this.nodeTab]
+      this.attributes.nodes[node].forEach(attr => {
+        if (attr.name !== "type")
           models.push({name: attr.name, label: attr.label, selected: attr.list})
-        })
-        this.options.attributes[node] = models;
-      }
+      })
+      this.options.attributes = models;
       this.options.type = "nodes";
     }
     ,
@@ -1324,13 +1318,13 @@ export default {
       this.options["title"] = (Object.keys(this.edges).length > 1) ? "Edges" : "Edge"
 
       this.options["attributes"] = {}
-      for (let edge in Object.keys(this.attributes.edges)) {
-        let models = []
-        this.attributes.edges[Object.keys(this.attributes.edges)[edge]].forEach(attr => {
+      let models = []
+      let edge = Object.keys(this.edges)[this.edgeTab]
+      this.attributes.edges[edge].forEach(attr => {
+        if (attr.name !== "type")
           models.push({name: attr.name, label: attr.label, selected: attr.list})
-        })
-        this.options.attributes[edge] = models;
-      }
+      })
+      this.options.attributes = models;
       this.options.type = "edges";
       this.optionDialog = true;
     }
@@ -1344,28 +1338,21 @@ export default {
       let comparison = this.attributes[this.options.type];
 
       let reloadNeeded = [];
-      for (let index in this.options.attributes) {
-        let name = Object.keys(comparison)[index]
-        for (let attrIndex in this.options.attributes[index]) {
-          if (this.options.attributes[index][attrIndex].selected && !comparison[name][attrIndex].sent) {
-            reloadNeeded.push(name)
-            break;
-          }
-          comparison[name][attrIndex].list = this.options.attributes[index][attrIndex].selected;
+      let name = this.options.type ==="nodes" ? Object.keys(this.nodes)[this.nodeTab]  : Object.keys(this.edges)[this.edgeTab]
+      for (let attrIndex in this.options.attributes) {
+        if (this.options.attributes[attrIndex].selected && !comparison[name][attrIndex].sent) {
+          reloadNeeded.push(name)
+          break;
         }
+        comparison[name][attrIndex].list = this.options.attributes[attrIndex].selected;
       }
       if (reloadNeeded.length > 0) {
         let payload = {id: this.gid, attributes: {nodes: {}, edges: {}}}
-        for (let index in this.options.attributes) {
-          let name = Object.keys(comparison)[index]
-          if (reloadNeeded.indexOf(name) === -1)
-            continue
-          let attrs = []
-          payload.attributes[this.options.type][name] = attrs
-          for (let attrIndex in this.options.attributes[index]) {
-            if (this.options.attributes[index][attrIndex].selected)
-              attrs.push(this.options.attributes[index][attrIndex].name)
-          }
+        let attrs = []
+        payload.attributes[this.options.type][name] = attrs
+        for (let attrIndex in this.options.attributes) {
+          if (this.options.attributes[attrIndex].selected)
+            attrs.push(this.options.attributes[attrIndex].name)
         }
         this.$http.post("/getCustomGraphList", payload).then(response => {
           if (response.data !== undefined)
@@ -1612,16 +1599,15 @@ export default {
       this.download(this.gid + "_" + name + "-" + entity + ".tsv", table)
     },
 
-    downloadEdgeTable: function(){
+    downloadEdgeTable: function () {
       let type = Object.keys(this.edges)[this.edgeTab]
-      let attributes =this.attributes.edges[type].filter(a=>a.list).map(a=>a.name)
-      console.log(attributes)
-      this.downloadEntries("edge",type,attributes)
+      let attributes = this.attributes.edges[type].filter(a => a.list).map(a => a.name)
+      this.downloadEntries("edge", type, attributes)
     },
 
-    downloadNodeTable: function(){
+    downloadNodeTable: function () {
       let type = Object.keys(this.nodes)[this.nodeTab]
-      this.downloadEntries("nodes",type,this.attributes.nodes[type].filter(a=>a.list).map(a=>a.name))
+      this.downloadEntries("nodes", type, this.attributes.nodes[type].filter(a => a.list).map(a => a.name))
     },
 
     loadSelection: function () {

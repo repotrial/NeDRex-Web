@@ -187,6 +187,8 @@ public class NodeController {
         };
     }
 
+
+
     public String[] getAttributeLabels(Integer typeId) {
         return switch (Graphs.getNode(typeId)) {
             case "disorder" -> Disorder.attributeLabels;

@@ -42,6 +42,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toSet;
@@ -171,7 +172,8 @@ public class WebGraphService {
                 } catch (NullPointerException ignore) {
                 }
                 LinkedList<String> attributes = new LinkedList<>(Arrays.asList(finalReq1.attributes.get("nodes").get(stringType)));
-                List<String> allAttributes = new LinkedList<>(Arrays.asList(nodeController.getAttributes(type)));
+                Set<String> detailAttrs = DBConfig.getConfig().nodes.get(type).getDetailAttributes().stream().map(a -> a.name).collect(Collectors.toCollection(HashSet::new));
+                List<String> allAttributes = Arrays.stream(nodeController.getAttributes(type)).filter(detailAttrs::contains).collect(Collectors.toList());
                 try {
                     g.getCustomNodeAttributeTypes().get(type).forEach((attrName, attrType) -> {
                         if (!attributes.contains(attrName))
@@ -234,7 +236,8 @@ public class WebGraphService {
                     finalList.addEdges(stringType, attrMaps);
                     finalList.setTypes("edges", stringType, attributeArray, g.getCustomEdgeListAttributeTypes(type), g.areCustomListAttributeIds(type), g.getCustomEdgeAttributeTypes().get(type));
                 } else {
-                    String[] attributeArray = edgeController.getAttributes(type);
+                    Set<String> detailAttrs = DBConfig.getConfig().edges.get(type).getDetailAttributes().stream().map(a -> a.name).collect(Collectors.toCollection(HashSet::new));
+                    String[] attributeArray = Arrays.stream(edgeController.getAttributes(type)).filter(detailAttrs::contains).collect(Collectors.toList()).toArray(new String[]{});
                     finalList.addAttributes("edges", stringType, attributeArray, attributeLabelMap);
                     LinkedList<HashMap<String, Object>> attrMaps = edgeController.edgesToAttributeList(type, edges, attrs);
                     finalList.addEdges(stringType, attrMaps);

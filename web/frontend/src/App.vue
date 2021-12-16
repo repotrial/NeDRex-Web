@@ -504,7 +504,6 @@ export default {
     focusInGraph: function (type, id) {
       if (!this.$refs.graph.isVisualized || !this.$refs.graph.graphExists()) {
         this.printNotification("Graph must be visualized first!", 2)
-        this.$refs.graph.visualize()
         return
       }
       this.setTabId("graph", false)
