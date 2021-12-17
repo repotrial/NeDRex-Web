@@ -2,6 +2,7 @@
   <v-card
     class="mb-4"
     min-height="80vh"
+    :flat="flat"
   >
     <template v-if="header">
     <v-card-subtitle class="headline">{{ step }}. Drug Prioritization Algorithm Selection</v-card-subtitle>
@@ -205,6 +206,10 @@ export default {
     blitz: {
       type: Boolean,
       default: false
+    },
+    flat:{
+      default: false,
+      type:Boolean,
     },
     header:{
       type:Boolean,

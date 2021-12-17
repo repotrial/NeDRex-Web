@@ -2,6 +2,7 @@
   <v-card
     class="mb-4"
     min-height="80vh"
+    :flat="flat"
   >
     <template v-if="header">
       <v-card-subtitle class="headline">2. Module Identification Algorithm Selection</v-card-subtitle>
@@ -603,6 +604,10 @@ export default {
     seeds: Array,
     seedTypeId: Number,
     socketEvent: String,
+    flat:{
+      default: false,
+      type:Boolean,
+    },
     header: {
       default: true,
       type: Boolean,

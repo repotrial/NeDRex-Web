@@ -8,18 +8,30 @@
   >
     <v-sheet>
       <v-card>
-        <v-card-subtitle class="headline">2. Module Identification Algorithm Selection</v-card-subtitle>
+        <template v-if="type==='mi'">
+        <v-card-subtitle class="headline">Module Identification Algorithm Selection</v-card-subtitle>
         <v-card-subtitle style="margin-top: -25px">Select and adjust the algorithm you want to apply on your seeds
           to construct a disease module.
         </v-card-subtitle>
+        </template>
+        <template v-else>
+          <v-card-subtitle class="headline">Drug Prioritization Algorithm Selection</v-card-subtitle>
+          <v-card-subtitle style="margin-top: -25px">Select and adjust the algorithm you want to apply on your seeds
+            to identify a ranked list of drug candidates.
+          </v-card-subtitle>
+        </template>
+
         <v-divider style="margin: 15px;"></v-divider>
         <div style="max-height: 50vh; overflow-y: auto">
-          <MIAlgorithmSelect ref="miAlgorithms" :header="false" v-if="type==='mi'" :seeds="nodes" @jobEvent="jobSubmitted"
-                             :seed-type-id="['gene','protein'].indexOf(nodeType)" socket-event="jobUpdateEvent"
-                             @algorithmSelectedEvent="algorithmSelectedEvent"></MIAlgorithmSelect>
-          <DPAlgorithmSelect ref="dpAlgorithms" v-else :header="false" :seeds="nodes" @jobEvent="jobSubmitted"
-                             :seed-type-id="['gene','protein'].indexOf(nodeType)" socket-event="jobUpdateEvent"
-                             @algorithmSelectedEvent="algorithmSelectedEvent"></DPAlgorithmSelect>
+          <div style="padding:16px">
+            <MIAlgorithmSelect ref="miAlgorithms" :header="false" v-if="type==='mi'" :seeds="nodes" flat
+                               @jobEvent="jobSubmitted"
+                               :seed-type-id="['gene','protein'].indexOf(nodeType)" socket-event="jobUpdateEvent"
+                               @algorithmSelectedEvent="algorithmSelectedEvent"></MIAlgorithmSelect>
+            <DPAlgorithmSelect ref="dpAlgorithms" v-else :header="false" :seeds="nodes" @jobEvent="jobSubmitted" flat
+                               :seed-type-id="['gene','protein'].indexOf(nodeType)" socket-event="jobUpdateEvent"
+                               @algorithmSelectedEvent="algorithmSelectedEvent"></DPAlgorithmSelect>
+          </div>
         </div>
         <v-divider style="margin: 15px;"></v-divider>
         <v-card-actions>
@@ -66,16 +78,16 @@ export default {
       if (bool) {
         let algo = this.type === "mi" ? this.$refs.miAlgorithms : this.$refs.dpAlgorithms;
         algo.run()
-      }else{
+      } else {
         this.model = false;
       }
       this.algoSelected = false;
     },
 
 
-    jobSubmitted: function(data){
-      this.$emit("newJobEvent",data)
-      this.model=false;
+    jobSubmitted: function (data) {
+      this.$emit("newJobEvent", data)
+      this.model = false;
     }
   }
 

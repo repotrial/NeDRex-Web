@@ -6,8 +6,8 @@
         Jobs
       </v-list-item-title>
     </v-list-item>
-    <v-divider></v-divider>
     <template v-if="show">
+      <v-divider></v-divider>
       <v-tabs
         fixed-tabs
         v-model="jobsTabModel"

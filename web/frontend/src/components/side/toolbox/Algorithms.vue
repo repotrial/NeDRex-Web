@@ -6,7 +6,7 @@
         Algorithms
       </v-list-item-title>
     </v-list-item>
-    <v-container v-show="show">
+    <div v-show="show">
       <v-divider></v-divider>
       <div>
         <div style="display: flex; justify-content: center">
@@ -34,7 +34,7 @@
           </v-btn>
         </div>
       </div>
-    </v-container>
+    </div>
 
   </v-card>
 </template>
