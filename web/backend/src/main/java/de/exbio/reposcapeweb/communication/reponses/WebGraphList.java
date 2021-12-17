@@ -1,9 +1,13 @@
 package de.exbio.reposcapeweb.communication.reponses;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class WebGraphList {
+    private final Logger log = LoggerFactory.getLogger(WebGraphList.class);
     public String id;
     public HashMap<String, HashMap<String, LinkedList<WebAttribute>>> attributes;
     public HashMap<String, HashMap<String, Object>> marks;
@@ -134,15 +138,20 @@ public class WebGraphList {
         ArrayList<String> names = new ArrayList<>(Arrays.asList(attributes));
         this.attributes.get(type).get(name).forEach(a -> {
             int idx = names.indexOf(a.name);
-            String t = idx == -1 ? customAttributes.get(a.name) : types[idx];
-            if(t==null)
+            try {
+                String t = idx == -1 ? customAttributes.get(a.name) : types[idx];
+                if (t == null)
+                    return;
+                if (t.equals("numeric"))
+                    a.isNumeric();
+                if (t.equals("array"))
+                    a.isArray();
+                if (idx > -1 && ids[idx])
+                    a.isId();
+            }catch (NullPointerException e){
+                log.warn("Did not find attribute "+a.name);
                 return;
-            if (t.equals("numeric"))
-                a.isNumeric();
-            if (t.equals("array"))
-                a.isArray();
-            if (idx > -1 && ids[idx])
-                a.isId();
+            }
         });
     }
 

@@ -7,7 +7,7 @@
         indeterminate
       ></v-progress-linear>
     </template>
-    <template v-if="detailRequest!=null">
+    <template v-if="detailedObject.node!=null || detailedObject.edge!=null">
       <v-chip outlined v-if="redirected" @click="redirect()">
         <v-icon>fas fa-arrow-left</v-icon>
       </v-chip>

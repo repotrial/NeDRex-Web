@@ -159,7 +159,7 @@
         </v-list-item>
         <div v-if="show.selectionTools">
           <v-divider></v-divider>
-          <v-card-subtitle>General</v-card-subtitle>
+          <v-card-subtitle style="font-size: 14pt"><i>General</i></v-card-subtitle>
           <v-tooltip left>
             <template v-slot:activator="{attrs, on}">
               <div v-on="on"
@@ -215,7 +215,7 @@
             </div>
           </v-tooltip>
           <v-divider style="margin-left: 16px; margin-right: 16px"></v-divider>
-          <v-card-subtitle>Nodes</v-card-subtitle>
+          <v-card-subtitle style="font-size: 14pt"><i>Nodes</i></v-card-subtitle>
           <v-chip
             style="margin:8px"
             icon
@@ -244,7 +244,7 @@
             Unselect All Nodes
           </v-chip>
           <v-divider style="margin-left: 16px; margin-right: 16px"></v-divider>
-          <v-card-subtitle>Edges</v-card-subtitle>
+          <v-card-subtitle style="font-size: 14pt"><i>Edges</i></v-card-subtitle>
           <v-chip
             style="margin:8px"
             icon
