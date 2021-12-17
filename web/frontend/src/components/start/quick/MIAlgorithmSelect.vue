@@ -3,11 +3,13 @@
     class="mb-4"
     min-height="80vh"
   >
-    <v-card-subtitle class="headline">2. Module Identification Algorithm Selection</v-card-subtitle>
-    <v-card-subtitle style="margin-top: -25px">Select and adjust the algorithm you want to apply on your seeds
-      to construct a disease module.
-    </v-card-subtitle>
-    <v-divider style="margin: 15px;"></v-divider>
+    <template v-if="header">
+      <v-card-subtitle class="headline">2. Module Identification Algorithm Selection</v-card-subtitle>
+      <v-card-subtitle style="margin-top: -25px">Select and adjust the algorithm you want to apply on your seeds
+        to construct a disease module.
+      </v-card-subtitle>
+      <v-divider style="margin: 15px;"></v-divider>
+    </template>
     <v-container style="height: 80%; max-width: 100%">
       <v-list-item-title>Select the Algorithm group!</v-list-item-title>
       <v-list-item-action>
@@ -96,7 +98,8 @@
                         </template>
                       </v-select>
                     </div>
-                    <div style="justify-self: flex-end; margin-left: auto; margin-right: auto; width: calc(100% - 400px); min-width: 250px; margin-top: 14px;">
+                    <div
+                      style="justify-self: flex-end; margin-left: auto; margin-right: auto; width: calc(100% - 400px); min-width: 250px; margin-top: 14px;">
                       <v-file-input
                         ref="upload"
                         v-on:change="biconFile"
@@ -120,20 +123,25 @@
                                 left> far fa-question-circle
                               </v-icon>
                             </template>
-                            <div>Select your expression matrix that should be uploaded. The server removes your data once the the algorithm successfully terminated.</div>
+                            <div>Select your expression matrix that should be uploaded. The server removes your data
+                              once the the algorithm successfully terminated.
+                            </div>
                           </v-tooltip>
                           <v-tooltip left>
                             <template v-slot:activator="{on,attrs}">
-                              <a href="https://drive.google.com/file/d/14m0LjT33OT2iP_PkoPQgczOOGKFRxOTh/view?usp=sharing" target="_blank" style="text-decoration: none">
-                              <v-icon
-                              v-bind="attrs"
-                              v-on="on"
-                              left
-                              >
-                                fas fa-download
-                              </v-icon></a>
+                              <a
+                                href="https://drive.google.com/file/d/14m0LjT33OT2iP_PkoPQgczOOGKFRxOTh/view?usp=sharing"
+                                target="_blank" style="text-decoration: none">
+                                <v-icon
+                                  v-bind="attrs"
+                                  v-on="on"
+                                  left
+                                >
+                                  fas fa-download
+                                </v-icon>
+                              </a>
                             </template>
-                              <div>Download an example expression matrix from the BiCon repository.</div>
+                            <div>Download an example expression matrix from the BiCon repository.</div>
                           </v-tooltip>
                         </template>
                       </v-file-input>
@@ -595,6 +603,10 @@ export default {
     seeds: Array,
     seedTypeId: Number,
     socketEvent: String,
+    header: {
+      default: true,
+      type: Boolean,
+    },
     blitz: {
       type: Boolean,
       default: false

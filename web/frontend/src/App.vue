@@ -98,6 +98,7 @@
                     v-on:reloadSide="reloadSide"
                     v-on:addJobEvent="registerJob"
                     v-on:focusInGraphEvent="focusInGraph"
+                    @newJobEvent="addListJob"
                     @loadLegendEvent="loadLegendEvent"
                     @recolorGraphEvent="recolorGraph"
                     :configuration="options.list"
@@ -204,7 +205,7 @@
                     v-on:historyReloadEvent="historyReloadEvent"
                     v-on:reverseSortingEvent="reverseHistorySorting"
                     v-on:selectionEvent="listSelectionEvent"
-                    v-on:executeAlgorithmEvent="executeAlgorithm"
+                    v-on:openAlgorithmDialogEvent="openAlgorithmDialogEvent"
                     v-on:graphLoadEvent="loadGraph"
                     v-on:reloadHistoryEvent="reloadHistory"
                     @selectModeEvent="toggleGraphSelectMode"
@@ -560,6 +561,11 @@ export default {
     }
     ,
 
+    addListJob: function(data){
+      if(this.$refs.side)
+        this.$refs.side.addJob(data);
+    },
+
     loadLegendEvent: function (val) {
       if (val === this.showLegend && val) {
         this.showLegend = false;
@@ -696,8 +702,8 @@ export default {
       this.$refs.history.reload()
     }
     ,
-    executeAlgorithm: function (algorithm, params) {
-      this.$refs.list.executeAlgorithm(algorithm, params)
+    openAlgorithmDialogEvent: function (data) {
+      this.$refs.list.openAlgorithmDialogEvent(data)
     }
     ,
     applyEvent: function (bool) {

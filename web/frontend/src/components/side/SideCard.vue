@@ -379,7 +379,7 @@
         </v-container>
       </v-card>
       <template v-if="selectedTab===2">
-        <Algorithms ref="algorithms" @executeAlgorithmEvent="submitAlgorithm"></Algorithms>
+        <Algorithms ref="algorithms" @openAlgorithmDialogEvent="submitAlgorithm"></Algorithms>
         <Jobs ref="jobs" @graphLoadEvent="graphLoadEvent" @printNotificationEvent="printNotification"
               @reloadHistoryEvent="reloadHistory"></Jobs>
       </template>
@@ -640,8 +640,8 @@ export default {
     }
     ,
 
-    submitAlgorithm: function (algorithm, params) {
-      this.$emit('executeAlgorithmEvent', algorithm, params)
+    submitAlgorithm: function (data) {
+      this.$emit('openAlgorithmDialogEvent', data)
     },
     graphViewEvent: function (data) {
       this.$emit("graphViewEvent", data)

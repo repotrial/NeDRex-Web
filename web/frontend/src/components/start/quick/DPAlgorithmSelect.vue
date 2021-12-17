@@ -3,11 +3,13 @@
     class="mb-4"
     min-height="80vh"
   >
+    <template v-if="header">
     <v-card-subtitle class="headline">{{ step }}. Drug Prioritization Algorithm Selection</v-card-subtitle>
     <v-card-subtitle style="margin-top: -25px">Select and adjust the algorithm you want to apply on your seeds
       to identify a ranked list of drug candidates.
     </v-card-subtitle>
     <v-divider style="margin: 15px;"></v-divider>
+    </template>
     <v-container style="height: 80%; max-width: 100%">
       <v-row style="height: 100%">
         <v-col>
@@ -203,6 +205,10 @@ export default {
     blitz: {
       type: Boolean,
       default: false
+    },
+    header:{
+      type:Boolean,
+      default: true
     }
   },
 

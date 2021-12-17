@@ -789,6 +789,7 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <AlgorithmExecution ref="algorithmDialog" @newJobEvent="newJobEvent" :node-type="algorithmDialogParams.nodeType" :type="algorithmDialogParams.type" :nodes="algorithmDialogParams.nodes"></AlgorithmExecution>
     <v-dialog
       v-model="selectionColor.show"
       persistent
@@ -843,10 +844,12 @@
 <script>
 
 import SuggestionElement from "@/components/app/suggestions/SuggestionElement";
+import AlgorithmExecution from "@/components/app/dialogs/AlgorithmExecution";
 
 export default {
 
   components: {
+    AlgorithmExecution,
     SuggestionElement,
   },
 
@@ -917,7 +920,8 @@ export default {
       filterNodeModel: null,
       loading: true,
       nodeTabLoading: false,
-      selectionColor: {show: false, name: "", color: {}}
+      selectionColor: {show: false, name: "", color: {}},
+      algorithmDialogParams:{type:undefined, nodeType:undefined, nodes: []}
     }
   },
 
@@ -1680,6 +1684,9 @@ export default {
     selectDependentNodes: function (type, edges) {
       this.setDependentNodeSelection(type, edges, true)
     },
+    newJobEvent: function(data){
+      this.$emit('newJobEvent',data);
+    },
 
     setDependentNodeSelection: function (type, edges, state) {
       let nodes = this.$utils.getNodesExtended(this.configuration.entityGraph, type)
@@ -1977,31 +1984,21 @@ export default {
     getColoring: function (entity, name, style) {
       return this.$utils.getColoring(this.$global.metagraph, entity, name, style)
     },
-    executeAlgorithm: function (algorithm, params) {
+    openAlgorithmDialogEvent: function (data) {
       this.filterNodeModel = null
-      let payload = {
-        userId: this.uid,
-        dbVersion: this.$global.metadata.repotrial.version,
-        graphId: this.gid,
-        algorithm: algorithm,
-        params: params
+      try {
+        this.algorithmDialogParams.nodes = (data.selection ? this.nodes[data.type].filter(n => n.selected ) : this.nodes[data.type])
+      }catch (e) {
+        this.printNotification("The selected node-type is not part of your current network!",2)
+        return;
       }
-      payload.selection = params.selection
-      payload.experimentalOnly = params.experimentalOnly
-      if (params.selection)
-        payload["nodes"] = this.nodes[params.type].filter(n => n.selected).map(n => n.id)
-      if (algorithm === "diamond" || algorithm === "trustrank" || algorithm === "centrality" || algorithm === "must") {
-        if (this.configuration.countMap.nodes[params.type] === undefined || (params.selection && this.configuration.countMap.nodes[params.type].selected === 0)) {
-          this.printNotification("Cannot execute " + algorithm + " without seed nodes!", 1)
-          return;
-        }
+      if(this.algorithmDialogParams.nodes.length ===0){
+        this.printNotification("No nodes are selected by your current settings!",2)
+        return
       }
-      this.$http.post("/submitJob", payload).then(response => {
-        if (response.data !== undefined)
-          return response.data
-      }).then(data => {
-        this.$emit("addJobEvent", data)
-      }).catch(console.error)
+      this.algorithmDialogParams.nodeType=data.type;
+      this.algorithmDialogParams.type=data.algorithms;
+      this.$refs.algorithmDialog.show()
     },
     directionExtended: function (edge) {
       let e = Object.values(this.configuration.entityGraph.edges).filter(e => e.name === edge)[0];
