@@ -443,8 +443,11 @@ export default {
     }
     ,
     selectionColorSelect: function () {
+      if (!this.$refs.graph.isVisualized || !this.$refs.graph.graphExists()) {
+        this.printNotification("Graph must be visualized first!", 2)
+        return
+      }
       this.$refs.list.selectColor()
-      this.$refs.graph.visualize()
     }
     ,
     setTabId: function (tab, skipReroute) {

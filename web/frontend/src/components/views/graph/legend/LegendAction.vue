@@ -2,7 +2,7 @@
   <v-list-item-action>
     <v-tooltip bottom>
       <template v-slot:activator="{on,attrs}">
-        <v-btn icon :color="color"
+        <v-btn icon :color="color" :disabled="disabled"
                @click="$emit('click')" v-on="on" v-bind="attrs" style="height:14px; width:14px;">
           <v-icon size="14px">{{ icon }}</v-icon>
         </v-btn>
@@ -16,6 +16,10 @@
 export default {
   name: "LegendAction",
   props: {
+    disabled:{
+      default: false,
+      type: Boolean,
+    },
     color: String,
     tooltip: String,
     icon: String,

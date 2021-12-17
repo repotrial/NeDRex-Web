@@ -441,10 +441,12 @@
             <template v-if="attr.both>0 && attr.selected">
               <v-list-item :key="attr.name+'_addition'">
                 <v-divider vertical style="margin-right:15px; margin-left:15px"></v-divider>
-                <LabeledSwitch v-model="attr.induced" label-off="Extend by new nodes" label-on="Add induced edges only" style="margin-left: 5px">
+                <LabeledSwitch v-model="attr.induced" label-off="Extend by new nodes" label-on="Add induced edges only"
+                               style="margin-left: 5px">
                   <template v-slot:tooltip>
                     <div style="width: 300px">
-                      When <b>disabled</b> adds also new nodes to the network. When <b>enabled</b> only edges that can connect two already existing nodes will be added.
+                      When <b>disabled</b> adds also new nodes to the network. When <b>enabled</b> only edges that can
+                      connect two already existing nodes will be added.
                     </div>
                   </template>
                 </LabeledSwitch>
@@ -452,10 +454,12 @@
               <v-list-item v-if="attr.name==='DisorderHierarchy'">
                 <v-divider vertical style="margin-right:15px; margin-left:15px"></v-divider>
 
-                <LabeledSwitch v-model="attr.switch" label-off="Add children" label-on="Add parents" style="margin-left: 5px">
+                <LabeledSwitch v-model="attr.switch" label-off="Add children" label-on="Add parents"
+                               style="margin-left: 5px">
                   <template v-slot:tooltip>
                     <div style="width: 300px">
-                      When <b>disabled</b> all subtypes of the current disorders are added. When <b>enabled</b> the umbrella disorders are added.
+                      When <b>disabled</b> all subtypes of the current disorders are added. When <b>enabled</b> the
+                      umbrella disorders are added.
                     </div>
                   </template>
                 </LabeledSwitch>
@@ -489,75 +493,62 @@
       v-model="collapse.show"
       persistent
       max-width="500"
-      style="z-index: 1001"
+      style="z-index: 1001; max-height: 80vh"
     >
       <v-card v-if="collapse.show" ref="dialog">
         <v-card-title class="headline">
-          Edge Creation Configuration
+          Induced Edge Creation
         </v-card-title>
         <v-card-text>Select a node and one or two edges which should be used to create a new user-named edge.
         </v-card-text>
         <v-divider></v-divider>
-        <v-container>
-          <v-row>
-            <v-col>
-              <v-switch
-                v-model="collapse.self.selected"
-                :disabled="collapse.self.disabled"
-                @click="isDisabled()"
-                label="Allow Single Edge"
-              ></v-switch>
-            </v-col>
-          </v-row>
-          <v-divider></v-divider>
-          <v-row>
-            <v-col>
-              <v-list>
-                <v-list-item>
-                  <v-card-title>Nodes</v-card-title>
-                </v-list-item>
-                <template v-for="attr in collapse.nodes">
-                  <v-list-item :key="attr.name">
-                    <v-switch v-model="attr.selected" :disabled="attr.disabled" @click="isDisabled('nodes',attr.name)">
-                    </v-switch>
-                    <span>
-                <v-icon left :color="getColoring('nodes',attr.name,'light')">fas fa-genderless</v-icon>
+        <v-card-subtitle style="font-size: 16pt; margin-top:8px;"><i>General</i></v-card-subtitle>
+        <div style="width: 100%; display: flex; justify-content: center">
+          <LabeledSwitch v-model="collapse.self.selected" :disabled="collapse.self.disabled" @click="isDisabled()" label-on="Allow single edge" label-off="Use two edges">
+            <template v-slot:tooltip>
+              <div style="width: 300px">
+                If disabled, an induced edge using two distinct types of edges is allowed. If enabled, the only one edge will be necessary to select, which allows the creation of for example a Diseasome.
+              </div>
+            </template>
+          </LabeledSwitch>
+        </div>
+        <v-divider></v-divider>
+        <v-card-subtitle style="font-size: 16pt; margin-top:8px;"><i>Nodes</i></v-card-subtitle>
+            <v-list>
+              <template v-for="attr in collapse.nodes">
+                <v-list-item :key="attr.name">
+                  <v-switch v-model="attr.selected" :disabled="attr.disabled" @click="isDisabled('nodes',attr.name)">
+                  </v-switch>
+                  <span>
+                <v-icon :color="getColoring('nodes',attr.name,'light')">fas fa-genderless</v-icon>
                 {{ attr.name }}
               </span>
-                  </v-list-item>
-                </template>
-              </v-list>
-
-            </v-col>
-          </v-row>
-          <v-row>
-            <v-col>
-              <v-list>
-                <v-list-item>
-                  <v-card-title>Edges</v-card-title>
                 </v-list-item>
-                <template v-for="attr in collapse.edges">
-                  <v-list-item :key="attr.name">
-                    <v-switch v-model="attr.selected" :disabled="attr.disabled" @click="isDisabled('edges',attr.name)">
-                    </v-switch>
-                    <span>
-                    <v-icon left :color="getExtendedColoring('edges',attr.name,'light')[0]">fas fa-genderless</v-icon>
+              </template>
+            </v-list>
+<v-divider></v-divider>
+        <v-card-subtitle style="font-size: 16pt; margin-top:8px;"><i>Edges</i></v-card-subtitle>
+            <v-list>
+              <template v-for="attr in collapse.edges">
+                <v-list-item :key="attr.name">
+                  <v-switch v-model="attr.selected" :disabled="attr.disabled" @click="isDisabled('edges',attr.name)">
+                  </v-switch>
+                  <span>
+                    <v-icon :color="getExtendedColoring('edges',attr.name,'light')[0]">fas fa-genderless</v-icon>
                     <template v-if="directionExtended(attr.name)===0">
-                      <v-icon left>fas fa-undo-alt</v-icon>
+                      <v-icon>fas fa-undo-alt</v-icon>
                     </template>
                     <template v-else>
                       <v-icon>fas fa-long-arrow-alt-right</v-icon>
-                      <v-icon left :color="getExtendedColoring('edges',attr.name,'light')[1]">fas fa-genderless</v-icon>
+                      <v-icon :color="getExtendedColoring('edges',attr.name,'light')[1]">fas fa-genderless</v-icon>
                     </template>
                 {{ attr.name }}
               </span>
-                  </v-list-item>
-                </template>
-              </v-list>
-            </v-col>
-          </v-row>
-        </v-container>
+                </v-list-item>
+              </template>
+            </v-list>
         <v-divider></v-divider>
+        <v-card-subtitle style="font-size: 16pt; margin-top:8px;"><i>Name</i></v-card-subtitle>
         <div style="display: flex; justify-content: center">
           <v-text-field
             label="Edge Name"
@@ -629,14 +620,14 @@
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn
-            color="green darken-1"
+            color="error"
             text
             @click="collapseDialogResolve(false)"
           >
             Cancel
           </v-btn>
           <v-btn
-            color="green darken-1"
+            color="success"
             text
             :disabled="!collapse.accept"
             @click="collapseDialogResolve(true)"
@@ -664,8 +655,9 @@
         <v-divider></v-divider>
         <template v-if="Object.keys(options.type).length>0">
           <v-list>
-            <v-list-item v-for="attr in options.attributes" :key="attr.name" dense >
-              <v-switch v-model="attr.selected" dense :label="attr.label" :disabled="(attr.name === 'id')" style="margin-top: 0">
+            <v-list-item v-for="attr in options.attributes" :key="attr.name" dense>
+              <v-switch v-model="attr.selected" dense :label="attr.label" :disabled="(attr.name === 'id')"
+                        style="margin-top: 0">
               </v-switch>
             </v-list-item>
           </v-list>
@@ -699,27 +691,21 @@
       style="z-index: 1001"
     >
       <v-card v-if="selectionDialog.show && selectionDialog.type !== undefined">
-        <v-list>
-          <v-list-item>
-            <v-list-item-title class="text-h4">
-              Select induced network
-            </v-list-item-title>
-          </v-list-item>
-          <v-list-item>
-            <v-card-text>Extend your selection based on already selected nodes. Make sure to select the "extend" option
-              to not only select edges but also nodes that are directly reachable.
-            </v-card-text>
-          </v-list-item>
-        </v-list>
-        <v-card-subtitle>Nodes</v-card-subtitle>
+        <v-card-title style="margin-bottom: 16px">
+          Select induced network
+        </v-card-title>
+        <v-card-subtitle>Extend your selection based on already selected nodes. Make sure to select the "extend" option
+          to not only select edges but also nodes that are directly reachable.
+        </v-card-subtitle>
         <v-divider></v-divider>
+        <v-card-subtitle style="font-size: 16pt; margin-top:8px;"><i>Nodes</i></v-card-subtitle>
         <v-tabs-items>
           <v-list>
             <template v-for="attr in selectionDialog.seeds">
               <v-list-item :key="attr.name">
                 <v-switch v-model="attr.select" :disabled="attr.disabled"></v-switch>
                 <span>
-                <v-icon left :color="getColoring('nodes',attr.name,'light')">fas fa-genderless</v-icon>
+                <v-icon :color="getColoring('nodes',attr.name,'light')">fas fa-genderless</v-icon>
                 {{ attr.name }} ({{ countSelected('nodes', attr.name) }})
               </span>
               </v-list-item>
@@ -728,8 +714,8 @@
           </v-list>
         </v-tabs-items>
 
-        <v-card-subtitle>Edges</v-card-subtitle>
         <v-divider></v-divider>
+        <v-card-subtitle style="font-size: 16pt; margin-top:8px"><i>Edges</i></v-card-subtitle>
         <v-tabs-items>
           <v-list>
             <template v-for="attr in selectionDialog.targets">
@@ -737,13 +723,13 @@
                 <v-switch v-model="attr.select" :disabled="attr.disabled">
                 </v-switch>
                 <span>
-                <v-icon left :color="getExtendedColoring('edges',attr.name,'light')[0]">fas fa-genderless</v-icon>
+                <v-icon :color="getExtendedColoring('edges',attr.name,'light')[0]">fas fa-genderless</v-icon>
                     <template v-if="directionExtended(attr.name)===0">
-                      <v-icon left>fas fa-undo-alt</v-icon>
+                      <v-icon>fas fa-undo-alt</v-icon>
                     </template>
                     <template v-else>
                       <v-icon>fas fa-long-arrow-alt-right</v-icon>
-                      <v-icon left :color="getExtendedColoring('edges',attr.name,'light')[1]">fas fa-genderless</v-icon>
+                      <v-icon :color="getExtendedColoring('edges',attr.name,'light')[1]">fas fa-genderless</v-icon>
                     </template>
                 {{ attr.name }} ({{ countSelected('edges', attr.name) }})
               </span>
@@ -751,8 +737,8 @@
             </template>
           </v-list>
         </v-tabs-items>
-
-        <v-card-subtitle>Options</v-card-subtitle>
+        <v-divider></v-divider>
+        <v-card-subtitle style="font-size: 16pt; margin-top:8px;"><i>Options</i></v-card-subtitle>
         <v-container>
           <v-row>
             <v-col v-show="selectionDialog.type === 'nodes'">
@@ -798,7 +784,8 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-    <AlgorithmExecution ref="algorithmDialog" @newJobEvent="newJobEvent" :node-type="algorithmDialogParams.nodeType" :type="algorithmDialogParams.type" :nodes="algorithmDialogParams.nodes"></AlgorithmExecution>
+    <AlgorithmExecution ref="algorithmDialog" @newJobEvent="newJobEvent" :node-type="algorithmDialogParams.nodeType"
+                        :type="algorithmDialogParams.type" :nodes="algorithmDialogParams.nodes"></AlgorithmExecution>
     <v-dialog
       v-model="selectionColor.show"
       persistent
@@ -830,15 +817,13 @@
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn
-            color="green darken-1"
-            text
+            color="error"
             @click="resolveRecoloring(false)"
           >
             Cancel
           </v-btn>
           <v-btn
-            color="green darken-1"
-            text
+            color="success"
             @click="resolveRecoloring(true,selectionColor.name, selectionColor.color.hex)"
             :disabled="selectionColor.name==null ||selectionColor.name.length===0"
           >
@@ -932,7 +917,7 @@ export default {
       loading: true,
       nodeTabLoading: false,
       selectionColor: {show: false, name: "", color: {}},
-      algorithmDialogParams:{type:undefined, nodeType:undefined, nodes: []}
+      algorithmDialogParams: {type: undefined, nodeType: undefined, nodes: []}
     }
   },
 
@@ -1353,7 +1338,7 @@ export default {
       let comparison = this.attributes[this.options.type];
 
       let reloadNeeded = [];
-      let name = this.options.type ==="nodes" ? Object.keys(this.nodes)[this.nodeTab]  : Object.keys(this.edges)[this.edgeTab]
+      let name = this.options.type === "nodes" ? Object.keys(this.nodes)[this.nodeTab] : Object.keys(this.edges)[this.edgeTab]
       for (let attrIndex in this.options.attributes) {
         if (this.options.attributes[attrIndex].selected && !comparison[name][attrIndex].sent) {
           reloadNeeded.push(name)
@@ -1539,7 +1524,7 @@ export default {
       this.filterNodeModel = null
       let selectionIds = []
       Object.keys(this.nodes).forEach(name => this.nodes[name].filter(n => n.selected).forEach(n => selectionIds.push({id: name.substring(0, 3) + "_" + n.id})))
-      this.$emit("recolorGraphEvent", {ids: selectionIds, color: color, name: name})
+      this.$emit("recolorGraphEvent", {ids: selectionIds, color: color, name: name, total: selectionIds.length})
     },
     printNotification: function (message, type) {
       this.$emit("printNotificationEvent", message, type)
@@ -1695,8 +1680,8 @@ export default {
     selectDependentNodes: function (type, edges) {
       this.setDependentNodeSelection(type, edges, true)
     },
-    newJobEvent: function(data){
-      this.$emit('newJobEvent',data);
+    newJobEvent: function (data) {
+      this.$emit('newJobEvent', data);
     },
 
     setDependentNodeSelection: function (type, edges, state) {
@@ -1998,17 +1983,17 @@ export default {
     openAlgorithmDialogEvent: function (data) {
       this.filterNodeModel = null
       try {
-        this.algorithmDialogParams.nodes = (data.selection ? this.nodes[data.type].filter(n => n.selected ) : this.nodes[data.type])
-      }catch (e) {
-        this.printNotification("The selected node-type is not part of your current network!",2)
+        this.algorithmDialogParams.nodes = (data.selection ? this.nodes[data.type].filter(n => n.selected) : this.nodes[data.type])
+      } catch (e) {
+        this.printNotification("The selected node-type is not part of your current network!", 2)
         return;
       }
-      if(this.algorithmDialogParams.nodes.length ===0){
-        this.printNotification("No nodes are selected by your current settings!",2)
+      if (this.algorithmDialogParams.nodes.length === 0) {
+        this.printNotification("No nodes are selected by your current settings!", 2)
         return
       }
-      this.algorithmDialogParams.nodeType=data.type;
-      this.algorithmDialogParams.type=data.algorithms;
+      this.algorithmDialogParams.nodeType = data.type;
+      this.algorithmDialogParams.type = data.algorithms;
       this.$refs.algorithmDialog.show()
     },
     directionExtended: function (edge) {

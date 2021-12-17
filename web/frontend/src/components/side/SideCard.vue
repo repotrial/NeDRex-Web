@@ -79,40 +79,59 @@
               </v-list-item-avatar>
               <v-list-item-subtitle>{{ name }}</v-list-item-subtitle>
               <v-list-item-subtitle style="min-width: 3rem; max-width: 4.5rem">{{
-                  options.list.countMap.nodes[name] != null ? options.list.countMap.edges[name].selected : 0
+                  options.list.countMap.edges[name] != null ? options.list.countMap.edges[name].selected : 0
                 }}/{{ count }}
               </v-list-item-subtitle>
             </v-list-item>
-            <v-chip
-              outlined
-              icon
-              style="margin:8px"
-              @click="requestGraphDownload"
-            >
-              <v-icon
-                left
-                small
-                color="primary"
-              >
-                far fa-arrow-alt-circle-down
-              </v-icon>
-              Download
-            </v-chip>
-            <v-chip
-              outlined
-              icon
-              style="margin:8px"
-              @click="copyLink(); printNotification('Copied graph link to clipboard!',1)"
-            >
-              <v-icon
-                left
-                small
-                color="primary"
-              >
-                far fa-copy
-              </v-icon>
-              Copy URL
-            </v-chip>
+            <v-tooltip top>
+              <template v-slot:activator="{attrs, on}">
+                <v-chip
+                  outlined
+                  icon
+                  v-on="on"
+                  v-bind="attrs"
+                  style="margin:8px"
+                  @click="requestGraphDownload"
+                >
+                  <v-icon
+                    left
+                    small
+                    color="primary"
+                  >
+                    far fa-arrow-alt-circle-down
+                  </v-icon>
+                  Download
+                </v-chip>
+              </template>
+              <div style="width: 250px">Download a .graphml file containing the current network with all available
+                attributes.
+              </div>
+            </v-tooltip>
+            <v-tooltip top>
+              <template v-slot:activator="{attrs, on}">
+                <v-chip
+                  v-on="on"
+                  v-bind="attrs"
+                  outlined
+                  icon
+                  style="margin:8px"
+                  @click="copyLink(); printNotification('Copied graph link to clipboard!',1)"
+                >
+                  <v-icon
+                    left
+                    small
+                    color="primary"
+                  >
+                    far fa-copy
+                  </v-icon>
+                  Copy URL
+                </v-chip>
+              </template>
+              <div style="width: 250px">
+                Copies the unique link of this network to your clipboard to save it to some document or to share it with
+                others.
+              </div>
+            </v-tooltip>
           </v-list>
         </template>
       </v-card>
@@ -139,12 +158,15 @@
                       @click="$emit('historyReloadEvent')"></v-switch>
           </div>
           <div>
-<!--            <div style="width: 100%; display: flex; justify-content: center">-->
-<!--              <v-switch v-model="options.history.otherUsers" :disabled="!chronological" dense label="Show parent graphs of other users"-->
-<!--                        @click="$emit('historyReloadEvent')"></v-switch>-->
-<!--            </div>-->
+            <!--            <div style="width: 100%; display: flex; justify-content: center">-->
+            <!--              <v-switch v-model="options.history.otherUsers" :disabled="!chronological" dense label="Show parent graphs of other users"-->
+            <!--                        @click="$emit('historyReloadEvent')"></v-switch>-->
+            <!--            </div>-->
             <div style="width: 100%; display: flex; justify-content: center">
-              <v-chip outlined style="margin:8px" :disabled="!chronological" @click="$emit('reverseSortingEvent')"><v-icon small left color="primary">fas fa-sort</v-icon>Reverse Sorting</v-chip>
+              <v-chip outlined style="margin:8px" :disabled="!chronological" @click="$emit('reverseSortingEvent')">
+                <v-icon small left color="primary">fas fa-sort</v-icon>
+                Reverse Sorting
+              </v-chip>
             </div>
           </div>
         </template>
@@ -160,7 +182,7 @@
         <div v-if="show.selectionTools">
           <v-divider></v-divider>
           <v-card-subtitle style="font-size: 14pt"><i>General</i></v-card-subtitle>
-          <v-tooltip left>
+          <v-tooltip top>
             <template v-slot:activator="{attrs, on}">
               <div v-on="on"
                    v-bind="attrs" style="width: 100%; display: flex; justify-content: center">
@@ -179,7 +201,7 @@
               Switch between looking all or only the nodes and edges that are in the current selection.
             </div>
           </v-tooltip>
-          <v-tooltip left>
+          <v-tooltip top>
             <template v-slot:activator="{attrs, on}">
               <v-chip
                 style="margin:8px"
@@ -196,7 +218,7 @@
               Resets the selection of nodes and edges
             </div>
           </v-tooltip>
-          <v-tooltip left>
+          <v-tooltip top>
             <template v-slot:activator="{attrs, on}">
               <v-chip
                 style="margin:8px"
@@ -216,53 +238,100 @@
           </v-tooltip>
           <v-divider style="margin-left: 16px; margin-right: 16px"></v-divider>
           <v-card-subtitle style="font-size: 14pt"><i>Nodes</i></v-card-subtitle>
-          <v-chip
-            style="margin:8px"
-            icon
-            outlined
-            v-on:click="$emit('selectionEvent','nodes','all')"
-          >
-            <v-icon left small color="primary">fas fa-check-double</v-icon>
-            Select All Nodes
-          </v-chip>
-          <v-chip
-            style="margin:8px"
-            icon
-            outlined
-            v-on:click="$emit('selectionEvent','nodes','induced')"
-          >
-            <v-icon small color="primary" left>fas fa-check</v-icon>
-            Select Induced
-          </v-chip>
-          <v-chip
-            style="margin:8px"
-            icon
-            outlined
-            v-on:click="$emit('selectionEvent','nodes','none')"
-          >
-            <v-icon left small color="error">fas fa-ban</v-icon>
-            Unselect All Nodes
-          </v-chip>
+          <v-tooltip top>
+            <template v-slot:activator="{attrs, on}">
+              <v-chip
+                style="margin:8px"
+                icon
+                v-bind="attrs"
+                v-on="on"
+                outlined
+                v-on:click="$emit('selectionEvent','nodes','all')"
+              >
+                <v-icon left small color="primary">fas fa-check-double</v-icon>
+                Select All Nodes
+              </v-chip>
+            </template>
+            <div style="width:250px">
+              Adds all nodes in the current node table to the selection.
+            </div>
+          </v-tooltip>
+          <v-tooltip top>
+            <template v-slot:activator="{attrs, on}">
+              <v-chip
+                v-bind="attrs"
+                v-on="on"
+                style="margin:8px"
+                icon
+                outlined
+                v-on:click="$emit('selectionEvent','nodes','induced')"
+              >
+                <v-icon small color="primary" left>fas fa-check</v-icon>
+                Add Connected
+              </v-chip>
+            </template>
+            <div style="width:250px">
+              Select edges connecting selected nodes or also other nodes based on their connection to already selected
+              ones.
+            </div>
+          </v-tooltip>
+          <v-tooltip top>
+            <template v-slot:activator="{attrs, on}">
+              <v-chip
+                style="margin:8px"
+                v-on="on"
+                v-bind="attrs"
+                icon
+                outlined
+                v-on:click="$emit('selectionEvent','nodes','none')"
+              >
+                <v-icon left small color="error">fas fa-ban</v-icon>
+                Unselect All Nodes
+              </v-chip>
+            </template>
+            <div style="width:250px">
+              Remove all nodes of the currently selected table from the selection!
+            </div>
+          </v-tooltip>
           <v-divider style="margin-left: 16px; margin-right: 16px"></v-divider>
           <v-card-subtitle style="font-size: 14pt"><i>Edges</i></v-card-subtitle>
-          <v-chip
-            style="margin:8px"
-            icon
-            outlined
-            v-on:click="$emit('selectionEvent','edges','all')"
-          >
-            <v-icon left small color="primary">fas fa-check-double</v-icon>
-            Select All Edges
-          </v-chip>
-          <v-chip
-            style="margin:8px"
-            icon
-            outlined
-            v-on:click="$emit('selectionEvent','edges','none')"
-          >
-            <v-icon left small color="error">fas fa-ban</v-icon>
-            Unselect All Edges
-          </v-chip>
+          <v-tooltip top>
+            <template v-slot:activator="{attrs, on}">
+              <v-chip
+                style="margin:8px"
+                v-on="on"
+                v-bind="attrs"
+                icon
+                outlined
+                v-on:click="$emit('selectionEvent','edges','all')"
+              >
+                <v-icon left small color="primary">fas fa-check-double</v-icon>
+                Select All Edges
+              </v-chip>
+            </template>
+            <div style="width:250px">
+              Adds all edges in the current edge table to the selection as well as nodes connected by these edges.
+            </div>
+
+          </v-tooltip>
+          <v-tooltip top>
+            <template v-slot:activator="{attrs, on}">
+              <v-chip
+                style="margin:8px"
+                v-on="on"
+                v-bind="attrs"
+                icon
+                outlined
+                v-on:click="$emit('selectionEvent','edges','none')"
+              >
+                <v-icon left small color="error">fas fa-ban</v-icon>
+                Unselect All Edges
+              </v-chip>
+            </template>
+            <div style="width:250px">
+              Remove all edges of the currently selected table from the selection!
+            </div>
+          </v-tooltip>
         </div>
       </v-card>
 
@@ -277,33 +346,66 @@
         <v-divider></v-divider>
 
         <div v-show="show.modify">
-          <v-chip
-            v-on:click="$emit('graphModificationEvent','extend')"
-            class="pa-3"
-            outlined
-            style="margin:8px"
-          >
-            <v-icon left small color="success">fas fa-plus-circle</v-icon>
-            Extend Network
-          </v-chip>
-          <v-chip
-            v-on:click="$emit('graphModificationEvent','collapse')"
-            class="pa-3"
-            outlined
-            style="margin:8px"
-          >
-            <v-icon left small color="success">fas fa-compress-alt</v-icon>
-            Infer new edge
-          </v-chip>
-          <v-chip
-            v-on:click="$emit('colorSelectionEvent')"
-            class="pa-3"
-            outlined
-            style="margin:8px"
-          >
-            <v-icon left small color="primary">fas fa-palette</v-icon>
-            New group from selection
-          </v-chip>
+          <v-tooltip top>
+            <template v-slot:activator="{attrs, on}">
+              <v-chip
+                v-on="on"
+                v-bind="attrs"
+                v-on:click="$emit('graphModificationEvent','extend')"
+                class="pa-3"
+                outlined
+                style="margin:8px"
+              >
+                <v-icon left small color="success">fas fa-plus-circle</v-icon>
+                Extend Network
+              </v-chip>
+            </template>
+            <div style="width: 250px">
+              Add edges to the current network to either explore how the current nodes are interconnected or to add
+              additional nodes to the network. This will create a new network which will be listed as a child of the
+              current network on the history page.
+            </div>
+          </v-tooltip>
+          <v-tooltip top>
+            <template v-slot:activator="{attrs, on}">
+              <v-chip
+                v-on="on"
+                v-bind="attrs"
+                v-on:click="$emit('graphModificationEvent','collapse')"
+                class="pa-3"
+                outlined
+                style="margin:8px"
+              >
+                <v-icon left small color="success">fas fa-compress-alt</v-icon>
+                Infer new edge
+              </v-chip>
+            </template>
+            <div style="width: 250px">
+              Create a new, custom edge based on a path of length two in your current network (e.g. Diseasome). This
+              will create a new network which will be listed as a child of the
+              current network on the history page.
+            </div>
+          </v-tooltip>
+          <v-tooltip top>
+            <template v-slot:activator="{attrs, on}">
+              <v-chip
+                v-on="on"
+                v-bind="attrs"
+                v-on:click="$emit('colorSelectionEvent')"
+                class="pa-3"
+                outlined
+                style="margin:8px"
+              >
+                <v-icon left small color="primary">fas fa-palette</v-icon>
+                New group from selection
+              </v-chip>
+            </template>
+            <div style="width: 250px">
+              Create a new temporary node group based on the currently selected nodes. This will add an entry to the
+              legend in the graph view and color all selected nodes in a distinct color which helps with visual
+              separation.
+            </div>
+          </v-tooltip>
         </div>
       </v-card>
 
@@ -413,7 +515,7 @@ export default {
       gid: undefined,
       graphInfo: undefined,
       summaryTitleEdit: false,
-      chronological:false,
+      chronological: false,
       show: {
         selectionTools: true,
         options: true,
