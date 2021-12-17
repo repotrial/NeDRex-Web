@@ -226,7 +226,7 @@
     <v-bottom-sheet inset v-model="showBugInfo" width="30vw" :overlay-color="colors.main.bg1" style="z-index: 1001">
       <BugSheet :color="colors.main.bg1"></BugSheet>
     </v-bottom-sheet>
-    <v-bottom-sheet inset v-model="showHelp" width="30vw" :overlay-color="colors.main.bg1" style="z-index: 1001">
+    <v-bottom-sheet inset v-model="showHelp" width="35vw" :overlay-color="colors.main.bg1" style="z-index: 1001">
       <HelpSheet :color="colors.main.bg1"></HelpSheet>
     </v-bottom-sheet>
     <v-bottom-sheet inset v-model="showVersionInfo" width="60vw" :overlay-color="colors.main.bg1"
