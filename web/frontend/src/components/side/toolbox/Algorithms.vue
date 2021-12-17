@@ -24,14 +24,14 @@
           </template>
         </LabeledSwitch>
         <div>
-          <v-btn style="margin: 8px" small outlined :disabled="nodeModel==null" color="primary"
+          <v-chip style="margin: 8px" outlined :disabled="nodeModel==null"
                  @click="$emit('openAlgorithmDialogEvent',{selection:selectionSwitch, type:['gene','protein'][nodeModel], algorithms:'mi'})">
-            Module Identification
-          </v-btn>
-          <v-btn style="margin: 8px" small outlined :disabled="nodeModel==null" color="primary"
+            <v-icon left small color="primary">fas fa-cog</v-icon>Module Identification
+          </v-chip>
+          <v-chip style="margin: 8px" outlined :disabled="nodeModel==null"
                  @click="$emit('openAlgorithmDialogEvent',{selection:selectionSwitch, type:['gene','protein'][nodeModel], algorithms:'dp'})">
-            Drug Ranking
-          </v-btn>
+            <v-icon left small color="primary">fas fa-cog</v-icon>Drug Ranking
+          </v-chip>
         </div>
       </div>
     </div>

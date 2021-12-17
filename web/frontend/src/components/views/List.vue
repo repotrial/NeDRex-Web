@@ -427,13 +427,13 @@
             <v-list-item :key="attr.name">
               <v-switch v-model="attr.selected" :disabled="attr.disabled"></v-switch>
               <span>
-                <v-icon left :color="getColoring('edges',attr.name,'light')[0]">fas fa-genderless</v-icon>
+                <v-icon :color="getColoring('edges',attr.name,'light')[0]">fas fa-genderless</v-icon>
                     <template v-if="direction(attr.name)===0">
-                      <v-icon left>fas fa-undo-alt</v-icon>
+                      <v-icon>fas fa-undo-alt</v-icon>
                     </template>
                     <template v-else>
                       <v-icon>fas fa-long-arrow-alt-right</v-icon>
-                      <v-icon left :color="getColoring('edges',attr.name,'light')[1]">fas fa-genderless</v-icon>
+                      <v-icon :color="getColoring('edges',attr.name,'light')[1]">fas fa-genderless</v-icon>
                     </template>
                 {{ attr.name }}
               </span>
@@ -441,15 +441,24 @@
             <template v-if="attr.both>0 && attr.selected">
               <v-list-item :key="attr.name+'_addition'">
                 <v-divider vertical style="margin-right:15px; margin-left:15px"></v-divider>
-                <span>Extend by new nodes</span>
-                <v-switch v-model="attr.induced" style="margin-left:5px"></v-switch>
-                <span>Add induced edges only</span>
+                <LabeledSwitch v-model="attr.induced" label-off="Extend by new nodes" label-on="Add induced edges only" style="margin-left: 5px">
+                  <template v-slot:tooltip>
+                    <div style="width: 300px">
+                      When <b>disabled</b> adds also new nodes to the network. When <b>enabled</b> only edges that can connect two already existing nodes will be added.
+                    </div>
+                  </template>
+                </LabeledSwitch>
               </v-list-item>
               <v-list-item v-if="attr.name==='DisorderHierarchy'">
                 <v-divider vertical style="margin-right:15px; margin-left:15px"></v-divider>
-                <span>Add children</span>
-                <v-switch v-model="attr.switch" style="margin-left:5px"></v-switch>
-                <span>Add parents</span>
+
+                <LabeledSwitch v-model="attr.switch" label-off="Add children" label-on="Add parents" style="margin-left: 5px">
+                  <template v-slot:tooltip>
+                    <div style="width: 300px">
+                      When <b>disabled</b> all subtypes of the current disorders are added. When <b>enabled</b> the umbrella disorders are added.
+                    </div>
+                  </template>
+                </LabeledSwitch>
               </v-list-item>
             </template>
           </template>
@@ -845,10 +854,12 @@
 
 import SuggestionElement from "@/components/app/suggestions/SuggestionElement";
 import AlgorithmExecution from "@/components/app/dialogs/AlgorithmExecution";
+import LabeledSwitch from "@/components/app/input/LabeledSwitch";
 
 export default {
 
   components: {
+    LabeledSwitch,
     AlgorithmExecution,
     SuggestionElement,
   },

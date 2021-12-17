@@ -7,19 +7,16 @@
       </v-list-item-title>
     </v-list-item>
     <v-divider></v-divider>
-    <v-container v-show="show">
-      <v-row>
-        <v-col cols="6">
-          <v-switch label="Selection Mode" v-model="options.selectMode"
-                    @click="$emit('selectModeEvent',options.selectMode)"></v-switch>
-        </v-col>
-        <v-col cols="6" style="margin-top:15px">
-          <v-chip outlined color="green" @click="applySelection">
-            Apply selection
-            <v-icon right>fas fa-chevron-right</v-icon>
-          </v-chip>
-        </v-col>
-      </v-row>
+    <div v-show="show">
+      <div style="display: flex; justify-content: center">
+        <v-switch dense label="Selection Mode" v-model="options.selectMode"
+                  @click="$emit('selectModeEvent',options.selectMode)"></v-switch>
+      </div>
+      <div style="display: flex; justify-content: center">
+        <v-chip outlined @click="applySelection" style="margin: 8px">
+          <v-icon small left color="primary">fas fa-plus-circle</v-icon>Add to selection
+        </v-chip>
+      </div>
       <v-divider></v-divider>
       <v-container>
         <v-card-title>Current Manual Selection ({{ selection.length }})</v-card-title>
@@ -44,7 +41,7 @@
         </v-simple-table>
         <i v-else>no selection available</i>
       </v-container>
-    </v-container>
+    </div>
   </v-card>
 </template>
 

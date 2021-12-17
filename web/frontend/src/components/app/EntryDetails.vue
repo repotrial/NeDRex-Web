@@ -7,121 +7,125 @@
         indeterminate
       ></v-progress-linear>
     </template>
-
-    <v-chip outlined v-if="redirected" @click="redirect()">
-      <v-icon>fas fa-arrow-left</v-icon>
-    </v-chip>
-    <v-card-text>
-      <template class="text--primary" style="font-size: x-large" v-if="detailedObject.node">
-        <div class="text-h5">
-          <v-tooltip left>
-            <template v-slot:activator="{ on, attrs }">
-              <v-icon
-                left
-                :color="getColoring('nodes',detailedObject['Type'],'light')"
-                v-bind="attrs"
-                v-on="on"
-                :size="hover.node1?'45px':'35px'"
-                @mouseleave.native="hover.node1=false"
-                @mouseover.native="hover.node1=true"
-              >
-                > fas fa-genderless
-              </v-icon>
-            </template>
-            <span>{{ detailedObject['Type'] }}</span>
-          </v-tooltip>
-          {{ detailedObject['Name'] }}
-        </div>
-
-      </template>
-      <template class="text--primary" style="font-size: x-large" v-if="detailedObject.edge">
-        <div class="text-h5">
-          <v-tooltip left>
-            <template v-slot:activator="{ on, attrs }">
-              <v-icon
-                :color="getExtendedColoring('edges',detailedObject['Type'], 'light')[0]"
-                v-bind="attrs"
-                v-on="on"
-                :size="hover.node1?'45px':'35px'"
-                @mouseleave.native="hover.node1=false"
-                @mouseover.native="hover.node1=true"
-                @click="redirect( {edge:false,type:getExtendedNodeNames(detailedObject['Type'])[0],id:detailedObject['ID'].split('-')[0]},{type: 'edge', name:detailedObject['Type'],id:detailedObject['ID'].split('-')[0]})"
-              >
-                > fas fa-genderless
-              </v-icon>
-            </template>
-            <span>{{ getExtendedNodeNames(detailedObject['Type'])[0] }}</span>
-          </v-tooltip>
-          {{ detailedObject['Node1'] }}
-        </div>
-        <div>
-          <v-tooltip left>
-            <template v-slot:activator="{ on, attrs }">
-              <v-icon
-                v-bind="attrs"
-                v-on="on"
-                :size="hover.arrow?'45px':'35px'"
-                @mouseleave.native="hover.arrow=false"
-                @mouseover.native="hover.arrow=true">
-                {{ detailedObject.directed ? 'fas fa-long-arrow-alt-down' : 'fas fa-arrows-alt-v' }}
-              </v-icon>
-            </template>
-            <span>{{ detailedObject['Type'] }}</span>
-          </v-tooltip>
-        </div>
-        <div class="text-h5">
-          <v-tooltip left>
-            <template v-slot:activator="{ on, attrs }">
-              <v-icon
-                :color="getExtendedColoring('edges',detailedObject['Type'], 'light')[1]"
-                v-bind="attrs"
-                v-on="on"
-                :size="hover.node2?'45px':'35px'"
-                @mouseleave.native="hover.node2=false"
-                @mouseover.native="hover.node2=true"
-                @click="redirect( {edge:false,type:getExtendedNodeNames(detailedObject['Type'])[1],id:detailedObject['ID'].split('-')[1]},{type: 'edge', name:detailedObject['Type'],id:detailedObject['ID'].split('-')[1]})"
-              >
-                > fas fa-genderless
-              </v-icon>
-            </template>
-            <span>{{ getExtendedNodeNames(detailedObject['Type'])[1] }}</span>
-          </v-tooltip>
-          {{ detailedObject['Node2'] }}
-        </div>
-      </template>
-    </v-card-text>
-
-    <v-divider></v-divider>
-    <v-timeline align-top dense style="margin-left: -30px">
-      <v-timeline-item small :color="getDetailDotColor(item)"
-                       v-for="item in (attributes !=null && attributes.length >0 ? attributes :detailedObject.order)"
-                       :key="item">
-
-        <div><strong>{{ item }}</strong></div>
-        <div>
-          <v-list v-if="typeof detailedObject[item] === 'object'">
-            <div v-for="(i, index) in detailedObject[item]" :key="index">
-              <v-chip outlined v-if="getUrl(item,i).length>0" @click="openExternal(item,i)"
-                      :title="getExternalSource(item,i)" style="margin: 2px">
-                {{ format(item, i) }}
-                <v-icon right size="14px" :color="getExternalColor(item,i)">fas fa-external-link-alt
+    <template v-if="detailRequest!=null">
+      <v-chip outlined v-if="redirected" @click="redirect()">
+        <v-icon>fas fa-arrow-left</v-icon>
+      </v-chip>
+      <v-card-text>
+        <template class="text--primary" style="font-size: x-large" v-if="detailedObject.node">
+          <div class="text-h5">
+            <v-tooltip left>
+              <template v-slot:activator="{ on, attrs }">
+                <v-icon
+                  left
+                  :color="getColoring('nodes',detailedObject['Type'],'light')"
+                  v-bind="attrs"
+                  v-on="on"
+                  :size="hover.node1?'45px':'35px'"
+                  @mouseleave.native="hover.node1=false"
+                  @mouseover.native="hover.node1=true"
+                >
+                  > fas fa-genderless
                 </v-icon>
-              </v-chip>
-              <span v-else>{{ format(item, i) }}</span>
-            </div>
-          </v-list>
-          <v-chip outlined v-else-if="getUrl(item,detailedObject[item]).length>0"
-                  @click="openExternal(item,detailedObject[item])"
-                  :title="getExternalSource(item,detailedObject[item])">
-            {{ format(item, detailedObject[item]) }}
-            <v-icon right size="14px" :color="getExternalColor(item,detailedObject[item])">fas
-              fa-external-link-alt
-            </v-icon>
-          </v-chip>
-          <div v-else v-html="format(item, detailedObject[item])"></div>
-        </div>
-      </v-timeline-item>
-    </v-timeline>
+              </template>
+              <span>{{ detailedObject['Type'] }}</span>
+            </v-tooltip>
+            {{ detailedObject['Name'] }}
+          </div>
+
+        </template>
+        <template class="text--primary" style="font-size: x-large" v-if="detailedObject.edge">
+          <div class="text-h5">
+            <v-tooltip left>
+              <template v-slot:activator="{ on, attrs }">
+                <v-icon
+                  :color="getExtendedColoring('edges',detailedObject['Type'], 'light')[0]"
+                  v-bind="attrs"
+                  v-on="on"
+                  :size="hover.node1?'45px':'35px'"
+                  @mouseleave.native="hover.node1=false"
+                  @mouseover.native="hover.node1=true"
+                  @click="redirect( {edge:false,type:getExtendedNodeNames(detailedObject['Type'])[0],id:detailedObject['ID'].split('-')[0]},{type: 'edge', name:detailedObject['Type'],id:detailedObject['ID'].split('-')[0]})"
+                >
+                  > fas fa-genderless
+                </v-icon>
+              </template>
+              <span>{{ getExtendedNodeNames(detailedObject['Type'])[0] }}</span>
+            </v-tooltip>
+            {{ detailedObject['Node1'] }}
+          </div>
+          <div>
+            <v-tooltip left>
+              <template v-slot:activator="{ on, attrs }">
+                <v-icon
+                  v-bind="attrs"
+                  v-on="on"
+                  :size="hover.arrow?'45px':'35px'"
+                  @mouseleave.native="hover.arrow=false"
+                  @mouseover.native="hover.arrow=true">
+                  {{ detailedObject.directed ? 'fas fa-long-arrow-alt-down' : 'fas fa-arrows-alt-v' }}
+                </v-icon>
+              </template>
+              <span>{{ detailedObject['Type'] }}</span>
+            </v-tooltip>
+          </div>
+          <div class="text-h5">
+            <v-tooltip left>
+              <template v-slot:activator="{ on, attrs }">
+                <v-icon
+                  :color="getExtendedColoring('edges',detailedObject['Type'], 'light')[1]"
+                  v-bind="attrs"
+                  v-on="on"
+                  :size="hover.node2?'45px':'35px'"
+                  @mouseleave.native="hover.node2=false"
+                  @mouseover.native="hover.node2=true"
+                  @click="redirect( {edge:false,type:getExtendedNodeNames(detailedObject['Type'])[1],id:detailedObject['ID'].split('-')[1]},{type: 'edge', name:detailedObject['Type'],id:detailedObject['ID'].split('-')[1]})"
+                >
+                  > fas fa-genderless
+                </v-icon>
+              </template>
+              <span>{{ getExtendedNodeNames(detailedObject['Type'])[1] }}</span>
+            </v-tooltip>
+            {{ detailedObject['Node2'] }}
+          </div>
+        </template>
+      </v-card-text>
+
+      <v-divider></v-divider>
+      <v-timeline align-top dense style="margin-left: -30px">
+        <v-timeline-item small :color="getDetailDotColor(item)"
+                         v-for="item in (attributes !=null && attributes.length >0 ? attributes :detailedObject.order)"
+                         :key="item">
+
+          <div><strong>{{ item }}</strong></div>
+          <div>
+            <v-list v-if="typeof detailedObject[item] === 'object'">
+              <div v-for="(i, index) in detailedObject[item]" :key="index">
+                <v-chip outlined v-if="getUrl(item,i).length>0" @click="openExternal(item,i)"
+                        :title="getExternalSource(item,i)" style="margin: 2px">
+                  {{ format(item, i) }}
+                  <v-icon right size="14px" :color="getExternalColor(item,i)">fas fa-external-link-alt
+                  </v-icon>
+                </v-chip>
+                <span v-else>{{ format(item, i) }}</span>
+              </div>
+            </v-list>
+            <v-chip outlined v-else-if="getUrl(item,detailedObject[item]).length>0"
+                    @click="openExternal(item,detailedObject[item])"
+                    :title="getExternalSource(item,detailedObject[item])">
+              {{ format(item, detailedObject[item]) }}
+              <v-icon right size="14px" :color="getExternalColor(item,detailedObject[item])">fas
+                fa-external-link-alt
+              </v-icon>
+            </v-chip>
+            <div v-else v-html="format(item, detailedObject[item])"></div>
+          </div>
+        </v-timeline-item>
+      </v-timeline>
+    </template>
+    <div v-else>
+      <i>No node or edge selected!</i>
+    </div>
   </div>
 </template>
 
@@ -162,7 +166,7 @@ export default {
       if (item === "SourceIDs" || item === "SourceID" || item === "TargetID" || item === "TargetIDs" || item === "MemberOne" || item === "MemberTwo") {
         let split = value.split(".")
         switch (split[0]) {
-          case "entrez" | "drugbank" | "uniprot" | "reactome" | "mondo" | "ncit"| "mesh"| "doid"| "snomedct"| "omim"|"orpha"|"umls"|"meddra"|"medgen"|"drug_central":
+          case "entrez" | "drugbank" | "uniprot" | "reactome" | "mondo" | "ncit" | "mesh" | "doid" | "snomedct" | "omim" | "orpha" | "umls" | "meddra" | "medgen" | "drug_central":
             return split[1]
         }
       }
@@ -258,7 +262,7 @@ export default {
           case "medgen":
             return "https://www.ncbi.nlm.nih.gov/medgen/?term=" + split[1]
           case "drug_central":
-            return "https://drugcentral.org/drugcard/"+split[1]
+            return "https://drugcentral.org/drugcard/" + split[1]
 
         }
       }
@@ -424,7 +428,7 @@ export default {
       this.redirected = redirect != null && redirect
       if (!this.redirected)
         this.lastReq = detailRequest;
-      if(detailRequest==null)
+      if (detailRequest == null)
         return
       if (!detailRequest.edge) {
         return this.$http.get("getNodeDetails?name=" + detailRequest.type + "&id=" + detailRequest.id).then(response => {
@@ -457,10 +461,10 @@ export default {
 
     getDetailDotColor: function (attribute) {
       if (this.detailedObject.node)
-        return this.getColoring('nodes', this.detailedObject["Type"],"light");
+        return this.getColoring('nodes', this.detailedObject["Type"], "light");
       if (this.detailedObject.edge) {
         let basic = "#464e53";
-        let colors = this.getExtendedColoring('edges', this.detailedObject["Type"],"light");
+        let colors = this.getExtendedColoring('edges', this.detailedObject["Type"], "light");
         if (["Source", "Node1", "SourceDomainID", "SourceID", "SourceDomainIDs", "IDOne", "MemberOne"].indexOf(attribute) > -1)
           return colors[0]
         if (["Target", "Node2", "TargetDomainID", "TargetID", "TargetDomainIDs", "IDTwo", "MemberTwo"].indexOf(attribute) > -1)
@@ -469,7 +473,7 @@ export default {
       }
     },
 
-    getColoring: function (type, name,style) {
+    getColoring: function (type, name, style) {
       return this.$utils.getColoring(this.$global.metagraph, type, name, style)
     },
 

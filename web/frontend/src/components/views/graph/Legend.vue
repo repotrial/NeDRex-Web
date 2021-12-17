@@ -19,7 +19,7 @@
             <b>{{ isToggled('nodes', node.name) ? 'on' : 'off' }}</b><br>
           </template>
         </LegendAction>
-        <LegendAction icon="fas fa-thumbtack">
+        <LegendAction icon="fas fa-thumbtack" v-show="false">
           <template v-slot:tooltip>
             Fixating nodes for interaction simulation will be added in the future.
           </template>
