@@ -1455,6 +1455,7 @@ public class WebGraphService {
 
         List<Integer> ids = new LinkedList<>();
         file.forEach(id -> {
+            id=id.strip();
             try {
                 if (!id.contains("."))
                     id = DBConfig.getConfig().nodes.get(Graphs.getNode(type)).sourceId.toLowerCase() + "." + id;
