@@ -14,13 +14,20 @@ import java.util.*;
 public class Job {
 
 
-
     public enum JobState {
         INITIALIZED, QUEUED, EXECUTING, DONE, NOCHANGE, ERROR, TIMEOUT,LIMITED, WAITING
     }
 
+    public enum JobGoal{
+        MODULE_IDENTIFICATION,DRUG_PRIORITIZATION,DRUG_REPURPOSING
+    }
+
     @Id
     private String jobId;
+    private String parentJid;
+
+    @Enumerated(EnumType.ORDINAL)
+    private JobGoal goal;
 
     private String userId;
     private String basisGraph;
@@ -74,17 +81,18 @@ public class Job {
     }
 
     public Job(String id, JobRequest job) {
-        this(id, job.userId, job.graphId, job.algorithm, job.params.get("type"), job.dbVersion);
+        this(id, job.userId, job.graphId, job.algorithm, job.params.get("type"), job.dbVersion, job.goal);
 //        this.request=job;
     }
 
-    public Job(String jobId, String userId, String graphId, String algorithm, String target, String dbVersion) {
+    public Job(String jobId, String userId, String graphId, String algorithm, String target, String dbVersion, String goal) {
         this.userId = userId;
         this.basisGraph = graphId;
         this.jobId = jobId;
         this.method = ToolService.Tool.valueOf(algorithm.toUpperCase());
         this.target = target;
         this.dbVersion = dbVersion;
+        this.goal = JobGoal.valueOf(goal.toUpperCase());
         created = LocalDateTime.now();
     }
 
@@ -126,6 +134,15 @@ public class Job {
 //    }
 
 
+
+    public String getParentJid() {
+        return parentJid;
+    }
+
+    public void setParentJid(String jobId) {
+        this.parentJid=jobId;
+    }
+
     public String getExpressionData() {
         return expressionData;
     }
@@ -160,6 +177,12 @@ public class Job {
 
     public void setStarted() {
         this.started = LocalDateTime.now();
+    }
+
+
+
+    public JobGoal getGoal() {
+        return goal;
     }
 
     public LocalDateTime getStarted() {

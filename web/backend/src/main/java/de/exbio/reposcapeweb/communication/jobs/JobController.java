@@ -3,6 +3,7 @@ package de.exbio.reposcapeweb.communication.jobs;
 import de.exbio.reposcapeweb.communication.cache.Graph;
 import de.exbio.reposcapeweb.communication.cache.Graphs;
 import de.exbio.reposcapeweb.communication.controller.SocketController;
+import de.exbio.reposcapeweb.communication.reponses.JobResponse;
 import de.exbio.reposcapeweb.communication.reponses.WebGraphService;
 import de.exbio.reposcapeweb.db.history.HistoryController;
 import de.exbio.reposcapeweb.db.services.nodes.DrugService;
@@ -36,6 +37,8 @@ public class JobController {
     private final HistoryController historyController;
     private final JobCache jobCache;
 
+    private final HashMap<String, List<Pair<Job,JobRequest>>> jobWaitingForJobs = new HashMap<>();
+
     private HashMap<String, Job> jobs = new HashMap<>();
     private HashMap<String, LinkedList<String>> jobWaitingForResults = new HashMap<>();
     private Logger log = LoggerFactory.getLogger(JobController.class);
@@ -63,6 +66,9 @@ public class JobController {
             id = UUID.randomUUID().toString();
         Job j = new Job(id, req);
         jobs.put(id, j);
+        if(req.jobId!=null) {
+            j.setParentJid(req.jobId);
+        }
         return j;
     }
 
@@ -85,14 +91,24 @@ public class JobController {
         j.addParam("pcutoff", req.getParams().containsKey("pcutoff") ? Math.pow(10, Double.parseDouble(req.getParams().get("pcutoff"))) : 1);
         j.addParam("topX", req.getParams().containsKey("topX") ? Integer.parseInt(req.getParams().get("topX")) : Integer.MAX_VALUE);
         j.addParam("elements", req.getParams().containsKey("elements") && req.getParams().get("elements").startsWith("t"));
-        Graph g = graphService.getCachedGraph(req.graphId);
-        try {
-            prepareJob(j, req, g);
-        } catch (Exception e) {
-            log.error("Error on job submission");
-            j.setStatus(Job.JobState.ERROR);
-            e.printStackTrace();
-            return j;
+
+        if(req.jobId==null || getJobById(req.jobId).getState()== Job.JobState.DONE) {
+            if(req.jobId!=null)
+                req.graphId=getJobById(req.jobId).getDerivedGraph();
+            Graph g = graphService.getCachedGraph(req.graphId);
+            try {
+                prepareJob(j, req, g);
+            } catch (Exception e) {
+                log.error("Error on job submission");
+                j.setStatus(Job.JobState.ERROR);
+                e.printStackTrace();
+                return j;
+            }
+        }else{
+            j.setStatus(Job.JobState.WAITING);
+            if(!jobWaitingForJobs.containsKey(j.getParentJid()))
+                jobWaitingForJobs.put(j.getParentJid(),new LinkedList<>());
+            jobWaitingForJobs.get(j.getParentJid()).add(new Pair<>(j,req));
         }
         if (!j.getState().equals(Job.JobState.DONE) && !j.getState().equals(Job.JobState.WAITING))
             queue(j);
@@ -109,6 +125,7 @@ public class JobController {
     private void save(Job j) {
         jobRepository.save(j);
     }
+
 
     private void prepareJob(Job j, JobRequest req, Graph g) {
         if (g == null & req.selection) {
@@ -255,6 +272,26 @@ public class JobController {
         save(j);
         socketController.setJobUpdate(j);
         checkWaitingJobs(j);
+        if(jobWaitingForJobs.containsKey(j.getJobId())){
+            Graph g = graphService.getCachedGraph(j.getDerivedGraph());
+            jobWaitingForJobs.get(j.getJobId()).forEach(job->{
+                job.first.setBasisGraph(g.getId());
+                job.second.graphId=g.getId();
+                job.first.setStatus(Job.JobState.INITIALIZED);
+                try {
+                    prepareJob(job.first, job.second, g);
+                } catch (Exception e) {
+                    log.error("Error on job submission");
+                    job.first.setStatus(Job.JobState.ERROR);
+                    e.printStackTrace();
+                }
+                if (!job.first.getState().equals(Job.JobState.DONE) && !job.first.getState().equals(Job.JobState.WAITING))
+                    queue(job.first);
+                else
+                    jobRepository.save(job.first);
+            });
+            jobWaitingForJobs.remove(j.getJobId());
+        }
         return state;
     }
 
@@ -338,6 +375,15 @@ public class JobController {
 
     public Job getJobById(String jobid) {
         return this.jobs.get(jobid);
+    }
+
+    public JobResponse getJobResponse(String jobId) {
+        Job j = getJobById(jobId);
+        JobResponse jr = new JobResponse(j);
+        if(jr.parentJid!=null)
+            jr.parentGraph = getJobById(jr.parentJid).getBasisGraph();
+        graphService.recreateJobData(jr);
+        return jr;
     }
 
     public HashMap<String, String> getParams(String jobid) {

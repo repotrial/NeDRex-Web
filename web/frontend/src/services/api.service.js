@@ -62,6 +62,17 @@ const ApiService = {
     }).catch(console.error)
   },
 
+  getJobByGraph(gid){
+    return this.get("/getJobByGraph?gid="+gid).then(response=>{
+      return response.data
+    }).catch(console.error)
+  },
+  getJob(jid) {
+    return this.get("/getJob?id="+jid).then(response=>{
+      return response.data
+    }).catch(console.error)
+  },
+
   removeGraph(id) {
     this.get("/removeGraph?gid=" + id).catch(console.error)
   },
@@ -259,7 +270,8 @@ const ApiService = {
       if(response.data!=null)
         return response.data
     }).catch(console.error)
-  }
+  },
+
 }
 
 export default ApiService

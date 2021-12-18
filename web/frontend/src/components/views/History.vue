@@ -158,20 +158,20 @@
                 </v-timeline>
               </v-row>
               <v-row style="margin: 25px"></v-row>
-              <v-row style="margin: 25px" v-if="selected.jobid!=null">
-<!--                <v-chip outlined @click="loadJob(selected.jobid)">-->
-<!--                  Reload Result View-->
-<!--                  <v-icon right>far fa-eye</v-icon>-->
-<!--                </v-chip>-->
-                <v-chip outlined @click="downloadJob(selected.jobid)">
-                  {{ selected.method }} Results
-                  <v-icon right>fas fa-download</v-icon>
+<!--/*              <v-row style="margin: 25px" v-if="selected.jobid!=null">*/-->
+                <v-chip outlined @click="loadJob(selected.jobid)" >
+
+                  <v-icon left color="success" >far fa-eye</v-icon>Reload Result View
                 </v-chip>
-                <v-chip v-show="selected.params!=null" outlined style="margin-right: 7px"
-                        @click="showParams=!showParams">Chosen Parameters
-                  <v-icon right>{{ showParams ? 'fas fa-caret-up' : 'fas fa-caret-down' }}</v-icon>
+                <v-chip outlined @click="downloadJob(selected.jobid)" style="margin:8px">
+
+                  <v-icon left small color="primary">fas fa-download</v-icon>{{ selected.method }} Results
                 </v-chip>
-              </v-row>
+                <v-chip v-show="selected.params!=null" outlined style="margin: 8px"
+                        @click="showParams=!showParams">
+                  <v-icon left color="primary" >{{ showParams ? 'fas fa-caret-up' : 'fas fa-caret-down' }}</v-icon>Chosen Parameters
+                </v-chip>
+<!--              </v-row>-->
               <div v-if="selected.params" style="width: 100% ; display: flex; justify-content: center">
                 <div style="max-width: 300px">
                   <v-simple-table v-show="showParams">
@@ -550,7 +550,8 @@ export default {
     },
 
     loadJob: function(jobid){
-      this.$router.push({path: "/explore/quick/result/" + jobid})
+      this.$router.push({path: "/explore/quick/start?job=" + jobid})
+      this.$router.go()
     },
 
     reverseList: function () {

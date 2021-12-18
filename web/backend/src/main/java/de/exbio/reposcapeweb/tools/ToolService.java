@@ -170,7 +170,6 @@ public class ToolService {
     }
 
 
-
     public String createCommand(Job job, JobRequest request) {
         String command = "localhost:" + env.getProperty("server.port") + env.getProperty("server.servlet.context-path") + "/api/finishedJob?id=" + job.getJobId() + " " + getTempDir(job.getJobId()).getAbsolutePath() + " ";
         LinkedList<File> neededFiles = new LinkedList<>();
@@ -204,7 +203,7 @@ public class ToolService {
         try {
             ProcessBuilder pb = algorithms.get(algo).getExecutionEnvironment((executor.getAbsolutePath() + " " + command).split(" "));
 //            ProcessUtils.executeProcessWait(pb,true);
-          return ProcessUtils.executeProcess(pb);
+            return ProcessUtils.executeProcess(pb);
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
@@ -260,7 +259,7 @@ public class ToolService {
         }
     }
 
-    public void createLayoutAndThumbnail(File graphml, File layout, File thumb){
+    public void createLayoutAndThumbnail(File graphml, File layout, File thumb) {
         layout.getParentFile().mkdirs();
         try {
             ProcessUtils.executeProcessWait(new ProcessBuilder("python3", new File(scriptDir, "computeLayouting.py").getAbsolutePath(), graphml.getAbsolutePath(), "2", layout.getAbsolutePath(), thumb.getAbsolutePath(), DBConfig.getConfFile().getAbsolutePath()), false);
@@ -277,6 +276,7 @@ public class ToolService {
             e.printStackTrace();
         }
     }
+
     public void createTripartiteLayout(File graphml, File layout, File sources, File targets) {
         layout.getParentFile().mkdirs();
         try {
@@ -291,13 +291,11 @@ public class ToolService {
     }
 
 
-
     public void createIndexFiles() {
-        algorithms.values().forEach(algorithm ->{
+        algorithms.values().forEach(algorithm -> {
             algorithm.createIndex();
         });
     }
-
 
 
     public enum Tool {

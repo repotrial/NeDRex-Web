@@ -1455,7 +1455,7 @@ public class WebGraphService {
 
         List<Integer> ids = new LinkedList<>();
         file.forEach(id -> {
-            id=id.strip();
+            id = id.strip();
             try {
                 if (!id.contains("."))
                     id = DBConfig.getConfig().nodes.get(Graphs.getNode(type)).sourceId.toLowerCase() + "." + id;
@@ -2065,5 +2065,41 @@ public class WebGraphService {
 
         g.addEdges(edgeId, edges.stream().map(Edge::new).collect(Collectors.toList()));
         return g.toWebGraph(getColorMap(g.getNodes().keySet().stream().map(Graphs::getNode).collect(Collectors.toSet())), null);
+    }
+
+    public HashSet<Integer> getSeeds(String type, Object marks, Graph g) {
+        HashSet<Integer> targets = new HashSet<>((Collection<Integer>) marks);
+        return g.getNodes().get(Graphs.getNode(type)).keySet().stream().filter(n -> !targets.contains(n)).collect(Collectors.toCollection(HashSet::new));
+    }
+
+    public void recreateJobData(JobResponse jr) {
+        if (jr.derivedGraph != null) {
+            Graph g = getCachedGraph(jr.derivedGraph);
+            if (jr.goal == Job.JobGoal.DRUG_PRIORITIZATION) {
+                jr.seeds = new HashSet<>(g.getNodes().get(Graphs.getNode(jr.target)).keySet());
+            } else {
+                HashMap<String, HashMap<Integer, Object>> marks = g.getMarks();
+                if (marks.get("nodes") != null) {
+                    if (jr.goal == Job.JobGoal.MODULE_IDENTIFICATION | jr.goal == Job.JobGoal.DRUG_REPURPOSING) {
+                        jr.seeds = getSeeds(jr.target, marks.get("nodes").get(Graphs.getNode(jr.target)), g);
+                    }
+//                    if () {
+//                        Graph parent = getCachedGraph(jr.basisGraph);
+//                        String type = jr.target;
+//                        jr.seeds = getSeeds(type, parent.getMarks().get("nodes").get(Graphs.getNode(type)), parent);
+//                    }
+                }
+            }
+        } else if (jr.state != Job.JobState.DONE) {
+
+            if (jr.goal == Job.JobGoal.MODULE_IDENTIFICATION || jr.goal == Job.JobGoal.DRUG_PRIORITIZATION||(jr.goal == Job.JobGoal.DRUG_REPURPOSING && jr.basisGraph!=null)) {
+                Graph parent = getCachedGraph(jr.basisGraph);
+                jr.seeds = new HashSet<>(parent.getNodes().get(Graphs.getNode(jr.target)).keySet());
+            } else if (jr.goal == Job.JobGoal.DRUG_REPURPOSING) {
+                jr.type="mi";
+                if (getCachedGraph(jr.parentGraph) != null)
+                    jr.seeds = new HashSet<>(getCachedGraph(jr.parentGraph).getNodes().get(Graphs.getNode(jr.target)).keySet());
+            }
+        }
     }
 }

@@ -5,11 +5,11 @@
     :flat="flat"
   >
     <template v-if="header">
-    <v-card-subtitle class="headline">{{ step }}. Drug Prioritization Algorithm Selection</v-card-subtitle>
-    <v-card-subtitle style="margin-top: -25px">Select and adjust the algorithm you want to apply on your seeds
-      to identify a ranked list of drug candidates.
-    </v-card-subtitle>
-    <v-divider style="margin: 15px;"></v-divider>
+      <v-card-subtitle class="headline">{{ step }}. Drug Prioritization Algorithm Selection</v-card-subtitle>
+      <v-card-subtitle style="margin-top: -25px">Select and adjust the algorithm you want to apply on your seeds
+        to identify a ranked list of drug candidates.
+      </v-card-subtitle>
+      <v-divider style="margin: 15px;"></v-divider>
     </template>
     <v-container style="height: 80%; max-width: 100%">
       <v-row style="height: 100%">
@@ -207,12 +207,16 @@ export default {
       type: Boolean,
       default: false
     },
-    flat:{
+    flat: {
       default: false,
-      type:Boolean,
+      type: Boolean,
     },
-    header:{
-      type:Boolean,
+    goal: {
+      type: String,
+      default: "drug_prioritization",
+    },
+    header: {
+      type: Boolean,
       default: true
     }
   },
@@ -303,6 +307,7 @@ export default {
     },
 
     setMethod: async function (method, params) {
+      method = method.toLowerCase()
       let algos = this.methods.filter(m => m.group === this.groupModel)
       for (let i = 0; i < algos.length; i++) {
         if (algos[i].id === method) {
@@ -310,12 +315,14 @@ export default {
           break
         }
       }
-      let models = this.getAlgorithmModels()
-      Object.keys(models).forEach(key => {
-        if (params[key] != null) {
-          models[key] = params[key]
-        }
-      })
+      if (params) {
+        let models = this.getAlgorithmModels()
+        Object.keys(models).forEach(key => {
+          if (params[key] != null) {
+            models[key] = params[key]
+          }
+        })
+      }
     },
 
     getParams: async function () {
@@ -350,9 +357,39 @@ export default {
     },
 
     getHeaders: function () {
-      if (this.getAlgorithm() != null || this.getAlgorithm().scores != null)
+      if (this.getAlgorithm() != null && this.getAlgorithm().scores != null)
         return this.getAlgorithm().scores;
       return []
+    },
+    runLater: async function (jid) {
+      let params = await this.getParams();
+      let payload = {
+        userId: this.$cookies.get("uid"),
+        dbVersion: this.$global.metadata.repotrial.version,
+        algorithm: this.getAlgorithmMethod(),
+        goal: this.goal,
+        params: params
+      }
+
+      payload.experimentalOnly = params.experimentalOnly
+      if (this.seeds.length === 0 && jid == null) {
+        this.printNotification("Cannot execute " + this.getAlgorithm().label + " without seed nodes!", 1)
+        return;
+      }
+      payload.jobId = jid
+      let ctx = this
+
+      this.$http.post("/submitJob", payload).then(response => {
+        if (response.data !== undefined)
+          return response.data
+      }).then(data => {
+        if (data.state === "DONE") {
+          ctx.$emit("jobEvent", data, true)
+        } else {
+          this.$socket.subscribeJob(data.jid, this.socketEvent);
+          ctx.$emit("jobEvent", data)
+        }
+      }).catch(console.error)
     },
     run: async function (gid) {
       let params = await this.getParams();
@@ -360,6 +397,7 @@ export default {
         userId: this.$cookies.get("uid"),
         dbVersion: this.$global.metadata.repotrial.version,
         algorithm: this.getAlgorithmMethod(),
+        goal: this.goal,
         params: params
       }
 

@@ -79,7 +79,7 @@ public class Graph {
             log.info("Converting Graph " + id + " (nodes:" + nodeCount + ", edges:" + edgeCount + ") to webgraph: ");
             webgraph = new WebGraph(id);
             nodes.forEach((typeId, nodeMap) -> {
-                HashMap<Integer, Point2D> coords = layout !=null ? layout.get(typeId): null;
+                HashMap<Integer, Point2D> coords = layout != null ? layout.get(typeId) : null;
                 String prefix = Graphs.getPrefix(typeId);
                 String group = Graphs.getNode(typeId);
                 boolean adjustment = group.equals("protein");
@@ -115,6 +115,10 @@ public class Graph {
         getNodeFilters().forEach(g::saveNodeFilter);
         nodes.forEach((type, map) -> g.addNodes(type, map.values()));
         edges.forEach(g::addEdges);
+        if (this.marks.containsKey("nodes"))
+            this.marks.get("nodes").forEach((k, v) -> g.addNodeMarks(k, ((Collection<Integer>) v)));
+        if (this.marks.containsKey("edges"))
+            this.marks.get("edges").forEach((k, v) -> g.addEdgeMarks(k, ((HashMap<Integer, List<Integer>>) v)));
         customEdgeNodes.forEach((k, v) -> g.addCustomEdge(v.getFirst(), v.getSecond(), customEdges.get(k), new LinkedList<>()));
         g.setParent(this.id);
         getCustomEdgeAttributeTypes().forEach((eid, vals) -> g.addCustomEdgeAttributeTypes(eid, vals, this.customEdgeAttributeLabels.get(eid)));

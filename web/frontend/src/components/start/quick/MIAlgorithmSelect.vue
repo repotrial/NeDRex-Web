@@ -604,6 +604,10 @@ export default {
     seeds: Array,
     seedTypeId: Number,
     socketEvent: String,
+    goal:{
+      type: String,
+      default: "module_identification",
+    },
     flat:{
       default: false,
       type:Boolean,
@@ -754,6 +758,15 @@ export default {
       return undefined;
     },
 
+    setMethod: async function(method){
+      method = method.toLowerCase()
+      let m = this.methods.filter(m=>m.id===method)[0]
+      if(m.group === "nw")
+        await this.setNWMethod(method)
+      else
+        await this.setExpMethod(method)
+    },
+
     setNWMethod: async function (method, params) {
       this.groupModel = "nw"
       this.$nextTick(() => {
@@ -765,6 +778,7 @@ export default {
           }
         }
       })
+      if(params)
       this.$nextTick(() => {
         let models = this.getAlgorithmModels()
         Object.keys(models).forEach(key => {
@@ -773,7 +787,6 @@ export default {
         })
       })
     },
-
     setExpMethod: async function (method, params) {
       this.groupModel = "exp"
       this.$nextTick(() => {
@@ -785,7 +798,7 @@ export default {
           }
         }
       })
-      if (params != null)
+      if (params)
         this.$nextTick(() => {
           let models = this.getAlgorithmModels()
           Object.keys(models).forEach(key => {
@@ -882,6 +895,7 @@ export default {
         userId: this.$cookies.get("uid"),
         dbVersion: this.$global.metadata.repotrial.version,
         algorithm: this.getAlgorithmMethod(),
+        goal:this.goal,
         params: params
       }
       payload.selection = true

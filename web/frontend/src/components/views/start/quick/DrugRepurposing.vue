@@ -264,7 +264,7 @@
 
         <v-stepper-content step="2">
           <MIAlgorithmSelect ref="moduleAlgorithms" :blitz="blitz" :seeds="seeds" :seed-type-id="seedTypeId"
-                             socket-event="quickRepurposeModuleFinishedEvent"
+                             socket-event="quickRepurposeModuleFinishedEvent" goal="module_identification"
                              @algorithmSelectedEvent="acceptModuleAlgorithmSelectEvent"
                              @jobEvent="readModuleJob" @clearSeedsEvent="seeds = []"></MIAlgorithmSelect>
           <ButtonCancel @click="makeStep"></ButtonCancel>
@@ -276,7 +276,7 @@
 
         <v-stepper-content step="3">
           <DPAlgorithmSelect ref="rankingAlgorithms" :blitz="blitz" :step="3" :seeds="seeds" :seed-type-id="seedTypeId"
-                             socket-event="quickRepurposeRankingFinishedEvent"
+                             socket-event="quickRepurposeRankingFinishedEvent" goal="drug_repurposing"
                              @algorithmSelectedEvent="acceptRankingAlgorithmSelectEvent"
                              @jobEvent="readRankingJob"></DPAlgorithmSelect>
           <ButtonCancel @click="makeStep"></ButtonCancel>
@@ -304,7 +304,8 @@
                                          style="margin-left:15px; z-index:50">
                     </v-progress-circular>
                   </v-card-title>
-                  <v-data-table max-height="50vh" height="50vh" class="overflow-y-auto" fixed-header dense item-key="id"
+                  <v-data-table v-if="$refs.moduleAlgorithms && $refs.moduleAlgorithms.getAlgorithm()" max-height="50vh"
+                                height="50vh" class="overflow-y-auto" fixed-header dense item-key="id"
                                 :items="(!results.targets ||results.targets.length ===0) ?seeds : results.targets"
                                 :headers="getHeaders(0)"
                                 disable-pagination show-expand :single-expand="true"
@@ -410,7 +411,8 @@
                     </v-progress-circular>
                   </v-card-title>
                   <template v-if="results.drugs.length>=0">
-                    <v-data-table max-height="50vh" height="50vh" class="overflow-y-auto" fixed-header dense
+                    <v-data-table v-if="$refs.rankingAlgorithms" max-height="50vh" height="50vh" class="overflow-y-auto"
+                                  fixed-header dense
                                   item-key="id" show-expand :single-expand="true"
                                   :items="results.drugs"
                                   :headers="getHeaders(1)"
@@ -487,7 +489,7 @@
             </v-container>
           </v-card>
           <ButtonCancel @click="makeStep"></ButtonCancel>
-          <ButtonBack @click="makeStep"></ButtonBack>
+          <ButtonBack @click="makeStep" v-if="!reloaded"></ButtonBack>
           <ButtonNext @click="makeStep" label="VALIDATE" :disabled="rankingGid ==null"></ButtonNext>
           <ButtonAdvanced @click="$emit('graphLoadNewTabEvent',{post: {id: rankingGid}})" :disabled="rankingGid==null">
             Advanced >
@@ -604,6 +606,10 @@ export default {
   name: "CombinedRepurposing",
   props: {
     blitz: Boolean,
+    reload: {
+      default: undefined,
+      type: Object,
+    }
   },
 
   sugQuery: undefined,
@@ -648,6 +654,7 @@ export default {
       selectedSuggestions: [],
       namePopup: false,
       nameOptions: [],
+      reloaded: false,
       graphName: "",
       showVisOption: false,
       loadingTrialData: false,
@@ -659,8 +666,9 @@ export default {
     this.$socket.$on("quickRepurposeModuleFinishedEvent", this.convertModuleJob)
     this.$socket.$on("quickRepurposeRankingFinishedEvent", this.convertRankingJob)
     this.uid = this.$cookies.get("uid")
-    this.list
     this.init()
+    if (this.reload)
+      this.reloadJob(this.reload);
   },
   destroyed() {
     //TODO maybe add destroyed function to be save that all data is removed
@@ -681,6 +689,7 @@ export default {
       this.results.targets = []
       this.results.drugs = []
       this.seedOrigin = {}
+      this.reloaded = false
       if (this.$refs.graph)
         this.$refs.graph.reload()
       this.moduleJid = undefined
@@ -731,6 +740,12 @@ export default {
     },
     subtypePopup: function (item) {
       this.$refs.disorderHierarchy.loadDisorder(item.sid)
+    },
+    setURL: function (jid) {
+      let route = location.pathname + "?job=" + jid
+      if (location.origin + route !== location.href) {
+        this.$router.push(route)
+      }
     },
     makeStep: function (button) {
       if (button === "continue") {
@@ -819,13 +834,13 @@ export default {
       this.readRankingJob(data)
     },
     waitForModuleJob: function (resolve) {
-      if (this.moduleGid == null)
+      if (this.moduleJid == null)
         setTimeout(this.waitForModuleJob, 100, resolve)
       else
         resolve()
     },
-    showInteractionNetwork: function(){
-      this.$refs.interactionDialog.show(["gene","protein"][this.seedTypeId],this.$refs.seedTable.getSeeds().map(n=>n.id))
+    showInteractionNetwork: function () {
+      this.$refs.interactionDialog.show(["gene", "protein"][this.seedTypeId], this.$refs.seedTable.getSeeds().map(n => n.id))
     },
     getColor: function (item) {
       if (item.isSeed)
@@ -852,7 +867,10 @@ export default {
     submitRankingAlgorithm: function () {
       let ctx = this
       new Promise(resolve => this.waitForModuleJob(resolve)).then(() => {
-        ctx.$refs.rankingAlgorithms.run(ctx.moduleGid)
+        if (ctx.moduleGid != null) {
+          ctx.$refs.rankingAlgorithms.run(ctx.moduleGid)
+        } else
+          ctx.$refs.rankingAlgorithms.runLater(ctx.moduleJid)
       })
     },
 
@@ -886,10 +904,54 @@ export default {
     updateDrugCount: function () {
       this.validationDrugCount = this.$refs.validation.getDrugs().length;
     },
+    reloadJobs: async function (module, ranking) {
+      await this.$refs.moduleAlgorithms.setMethod(module.method)
+      this.$http.getNodes(module.target, module.seeds, ["id", "displayName"]).then(response => {
+        this.seeds = response
+      })
+      this.moduleGid = module.derivedGraph
+      this.moduleJid = module.jobId;
+      this.rankingJid = ranking.jobId;
+      if (module.derivedGraph && module.state === "DONE") {
+        this.loadModuleTargetTable(this.moduleGid).then(() => {
+          this.loadGraph(this.moduleGid)
+        })
+      } else {
+        this.$socket.subscribeJob(this.moduleJid, "quickRepurposeModuleFinishedEvent");
+      }
+      await this.$refs.rankingAlgorithms.setMethod(ranking.method)
+      if (ranking.derivedGraph && ranking.state === "DONE") {
+        this.loadRankingTargetTable(ranking.derivedGraph).then(() => {
+          this.loadGraph(this.rankingGid)
+        })
+      } else {
+        this.$socket.subscribeJob(this.rankingJid, "quickRepurposeRankingFinishedEvent");
+      }
+    },
+
+    reloadJob: async function (job) {
+      this.reloaded = true;
+      this.step = 4;
+      await setTimeout(() => {
+      }, 200)
+      this.seedTypeId = ["gene", "protein"].indexOf(job.target)
+      await setTimeout(() => {
+      }, 1000);
+      if (job.basisGraph) {
+        this.$http.getJobByGraph(job.basisGraph).then(moduleJob => {
+          this.reloadJobs(moduleJob, job)
+        })
+      } else {
+        this.$http.getJob(job.parentJid).then(async moduleJob => {
+          this.reloadJobs(moduleJob, job)
+        })
+      }
+    },
     readRankingJob: function (result, unsubscribed, dirty) {
       this.resultProgress += 5
       let data = !dirty ? result : JSON.parse(result)
       this.rankingJid = data.jid
+      this.setURL(this.rankingJid)
       this.rankingGid = data.gid
       if (this.rankingGid != null && data.state === "DONE") {
         this.resultProgress = 75
@@ -1033,7 +1095,8 @@ export default {
 
     },
 
-    loadRankingTargetTable: function () {
+    loadRankingTargetTable: function (gid) {
+      this.rankingGid = gid
       return this.$http.get("/getGraphList?id=" + this.rankingGid).then(response => {
         if (response.data !== undefined)
           return response.data
@@ -1192,7 +1255,7 @@ export default {
 
     waitForGraph: function (resolve) {
       if (this.$refs.graph === undefined)
-        setTimeout(this.waitForGraph, 100, resolve)
+        setTimeout(() => this.waitForGraph(resolve), 100)
       else
         resolve()
     }

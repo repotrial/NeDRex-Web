@@ -357,7 +357,7 @@
             </v-container>
           </v-card>
           <ButtonCancel @click="makeStep"></ButtonCancel>
-          <ButtonBack @click="makeStep"></ButtonBack>
+          <ButtonBack @click="makeStep" v-if="!reloaded"></ButtonBack>
           <ButtonNext @click="makeStep" label="VALIDATE" :disabled="currentGid==null"></ButtonNext>
           <v-tooltip top>
             <template v-slot:activator="{attrs, on}">
@@ -520,6 +520,10 @@ export default {
 
   props: {
     blitz: Boolean,
+    reload: {
+      default: undefined,
+      type: Object,
+    }
   },
   sugQuery: undefined,
   disorderIds: [],
@@ -539,6 +543,7 @@ export default {
       uid: undefined,
       seedTypeId: undefined,
       seeds: [],
+      reloaded: false,
       // seedOrigin: {},
       sourceType: undefined,
       step: 1,
@@ -575,6 +580,8 @@ export default {
     this.$socket.$on("quickModuleFinishedEvent", this.convertJobResult)
     this.uid = this.$cookies.get("uid")
     this.init()
+    if (this.reload)
+      this.reloadJob(this.reload);
   },
 
   methods: {
@@ -595,7 +602,7 @@ export default {
       this.results.targets = []
       this.results.drugs = []
       this.validationDrugCount = 0
-
+      this.reloaded = false;
     },
 
     reset: function (keepSeedType) {
@@ -644,6 +651,9 @@ export default {
           if (this.blitz)
             this.step++
         }
+        if (this.step === 3) {
+          this.$refs.algorithms.run()
+        }
       }
       if (button === "back") {
         this.step--
@@ -668,7 +678,6 @@ export default {
         this.$emit("resetEvent")
       }
       if (this.step === 3) {
-        this.$refs.algorithms.run()
         if (this.currentGid == null || this.currentGid === this.graphName)
           this.graphNamePopup()
       }
@@ -762,6 +771,7 @@ export default {
         return;
       }
       let jid = data.jid
+      this.setURL(jid)
       this.currentJid = jid
       this.currentGid = data.gid
       if (this.currentGid != null && data.state === "DONE") {
@@ -774,6 +784,12 @@ export default {
 
     }
     ,
+    setURL: function (jid) {
+      let route = location.pathname + "?job=" + jid
+      if (location.origin + route !== location.href) {
+        this.$router.push(route)
+      }
+    },
     updateDrugCount: function () {
       this.validationDrugCount = this.$refs.validation ? this.$refs.validation.getDrugs().length : 0;
     },
@@ -790,8 +806,30 @@ export default {
       return this.$refs.algorithms.getHeaders()
     }
     ,
-    showInteractionNetwork: function(){
-      this.$refs.interactionDialog.show(["gene","protein"][this.seedTypeId],this.$refs.seedTable.getSeeds().map(n=>n.id))
+    reloadJob: async function (job) {
+      this.reloaded = true;
+      this.step = 3;
+      await setTimeout(() => {
+      }, 200)
+      this.seedTypeId = ["gene", "protein"].indexOf(job.target)
+      await setTimeout(() => {
+      }, 1000)
+      this.currentJid = job.jobId
+      await this.$refs.algorithms.setMethod(job.method)
+      this.$http.getNodes(job.target, job.seeds, ["id", "displayName"]).then(response => {
+        this.seeds = response
+      })
+      if (job.derivedGraph && job.state==="DONE") {
+        this.currentGid = job.derivedGraph;
+        this.loadTargetTable(this.currentGid).then(() => {
+          this.loadGraph(this.currentGid)
+        })
+      } else {
+        this.$socket.subscribeJob(this.currentJid, "quickModuleFinishedEvent");
+      }
+    },
+    showInteractionNetwork: function () {
+      this.$refs.interactionDialog.show(["gene", "protein"][this.seedTypeId], this.$refs.seedTable.getSeeds().map(n => n.id))
     },
     downloadList: function (names, sep) {
       this.$http.post("mapToDomainIds", {
@@ -975,7 +1013,7 @@ export default {
     },
     waitForGraph: function (resolve) {
       if (this.$refs.graph === undefined)
-        setTimeout(this.waitForGraph, 100)
+        setTimeout(()=>this.waitForGraph(resolve), 100)
       else
         resolve()
     },

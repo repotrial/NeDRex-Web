@@ -527,7 +527,13 @@ public class RequestController {
     @RequestMapping(value = "/getJob", method = RequestMethod.GET)
     @ResponseBody
     public String getJob(@RequestParam("id") String id) {
-        return toJson(jobController.getJobById(id));
+        return toJson(jobController.getJobResponse(id));
+    }
+
+    @RequestMapping(value="/getJobByGraph", method = RequestMethod.GET)
+    @ResponseBody
+    public String getJobByGraph(@RequestParam("gid") String gid){
+        return getJob(jobController.getJobByGraphId(gid));
     }
 
     @RequestMapping(value = "/getUserJobs", method = RequestMethod.GET)

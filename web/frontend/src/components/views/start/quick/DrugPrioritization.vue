@@ -49,9 +49,8 @@
           <v-card
             v-show="step===1"
             class="mb-4"
-            height="81vh"
+            height="830px"
           >
-
             <v-card-subtitle class="headline">1. Seed Configuration</v-card-subtitle>
             <v-card-subtitle style="margin-top: -25px">Add seeds to your
               list.
@@ -328,7 +327,7 @@
                                          style="margin-left:15px; z-index:50">
                     </v-progress-circular>
                   </v-card-title>
-                  <template v-if="results.targets.length>=0">
+                  <template v-if="$refs.algorithms !=null && results.targets.length>=0">
                     <v-data-table max-height="50vh" height="50vh" class="overflow-y-auto" fixed-header dense
                                   item-key="id"
                                   :items="results.targets" :headers="getHeaders()" disable-pagination show-expand
@@ -406,7 +405,7 @@
             </v-container>
           </v-card>
           <ButtonCancel label="RESTART" @click="makeStep"></ButtonCancel>
-          <ButtonBack @click="makeStep"></ButtonBack>
+          <ButtonBack @click="makeStep" v-if="!reloaded"></ButtonBack>
           <ButtonNext @click="makeStep" label="VALIDATE" :disabled="currentGid == null"></ButtonNext>
           <ButtonAdvanced @click="$emit('graphLoadNewTabEvent',{post: {id: jobs[currentJid].result}})"
                           :disabled="currentGid==null"></ButtonAdvanced>
@@ -519,6 +518,10 @@ export default {
 
   props: {
     blitz: Boolean,
+    reload:{
+      default: undefined,
+      type:Object,
+    }
   },
   sugQuery: "",
   validationDrugs: {},
@@ -529,6 +532,7 @@ export default {
         height: '60vh',
         'min-height': '60vh',
       },
+      reloaded: false,
       graphConfig: {visualized: false},
       uid: undefined,
       seedTypeId: undefined,
@@ -570,6 +574,8 @@ export default {
     this.$socket.$on("quickRankingFinishedEvent", this.convertJobResult)
     this.uid = this.$cookies.get("uid")
     this.init()
+    if(this.reload)
+      this.reloadJob(this.reload);
   },
 
   methods: {
@@ -589,6 +595,7 @@ export default {
       if (this.blitz) {
         this.methodModel = 1
       }
+      this.reloaded = false
       this.validationDrugCount = 0
       this.results.target = []
       this.graphName = undefined
@@ -631,6 +638,8 @@ export default {
     makeStep: function (button) {
       if (button === "continue") {
         this.step++
+        if(this.step ===3)
+          this.$refs.algorithms.run()
         if (this.step === 2) {
           this.seeds = this.$refs.seedTable.getSeeds()
           if (this.blitz)
@@ -661,7 +670,6 @@ export default {
         this.$emit("resetEvent")
       }
       if (this.step === 3) {
-        this.$refs.algorithms.run()
         if (this.currentGid == null || this.currentGid === this.graphName)
           this.graphNamePopup()
       }
@@ -730,12 +738,37 @@ export default {
       this.$refs.graph.setPhysics(this.graph.physics)
     },
 
+    reloadJob: async function(job){
+      this.reloaded= true;
+      this.step = 3;
+      console.log(job)
+      await setTimeout(() => {
+      }, 200)
+      this.seedTypeId = ["gene", "protein"].indexOf(job.target)
+      await setTimeout(() => {
+      }, 1000)
+      this.currentJid = job.jobId
+      await this.$refs.algorithms.setMethod(job.method)
+      this.$http.getNodes(job.target, job.seeds, ["id", "displayName"]).then(response => {
+        this.seeds = response
+      })
+      if (job.derivedGraph && job.state==="DONE") {
+        this.currentGid = job.derivedGraph;
+        this.loadTargetTable(this.currentGid).then(() => {
+          this.loadGraph(this.currentGid)
+        })
+      } else {
+        this.$socket.subscribeJob(this.currentJid, "quickRankingFinishedEvent");
+      }
+    },
+
     readJob: function (data, notSubbed) {
       if (data.state === "ERROR") {
         this.error = true;
         return
       }
       let jid = data.jid
+      this.setURL(jid)
       this.currentJid = jid
       let base = data.basis
       this.currentGid = data.gid
@@ -815,7 +848,12 @@ export default {
         }).catch(console.error)
       }).catch(console.error)
     },
-
+    setURL: function(jid){
+      let route = location.pathname + "?job=" + jid
+      if (location.origin+route !== location.href) {
+        this.$router.push(route)
+      }
+    },
     downloadList: function (names, sep) {
       this.$http.post("mapToDomainIds", {
         type: ['gene', 'protein'][this.seedTypeId],
@@ -1025,7 +1063,7 @@ export default {
     ,
     waitForGraph: function (resolve) {
       if (this.$refs.graph === undefined)
-        setTimeout(this.waitForGraph, 100)
+        setTimeout(()=>this.waitForGraph(resolve), 100)
       else
         resolve()
     }

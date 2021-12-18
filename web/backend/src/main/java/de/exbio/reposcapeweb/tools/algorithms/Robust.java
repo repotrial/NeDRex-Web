@@ -136,8 +136,8 @@ public class Robust implements Algorithm {
             allNodes.addAll(g.getNodes().get(nodeTypeId).keySet());
         int beforeCount = allNodes.size();
         Set<Integer> newNodeIDs = j.getResult().getNodes().entrySet().stream().filter(e -> e.getValue() != null).map(Map.Entry::getKey).collect(Collectors.toSet());
+        derived.addNodeMarks(nodeTypeId, newNodeIDs.stream().filter(e->!allNodes.contains(e)).collect(Collectors.toList()));
         allNodes.addAll(newNodeIDs);
-        derived.addNodeMarks(nodeTypeId, newNodeIDs);
         j.setUpdate("" + (allNodes.size() - beforeCount));
         NodeFilter nf = new NodeFilter(nodeController.getFilter(Graphs.getNode(nodeTypeId)), allNodes);
         derived.saveNodeFilter(Graphs.getNode(nodeTypeId), nf);
