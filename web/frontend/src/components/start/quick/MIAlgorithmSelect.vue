@@ -559,7 +559,7 @@
                       hide-details
                       class="align-center"
                       v-model="getAlgorithmModels().maxit"
-                      min="0"
+                      min="1"
                       max="20"
                     >
                       <template v-slot:prepend>

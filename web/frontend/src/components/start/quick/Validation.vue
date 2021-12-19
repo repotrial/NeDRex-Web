@@ -4,7 +4,7 @@
     min-height="80vh"
   >
     <v-card-subtitle class="headline">{{ step }}. Validation</v-card-subtitle>
-    <v-card-subtitle style="margin-top: -25px">Validate the results.
+    <v-card-subtitle style="margin-top: -25px">Validate the results by selecting drugs known to be effective in the current scenario.
     </v-card-subtitle>
     <v-divider style="margin: 15px;"></v-divider>
     <v-container style="height: 80%; max-width: 100%">

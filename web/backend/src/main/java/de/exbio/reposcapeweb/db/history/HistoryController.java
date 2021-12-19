@@ -207,7 +207,7 @@ public class HistoryController {
         if (toolService.getAlgorithms().get(j.getMethod()).hasMultipleResultFiles()) {
             return new File(cachedir, "users/" + j.getUserId() + "/jobs/" + j.getJobId() + "_result"+(suffix.equals("zip") ? "" :("_"+suffix) )+ ".zip");
         } else
-            return new File(cachedir, "users/" + j.getUserId() + "/jobs/" + j.getJobId() +  "_result"+(suffix.equals("txt") ? "" :("_"+suffix) )+ ".txt");
+            return new File(cachedir, "users/" + j.getUserId() + "/jobs/" + j.getJobId() +  "_result."+ suffix);
     }
 
     public String validateUser(String userId) {

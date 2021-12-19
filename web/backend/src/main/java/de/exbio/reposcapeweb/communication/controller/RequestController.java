@@ -306,8 +306,9 @@ public class RequestController {
         File f = jobController.getDownload(jid);
         Resource resource = new FileSystemResource(jobController.getDownload(jid));
         String contentType = request.getServletContext().getMimeType(jobController.getDownload(jid).getAbsolutePath());
+        MediaType type = f.getName().endsWith(".graphml") ? MediaType.TEXT_XML :MediaType.parseMediaType(contentType);
         return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(contentType))
+                .contentType(type)
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + f.getName())
                 .body(resource);
     }
