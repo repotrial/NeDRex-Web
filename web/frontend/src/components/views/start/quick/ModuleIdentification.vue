@@ -252,7 +252,7 @@
               <v-row>
                 <v-col cols="3" style="padding: 0 50px 0 0; margin-right: -50px">
                   <v-card-title class="subtitle-1">Seeds ({{ seeds.length }}) {{
-                      (results.targets.length !== undefined && results.targets.length > 0 ? ("& Module (" + getTargetCount() + ") " + ["Genes", "Proteins"][seedTypeId]) : (": "+(state!=null ? ("["+state+"]"):"Processing")))
+                      (results.targets.length !== undefined && results.targets.length > 0 ? ("& Module (" + getTargetCount() + ") " + ["Genes", "Proteins"][seedTypeId]) : (": " + (state != null ? ("[" + state + "]") : "Processing")))
                     }}
                     <v-progress-circular indeterminate size="25" v-if="this.results.targets.length===0"
                                          style="margin-left:15px; z-index:50">
@@ -317,6 +317,8 @@
                   </v-data-table>
                 </v-col>
                 <v-col>
+                  <i v-if="!this.currentGid">The execution could take a moment. Save the current URL and return at any
+                    time!</i>
                   <Network ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle"
                            :legend="results.targets.length>0" :tools="results.targets.length>0" :secondaryViewer="true"
                            @loadIntoAdvancedEvent="$emit('graphLoadEvent',{post: {id: currentGid}})"
@@ -558,7 +560,7 @@ export default {
       advancedOptions: false,
       physicsOn: false,
 
-      state:undefined,
+      state: undefined,
 
       geneDetailAttributes: ["Name", "SourceIDs", "Symbols", "Chromosome", "Genomic Location", "Synonyms", "Description"],
       proteinDetailAttributes: ["Name", "SourceIDs", "Gene", "Synonyms", "Comments"],
@@ -821,14 +823,15 @@ export default {
         this.currentJid = job.jobId
         this.state = job.state
         await this.$refs.algorithms.setMethod(job.method)
-        if(!job.seeds || job.seeds.length===0)
+        if (this.$refs.algorithms.getGroup() !== "exp" && (!job.seeds || job.seeds.length === 0))
           this.$emit("jobReloadError")
-        this.$http.getNodes(job.target, job.seeds, ["id", "displayName"]).then(response => {
-          if(!response || response.length===0){
-            this.$emit("jobReloadError")
-          }
-          this.seeds = response
-        })
+        if (job.seeds && job.seeds.length > 0)
+          this.$http.getNodes(job.target, job.seeds, ["id", "displayName"]).then(response => {
+            if (!response || response.length === 0) {
+              this.$emit("jobReloadError")
+            }
+            this.seeds = response
+          })
         if (job.derivedGraph && job.state === "DONE") {
           this.currentGid = job.derivedGraph;
           this.loadTargetTable(this.currentGid).then(() => {
@@ -837,7 +840,7 @@ export default {
         } else {
           this.$socket.subscribeJob(this.currentJid, "quickModuleFinishedEvent");
         }
-      }catch (e){
+      } catch (e) {
         this.$emit("jobReloadError")
       }
     },
@@ -1026,7 +1029,7 @@ export default {
     },
     waitForGraph: function (resolve) {
       if (this.$refs.graph === undefined)
-        setTimeout(()=>this.waitForGraph(resolve), 100)
+        setTimeout(() => this.waitForGraph(resolve), 100)
       else
         resolve()
     },

@@ -758,6 +758,10 @@ export default {
       return undefined;
     },
 
+    getGroup: function(){
+      return this.groupModel
+    },
+
     setMethod: async function(method){
       method = method.toLowerCase()
       let m = this.methods.filter(m=>m.id===method)[0]

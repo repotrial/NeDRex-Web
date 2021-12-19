@@ -298,7 +298,7 @@
               <v-row>
                 <v-col cols="3" style="padding: 0 50px 0 0; margin-right: -50px">
                   <v-card-title class="subtitle-1">Seeds ({{ seeds.length }}) {{
-                      (results.targets.length !== undefined && results.targets.length > 0 ? ("& Module (" + getTargetCount() + ") " + ["Genes", "Proteins"][seedTypeId]) : (": "+(moduleState!=null ? ("["+moduleState+"]"):"Processing")))
+                      (results.targets.length !== undefined && results.targets.length > 0 ? ("& Module (" + getTargetCount() + ") " + ["Genes", "Proteins"][seedTypeId]) : (": " + (moduleState != null ? ("[" + moduleState + "]") : "Processing")))
                     }}
                     <v-progress-circular indeterminate size="25" v-if="this.results.targets.length===0"
                                          style="margin-left:15px; z-index:50">
@@ -347,8 +347,11 @@
                   </v-data-table>
                 </v-col>
                 <v-col>
+                  <i v-if="!this.rankingGid">The execution could take a moment. Save the current URL and return at any
+                    time!</i>
                   <Network ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle"
-                           :progress="resultProgress" :progress-interminate="reloaded && !rankingGid" :legend="resultProgress>=50"
+                           :progress="resultProgress" :progress-interminate="reloaded && !rankingGid"
+                           :legend="resultProgress>=50"
                            :tools="resultProgress===100"
                            :secondaryViewer="true" :show-vis-option="showVisOption"
                            @loadIntoAdvancedEvent="$emit('graphLoadEvent',{post: {id: rankingGid}})">
@@ -401,7 +404,7 @@
                 </v-col>
                 <v-col style="padding:0; max-width: 31%; width: 31%">
                   <v-card-title class="subtitle-1"> Drugs{{
-                      (results.drugs.length !== undefined && (results.drugs.length > 0 || rankingGid != null) ? (" (" + (results.drugs.length) + ")") : (": "+(rankingState!=null ? ("["+rankingState+"]"):"Processing")))
+                      (results.drugs.length !== undefined && (results.drugs.length > 0 || rankingGid != null) ? (" (" + (results.drugs.length) + ")") : (": " + (rankingState != null ? ("[" + rankingState + "]") : "Processing")))
                     }}
                     <span v-show="loadingTrialData">: Loading Trial
                       Data</span>
@@ -913,9 +916,13 @@ export default {
         this.moduleState = module.state
         this.rankingState = ranking.state
         await this.$refs.moduleAlgorithms.setMethod(module.method)
-        this.$http.getNodes(module.target, module.seeds, ["id", "displayName"]).then(response => {
-          this.seeds = response
-        })
+        if (this.$refs.moduleAlgorithms.getGroup() !== "exp" && (!module.seeds || module.seeds.length === 0))
+          this.$emit("jobReloadError")
+        if (module.seeds && module.seeds.length > 0)
+          this.$http.getNodes(module.target, module.seeds, ["id", "displayName"]).then(response => {
+            if (!response || response.length === 0)
+              this.seeds = response
+          })
         this.moduleGid = module.derivedGraph
         this.moduleJid = module.jobId;
         this.rankingJid = ranking.jobId;
@@ -934,7 +941,7 @@ export default {
         } else {
           this.$socket.subscribeJob(this.rankingJid, "quickRepurposeRankingFinishedEvent");
         }
-      }catch (e){
+      } catch (e) {
         console.error(e)
         this.$emit("jobReloadError")
       }

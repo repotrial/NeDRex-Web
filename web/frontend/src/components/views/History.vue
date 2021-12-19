@@ -161,7 +161,7 @@
 <!--/*              <v-row style="margin: 25px" v-if="selected.jobid!=null">*/-->
                 <v-chip outlined @click="loadJob(selected.jobid)" >
 
-                  <v-icon left color="success" >far fa-eye</v-icon>Reload Result View
+                  <v-icon left color="success" >far fa-play-circle</v-icon>Reload Result View
                 </v-chip>
                 <v-chip outlined @click="downloadJob(selected.jobid)" style="margin:8px">
 

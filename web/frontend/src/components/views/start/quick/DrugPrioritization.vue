@@ -281,6 +281,7 @@
                   </v-data-table>
                 </v-col>
                 <v-col>
+                  <i v-if="!this.currentGid">The execution could take a moment. Save the current URL and return at any time!</i>
                   <Network ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle"
                            :show-vis-option="showVisOption"
                            :legend="results.targets.length>0" :tools="results.targets.length>0" :secondaryViewer="true"
