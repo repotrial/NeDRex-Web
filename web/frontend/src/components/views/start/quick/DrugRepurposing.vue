@@ -912,6 +912,8 @@ export default {
       this.validationDrugCount = this.$refs.validation.getDrugs().length;
     },
     reloadJobs: async function (module, ranking) {
+      console.log(module)
+      console.log(ranking)
       try {
         this.moduleState = module.state
         this.rankingState = ranking.state
@@ -920,7 +922,7 @@ export default {
           this.$emit("jobReloadError")
         if (module.seeds && module.seeds.length > 0)
           this.$http.getNodes(module.target, module.seeds, ["id", "displayName"]).then(response => {
-            if (!response || response.length === 0)
+            if (response && response.length > 0)
               this.seeds = response
           })
         this.moduleGid = module.derivedGraph
