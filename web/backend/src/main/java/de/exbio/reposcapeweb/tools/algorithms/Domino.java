@@ -58,6 +58,11 @@ public class Domino implements Algorithm {
     }
 
     @Override
+    public String getResultSuffix() {
+        return "txt";
+    }
+
+    @Override
     public String createCommand(File[] interactions, JobRequest request) {
         return "domino seeds.list " + interactions[0].getName() + " " + interactions[1].getName() + " result";
     }

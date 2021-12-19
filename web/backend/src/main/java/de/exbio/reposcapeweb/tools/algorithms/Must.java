@@ -98,6 +98,11 @@ public class Must implements Algorithm{
     }
 
     @Override
+    public String getResultSuffix() {
+        return "zip";
+    }
+
+    @Override
     public String createCommand(File[] interactions, JobRequest request) {
         return "must " +
                 executable.getAbsolutePath() + " " +

@@ -70,6 +70,11 @@ public class Bicon implements Algorithm{
     }
 
     @Override
+    public String getResultSuffix() {
+        return "txt";
+    }
+
+    @Override
     public String createCommand(File[] interactions, JobRequest request) {
         return "bicon " + executable.getAbsolutePath() + " exprFile " + interactions[0].getName() + " genes.txt " + request.getParams().get("lg_min") + " " + request.getParams().get("lg_max");
     }

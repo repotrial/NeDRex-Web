@@ -65,6 +65,11 @@ public class TrustRank implements Algorithm {
     }
 
     @Override
+    public String getResultSuffix() {
+        return "txt";
+    }
+
+    @Override
     public String createCommand(File[] interactions, JobRequest request) {
         return "trustrank " + executable.getAbsolutePath() + " " +
                 interactions[0].getName() +

@@ -58,6 +58,11 @@ public class Diamond implements Algorithm {
         return new File[]{(request.getParams().get("type").equals("gene") ? new File(utils.dataDir, "gene_gene_interaction_" + (request.experimentalOnly ? "exp" : "all") + ".pairs") : new File(utils.dataDir, "protein_protein_interaction_" + (request.experimentalOnly ? "exp" : "all") + ".pairs"))};
     }
 
+    @Override
+    public String getResultSuffix() {
+        return "txt";
+    }
+
 
     @Override
     public ToolService.Tool getEnum() {

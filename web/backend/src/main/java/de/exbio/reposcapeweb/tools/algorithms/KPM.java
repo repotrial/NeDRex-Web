@@ -71,6 +71,11 @@ public class KPM implements Algorithm {
         return new File[]{interactions, config, executable};
     }
 
+    @Override
+    public String getResultSuffix() {
+        return "txt";
+    }
+
 
     @Override
     public String createCommand(File[] interactions, JobRequest request) {

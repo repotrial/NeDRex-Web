@@ -203,10 +203,11 @@ public class HistoryController {
 
     public File getJobPath(Job j) {
         String cachedir = env.getProperty("path.usr.cache");
-        if (toolService.getAlgorithms().get(j.getMethod()).hasMultipleResultFiles())
-            return new File(cachedir, "users/" + j.getUserId() + "/jobs/" + j.getJobId() + "_result.zip");
-        else
-            return new File(cachedir, "users/" + j.getUserId() + "/jobs/" + j.getJobId() + "_result.txt");
+        String suffix = toolService.getAlgorithms().get(j.getMethod()).getResultSuffix();
+        if (toolService.getAlgorithms().get(j.getMethod()).hasMultipleResultFiles()) {
+            return new File(cachedir, "users/" + j.getUserId() + "/jobs/" + j.getJobId() + "_result"+(suffix.equals("zip") ? "" :("_"+suffix) )+ ".zip");
+        } else
+            return new File(cachedir, "users/" + j.getUserId() + "/jobs/" + j.getJobId() +  "_result"+(suffix.equals("txt") ? "" :("_"+suffix) )+ ".txt");
     }
 
     public String validateUser(String userId) {

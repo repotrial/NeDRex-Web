@@ -104,6 +104,11 @@ public class ClosenessCentrality implements Algorithm {
     }
 
     @Override
+    public String getResultSuffix() {
+        return "txt";
+    }
+
+    @Override
     public boolean usesExpressionInput() {
         return false;
     }
