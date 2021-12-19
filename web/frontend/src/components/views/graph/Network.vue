@@ -3,7 +3,11 @@
        @mouseleave="setGlobalScroll('auto')">
     <v-progress-linear v-if="progress ===undefined" v-show="loading && !waiting" indeterminate
                        :color=loadingColor></v-progress-linear>
-    <v-progress-linear v-else v-show="progress <100" :value="progress" :color=loadingColor></v-progress-linear>
+    <template v-else>
+      <v-progress-linear v-if="progressInterminate && progress>0 && progress<100" indeterminate :color="loadingColor"></v-progress-linear>
+      <v-progress-linear v-else v-show="progress <100" :value="progress" :color=loadingColor></v-progress-linear>
+    </template>
+
     <div :style="{position:'relative', height:'100%',width:'100%',display: 'flex', justifyContent:'flex-end'}">
       <div style="justify-self: center; align-self: center; margin: auto" v-if="!configuration.visualized">
         <template v-if="nodeSet==null && (loading || waiting) && progressText !=null">
@@ -154,6 +158,10 @@ export default {
     legend: Boolean,
     tools: Boolean,
     styles: Boolean,
+    progressInterminate:{
+      default: false,
+      type: Boolean
+    },
     configuration: Object,
     startGraph: false,
     progress: Number,

@@ -317,7 +317,7 @@
                 </v-col>
                 <v-col style="padding: 0; width: 28%; max-width: 28%">
                   <v-card-title class="subtitle-1"> Drugs{{
-                      (results.targets.length !== undefined && (results.targets.length > 0 || currentGid != null) ? (" (" + (results.targets.length) + ")") : ": Processing")
+                      (results.targets.length !== undefined && (results.targets.length > 0 || currentGid != null) ? (" (" + (results.targets.length) + ")") : (": " + (state != null ? ("[" + state + "]") : "Processing")))
                     }}
                     <span v-show="loadingTrialData">: Loading Trial
                       Data</span>
@@ -518,9 +518,9 @@ export default {
 
   props: {
     blitz: Boolean,
-    reload:{
+    reload: {
       default: undefined,
-      type:Object,
+      type: Object,
     }
   },
   sugQuery: "",
@@ -551,6 +551,7 @@ export default {
       experimentalSwitch: true,
       results: {seeds: [], targets: []},
       jobs: {},
+      state: undefined,
       currentJid: undefined,
       currentGid: undefined,
       drugDetailAttributes: ["Name", "SourceIDs", "Formula", "Indication", "Description", "Synonyms"],
@@ -574,7 +575,7 @@ export default {
     this.$socket.$on("quickRankingFinishedEvent", this.convertJobResult)
     this.uid = this.$cookies.get("uid")
     this.init()
-    if(this.reload)
+    if (this.reload)
       this.reloadJob(this.reload);
   },
 
@@ -638,7 +639,7 @@ export default {
     makeStep: function (button) {
       if (button === "continue") {
         this.step++
-        if(this.step ===3)
+        if (this.step === 3)
           this.$refs.algorithms.run()
         if (this.step === 2) {
           this.seeds = this.$refs.seedTable.getSeeds()
@@ -690,8 +691,8 @@ export default {
       this.namePopup = true
 
     },
-    showInteractionNetwork: function(){
-      this.$refs.interactionDialog.show(["gene","protein"][this.seedTypeId],this.$refs.seedTable.getSeeds().map(n=>n.id))
+    showInteractionNetwork: function () {
+      this.$refs.interactionDialog.show(["gene", "protein"][this.seedTypeId], this.$refs.seedTable.getSeeds().map(n => n.id))
     },
     resolveNamingDialog: function (value) {
       this.namePopup = false
@@ -738,31 +739,36 @@ export default {
       this.$refs.graph.setPhysics(this.graph.physics)
     },
 
-    reloadJob: async function(job){
-      this.reloaded= true;
-      this.step = 3;
-      console.log(job)
-      await setTimeout(() => {
-      }, 200)
-      this.seedTypeId = ["gene", "protein"].indexOf(job.target)
-      await setTimeout(() => {
-      }, 1000)
-      this.currentJid = job.jobId
-      await this.$refs.algorithms.setMethod(job.method)
-      this.$http.getNodes(job.target, job.seeds, ["id", "displayName"]).then(response => {
-        this.seeds = response
-      })
-      if (job.derivedGraph && job.state==="DONE") {
-        this.currentGid = job.derivedGraph;
-        this.loadTargetTable(this.currentGid).then(() => {
-          this.loadGraph(this.currentGid)
+    reloadJob: async function (job) {
+      try {
+        this.reloaded = true;
+        this.step = 3;
+        await setTimeout(() => {
+        }, 200)
+        this.seedTypeId = ["gene", "protein"].indexOf(job.target)
+        await setTimeout(() => {
+        }, 1000)
+        this.currentJid = job.jobId
+        this.state = job.state
+        await this.$refs.algorithms.setMethod(job.method)
+        this.$http.getNodes(job.target, job.seeds, ["id", "displayName"]).then(response => {
+          this.seeds = response
         })
-      } else {
-        this.$socket.subscribeJob(this.currentJid, "quickRankingFinishedEvent");
+        if (job.derivedGraph && job.state === "DONE") {
+          this.currentGid = job.derivedGraph;
+          this.loadTargetTable(this.currentGid).then(() => {
+            this.loadGraph(this.currentGid)
+          })
+        } else {
+          this.$socket.subscribeJob(this.currentJid, "quickRankingFinishedEvent");
+        }
+      } catch (e) {
+        this.$emit("jobReloadError")
       }
     },
 
     readJob: function (data, notSubbed) {
+      this.state = data.state
       if (data.state === "ERROR") {
         this.error = true;
         return
@@ -848,9 +854,9 @@ export default {
         }).catch(console.error)
       }).catch(console.error)
     },
-    setURL: function(jid){
+    setURL: function (jid) {
       let route = location.pathname + "?job=" + jid
-      if (location.origin+route !== location.href) {
+      if (location.origin + route !== location.href) {
         this.$router.push(route)
       }
     },
@@ -1063,7 +1069,7 @@ export default {
     ,
     waitForGraph: function (resolve) {
       if (this.$refs.graph === undefined)
-        setTimeout(()=>this.waitForGraph(resolve), 100)
+        setTimeout(() => this.waitForGraph(resolve), 100)
       else
         resolve()
     }

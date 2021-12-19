@@ -115,12 +115,14 @@
         <CombinedRepurposing v-if="modus===0" :blitz="blitz" @resetEvent="reset()" :reload="reload"
                              @printNotificationEvent="printNotification"
                              @graphLoadEvent="loadGraph"
+                             @jobReloadError="jobReloadError()"
                              @graphLoadNewTabEvent="loadGraphNewTab"
                              @focusEvent="focusTop"
                              ref="drugRepurposing" @newGraphEvent="$emit('newGraphEvent')">
 
         </CombinedRepurposing>
         <ModuleIdentification v-if="modus===1" :blitz="blitz" @resetEvent="reset()" :reload="reload"
+                              @jobReloadError="jobReloadError()"
                               @printNotificationEvent="printNotification"
                               @graphLoadEvent="loadGraph"
                               @graphLoadNewTabEvent="loadGraphNewTab"
@@ -131,6 +133,7 @@
         <DrugRepurposing v-if="modus===2" :blitz="blitz" @resetEvent="reset()" :reload="reload"
                          @printNotificationEvent="printNotification"
                          @graphLoadEvent="loadGraph"
+                         @jobReloadError="jobReloadError()"
                          @graphLoadNewTabEvent="loadGraphNewTab"
                          @focusEvent="focusTop"
                          ref="drugRanking" @newGraphEvent="$emit('newGraphEvent')"
@@ -184,6 +187,11 @@ export default {
         this.$refs.drugRanking.reset()
       this.modus = -1
     },
+
+    jobReloadError: function(){
+      this.reset()
+      this.printNotification("Could not reload the requested result! Either the job result is to old, broken or you might have to try again in a moment!",2,10000)
+    },
     start: function (modus, blitz) {
       this.modus = modus;
       this.blitz = blitz;
@@ -201,22 +209,31 @@ export default {
 
 
     reloadJob: function (job) {
-      switch (job.goal) {
-        case "MODULE_IDENTIFICATION": {
-          this.modus = 1;
-          this.reload = job;
-          break;
+      try {
+      if(!job.goal){
+        this.printNotification("Could not reload the result because your job was created with a too old version!",2,10000)
+        this.reset()
+        return
+      }
+        switch (job.goal) {
+          case "MODULE_IDENTIFICATION": {
+            this.modus = 1;
+            this.reload = job;
+            break;
+          }
+          case "DRUG_PRIORITIZATION": {
+            this.modus = 2;
+            this.reload = job;
+            break;
+          }
+          case "DRUG_REPURPOSING": {
+            this.modus = 0
+            this.reload = job;
+            break;
+          }
         }
-        case "DRUG_PRIORITIZATION": {
-          this.modus = 2;
-          this.reload = job;
-          break;
-        }
-        case "DRUG_REPURPOSING": {
-          this.modus = 0
-          this.reload = job;
-          break;
-        }
+      }catch (e){
+        this.printNotification("Could not reload the requested result! Either the job result is to old, broken or you might have to try again in a moment!",2,10000)
       }
     },
     getConfig() {

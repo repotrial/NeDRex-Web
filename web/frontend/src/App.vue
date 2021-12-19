@@ -377,7 +377,7 @@ export default {
       if (this.$cookies.get("uid") == null) {
         this.showTos()
       } else {
-        if(sessionStorage.getItem("tos")==null)
+        if (sessionStorage.getItem("tos") == null)
           this.showTos()
         this.$http.get("/getUser?user=" + this.$cookies.get("uid")).then(response => {
           if (response.data !== undefined)
@@ -564,8 +564,8 @@ export default {
     }
     ,
 
-    addListJob: function(data){
-      if(this.$refs.side)
+    addListJob: function (data) {
+      if (this.$refs.side)
         this.$refs.side.addJob(data);
     },
 
@@ -858,8 +858,8 @@ export default {
     ,
     adaptSidecard: function (param) {
       // if (this.selectedTabId === 0) {
-        // this.$refs.side.loadFilter(param)
-        // this.setSideVisible(false)
+      // this.$refs.side.loadFilter(param)
+      // this.setSideVisible(false)
       // }
       if (this.selectedTabId === 3) {
         this.setSideVisible(true)
@@ -882,12 +882,24 @@ export default {
         this.$http.removeGraph(id)
       }
     },
-    printNotification: function (message, style) {
+    printNotification: function (message, style, timeout) {
       if (style === 1) {
+        let old = this.notifications.style1.timeout;
+        this.notifications.style1.timeout = timeout
         this.setNotification(this.notifications.style1, message)
+        if (timeout !== old)
+          setTimeout(() => {
+            this.notifications.style1.timeout = old
+          }, timeout)
       }
       if (style === 2) {
+        let old = this.notifications.style2.timeout;
+        this.notifications.style2.timeout = timeout
         this.setNotification(this.notifications.style2, message)
+        if (timeout !== old)
+          setTimeout(() => {
+            this.notifications.style2.timeout = old
+          }, timeout)
       }
     }
     ,

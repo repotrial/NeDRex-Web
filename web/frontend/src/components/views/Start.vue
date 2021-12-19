@@ -102,8 +102,8 @@ export default {
       if (idx === 2 && this.$refs.advanced)
         this.$refs.advanced.reset()
     },
-    printNotification: function (message, style) {
-      this.$emit("printNotificationEvent", message, style)
+    printNotification: function (message, style,timeout) {
+      this.$emit("printNotificationEvent", message, style,timeout)
     },
 
     checkURLclear: function (view) {

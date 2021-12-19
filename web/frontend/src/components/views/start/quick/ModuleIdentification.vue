@@ -252,7 +252,7 @@
               <v-row>
                 <v-col cols="3" style="padding: 0 50px 0 0; margin-right: -50px">
                   <v-card-title class="subtitle-1">Seeds ({{ seeds.length }}) {{
-                      (results.targets.length !== undefined && results.targets.length > 0 ? ("& Module (" + getTargetCount() + ") " + ["Genes", "Proteins"][seedTypeId]) : ": Processing")
+                      (results.targets.length !== undefined && results.targets.length > 0 ? ("& Module (" + getTargetCount() + ") " + ["Genes", "Proteins"][seedTypeId]) : (": "+(state!=null ? ("["+state+"]"):"Processing")))
                     }}
                     <v-progress-circular indeterminate size="25" v-if="this.results.targets.length===0"
                                          style="margin-left:15px; z-index:50">
@@ -558,6 +558,8 @@ export default {
       advancedOptions: false,
       physicsOn: false,
 
+      state:undefined,
+
       geneDetailAttributes: ["Name", "SourceIDs", "Symbols", "Chromosome", "Genomic Location", "Synonyms", "Description"],
       proteinDetailAttributes: ["Name", "SourceIDs", "Gene", "Synonyms", "Comments"],
 
@@ -766,6 +768,7 @@ export default {
 
 
     readJob: function (data, notSubbed) {
+      this.state = data.state
       if (data.state === "ERROR") {
         this.error = true;
         return;
@@ -807,25 +810,30 @@ export default {
     }
     ,
     reloadJob: async function (job) {
-      this.reloaded = true;
-      this.step = 3;
-      await setTimeout(() => {
-      }, 200)
-      this.seedTypeId = ["gene", "protein"].indexOf(job.target)
-      await setTimeout(() => {
-      }, 1000)
-      this.currentJid = job.jobId
-      await this.$refs.algorithms.setMethod(job.method)
-      this.$http.getNodes(job.target, job.seeds, ["id", "displayName"]).then(response => {
-        this.seeds = response
-      })
-      if (job.derivedGraph && job.state==="DONE") {
-        this.currentGid = job.derivedGraph;
-        this.loadTargetTable(this.currentGid).then(() => {
-          this.loadGraph(this.currentGid)
+      try {
+        this.reloaded = true;
+        this.step = 3;
+        await setTimeout(() => {
+        }, 200)
+        this.seedTypeId = ["gene", "protein"].indexOf(job.target)
+        await setTimeout(() => {
+        }, 1000)
+        this.currentJid = job.jobId
+        this.state = job.state
+        await this.$refs.algorithms.setMethod(job.method)
+        this.$http.getNodes(job.target, job.seeds, ["id", "displayName"]).then(response => {
+          this.seeds = response
         })
-      } else {
-        this.$socket.subscribeJob(this.currentJid, "quickModuleFinishedEvent");
+        if (job.derivedGraph && job.state === "DONE") {
+          this.currentGid = job.derivedGraph;
+          this.loadTargetTable(this.currentGid).then(() => {
+            this.loadGraph(this.currentGid)
+          })
+        } else {
+          this.$socket.subscribeJob(this.currentJid, "quickModuleFinishedEvent");
+        }
+      }catch (e){
+        this.$emit("jobReloadError")
       }
     },
     showInteractionNetwork: function () {

@@ -298,7 +298,7 @@
               <v-row>
                 <v-col cols="3" style="padding: 0 50px 0 0; margin-right: -50px">
                   <v-card-title class="subtitle-1">Seeds ({{ seeds.length }}) {{
-                      (results.targets.length !== undefined && results.targets.length > 0 ? ("& Module (" + getTargetCount() + ") " + ["Genes", "Proteins"][seedTypeId]) : ": Processing")
+                      (results.targets.length !== undefined && results.targets.length > 0 ? ("& Module (" + getTargetCount() + ") " + ["Genes", "Proteins"][seedTypeId]) : (": "+(moduleState!=null ? ("["+moduleState+"]"):"Processing")))
                     }}
                     <v-progress-circular indeterminate size="25" v-if="this.results.targets.length===0"
                                          style="margin-left:15px; z-index:50">
@@ -348,7 +348,8 @@
                 </v-col>
                 <v-col>
                   <Network ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle"
-                           :progress="resultProgress" :legend="resultProgress>=50" :tools="resultProgress===100"
+                           :progress="resultProgress" :progress-interminate="reloaded && !rankingGid" :legend="resultProgress>=50"
+                           :tools="resultProgress===100"
                            :secondaryViewer="true" :show-vis-option="showVisOption"
                            @loadIntoAdvancedEvent="$emit('graphLoadEvent',{post: {id: rankingGid}})">
                     <template v-slot:legend v-if="results.targets.length>0">
@@ -400,7 +401,7 @@
                 </v-col>
                 <v-col style="padding:0; max-width: 31%; width: 31%">
                   <v-card-title class="subtitle-1"> Drugs{{
-                      (results.drugs.length !== undefined && (results.drugs.length > 0 || rankingGid != null) ? (" (" + (results.drugs.length) + ")") : ": Processing")
+                      (results.drugs.length !== undefined && (results.drugs.length > 0 || rankingGid != null) ? (" (" + (results.drugs.length) + ")") : (": "+(rankingState!=null ? ("["+rankingState+"]"):"Processing")))
                     }}
                     <span v-show="loadingTrialData">: Loading Trial
                       Data</span>
@@ -643,6 +644,8 @@ export default {
       rankingSelect: 1,
       moduleGid: undefined,
       moduleJid: undefined,
+      rankingState: undefined,
+      moduleState: undefined,
       rankingGid: undefined,
       rankingJid: undefined,
       validationDrugCount: 0,
@@ -875,6 +878,7 @@ export default {
     },
 
     readModuleJob: function (data, notSubbed) {
+      this.moduleState = data.state
       if (data.state === "ERROR") {
         this.error = true;
         return
@@ -905,51 +909,65 @@ export default {
       this.validationDrugCount = this.$refs.validation.getDrugs().length;
     },
     reloadJobs: async function (module, ranking) {
-      await this.$refs.moduleAlgorithms.setMethod(module.method)
-      this.$http.getNodes(module.target, module.seeds, ["id", "displayName"]).then(response => {
-        this.seeds = response
-      })
-      this.moduleGid = module.derivedGraph
-      this.moduleJid = module.jobId;
-      this.rankingJid = ranking.jobId;
-      if (module.derivedGraph && module.state === "DONE") {
-        this.loadModuleTargetTable(this.moduleGid).then(() => {
-          this.loadGraph(this.moduleGid)
+      try {
+        this.moduleState = module.state
+        this.rankingState = ranking.state
+        await this.$refs.moduleAlgorithms.setMethod(module.method)
+        this.$http.getNodes(module.target, module.seeds, ["id", "displayName"]).then(response => {
+          this.seeds = response
         })
-      } else {
-        this.$socket.subscribeJob(this.moduleJid, "quickRepurposeModuleFinishedEvent");
-      }
-      await this.$refs.rankingAlgorithms.setMethod(ranking.method)
-      if (ranking.derivedGraph && ranking.state === "DONE") {
-        this.loadRankingTargetTable(ranking.derivedGraph).then(() => {
-          this.loadGraph(this.rankingGid)
-        })
-      } else {
-        this.$socket.subscribeJob(this.rankingJid, "quickRepurposeRankingFinishedEvent");
+        this.moduleGid = module.derivedGraph
+        this.moduleJid = module.jobId;
+        this.rankingJid = ranking.jobId;
+        if (module.derivedGraph && module.state === "DONE") {
+          this.loadModuleTargetTable(this.moduleGid).then(() => {
+            this.loadGraph(this.moduleGid)
+          })
+        } else {
+          this.$socket.subscribeJob(this.moduleJid, "quickRepurposeModuleFinishedEvent");
+        }
+        await this.$refs.rankingAlgorithms.setMethod(ranking.method)
+        if (ranking.derivedGraph && ranking.state === "DONE") {
+          this.loadRankingTargetTable(ranking.derivedGraph).then(() => {
+            this.loadGraph(this.rankingGid)
+          })
+        } else {
+          this.$socket.subscribeJob(this.rankingJid, "quickRepurposeRankingFinishedEvent");
+        }
+      }catch (e){
+        console.error(e)
+        this.$emit("jobReloadError")
       }
     },
 
     reloadJob: async function (job) {
-      this.reloaded = true;
-      this.step = 4;
-      await setTimeout(() => {
-      }, 200)
-      this.seedTypeId = ["gene", "protein"].indexOf(job.target)
-      await setTimeout(() => {
-      }, 1000);
-      if (job.basisGraph) {
-        this.$http.getJobByGraph(job.basisGraph).then(moduleJob => {
-          this.reloadJobs(moduleJob, job)
-        })
-      } else {
-        this.$http.getJob(job.parentJid).then(async moduleJob => {
-          this.reloadJobs(moduleJob, job)
-        })
+      try {
+        this.reloaded = true;
+        this.resultProgress = 50;
+        this.step = 4;
+        await setTimeout(() => {
+        }, 200)
+        this.seedTypeId = ["gene", "protein"].indexOf(job.target)
+        await setTimeout(() => {
+        }, 1000);
+        if (job.basisGraph) {
+          this.$http.getJobByGraph(job.basisGraph).then(moduleJob => {
+            this.reloadJobs(moduleJob, job)
+          })
+        } else {
+          this.$http.getJob(job.parentJid).then(async moduleJob => {
+            this.reloadJobs(moduleJob, job)
+          })
+        }
+      } catch (e) {
+        console.error(e)
+        this.$emit("jobReloadError")
       }
     },
     readRankingJob: function (result, unsubscribed, dirty) {
       this.resultProgress += 5
       let data = !dirty ? result : JSON.parse(result)
+      this.rankingState = data.state
       this.rankingJid = data.jid
       this.setURL(this.rankingJid)
       this.rankingGid = data.gid
