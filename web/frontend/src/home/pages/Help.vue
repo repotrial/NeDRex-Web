@@ -26,13 +26,12 @@
       Video-Tutorials
     </v-card-title>
     <v-card-text>
-      TODO
-      <div style="display: flex; justify-content: center">
-        <div style="width: 192px; height: 108px; background-color: black; margin: 10px; color: white">General</div>
-        <div style="width: 192px; height: 108px; background-color: black; margin: 10px; color: white">Quick</div>
-        <div style="width: 192px; height: 108px; background-color: black; margin: 10px; color: white">Guided</div>
-        <div style="width: 192px; height: 108px; background-color: black; margin: 10px; color: white">Advanced</div>
-      </div>
+      <iframe width="480" height="270" src="https://www.youtube.com/embed/y9JOxxtr9Kk" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+<!--      <div style="display: flex; justify-content: center">-->
+<!--        <div style="width: 192px; height: 108px; background-color: black; margin: 10px; color: white">Quick</div>-->
+<!--        <div style="width: 192px; height: 108px; background-color: black; margin: 10px; color: white">Guided</div>-->
+<!--        <div style="width: 192px; height: 108px; background-color: black; margin: 10px; color: white">Advanced</div>-->
+<!--      </div>-->
     </v-card-text>
 
     <v-card-title>Browser Compatability</v-card-title>
