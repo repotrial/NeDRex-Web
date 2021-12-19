@@ -912,8 +912,6 @@ export default {
       this.validationDrugCount = this.$refs.validation.getDrugs().length;
     },
     reloadJobs: async function (module, ranking) {
-      console.log(module)
-      console.log(ranking)
       try {
         this.moduleState = module.state
         this.rankingState = ranking.state
