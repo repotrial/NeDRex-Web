@@ -107,7 +107,7 @@ public class Robust implements Algorithm {
             String line = br.readLine();
             HashMap<String, String> keys = new HashMap<>();
             while ((line = br.readLine()) != null) {
-                if (line.startsWith("<key")) {
+                if (line.contains("<key")) {
                     LinkedList<String> attrs = StringUtils.split(line, " ");
                     AtomicReference<String> id = new AtomicReference<>("");
                     AtomicReference<String> name = new AtomicReference<>("");
@@ -124,13 +124,13 @@ public class Robust implements Algorithm {
                     if (id.get().length() > 0 && name.get().length() > 0)
                         keys.put(id.get(), name.get());
                 }
-                if (line.startsWith("<node")) {
+                if (line.contains("<node")) {
                     line = line.substring(1, line.length() - 1);
                     String nodeId = StringUtils.split(line, ' ').stream().filter(e -> e.startsWith("id")).collect(Collectors.toList()).get(0);
                     nodeId = nodeId.substring(4, nodeId.length() - 1);
                     HashMap<String, Object> attributes = new HashMap<>();
                     line = br.readLine();
-                    while (!line.startsWith("</node>")) {
+                    while (!line.contains("</node>")) {
                         LinkedList<String> attrs = StringUtils.split(line, '"');
                         String aid = attrs.get(1);
                         if (keys.containsKey(aid)) {
