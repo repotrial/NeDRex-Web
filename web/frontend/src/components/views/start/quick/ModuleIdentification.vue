@@ -821,7 +821,12 @@ export default {
         this.currentJid = job.jobId
         this.state = job.state
         await this.$refs.algorithms.setMethod(job.method)
+        if(!job.seeds || job.seeds.length===0)
+          this.$emit("jobReloadError")
         this.$http.getNodes(job.target, job.seeds, ["id", "displayName"]).then(response => {
+          if(!response || response.length===0){
+            this.$emit("jobReloadError")
+          }
           this.seeds = response
         })
         if (job.derivedGraph && job.state === "DONE") {

@@ -71,6 +71,7 @@ public class Must implements Algorithm{
                 edges.add(new Edge(id1, id2));
             });
         });
+        derived.addNodeMarks(nodeTypeId, derived.getNodes().get(nodeTypeId).keySet().stream().filter(n->!j.getSeeds().contains(n)).collect(Collectors.toList()));
         derived.addCustomEdge(nodeTypeId, nodeTypeId, "MuST_Interaction", edges);
         int eid = derived.getEdge("MuST_Interaction");
         derived.addCustomEdgeAttribute(eid, j.getResult().getEdges());

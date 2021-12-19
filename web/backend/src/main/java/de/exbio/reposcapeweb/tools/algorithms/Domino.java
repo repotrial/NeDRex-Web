@@ -119,7 +119,7 @@ public class Domino implements Algorithm {
         int beforeCount = allNodes.size();
         Set<Integer> newNodeIDs = new HashSet<>(j.getResult().getNodes().keySet());
         allNodes.addAll(newNodeIDs);
-        derived.addNodeMarks(nodeTypeId, newNodeIDs);
+        derived.addNodeMarks(nodeTypeId, newNodeIDs.stream().filter(n->!j.getSeeds().contains(n)).collect(Collectors.toList()));
         j.setUpdate("" + (allNodes.size() - beforeCount));
         NodeFilter nf = new NodeFilter(nodeController.getFilter(Graphs.getNode(nodeTypeId)), allNodes);
         derived.saveNodeFilter(Graphs.getNode(nodeTypeId), nf);

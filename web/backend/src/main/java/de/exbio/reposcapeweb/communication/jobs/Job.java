@@ -206,6 +206,10 @@ public class Job {
         this.message = update;
     }
 
+    public TreeSet<Integer> getSeeds() {
+        return seeds;
+    }
+
     public String getTarget() {
         return target;
     }
