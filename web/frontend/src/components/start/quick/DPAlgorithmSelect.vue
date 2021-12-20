@@ -229,7 +229,7 @@ export default {
       methods: [{
         id: "trustrank",
         label: "TrustRank",
-        description: "TrustRank is derived form the well known PageRank algorithm. Its  original purpose is to filter spam-sites that are not highly supported by other pages. This is achieved by assigning weights based on in- and out-going edges to favor highly and punish weakly supported nodes. In theory, these weights are iteratively propagated through the network until the assigned scores or ranks stabilize. In a biological application, the ranked websites are drugs, and the most trusted ones are drugs that have high chances of targeting a large number of seeds.",
+        description: "TrustRank is derived from the well known PageRank algorithm. Its  original purpose is to filter spam-sites that are not highly supported by other pages. This is achieved by assigning weights based on in- and out-going edges to favor highly and punish weakly supported nodes. In theory, these weights are iteratively propagated through the network until the assigned scores or ranks stabilize. In a biological application, the ranked websites are drugs, and the most trusted ones are drugs that have high chances of targeting a large number of seeds.",
         link: "https://en.wikipedia.org/wiki/TrustRank",
         descType: "Description",
         models: {
@@ -251,7 +251,7 @@ export default {
         {
           id: "centrality",
           label: "Closeness Centrality",
-          description: "Like the name suggests closeness centrality is one of several centrality measurements. These generally are used in network analysis to derive scores that translate to the importance of the nodes in its specific network. Closeness, in particular, is derived by calculating the sum over all shortest paths between the specific node x and any other (y) to the power of negative one. A low average shortest path is then used as an indicator for possible candidates that target the module.",
+          description: "Like the name suggests, closeness centrality is one of several centrality measurements. These generally are used in network analysis to derive scores that translate to the importance of the nodes in its specific network. Closeness, in particular, is derived by calculating the sum over all shortest paths between the specific node n and any other to the power of the negative one. A low average shortest path is then used as an indicator for possible candidates that target the module.",
           link: "https://en.wikipedia.org/wiki/Closeness_centrality",
           descType: "Description",
           models: {

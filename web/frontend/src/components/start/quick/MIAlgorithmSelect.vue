@@ -648,7 +648,7 @@ export default {
           group: "nw",
           label: "DIAMOnD",
           descType: "Description",
-          description: "DIAMOnD stands for DIseAse Module Detection and it iteratively identifies the best \"addition\" to the module by calculating the <i>connectivity significance</i> of all nodes connected to at least on of the nodes within the current selection. It was developed and evaluated on the known network topologies of 70 complex disorders. The approach aims to not over prefer high-degree nodes in general but only such those that are highly connected to the input, or by each iteration extended, node list.",
+          description: "DIAMOnD stands for DIseAse Module Detection and it iteratively identifies the best \"addition\" to the module by calculating the <i>connectivity significance</i> of all nodes connected to at least one of the nodes within the current selection. It was developed and evaluated on the known network topologies of 70 complex disorders. The approach aims to not over-prefer high-degree nodes in general but only such those that are highly connected to the input, or by each iteration extended, node list.",
           link: "https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1004120",
           models: {
             nModel: 200,
@@ -669,7 +669,7 @@ export default {
             lg: [10, 15]
           },
           descType: "Abstract",
-          description: "BiCoN (Biclustering Constrained by Networks) enriches general expression data based biclustering of genes and patients/conditions by gene interaction information. It \"restricts biclusters to functionally related genes connected in molecular interaction networks\" while \"maximizing the expression difference between two subgroups of patients\". For the module, both clusters of genes are seen as relevant under that condition and thus combined in the resulting module.",
+          description: "BiCoN (Biclustering Constrained by Networks) enriches general expression data-based biclustering of genes and patients/conditions by gene interaction information. It \"restricts biclusters to functionally related genes connected in molecular interaction networks\" while \"maximizing the expression difference between two subgroups of patients\". For the module, both clusters of genes are seen as relevant under that condition and thus combined in the resulting module.",
           link: "https://biomedical-big-data.de/publication/lazareva-2020-bicon/",
         }, {
           id: "must", group: "nw", label: "MuST", scores: [], models: {
@@ -679,7 +679,7 @@ export default {
             maxit: 10,
           },
           descType: "Description",
-          description: "Minimal Steiner trees are generated, meaning a minimal scoring tree is identified that is still only one connected component. This way, minimal cost paths within the network are identified. The reasoning behind using multiple trees is, that PPI clusters are highly connected leading to several shortest path options. This means that using only one tree would not really resemble the best solution but be drawn randomly from multiple equal ones. These multiple trees are then used to derive a prioritized list of target nodes the seeds are connected to, where the number of 'visits' of a non-seed node indicates the priority or significance of it.",
+          description: "Minimal Steiner trees are generated, meaning a minimal scoring tree is identified that is still only one connected component. This way, minimal cost paths within the network are identified. The reasoning behind using multiple trees is that PPI clusters are highly connected leading to several shortest path options. This means that using only one tree would not really resemble the best solution but be drawn randomly from multiple equal ones. These multiple trees are then used to derive a prioritized list of target nodes the seeds are connected to, where the number of 'visits' of a non-seed node indicates the priority or significance of it.",
           link: "https://en.wikipedia.org/wiki/Steiner_tree_problem"
         },
           {
@@ -698,7 +698,7 @@ export default {
             scores: []
             ,
             descType: "Description",
-            description: "<b>D</b>iscovery <b>o</b>f <b>M</b>odules <b>I</b>n <b>N</b>etworks using <b>O</b>mic is an active module identification tool that appeared to resolve the issue of by chance over-representation of specific GO terms and was validated to yield a high rate of empirically significant GO terms. DOMINO uses the seeds as \"active nodes\" and based on those identifies \"disjoint connected subnetworks\" with an over-representation of active nodes. For this first all disjoint but highly connected subnetworks are identified, before either removing this subnetwork from the list of potential results or repartitioning it and keeping it. The final list of subnetworks is returned as a result.<br><i>DOMINO might identify unconnected mechanisms!</i>",
+            description: "<b>D</b>iscovery <b>o</b>f <b>M</b>odules <b>I</b>n <b>N</b>etworks using <b>O</b>mic is an active module identification tool that aims to resolve the issue of by chance over-representation of specific GO terms and was validated to yield a high rate of empirically significant GO terms. DOMINO uses the seeds as \"active nodes\" and based on those identifies \"disjoint connected subnetworks\" with an over-representation of active nodes. For this first all disjoint but highly connected subnetworks are identified, before either removing this subnetwork from the list of potential results or repartitioning it and keeping it. The final list of subnetworks is returned as a result.<br><i>DOMINO might identify unconnected mechanisms!</i>",
             link: "https://www.embopress.org/doi/full/10.15252/msb.20209593"
 
           }, {
@@ -706,7 +706,7 @@ export default {
           label: "ROBUST",
           group: "nw",
           descType: "Description",
-          description: "ROBUST was developed as a result of the realization that other disease module identification algorithms are not robust to input permutation or not even deterministic overall. It employes \"diverse prize-collecting Steiner trees\" to reproducibly identify key nodes to add to the mdoule.",
+          description: "ROBUST was developed as a result of the realization that other disease module identification algorithms are not robust to input permutation or not even deterministic overall. It employs \"diverse prize-collecting Steiner trees\" to reproducibly identify key nodes to add to the module.",
           link: "https://github.com/bionetslab/robust",
           models: {
             initFract: 0.25,
