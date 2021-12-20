@@ -7,9 +7,9 @@
       <div style="text-align: justify">
         We provide two kinds of helpful materials to make sure you will have the best experience with <b>NeDRex-Web</b>:
       </div>
-      <div style="margin-left: 16px; margin-top:8px;text-align: justify">1. To give an overview over the <b>NeDRex-Web
-        application</b> we provide some short
-        <i><b>video material</b></i>. The are a <i><b>general introduction</b></i> and three additional <i><b>hands-on
+      <div style="margin-left: 16px; margin-top:8px;text-align: justify">1. To give an overview of the <b>NeDRex-Web
+        application</b> we provide a short
+        <i><b>video material</b></i>. It provides a <i><b>general introduction</b></i> and three additional <i><b>hands-on
           tutorials</b></i> explaining the three <i><b>different ways of starting</b></i> to explore the
         <b>NeDRex</b> knowledge graph with <b>NeDRex-Web</b>.
       </div>
@@ -21,7 +21,7 @@
           <v-icon :color="color" small style="margin-top: -2px;">fas fa-external-link-alt</v-icon>
         </a>
         <br>
-        <i>Please not this document might be updated over time</i>
+        <i>Please note this document might be updated over time</i>
       </div>
     </v-card-text>
     <v-card-title>
