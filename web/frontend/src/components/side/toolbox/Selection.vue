@@ -9,13 +9,30 @@
     <v-divider></v-divider>
     <div v-show="show">
       <div style="display: flex; justify-content: center">
-        <v-switch dense label="Selection Mode" v-model="options.selectMode"
-                  @click="$emit('selectModeEvent',options.selectMode)"></v-switch>
+        <v-tooltip top>
+          <template v-slot:activator="{attrs, on}">
+            <div v-on="on" v-bind="attrs">
+              <v-switch dense label="Selection Mode" v-model="options.selectMode"
+                        @click="$emit('selectModeEvent',options.selectMode)"></v-switch>
+            </div>
+          </template>
+          <div style="width: 250px">Enable visual selection mode and select nodes from the network by drawing a
+            rectangle in the network viewer.
+          </div>
+        </v-tooltip>
       </div>
       <div style="display: flex; justify-content: center">
-        <v-chip outlined @click="applySelection" style="margin: 8px">
-          <v-icon small left color="primary">fas fa-plus-circle</v-icon>Add to selection
-        </v-chip>
+        <v-tooltip top>
+          <template v-slot:activator="{attrs, on}">
+            <v-chip outlined @click="applySelection" style="margin: 8px" v-on="on" v-bind="attrs">
+              <v-icon small left color="primary">fas fa-plus-circle</v-icon>
+              Add to selection
+            </v-chip>
+          </template>
+          <div style="width: 250px">
+            Adds all nodes of the list below to the general node selection.
+          </div>
+        </v-tooltip>
       </div>
       <v-divider></v-divider>
       <v-container>
@@ -46,8 +63,11 @@
 </template>
 
 <script>
+import LabeledSwitch from "@/components/app/input/LabeledSwitch";
+
 export default {
   name: "Selection",
+  components: {LabeledSwitch},
   props: {
     options: Object,
   },

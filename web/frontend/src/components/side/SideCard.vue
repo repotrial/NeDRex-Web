@@ -14,9 +14,14 @@
         <v-divider></v-divider>
         <template v-if="show.summary">
           <v-card-title v-if="!summaryTitleEdit"><span>{{ graphInfo.name }}
-            <v-btn icon style="top: -3px; left: -3px" @click="summaryTitleEdit=true">
-              <v-icon size="15" color="primary">fas fa-edit</v-icon>
-            </v-btn>
+            <v-tooltip left>
+              <template v-slot:activator="{attrs, on}">
+                <v-btn icon style="top: -3px; left: -3px"  @click="summaryTitleEdit=true">
+                  <v-icon size="15"  v-on="on" v-bind="attrs" color="primary">fas fa-edit</v-icon>
+                </v-btn>
+                </template>
+              <div >Edit the name of the network</div>
+              </v-tooltip>
           </span></v-card-title>
           <v-card-title v-else>
             <v-text-field v-model="graphInfo.name"></v-text-field>

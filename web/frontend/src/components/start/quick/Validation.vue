@@ -4,13 +4,14 @@
     min-height="80vh"
   >
     <v-card-subtitle class="headline">{{ step }}. Validation</v-card-subtitle>
-    <v-card-subtitle style="margin-top: -25px">Validate the results by selecting drugs known to be effective in the current scenario.
+    <v-card-subtitle style="margin-top: -25px">Validate the results by selecting drugs known to be effective in the
+      current scenario.
     </v-card-subtitle>
     <v-divider style="margin: 15px;"></v-divider>
     <v-container style="height: 80%; max-width: 100%">
       <v-row>
         <v-col cols="6">
-          <div style="height: 800px; max-height: 800px;">
+          <div style="height: 820px; max-height: 820px;">
             <template>
               <div style="display: flex">
                 <div style="justify-content: flex-start">
@@ -72,11 +73,25 @@
           </div>
         </v-col>
 
-        <v-divider vertical></v-divider>
+        <v-divider vertical style="margin-bottom: 10px"></v-divider>
         <div style="justify-self: flex-end; margin-left: auto; width: 48%;"
              v-if="$refs.drugTable && $refs.drugTable.getSeeds().length>0">
           <v-card-title class="subtitle-1">Adjust validation parameters</v-card-title>
-          <v-switch v-model="models.onlyApproved" label="Approved Drugs only"></v-switch>
+          <div style="width: 100%; display: flex; justify-content: left">
+            <v-tooltip top>
+              <template v-slot:activator="{attrs, on}">
+                <div v-on="on" v-bind="attrs">
+                  <v-switch v-model="models.onlyApproved" label="Approved Drugs only"></v-switch>
+                </div>
+              </template>
+              <div style="width: 350px">Defines if only approved drugs or all should be used for random sampling in
+                the
+                validation step. For drug-ranking the value is by default set to the state that was chosen in the
+                algorithm parametrization step.
+              </div>
+            </v-tooltip>
+          </div>
+
           <v-slider
             hide-details
             class="align-center"
@@ -103,11 +118,17 @@
                     left> far fa-question-circle
                   </v-icon>
                 </template>
-                <span>A value between 1000 and 10000 which determines the number of permutations created for validation.</span>
+                <div style="width: 300px">A value between 1000 and 10000 which determines the number of permutations
+                  created for validation.
+                </div>
               </v-tooltip>
             </template>
           </v-slider>
-
+          <v-card-subtitle style="margin-top: 16px; color: #383838">{{ models.perms }} random modules with same node
+            count and number of connected components or drug lists with the same number of drugs are computed and
+            p-values derived by determining the fraction of cases in which random networks have a better score than the
+            observed network.
+          </v-card-subtitle>
           <v-btn @click="validate()" color="primary">Run Validation
             <v-icon right>fas fa-angle-double-right</v-icon>
           </v-btn>
@@ -136,7 +157,19 @@
                 <template v-slot:default>
                   <thead>
                   <tr>
-                    <th class="text-center">Measure</th>
+                    <v-tooltip top>
+                      <template v-slot:activator="{attrs, on}">
+                        <th class="text-center">Measure
+                          <v-icon small v-on="on" v-bind="attrs">far fa-question-circle</v-icon>
+                        </th>
+                      </template>
+                      <div style="width: 300px">:<br>
+                        <b>normal:</b> Cases in which #ref-drugs(random) > #ref-drugs(observed)
+                        <br>
+                        <b>precision based:</b> The precision of a module is defined by the drugs that target the module
+                        (#ref-drugs/#all-drugs)
+                      </div>
+                    </v-tooltip>
                     <th class="text-center">Value</th>
                   </tr>
                   </thead>
@@ -181,7 +214,16 @@
                 <template v-slot:default>
                   <thead>
                   <tr>
-                    <th class="text-center">Measure</th>
+                    <v-tooltip top>
+                      <template v-slot:activator="{attrs, on}">
+                    <th class="text-center">Measure <v-icon v-on="on" v-bind="attrs" small>far fa-question-circle</v-icon></th>
+                      </template>
+                      <div style="width: 300px">:<br>
+                        <b>DCG-based:</b> Observed drug list is compared to random drug lists by discounted cumulative gain
+                        <br>
+                        <b>without ranks:</b> Only compares #found-drugs in observed and random lists based on the reference list
+                      </div>
+                    </v-tooltip>
                     <th class="text-center">Value</th>
                   </tr>
                   </thead>
