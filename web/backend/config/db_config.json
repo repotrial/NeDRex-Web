@@ -322,7 +322,7 @@
           "list": true,
           "detail": true,
           "id": false,
-          "type": "numeric",
+          "distinct": true,
           "label": "Gene-Type"
         },
         {
