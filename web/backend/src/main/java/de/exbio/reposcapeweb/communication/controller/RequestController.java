@@ -2,16 +2,21 @@ package de.exbio.reposcapeweb.communication.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.exbio.reposcapeweb.communication.cache.Graph;
 import de.exbio.reposcapeweb.communication.cache.Graphs;
 import de.exbio.reposcapeweb.communication.jobs.Job;
 import de.exbio.reposcapeweb.communication.jobs.JobController;
 import de.exbio.reposcapeweb.communication.jobs.JobRequest;
 import de.exbio.reposcapeweb.communication.reponses.*;
 import de.exbio.reposcapeweb.communication.requests.*;
+import de.exbio.reposcapeweb.configs.DBConfig;
 import de.exbio.reposcapeweb.db.DbCommunicationService;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
+import de.exbio.reposcapeweb.db.history.GraphHistoryDetail;
 import de.exbio.reposcapeweb.db.history.HistoryController;
 import de.exbio.reposcapeweb.db.services.controller.NodeController;
+import de.exbio.reposcapeweb.db.services.nodes.GeneService;
+import de.exbio.reposcapeweb.db.services.nodes.ProteinService;
 import de.exbio.reposcapeweb.db.updates.UpdateService;
 import de.exbio.reposcapeweb.tools.ToolService;
 import de.exbio.reposcapeweb.utils.Pair;
@@ -28,6 +33,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import java.io.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Controller for the incoming requests on the RepoScape-WEB application.
@@ -78,12 +84,14 @@ public class RequestController {
     @RequestMapping(value = "/getNodeDetails", method = RequestMethod.GET)
     @ResponseBody
     public String getDetails(@RequestParam("name") String name, @RequestParam("id") int id) {
+        //TODO make static detailAttributeLabels in Node classes
         log.info("requested details for node " + name + " with id " + id);
         String out = "";
         HashMap<String, Object> details = new HashMap<>();
-        nodeController.nodeToAttributeList(Graphs.getNode(name), id).forEach((k, v) -> details.put(nodeController.getAttributeLabelMap(name).get(k), v));
+        HashSet<String> attrs = DBConfig.getConfig().nodes.get(Graphs.getNode(name)).getDetailAttributes().stream().map(a -> a.name).collect(Collectors.toCollection(HashSet::new));
+        nodeController.nodeToAttributeList(Graphs.getNode(name), id, attrs).forEach((k, v) -> details.put(nodeController.getAttributeLabelMap(name).get(k), v));
         try {
-            details.put("order", nodeController.getAttributeLabels(Graphs.getNode(name)));
+            details.put("order", nodeController.getDetailAttributeLabels(Graphs.getNode(name)));
             out = objectMapper.writeValueAsString(details);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
@@ -95,12 +103,12 @@ public class RequestController {
     @ResponseBody
     public String getCustomDetails(@RequestBody DetailRequest req) {
         log.info("requested details" + toJson(req));
-        if(req.attributes ==null || req.attributes.isEmpty())
-            return getDetails(req.name,req.id);
+        if (req.attributes == null || req.attributes.isEmpty())
+            return getDetails(req.name, req.id);
         HashMap<String, Object> details = new HashMap<>();
         nodeController.nodeToAttributeList(Graphs.getNode(req.name), req.id).forEach((k, v) -> {
-            if(req.attributes.contains(k))
-            details.put(nodeController.getAttributeLabelMap(req.name).get(k), v);
+            if (req.attributes.contains(k))
+                details.put(nodeController.getAttributeLabelMap(req.name).get(k), v);
         });
         return toJson(details);
     }
@@ -112,24 +120,38 @@ public class RequestController {
         return toJson(webGraphService.getEdgeDetails(gid, name, new PairId(id1, id2)));
     }
 
-    @RequestMapping(value = "/getQuickExample", method = RequestMethod.GET)
-    @ResponseBody
-    public String getQuickExample(@RequestParam("nr") int nr, @RequestParam("nodeType") String nodeName) {
-        LinkedList<Object> nodes = new LinkedList<>();
-        if (nr == 2) {
-            webGraphService.getQuickExample(nodeName, nr).forEach(n -> {
-                nodes.add(nodeController.getNode(nodeName, n).getAsMap(new HashSet<>(Arrays.asList("id", "displayName", "primaryDomainId"))));
-            });
-            return toJson(nodes);
-        } else {
-            return toJson(webGraphService.getConnectedNodes(nr == 0 ? "disorder" : "drug", nodeName, webGraphService.getQuickExample(nodeName, nr)));
-        }
-
-    }
+//    @RequestMapping(value = "/getQuickExample", method = RequestMethod.GET)
+//    @ResponseBody
+//    public String getQuickExample(@RequestParam("nr") int nr, @RequestParam("nodeType") String nodeName) {
+//        HashMap<String, Object> out = new HashMap<>();
+//        LinkedList<Object> nodes = new LinkedList<>();
+//        if (nr == 2) {
+//            webGraphService.getQuickExample(nodeName, nr).forEach(n -> {
+//                nodes.add(nodeController.getNode(nodeName, n).getAsMap(new HashSet<>(Arrays.asList("id", "displayName", "primaryDomainId"))));
+//            });
+//            out.put("data", nodes);
+//            out.put("drugs", new LinkedList<>());
+//            out.put("disorders", new LinkedList<>());
+//            return toJson(out);
+//        } else {
+//            LinkedList<Integer> disorderIds = webGraphService.getQuickExample(nodeName, nr);
+//            out.put("data", webGraphService.getConnectedNodes(nr == 0 ? "disorder" : "drug", nodeName, disorderIds));
+//            if (nr == 1) {
+//                out.put("drugs", webGraphService.getDirectNodes(webGraphService.getQuickExample(nodeName,nr),"drug"));
+//                out.put("disorders",new LinkedList<>());
+//            }
+//            if(nr==0){
+//                out.put("drugs",webGraphService.getConnectedNodes("disorder","drug",disorderIds));
+//                out.put("disorders",disorderIds);
+//            }
+//            return toJson(out);
+//        }
+//
+//    }
 
     @RequestMapping(value = "/getSuggestionEntry", method = RequestMethod.GET)
     @ResponseBody
-    public String getSuggestionEntry(@RequestParam(value = "gid",required = false) String gid, @RequestParam("nodeType") String nodeName, @RequestParam("sid") String sid) {
+    public String getSuggestionEntry(@RequestParam(value = "gid", required = false) String gid, @RequestParam("nodeType") String nodeName, @RequestParam("sid") String sid) {
         try {
             log.debug("Got request for SuggestionId=" + sid);
             return objectMapper.writeValueAsString(webGraphService.getSuggestionEntry(gid, nodeName, sid));
@@ -157,10 +179,23 @@ public class RequestController {
 
     }
 
+    @RequestMapping(value="/getExampleInputFileLink", method=RequestMethod.GET)
+    @ResponseBody
+    public String getExampleInputFileLink(@RequestParam(value="type") String type){
+        return switch (type){
+            case "gene" -> "https://drive.google.com/file/d/1WCCSV-149fkzfma0OtH29Yw5q8Giib1j/view?usp=sharing";
+            case "protein" -> "https://drive.google.com/file/d/1NNSUAp5Tu4FJzr1GK589bZdPM57ne7cq/view?usp=sharing";
+            case "pathway" -> "https://drive.google.com/file/d/1H_PBVjDlS6afdnTHvHvwtWUGh7zLJdWc/view?usp=sharing";
+            case "drug" -> "https://drive.google.com/file/d/18R0H-y7kmsF2HABgKL2ughYLspc3lkN6/view?usp=sharing";
+            case "disorder" -> "https://drive.google.com/file/d/1x53hj-1FUb1kbWRnmLIB2qK9VZ7-gQYk/view?usp=sharing";
+            default -> null;
+        };
+    }
+
     @RequestMapping(value = "/getConnectedNodes", method = RequestMethod.POST)
     @ResponseBody
     public String getConnectedNodes(@RequestBody HashMap<String, Object> request) {
-        Collection<Integer> ids = request.get("sugId").toString().indexOf('_') > -1 ? webGraphService.getSuggestionEntry(null, request.get("sourceType").toString(), request.get("sugId").toString()) : Collections.singletonList(Integer.parseInt(request.get("sugId").toString()));
+        Collection<Integer> ids = request.get("sugId") != null ? (request.get("sugId").toString().indexOf('_') > -1 ? webGraphService.getSuggestionEntry(null, request.get("sourceType").toString(), request.get("sugId").toString()) : Collections.singletonList(Integer.parseInt(request.get("sugId").toString()))) : ((ArrayList<Integer>) request.get("ids"));
         if ((boolean) request.get("noloop")) {
             LinkedList<Object> nodes = webGraphService.getDirectNodes(ids, request);
             return toJson(nodes);
@@ -271,8 +306,9 @@ public class RequestController {
         File f = jobController.getDownload(jid);
         Resource resource = new FileSystemResource(jobController.getDownload(jid));
         String contentType = request.getServletContext().getMimeType(jobController.getDownload(jid).getAbsolutePath());
+        MediaType type = f.getName().endsWith(".graphml") ? MediaType.TEXT_XML :MediaType.parseMediaType(contentType);
         return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(contentType))
+                .contentType(type)
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + f.getName())
                 .body(resource);
     }
@@ -280,12 +316,27 @@ public class RequestController {
     @RequestMapping(value = "/downloadGraph", method = RequestMethod.GET, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public @ResponseBody
     ResponseEntity<Resource> downloadGraph(@RequestParam("gid") String gid, HttpServletRequest request) {
+        log.info("Requested graphml download of " + gid);
         File f = webGraphService.getDownload(gid);
         Resource resource = new FileSystemResource(f);
         return ResponseEntity.ok()
                 .contentType(MediaType.TEXT_XML)
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + f.getName())
                 .body(resource);
+    }
+
+    @RequestMapping(value = "getLicense", method = RequestMethod.GET)
+    public @ResponseBody
+    String getLicence() {
+//       TODO while db update is not regular
+        return updateService.queryLicenseText();
+//        return updateService.getLicenceText();
+    }
+
+    @RequestMapping(value = "/getLayout", method = RequestMethod.GET)
+    public @ResponseBody
+    String getLayout(@RequestParam("gid") String gid, @RequestParam("type") String type) {
+        return toJson(webGraphService.loadLayout(gid, type));
     }
 
 
@@ -328,21 +379,25 @@ public class RequestController {
 
     @RequestMapping(value = "/mapListToItems", method = RequestMethod.POST)
     @ResponseBody
-    public String getListToItems(@RequestBody MapListRequest request) {
+    public String getListToItems(@RequestBody MapDomainListRequest request) {
         log.debug("Got mapping request for node type: " + request.type + " and list " + toJson(request.list));
-        return toJson(webGraphService.mapDomainIdsToItemList(request.type, new LinkedList(Arrays.asList(request.list))));
+        return toJson(webGraphService.mapDomainIdsToItemList(request.type, request.list));
     }
+
     @RequestMapping(value = "/mapIdListToItems", method = RequestMethod.POST)
     @ResponseBody
     public String getIdListToItems(@RequestBody MapListRequest request) {
         log.debug("Got mapping request for node type: " + request.type + " and id list " + toJson(request.list));
-        return toJson(webGraphService.mapIdsToItemList(request.type, request.list,request.attributes));
+        return toJson(webGraphService.mapIdsToItemList(request.type, request.list, request.attributes));
     }
 
 
     @RequestMapping(value = "/removeGraph", method = RequestMethod.GET)
     @ResponseBody
     public void removeGraph(@RequestParam("gid") String gid) {
+        String jid = jobController.getJobByGraphId(gid);
+        if (jid != null)
+            jobController.removeJob(jid);
         webGraphService.remove(gid);
     }
 
@@ -371,13 +426,28 @@ public class RequestController {
         return toJson(info);
     }
 
+    @RequestMapping(value = "/getInteractionEdges", method = RequestMethod.POST)
+    @ResponseBody
+    public String getInteractionEdges(@RequestBody EdgeRequest request) {
+        return toJson(webGraphService.getInteractionEdges(request.type, request.ids));
+    }
+
     @RequestMapping(value = "/getGraphHistory", method = RequestMethod.GET)
     @ResponseBody
     public String getGraphHistory(@RequestParam("gid") String gid, @RequestParam("uid") String uid) {
         log.info("GraphHistory detail request: " + gid);
         File thumbnail = webGraphService.getThumbnail(gid);
         webGraphService.createThumbnail(gid, thumbnail);
-        return toJson(historyController.getDetailedHistory(uid, webGraphService.getCachedGraph(gid), webGraphService.getConnectionGraph(gid), jobController.getJobGraphStatesAndTypes(uid), thumbnail));
+        GraphHistoryDetail detail = historyController.getDetailedHistory(uid, webGraphService.getCachedGraph(gid), webGraphService.getConnectionGraph(gid), jobController.getJobGraphStatesAndTypes(uid), thumbnail);
+        if (detail.jobid != null)
+            detail.params.putAll(jobController.getParams(detail.jobid));
+        return toJson(detail);
+    }
+
+    @RequestMapping(value = "/getThumbnailState", method = RequestMethod.GET)
+    @ResponseBody
+    public String getThumbnailState(@RequestParam("gid") String gid) {
+        return toJson(webGraphService.getThumbnailState(gid));
     }
 
     @RequestMapping(value = "/getThumbnailPath", method = RequestMethod.GET)
@@ -415,6 +485,27 @@ public class RequestController {
         return toJson(j.toMap());
     }
 
+    @Autowired
+    GeneService geneService;
+
+    @Autowired
+    ProteinService proteinService;
+
+    @RequestMapping(value = "/getAllowedExpressionIDs", method = RequestMethod.GET)
+    @ResponseBody
+    public String getAllowedExpressionIDs() {
+        HashSet<String> allIds = new HashSet<>();
+        allIds.addAll(geneService.getDomainIdTypes());
+//        allIds.addAll(proteinService.getDomainIdTypes());
+        return toJson(allIds);
+    }
+
+    @RequestMapping(value = "/getDisorderHierarchy", method = RequestMethod.GET)
+    @ResponseBody
+    public String getDisorderHierarch(@RequestParam("sid") String sid) {
+        return toJson(webGraphService.getDisorderHierarchy(sid));
+    }
+
     @RequestMapping(value = "/getNedrex", method = RequestMethod.POST)
     @ResponseBody
     public String getNedrex(@RequestBody NedrexRequest req) {
@@ -434,15 +525,27 @@ public class RequestController {
         return toJson(jobController.getJobGraphStatesAndTypes(uid, gid));
     }
 
+    @RequestMapping(value = "/getJob", method = RequestMethod.GET)
+    @ResponseBody
+    public String getJob(@RequestParam("id") String id) {
+        return toJson(jobController.getJobResponse(id));
+    }
+
+    @RequestMapping(value="/getJobByGraph", method = RequestMethod.GET)
+    @ResponseBody
+    public String getJobByGraph(@RequestParam("gid") String gid){
+        return getJob(jobController.getJobByGraphId(gid));
+    }
+
     @RequestMapping(value = "/getUserJobs", method = RequestMethod.GET)
     @ResponseBody
     public String getJobs(@RequestParam("uid") String uid) {
         return toJson(jobController.getJobGraphStatesAndTypes(uid, null));
     }
 
-    @RequestMapping(value="/getInteractingOnly", method = RequestMethod.POST)
+    @RequestMapping(value = "/getInteractingOnly", method = RequestMethod.POST)
     @ResponseBody
-    public String filterInteracting(@RequestBody FilterInteractionRequest req){
+    public String filterInteracting(@RequestBody FilterInteractionRequest req) {
         return toJson(webGraphService.filterInteracting(req.type, req.ids));
     }
 

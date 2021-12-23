@@ -39,7 +39,7 @@ WORKDIR /usr/app/scripts/graph_tools
 RUN wget https://downloads.skewed.de/graph-tool/graph-tool-2.35.tar.bz2
 RUN tar -xf graph-tool-2.35.tar.bz2
 WORKDIR /usr/app/scripts/graph_tools/graph-tool-2.35
-#
+
 RUN ./configure
 RUN make
 RUN make install

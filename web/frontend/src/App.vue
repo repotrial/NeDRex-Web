@@ -1,6 +1,8 @@
 <template style="overflow-y: hidden">
   <v-app :style="{marginTop:selectedTabId===0 ? '60px': '0px'}" id="app">
-    <headerBar @showVersionEvent="showVersionInfo=true" @showBugEvent="showBugInfo=true" @showHelpEvent="showHelp=true"
+    <headerBar @showVersionEvent="showVersionInfo=true" @showBugEvent="showBugInfo=true"
+               @showHelpEvent="showHelp=true"
+               @showCompatability="showCompatability=true"
                @redirectEvent="redirect"
                :prominent="selectedTabId===0" style="z-index: 1000;"/>
     <v-card style="position: sticky ; top: 0; margin-top: -10px; z-index: 999 ">
@@ -28,20 +30,23 @@
         </template>
       </v-toolbar>
     </v-card>
-    <v-container align-self="start" v-if="metaLoaded" style="width: 100%; max-width:95vw; margin-left: 1%; margin-right: 1%">
+    <v-container ref="mainContainer" align-self="start" v-if="metaLoaded"
+                 style="width: 100%; max-width:95vw; margin-left: 1%; margin-right: 1%" @mouseup="resizeUp">
       <v-row>
-        <v-col :cols="sideHidden ? 12:10">
+        <v-col v-resize="setMainWidth"
+               :style="{width: (mainWidth - (sideHidden ? 0 :sideCardWidth))+'px', minWidth: (mainWidth  - (sideHidden? 0 :sideCardWidth))+'px'}">
           <v-main app style="padding-top: 0">
-            <v-container fluid>
+            <v-container fluid style="margin-right:0; padding-right: 0">
 
-              <Start v-show="selectedTabId===0" ref="start"
+              <Start v-if="selectedTabId===0" ref="start"
                      v-on:graphLoadEvent="loadGraph"
                      @graphLoadNewTabEvent="loadGraphNewTab"
                      v-on:printNotificationEvent="printNotification"
                      @showSideEvent="setSideVisible"
                      @clearURLEvent="clearURL"
                      @modifyURLEvent="modifyURL"
-                     :colors="colors" :options="options.start" :filters="startFilters"></Start>
+                     @newGraphEvent="reloadHistory()"
+                     :colors="colors" :options="options.start" :filters="startFilters" :jid="jid"></Start>
               <Network
                 v-show="selectedTabId===1"
                 ref="graph"
@@ -93,13 +98,15 @@
                     v-on:reloadSide="reloadSide"
                     v-on:addJobEvent="registerJob"
                     v-on:focusInGraphEvent="focusInGraph"
+                    @newJobEvent="addListJob"
                     @loadLegendEvent="loadLegendEvent"
                     @recolorGraphEvent="recolorGraph"
                     :configuration="options.list"
               ></List>
             </v-container>
-            <v-container v-show="selectedTabId===3" fluid>
+            <v-container v-show="selectedTabId===3" fluid style="margin-right:0; padding-right: 0">
               <History ref="history"
+                       :width="mainWidth-sideCardWidth"
                        v-on:graphLoadEvent="loadGraph"
                        v-on:printNotificationEvent="printNotification"
                        v-on:reloadEvent=""
@@ -119,6 +126,7 @@
               v-if="listWarnObject !== undefined"
               persistent
               max-width="500"
+              style="z-index: 1001"
             >
               <v-card>
                 <v-card-title class="headline">
@@ -179,7 +187,13 @@
             </v-dialog>
           </v-main>
         </v-col>
-        <v-col cols="2" v-show="!sideHidden" style="margin-left:-40px; margin-right: 0">
+        <v-col v-show="!sideHidden"
+               :style="{marginLeft:'-40px', marginRight: 0, width: sideCardWidth, minWidth: sideCardWidth}">
+          <div :style="{position: 'fixed', top:'50vh',right:sideCardWidth-25+'px', zIndex:1000}">
+            <v-icon style="cursor:col-resize; z-index: 1000" @mousedown="resizeDown">fas
+              fa-grip-lines-vertical
+            </v-icon>
+          </div>
           <SideCard ref="side"
                     v-on:printNotificationEvent="printNotification"
                     v-on:nodeSelectionEvent="setSelectedNode"
@@ -191,7 +205,7 @@
                     v-on:historyReloadEvent="historyReloadEvent"
                     v-on:reverseSortingEvent="reverseHistorySorting"
                     v-on:selectionEvent="listSelectionEvent"
-                    v-on:executeAlgorithmEvent="executeAlgorithm"
+                    v-on:openAlgorithmDialogEvent="openAlgorithmDialogEvent"
                     v-on:graphLoadEvent="loadGraph"
                     v-on:reloadHistoryEvent="reloadHistory"
                     @selectModeEvent="toggleGraphSelectMode"
@@ -203,45 +217,27 @@
                     :options="options"
                     :selected-tab="selectedTabId"
                     :filters="startFilters"
+                    :side-width="sideCardWidth"
           ></SideCard>
         </v-col>
       </v-row>
-      <v-dialog
-        v-model="cookiesPopup"
-        persistent
-        max-width="500"
-      >
-        <v-card>
-          <v-card-title>This page uses cookies</v-card-title>
-          <v-card-text>This network browser uses cookies to store an identification for your user. This is used to show
-            you
-            your previous explorations.
-          </v-card-text>
-          <v-divider></v-divider>
-
-          <v-card-actions>
-            <v-btn
-              color="green darken-1"
-              text
-              @click="closeCookiePopup"
-            >
-              Accept
-            </v-btn>
-          </v-card-actions>
-        </v-card>
-
-      </v-dialog>
     </v-container>
-    <v-bottom-sheet inset v-model="showBugInfo" width="30vw" :overlay-color="colors.main.bg1">
+    <LegalDialog ref="tos" v-model="cookiesPopup" @initUserEvent="initUser()"></LegalDialog>
+    <v-bottom-sheet inset v-model="showBugInfo" width="30vw" :overlay-color="colors.main.bg1" style="z-index: 1001">
       <BugSheet :color="colors.main.bg1"></BugSheet>
     </v-bottom-sheet>
-    <v-bottom-sheet inset v-model="showHelp" width="30vw" :overlay-color="colors.main.bg1">
+    <v-bottom-sheet inset v-model="showHelp" width="35vw" :overlay-color="colors.main.bg1" style="z-index: 1001">
       <HelpSheet :color="colors.main.bg1"></HelpSheet>
     </v-bottom-sheet>
-    <v-bottom-sheet inset v-model="showVersionInfo" width="60vw" :overlay-color="colors.main.bg1">
-      <VersionSheet :color="colors.main.bg1"></VersionSheet>
+    <v-bottom-sheet inset v-model="showVersionInfo" width="60vw" :overlay-color="colors.main.bg1"
+                    style="z-index: 1001">
+      <VersionSheet :color="colors.main.bg1" @showTOSEvent="showTos(true)"></VersionSheet>
     </v-bottom-sheet>
-    <Footer :color="colors.main.bg1"></Footer>
+    <v-bottom-sheet inset v-model="showCompatability" width="60vw" :overlay-color="colors.main.bg1"
+                    style="z-index:1001">
+      <CompatabilitySheet :color="colors.main.bg1"></CompatabilitySheet>
+    </v-bottom-sheet>
+    <Footer :color="colors.main.bg1" style="z-index: 1000;"></Footer>
   </v-app>
 </template>
 
@@ -250,7 +246,6 @@ import Start from './components/views/Start.vue';
 import History from "./components/views/History";
 import List from './components/views/List.vue'
 import SideCard from './components/side/SideCard.vue'
-import Home from './components/views/Home.vue'
 import headerBar from './components/app/Header.vue'
 import Legend from "./components/views/graph/Legend";
 import Footer from "@/components/app/Footer";
@@ -261,6 +256,8 @@ import Network from "@/components/views/graph/Network";
 import VisualizationOptions from "@/components/views/graph/VisualizationOptions";
 import * as CONFIG from "@/Config";
 import Tools from "@/components/views/graph/Tools";
+import CompatabilitySheet from "@/components/app/sheets/CompatabilitySheet";
+import LegalDialog from "@/components/app/dialogs/LegalDialog";
 
 export default {
   name: 'app',
@@ -291,6 +288,7 @@ export default {
       showVersionInfo: false,
       showBugInfo: false,
       showHelp: false,
+      showCompatability: false,
       sideHidden: true,
       graphWindowStyle: {
         height: '75vh',
@@ -298,20 +296,37 @@ export default {
       },
       showLegend: false,
       physicsDisabled: false,
+      jid: undefined,
+      hoverResizer: false,
+      sideCardWidth: 0,
+      mainWidth: 0,
+      resizeStart: undefined
     }
   },
   created() {
+    this.sideCardWidth = window.document.body.getBoundingClientRect().width * 0.2
+    this.mainWidth = window.document.body.getBoundingClientRect().width
     this.loadUser()
     this.init()
   },
+
   watch: {
     '$route'(to, from) {
       let new_gid = this.$route.params["gid"]
       this.applyUrlTab(true)
       this.setView()
       if (new_gid && new_gid !== this.gid) {
+        this.jid = null
         this.gid = new_gid
         this.reloadAll()
+      }
+      if (this.$route.params["job"] != null) {
+        let new_jid = this.$route.params["job"]
+        if (this.jid !== new_jid) {
+          this.gid = null
+          this.jid = new_jid
+          this.reloadAll()
+        }
       }
     },
   },
@@ -339,8 +354,7 @@ export default {
     disablePhysics: function (bool) {
       this.physicsDisabled = bool
     },
-    closeCookiePopup: function () {
-      this.cookiesPopup = false
+    initUser: function () {
       this.$http.get("/initUser").then(response => {
         if (response.data !== undefined) {
           return response.data;
@@ -350,10 +364,21 @@ export default {
         this.$router.go()
       }).catch(console.error)
     },
+    showTos: function () {
+      if (this.$refs.tos)
+        this.$refs.tos.show()
+      else
+        setTimeout(() => {
+          this.showTos()
+        }, 500)
+    },
+
     loadUser: function () {
-      if (this.$cookies.get("uid") === null) {
-        this.cookiesPopup = true
+      if (this.$cookies.get("uid") == null) {
+        this.showTos()
       } else {
+        if (sessionStorage.getItem("tos") == null)
+          this.showTos()
         this.$http.get("/getUser?user=" + this.$cookies.get("uid")).then(response => {
           if (response.data !== undefined)
             return response.data
@@ -371,26 +396,32 @@ export default {
       this.gid = undefined
       if (this.$router.currentRoute.fullPath.length > 1) {
         if (!view)
-          this.$router.push("/home")
+          this.$router.push("/explore/")
         else {
+
           let path = "/explore/" + view + "/start"
           if (this.$route.fullPath !== path)
             this.$router.push(path)
-          this.reloadAll()
-          this.$refs.graph.reload()
+          this.reloadAll(["start"])
         }
       }
     }
     ,
-    reloadAll: function () {
+    reloadAll: function (except) {
       this.tabslist[1].icon = "fas fa-project-diagram"
       this.tabslist[2].icon = "fas fa-list-ul"
-      this.$refs.list.setLoading(true)
-      this.$refs.graph.reload()
-      this.$refs.list.reload()
-      this.$refs.history.reload()
-      this.$refs.side.reload()
-
+      if (this.$refs.list && (except == null || except.indexOf("list") === -1)) {
+        this.$refs.list.setLoading(true)
+        this.$refs.list.reload();
+      }
+      if (this.$refs.graph && (except == null || except.indexOf("graph") === -1))
+        this.$refs.graph.reload()
+      if (this.$refs.history && (except == null || except.indexOf("history") === -1))
+        this.$refs.history.reload()
+      if (this.$refs.side && (except == null || except.indexOf("side") === -1))
+        this.$refs.side.reload()
+      if (this.$refs.start && (except == null || except.indexOf("start") === -1))
+        this.$refs.start.reload()
     }
     ,
     setView: function () {
@@ -412,8 +443,11 @@ export default {
     }
     ,
     selectionColorSelect: function () {
+      if (!this.$refs.graph.isVisualized || !this.$refs.graph.graphExists()) {
+        this.printNotification("Graph must be visualized first!", 2)
+        return
+      }
       this.$refs.list.selectColor()
-      this.$refs.graph.visualize()
     }
     ,
     setTabId: function (tab, skipReroute) {
@@ -421,8 +455,9 @@ export default {
     }
     ,
     applyUrlTab: function (skipReroute) {
-      let new_tab = this.$route.params["tab"]
-      if (new_tab !== this.tab) {
+
+      let new_tab = this.$route.params["job"] != null ? "quick" : this.$route.params["tab"]
+      if (new_tab && new_tab !== this.tab) {
         this.tab = new_tab
         this.setTabId(new_tab, skipReroute)
       }
@@ -436,6 +471,12 @@ export default {
       }
     },
 
+    setMainWidth: function () {
+      this.mainWidth = window.document.body.getBoundingClientRect().width
+      if (this.sideCardWidth > this.mainWidth * 0.4)
+        this.sideCardWidth = this.mainWidth * 0.4
+    },
+
     scheduleVisualization: function (id) {
       if (this.$refs.graph == null)
         setTimeout(this.scheduleVisualization, 100, id)
@@ -444,7 +485,7 @@ export default {
     },
 
     setSideVisible: function (bool) {
-      this.sideHidden = !bool
+      this.$set(this, 'sideHidden', !bool)
     }
     ,
     visualizationEvent: function () {
@@ -467,7 +508,6 @@ export default {
     focusInGraph: function (type, id) {
       if (!this.$refs.graph.isVisualized || !this.$refs.graph.graphExists()) {
         this.printNotification("Graph must be visualized first!", 2)
-        this.$refs.graph.visualize()
         return
       }
       this.setTabId("graph", false)
@@ -488,10 +528,20 @@ export default {
       }
     }
     ,
-    downloadEntries: function (entity, name) {
-      if (this.$refs.list != null)
-        this.$refs.list.downloadFromLegend(entity, name)
+    downloadEntries: async function (entity, name) {
+      let table = await this.$http.getTableDownload(this.gid, entity, name, ["primaryDomainId", "displayName"])
+      this.download(this.gid + "_" + name + "-" + entity + ".tsv", table)
     },
+    download: function (name, content) {
+      let dl = document.createElement('a')
+      dl.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(content))
+      dl.setAttribute('download', name)
+      dl.style.direction = 'none'
+      document.body.appendChild(dl)
+      dl.click()
+      document.body.removeChild(dl)
+    }
+    ,
     initComponents: function () {
       this.options.start = {skipVis: true, onlyConnected: true, selectedElements: []}
       this.options.graph = {
@@ -513,6 +563,11 @@ export default {
       this.loadGraph({data: selection})
     }
     ,
+
+    addListJob: function (data) {
+      if (this.$refs.side)
+        this.$refs.side.addJob(data);
+    },
 
     loadLegendEvent: function (val) {
       if (val === this.showLegend && val) {
@@ -559,6 +614,8 @@ export default {
         this.$refs.graph.graphViewEvent(value)
       if (option === 'shadow')
         this.$refs.graph.setShadow(value)
+      if (option === 'label')
+        this.$refs.graph.showLabels(value)
     },
 
     clickToolOption: function (option) {
@@ -629,7 +686,6 @@ export default {
         this.$http.get("/archiveHistory?uid=" + this.$cookies.get("uid") + "&gid=" + info.id).then(() => {
           this.loadGraphURL(info.id, tab)
         }).catch(err => console.error(err))
-
       }
     }
     ,
@@ -649,8 +705,8 @@ export default {
       this.$refs.history.reload()
     }
     ,
-    executeAlgorithm: function (algorithm, params) {
-      this.$refs.list.executeAlgorithm(algorithm, params)
+    openAlgorithmDialogEvent: function (data) {
+      this.$refs.list.openAlgorithmDialogEvent(data)
     }
     ,
     applyEvent: function (bool) {
@@ -660,6 +716,31 @@ export default {
         this.$refs.graph.visualize()
     }
     ,
+    resizeDown: function (e) {
+      this.resizeStart = e
+      this.$refs.mainContainer.addEventListener("mousemove", this.resizeMove)
+    },
+
+    resizeUp: function (e) {
+      this.resizeStart = undefined
+      this.$refs.mainContainer.removeEventListener("mousemove", this.resizeMove)
+    },
+
+    resizeMove: function (e) {
+      let size = this.sideCardWidth - (e.clientX - this.resizeStart.clientX);
+      if (size < 700 && size < 0.4 * this.mainWidth) {
+        if (size > 300) {
+          this.sideCardWidth = size
+          this.resizeStart = e;
+        } else {
+          this.sideCardWidth = 300
+        }
+      } else {
+        this.sideCardWidth = Math.min(700, 0.4 * this.mainWidth);
+      }
+    },
+
+
     listModification: function (event) {
       this.$refs.list.receiveEvent(event)
     }
@@ -710,17 +791,17 @@ export default {
         this.$refs.tools.setSelectedNodeId(params.nodes[0])
         this.$refs.side.loadSelection(this.$refs.graph.identifyNeighbors(params.nodes[0]))
         this.$refs.side.loadDetails({
-          type: "node",
-          name: ["gene", "protein", "pathway", "disorder", "drug"][["gen", "pro", "pat", "dis", "dru"].indexOf(params.nodes[0].substring(0, 3))],
-          id: params.nodes[0].substring(4)
+          edge: false,
+          type: ["gene", "protein", "pathway", "disorder", "drug"][["gen", "pro", "pat", "dis", "dru"].indexOf(params.nodes[0].substring(0, 3))],
+          id: parseInt(params.nodes[0].substring(4))
         })
 
       } else if (params != null && params.edges != null && params.edges.length > 0) {
         this.$refs.side.loadDetails({
-          type: "edge",
-          name: params.edges[0].title,
-          id1: params.edges[0].from.substring(4),
-          id2: params.edges[0].to.substring(4)
+          edge: true,
+          type: params.edges[0].title,
+          id1: parseInt(params.edges[0].from.substring(4)),
+          id2: parseInt(params.edges[0].to.substring(4))
         })
       } else {
         this.$refs.side.loadSelection(this.$refs.graph.getAllNodes())
@@ -746,7 +827,9 @@ export default {
       if (this.selectedTabId === tabid)
         return
       if (this.selectedTabId === 0 && !skipReroute)
-        this.$refs.start.reset()
+        this.$nextTick(() => {
+          this.$refs.start.reset()
+        })
       let colInactive = this.colors.tabs.inactive;
       let colActive = this.colors.tabs.active;
       for (let idx in this.tabslist) {
@@ -759,10 +842,10 @@ export default {
       this.selectedTabId = tabid;
       if (!skipReroute) {
         let route = ""
-        if (this.gid !== undefined)
+        if (this.gid != null)
           route = ("/explore/" + ['quick/start', 'advanced/graph', 'advanced/list', 'advanced/history'][tabid] + "/" + this.gid)
-        if (this.gid === undefined)
-          route = ("/" + ['home', 'home', 'home', 'history'][tabid])
+        else
+          route = ("/" + ['explore', 'explore', 'explore', 'history'][tabid])
         if (this.$route.path !== route)
           this.$router.push(route)
       }
@@ -774,11 +857,13 @@ export default {
     }
     ,
     adaptSidecard: function (param) {
-      if (this.selectedTabId === 0) {
-        this.$refs.side.loadFilter(param)
-      }
-      if (this.selectedTabId === 3)
+      // if (this.selectedTabId === 0) {
+      // this.$refs.side.loadFilter(param)
+      // this.setSideVisible(false)
+      // }
+      if (this.selectedTabId === 3) {
         this.setSideVisible(true)
+      }
       if (this.selectedTabId === 2 && this.gid == null)
         this.setSideVisible(false)
       if (this.selectedTabId === 1)
@@ -791,16 +876,30 @@ export default {
     ,
     resolveWarning: async function (id, download) {
       if (download)
-        await window.open(CONFIG.HOST_URL + CONFIG.CONTEXT_PATH + '/api/downloadGraph?gid=' + this.gid)
-      this.$http.removeGraph(id)
-      this.listDialog = false;
+        await window.open(CONFIG.HOST_URL + CONFIG.CONTEXT_PATH + '/api/downloadGraph?gid=' + id)
+      else {
+        this.listDialog = false;
+        this.$http.removeGraph(id)
+      }
     },
-    printNotification: function (message, style) {
+    printNotification: function (message, style, timeout) {
       if (style === 1) {
+        let old = this.notifications.style1.timeout;
+        this.notifications.style1.timeout = timeout
         this.setNotification(this.notifications.style1, message)
+        if (timeout !== old)
+          setTimeout(() => {
+            this.notifications.style1.timeout = old
+          }, timeout)
       }
       if (style === 2) {
+        let old = this.notifications.style2.timeout;
+        this.notifications.style2.timeout = timeout
         this.setNotification(this.notifications.style2, message)
+        if (timeout !== old)
+          setTimeout(() => {
+            this.notifications.style2.timeout = old
+          }, timeout)
       }
     }
     ,
@@ -828,6 +927,7 @@ export default {
   }
   ,
   components: {
+    LegalDialog,
     headerBar,
     Network,
     SideCard,
@@ -836,10 +936,10 @@ export default {
     History,
     Legend,
     Tools,
-    Home,
     Footer,
     BugSheet,
     HelpSheet,
+    CompatabilitySheet,
     VersionSheet,
     VisualizationOptions,
   }
@@ -882,7 +982,6 @@ ul
 li
   display: inline-block
   margin: 0 10px
-
 
 a
   color: #42b983

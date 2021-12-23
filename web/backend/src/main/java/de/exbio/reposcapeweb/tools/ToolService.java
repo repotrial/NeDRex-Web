@@ -24,10 +24,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.Arrays;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.*;
 
 @Service
 public class ToolService {
@@ -47,14 +44,14 @@ public class ToolService {
     private Logger log = LoggerFactory.getLogger(ToolService.class);
 
     @Autowired
-    public ToolService(Robust robust, Domino domino, TrustRank trustrank, ClosenessCentrality cc, Bicon bicon, Must must, Diamond diamond, ProteinService proteinService, GeneService geneService, Environment env, ProteinInteractsWithProteinService interactionService) {
+    public ToolService(KPM kpm, Robust robust, Domino domino, TrustRank trustrank, ClosenessCentrality cc, Bicon bicon, Must must, Diamond diamond, ProteinService proteinService, GeneService geneService, Environment env, ProteinInteractsWithProteinService interactionService) {
         this.env = env;
         this.interactionService = interactionService;
         this.proteinService = proteinService;
         this.geneService = geneService;
 
         Algorithm[] algorithms = new Algorithm[]
-                {diamond, must, bicon, cc, trustrank, domino, robust};
+                {diamond, must, bicon, cc, trustrank, domino, robust, kpm};
         for (Algorithm algorithm : algorithms) {
             this.algorithms.put(algorithm.getEnum(), algorithm);
         }
@@ -142,7 +139,7 @@ public class ToolService {
             rankCache.delete();
         rankCache.mkdir();
         try {
-            ProcessUtils.executeProcessWait(new ProcessBuilder("python3", env.getProperty("jobs.scripts.ranking_preparation"), dataDir.getAbsolutePath(), rankCache.getAbsolutePath()));
+            ProcessUtils.executeProcessWait(new ProcessBuilder("python3", env.getProperty("jobs.scripts.ranking_preparation"), dataDir.getAbsolutePath(), rankCache.getAbsolutePath()), false);
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
@@ -171,7 +168,6 @@ public class ToolService {
             }
         }
     }
-
 
 
     public String createCommand(Job job, JobRequest request) {
@@ -206,8 +202,9 @@ public class ToolService {
     public Process executeJob(String command, Tool algo) {
         try {
             ProcessBuilder pb = algorithms.get(algo).getExecutionEnvironment((executor.getAbsolutePath() + " " + command).split(" "));
-            return pb.start();
-        } catch (IOException e) {
+//            ProcessUtils.executeProcessWait(pb,true);
+            return ProcessUtils.executeProcess(pb);
+        } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
         return null;
@@ -244,7 +241,7 @@ public class ToolService {
 
     public void createGraphmlFromFS(File wd, File graphml) {
         try {
-            ProcessUtils.executeProcessWait(new ProcessBuilder("python3", new File(scriptDir, "tablesToGraphml.py").getAbsolutePath(), wd.getAbsolutePath(), graphml.getAbsolutePath()));
+            ProcessUtils.executeProcessWait(new ProcessBuilder("python3", new File(scriptDir, "tablesToGraphml.py").getAbsolutePath(), wd.getAbsolutePath(), graphml.getAbsolutePath()), false);
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
@@ -256,7 +253,16 @@ public class ToolService {
     public void createThumbnail(File graphml, File thumb) {
         thumb.getParentFile().mkdirs();
         try {
-            ProcessUtils.executeProcessWait(new ProcessBuilder("python3", new File(scriptDir, "computeLayouting.py").getAbsolutePath(), graphml.getAbsolutePath(), "1", thumb.getAbsolutePath(), DBConfig.getConfFile().getAbsolutePath()));
+            ProcessUtils.executeProcessWait(new ProcessBuilder("python3", new File(scriptDir, "computeLayouting.py").getAbsolutePath(), graphml.getAbsolutePath(), "1", thumb.getAbsolutePath(), DBConfig.getConfFile().getAbsolutePath()), false);
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void createLayoutAndThumbnail(File graphml, File layout, File thumb) {
+        layout.getParentFile().mkdirs();
+        try {
+            ProcessUtils.executeProcessWait(new ProcessBuilder("python3", new File(scriptDir, "computeLayouting.py").getAbsolutePath(), graphml.getAbsolutePath(), "2", layout.getAbsolutePath(), thumb.getAbsolutePath(), DBConfig.getConfFile().getAbsolutePath()), false);
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
@@ -265,7 +271,16 @@ public class ToolService {
     public void createLayout(File graphml, File layout) {
         layout.getParentFile().mkdirs();
         try {
-            ProcessUtils.executeProcessWait(new ProcessBuilder("python3", new File(scriptDir, "computeLayouting.py").getAbsolutePath(), graphml.getAbsolutePath(), "0", layout.getAbsolutePath(), DBConfig.getConfFile().getAbsolutePath()));
+            ProcessUtils.executeProcessWait(new ProcessBuilder("python3", new File(scriptDir, "computeLayouting.py").getAbsolutePath(), graphml.getAbsolutePath(), "0", layout.getAbsolutePath(), DBConfig.getConfFile().getAbsolutePath()), false);
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void createTripartiteLayout(File graphml, File layout, File sources, File targets) {
+        layout.getParentFile().mkdirs();
+        try {
+            ProcessUtils.executeProcessWait(new ProcessBuilder("python3", new File(scriptDir, "tripartiteLayout.py").getAbsolutePath(), graphml.getAbsolutePath(), layout.getAbsolutePath(), sources.getAbsolutePath(), targets.getAbsolutePath(), DBConfig.getConfFile().getAbsolutePath()), false);
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
@@ -276,14 +291,14 @@ public class ToolService {
     }
 
 
-
     public void createIndexFiles() {
-        algorithms.values().forEach(algorithm ->{
+        algorithms.values().forEach(algorithm -> {
             algorithm.createIndex();
         });
     }
 
+
     public enum Tool {
-        DIAMOND, BICON, TRUSTRANK, CENTRALITY, MUST, DOMINO, ROBUST
+        DIAMOND, BICON, TRUSTRANK, CENTRALITY, MUST, DOMINO, ROBUST, KPM;
     }
 }

@@ -23,6 +23,7 @@
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <start-class>de.exbio.reposcapeweb.ReposcapewebApplication</start-class>
+        <log4j2.version>2.16.0</log4j2.version>
     </properties>
 
     <dependencies>
@@ -109,18 +110,18 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>${springboot.version}</version>
-<!--                <executions>-->
-<!--                    <execution>-->
-<!--                        <configuration>-->
-<!--                            <classifier>spring-boot</classifier>-->
-<!--                            <mainClass>de.exbio.reposcapeweb.ReposcapewebApplication-->
-<!--                            </mainClass>-->
-<!--                        </configuration>-->
-<!--                        <goals>-->
-<!--                            <goal>repackage</goal>-->
-<!--                        </goals>-->
-<!--                    </execution>-->
-<!--                </executions>-->
+                <!--                <executions>-->
+                <!--                    <execution>-->
+                <!--                        <configuration>-->
+                <!--                            <classifier>spring-boot</classifier>-->
+                <!--                            <mainClass>de.exbio.reposcapeweb.ReposcapewebApplication-->
+                <!--                            </mainClass>-->
+                <!--                        </configuration>-->
+                <!--                        <goals>-->
+                <!--                            <goal>repackage</goal>-->
+                <!--                        </goals>-->
+                <!--                    </execution>-->
+                <!--                </executions>-->
             </plugin>
             <!--            <plugin>-->
             <!--                <groupId>org.apache.maven.plugins</groupId>-->

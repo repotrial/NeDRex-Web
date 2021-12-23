@@ -7,8 +7,10 @@
 
             <template slot="description">
               <div style="font-size: 0.9em">
-                Identify disease modules by selecting <b><i>seed genes</i></b> or <b><i>proteins</i></b> by hand, suggestions using
-                information about e.g. <b><i>association to disorders</i></b> or by uploading a <b><i>list of ids</i></b>. Tune the parameters of the algorithms
+                Identify disease modules by selecting <b><i>seed genes</i></b> or <b><i>proteins</i></b> by hand,
+                suggestions using
+                information about e.g. <b><i>association to disorders</i></b> or by uploading a <b><i>list of
+                ids</i></b>. Tune the parameters of the algorithms
                 (<b>Basic Mode</b>) or just use defaults for even less necessary input work (<b>Quick Mode</b>).
               </div>
             </template>
@@ -18,7 +20,7 @@
                   <v-icon left>
                     fas fa-angle-double-right
                   </v-icon>
-                 Run Module Identification
+                  Run Module Identification
                 </v-btn>
               </div>
               <div>
@@ -42,8 +44,10 @@
 
             <template slot="description">
               <div style="font-size:0.9em">
-                Based on a set of given <b><i>seed genes</i></b> or <b><i>proteins</i></b> <b>drug candidates</b> can be identified through the
-                application of <b>ranking</b> algorithms in combination with the <b><i>protein or gene interaction network</i></b> and
+                Based on a set of given <b><i>seed genes</i></b> or <b><i>proteins</i></b> <b>drug candidates</b> can be
+                identified through the
+                application of <b>ranking</b> algorithms in combination with the <b><i>protein or gene interaction
+                network</i></b> and
                 their known <b>drug associations</b>.
               </div>
             </template>
@@ -73,12 +77,14 @@
       </div>
       <div style="display: flex; justify-content: center;">
         <div @mouseenter="hoverDrugRep=true" @mouseleave="hoverDrugRep=false">
-          <PipelineCard :image="getConfig().STATIC_PATH+'/assets/drug_rep.png'" title="Drug Repurposing" subtitle="Module Identification + Drug Prioritization">
+          <PipelineCard :image="getConfig().STATIC_PATH+'/assets/drug_rep.png'" title="Drug Repurposing"
+                        subtitle="Module Identification + Drug Prioritization">
             <template slot="description">
               <div style="font-size: 0.9em">
                 Identify disease modules as in the standalone mode (<b>Module Identification</b>) but with
                 direct use in a subsequent
-                <b>drug prioritization</b> analysis. Using the <b>Quick Mode</b> will use default values for the algorithmic
+                <b>drug prioritization</b> analysis. Using the <b>Quick Mode</b> will use default values for the
+                algorithmic
                 choices, limiting the users decisions to identifying the starting genes.
               </div>
             </template>
@@ -106,28 +112,31 @@
     </template>
     <v-row>
       <v-col>
-        <CombinedRepurposing v-if="modus===0" :blitz="blitz" @resetEvent="modus=-1"
+        <CombinedRepurposing v-if="modus===0" :blitz="blitz" @resetEvent="reset()" :reload="reload"
                              @printNotificationEvent="printNotification"
                              @graphLoadEvent="loadGraph"
+                             @jobReloadError="jobReloadError()"
                              @graphLoadNewTabEvent="loadGraphNewTab"
                              @focusEvent="focusTop"
-                             ref="drugRepurposing">
+                             ref="drugRepurposing" @newGraphEvent="$emit('newGraphEvent')">
 
         </CombinedRepurposing>
-        <ModuleIdentification v-if="modus===1" :blitz="blitz" @resetEvent="modus=-1"
+        <ModuleIdentification v-if="modus===1" :blitz="blitz" @resetEvent="reset()" :reload="reload"
+                              @jobReloadError="jobReloadError()"
                               @printNotificationEvent="printNotification"
                               @graphLoadEvent="loadGraph"
                               @graphLoadNewTabEvent="loadGraphNewTab"
                               @loadDrugTargetEvent="loadDrugTarget"
                               @focusEvent="focusTop"
-                              ref="moduleIdentification"
+                              ref="moduleIdentification" @newGraphEvent="$emit('newGraphEvent')"
         ></ModuleIdentification>
-        <DrugRepurposing v-if="modus===2" :blitz="blitz" @resetEvent="modus=-1"
+        <DrugRepurposing v-if="modus===2" :blitz="blitz" @resetEvent="reset()" :reload="reload"
                          @printNotificationEvent="printNotification"
                          @graphLoadEvent="loadGraph"
+                         @jobReloadError="jobReloadError()"
                          @graphLoadNewTabEvent="loadGraphNewTab"
                          @focusEvent="focusTop"
-                         ref="drugRanking"
+                         ref="drugRanking" @newGraphEvent="$emit('newGraphEvent')"
         ></DrugRepurposing>
       </v-col>
     </v-row>
@@ -147,6 +156,7 @@ export default {
       modus: -1,
       blitz: false,
       hoverDrugRep: false,
+      reload: undefined,
     }
   },
   created() {
@@ -157,9 +167,9 @@ export default {
     modus: function (val) {
       if (val > -1) {
         this.focusTop()
-        this.$emit("showStartSelectionEvent",false)
-      }else{
-        this.$emit("showStartSelectionEvent",true)
+        this.$emit("showStartSelectionEvent", false)
+      } else {
+        this.$emit("showStartSelectionEvent", true)
       }
     }
 
@@ -168,6 +178,7 @@ export default {
 
   methods: {
     reset: function () {
+      this.jobURLReset()
       if (this.modus === 0 && this.$refs.drugRepurposing)
         this.$refs.drugRepurposing.reset()
       if (this.modus === 1 && this.$refs.moduleIdentification)
@@ -176,13 +187,63 @@ export default {
         this.$refs.drugRanking.reset()
       this.modus = -1
     },
+
+    jobReloadError: function(){
+      this.reset()
+      this.printNotification("Could not reload the requested result! Either the job result is to old, broken or you might have to try again in a moment!",2,10000)
+    },
     start: function (modus, blitz) {
       this.modus = modus;
       this.blitz = blitz;
       this.$emit("clearURLEvent")
     },
+
+    waitForComponent: async function (component,resolve) {
+      if (component != null)
+        resolve()
+      else
+        setTimeout(() => {
+          this.waitForComponent(component,resolve)
+        }, 200)
+    },
+
+
+    reloadJob: function (job) {
+      try {
+      if(!job.goal){
+        this.printNotification("Could not reload the result because your job was created with a too old version!",2,10000)
+        this.reset()
+        return
+      }
+        switch (job.goal) {
+          case "MODULE_IDENTIFICATION": {
+            this.modus = 1;
+            this.reload = job;
+            break;
+          }
+          case "DRUG_PRIORITIZATION": {
+            this.modus = 2;
+            this.reload = job;
+            break;
+          }
+          case "DRUG_REPURPOSING": {
+            this.modus = 0
+            this.reload = job;
+            break;
+          }
+        }
+      }catch (e){
+        this.printNotification("Could not reload the requested result! Either the job result is to old, broken or you might have to try again in a moment!",2,10000)
+      }
+    },
     getConfig() {
       return this.$config
+    },
+
+    jobURLReset(){
+      this.reload = undefined;
+      if(this.$route.fullPath !== location.pathname)
+        this.$router.push(location.pathname)
     },
 
     printNotification: function (message, type) {
@@ -195,11 +256,15 @@ export default {
     loadGraphNewTab: function (gid) {
       this.$emit("graphLoadNewTabEvent", gid)
     },
-    loadDrugTarget: function (blitz, seeds, type, origin) {
-      this.blitz = blitz;
+    loadDrugTarget: function (data) {
+      this.blitz = data.blitz;
+      this.jobURLReset()
       this.modus = 2
       setTimeout(function () {
-        this.$refs.drugRanking.setSeeds(seeds, type, origin)
+        this.$refs.drugRanking.setSeeds(data.seeds, data.type, data.origin)
+        this.$refs.drugRanking.setDisorders(data.disorders)
+        this.$refs.drugRanking.setDrugs(data.drugs, data.origin)
+        this.$refs.drugRanking.setSuggestions(data.suggestions)
       }.bind(this), 500)
 
     },

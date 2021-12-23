@@ -25,11 +25,14 @@ public class NedrexService {
         this.objectMapper = objectMapper;
     }
 
+    public String getAPI(){
+        return env.getProperty("url.api.validation")!=null ? env.getProperty("url.api.validation"): env.getProperty("url.api.db");
+    }
 
     public String get(String path) {
         StringBuffer sb = new StringBuffer();
         try {
-            ProcessUtils.executeProcessWait(new ProcessBuilder("curl", "-s", env.getProperty("url.api.db")+(path.charAt(0)=='/' ? path.substring(1):path)), sb);
+            ProcessUtils.executeProcessWait(new ProcessBuilder("curl", "-s", getAPI() +(path.charAt(0)=='/' ? path.substring(1):path)), sb);
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
@@ -44,7 +47,7 @@ public class NedrexService {
             BufferedWriter bw = WriterUtils.getBasicWriter(input);
             bw.write(toJson(data));
             bw.close();
-            ProcessUtils.executeProcessWait(new ProcessBuilder("curl", "-s", "-X", "POST", "-H", "Content-Type: application/json", "-d", "@" + input.getAbsolutePath() , env.getProperty("url.api.db")+(path.charAt(0)=='/' ? path.substring(1):path)), sb);
+            ProcessUtils.executeProcessWait(new ProcessBuilder("curl", "-s", "-X", "POST", "-H", "Content-Type: application/json", "-d", "@" + input.getAbsolutePath() ,getAPI()+(path.charAt(0)=='/' ? path.substring(1):path)), sb);
             input.delete();
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();

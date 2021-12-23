@@ -80,7 +80,7 @@ public class DBConfig {
                     listAttributes.add(attr.name);
             });
 
-            setAttributes("node", node.name, allAttributes.toArray(new String[]{}), allAttributeTypes.toArray(new String[]{}), idAttributes.toArray(new Boolean[0]), listAttributes.toArray(new String[]{}), attributeLabels.toArray(new String[]{}), source);
+            setAttributes("node", node.name, allAttributes.toArray(new String[]{}), allAttributeTypes.toArray(new String[]{}), idAttributes.toArray(new Boolean[0]), listAttributes.toArray(new String[]{}), attributeLabels.toArray(new String[]{}), source, null);
         });
 
         config.edges.forEach(edge -> {
@@ -91,24 +91,26 @@ public class DBConfig {
             LinkedList<Boolean> idAttributes = new LinkedList<>();
             LinkedList<String> listAttributes = new LinkedList<>();
             LinkedList<String> attributeLabels = new LinkedList<>();
+            LinkedList<Boolean> detailAttributes = new LinkedList<>();
 
            edge.attributes.forEach(attr -> {
                 allAttributes.add(attr.name);
                 allAttributeTypes.add(attr.type);
                 idAttributes.add(attr.id);
                 attributeLabels.add(attr.label);
+                detailAttributes.add(attr.detail);
                 if (attr.source)
                     source.add(attr.name);
                 if (attr.list)
                     listAttributes.add(attr.name);
             });
 
-            setAttributes("edge", edge.mapsTo, allAttributes.toArray(new String[]{}), allAttributeTypes.toArray(new String[]{}), idAttributes.toArray(new Boolean[0]), listAttributes.toArray(new String[]{}),attributeLabels.toArray(new String[]{}), source);
+            setAttributes("edge", edge.mapsTo, allAttributes.toArray(new String[]{}), allAttributeTypes.toArray(new String[]{}), idAttributes.toArray(new Boolean[0]), listAttributes.toArray(new String[]{}),attributeLabels.toArray(new String[]{}), source, detailAttributes.toArray(new Boolean[]{}));
         });
 
     }
 
-    private static void setAttributes(String entity, String mapsTo, String[] all, String[] allTypes, Boolean[] allIds, String[] list, String[] labels,HashSet<String> source) {
+    private static void setAttributes(String entity, String mapsTo, String[] all, String[] allTypes, Boolean[] allIds, String[] list, String[] labels,HashSet<String> source, Boolean[] details) {
         if (entity.equals("edge"))
             switch (mapsTo) {
                 case "DrugTargetProtein": {
@@ -118,6 +120,7 @@ public class DBConfig {
                     DrugHasTargetProtein.idAttributes = allIds;
                     DrugHasTargetProtein.listAttributes = list;
                     DrugHasTargetProtein.attributeLabels=labels;
+                    DrugHasTargetProtein.detailAttributes=details;
                     break;
                 }
                 case "DrugTargetGene": {
@@ -126,6 +129,7 @@ public class DBConfig {
                     DrugHasTargetGene.idAttributes = allIds;
                     DrugHasTargetGene.listAttributes = list;
                     DrugHasTargetGene.attributeLabels=labels;
+                    DrugHasTargetGene.detailAttributes = details;
                     break;
                 }
 
@@ -136,6 +140,7 @@ public class DBConfig {
                     ProteinInteractsWithProtein.idAttributes = allIds;
                     ProteinInteractsWithProtein.listAttributes = list;
                     ProteinInteractsWithProtein.attributeLabels=labels;
+                    ProteinInteractsWithProtein.detailAttributes=details;
                     break;
                 }
 
@@ -146,6 +151,7 @@ public class DBConfig {
                     ProteinInPathway.idAttributes = allIds;
                     ProteinInPathway.listAttributes = list;
                     ProteinInPathway.attributeLabels=labels;
+                    ProteinInPathway.detailAttributes=details;
 
                 }
 
@@ -156,6 +162,7 @@ public class DBConfig {
                     ProteinEncodedBy.idAttributes = allIds;
                     ProteinEncodedBy.listAttributes = list;
                     ProteinEncodedBy.attributeLabels=labels;
+                    ProteinEncodedBy.detailAttributes=details;
                 }
 
                 case "ProteinAssociatedWithDisorder": {
@@ -164,6 +171,7 @@ public class DBConfig {
                     ProteinAssociatedWithDisorder.idAttributes = allIds;
                     ProteinAssociatedWithDisorder.listAttributes = list;
                     ProteinAssociatedWithDisorder.attributeLabels=labels;
+                    ProteinAssociatedWithDisorder.detailAttributes=details;
                     break;
                 }
 
@@ -173,6 +181,7 @@ public class DBConfig {
                     GeneInteractsWithGene.idAttributes = allIds;
                     GeneInteractsWithGene.listAttributes = list;
                     GeneInteractsWithGene.attributeLabels=labels;
+                    GeneInteractsWithGene.detailAttributes =details;
                     break;
                 }
 
@@ -183,6 +192,7 @@ public class DBConfig {
                     GeneAssociatedWithDisorder.idAttributes = allIds;
                     GeneAssociatedWithDisorder.listAttributes = list;
                     GeneAssociatedWithDisorder.attributeLabels=labels;
+                    GeneAssociatedWithDisorder.detailAttributes = details;
                     break;
                 }
 
@@ -193,6 +203,7 @@ public class DBConfig {
                     DisorderComorbidWithDisorder.idAttributes = allIds;
                     DisorderComorbidWithDisorder.listAttributes = list;
                     DisorderComorbidWithDisorder.attributeLabels=labels;
+                    DisorderComorbidWithDisorder.detailAttributes=details;
                     break;
                 }
 
@@ -203,6 +214,7 @@ public class DBConfig {
                     DisorderIsADisorder.idAttributes = allIds;
                     DisorderIsADisorder.listAttributes = list;
                     DisorderIsADisorder.attributeLabels=labels;
+                    DisorderIsADisorder.detailAttributes=details;
                     break;
                 }
 
@@ -214,6 +226,7 @@ public class DBConfig {
                     DrugHasIndication.idAttributes = allIds;
                     DrugHasIndication.listAttributes = list;
                     DrugHasIndication.attributeLabels=labels;
+                    DrugHasIndication.detailAttributes=details;
                     break;
                 }
 
@@ -224,6 +237,7 @@ public class DBConfig {
                     DrugHasContraindication.idAttributes = allIds;
                     DrugHasContraindication.listAttributes = list;
                     DrugHasContraindication.attributeLabels=labels;
+                    DrugHasContraindication.detailAttributes=details;
                     break;
                 }
             }

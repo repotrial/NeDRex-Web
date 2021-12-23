@@ -40,5 +40,9 @@ then
   python3.7 $4 $5 $6 $7 $8 $9 ${10} ${11}
 fi
 
+if [ $tool == 'kpm' ]
+then
+  java -jar $4 -graphFile=$5 -matrix1=$6 -L1=$7 -K=$8 -removeBens
+fi
 curl $response
 

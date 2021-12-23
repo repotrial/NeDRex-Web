@@ -25,8 +25,8 @@
     </v-card>
     <Quick v-if="startTab===0" @printNotificationEvent="printNotification"
            @graphLoadNewTabEvent="loadGraphNewTab" @graphLoadEvent="loadGraph" @focusEvent="focusTop" @clearURLEvent="$emit('clearURLEvent','quick')"
-           ref="quick" @showStartSelectionEvent="toggleStartSelection"></Quick>
-    <Guided v-if="startTab===1" @printNotificationEvent="printNotification"
+           ref="quick" @showStartSelectionEvent="toggleStartSelection" @newGraphEvent="$emit('newGraphEvent')"></Quick>
+    <Guided v-if="startTab===1" @printNotificationEvent="printNotification" @newGraphEvent="$emit('newGraphEvent')"
             @graphLoadEvent="loadGraph" @graphLoadNewTabEvent="loadGraphNewTab" @clearURLEvent="$emit('clearURLEvent', 'guided')" ref="guided"></Guided>
     <Advanced ref="advanced" v-if="startTab===2" :options="options" :colors="colors" :filters="filters"
               @printNotificationEvent="printNotification"
@@ -46,6 +46,7 @@ export default {
   props: {
     options: Object,
     filters: Object,
+    jid: String,
     colors: {
       type: Object
     },
@@ -53,29 +54,45 @@ export default {
   data() {
     return {
       startTab: 0,
+      job: this.jid,
       showStartSelection: true,
     }
   },
   watch: {
     startTab: function (val) {
-      this.$emit("showSideEvent", val === 2)
+      this.$emit("showSideEvent", false)
       this.focusTop()
-    }
+    },
   },
   created() {
-    if (this.$route.path.split("/").indexOf("start") > -1)
-      this.$emit("showSideEvent", this.startTab === 2)
+    // if (this.$route.path.split("/").indexOf("start") > -1)
+    //   this.$emit("showSideEvent", this.startTab === 2)
     this.setView()
+    this.job = this.$route.query["job"]
+    if(this.job!=null)
+      this.loadJob();
   },
   mounted() {
   },
   methods: {
     reset: function () {
       this.resetIndex(this.startTab)
-      //TODO try to find out why this in not working
-      // this.startTab = 0;
+      this.startTab = 0;
     }
     ,
+    reload: function(){
+      if(this.job!=null)
+        this.loadJob();
+    },
+
+    loadJob: function(){
+      this.$http.get("getJob?id="+this.job).then(response=>{
+        this.startTab=0
+        this.$nextTick(()=>{
+          this.$refs.quick.reloadJob(response.data)
+        })
+      })
+    },
 
     resetIndex: function (idx) {
       if (idx === 0 && this.$refs.quick)
@@ -85,8 +102,8 @@ export default {
       if (idx === 2 && this.$refs.advanced)
         this.$refs.advanced.reset()
     },
-    printNotification: function (message, style) {
-      this.$emit("printNotificationEvent", message, style)
+    printNotification: function (message, style,timeout) {
+      this.$emit("printNotificationEvent", message, style,timeout)
     },
 
     checkURLclear: function (view) {

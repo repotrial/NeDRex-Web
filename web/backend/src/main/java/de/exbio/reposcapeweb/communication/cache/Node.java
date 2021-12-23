@@ -1,5 +1,6 @@
 package de.exbio.reposcapeweb.communication.cache;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.exbio.reposcapeweb.communication.reponses.WebNode;
 
 public class Node {
@@ -7,6 +8,7 @@ public class Node {
     private int id;
     private String name;
     private boolean hasEdge =false;
+    private int degree = 0;
 
 
     public Node(){
@@ -20,11 +22,6 @@ public class Node {
     public Node (int id, String name, boolean hasEdge){
         this(id,name);
         this.hasEdge=hasEdge;
-        Long l1 = Long.valueOf(27);
-        Long l2 = new Long(274573440);
-        if(l1.equals(l2)){
-
-        }
     }
 
     public int getId() {
@@ -57,5 +54,18 @@ public class Node {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    @JsonIgnore
+    public int getDegree() {
+        return degree;
+    }
+//
+//    public void setDegree(int degree) {
+//        this.degree = degree;
+//    }
+
+    public void addDegree() {
+        this.degree++;
     }
 }

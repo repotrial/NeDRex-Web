@@ -1,6 +1,5 @@
 package de.exbio.reposcapeweb.db.entities;
 
-import de.exbio.reposcapeweb.db.entities.RepoTrialEntity;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
 import de.exbio.reposcapeweb.utils.Pair;
 

@@ -14,27 +14,6 @@
 
         </template>
         <template v-if="!loading" v-show="!nodeTabLoading">
-          <v-card-title id="nodes" ref="nodeTitle" v-on:mouseenter="nodeOptionHover=true"
-                        v-on:mouseleave="nodeOptionHover=false">
-            Nodes
-            <v-tooltip
-              right>
-              <template v-slot:activator="{ on, attrs }">
-                <v-icon
-                  v-show="nodeOptionHover"
-                  size="17px"
-                  color="primary"
-                  dark
-                  v-bind="attrs"
-                  v-on="on"
-                  v-on:click="nodeOptions"
-                >
-                  fas fa-cog
-                </v-icon>
-              </template>
-              <span>options</span>
-            </v-tooltip>
-          </v-card-title>
           <i v-if="!update.nodes && nodes!=null &&Object.keys(nodes).length === 0">no node entries</i>
           <template v-if="nodes !=null && Object.keys(nodes).length>0">
             <v-tabs next-icon="mdi-arrow-right-bold-box-outline"
@@ -43,8 +22,10 @@
                     v-model="nodeTab"
                     @change="resetFilters('nodes')"
             >
-              <v-tabs-slider color="blue"></v-tabs-slider>
-              <v-tab v-for="node in Object.keys(nodes)" :key="node">
+              <v-card-title id="nodes" ref="nodeTitle" style="color: black">
+                Nodes:
+              </v-card-title>
+              <v-tab v-for="node in Object.keys(nodes)" :key="node" style="margin-top: 16px">
                 {{ node }}
               </v-tab>
             </v-tabs>
@@ -61,20 +42,40 @@
                 :search="filters.nodes.query"
                 :custom-filter="filterNode"
               >
+                <template v-slot:header.info>
+                  <div style="display: flex">
+                    <div style="justify-self: flex-start;  margin-right: auto; margin-top: 4px;">
+                      Info
+                    </div>
+                    <div style="justify-self: flex-end; margin-left: auto;">
+                      <v-tooltip right>
+                        <template v-slot:activator="{attrs, on}">
+                          <v-btn small
+                                 style="margin-top: -2px;"
+                                 icon
+                                 @click="downloadNodeTable()">
+                            <v-icon small v-bind="attrs" v-on="on">fas fa-download</v-icon>
+                          </v-btn>
+                        </template>
+                        <span>Download table</span>
+                      </v-tooltip>
+                    </div>
+                  </div>
+                </template>
                 <template v-slot:header.selected>
                   <v-tooltip right>
                     <template v-slot:activator="{attrs, on}">
-                      <v-btn small style="margin-left: -10px; margin-top: -2px;" icon v-bind="attrs" v-on="on" @click="nodeOptions">
-                        <v-icon small>fas fa-cog</v-icon>
+                      <v-btn small style="margin-left: -10px; margin-top: -2px;" icon
+                             @click="nodeOptions">
+                        <v-icon small v-bind="attrs" v-on="on">fas fa-cog</v-icon>
                       </v-btn>
                     </template>
                     <span>Edit table headers</span>
                   </v-tooltip>
                   Select
                 </template>
-
                 <template v-slot:top>
-                  <v-container style="margin-top: 15px;margin-bottom: -40px">
+                  <v-container style="margin-top: 15px;margin-bottom: -20px">
                     <v-row>
                       <v-col
                       >
@@ -90,15 +91,16 @@
                     <div style="display: flex;width: 100%">
                       <div
                         v-show="!filters.nodes.suggestions"
-                        style="justify-self: flex-start; margin-left: 16px; margin-right: 8px"
+                        style="justify-self: flex-start; margin-left: 16px; margin-right: 8px; width: 25%"
                       >
                         <v-select
+                          dense
                           :items="headerNames('nodes',Object.keys(nodes)[nodeTab])"
                           label="Attribute"
                           v-model="filters.nodes.attribute.name"
                           @change="resetFilter('nodes')"
                           outlined
-                          style="width: 20%; min-width: 150px;"
+                          style="width: 100%; min-width: 150px;"
                         ></v-select>
                       </div>
                       <div
@@ -106,6 +108,7 @@
                         style="justify-self: flex-start; width: 20%; margin-left: 8px; margin-right: 8px"
                       >
                         <v-select
+                          dense
                           v-if="filters.nodes.attribute.name === undefined || filters.nodes.attribute.name == null || !isDistinctAttribute('nodes',filters.nodes.attribute.name)"
                           v-model="filters.nodes.attribute.operator"
                           :disabled="filters.nodes.attribute.name === undefined || filters.nodes.attribute.name == null || filters.nodes.attribute.name.length ===0"
@@ -116,6 +119,7 @@
                         ></v-select>
                         <v-select
                           v-else
+                          dense
                           v-model="filters.nodes.attribute.operator"
                           @change="filters.nodes.attribute.dist=true"
                           :items="attributes.nodes[Object.keys(nodes)[nodeTab]].filter(a=>a.label===filters.nodes.attribute.name)[0].values"
@@ -129,6 +133,7 @@
                         style="display: flex; justify-self: flex-start; justify-content: center; width: 100%; margin-left: 8px; margin-right: 16px"
                       >
                         <v-text-field
+                          dense
                           :disabled="filters.nodes.attribute.name == null || filters.nodes.attribute.name.length ===0 || filters.nodes.attribute.operator == null|| filters.nodes.attribute.dist"
                           clearable
                           v-show="!filters.nodes.suggestions"
@@ -137,6 +142,7 @@
                           class="mx-4"
                         ></v-text-field>
                         <v-autocomplete
+                          dense
                           chips
                           :search-input.sync="findNodeSuggestions"
                           v-show="filters.nodes.suggestions"
@@ -147,7 +153,7 @@
                           item-value="key"
                           label="Query (case insensitive)"
                           class="mx-4"
-                          style="max-width: 500px"
+                          style="max-width: 500px; margin-bottom: 4px"
                         >
                           <template v-slot:item="{ item }">
                             <SuggestionElement :data="item"></SuggestionElement>
@@ -161,7 +167,7 @@
                   <v-row>
                     <v-col cols="2">
                       <v-checkbox
-                        style="margin-top: -4px"
+                        style="margin-top: -4px; margin-left:24px"
                         :key="item.id"
                         v-model="item.selected"
                         hide-details
@@ -169,22 +175,6 @@
                         @click="countClick('nodes',nodeTab,item.selected)"
                       >
                       </v-checkbox>
-                    </v-col>
-                    <v-col cols="1">
-                      <v-tooltip right>
-                        <template v-slot:activator="{ on, attrs }"
-                                  v-if="marks.nodes && marks.nodes[Object.keys(attributes.nodes)[nodeTab]] &&marks.nodes[Object.keys(attributes.nodes)[nodeTab]].indexOf(item.id)>-1">
-                          <v-icon
-                            color="primary"
-                            dark
-                            v-bind="attrs"
-                            v-on="on"
-                          >
-                            fas fa-star
-                          </v-icon>
-                        </template>
-                        <span>Added by Algorithm</span>
-                      </v-tooltip>
                     </v-col>
                   </v-row>
 
@@ -223,7 +213,7 @@
                             fas fa-info-circle
                           </v-icon>
                         </template>
-                        <span>id:{{ item.id }}</span>
+                        <span>Details (ID:{{ item.id }})</span>
                       </v-tooltip>
                     </v-col>
                   </v-row>
@@ -244,34 +234,8 @@
                                indeterminate
           ></v-progress-circular>
           <i v-else>No data available!</i>
-          <!--          <v-progress-linear-->
-          <!--            color="primary"-->
-          <!--            height="5"-->
-          <!--            indeterminate-->
-          <!--          ></v-progress-linear>-->
-          <!--          <v-card-title>Edges</v-card-title>-->
         </template>
         <template v-if="!loading">
-          <v-card-title id="edges" ref="edgeTitle" v-on:mouseenter="edgeOptionHover=true"
-                        v-on:mouseleave="edgeOptionHover=false">Edges
-            <v-tooltip
-              right>
-              <template v-slot:activator="{ on, attrs }">
-                <v-icon
-                  v-show="edgeOptionHover"
-                  size="17px"
-                  color="primary"
-                  dark
-                  v-bind="attrs"
-                  v-on="on"
-                  v-on:click="edgeOptions"
-                >
-                  fas fa-cog
-                </v-icon>
-              </template>
-              <span>options</span>
-            </v-tooltip>
-          </v-card-title>
           <i v-if="edges !=null && Object.keys(edges).length === 0">no edge entries</i>
           <template v-if="edges !=null && Object.keys(edges).length>0">
             <v-tabs
@@ -280,9 +244,18 @@
               show-arrows
               v-model="edgeTab"
             >
-              <v-tabs-slider color="blue"></v-tabs-slider>
-              <v-tab v-for="edge in Object.keys(edges)" :key="edge">
-                {{ edge }}
+              <v-card-title ref="edgeTitle" style="color: black">Edges:
+              </v-card-title>
+              <v-tab v-for="edge in Object.keys(edges)" :key="edge" style="margin-top: 16px">
+                <template v-if="edge.length<36">
+                  {{ edge }}
+                </template>
+                <v-tooltip v-else top>
+                  <template v-slot:activator="{on, attrs}">
+                    <span v-on="on" v-bind="attrs">{{ edge.substring(0, 32) }}...</span>
+                  </template>
+                  {{ edge }}
+                </v-tooltip>
               </v-tab>
             </v-tabs>
             <v-tabs-items>
@@ -297,11 +270,32 @@
                 loading-text="Loading... Please wait"
                 item-key="id"
               >
+                <template v-slot:header.info>
+                  <div style="display: flex">
+                    <div style="justify-self: flex-start;  margin-right: auto; margin-top: 4px;">
+                      Info
+                    </div>
+                    <div style="justify-self: flex-end; margin-left: auto;">
+                      <v-tooltip right>
+                        <template v-slot:activator="{attrs, on}">
+                          <v-btn small
+                                 style="margin-top: -2px;"
+                                 icon
+                                 @click="downloadEdgeTable()">
+                            <v-icon small v-bind="attrs" v-on="on">fas fa-download</v-icon>
+                          </v-btn>
+                        </template>
+                        <span>Download table</span>
+                      </v-tooltip>
+                    </div>
+                  </div>
+                </template>
                 <template v-slot:header.selected>
                   <v-tooltip right>
                     <template v-slot:activator="{attrs, on}">
-                      <v-btn small style="margin-left: -10px; margin-top: -2px;" icon v-bind="attrs" v-on="on" @click="edgeOptions">
-                        <v-icon small>fas fa-cog</v-icon>
+                      <v-btn small style="margin-left: -10px; margin-top: -2px;" icon
+                             @click="edgeOptions">
+                        <v-icon small v-bind="attrs" v-on="on">fas fa-cog</v-icon>
                       </v-btn>
                     </template>
                     <span>Edit table headers</span>
@@ -309,12 +303,11 @@
                   Select
                 </template>
                 <template v-slot:top>
-                  <v-container style="margin-top: 15px;margin-bottom: -40px">
-                    <v-row>
-                      <v-col
-                        cols="2"
-                      >
+                  <v-container style="margin-top: 15px;margin-bottom: -30px">
+                    <div style="display: flex;width: 100%">
+                      <div style="justify-self: flex-start; margin-left: 16px; margin-right: 8px; width:25%">
                         <v-select
+                          dense
                           :items="headerNames('edges',Object.keys(edges)[edgeTab])"
                           label="Attribute"
                           v-model="filters.edges.attribute.name"
@@ -322,13 +315,10 @@
                           outlined
                           style="width: 100%"
                         ></v-select>
-                      </v-col>
-                      <v-col
-                        cols="1"
-                        v-if="!filters.edges.suggestions"
-                      >
-
+                      </div>
+                      <div style="justify-self: flex-start; width: 20%; margin-left: 8px; margin-right: 8px">
                         <v-select
+                          dense
                           v-if="filters.edges.attribute.name === undefined || filters.edges.attribute.name == null || !isDistinctAttribute('edges',filters.edges.attribute.name)"
                           v-model="filters.edges.attribute.operator"
                           :items="operatorNames('edges',Object.keys(edges)[edgeTab],filters.edges.attribute.name)"
@@ -338,6 +328,7 @@
                           style="width: 100%"
                         ></v-select>
                         <v-select
+                          dense
                           v-else
                           v-model="filters.edges.attribute.operator"
                           @change="filters.edges.attribute.dist=true"
@@ -347,23 +338,20 @@
                           style="width: 100%"
                         >
                         </v-select>
-                      </v-col>
-                      <v-col
-                        cols="9"
+                      </div>
+                      <div
+                        style="display: flex; justify-self: flex-start; justify-content: center; width: 100%; margin-left: 8px; margin-right: 16px"
                       >
                         <v-text-field
                           :disabled="filters.edges.attribute.name == null || filters.edges.attribute.name.length ===0 || filters.edges.attribute.operator == null|| filters.edges.attribute.dist"
                           clearable
+                          dense
                           v-model="filters.edges.query"
                           label="Query (case sensitive)"
                           class="mx-4"
                         ></v-text-field>
-                      </v-col>
-                      <v-col
-                        cols="2"
-                      >
-                      </v-col>
-                    </v-row>
+                      </div>
+                    </div>
                   </v-container>
                 </template>
                 <template v-slot:item.selected="{item}">
@@ -374,25 +362,9 @@
                         v-model="item.selected"
                         hide-details
                         primary
-                        style="margin-top: -4px"
+                        style="margin-top: -4px; margin-left: 24px"
                         @click="countClick('edges',edgeTab,item)"
                       ></v-checkbox>
-                    </v-col>
-                    <v-col cols="1">
-                      <v-tooltip right>
-                        <template v-slot:activator="{ on, attrs }"
-                                  v-if="marks.edges && marks.edges[Object.keys(attributes.edges)[edgeTab]] &&marks.edges[Object.keys(attributes.edges)[edgeTab]].indexOf(item.id)>-1">
-                          <v-icon
-                            color="primary"
-                            dark
-                            v-bind="attrs"
-                            v-on="on"
-                          >
-                            fas fa-star
-                          </v-icon>
-                        </template>
-                        <span>Added by Algorithm</span>
-                      </v-tooltip>
                     </v-col>
                   </v-row>
                 </template>
@@ -423,7 +395,7 @@
                             fas fa-info-circle
                           </v-icon>
                         </template>
-                        <span>id:{{ item.id }}</span>
+                        <span>Details (ID:{{ item.id }})</span>
                       </v-tooltip>
                     </v-col>
                   </v-row>
@@ -440,7 +412,7 @@
       persistent
       max-width="500"
       ref="extensionDialog"
-      style="z-index: 1000"
+      style="z-index: 1001"
     >
       <v-card v-if="extension.show">
         <v-card-title class="headline">
@@ -455,13 +427,13 @@
             <v-list-item :key="attr.name">
               <v-switch v-model="attr.selected" :disabled="attr.disabled"></v-switch>
               <span>
-                <v-icon left :color="getColoring('edges',attr.name,'light')[0]">fas fa-genderless</v-icon>
+                <v-icon :color="getColoring('edges',attr.name,'light')[0]">fas fa-genderless</v-icon>
                     <template v-if="direction(attr.name)===0">
-                      <v-icon left>fas fa-undo-alt</v-icon>
+                      <v-icon>fas fa-undo-alt</v-icon>
                     </template>
                     <template v-else>
                       <v-icon>fas fa-long-arrow-alt-right</v-icon>
-                      <v-icon left :color="getColoring('edges',attr.name,'light')[1]">fas fa-genderless</v-icon>
+                      <v-icon :color="getColoring('edges',attr.name,'light')[1]">fas fa-genderless</v-icon>
                     </template>
                 {{ attr.name }}
               </span>
@@ -469,15 +441,28 @@
             <template v-if="attr.both>0 && attr.selected">
               <v-list-item :key="attr.name+'_addition'">
                 <v-divider vertical style="margin-right:15px; margin-left:15px"></v-divider>
-                <span>Extend by new nodes</span>
-                <v-switch v-model="attr.induced" style="margin-left:5px"></v-switch>
-                <span>Add induced edges only</span>
+                <LabeledSwitch v-model="attr.induced" label-off="Extend by new nodes" label-on="Add induced edges only"
+                               style="margin-left: 5px">
+                  <template v-slot:tooltip>
+                    <div style="width: 300px">
+                      When <b>disabled</b> adds also new nodes to the network. When <b>enabled</b> only edges that can
+                      connect two already existing nodes will be added.
+                    </div>
+                  </template>
+                </LabeledSwitch>
               </v-list-item>
               <v-list-item v-if="attr.name==='DisorderHierarchy'">
                 <v-divider vertical style="margin-right:15px; margin-left:15px"></v-divider>
-                <span>Add children</span>
-                <v-switch v-model="attr.switch" style="margin-left:5px"></v-switch>
-                <span>Add parents</span>
+
+                <LabeledSwitch v-model="attr.switch" label-off="Add children" label-on="Add parents"
+                               style="margin-left: 5px">
+                  <template v-slot:tooltip>
+                    <div style="width: 300px">
+                      When <b>disabled</b> all subtypes of the current disorders are added. When <b>enabled</b> the
+                      umbrella disorders are added.
+                    </div>
+                  </template>
+                </LabeledSwitch>
               </v-list-item>
             </template>
           </template>
@@ -508,75 +493,62 @@
       v-model="collapse.show"
       persistent
       max-width="500"
-      style="z-index: 1000"
+      style="z-index: 1001; max-height: 80vh"
     >
       <v-card v-if="collapse.show" ref="dialog">
         <v-card-title class="headline">
-          Edge Creation Configuration
+          Induced Edge Creation
         </v-card-title>
         <v-card-text>Select a node and one or two edges which should be used to create a new user-named edge.
         </v-card-text>
         <v-divider></v-divider>
-        <v-container>
-          <v-row>
-            <v-col>
-              <v-switch
-                v-model="collapse.self.selected"
-                :disabled="collapse.self.disabled"
-                @click="isDisabled()"
-                label="Allow Single Edge"
-              ></v-switch>
-            </v-col>
-          </v-row>
-          <v-divider></v-divider>
-          <v-row>
-            <v-col>
-              <v-list>
-                <v-list-item>
-                  <v-card-title>Nodes</v-card-title>
-                </v-list-item>
-                <template v-for="attr in collapse.nodes">
-                  <v-list-item :key="attr.name">
-                    <v-switch v-model="attr.selected" :disabled="attr.disabled" @click="isDisabled('nodes',attr.name)">
-                    </v-switch>
-                    <span>
-                <v-icon left :color="getColoring('nodes',attr.name,'light')">fas fa-genderless</v-icon>
+        <v-card-subtitle style="font-size: 16pt; margin-top:8px;"><i>General</i></v-card-subtitle>
+        <div style="width: 100%; display: flex; justify-content: center">
+          <LabeledSwitch v-model="collapse.self.selected" :disabled="collapse.self.disabled" @click="isDisabled()" label-on="Allow single edge" label-off="Use two edges">
+            <template v-slot:tooltip>
+              <div style="width: 300px">
+                If disabled, an induced edge using two distinct types of edges is allowed. If enabled, the only one edge will be necessary to select, which allows the creation of for example a Diseasome.
+              </div>
+            </template>
+          </LabeledSwitch>
+        </div>
+        <v-divider></v-divider>
+        <v-card-subtitle style="font-size: 16pt; margin-top:8px;"><i>Nodes</i></v-card-subtitle>
+            <v-list>
+              <template v-for="attr in collapse.nodes">
+                <v-list-item :key="attr.name">
+                  <v-switch v-model="attr.selected" :disabled="attr.disabled" @click="isDisabled('nodes',attr.name)">
+                  </v-switch>
+                  <span>
+                <v-icon :color="getColoring('nodes',attr.name,'light')">fas fa-genderless</v-icon>
                 {{ attr.name }}
               </span>
-                  </v-list-item>
-                </template>
-              </v-list>
-
-            </v-col>
-          </v-row>
-          <v-row>
-            <v-col>
-              <v-list>
-                <v-list-item>
-                  <v-card-title>Edges</v-card-title>
                 </v-list-item>
-                <template v-for="attr in collapse.edges">
-                  <v-list-item :key="attr.name">
-                    <v-switch v-model="attr.selected" :disabled="attr.disabled" @click="isDisabled('edges',attr.name)">
-                    </v-switch>
-                    <span>
-                    <v-icon left :color="getExtendedColoring('edges',attr.name,'light')[0]">fas fa-genderless</v-icon>
+              </template>
+            </v-list>
+<v-divider></v-divider>
+        <v-card-subtitle style="font-size: 16pt; margin-top:8px;"><i>Edges</i></v-card-subtitle>
+            <v-list>
+              <template v-for="attr in collapse.edges">
+                <v-list-item :key="attr.name">
+                  <v-switch v-model="attr.selected" :disabled="attr.disabled" @click="isDisabled('edges',attr.name)">
+                  </v-switch>
+                  <span>
+                    <v-icon :color="getExtendedColoring('edges',attr.name,'light')[0]">fas fa-genderless</v-icon>
                     <template v-if="directionExtended(attr.name)===0">
-                      <v-icon left>fas fa-undo-alt</v-icon>
+                      <v-icon>fas fa-undo-alt</v-icon>
                     </template>
                     <template v-else>
                       <v-icon>fas fa-long-arrow-alt-right</v-icon>
-                      <v-icon left :color="getExtendedColoring('edges',attr.name,'light')[1]">fas fa-genderless</v-icon>
+                      <v-icon :color="getExtendedColoring('edges',attr.name,'light')[1]">fas fa-genderless</v-icon>
                     </template>
                 {{ attr.name }}
               </span>
-                  </v-list-item>
-                </template>
-              </v-list>
-            </v-col>
-          </v-row>
-        </v-container>
+                </v-list-item>
+              </template>
+            </v-list>
         <v-divider></v-divider>
+        <v-card-subtitle style="font-size: 16pt; margin-top:8px;"><i>Name</i></v-card-subtitle>
         <div style="display: flex; justify-content: center">
           <v-text-field
             label="Edge Name"
@@ -648,14 +620,14 @@
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn
-            color="green darken-1"
+            color="error"
             text
             @click="collapseDialogResolve(false)"
           >
             Cancel
           </v-btn>
           <v-btn
-            color="green darken-1"
+            color="success"
             text
             :disabled="!collapse.accept"
             @click="collapseDialogResolve(true)"
@@ -669,31 +641,26 @@
       v-model="optionDialog"
       persistent
       max-width="500"
-      style="z-index: 1000"
+      style="z-index: 1001"
     >
       <v-card
         v-if="options !== undefined && options.type != null && options.attributes !=null && attributes[options.type]!=null">
         <v-card-title class="headline">
           Organize {{ options.title }} Attributes
         </v-card-title>
-        <v-card-text>Adjust the attributes of the general item tables.
+        <v-card-text>Adjust the attributes of the
+          {{ options.type === "nodes" ? Object.keys(this.nodes)[this.nodeTab] : Object.keys(this.edges)[this.edgeTab] }}
+          edge table header.
         </v-card-text>
         <v-divider></v-divider>
         <template v-if="Object.keys(options.type).length>0">
-          <v-tabs v-model="optionTab">
-            <v-tabs-slider color="blue"></v-tabs-slider>
-            <v-tab v-for="name in Object.keys(options.attributes)" :key="name">
-              {{ Object.keys(attributes[options.type])[name] }}
-            </v-tab>
-          </v-tabs>
-          <v-tabs-items>
-            <v-list>
-              <v-list-item v-for="attr in options.attributes[optionTab]" :key="attr.name">
-                <v-switch v-model="attr.selected" :label="attr.label" :disabled="(attr.name === 'id')">
-                </v-switch>
-              </v-list-item>
-            </v-list>
-          </v-tabs-items>
+          <v-list>
+            <v-list-item v-for="attr in options.attributes" :key="attr.name" dense>
+              <v-switch v-model="attr.selected" dense :label="attr.label" :disabled="(attr.name === 'id')"
+                        style="margin-top: 0">
+              </v-switch>
+            </v-list-item>
+          </v-list>
         </template>
 
         <v-divider></v-divider>
@@ -721,30 +688,24 @@
       v-model="selectionDialog.show"
       persistent
       max-width="500"
-      style="z-index: 1000"
+      style="z-index: 1001"
     >
       <v-card v-if="selectionDialog.show && selectionDialog.type !== undefined">
-        <v-list>
-          <v-list-item>
-            <v-list-item-title class="text-h4">
-              Select induced network
-            </v-list-item-title>
-          </v-list-item>
-          <v-list-item>
-            <v-card-text>Extend your selection based on already selected nodes. Make sure to select the "extend" option
-              to not only select edges but also nodes that are directly reachable.
-            </v-card-text>
-          </v-list-item>
-        </v-list>
-        <v-card-subtitle>Nodes</v-card-subtitle>
+        <v-card-title style="margin-bottom: 16px">
+          Select induced network
+        </v-card-title>
+        <v-card-subtitle>Extend your selection based on already selected nodes. Make sure to select the "extend" option
+          to not only select edges but also nodes that are directly reachable.
+        </v-card-subtitle>
         <v-divider></v-divider>
+        <v-card-subtitle style="font-size: 16pt; margin-top:8px;"><i>Nodes</i></v-card-subtitle>
         <v-tabs-items>
           <v-list>
             <template v-for="attr in selectionDialog.seeds">
               <v-list-item :key="attr.name">
                 <v-switch v-model="attr.select" :disabled="attr.disabled"></v-switch>
                 <span>
-                <v-icon left :color="getColoring('nodes',attr.name,'light')">fas fa-genderless</v-icon>
+                <v-icon :color="getColoring('nodes',attr.name,'light')">fas fa-genderless</v-icon>
                 {{ attr.name }} ({{ countSelected('nodes', attr.name) }})
               </span>
               </v-list-item>
@@ -753,8 +714,8 @@
           </v-list>
         </v-tabs-items>
 
-        <v-card-subtitle>Edges</v-card-subtitle>
         <v-divider></v-divider>
+        <v-card-subtitle style="font-size: 16pt; margin-top:8px"><i>Edges</i></v-card-subtitle>
         <v-tabs-items>
           <v-list>
             <template v-for="attr in selectionDialog.targets">
@@ -762,13 +723,13 @@
                 <v-switch v-model="attr.select" :disabled="attr.disabled">
                 </v-switch>
                 <span>
-                <v-icon left :color="getExtendedColoring('edges',attr.name,'light')[0]">fas fa-genderless</v-icon>
+                <v-icon :color="getExtendedColoring('edges',attr.name,'light')[0]">fas fa-genderless</v-icon>
                     <template v-if="directionExtended(attr.name)===0">
-                      <v-icon left>fas fa-undo-alt</v-icon>
+                      <v-icon>fas fa-undo-alt</v-icon>
                     </template>
                     <template v-else>
                       <v-icon>fas fa-long-arrow-alt-right</v-icon>
-                      <v-icon left :color="getExtendedColoring('edges',attr.name,'light')[1]">fas fa-genderless</v-icon>
+                      <v-icon :color="getExtendedColoring('edges',attr.name,'light')[1]">fas fa-genderless</v-icon>
                     </template>
                 {{ attr.name }} ({{ countSelected('edges', attr.name) }})
               </span>
@@ -776,8 +737,8 @@
             </template>
           </v-list>
         </v-tabs-items>
-
-        <v-card-subtitle>Options</v-card-subtitle>
+        <v-divider></v-divider>
+        <v-card-subtitle style="font-size: 16pt; margin-top:8px;"><i>Options</i></v-card-subtitle>
         <v-container>
           <v-row>
             <v-col v-show="selectionDialog.type === 'nodes'">
@@ -823,11 +784,13 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <AlgorithmExecution ref="algorithmDialog" @newJobEvent="newJobEvent" :node-type="algorithmDialogParams.nodeType"
+                        :type="algorithmDialogParams.type" :nodes="algorithmDialogParams.nodes"></AlgorithmExecution>
     <v-dialog
       v-model="selectionColor.show"
       persistent
       max-width="500"
-      style="z-index: 1000"
+      style="z-index: 1001"
     >
       <v-card>
         <v-card-title class="headline">
@@ -854,15 +817,13 @@
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn
-            color="green darken-1"
-            text
+            color="error"
             @click="resolveRecoloring(false)"
           >
             Cancel
           </v-btn>
           <v-btn
-            color="green darken-1"
-            text
+            color="success"
             @click="resolveRecoloring(true,selectionColor.name, selectionColor.color.hex)"
             :disabled="selectionColor.name==null ||selectionColor.name.length===0"
           >
@@ -877,10 +838,14 @@
 <script>
 
 import SuggestionElement from "@/components/app/suggestions/SuggestionElement";
+import AlgorithmExecution from "@/components/app/dialogs/AlgorithmExecution";
+import LabeledSwitch from "@/components/app/input/LabeledSwitch";
 
 export default {
 
   components: {
+    LabeledSwitch,
+    AlgorithmExecution,
     SuggestionElement,
   },
 
@@ -901,15 +866,12 @@ export default {
     return {
       edges: {},
       nodes: {},
-      marks: {},
       attributes: {},
       countMap: undefined,
       nodeTab: undefined,
       edgeTab: undefined,
       selectAllModel: {nodes: {}, edges: {}},
       nodepage: {},
-      nodeOptionHover: false,
-      edgeOptionHover: false,
       optionDialog: false,
       waiting: true,
       suggestion: false,
@@ -954,7 +916,8 @@ export default {
       filterNodeModel: null,
       loading: true,
       nodeTabLoading: false,
-      selectionColor: {show: false, name: "", color: {}}
+      selectionColor: {show: false, name: "", color: {}},
+      algorithmDialogParams: {type: undefined, nodeType: undefined, nodes: []}
     }
   },
 
@@ -988,7 +951,6 @@ export default {
       this.waiting = true
       this.attributes = {}
       this.edges = {}
-      this.marks = {}
       this.backup = {nodes: {}, edges: {}}
       this.gid = this.$route.params["gid"]
       if (this.gid !== undefined)
@@ -1109,7 +1071,6 @@ export default {
       this.attributes = {};
       this.edges = {};
       this.nodes = {};
-      this.marks = {};
       this.nodeTab = 0
       this.edgeTab = 0
       this.resetFilters('nodes')
@@ -1125,7 +1086,6 @@ export default {
         }
         this.edges = data.edges;
         this.nodes = data.nodes;
-        this.marks = data.marks;
         Object.keys(this.nodes).forEach(node => {
           let columns = this.attributes.nodes[node].map(n => n.name)
           let p_hyper = columns.indexOf("p_hyper") != -1
@@ -1343,13 +1303,13 @@ export default {
       this.options["title"] = (Object.keys(this.nodes).length > 1) ? "Nodes" : "Node"
 
       this.options["attributes"] = {}
-      for (let node in Object.keys(this.attributes.nodes)) {
-        let models = []
-        this.attributes.nodes[Object.keys(this.attributes.nodes)[node]].forEach(attr => {
+      let models = []
+      let node = Object.keys(this.nodes)[this.nodeTab]
+      this.attributes.nodes[node].forEach(attr => {
+        if (attr.name !== "type")
           models.push({name: attr.name, label: attr.label, selected: attr.list})
-        })
-        this.options.attributes[node] = models;
-      }
+      })
+      this.options.attributes = models;
       this.options.type = "nodes";
     }
     ,
@@ -1358,13 +1318,13 @@ export default {
       this.options["title"] = (Object.keys(this.edges).length > 1) ? "Edges" : "Edge"
 
       this.options["attributes"] = {}
-      for (let edge in Object.keys(this.attributes.edges)) {
-        let models = []
-        this.attributes.edges[Object.keys(this.attributes.edges)[edge]].forEach(attr => {
+      let models = []
+      let edge = Object.keys(this.edges)[this.edgeTab]
+      this.attributes.edges[edge].forEach(attr => {
+        if (attr.name !== "type")
           models.push({name: attr.name, label: attr.label, selected: attr.list})
-        })
-        this.options.attributes[edge] = models;
-      }
+      })
+      this.options.attributes = models;
       this.options.type = "edges";
       this.optionDialog = true;
     }
@@ -1378,28 +1338,21 @@ export default {
       let comparison = this.attributes[this.options.type];
 
       let reloadNeeded = [];
-      for (let index in this.options.attributes) {
-        let name = Object.keys(comparison)[index]
-        for (let attrIndex in this.options.attributes[index]) {
-          if (this.options.attributes[index][attrIndex].selected && !comparison[name][attrIndex].sent) {
-            reloadNeeded.push(name)
-            break;
-          }
-          comparison[name][attrIndex].list = this.options.attributes[index][attrIndex].selected;
+      let name = this.options.type === "nodes" ? Object.keys(this.nodes)[this.nodeTab] : Object.keys(this.edges)[this.edgeTab]
+      for (let attrIndex in this.options.attributes) {
+        if (this.options.attributes[attrIndex].selected && !comparison[name][attrIndex].sent) {
+          reloadNeeded.push(name)
+          break;
         }
+        comparison[name][attrIndex].list = this.options.attributes[attrIndex].selected;
       }
       if (reloadNeeded.length > 0) {
         let payload = {id: this.gid, attributes: {nodes: {}, edges: {}}}
-        for (let index in this.options.attributes) {
-          let name = Object.keys(comparison)[index]
-          if (reloadNeeded.indexOf(name) === -1)
-            continue
-          let attrs = []
-          payload.attributes[this.options.type][name] = attrs
-          for (let attrIndex in this.options.attributes[index]) {
-            if (this.options.attributes[index][attrIndex].selected)
-              attrs.push(this.options.attributes[index][attrIndex].name)
-          }
+        let attrs = []
+        payload.attributes[this.options.type][name] = attrs
+        for (let attrIndex in this.options.attributes) {
+          if (this.options.attributes[attrIndex].selected)
+            attrs.push(this.options.attributes[attrIndex].name)
         }
         this.$http.post("/getCustomGraphList", payload).then(response => {
           if (response.data !== undefined)
@@ -1477,30 +1430,30 @@ export default {
         this.$emit("updateInfo", info)
       }).catch(err => console.error(err))
     },
-    downloadFromLegend: function (entity, name) {
-      //TODO resolve custom groups
-      if (entity === "nodes") {
-        let out = "#ID\tName\n"
-        this.nodes[name].forEach(node => out += node.primaryDomainId + "\t" + node.displayName + "\n")
-        this.download(name + "_nodes_" + this.gid + ".tsv", out)
-      }
-      if (entity === "edges") {
-        let out = "#ID1\tID2\tName1\tName2\n"
-        let edgeType = this.getExtendedNodes(name)
-        let nodeMap1 = {}
-        this.nodes[edgeType[0]].forEach(n => nodeMap1[n.id] = n.primaryDomainId)
-        let nodeMap2 = {}
-        if (edgeType[0] === edgeType[1])
-          nodeMap2 = nodeMap1
-        else
-          this.nodes[edgeType[1]].forEach(n => nodeMap2[n.id] = n.primaryDomainId)
-        this.edges[name].forEach(e => {
-          let ids = e.id.split('-')
-          out += nodeMap1[parseInt(ids[0])] + "\t" + nodeMap2[parseInt(ids[1])] + "\t" + e.node1 + "\t" + e.node2 + "\n"
-        })
-        this.download(name + "_edges_" + edgeType[0] + "-" + edgeType[1] + "_" + this.gid + ".tsv", out)
-      }
-    },
+    // downloadFromLegend: function (entity, name) {
+    //   if (entity === "nodes") {
+    //     let out = "#ID\tName\n"
+    //     this.nodes[name].forEach(node => out += node.primaryDomainId + "\t" + node.displayName + "\n")
+    //     this.download(name + "_nodes_" + this.gid + ".tsv", out)
+    //   }
+    //   if (entity === "edges") {
+    //     let out = "#ID1\tID2\tName1\tName2\n"
+    //     let edgeType = this.getExtendedNodes(name)
+    //     let nodeMap1 = {}
+    //     this.nodes[edgeType[0]].forEach(n => nodeMap1[n.id] = n.primaryDomainId)
+    //     let nodeMap2 = {}
+    //     if (edgeType[0] === edgeType[1])
+    //       nodeMap2 = nodeMap1
+    //     else
+    //       this.nodes[edgeType[1]].forEach(n => nodeMap2[n.id] = n.primaryDomainId)
+    //     this.edges[name].forEach(e => {
+    //       let ids = e.id.split('-')
+    //       out += nodeMap1[parseInt(ids[0])] + "\t" + nodeMap2[parseInt(ids[1])] + "\t" + e.node1 + "\t" + e.node2 + "\n"
+    //     })
+    //     this.download(name + "_edges_" + edgeType[0] + "-" + edgeType[1] + "_" + this.gid + ".tsv", out)
+    //   }
+    // },
+
     download: function (name, content) {
       let dl = document.createElement('a')
       dl.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(content))
@@ -1571,7 +1524,7 @@ export default {
       this.filterNodeModel = null
       let selectionIds = []
       Object.keys(this.nodes).forEach(name => this.nodes[name].filter(n => n.selected).forEach(n => selectionIds.push({id: name.substring(0, 3) + "_" + n.id})))
-      this.$emit("recolorGraphEvent", {ids: selectionIds, color: color, name: name})
+      this.$emit("recolorGraphEvent", {ids: selectionIds, color: color, name: name, total: selectionIds.length})
     },
     printNotification: function (message, type) {
       this.$emit("printNotificationEvent", message, type)
@@ -1641,6 +1594,22 @@ export default {
       })
     }
     ,
+    downloadEntries: async function (entity, name, attributes) {
+      let table = await this.$http.getTableDownload(this.gid, entity, name, attributes)
+      this.download(this.gid + "_" + name + "-" + entity + ".tsv", table)
+    },
+
+    downloadEdgeTable: function () {
+      let type = Object.keys(this.edges)[this.edgeTab]
+      let attributes = this.attributes.edges[type].filter(a => a.list).map(a => a.name)
+      this.downloadEntries("edge", type, attributes)
+    },
+
+    downloadNodeTable: function () {
+      let type = Object.keys(this.nodes)[this.nodeTab]
+      this.downloadEntries("nodes", type, this.attributes.nodes[type].filter(a => a.list).map(a => a.name))
+    },
+
     loadSelection: function () {
 
       //TODO check if correct (nodes connected by edge)
@@ -1710,6 +1679,9 @@ export default {
 
     selectDependentNodes: function (type, edges) {
       this.setDependentNodeSelection(type, edges, true)
+    },
+    newJobEvent: function (data) {
+      this.$emit('newJobEvent', data);
     },
 
     setDependentNodeSelection: function (type, edges, state) {
@@ -1828,7 +1800,7 @@ export default {
     }
     ,
     headers: function (entity, node) {
-      let out = [{text: "Select", align: 'start', sortable: false, value: "selected",width:"90px"}]
+      let out = [{text: "Select", align: 'start', sortable: false, value: "selected", width: "90px"}]
       this.attributes[entity][node].forEach(attr => {
         if (!attr.list)
           return
@@ -2008,31 +1980,21 @@ export default {
     getColoring: function (entity, name, style) {
       return this.$utils.getColoring(this.$global.metagraph, entity, name, style)
     },
-    executeAlgorithm: function (algorithm, params) {
+    openAlgorithmDialogEvent: function (data) {
       this.filterNodeModel = null
-      let payload = {
-        userId: this.uid,
-        dbVersion: this.$global.metadata.repotrial.version,
-        graphId: this.gid,
-        algorithm: algorithm,
-        params: params
+      try {
+        this.algorithmDialogParams.nodes = (data.selection ? this.nodes[data.type].filter(n => n.selected) : this.nodes[data.type])
+      } catch (e) {
+        this.printNotification("The selected node-type is not part of your current network!", 2)
+        return;
       }
-      payload.selection = params.selection
-      payload.experimentalOnly = params.experimentalOnly
-      if (params.selection)
-        payload["nodes"] = this.nodes[params.type].filter(n => n.selected).map(n => n.id)
-      if (algorithm === "diamond" || algorithm === "trustrank" || algorithm === "centrality" || algorithm === "must") {
-        if (this.configuration.countMap.nodes[params.type] === undefined || (params.selection && this.configuration.countMap.nodes[params.type].selected === 0)) {
-          this.printNotification("Cannot execute " + algorithm + " without seed nodes!", 1)
-          return;
-        }
+      if (this.algorithmDialogParams.nodes.length === 0) {
+        this.printNotification("No nodes are selected by your current settings!", 2)
+        return
       }
-      this.$http.post("/submitJob", payload).then(response => {
-        if (response.data !== undefined)
-          return response.data
-      }).then(data => {
-        this.$emit("addJobEvent", data)
-      }).catch(console.error)
+      this.algorithmDialogParams.nodeType = data.type;
+      this.algorithmDialogParams.type = data.algorithms;
+      this.$refs.algorithmDialog.show()
     },
     directionExtended: function (edge) {
       let e = Object.values(this.configuration.entityGraph.edges).filter(e => e.name === edge)[0];

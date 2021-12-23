@@ -1,9 +1,9 @@
 <template>
   <v-card ref="legend" elevation="3" v-if="entityGraph!==undefined"
-          style="max-width: 22vw; min-width: 300px; width: auto; padding-top: 15px;" v-show="show" >
+          style="max-width: 22vw; min-width: 300px; width: auto; padding-top: 15px;" v-show="show">
     <v-card-title style="margin-top:.5rem;padding-bottom:0">Nodes</v-card-title>
     <v-list ref="list">
-      <v-list-item v-for="node in Object.values(countMap.nodes)" :key="node.name" style="min-height: 30px; height:2rem" >
+      <v-list-item v-for="node in Object.values(countMap.nodes)" :key="node.name" style="min-height: 30px; height:2rem">
         <v-list-item-avatar width="20" height="20">
           <v-icon :color="getColoring('nodes',node.name,'light')" style="max-height: 1rem">fas fa-genderless</v-icon>
         </v-list-item-avatar>
@@ -19,7 +19,7 @@
             <b>{{ isToggled('nodes', node.name) ? 'on' : 'off' }}</b><br>
           </template>
         </LegendAction>
-        <LegendAction icon="fas fa-thumbtack">
+        <LegendAction icon="fas fa-thumbtack" v-show="false">
           <template v-slot:tooltip>
             Fixating nodes for interaction simulation will be added in the future.
           </template>
@@ -31,11 +31,33 @@
         </LegendAction>
       </v-list-item>
       <v-list-item v-for="node in nodeMap" :key="node.label" ref="custom">
-        <v-chip outlined @click="toggleNode(node.name)">
-          <v-icon left :color="options.toggled.nodes[node.name] ? node.color :'gray'" size="15px">fas fa-circle
+        <v-list-item-avatar width="20" height="20">
+          <v-icon :color="options.toggled.nodes[node.name] ? node.color :'gray'" style="max-height: 1rem">fas
+            fa-genderless
           </v-icon>
-          {{ node.label }}
-        </v-chip>
+        </v-list-item-avatar>
+        <v-list-item-title style="font-size: small">{{ node.name }}</v-list-item-title>
+        <v-list-item-subtitle style="font-size: small">{{ node.total }}</v-list-item-subtitle>
+        <LegendAction
+          @click="toggleNode(node.name)"
+          :color="isToggled('nodes',node.name) ? 'primary' : 'gray'"
+          :icon="isToggled('nodes',node.name) ?'far fa-eye' : 'far fa-eye-slash'"
+        >
+          <template v-slot:tooltip>
+            Toggle the visualization of the <i><b>{{ node.name }}</b></i> nodes.<br>Current state:
+            <b>{{ isToggled('nodes', node.name) ? 'on' : 'off' }}</b><br>
+          </template>
+        </LegendAction>
+        <LegendAction icon="fas fa-thumbtack" v-show="false">
+          <template v-slot:tooltip>
+            Fixating nodes for interaction simulation will be added in the future.
+          </template>
+        </LegendAction>
+        <LegendAction icon="fas fa-download" color="primary" @click="startDownload('nodes',node.name)" disabled>
+          <template v-slot:tooltip>
+            Download list of all <i>{{ node.name }}</i> nodes.
+          </template>
+        </LegendAction>
       </v-list-item>
     </v-list>
     <v-card-title style="margin-top:0;padding-bottom:0">Edges</v-card-title>
@@ -104,7 +126,6 @@ export default {
     if (this.options.toggled === undefined) {
       this.options.toggled = {}
     }
-    console.log(this.$global.metagraph)
   },
   methods: {
     toggleNode: function (nodeName) {
@@ -147,11 +168,20 @@ export default {
         this.options.toggled.nodes = {}
       if (this.options.toggled.nodes[request.name] === undefined)
         this.options.toggled.nodes[request.name] = true;
+      if (this.nodeMap[request.name])
+        this.nodeMap[request.name].total = request.ids.length
       if (this.nodeMap[request.name] !== undefined)
         this.nodeMap[request.name].color = request.color
       else
-        this.nodeMap[request.name] = {label: request.name, name: request.name.toLowerCase(), color: request.color}
+        this.nodeMap[request.name] = {label: request.name, name: request.name.toLowerCase(), color: request.color, total: request.ids.length}
       this.$forceUpdate()
+    },
+
+    updateCounts: function(list){
+      list.forEach(entry=>{
+        if(this.nodeMap[entry.name])
+        this.nodeMap[entry.name].total = list.total;
+      })
     },
 
     startDownload: function (entity, name) {
@@ -178,9 +208,9 @@ export default {
 }
 
 .v-list-item__title {
-  max-width:700px;
-  width:500px;
-  min-width:auto;
+  max-width: 700px;
+  width: 500px;
+  min-width: auto;
 }
 
 </style>

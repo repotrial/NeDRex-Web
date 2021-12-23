@@ -3,6 +3,7 @@ package de.exbio.reposcapeweb.communication.jobs;
 import de.exbio.reposcapeweb.communication.cache.Graph;
 import de.exbio.reposcapeweb.communication.cache.Graphs;
 import de.exbio.reposcapeweb.communication.controller.SocketController;
+import de.exbio.reposcapeweb.communication.reponses.JobResponse;
 import de.exbio.reposcapeweb.communication.reponses.WebGraphService;
 import de.exbio.reposcapeweb.db.history.HistoryController;
 import de.exbio.reposcapeweb.db.services.nodes.DrugService;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Service;
 import java.io.*;
 import java.nio.file.Files;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 public class JobController {
@@ -34,6 +36,8 @@ public class JobController {
     private final DrugService drugService;
     private final HistoryController historyController;
     private final JobCache jobCache;
+
+    private final HashMap<String, List<Pair<Job,JobRequest>>> jobWaitingForJobs = new HashMap<>();
 
     private HashMap<String, Job> jobs = new HashMap<>();
     private HashMap<String, LinkedList<String>> jobWaitingForResults = new HashMap<>();
@@ -62,6 +66,9 @@ public class JobController {
             id = UUID.randomUUID().toString();
         Job j = new Job(id, req);
         jobs.put(id, j);
+        if(req.jobId!=null) {
+            j.setParentJid(req.jobId);
+        }
         return j;
     }
 
@@ -74,21 +81,34 @@ public class JobController {
         Job j = createJob(req);
 
         j.addParam("experimentalOnly", req.experimentalOnly);
-        for (String param : req.getParams().keySet())
-            j.addParam(param, req.getParams().get(param));
+        for (String param : req.getParams().keySet()) {
+            if (!param.equals("exprData"))
+                j.addParam(param, req.getParams().get(param));
+        }
+
 
         //TODO can be moved to frontend
         j.addParam("pcutoff", req.getParams().containsKey("pcutoff") ? Math.pow(10, Double.parseDouble(req.getParams().get("pcutoff"))) : 1);
         j.addParam("topX", req.getParams().containsKey("topX") ? Integer.parseInt(req.getParams().get("topX")) : Integer.MAX_VALUE);
         j.addParam("elements", req.getParams().containsKey("elements") && req.getParams().get("elements").startsWith("t"));
-        Graph g = graphService.getCachedGraph(req.graphId);
-        try {
-            prepareJob(j, req, g);
-        } catch (Exception e) {
-            log.error("Error on job submission");
-            j.setStatus(Job.JobState.ERROR);
-            e.printStackTrace();
-            return j;
+
+        if(req.jobId==null || getJobById(req.jobId).getState()== Job.JobState.DONE) {
+            if(req.jobId!=null)
+                req.graphId=getJobById(req.jobId).getDerivedGraph();
+            Graph g = graphService.getCachedGraph(req.graphId);
+            try {
+                prepareJob(j, req, g);
+            } catch (Exception e) {
+                log.error("Error on job submission");
+                j.setStatus(Job.JobState.ERROR);
+                e.printStackTrace();
+                return j;
+            }
+        }else{
+            j.setStatus(Job.JobState.WAITING);
+            if(!jobWaitingForJobs.containsKey(j.getParentJid()))
+                jobWaitingForJobs.put(j.getParentJid(),new LinkedList<>());
+            jobWaitingForJobs.get(j.getParentJid()).add(new Pair<>(j,req));
         }
         if (!j.getState().equals(Job.JobState.DONE) && !j.getState().equals(Job.JobState.WAITING))
             queue(j);
@@ -105,6 +125,7 @@ public class JobController {
     private void save(Job j) {
         jobRepository.save(j);
     }
+
 
     private void prepareJob(Job j, JobRequest req, Graph g) {
         if (g == null & req.selection) {
@@ -127,6 +148,7 @@ public class JobController {
                 switch (sameJob.getState()) {
                     case DONE -> {
                         copyResults(j.getJobId(), sameJob, false);
+                        copyThumbnailAndLayout(j.getDerivedGraph(), sameJob.getDerivedGraph());
                         return;
                     }
                     case EXECUTING, INITIALIZED, QUEUED, NOCHANGE -> {
@@ -146,14 +168,19 @@ public class JobController {
 
     private void prepareExpressionFile(JobRequest req) {
         String data = req.getParams().get("exprData");
+        String idType = req.getParams().get("exprIDType");
         if (data.indexOf(',') > -1)
             data = StringUtils.split(data, ',').get(1);
         final boolean[] header = {true};
-        char tab = '\t';
         char n = '\n';
         StringBuilder mapped = new StringBuilder();
+
+        HashMap<String, String> idMap = geneService.getDomainIdTypes().contains(idType) ? geneService.getSecondaryDomainToIDMap(idType) : proteinService.getSecondaryDomainToIDMap(idType);
+
+        AtomicReference<Character> sep = new AtomicReference<>(null);
+        char[] seps = new char[]{'\t', ',', ';'};
         StringUtils.split(new String(Base64.getDecoder().decode(data)), '\n').forEach(line -> {
-                    if (line.length() == 0 || line.charAt(0) == '!') {
+                    if (line.length() == 0 || line.charAt(0) == '!' || line.charAt(0) == '#') {
                         return;
                     }
                     if (header[0]) {
@@ -161,18 +188,30 @@ public class JobController {
                         header[0] = false;
                         return;
                     }
-                    LinkedList<String> split = StringUtils.split(line, "\t");
-                    String entrez = split.get(0);
-                    if (entrez.charAt(0) == '"')
-                        entrez = entrez.substring(1, entrez.length() - 1);
+                    if (sep.get() == null) {
+                        int maxAmount = 0;
+                        char bestChar = '\t';
+                        for (char c : seps) {
+                            int nr = StringUtils.split(line, c).size();
+                            if (nr > maxAmount) {
+                                maxAmount = nr;
+                                bestChar = c;
+                            }
+                        }
+                        sep.set(bestChar);
+                    }
 
-                    if (!entrez.startsWith("entrez."))
-                        entrez = "entrez." + entrez;
-                    Integer id = geneService.getDomainToIdMap().get(entrez);
-                    if (id != null) {
-                        mapped.append(id);
-                        split.subList(1, split.size()).forEach(e -> mapped.append(tab).append(e));
-                        mapped.append(n);
+                    LinkedList<String> split = StringUtils.splitFirst(line, sep.get());
+                    String id = split.get(0);
+                    if (id.charAt(0) == '"')
+                        id = id.substring(1, id.length() - 1);
+
+                    if (id.startsWith(idType + "."))
+                        id = id.substring(idType.length() + 1);
+                    id = id.toLowerCase();
+                    String strID = idMap.get(id);
+                    if (strID != null) {
+                        mapped.append(strID).append(sep.get()).append(split.get(1)).append(n);
                     }
                 }
         );
@@ -194,8 +233,9 @@ public class JobController {
     }
 
 
-    public void finishJob(String id) {
+    public boolean finishJob(String id) {
         Job j = jobs.get(id);
+        boolean state = true;
         try {
             HashMap<Integer, HashMap<String, Integer>> domainIds = new HashMap<>();
             domainIds.put(Graphs.getNode("gene"), geneService.getDomainToIdMap());
@@ -205,23 +245,54 @@ public class JobController {
             toolService.getJobResults(j, domainIds);
             if ((j.getResult().getNodes().isEmpty()) & (!j.getParams().containsKey("nodesOnly") || !j.getParams().get("nodesOnly").equals("true"))) {
                 j.setDerivedGraph(j.getBasisGraph());
-            } else
-                graphService.applyJob(j);
+            } else {
+                boolean basisIsJob = getJobByGraphId(j.getBasisGraph()) != null;
+                graphService.applyJob(j, basisIsJob);
+                if (!basisIsJob) {
+                    historyController.remove(j.getBasisGraph());
+                    j.setBasisGraph(null);
+                }
+
+            }
         } catch (Exception e) {
             log.error("Error on finishing job: " + id);
             e.printStackTrace();
             j.setStatus(Job.JobState.ERROR);
+            state = false;
         }
-        try {
-            toolService.clearDirectories(j, historyController.getJobPath(j));
-        } catch (Exception e) {
-            log.error("Error on finishing job: " + id);
-            e.printStackTrace();
-            j.setStatus(Job.JobState.ERROR);
-        }
+        if (state)
+            try {
+                toolService.clearDirectories(j, historyController.getJobPath(j));
+            } catch (Exception e) {
+                log.error("Error on finishing job: " + id);
+                e.printStackTrace();
+                j.setStatus(Job.JobState.ERROR);
+                state = false;
+            }
         save(j);
         socketController.setJobUpdate(j);
         checkWaitingJobs(j);
+        if(jobWaitingForJobs.containsKey(j.getJobId())){
+            Graph g = graphService.getCachedGraph(j.getDerivedGraph());
+            jobWaitingForJobs.get(j.getJobId()).forEach(job->{
+                job.first.setBasisGraph(g.getId());
+                job.second.graphId=g.getId();
+                job.first.setStatus(Job.JobState.INITIALIZED);
+                try {
+                    prepareJob(job.first, job.second, g);
+                } catch (Exception e) {
+                    log.error("Error on job submission");
+                    job.first.setStatus(Job.JobState.ERROR);
+                    e.printStackTrace();
+                }
+                if (!job.first.getState().equals(Job.JobState.DONE) && !job.first.getState().equals(Job.JobState.WAITING))
+                    queue(job.first);
+                else
+                    jobRepository.save(job.first);
+            });
+            jobWaitingForJobs.remove(j.getJobId());
+        }
+        return state;
     }
 
     private void checkWaitingJobs(Job j) {
@@ -231,6 +302,11 @@ public class JobController {
 
     private void copyResults(String cloneJid, Job j, boolean notify) {
         Job dependent = jobs.get(cloneJid);
+        boolean keepParent = getJobByGraphId(j.getBasisGraph()) != null;
+        if (!keepParent && dependent.getBasisGraph() != null) {
+            historyController.remove(dependent.getBasisGraph());
+            dependent.setBasisGraph(null);
+        }
         dependent.setStatus(Job.JobState.DONE);
         log.info("Finished " + dependent.getMethod().name() + " job " + dependent.getJobId() + "of user " + dependent.getUserId() + "! (Cloned from " + j.getJobId() + " to finish)");
         dependent.setDerivedGraph(graphService.cloneGraph(j.getDerivedGraph(), dependent.getUserId(), dependent.getBasisGraph()));
@@ -241,8 +317,33 @@ public class JobController {
             e.printStackTrace();
         }
         dependent.setUpdate(j.getUpdate());
-        if (notify)
+        if (notify) {
+            copyThumbnailAndLayout(dependent.getDerivedGraph(), j.getDerivedGraph());
             socketController.setJobUpdate(dependent);
+        }
+    }
+
+    public void copyThumbnailAndLayout(String derivedId, String originalId) {
+        File copy = historyController.getThumbnailPath(derivedId);
+        copy.getParentFile().mkdirs();
+        File old = historyController.getThumbnailPath(originalId);
+        if (old.exists()) {
+            try {
+                Files.copy(old.toPath(), copy.toPath());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        copy = historyController.getLayoutPath(derivedId);
+        old = historyController.getLayoutPath(originalId);
+        copy.getParentFile().mkdirs();
+        if (old.exists()) {
+            try {
+                Files.copy(old.toPath(), copy.toPath());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
 
@@ -250,10 +351,15 @@ public class JobController {
         return historyController.getJobPath(jobs.get(id));
     }
 
+    public String getJobByGraphId(String gid) {
+        Optional<Job> j = jobs.values().stream().filter(job -> job != null && job.getDerivedGraph() != null && job.getDerivedGraph().equals(gid)).findFirst();
+        return j.map(Job::getJobId).orElse(null);
+    }
+
 
     public HashMap<String, Pair<String, Pair<Job.JobState, ToolService.Tool>>> getJobGraphStatesAndTypes(String user) {
         HashMap<String, Pair<String, Pair<Job.JobState, ToolService.Tool>>> stateMap = new HashMap<>();
-        jobs.values().stream().filter(j -> j.getUserId()!=null &&j.getUserId().equals(user)).forEach(j -> stateMap.put(j.getDerivedGraph(), new Pair<>(j.getJobId(), new Pair<>(j.getState(), j.getMethod()))));
+        jobs.values().stream().filter(j -> j.getUserId() != null && j.getUserId().equals(user)).forEach(j -> stateMap.put(j.getDerivedGraph(), new Pair<>(j.getJobId(), new Pair<>(j.getState(), j.getMethod()))));
         return stateMap;
     }
 
@@ -267,4 +373,36 @@ public class JobController {
         return stateMap;
     }
 
+    public Job getJobById(String jobid) {
+        return this.jobs.get(jobid);
+    }
+
+    public JobResponse getJobResponse(String jobId) {
+        Job j = getJobById(jobId);
+        JobResponse jr = new JobResponse(j);
+        if(jr.parentJid!=null)
+            jr.parentGraph = getJobById(jr.parentJid).getBasisGraph();
+        graphService.recreateJobData(jr);
+        return jr;
+    }
+
+    public HashMap<String, String> getParams(String jobid) {
+        Job j = this.getJobById(jobid);
+        if (j == null)
+            return new HashMap<>();
+        return j.getParams();
+
+
+    }
+
+    public void removeJob(String jobId) {
+        Job j = getJobById(jobId);
+        jobCache.remove(j);
+        if (j.isResultFile()) {
+            File result = getDownload(j.getJobId());
+            if (result != null && result.exists())
+                result.delete();
+        }
+        jobRepository.delete(j);
+    }
 }

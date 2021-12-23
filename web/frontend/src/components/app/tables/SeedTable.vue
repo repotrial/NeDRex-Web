@@ -12,10 +12,10 @@
         </div>
       </template>
       <template v-slot:item.displayName="{item}">
-        <v-tooltip v-if="item.displayName.length>16" right>
+        <v-tooltip v-if="item.displayName.length>36" right>
           <template v-slot:activator="{attr,on }">
                           <span v-bind="attr" v-on="on"
-                                style="color: dimgray">{{ item.displayName.substr(0, 16) }}...</span>
+                                style="color: dimgray">{{ item.displayName.substr(0, 33) }}...</span>
           </template>
           <span>{{ item.displayName }}</span>
         </v-tooltip>
@@ -157,7 +157,6 @@ export default {
   },
 
   methods: {
-
     getOrigins: function (id) {
       if (this.origins[id] === undefined)
         return ["?"]
@@ -182,7 +181,16 @@ export default {
       this.nodes.splice(index, 1)
       this.$emit("remove", this.origins[id])
       delete this.origins[id]
+      this.$emit("updateCount")
     },
+
+    setValues(origins, nodes, attributes){
+      this.origins= {...origins}
+      this.$set(this,"nodes",[...nodes])
+      this.$set(this,"attributes",{...attributes})
+      this.$emit("updateCount")
+    },
+
 
     removeNodes: function (data) {
       let all = data.all;
@@ -190,6 +198,7 @@ export default {
       let value = data.value;
       this.nodes.filter(n => (n[attribute] != null && (n[attribute].indexOf(value) > -1 && (n[attribute].length === 1 || all)))).map(n => n.id).forEach(this.removeNode)
       this.updateAttributes()
+      this.$emit("updateCount")
     },
 
     filterNodes: function (data) {
@@ -198,6 +207,7 @@ export default {
       let value = data.value;
       this.nodes.filter(n => !(n[attribute] != null && n[attribute].indexOf(value) > -1 && (n[attribute].length === 1 || all))).map(n => n.id).forEach(this.removeNode)
       this.updateAttributes()
+      this.$emit("updateCount")
     },
 
     updateAttributes: function () {
@@ -217,6 +227,8 @@ export default {
     clear: function () {
       this.nodes = []
       this.origins = {}
+      this.$emit("clearEvent")
+      this.$emit("updateCount")
     },
 
     downloadNodes: function (names, sep) {
@@ -260,8 +272,9 @@ export default {
         } else {
           if (e.sourceDBs != null) {
             let node = ids[e.id]
-            if (node.sourceDBs != null)
-              node.sourceDBs = node.sourceDBs.concat(e.sourceDBs)
+            if (node.sourceDBs != null) {
+              node.sourceDBs = node.sourceDBs.concat(e.sourceDBs.filter(n=>node.sourceDBs.indexOf(n)===-1))
+            }
             else node.sourceDBs = [].concat(e.sourceDBs)
           }
         }
@@ -272,12 +285,22 @@ export default {
           this.origins[e.id] = [entries.origin]
       })
       this.updateAttributes()
-      this.$emit("printNotificationEvent", "Added " + entries.data.length + "from " + entries.origin + " (" + count + " new) seeds!", 1)
+      this.$emit("printNotificationEvent", "Added " + entries.data.length + " from " + entries.origin + " (" + count + " new) seeds!", 1)
+      this.$emit("updateCount")
     },
 
     getSeeds() {
       return this.nodes;
     },
+
+    allOrigins(){
+      return this.origins
+    },
+
+    getAttributes(){
+      return this.attributes
+    },
+
 
     keepIntersection: function () {
       let remove = []
@@ -288,6 +311,7 @@ export default {
         }
       })
       this.nodes = this.nodes.filter(s => remove.indexOf(s.id) === -1)
+      this.$emit("updateCount")
     },
 
   },

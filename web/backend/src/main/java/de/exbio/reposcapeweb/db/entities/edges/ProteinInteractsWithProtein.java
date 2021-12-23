@@ -13,7 +13,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -55,6 +54,10 @@ public class ProteinInteractsWithProtein extends RepoTrialEdge implements Serial
 
     @Transient
     @JsonIgnore
+    public static Boolean[] detailAttributes;
+
+    @Transient
+    @JsonIgnore
     public static String[] attributeLabels;
 
     @Transient
@@ -82,13 +85,23 @@ public class ProteinInteractsWithProtein extends RepoTrialEdge implements Serial
     private String memberTwo;
     @Column(columnDefinition = "TEXT")
     private String methods;
+    @Column(columnDefinition = "TEXT")
+    private String developmentStages;
+    @Column(columnDefinition = "TEXT")
+    private String tissues;
+    @Column(columnDefinition = "TEXT")
+    private String subcellularLocations;
+    @Column(columnDefinition = "TEXT")
+    private String jointTissues;
+    @Column(columnDefinition = "TEXT")
+    private String brainTissues;
 
     @Transient
     private String nodeOne;
     @Transient
     private String nodeTwo;
 
-    private String sourceDatabases;
+    private String assertedBy;
     private String evidenceTypes;
 
     public ProteinInteractsWithProtein() {
@@ -97,7 +110,7 @@ public class ProteinInteractsWithProtein extends RepoTrialEdge implements Serial
     @Override
     public HashMap<String, Object> getAsMap() {
         HashMap<String, Object> values = new HashMap<>();
-        values.put("databases", getDatabases());
+        values.put("assertedBy", getAssertedBy());
         values.put("memberOne", getMemberOne());
         values.put("memberTwo", getMemberTwo());
         values.put("idOne", id.getId1());
@@ -108,6 +121,11 @@ public class ProteinInteractsWithProtein extends RepoTrialEdge implements Serial
         values.put("type", getType());
         values.put("id", id.getId1() + "-" + id.getId2());
         values.put("methods",getMethods());
+        values.put("developmentStages",getDevelopmentStages());
+        values.put("tissues",getTissues());
+        values.put("subcellularLocations",getSubcellularLocations());
+        values.put("jointTissues",getJointTissues());
+        values.put("brainTissues",getBrainTissues());
         return values;
     }
 
@@ -168,12 +186,52 @@ public class ProteinInteractsWithProtein extends RepoTrialEdge implements Serial
         this.methods = StringUtils.listToString(methods);
     }
 
-    public List<String> getDatabases() {
-        return StringUtils.stringToList(sourceDatabases);
+    public List<String> getDevelopmentStages() {
+        return StringUtils.stringToList(developmentStages);
     }
 
-    public void setDatabases(List<String> databases) {
-        this.sourceDatabases = StringUtils.listToString(databases);
+    public void setDevelopmentStages(List<String> developmentStages) {
+        this.developmentStages = StringUtils.listToString(developmentStages);
+    }
+
+    public List<String> getTissues() {
+        return StringUtils.stringToList(tissues);
+    }
+
+    public void setTissues(List<String> tissues) {
+        this.tissues = StringUtils.listToString(tissues);
+    }
+
+    public List<String> getSubcellularLocations() {
+        return StringUtils.stringToList(subcellularLocations);
+    }
+
+    public void setSubcellularLocations(List<String> subcellularLocations) {
+        this.subcellularLocations = StringUtils.listToString(subcellularLocations);
+    }
+
+    public List<String> getJointTissues() {
+        return StringUtils.stringToList(jointTissues);
+    }
+
+    public void setJointTissues(List<String> jointTissues) {
+        this.jointTissues = StringUtils.listToString(jointTissues);
+    }
+
+    public List<String> getBrainTissues() {
+        return StringUtils.stringToList(brainTissues);
+    }
+
+    public void setBrainTissues(List<String> brainTissues) {
+        this.brainTissues = StringUtils.listToString(brainTissues);
+    }
+
+    public List<String> getAssertedBy() {
+        return StringUtils.stringToList(assertedBy);
+    }
+
+    public void setAssertedBy(List<String> databases) {
+        this.assertedBy = StringUtils.listToString(databases);
     }
 
     public List<String> getEvidenceTypes() {
@@ -185,11 +243,16 @@ public class ProteinInteractsWithProtein extends RepoTrialEdge implements Serial
     }
 
     public void setValues(ProteinInteractsWithProtein other) {
-        this.sourceDatabases = other.sourceDatabases;
+        this.assertedBy = other.assertedBy;
         this.evidenceTypes = other.evidenceTypes;
         this.memberOne = other.memberOne;
         this.memberTwo = other.memberTwo;
         this.methods = other.methods;
+        this.developmentStages = other.developmentStages;
+        this.brainTissues = other.brainTissues;
+        this.jointTissues = other.jointTissues;
+        this.tissues = other.tissues;
+        this.subcellularLocations = other.subcellularLocations;
     }
 
     @Override

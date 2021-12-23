@@ -83,15 +83,15 @@ const Utils =
     }
     ,
     roundScores: function (data, nodeType, scoreAttrs) {
-        data.nodes[nodeType].forEach(item => {
-          if (typeof scoreAttrs === 'object') {
-            if (scoreAttrs.id)
-              this.roundScores(item, scoreAttrs.id)
-            else
-              scoreAttrs.forEach(scoreAttr => this.roundScore(item, scoreAttr.id))
-          } else
-            this.roundScore(item, scoreAttrs)
-        })
+      data.nodes[nodeType].forEach(item => {
+        if (typeof scoreAttrs === 'object') {
+          if (scoreAttrs.id)
+            this.roundScores(item, scoreAttrs.id)
+          else
+            scoreAttrs.forEach(scoreAttr => this.roundScore(item, scoreAttr.id))
+        } else
+          this.roundScore(item, scoreAttrs)
+      })
       return data
     },
     roundValue: function (score, decimals) {
@@ -146,7 +146,6 @@ const Utils =
 
     adjustMetaOptions(metagraph) {
       function drawEllipse({ctx, id, x, y, state: {selected, hover}, style, label}) {
-        console.log(style)
         return {
           // bellow arrows
           // primarily meant for nodes and the labels inside of their boundaries
@@ -168,9 +167,16 @@ const Utils =
 
       metagraph.options.options.groups.pathway["shape"] = "triangle";
       metagraph.options.options.groups.pathway["ctxRenderer"] = drawEllipse;
-      console.log(metagraph)
 
       return metagraph;
+    },
+    isMac(navigator) {
+      return navigator.appVersion.toLowerCase().indexOf("mac") > -1
+    },
+
+    isFirefox(navigator){
+      return navigator.appCodeName.indexOf("Mozilla")>-1
     }
+
   }
 export default Utils

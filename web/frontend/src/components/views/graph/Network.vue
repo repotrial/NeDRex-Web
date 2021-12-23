@@ -1,8 +1,13 @@
 <template>
-  <div class="graph-window" :style="windowStyle">
+  <div class="graph-window" :style="windowStyle" @mouseenter="setGlobalScroll('hidden')"
+       @mouseleave="setGlobalScroll('auto')">
     <v-progress-linear v-if="progress ===undefined" v-show="loading && !waiting" indeterminate
                        :color=loadingColor></v-progress-linear>
-    <v-progress-linear v-else v-show="progress <100" :value="progress" :color=loadingColor></v-progress-linear>
+    <template v-else>
+      <v-progress-linear v-if="progressInterminate && progress>0 && progress<100" indeterminate :color="loadingColor"></v-progress-linear>
+      <v-progress-linear v-else v-show="progress <100" :value="progress" :color=loadingColor></v-progress-linear>
+    </template>
+
     <div :style="{position:'relative', height:'100%',width:'100%',display: 'flex', justifyContent:'flex-end'}">
       <div style="justify-self: center; align-self: center; margin: auto" v-if="!configuration.visualized">
         <template v-if="nodeSet==null && (loading || waiting) && progressText !=null">
@@ -16,20 +21,24 @@
           </div>
           <i v-else>No network has been selected yet!</i>
         </template>
-        <div v-else-if="!show && !loading && !secondaryViewer">
-          <v-card v-if="nodeSet !== undefined" :img="getThumbnail()" height="20vh">
+        <div v-else-if="!show && !loading && (!secondaryViewer || showVisOption)">
+          <v-card v-if="nodeSet !== undefined || showVisOption" :img="getThumbnail(this.gid)"
+                  :height="thumbnailDone ? '20vh':'64px'">
             <v-card-title>
-              <i>Create a View for the Network</i>
-              <v-btn icon @click="visualize();">
-                <v-icon>fas fa-play</v-icon>
-              </v-btn>
+              <span style="background-color: rgba(255,255,255,0.9)">
+                <i>Create a View for the Network</i>
+                <v-btn icon @click="visualize();" v-if="!(secondaryViewer && waiting)">
+                  <v-icon>fas fa-play</v-icon>
+                </v-btn>
+                <v-progress-circular v-else indeterminate size="20" color="primary"
+                                     style="margin-left: 5px"></v-progress-circular>
+                </span>
             </v-card-title>
           </v-card>
           <div v-else>
-            <i>Create a View for the Network</i>
-            <v-btn icon @click="visualize();">
-              <v-icon>fas fa-play</v-icon>
-            </v-btn>
+            <i>Creating the Network</i>
+            <v-progress-circular indeterminate size="20" color="primary"
+                                 style="margin-left: 5px"></v-progress-circular>
           </div>
         </div>
         <div v-show="show">
@@ -55,7 +64,7 @@
            v-if=" (!waiting && show )|| keepLegends">
         <div v-if="legend">
           <v-btn @click="togglePanel(0)" :title="this.showPanels[0] ? 'Hide':'Show'" plain
-                 style="display: flex; justify-content: flex-end; margin-left: auto; z-index: 201">
+                 style="display: flex; justify-content: flex-end; margin-left: auto; z-index: 201; background-color: rgba(255,255,255,0.5)">
             <v-icon left>fas fa-scroll</v-icon>
             Legend
             <v-icon right>{{ this.showPanels[0] ? "fas fa-angle-up" : "fas fa-angle-down" }}</v-icon>
@@ -65,9 +74,10 @@
             <slot name="legend"></slot>
           </div>
         </div>
-        <template v-if="tools">
-          <div style="display: flex; justify-content: flex-end;">
-            <v-btn @click="togglePanel(1)" :title="this.showPanels[1] ? 'Hide':'Show'" plain style="z-index: 201">
+        <div v-if="tools">
+          <div style="display: flex; justify-content:flex-end">
+            <v-btn @click="togglePanel(1)" :title="this.showPanels[1] ? 'Hide':'Show'" plain
+                   style="z-index: 201; background-color: rgba(255,255,255,0.5)">
               <v-icon left>fas fa-tools</v-icon>
               Tools
               <v-icon right>{{ this.showPanels[1] ? "fas fa-angle-up" : "fas fa-angle-down" }}</v-icon>
@@ -76,7 +86,7 @@
           <div v-show="this.showPanels[1]" style="margin-top:-35px; margin-right:1px;  z-index: 200">
             <slot name="tools"></slot>
           </div>
-        </template>
+        </div>
         <template v-if="styles">
           <div style="display: flex; justify-content: flex-end;">
             <v-btn @click="togglePanel(2)" :title="this.showPanels[2] ? 'Hide':'Show'" plain style="z-index: 201">
@@ -97,7 +107,7 @@
         v-model="sizeDialog"
         persistent
         max-width="350"
-        style="z-index: 202"
+        style="z-index: 1001"
       >
         <v-card>
           <v-card-title class="headline">
@@ -148,9 +158,17 @@ export default {
     legend: Boolean,
     tools: Boolean,
     styles: Boolean,
+    progressInterminate:{
+      default: false,
+      type: Boolean
+    },
     configuration: Object,
     startGraph: false,
     progress: Number,
+    showVisOption: {
+      type: Boolean,
+      default: false,
+    },
     secondaryViewer: false,
     windowStyle: {
       height: '75vh',
@@ -182,10 +200,12 @@ export default {
       clickParams: {t0: 0, threshold: 250},
       selectMode: false,
       keepLegends: false,
+      thumbnailDone: false,
     }
   },
 
   created() {
+    this.$socket.$on("NetworkThumbnailReady", this.thumbnailReady)
     this.physics = false
     this.colors = {bar: {backend: "#6db33f", vis: 'primary', error: 'red darken-2'}}
     this.configuration.visualized = false
@@ -213,6 +233,7 @@ export default {
       this.toggleSelectMode(false)
       this.setPhysics(false)
       this.nodeSet = undefined
+      this.thumbnailDone = false
       this.edgeSet = undefined
     },
 
@@ -256,13 +277,29 @@ export default {
       this.loading = bool;
     },
 
+    loadLayout: function (type) {
+      this.$http.getLayout(this.gid, type).then(data => {
+        let groupMap = {}
+        this.$global.metagraph.nodes.forEach(n => groupMap[n.group] = parseInt(n.id))
+        let updates = this.nodeSet.get().map(n => {
+          let pos = data[groupMap[n.group]][parseInt(n.id.substring(4))]
+          n.x = pos.x
+          n.y = pos.y
+          return n
+        })
+        this.updateNodes(updates)
+      })
+    },
+
     loadNetworkById: function (gid, disableAdvancedLoading) {
       this.disableAdvancedLoading = !!disableAdvancedLoading
       if (gid === this.gid)
         return
+      this.gid = gid
       this.reset()
       this.setLoading(false)
       this.setWaiting(true)
+      this.checkThumbnail(gid)
       return this.$http.getGraph(gid).then(this.setGraph).catch(err => {
         this.loadingColor = this.colors.bar.error;
         console.error(err)
@@ -303,7 +340,12 @@ export default {
         this.setDirected(graph.directed)
         this.setEdges(graph.edges);
         this.setNodes(graph.nodes);
-        this.setOptions(this.startGraph ? null : graph.options)
+        if (this.startGraph) {
+          this.options.interaction.multiselect = false
+          this.reloadOptions();
+        }
+        else
+          this.setOptions(graph.options)
         this.checkSizeWarning(graph)
       }
       this.setLoading(false)
@@ -316,6 +358,7 @@ export default {
       let sum = (this.nodeSet != null ? this.nodeSet.length : 0) + (this.edgeSet != null ? this.edgeSet.length : 0);
       this.$emit("disablePhysicsEvent", sum > 20000)
       this.$set(this.configuration, "sizeWarning", (this.nodeSet !== undefined && this.nodeSet.length > 1000) || (this.edgeSet !== undefined && this.edgeSet.length > 1000))
+      this.$set(this.configuration, "sizeCheck", true)
     },
     showLoops: function (state) {
       let updates = Object.values(this.edgeSet.get({
@@ -390,12 +433,14 @@ export default {
     }
     ,
     visualize: function () {
+      this.setVisualized(false)
       if (this.configuration.sizeWarning)
         this.sizeDialog = true
-      else {
+      else if (this.configuration.sizeCheck) {
         this.prepare()
         this.show = true
         if (this.nodeSet != null) {
+          Object.keys(this.options.groups).forEach(g => this.options.groups[g].shape = this.groups[g].shape)
           this.showLoops(false)
           this.setVisualized(true)
           this.$emit("visualizationEvent")
@@ -476,6 +521,25 @@ export default {
       this.reloadOptions()
     },
 
+    showLabels: function (show) {
+      this.saveLayout()
+      let updates = []
+      if (!show)
+        updates = this.nodeSet.get().map(n => {
+          return {id: n.id, label: "", _label: n.label}
+        })
+      else
+        updates = this.nodeSet.get().map(n => {
+          return {id: n.id, label: n._label, _label: undefined}
+        })
+      this.updateNodes(updates)
+    },
+
+    setGlobalScroll: function (value) {
+      if (this.$utils.isMac(window.navigator) && this.$utils.isFirefox(window.navigator))
+        document.getElementsByTagName("html")[0].style.overflowY = value
+    },
+
     saveLayout: function () {
       try {
         if (this.$refs.network == null)
@@ -533,20 +597,38 @@ export default {
       return neighbors
     },
     setSelection: function (nodes) {
-      if(this.$refs.network !=null)
-      if (nodes !== undefined && nodes[0] !== undefined) {
-        this.$refs.network.selectNodes(nodes)
-        this.identifyNeighbors(nodes[0])
-        this.zoomToNode(nodes[0])
-      } else {
-        this.$refs.network.unselectAll()
-        this.$emit("selectionEvent")
-        this.focusNode()
-      }
+      if (this.$refs.network != null)
+        if (nodes !== undefined && nodes[0] !== undefined) {
+          this.$refs.network.selectNodes(nodes)
+          this.identifyNeighbors(nodes[0])
+          this.zoomToNode(nodes[0])
+        } else {
+          this.$refs.network.unselectAll()
+          this.$emit("selectionEvent")
+          this.focusNode()
+        }
     }
     ,
-    getThumbnail: function () {
-      return CONFIG.HOST_URL + CONFIG.CONTEXT_PATH + "/api/getThumbnailPath?gid=" + this.readGIDfromRoute()
+    checkThumbnail: async function (gid) {
+      this.$http.get("/getThumbnailState?gid=" + gid).then(resp => {
+        return resp.data
+      }).then(state => {
+        if (state === "ready")
+          this.thumbnailDone = true
+        else
+          this.$socket.subscribeThumbnail(gid, "NetworkThumbnailReady")
+      })
+    },
+    getThumbnail: function (gid) {
+      if (this.thumbnailDone)
+        return CONFIG.HOST_URL + CONFIG.CONTEXT_PATH + "/api/getThumbnailPath?gid=" + gid
+      else return ""
+    },
+
+    thumbnailReady: function (response) {
+      let params = JSON.parse(response)
+      this.thumbnailDone = true
+      this.$socket.unsubscribeThumbnail(params.gid)
     },
 
     getAllNodes: function () {
@@ -567,11 +649,11 @@ export default {
     },
 
     zoomToNode: function (nodeId) {
-      if(this.$refs.network !=null)
-      if (nodeId !== undefined) {
-        this.focusNode(nodeId)
-        this.$refs.network.moveTo({scale: 0.9})
-      }
+      if (this.$refs.network != null)
+        if (nodeId !== undefined) {
+          this.focusNode(nodeId)
+          this.$refs.network.moveTo({scale: 0.9})
+        }
     },
     focusNode: function (nodeId) {
 
@@ -818,10 +900,8 @@ export default {
       if (e.button === 0) {
         this.offsetLeft = e.target.getBoundingClientRect().left
         this.offsetTop = e.target.getBoundingClientRect().top
-        // this.selectedNodes = e.ctrlKey ? this.network.getSelectedNodes() : null;
         this.saveDrawingSurface();
         this.rect = {}
-        // let that = this;
         this.rect.startX = e.pageX - this.offsetLeft;
         this.rect.startY = e.pageY - this.offsetTop;
         this.drag = true;
@@ -853,10 +933,6 @@ export default {
 
     dialogResolve: function (vis) {
       this.sizeDialog = false;
-      if (this.secondaryViewer && !this.disableAdvancedLoading && !vis) {
-        this.keepLegends = true;
-        this.togglePanel(1);
-      }
       this.configuration.sizeWarning = !vis;
       if (vis) {
         this.visualize()

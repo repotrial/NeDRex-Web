@@ -7,19 +7,33 @@
       </v-list-item-title>
     </v-list-item>
     <v-divider></v-divider>
-    <v-container v-show="show">
-      <v-row>
-        <v-col cols="6">
-          <v-switch label="Selection Mode" v-model="options.selectMode"
-                    @click="$emit('selectModeEvent',options.selectMode)"></v-switch>
-        </v-col>
-        <v-col cols="6" style="margin-top:15px">
-          <v-chip outlined color="green" @click="applySelection">
-            Apply selection
-            <v-icon right>fas fa-chevron-right</v-icon>
-          </v-chip>
-        </v-col>
-      </v-row>
+    <div v-show="show">
+      <div style="display: flex; justify-content: center">
+        <v-tooltip top>
+          <template v-slot:activator="{attrs, on}">
+            <div v-on="on" v-bind="attrs">
+              <v-switch dense label="Selection Mode" v-model="options.selectMode"
+                        @click="$emit('selectModeEvent',options.selectMode)"></v-switch>
+            </div>
+          </template>
+          <div style="width: 250px">Enable visual selection mode and select nodes from the network by drawing a
+            rectangle in the network viewer.
+          </div>
+        </v-tooltip>
+      </div>
+      <div style="display: flex; justify-content: center">
+        <v-tooltip top>
+          <template v-slot:activator="{attrs, on}">
+            <v-chip outlined @click="applySelection" style="margin: 8px" v-on="on" v-bind="attrs">
+              <v-icon small left color="primary">fas fa-plus-circle</v-icon>
+              Add to selection
+            </v-chip>
+          </template>
+          <div style="width: 250px">
+            Adds all nodes of the list below to the general node selection.
+          </div>
+        </v-tooltip>
+      </div>
       <v-divider></v-divider>
       <v-container>
         <v-card-title>Current Manual Selection ({{ selection.length }})</v-card-title>
@@ -44,13 +58,16 @@
         </v-simple-table>
         <i v-else>no selection available</i>
       </v-container>
-    </v-container>
+    </div>
   </v-card>
 </template>
 
 <script>
+import LabeledSwitch from "@/components/app/input/LabeledSwitch";
+
 export default {
   name: "Selection",
+  components: {LabeledSwitch},
   props: {
     options: Object,
   },

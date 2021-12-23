@@ -70,6 +70,11 @@ public class Bicon implements Algorithm{
     }
 
     @Override
+    public String getResultSuffix() {
+        return "txt";
+    }
+
+    @Override
     public String createCommand(File[] interactions, JobRequest request) {
         return "bicon " + executable.getAbsolutePath() + " exprFile " + interactions[0].getName() + " genes.txt " + request.getParams().get("lg_min") + " " + request.getParams().get("lg_max");
     }
@@ -77,16 +82,7 @@ public class Bicon implements Algorithm{
     @Override
     public void prepareJobFiles(File tempDir, JobRequest req, Graph g, HashMap<Integer, Pair<String, String>> domainMap) {
         File exprFile = new File(tempDir, "exprFile");
-        boolean header = true;
-        try (BufferedWriter bw = WriterUtils.getBasicWriter(exprFile)) {
-            for (String line : StringUtils.split(req.getParams().get("exprData"), "\n")) {
-                bw.write((header ? "" : "entrez.") + line + "\n");
-                if (header)
-                    header = false;
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        WriterUtils.writeTo(exprFile,req.getParams().get("exprData"));
     }
 
     @Override

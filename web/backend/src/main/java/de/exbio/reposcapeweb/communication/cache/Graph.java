@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.exbio.reposcapeweb.communication.reponses.WebGraph;
 import de.exbio.reposcapeweb.communication.reponses.WebGraphInfo;
 import de.exbio.reposcapeweb.communication.reponses.WebGraphList;
+import de.exbio.reposcapeweb.communication.reponses.WebNode;
 import de.exbio.reposcapeweb.filter.NodeFilter;
 import de.exbio.reposcapeweb.utils.Pair;
 import org.slf4j.Logger;
@@ -24,14 +25,16 @@ public class Graph {
     private String parent;
     private HashMap<Integer, HashMap<Integer, Node>> nodes;
     private HashMap<Integer, LinkedList<Edge>> edges;
-    private HashMap<String,HashMap<Integer,Object>> marks;
+    private HashMap<String, HashMap<Integer, Object>> marks;
 
     private HashMap<Integer, String> customEdges;
     private HashMap<Integer, Pair<Integer, Integer>> customEdgeNodes;
     private HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<String, Object>>>> customEdgeAttributes;
     private HashMap<Integer, HashMap<String, String>> customEdgeAttributeTypes;
+    private HashMap<Integer, HashMap<String, String>> customEdgeAttributeLabels;
 
     private HashMap<Integer, HashMap<String, String>> customNodeAttributeTypes;
+    private HashMap<Integer, HashMap<String, String>> customNodeAttributeLabels;
     private HashMap<Integer, HashMap<String, HashMap<Integer, Object>>> customNodeAttributes;
 
     @JsonIgnore
@@ -52,12 +55,13 @@ public class Graph {
         customEdgeAttributeTypes = new HashMap<>();
         customNodeAttributes = new HashMap<>();
         customNodeAttributeTypes = new HashMap<>();
+        customEdgeAttributeLabels = new HashMap<>();
+        customNodeAttributeLabels = new HashMap<>();
     }
 
     public Graph(String id) {
         this();
         this.id = id;
-
     }
 
     public void setParent(String id) {
@@ -68,25 +72,32 @@ public class Graph {
         return parent;
     }
 
-    public WebGraph toWebGraph(HashMap<String, Object> colors, HashMap<Integer,HashMap<Integer, Point2D>> layout) {
+    public WebGraph toWebGraph(HashMap<String, Object> colors, HashMap<Integer, HashMap<Integer, Point2D>> layout) {
         if (webgraph == null) {
             int nodeCount = nodes.values().stream().mapToInt(HashMap::size).sum();
             int edgeCount = edges.values().stream().mapToInt(LinkedList::size).sum();
             log.info("Converting Graph " + id + " (nodes:" + nodeCount + ", edges:" + edgeCount + ") to webgraph: ");
             webgraph = new WebGraph(id);
             nodes.forEach((typeId, nodeMap) -> {
-                HashMap<Integer, Point2D> coords = layout.get(typeId);
+                HashMap<Integer, Point2D> coords = layout != null ? layout.get(typeId) : null;
                 String prefix = Graphs.getPrefix(typeId);
                 String group = Graphs.getNode(typeId);
                 boolean adjustment = group.equals("protein");
-                webgraph.addNodes(nodeMap.values().stream().map(node -> node.toWebNode().setPrefix(prefix).setGroup(group).adjustLabel(adjustment).setPosition(coords.get(node.getId()))).collect(Collectors.toSet()));
+                Set<WebNode> nodes = nodeMap.values().stream().map(node -> {
+                    WebNode n = node.toWebNode().setPrefix(prefix).setGroup(group).adjustLabel(adjustment);
+                    try {
+                        n.setPosition(coords.get(node.getId()));
+                    } catch (NullPointerException ignore) {
+                    }
+                    return n;
+                }).collect(Collectors.toSet());
+                webgraph.addNodes(nodes);
             });
             edges.forEach((typeId, edges) -> {
                 String name = getEdge(typeId);
                 Pair<Integer, Integer> ns = getNodesfromEdge(typeId);
                 String pref1 = Graphs.getPrefix(ns.first);
                 String pref2 = Graphs.getPrefix(ns.second);
-                //TODO add directional?
                 webgraph.addEdges(edges.stream().map(edge -> edge.toWebEdge().setTitle(name).addPrefixes(pref1, pref2)).collect(Collectors.toSet()));
             });
         }
@@ -104,12 +115,16 @@ public class Graph {
         getNodeFilters().forEach(g::saveNodeFilter);
         nodes.forEach((type, map) -> g.addNodes(type, map.values()));
         edges.forEach(g::addEdges);
+        if (this.marks.containsKey("nodes"))
+            this.marks.get("nodes").forEach((k, v) -> g.addNodeMarks(k, ((Collection<Integer>) v)));
+        if (this.marks.containsKey("edges"))
+            this.marks.get("edges").forEach((k, v) -> g.addEdgeMarks(k, ((HashMap<Integer, List<Integer>>) v)));
         customEdgeNodes.forEach((k, v) -> g.addCustomEdge(v.getFirst(), v.getSecond(), customEdges.get(k), new LinkedList<>()));
         g.setParent(this.id);
-        getCustomEdgeAttributeTypes().forEach(g::addCustomEdgeAttributeTypes);
+        getCustomEdgeAttributeTypes().forEach((eid, vals) -> g.addCustomEdgeAttributeTypes(eid, vals, this.customEdgeAttributeLabels.get(eid)));
         getCustomEdgeAttributes().forEach(g::addCustomEdgeAttribute);
 
-        getCustomNodeAttributeTypes().forEach(g::addCustomNodeAttributeTypes);
+        getCustomNodeAttributeTypes().forEach((nid, vals) -> g.addCustomNodeAttributeTypes(nid, vals, this.customEdgeAttributeLabels.get(nid)));
         getCustomNodeAttributes().forEach(g::addCustomNodeAttributes);
         return g;
     }
@@ -164,7 +179,7 @@ public class Graph {
         return id;
     }
 
-    public void addEdges(int edgeId, LinkedList<Edge> edges) {
+    public void addEdges(int edgeId, Collection<Edge> edges) {
         if (!this.edges.containsKey(edgeId))
             this.edges.put(edgeId, new LinkedList<>());
         this.edges.get(edgeId).addAll(edges);
@@ -259,16 +274,23 @@ public class Graph {
         });
     }
 
-    public void addCustomNodeAttributeType(int nid, String name, String type) {
-        if (!customNodeAttributeTypes.containsKey(nid))
+    public void addCustomNodeAttributeType(int nid, String name, String type, String label) {
+        if (!customNodeAttributeTypes.containsKey(nid)) {
             customNodeAttributeTypes.put(nid, new HashMap<>());
+            customNodeAttributeLabels.put(nid, new HashMap<>());
+        }
         customNodeAttributeTypes.get(nid).put(name, type);
+        customNodeAttributeLabels.get(nid).put(name, label);
     }
 
-    public void addCustomNodeAttributeTypes(int nid, HashMap<String, String> v) {
-        if (!customNodeAttributeTypes.containsKey(nid))
+    public void addCustomNodeAttributeTypes(int nid, HashMap<String, String> v, HashMap<String, String> labels) {
+        if (!customNodeAttributeTypes.containsKey(nid)) {
             customNodeAttributeTypes.put(nid, new HashMap<>());
+            customNodeAttributeLabels.put(nid, new HashMap<>());
+        }
         customNodeAttributeTypes.get(nid).putAll(v);
+        if (labels != null)
+            customNodeAttributeLabels.get(nid).putAll(labels);
     }
 
 
@@ -280,10 +302,22 @@ public class Graph {
         return customNodeAttributes;
     }
 
-    public void addCustomEdgeAttributeTypes(int eid, HashMap<String, String> v) {
-        if (!customEdgeAttributeTypes.containsKey(eid))
+    public void addCustomEdgeAttributeTypes(int eid, HashMap<String, String> v, HashMap<String, String> labels) {
+        if (!customEdgeAttributeTypes.containsKey(eid)) {
             customEdgeAttributeTypes.put(eid, new HashMap<>());
+            customEdgeAttributeLabels.put(eid, new HashMap<>());
+        }
         customEdgeAttributeTypes.get(eid).putAll(v);
+        if (labels != null)
+            customEdgeAttributeLabels.get(eid).putAll(labels);
+    }
+
+    public HashMap<Integer, HashMap<String, String>> getCustomEdgeAttributeLabels() {
+        return customEdgeAttributeLabels;
+    }
+
+    public HashMap<Integer, HashMap<String, String>> getCustomNodeAttributeLabels() {
+        return customNodeAttributeLabels;
     }
 
     public void addCustomEdge(int node1, int node2, String edgeName, LinkedList<Edge> edges) {
@@ -302,23 +336,23 @@ public class Graph {
     }
 
 
-    public HashMap<String, String> getCustomAttributeTypes(int eid) {
+    public HashMap<String, String> getCustomEdgeAttributeTypes(int eid) {
         return customEdgeAttributeTypes.get(eid);
     }
 
-    public HashMap<String, String> getCustomAttributeTypes(String eid) {
-        return getCustomAttributeTypes(getEdge(eid));
+    public HashMap<String, String> getCustomEdgeAttributeTypes(String eid) {
+        return getCustomEdgeAttributeTypes(getEdge(eid));
     }
 
-    public String[] getCustomListAttributes(int eid) {
+    public String[] getCustomEdgeListAttributes(int eid) {
         ArrayList<String> list = new ArrayList<>(Arrays.asList("id", "Node1", "Node2"));
-        list.addAll(getCustomAttributeTypes(eid).keySet());
+        list.addAll(getCustomEdgeAttributeTypes(eid).keySet());
         return list.toArray(new String[list.size()]);
     }
 
-    public String[] getCustomListAttributeTypes(int eid) {
+    public String[] getCustomEdgeListAttributeTypes(int eid) {
         ArrayList<String> list = new ArrayList<>(Arrays.asList("", "", ""));
-        list.addAll(getCustomAttributeTypes(eid).values());
+        list.addAll(getCustomEdgeAttributeTypes(eid).values());
         return list.toArray(new String[list.size()]);
     }
 
@@ -332,7 +366,7 @@ public class Graph {
 
     public Boolean[] areCustomListAttributeIds(int eid) {
         ArrayList<Boolean> list = new ArrayList<>(Arrays.asList(true, false, false));
-        getCustomAttributeTypes(eid).forEach((k, v) -> list.add(false));
+        getCustomEdgeAttributeTypes(eid).forEach((k, v) -> list.add(false));
         return list.toArray(new Boolean[list.size()]);
     }
 
@@ -346,12 +380,18 @@ public class Graph {
         this.customEdgeAttributeTypes.get(eid).put(attrName, type);
     }
 
-    public void addNodeMarks(Integer type, Collection<Integer> nodes) {
-        addMarks("nodes",type,new LinkedList<>(nodes));
+    public void addCustomAttributeLabel(int eid, String attrName, String label) {
+        if (!this.customEdgeAttributeLabels.containsKey(eid))
+            this.customEdgeAttributeLabels.put(eid, new HashMap<>());
+        this.customEdgeAttributeLabels.get(eid).put(attrName, label);
     }
 
-    public void addEdgeMarks(Integer type, HashMap<Integer,List<Integer>> edges) {
-        addMarks("edges",type,edges);
+    public void addNodeMarks(Integer type, Collection<Integer> nodes) {
+        addMarks("nodes", type, new LinkedList<>(nodes));
+    }
+
+    public void addEdgeMarks(Integer type, HashMap<Integer, List<Integer>> edges) {
+        addMarks("edges", type, edges);
     }
 
     public void addMarks(String entity, Integer type, Object marks) {
@@ -363,4 +403,33 @@ public class Graph {
     public HashMap<String, HashMap<Integer, Object>> getMarks() {
         return marks;
     }
+
+    public void calculateDegrees() {
+        this.getEdges().forEach((edgeId, vals) -> {
+            Pair<Integer, Integer> nodes = getNodesfromEdge(edgeId);
+            vals.forEach(edge -> {
+                try {
+                    this.getNodes().get(nodes.first).get(edge.getId1()).addDegree();
+                    this.getNodes().get(nodes.second).get(edge.getId2()).addDegree();
+                } catch (NullPointerException e) {
+                    e.printStackTrace();
+                }
+            });
+        });
+        HashMap<Integer, HashMap<Integer, HashMap<String, Object>>> degrees = new HashMap<>();
+        this.getNodes().forEach((nid, vals) -> {
+            HashMap<Integer, HashMap<String, Object>> nodeTypeDegrees = new HashMap<>();
+            degrees.put(nid, nodeTypeDegrees);
+            vals.forEach((id, n) -> {
+                HashMap<String, Object> degree = new HashMap<>();
+                degree.put("degree", n.getDegree());
+                nodeTypeDegrees.put(id, degree);
+            });
+        });
+        degrees.forEach((nid, vals) -> {
+            addCustomNodeAttributeType(nid, "degree", "numeric", "Degree");
+            addCustomNodeAttribute(nid, vals);
+        });
+    }
+
 }

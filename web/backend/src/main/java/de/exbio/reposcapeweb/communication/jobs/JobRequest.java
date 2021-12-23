@@ -10,6 +10,7 @@ public class JobRequest {
 
     public String userId;
     public String graphId;
+    public String jobId;
     public String dbVersion;
     public String algorithm;
     public HashMap<String, String> params;
@@ -17,6 +18,7 @@ public class JobRequest {
     public List<Integer> nodes;
     public String exprData;
     public boolean experimentalOnly;
+    public String goal;
     @JsonIgnore
     public HashSet<Integer> ids;
 

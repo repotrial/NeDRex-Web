@@ -13,8 +13,16 @@ COPY scripts/ ./
 RUN pipreqs ./
 RUN cat requirements.txt | grep -v "graph_tool" | grep -v "pcst_fast" > reqs.txt
 RUN pip3 install -r reqs.txt
-RUN pip3 uninstall -y networkx
-RUN pip3 install networkx==2.3
+
+RUN pip3 uninstall -y networkx numpy pyparsing
+RUN pip3 install networkx==2.5.1 numpy==1.21.0 pyparsing==2.4.6
+
+RUN apt update
+RUN apt install -y software-properties-common
+RUN apt-key adv --keyserver keys.openpgp.org --recv-key 612DEFB798507F25
+RUN add-apt-repository "deb [ arch=amd64 ] https://downloads.skewed.de/apt focal main"
+RUN apt update
+RUN apt install -y python3-graph-tool
 
 ENV LD_LIBRARY_PATH=/usr/local/python3.7.12/lib:$LD_LIBRARY_PATH
 ENV PYTHONPATH=$PATHONPATH:/usr/lib/python3.7/dist-packages/
@@ -22,7 +30,8 @@ ENV PYTHON=/usr/local/python3.7.12/bin/python3.7
 ENV PATH=$PATH:/usr/local/python3.7.12/bin
 
 RUN pip3.7 install domino-python numpy==1.18.1 matplotlib pandas==1.0.1 networkx==2.4
-
+RUN pip3.7 uninstall -y pyparsing
+RUN pip3.7 install pyparsing==2.4.7
 
 WORKDIR /usr/app
 

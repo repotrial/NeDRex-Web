@@ -1,7 +1,0 @@
-{
-"module_members":["entrez.2","entrez.472","entrez.57338"],
-"module_member_type":"gene",
-"true_drugs":["drugbank.DB01109"],
-"permutations":1000,
-"only_approved_drugs":true
-}

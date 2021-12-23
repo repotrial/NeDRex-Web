@@ -1,7 +1,7 @@
 <template>
-  <v-container style="position: fixed; width: 20%">
+  <v-container :style="{position: 'fixed', width: sideWidth+'px' ,right: 0}">
 
-    <v-card elevation="3" style="padding-top: 15px; overflow-y: auto; max-height: 80vh">
+    <v-card ref="scrollCard" elevation="3" style="padding-top: 15px; overflow-y: auto; max-height: 80vh">
       <v-card elevation="3" style="margin:15px"
               v-if="gid!==undefined && graphInfo !=null && Object.keys(options.list.entityGraph).length >0">
 
@@ -14,9 +14,14 @@
         <v-divider></v-divider>
         <template v-if="show.summary">
           <v-card-title v-if="!summaryTitleEdit"><span>{{ graphInfo.name }}
-            <v-btn icon style="top: -3px; left: -3px" @click="summaryTitleEdit=true">
-              <v-icon size="15" color="primary">fas fa-edit</v-icon>
-            </v-btn>
+            <v-tooltip left>
+              <template v-slot:activator="{attrs, on}">
+                <v-btn icon style="top: -3px; left: -3px"  @click="summaryTitleEdit=true">
+                  <v-icon size="15"  v-on="on" v-bind="attrs" color="primary">fas fa-edit</v-icon>
+                </v-btn>
+                </template>
+              <div >Edit the name of the network</div>
+              </v-tooltip>
           </span></v-card-title>
           <v-card-title v-else>
             <v-text-field v-model="graphInfo.name"></v-text-field>
@@ -37,17 +42,17 @@
             </v-list-item>
             <v-list-item>
               <v-list-item-title>Nodes
-                ({{
-                  Object.values(options.list.countMap.nodes).map(s => s.selected).reduce((s, v) => s + v)
-                }}/{{ Object.values(graphInfo.counts.nodes).reduce((s, v) => s + v) }})
+                ({{ getSelectedNumberOfNodes() }}/{{ getTotalNumberOfNodes() }})
               </v-list-item-title>
             </v-list-item>
             <v-list-item v-for="(count,name) in graphInfo.counts.nodes" :key="name" class="nedrex-list-item">
               <v-list-item-avatar>
-                <v-icon left :color="getExtendedColoring('nodes',name,'light')">fas fa-genderless</v-icon>
+                <v-icon left :color="getEntityGraph().nodes !=null ? getExtendedColoring('nodes',name,'light'):''">fas
+                  fa-genderless
+                </v-icon>
               </v-list-item-avatar>
               <v-list-item-subtitle>{{ name }}</v-list-item-subtitle>
-              <v-list-item-subtitle style="min-width: 2rem; max-width: 3rem">{{
+              <v-list-item-subtitle style="min-width: 3rem; max-width: 4.5rem">{{
                   options.list.countMap.nodes[name] != null ? options.list.countMap.nodes[name].selected : 0
                 }}/{{ count }}
               </v-list-item-subtitle>
@@ -55,8 +60,8 @@
             <v-list-item>
               <v-list-item-title>Edges
                 ({{
-                  Object.values(options.list.countMap.edges).map(s => s.selected).reduce((s, v) => s + v)
-                }}/{{ Object.values(graphInfo.counts.edges).reduce((s, v) => s + v) }})
+                  getSelectedNumberOfEdges()
+                }}/{{ getTotalNumberOfEdges() }})
               </v-list-item-title>
             </v-list-item>
             <v-list-item v-for="(count,name) in graphInfo.counts.edges" :key="name" class="nedrex-list-item">
@@ -64,7 +69,7 @@
                 <v-icon class="nedrex-list-icon" size="15" :color="getExtendedColoring('edges',name,'light')[0]">fas
                   fa-genderless
                 </v-icon>
-                <template v-if="directionExtended(name)===0">
+                <template v-if=" directionExtended(name)===0">
                   <v-icon class="nedrex-list-icon" size="15">fas fa-undo-alt</v-icon>
                 </template>
                 <template v-else>
@@ -78,227 +83,335 @@
                 </template>
               </v-list-item-avatar>
               <v-list-item-subtitle>{{ name }}</v-list-item-subtitle>
-              <v-list-item-subtitle style="min-width: 2rem; max-width: 3rem">{{
-                  options.list.countMap.nodes[name] != null ? options.list.countMap.edges[name].selected : 0
+              <v-list-item-subtitle style="min-width: 3rem; max-width: 4.5rem">{{
+                  options.list.countMap.edges[name] != null ? options.list.countMap.edges[name].selected : 0
                 }}/{{ count }}
               </v-list-item-subtitle>
             </v-list-item>
-            <v-list-item>
-              <v-list-item-action>
+            <v-tooltip top>
+              <template v-slot:activator="{attrs, on}">
                 <v-chip
                   outlined
+                  icon
+                  v-on="on"
+                  v-bind="attrs"
+                  style="margin:8px"
                   @click="requestGraphDownload"
                 >
                   <v-icon
                     left
+                    small
+                    color="primary"
                   >
                     far fa-arrow-alt-circle-down
                   </v-icon>
                   Download
                 </v-chip>
-              </v-list-item-action>
-            </v-list-item>
+              </template>
+              <div style="width: 250px">Download a .graphml file containing the current network with all available
+                attributes.
+              </div>
+            </v-tooltip>
+            <v-tooltip top>
+              <template v-slot:activator="{attrs, on}">
+                <v-chip
+                  v-on="on"
+                  v-bind="attrs"
+                  outlined
+                  icon
+                  style="margin:8px"
+                  @click="copyLink(); printNotification('Copied graph link to clipboard!',1)"
+                >
+                  <v-icon
+                    left
+                    small
+                    color="primary"
+                  >
+                    far fa-copy
+                  </v-icon>
+                  Copy URL
+                </v-chip>
+              </template>
+              <div style="width: 250px">
+                Copies the unique link of this network to your clipboard to save it to some document or to share it with
+                others.
+              </div>
+            </v-tooltip>
           </v-list>
         </template>
       </v-card>
 
       <v-card-title>Toolbox</v-card-title>
 
-      <v-card ref="options" elevation="3" style="margin:15px" v-if="selectedTab !==1">
+
+      <v-card ref="options" elevation="3" style="margin:15px" v-if="selectedTab ===3">
         <v-list-item @click="show.options=!show.options">
           <v-list-item-title>
             <v-icon left>{{ show.options ? "far fa-minus-square" : "far fa-plus-square" }}</v-icon>
             Options
           </v-list-item-title>
         </v-list-item>
-        <v-divider></v-divider>
-        <v-list>
-          <v-container v-if="show.options">
-            <template v-if="selectedTab===0">
-              <template v-if="options.start!==undefined">
+        <template v-if="show.options">
+          <v-divider></v-divider>
+          <div style="width: 100%; display: flex; justify-content: center">
+            <v-switch v-model="options.history.favos" dense label="Favourites Only"
+                      @click="$emit('historyReloadEvent')">
+            </v-switch>
+          </div>
+          <div style="width: 100%; display: flex; justify-content: center">
+            <v-switch v-model="chronological" dense label="Show Chronological"
+                      @click="$emit('historyReloadEvent')"></v-switch>
+          </div>
+          <div>
+            <!--            <div style="width: 100%; display: flex; justify-content: center">-->
+            <!--              <v-switch v-model="options.history.otherUsers" :disabled="!chronological" dense label="Show parent graphs of other users"-->
+            <!--                        @click="$emit('historyReloadEvent')"></v-switch>-->
+            <!--            </div>-->
+            <div style="width: 100%; display: flex; justify-content: center">
+              <v-chip outlined style="margin:8px" :disabled="!chronological" @click="$emit('reverseSortingEvent')">
+                <v-icon small left color="primary">fas fa-sort</v-icon>
+                Reverse Sorting
+              </v-chip>
+            </div>
+          </div>
+        </template>
+      </v-card>
 
-                <v-list-item>
-                  <v-col>
-                    <v-switch v-model="options.start.onlyConnected" label="Hide unconnected"></v-switch>
-                  </v-col>
-                </v-list-item>
-                <v-list-item>
-                  <v-col>
-                    <v-switch v-model="options.start.skipVis" label="Skip visualisation"></v-switch>
-                  </v-col>
-                </v-list-item>
-                <v-list-item>
-                  <v-container>
-                    <v-row>
-                      <v-col>
-                        <v-chip outlined color="green" @click="$emit('applyEvent',true); $emit('applyEvent',false)">
-                          Apply Subnetwork
-                          <v-icon right>far fa-check-circle</v-icon>
-                        </v-chip>
-                      </v-col>
-                      <v-col>
-                        <v-chip outlined color="red" @click="$emit('applyEvent',false)">
-                          Reset
-                          <v-icon right>far fa-trash-alt</v-icon>
-                        </v-chip>
-                      </v-col>
-                    </v-row>
-                  </v-container>
-                </v-list-item>
-              </template>
-              <v-progress-circular v-else>
-              </v-progress-circular>
-            </template>
-            <template v-if="selectedTab===2">
-              <v-list-item>
+      <v-card ref="options" elevation="3" style="margin:15px" v-if="selectedTab ===2">
+        <v-list-item @click="show.selectionTools=!show.selectionTools">
+          <v-list-item-title>
+            <v-icon left>{{ show.selectionTools ? "far fa-minus-square" : "far fa-plus-square" }}</v-icon>
+            Selection Tools
+          </v-list-item-title>
+        </v-list-item>
+        <div v-if="show.selectionTools">
+          <v-divider></v-divider>
+          <v-card-subtitle style="font-size: 14pt"><i>General</i></v-card-subtitle>
+          <v-tooltip top>
+            <template v-slot:activator="{attrs, on}">
+              <div v-on="on"
+                   v-bind="attrs" style="width: 100%; display: flex; justify-content: center">
                 <v-switch
+                  style="margin:8px; font-size: small"
+                  dense
                   v-model="options.list.showAll"
-                  @click="$emit('reloadTablesEvent')"
-                  :label="'Show all Items ('+options.list.selected+'/'+options.list.total+')'">
-                  >
+                  @click="$emit('reloadTablesEvent')">
+                  <template v-slot:label>
+                    <span>Show all Items ({{ options.list.selected }}/{{ options.list.total }})</span>
+                  </template>
                 </v-switch>
-              </v-list-item>
-              <v-list-item>
-                <v-row>
-                  <v-col>
-                    <v-chip
-                      outlined
-                      v-on:click="$emit('selectionEvent','all','none')"
-                    >
-                      <v-icon left color="red">fas fa-trash</v-icon>
-                      Unselect All
-                    </v-chip>
-                  </v-col>
-                  <v-col>
-                    <v-chip
-                      outlined
-                      v-on:click="$emit('graphModificationEvent','subselect');$forceUpdate"
-                    >
-                      <v-icon left color="green">fas fa-project-diagram</v-icon>
-                      Load Selection
-                    </v-chip>
-                  </v-col>
-                </v-row>
-              </v-list-item>
-              <v-tabs
-                fixed-tabs
-                v-model="menu.options.list.tab"
+              </div>
+            </template>
+            <div style="width: 250px">
+              Switch between looking all or only the nodes and edges that are in the current selection.
+            </div>
+          </v-tooltip>
+          <v-tooltip top>
+            <template v-slot:activator="{attrs, on}">
+              <v-chip
+                style="margin:8px"
+                v-on="on"
+                v-bind="attrs"
+                outlined
+                @click="$emit('selectionEvent','all','none')"
               >
-                <v-tabs-slider></v-tabs-slider>
-                <v-tab v-for="tab in menu.options.list.tabs" class="primary--text" :key=tab.id>
-                  {{ tab.label }}
-                </v-tab>
-              </v-tabs>
-              <template v-if="menu.options.list.tab===0" style="margin-top:10px">
-                <v-list-item>
-                  <v-chip
-                    v-on:click="$emit('graphModificationEvent','extend')"
-                    class="pa-3"
-                    outlined
-                  >
-                    <v-icon left>fas fa-plus-circle</v-icon>
-                    Extend Network
-                  </v-chip>
-                </v-list-item>
-                <v-list-item>
-                  <v-chip
-                    v-on:click="$emit('graphModificationEvent','collapse')"
-                    class="pa-3"
-                    outlined
-                  >
-                    <v-icon left>fas fa-compress-alt</v-icon>
-                    Infer new edge
-                  </v-chip>
-                </v-list-item>
-                <v-list-item>
-                  <v-chip
-                    v-on:click="$emit('colorSelectionEvent')"
-                    class="pa-3"
-                    outlined
-                  >
-                    <v-icon left>fas fa-palette</v-icon>
-                    New group from selection
-                  </v-chip>
-                </v-list-item>
-              </template>
-              <template v-if="menu.options.list.tab===1">
-                <v-list-item>
-                  <v-chip
-                    icon
-                    outlined
-                    v-on:click="$emit('selectionEvent','nodes','all')"
-                  >
-                    <v-icon left>fas fa-check-double</v-icon>
-                    Select All Nodes
-                  </v-chip>
-                </v-list-item>
-                <v-list-item>
-                  <v-chip
-                    icon
-                    outlined
-                    v-on:click="$emit('selectionEvent','nodes','induced')"
-                  >
-                    <v-icon left>fas fa-check</v-icon>
-                    Select Induced
-                  </v-chip>
-                </v-list-item>
-                <v-list-item>
-                  <v-chip
-                    icon
-                    outlined
-                    v-on:click="$emit('selectionEvent','nodes','none')"
-                  >
-                    <v-icon left>fas fa-ban</v-icon>
-                    Unselect All Nodes
-                  </v-chip>
-                </v-list-item>
-              </template>
-              <template v-if="menu.options.list.tab===2">
-                <v-list-item>
-                  <v-chip
-                    icon
-                    outlined
-                    v-on:click="$emit('selectionEvent','edges','all')"
-                  >
-                    <v-icon left>fas fa-check-double</v-icon>
-                    Select All Edges
-                  </v-chip>
-                </v-list-item>
-                <v-list-item>
-                  <v-chip
-                    icon
-                    outlined
-                    v-on:click="$emit('selectionEvent','edges','none')"
-                  >
-                    <v-icon left>fas fa-ban</v-icon>
-                    Unselect All Edges
-                  </v-chip>
-                </v-list-item>
-              </template>
+                <v-icon left color="error" small>fas fa-trash</v-icon>
+                Unselect All
+              </v-chip>
             </template>
-            <template v-if="selectedTab===3">
-              <v-list-item>
-                <v-switch v-model="options.history.favos" label="Favourites Only"
-                          @click="$emit('historyReloadEvent')">
-                </v-switch>
+            <div>
+              Resets the selection of nodes and edges
+            </div>
+          </v-tooltip>
+          <v-tooltip top>
+            <template v-slot:activator="{attrs, on}">
+              <v-chip
+                style="margin:8px"
+                v-on="on"
+                v-bind="attrs"
+                outlined
+                @click="$emit('graphModificationEvent','subselect');$forceUpdate"
+              >
+                <v-icon left small color="success">fas fa-project-diagram</v-icon>
+                Load Selection
+              </v-chip>
+            </template>
+            <div style="width: 300px">
+              Creates a new sub-network based on the current selection. The new network will appear as a child
+              of the previous network in the history hierarchy.
+            </div>
+          </v-tooltip>
+          <v-divider style="margin-left: 16px; margin-right: 16px"></v-divider>
+          <v-card-subtitle style="font-size: 14pt"><i>Nodes</i></v-card-subtitle>
+          <v-tooltip top>
+            <template v-slot:activator="{attrs, on}">
+              <v-chip
+                style="margin:8px"
+                icon
+                v-bind="attrs"
+                v-on="on"
+                outlined
+                v-on:click="$emit('selectionEvent','nodes','all')"
+              >
+                <v-icon left small color="primary">fas fa-check-double</v-icon>
+                Select All Nodes
+              </v-chip>
+            </template>
+            <div style="width:250px">
+              Adds all nodes in the current node table to the selection.
+            </div>
+          </v-tooltip>
+          <v-tooltip top>
+            <template v-slot:activator="{attrs, on}">
+              <v-chip
+                v-bind="attrs"
+                v-on="on"
+                style="margin:8px"
+                icon
+                outlined
+                v-on:click="$emit('selectionEvent','nodes','induced')"
+              >
+                <v-icon small color="primary" left>fas fa-check</v-icon>
+                Add Connected
+              </v-chip>
+            </template>
+            <div style="width:250px">
+              Select edges connecting selected nodes or also other nodes based on their connection to already selected
+              ones.
+            </div>
+          </v-tooltip>
+          <v-tooltip top>
+            <template v-slot:activator="{attrs, on}">
+              <v-chip
+                style="margin:8px"
+                v-on="on"
+                v-bind="attrs"
+                icon
+                outlined
+                v-on:click="$emit('selectionEvent','nodes','none')"
+              >
+                <v-icon left small color="error">fas fa-ban</v-icon>
+                Unselect All Nodes
+              </v-chip>
+            </template>
+            <div style="width:250px">
+              Remove all nodes of the currently selected table from the selection!
+            </div>
+          </v-tooltip>
+          <v-divider style="margin-left: 16px; margin-right: 16px"></v-divider>
+          <v-card-subtitle style="font-size: 14pt"><i>Edges</i></v-card-subtitle>
+          <v-tooltip top>
+            <template v-slot:activator="{attrs, on}">
+              <v-chip
+                style="margin:8px"
+                v-on="on"
+                v-bind="attrs"
+                icon
+                outlined
+                v-on:click="$emit('selectionEvent','edges','all')"
+              >
+                <v-icon left small color="primary">fas fa-check-double</v-icon>
+                Select All Edges
+              </v-chip>
+            </template>
+            <div style="width:250px">
+              Adds all edges in the current edge table to the selection as well as nodes connected by these edges.
+            </div>
 
-              </v-list-item>
-              <v-list-item>
-                <v-switch v-model="options.history.chronological" label="Show Chronological"
-                          @click="$emit('historyReloadEvent')"></v-switch>
-              </v-list-item>
-              <v-list v-show="options.history.chronological">
-                <v-list-item>
-                  <v-switch v-model="options.history.otherUsers" label="Show parent graphs of other users"
-                            @click="$emit('historyReloadEvent')"></v-switch>
-                </v-list-item>
-                <v-list-item>
-                  <v-chip outlined @click="$emit('reverseSortingEvent')">Reverse Sorting</v-chip>
-                </v-list-item>
-              </v-list>
+          </v-tooltip>
+          <v-tooltip top>
+            <template v-slot:activator="{attrs, on}">
+              <v-chip
+                style="margin:8px"
+                v-on="on"
+                v-bind="attrs"
+                icon
+                outlined
+                v-on:click="$emit('selectionEvent','edges','none')"
+              >
+                <v-icon left small color="error">fas fa-ban</v-icon>
+                Unselect All Edges
+              </v-chip>
             </template>
-          </v-container>
-        </v-list>
+            <div style="width:250px">
+              Remove all edges of the currently selected table from the selection!
+            </div>
+          </v-tooltip>
+        </div>
+      </v-card>
+
+
+      <v-card ref="modify" elevation="3" style="margin:15px" v-if="selectedTab===2">
+        <v-list-item @click="show.modify=!show.modify">
+          <v-list-item-title>
+            <v-icon left>{{ show.modify ? "far fa-minus-square" : "far fa-plus-square" }}</v-icon>
+            Modify
+          </v-list-item-title>
+        </v-list-item>
+        <v-divider></v-divider>
+
+        <div v-show="show.modify">
+          <v-tooltip top>
+            <template v-slot:activator="{attrs, on}">
+              <v-chip
+                v-on="on"
+                v-bind="attrs"
+                v-on:click="$emit('graphModificationEvent','extend')"
+                class="pa-3"
+                outlined
+                style="margin:8px"
+              >
+                <v-icon left small color="success">fas fa-plus-circle</v-icon>
+                Extend Network
+              </v-chip>
+            </template>
+            <div style="width: 250px">
+              Add edges to the current network to either explore how the current nodes are interconnected or to add
+              additional nodes to the network. This will create a new network which will be listed as a child of the
+              current network on the history page.
+            </div>
+          </v-tooltip>
+          <v-tooltip top>
+            <template v-slot:activator="{attrs, on}">
+              <v-chip
+                v-on="on"
+                v-bind="attrs"
+                v-on:click="$emit('graphModificationEvent','collapse')"
+                class="pa-3"
+                outlined
+                style="margin:8px"
+              >
+                <v-icon left small color="success">fas fa-compress-alt</v-icon>
+                Infer new edge
+              </v-chip>
+            </template>
+            <div style="width: 250px">
+              Create a new, custom edge based on a path of length two in your current network (e.g. Diseasome). This
+              will create a new network which will be listed as a child of the
+              current network on the history page.
+            </div>
+          </v-tooltip>
+          <v-tooltip top>
+            <template v-slot:activator="{attrs, on}">
+              <v-chip
+                v-on="on"
+                v-bind="attrs"
+                v-on:click="$emit('colorSelectionEvent')"
+                class="pa-3"
+                outlined
+                style="margin:8px"
+              >
+                <v-icon left small color="primary">fas fa-palette</v-icon>
+                New group from selection
+              </v-chip>
+            </template>
+            <div style="width: 250px">
+              Create a new temporary node group based on the currently selected nodes. This will add an entry to the
+              legend in the graph view and color all selected nodes in a distinct color which helps with visual
+              separation.
+            </div>
+          </v-tooltip>
+        </div>
       </v-card>
 
       <template v-if="(selectedTab===1 && options.graph.visualized)" :options="options.graph.selection">
@@ -352,7 +465,7 @@
         </v-container>
       </v-card>
       <template v-if="selectedTab===2">
-        <Algorithms ref="algorithms" @executeAlgorithmEvent="submitAlgorithm"></Algorithms>
+        <Algorithms ref="algorithms" @openAlgorithmDialogEvent="submitAlgorithm"></Algorithms>
         <Jobs ref="jobs" @graphLoadEvent="graphLoadEvent" @printNotificationEvent="printNotification"
               @reloadHistoryEvent="reloadHistory"></Jobs>
       </template>
@@ -383,7 +496,6 @@
 <script>
 import Algorithms from "./toolbox/Algorithms.vue"
 import Jobs from "./toolbox/Jobs"
-// import Legend from "./toolbox/Legend"
 import Selection from "./toolbox/Selection";
 import * as CONFIG from "../../Config"
 import EntryDetails from "@/components/app/EntryDetails";
@@ -393,6 +505,7 @@ export default {
     options: Object,
     selectedTab: Number,
     filters: Object,
+    sideWidth: Number,
   },
   name: "SideCard",
   title: "",
@@ -407,7 +520,9 @@ export default {
       gid: undefined,
       graphInfo: undefined,
       summaryTitleEdit: false,
+      chronological: false,
       show: {
+        selectionTools: true,
         options: true,
         summary: true,
         info: false,
@@ -415,7 +530,8 @@ export default {
         detail: false,
         algorithms: false,
         jobs: false,
-
+        modify: true,
+        filter: true,
       },
 
       menu: {
@@ -452,6 +568,9 @@ export default {
           this.graphInfo = data
         }).catch(console.error)
     },
+    isMac: function () {
+      return this.$utils.isMac(window.navigator)
+    },
 
     reload: function () {
       this.init()
@@ -485,6 +604,34 @@ export default {
       this.$emit("reloadHistoryEvent")
     },
 
+    getTotalNumberOfEdges: function () {
+      let totalEdges = Object.values(this.graphInfo.counts.edges)
+      if (totalEdges.length > 0)
+        return totalEdges.reduce((s, v) => s + v)
+      return 0
+    },
+
+    getSelectedNumberOfEdges: function () {
+      let selectedEdges = Object.values(this.options.list.countMap.edges).map(s => s.selected)
+      if (selectedEdges.length === 0)
+        return 0
+      return selectedEdges.reduce((s, v) => s + v)
+    },
+
+    getSelectedNumberOfNodes: function () {
+      let selectedNodes = Object.values(this.options.list.countMap.nodes).map(s => s.selected);
+      if (selectedNodes.length === 0)
+        return 0
+      return selectedNodes.reduce((s, v) => s + v)
+    },
+
+    getTotalNumberOfNodes: function () {
+      let totalNodes = Object.values(this.graphInfo.counts.nodes)
+      if (totalNodes.length > 0)
+        return totalNodes.reduce((s, v) => s + v)
+      return 0
+    },
+
 
     openExternal: function (item, i) {
       window.open(this.getUrl(item, i), '_blank')
@@ -494,14 +641,28 @@ export default {
       return this.$utils.getColoring(this.$global.metagraph, type, name)
     },
 
+    getEntityGraph: function () {
+      return this.options.list.entityGraph
+    },
+
     getExtendedColoring: function (type, name, style) {
-      return this.$utils.getColoringExtended(this.$global.metagraph, this.options.list.entityGraph, type, name, style)
+      try {
+        return this.$utils.getColoringExtended(this.$global.metagraph, this.options.list.entityGraph, type, name, style)
+      } catch (e) {
+        console.warn("entityGraph might have not been fully initialized")
+        return ''
+      }
     },
     directionExtended: function (edge) {
-      let e = Object.values(this.options.list.entityGraph.edges).filter(e => e.name === edge)[0];
-      if (e.node1 === e.node2)
+      try {
+        let e = Object.values(this.options.list.entityGraph.edges).filter(e => e.name === edge)[0];
+        if (e.node1 === e.node2)
+          return 0
+        return e.directed ? 1 : 2
+      } catch (e) {
+        console.warn("entityGraph might have not been fully initialized")
         return 0
-      return e.directed ? 1 : 2
+      }
     },
 
     saveGraphName: function () {
@@ -523,8 +684,25 @@ export default {
     }
     ,
     loadDetails: function (req) {
-        this.show.detail = req!=null;
-        this.$refs.details.loadDetails(req)
+      this.show.detail = req != null;
+      try {
+        this.$refs.details.loadDetails(req).then(() => {
+          this.$nextTick(() => {
+            this.focusTop(this.$refs.detail)
+          })
+        })
+      } catch (ignore) {
+
+      }
+    },
+
+    focusTop: function (element) {
+      this.scroll(element.$el.offsetTop)
+    },
+
+    scroll: function (offset) {
+      const panel = this.$refs.scrollCard
+      panel.$el.scrollTo({top: offset, behavior: "smooth"})
     },
 
     loadFilter: function (data) {
@@ -551,8 +729,8 @@ export default {
     }
     ,
 
-    submitAlgorithm: function (algorithm, params) {
-      this.$emit('executeAlgorithmEvent', algorithm, params)
+    submitAlgorithm: function (data) {
+      this.$emit('openAlgorithmDialogEvent', data)
     },
     graphViewEvent: function (data) {
       this.$emit("graphViewEvent", data)
@@ -569,6 +747,22 @@ export default {
     },
     requestGraphDownload: function () {
       window.open(CONFIG.HOST_URL + CONFIG.CONTEXT_PATH + '/api/downloadGraph?gid=' + this.gid)
+    },
+    copyLink: function () {
+      const el = document.createElement('textarea');
+      el.value = location.host + "/explore/advanced/list/" + this.gid;
+      el.setAttribute('readonly', '');
+      el.style.position = 'absolute';
+      el.style.left = '-9999px';
+      document.body.appendChild(el);
+      const selected = document.getSelection().rangeCount > 0 ? document.getSelection().getRangeAt(0) : false;
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+      if (selected) {
+        document.getSelection().removeAllRanges();
+        document.getSelection().addRange(selected);
+      }
     }
   }
   ,
@@ -576,7 +770,6 @@ export default {
     Algorithms,
     Jobs,
     EntryDetails,
-    // Legend,
     Selection
   },
 

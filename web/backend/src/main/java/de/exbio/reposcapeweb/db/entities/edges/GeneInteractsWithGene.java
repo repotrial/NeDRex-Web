@@ -42,14 +42,21 @@ public class GeneInteractsWithGene extends RepoTrialEdge implements Serializable
     private String nodeTwo;
 
     private String evidenceTypes;
-    private String sourceDatabases;
+    private String assertedBy;
 
-//    private String conservativeEvidences;
-//    @Column(columnDefinition = "TEXT")
-//    private String methods;
-//
-//    private String sourceDatabases;
-//    private String evidenceTypes;
+    @Column(columnDefinition = "TEXT")
+    private String developmentStages;
+    @Column(columnDefinition = "TEXT")
+    private String tissues;
+    @Column(columnDefinition = "TEXT")
+    private String subcellularLocations;
+    @Column(columnDefinition = "TEXT")
+    private String jointTissues;
+    @Column(columnDefinition = "TEXT")
+    private String brainTissues;
+    @Column(columnDefinition = "TEXT")
+    private String methods;
+
 
     public GeneInteractsWithGene() {
     }
@@ -80,6 +87,10 @@ public class GeneInteractsWithGene extends RepoTrialEdge implements Serializable
 
     @Transient
     @JsonIgnore
+    public static Boolean[] detailAttributes;
+
+    @Transient
+    @JsonIgnore
     public static HashMap<String, String> name2labelMap;
 
     @Transient
@@ -105,9 +116,15 @@ public class GeneInteractsWithGene extends RepoTrialEdge implements Serializable
         values.put("node1", nodeOne);
         values.put("node2", nodeTwo);
         values.put("type", getType());
-        values.put("databases", getDatabases());
+        values.put("assertedBy", getAssertedBy());
         values.put("evidenceTypes", getEvidenceTypes());
         values.put("id", id.getId1() + "-" + id.getId2());
+        values.put("methods", getMethods());
+        values.put("developmentStages", getDevelopmentStages());
+        values.put("tissues", getTissues());
+        values.put("subcellularLocations", getSubcellularLocations());
+        values.put("jointTissues", getJointTissues());
+        values.put("brainTissues", getBrainTissues());
         return values;
     }
 
@@ -127,12 +144,60 @@ public class GeneInteractsWithGene extends RepoTrialEdge implements Serializable
     }
 
 
-    public List<String> getDatabases() {
-        return StringUtils.stringToList(sourceDatabases);
+    public List<String> getAssertedBy() {
+        return StringUtils.stringToList(assertedBy);
     }
 
-    public void setDatabases(List<String> databases) {
-        this.sourceDatabases = StringUtils.listToString(databases);
+    public void setAssertedBy(List<String> databases) {
+        this.assertedBy = StringUtils.listToString(databases);
+    }
+
+    public List<String> getMethods() {
+        return StringUtils.stringToList(methods);
+    }
+
+    public void setMethods(List<String> methods) {
+        this.methods = StringUtils.listToString(methods);
+    }
+
+    public List<String> getDevelopmentStages() {
+        return StringUtils.stringToList(developmentStages);
+    }
+
+    public void setDevelopmentStages(List<String> developmentStages) {
+        this.developmentStages = StringUtils.listToString(developmentStages);
+    }
+
+    public List<String> getTissues() {
+        return StringUtils.stringToList(tissues);
+    }
+
+    public void setTissues(List<String> tissues) {
+        this.tissues = StringUtils.listToString(tissues);
+    }
+
+    public List<String> getSubcellularLocations() {
+        return StringUtils.stringToList(subcellularLocations);
+    }
+
+    public void setSubcellularLocations(List<String> subcellularLocations) {
+        this.subcellularLocations = StringUtils.listToString(subcellularLocations);
+    }
+
+    public List<String> getJointTissues() {
+        return StringUtils.stringToList(jointTissues);
+    }
+
+    public void setJointTissues(List<String> jointTissues) {
+        this.jointTissues = StringUtils.listToString(jointTissues);
+    }
+
+    public List<String> getBrainTissues() {
+        return StringUtils.stringToList(brainTissues);
+    }
+
+    public void setBrainTissues(List<String> brainTissues) {
+        this.brainTissues = StringUtils.listToString(brainTissues);
     }
 
     public List<String> getEvidenceTypes() {
@@ -142,15 +207,6 @@ public class GeneInteractsWithGene extends RepoTrialEdge implements Serializable
     public void setEvidenceTypes(List<String> evidenceTypes) {
         this.evidenceTypes = StringUtils.listToString(evidenceTypes);
     }
-
-//    public List<String> getConservativeEvidences() {
-//        return StringUtils.stringToList(conservativeEvidences);
-//    }
-//
-//    public void setConservativeEvidences(List<String> conservativeEvidences) {
-//        this.conservativeEvidences = StringUtils.listToString(conservativeEvidences);
-//    }
-
 
     public static void setUpNameMaps() {
         label2NameMap = new HashMap<>();
@@ -178,36 +234,16 @@ public class GeneInteractsWithGene extends RepoTrialEdge implements Serializable
     public void setType(String type) {
     }
 
-//    public List<String> getMethods() {
-//        return StringUtils.stringToList(methods);
-//    }
-//
-//    public void setMethods(List<String> methods) {
-//        this.methods = StringUtils.listToString(methods);
-//    }
-//
-//    public List<String> getDatabases() {
-//        return StringUtils.stringToList(sourceDatabases);
-//    }
-//
-//    public void setDatabases(List<String> databases) {
-//        this.sourceDatabases = StringUtils.listToString(databases);
-//    }
-//
-//    public List<String> getEvidenceTypes() {
-//        return StringUtils.stringToList(evidenceTypes);
-//    }
-//
-//    public void setEvidenceTypes(List<String> evidenceTypes) {
-//        this.evidenceTypes = StringUtils.listToString(evidenceTypes);
-//    }
-
     public void setValues(GeneInteractsWithGene other) {
-//        this.sourceDatabases = other.sourceDatabases;
-//        this.evidenceTypes = other.evidenceTypes;
         this.memberOne = other.memberOne;
         this.memberTwo = other.memberTwo;
-//        this.methods = other.methods;
+        this.methods = other.methods;
+        this.developmentStages = other.developmentStages;
+        this.brainTissues = other.brainTissues;
+        this.jointTissues = other.jointTissues;
+        this.tissues = other.tissues;
+        this.subcellularLocations = other.subcellularLocations;
+        this.evidenceTypes = other.evidenceTypes;
     }
 
     @Override
@@ -246,17 +282,102 @@ public class GeneInteractsWithGene extends RepoTrialEdge implements Serializable
         setEvidenceTypes(all);
     }
 
-    public void addDatabases(List<String> databases) {
+    public void addAssertedBy(List<String> databases) {
         List<String> all;
-        if (this.sourceDatabases == null) {
+        if (this.assertedBy == null) {
             all = new LinkedList<>(databases);
         } else {
-            all = getDatabases();
+            all = getAssertedBy();
             for (String t : databases) {
                 if (!all.contains(t))
                     all.add(t);
             }
         }
-        setDatabases(all);
+        setAssertedBy(all);
     }
+
+    public void addMethod(List<String> methods) {
+        List<String> all;
+        if (this.methods == null) {
+            all = new LinkedList<>(methods);
+        } else {
+            all = getMethods();
+            for (String t : methods) {
+                if (!all.contains(t))
+                    all.add(t);
+            }
+        }
+        setMethods(all);
+    }
+
+    public void addDevelopmentStages(List<String> developmentStages) {
+        List<String> all;
+        if (this.developmentStages == null) {
+            all = new LinkedList<>(developmentStages);
+        } else {
+            all = getDevelopmentStages();
+            for (String t : developmentStages) {
+                if (!all.contains(t))
+                    all.add(t);
+            }
+        }
+        setDevelopmentStages(all);
+    }
+
+    public void addTissues(List<String> tissues) {
+        List<String> all;
+        if (this.tissues == null) {
+            all = new LinkedList<>(tissues);
+        } else {
+            all = getTissues();
+            for (String t : tissues) {
+                if (!all.contains(t))
+                    all.add(t);
+            }
+        }
+        setTissues(all);
+    }
+
+    public void addSubcellularLocations(List<String> subcellularLocations) {
+        List<String> all;
+        if (this.subcellularLocations == null) {
+            all = new LinkedList<>(subcellularLocations);
+        } else {
+            all = getSubcellularLocations();
+            for (String t : subcellularLocations) {
+                if (!all.contains(t))
+                    all.add(t);
+            }
+        }
+        setSubcellularLocations(all);
+    }
+
+    public void addJointTissues(List<String> jointTissues) {
+        List<String> all;
+        if (this.jointTissues == null) {
+            all = new LinkedList<>(jointTissues);
+        } else {
+            all = getJointTissues();
+            for (String t : jointTissues) {
+                if (!all.contains(t))
+                    all.add(t);
+            }
+        }
+        setJointTissues(all);
+    }
+
+    public void addBrainTissues(List<String> brainTissues) {
+        List<String> all;
+        if (this.brainTissues == null) {
+            all = new LinkedList<>(brainTissues);
+        } else {
+            all = getBrainTissues();
+            for (String t : brainTissues) {
+                if (!all.contains(t))
+                    all.add(t);
+            }
+        }
+        setBrainTissues(all);
+    }
+
 }

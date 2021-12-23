@@ -31,7 +31,6 @@ import java.util.stream.Collectors;
 @Service
 public class Must implements Algorithm{
 
-
     private Environment env;
     private AlgorithmUtils utils;
     private NodeController nodeController;
@@ -57,7 +56,7 @@ public class Must implements Algorithm{
     }
     @Override
     public boolean integrateOriginalGraph(Job j) {
-        return false;
+        return !j.getParams().containsKey("nodesOnly") || j.getParams().get("nodesOnly").equals("false");
     }
 
     @Override
@@ -72,6 +71,7 @@ public class Must implements Algorithm{
                 edges.add(new Edge(id1, id2));
             });
         });
+        derived.addNodeMarks(nodeTypeId, derived.getNodes().get(nodeTypeId).keySet().stream().filter(n->!j.getSeeds().contains(n)).collect(Collectors.toList()));
         derived.addCustomEdge(nodeTypeId, nodeTypeId, "MuST_Interaction", edges);
         int eid = derived.getEdge("MuST_Interaction");
         derived.addCustomEdgeAttribute(eid, j.getResult().getEdges());
@@ -95,6 +95,11 @@ public class Must implements Algorithm{
     @Override
     public File[] interactionFiles(JobRequest request) {
         return new File[]{(request.getParams().get("type").equals("gene") ? new File(utils.dataDir, "gene_gene_interaction_" + (request.experimentalOnly ? "exp" : "all") + ".pairs") : new File(utils.dataDir, "protein_protein_interaction_" + (request.experimentalOnly ? "exp" : "all") + ".pairs"))};
+    }
+
+    @Override
+    public String getResultSuffix() {
+        return "zip";
     }
 
     @Override

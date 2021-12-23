@@ -7,7 +7,7 @@
       :color="color"
       class="white--text text-center"
     >
-      <v-card-text class="white--text" style="margin-top: -15px">
+      <v-card-text class="white--text" style="padding-top: 0">
         NeDRex-Web
         <v-btn icon @click="openExternal('https://github.com/AndiMajore/RepoScapeWeb')">
           <v-icon size="22px">fab fa-github</v-icon>

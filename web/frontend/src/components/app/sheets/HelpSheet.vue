@@ -8,7 +8,7 @@
       </v-list-item>
       <v-list-item>
         <v-list-item-content>
-          You can either write an email or checking resources explaining each page of NeDRex-Web:
+          You can either write an email, check the tutorial videos or refer to the documentation sheet:
         </v-list-item-content>
       </v-list-item>
 
@@ -17,22 +17,37 @@
           <v-icon left>fas fa-at</v-icon>
         </v-list-item-icon>
         <v-list-item-title>By Mail:</v-list-item-title>
-        <v-list-item-subtitle><v-chip outlined><a :href="'mailto:andreas.maier-1@uni-hamburg.de?subject='+getMailSubject()">andreas.maier-1(at)uni-hamburg.de</a>
+        <v-list-item-subtitle><v-chip outlined><a style="text-decoration: none; color: white" :href="'mailto:andreas.maier-1@uni-hamburg.de?subject='+getMailSubject()">andreas.maier-1(_at_]uni-hamburg.de</a>
+          <v-icon right small>fas fa-envelope</v-icon>
         </v-chip>
         </v-list-item-subtitle>
       </v-list-item>
 
       <v-list-item>
         <v-list-item-icon>
-          <v-icon left>fab fa-github</v-icon>
+          <v-icon left>fab fa-youtube</v-icon>
 
         </v-list-item-icon>
-        <v-list-item-title>Application-Example:</v-list-item-title>
+        <v-list-item-title>Tutorial playlist:</v-list-item-title>
         <v-list-item-subtitle>
           <v-chip outlined
-                  @click="openExternal('https://github.com/AndiMajore/RepoScapeWeb/tree/master/material/page_explanation')">
-            Page-Explanations
-            <v-icon size="18" right>fas fa-external-link-alt</v-icon>
+                  @click="openExternal('https://youtube.com/playlist?list=PLY5U8UsdXZRncOAO5f9QjCMZSbO65WKfV')">
+            YouTube
+            <v-icon small right>fas fa-external-link-alt</v-icon>
+          </v-chip>
+        </v-list-item-subtitle>
+      </v-list-item>
+      <v-list-item>
+        <v-list-item-icon>
+          <v-icon left>fas fa-file-word</v-icon>
+
+        </v-list-item-icon>
+        <v-list-item-title>Documentation page:</v-list-item-title>
+        <v-list-item-subtitle>
+          <v-chip outlined
+                  @click="openExternal('https://docs.google.com/document/d/1BGp0wovJk_ERonojc6s9XQ7W2sV_Bgb-ljtjI7yj2bg/edit?usp=sharing')">
+            Google-Docs
+            <v-icon small right>fas fa-external-link-alt</v-icon>
           </v-chip>
         </v-list-item-subtitle>
       </v-list-item>

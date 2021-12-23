@@ -58,6 +58,11 @@ public class Domino implements Algorithm {
     }
 
     @Override
+    public String getResultSuffix() {
+        return "txt";
+    }
+
+    @Override
     public String createCommand(File[] interactions, JobRequest request) {
         return "domino seeds.list " + interactions[0].getName() + " " + interactions[1].getName() + " result";
     }
@@ -65,7 +70,6 @@ public class Domino implements Algorithm {
     @Override
     public void prepareJobFiles(File tempDir, JobRequest req, Graph g, HashMap<Integer, Pair<String, String>> domainMap) {
         File seed = new File(tempDir, "seeds.list");
-        //TODO accept and write activity scores
         if (req.selection)
             utils.writeSeedFile(seed, req.nodes, domainMap, "_", false);
         else
@@ -120,7 +124,7 @@ public class Domino implements Algorithm {
         int beforeCount = allNodes.size();
         Set<Integer> newNodeIDs = new HashSet<>(j.getResult().getNodes().keySet());
         allNodes.addAll(newNodeIDs);
-        derived.addNodeMarks(nodeTypeId, newNodeIDs);
+        derived.addNodeMarks(nodeTypeId, newNodeIDs.stream().filter(n->!j.getSeeds().contains(n)).collect(Collectors.toList()));
         j.setUpdate("" + (allNodes.size() - beforeCount));
         NodeFilter nf = new NodeFilter(nodeController.getFilter(Graphs.getNode(nodeTypeId)), allNodes);
         derived.saveNodeFilter(Graphs.getNode(nodeTypeId), nf);
@@ -136,7 +140,9 @@ public class Domino implements Algorithm {
         int eid = derived.getEdge("DOMINO_Interaction");
         derived.addCustomEdgeAttribute(eid, j.getResult().getEdges());
         derived.addCustomAttributeType(eid, "memberOne", "id");
+        derived.addCustomAttributeLabel(eid,"memberOne","ID1");
         derived.addCustomAttributeType(eid, "memberTwo", "id");
+        derived.addCustomAttributeLabel(eid,"memberTwo","ID2");
     }
 
     @Override
@@ -178,7 +184,7 @@ public class Domino implements Algorithm {
         wd.mkdir();
         Arrays.stream(utils.dataDir.listFiles()).filter(file -> file.getName().endsWith(".sif")).forEach(sif -> {
             try {
-                ProcessUtils.executeProcessWait(getExecutionEnvironment(new String[]{"slicer", "-n", sif.getAbsolutePath(), "-o", getIndexFile(sif).getAbsolutePath()}));
+                ProcessUtils.executeProcessWait(getExecutionEnvironment(new String[]{"slicer", "-n", sif.getAbsolutePath(), "-o", getIndexFile(sif).getAbsolutePath()}), false);
             } catch (IOException | InterruptedException e) {
                 e.printStackTrace();
             }

@@ -12,7 +12,7 @@
       <v-menu v-if="seeds" right offset-x transition="slide-x-transition" open-on-hover>
         <template v-slot:activator="{on,attrs}">
           <v-list-item v-bind="attrs" v-on="on">
-            Seeds
+            {{label}}
             <v-icon right>fas fa-caret-right</v-icon>
           </v-list-item>
         </template>
@@ -36,7 +36,7 @@
       <v-menu v-if="results" right offset-x transition="slide-x-transition" open-on-hover>
         <template v-slot:activator="{on,attrs}">
           <v-list-item v-bind="attrs" v-on="on">
-            Module
+            {{resultLabel}}
             <v-icon right>fas fa-caret-right</v-icon>
           </v-list-item>
         </template>
@@ -61,7 +61,7 @@
         <v-icon left size="1em">
           fas fa-download
         </v-icon>
-        Raw Results
+        {{rawLabel}}
       </v-list-item>
     </v-list>
   </v-menu>
@@ -74,7 +74,16 @@ export default {
   props:{
     seeds: Boolean,
     results: Boolean,
+    resultLabel:{
+      default: "Module"
+    },
     raw: Boolean,
+    rawLabel: {
+      default:"Raw Results"
+    },
+    label:{
+      default: "Seeds"
+    }
   }
 }
 </script>

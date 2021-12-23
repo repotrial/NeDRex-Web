@@ -12,6 +12,7 @@ public class GraphHistoryDetail {
     public String comment;
     public boolean thumbnailReady = false;
     public String jobid;
+    public HashMap<String,String> params;
     public HashMap<String,HashMap<String,Integer>> counts;
     public ConnectionGraph entityGraph;
 
@@ -26,6 +27,7 @@ public class GraphHistoryDetail {
         counts = new HashMap<>();
         counts.put("nodes",new HashMap<>());
         counts.put("edges",new HashMap<>());
+        params = new HashMap<>();
     }
 
 }

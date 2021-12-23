@@ -41,7 +41,7 @@ public class HistoryController {
     public HistoryController(HistoryRepository historyRepository, ObjectMapper objectMapper, Environment env, ToolService toolService) {
         this.historyRepository = historyRepository;
         this.objectMapper = objectMapper;
-        this.toolService=toolService;
+        this.toolService = toolService;
         this.env = env;
     }
 
@@ -190,12 +190,24 @@ public class HistoryController {
         return null;
     }
 
+    public File getTriLayoutPath(String id) {
+        String cachedir = env.getProperty("path.usr.cache");
+        GraphHistory history = getHistory(id);
+        try {
+            return new File(cachedir, "users/" + history.getUserId() + "/layouts/" + id + "_tripartite.tsv");
+        } catch (NullPointerException e) {
+            log.warn("Broken history request!");
+        }
+        return null;
+    }
+
     public File getJobPath(Job j) {
         String cachedir = env.getProperty("path.usr.cache");
-        if (toolService.getAlgorithms().get(j.getMethod()).hasMultipleResultFiles())
-            return new File(cachedir, "users/" + j.getUserId() + "/jobs/" + j.getJobId() + "_result.zip");
-        else
-            return new File(cachedir, "users/" + j.getUserId() + "/jobs/" + j.getJobId() + "_result.txt");
+        String suffix = toolService.getAlgorithms().get(j.getMethod()).getResultSuffix();
+        if (toolService.getAlgorithms().get(j.getMethod()).hasMultipleResultFiles()) {
+            return new File(cachedir, "users/" + j.getUserId() + "/jobs/" + j.getJobId() + "_result"+(suffix.equals("zip") ? "" :("_"+suffix) )+ ".zip");
+        } else
+            return new File(cachedir, "users/" + j.getUserId() + "/jobs/" + j.getJobId() +  "_result."+ suffix);
     }
 
     public String validateUser(String userId) {
@@ -277,7 +289,9 @@ public class HistoryController {
                 g.getParent().getDerived().remove(idx);
             }
             g.getDerived().forEach(child -> {
-                g.getParent().addDerivate(child);
+                if (g.getParent() != null) {
+                    g.getParent().addDerivate(child);
+                }
                 child.setParent(g.getParent());
             });
             historyRepository.saveAll(g.getDerived());
@@ -289,8 +303,9 @@ public class HistoryController {
                 FileUtils.deleteDirectory(cached.getParentFile());
         }
         userMap.forEach((u, m) -> m.remove(gid));
-        if (g != null)
+        if (g != null) {
             historyRepository.delete(g);
+        }
         graphMap.remove(gid);
     }
 }

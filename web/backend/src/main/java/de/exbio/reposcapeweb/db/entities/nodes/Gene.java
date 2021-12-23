@@ -241,7 +241,7 @@ public class Gene extends RepoTrialNode {
         map.put(FilterType.NAME, new HashMap<>());
         map.get(FilterType.NAME).put(displayName, new FilterEntry(displayName, FilterType.NAME, id));
 
-        if (!displayName.equals(approvedSymbol) & !getSymbols().contains(approvedSymbol) & symbols.length()<2) {
+        if (! (getSymbols().size()==0 | (displayName.equals(approvedSymbol) & getSymbols().contains(approvedSymbol) & getSymbols().size()==1))) {
             map.put(FilterType.SYMBOL, new HashMap<>());
             FilterEntry symbolEntry = new FilterEntry(displayName, FilterType.SYMBOL, id);
             getSymbols().stream().filter(s -> (!s.equals(displayName) | !s.equals(approvedSymbol)) & s.length()>0 ).forEach(s -> map.get(FilterType.SYMBOL).put(s, symbolEntry));
@@ -253,7 +253,6 @@ public class Gene extends RepoTrialNode {
             if (!displayName.equals(syn) & syn.length()>0)
                 map.get(FilterType.SYNONYM).put(syn, syns);
         });
-
 
         return map;
     }

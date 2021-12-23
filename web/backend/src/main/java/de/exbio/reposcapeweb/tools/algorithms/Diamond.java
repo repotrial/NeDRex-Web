@@ -58,6 +58,11 @@ public class Diamond implements Algorithm {
         return new File[]{(request.getParams().get("type").equals("gene") ? new File(utils.dataDir, "gene_gene_interaction_" + (request.experimentalOnly ? "exp" : "all") + ".pairs") : new File(utils.dataDir, "protein_protein_interaction_" + (request.experimentalOnly ? "exp" : "all") + ".pairs"))};
     }
 
+    @Override
+    public String getResultSuffix() {
+        return "txt";
+    }
+
 
     @Override
     public ToolService.Tool getEnum() {
@@ -83,8 +88,8 @@ public class Diamond implements Algorithm {
         derived.saveNodeFilter(Graphs.getNode(nodeTypeId), nf);
         derived.addNodes(nodeTypeId, nf.toList(-1).stream().map(e -> new Node(e.getNodeId(), e.getName())).collect(Collectors.toList()));
 
-        derived.addCustomNodeAttributeType(nodeTypeId, "rank", "numeric");
-        derived.addCustomNodeAttributeType(nodeTypeId, "p_hyper", "numeric");
+        derived.addCustomNodeAttributeType(nodeTypeId, "rank", "numeric", "Rank");
+        derived.addCustomNodeAttributeType(nodeTypeId, "p_hyper", "numeric", "P-Val (hyper)");
         derived.addCustomNodeAttribute(nodeTypeId, j.getResult().getNodes());
     }
 

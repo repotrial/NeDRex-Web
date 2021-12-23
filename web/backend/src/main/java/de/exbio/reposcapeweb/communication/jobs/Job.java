@@ -18,8 +18,16 @@ public class Job {
         INITIALIZED, QUEUED, EXECUTING, DONE, NOCHANGE, ERROR, TIMEOUT,LIMITED, WAITING
     }
 
+    public enum JobGoal{
+        MODULE_IDENTIFICATION,DRUG_PRIORITIZATION,DRUG_REPURPOSING
+    }
+
     @Id
     private String jobId;
+    private String parentJid;
+
+    @Enumerated(EnumType.ORDINAL)
+    private JobGoal goal;
 
     private String userId;
     private String basisGraph;
@@ -28,6 +36,9 @@ public class Job {
     private String params;
     @Transient
     private TreeSet<Integer> seeds;
+
+    @Transient
+    private String expressionData;
 
     @Enumerated(EnumType.ORDINAL)
     private ToolService.Tool method = null;
@@ -70,17 +81,18 @@ public class Job {
     }
 
     public Job(String id, JobRequest job) {
-        this(id, job.userId, job.graphId, job.algorithm, job.params.get("type"), job.dbVersion);
+        this(id, job.userId, job.graphId, job.algorithm, job.params.get("type"), job.dbVersion, job.goal);
 //        this.request=job;
     }
 
-    public Job(String jobId, String userId, String graphId, String algorithm, String target, String dbVersion) {
+    public Job(String jobId, String userId, String graphId, String algorithm, String target, String dbVersion, String goal) {
         this.userId = userId;
         this.basisGraph = graphId;
         this.jobId = jobId;
         this.method = ToolService.Tool.valueOf(algorithm.toUpperCase());
         this.target = target;
         this.dbVersion = dbVersion;
+        this.goal = JobGoal.valueOf(goal.toUpperCase());
         created = LocalDateTime.now();
     }
 
@@ -121,6 +133,24 @@ public class Job {
 //        return request;
 //    }
 
+
+
+    public String getParentJid() {
+        return parentJid;
+    }
+
+    public void setParentJid(String jobId) {
+        this.parentJid=jobId;
+    }
+
+    public String getExpressionData() {
+        return expressionData;
+    }
+
+    public void setExpressionData(String expressionData) {
+        this.expressionData = expressionData;
+    }
+
     public LocalDateTime getCreated() {
         return created;
     }
@@ -149,6 +179,12 @@ public class Job {
         this.started = LocalDateTime.now();
     }
 
+
+
+    public JobGoal getGoal() {
+        return goal;
+    }
+
     public LocalDateTime getStarted() {
         return this.started;
     }
@@ -168,6 +204,10 @@ public class Job {
 
     public void setUpdate(String update) {
         this.message = update;
+    }
+
+    public TreeSet<Integer> getSeeds() {
+        return seeds;
     }
 
     public String getTarget() {
@@ -233,6 +273,6 @@ public class Job {
     //FIXME can overflow but unlikely to cause collisions
     @Override
     public int hashCode() {
-        return Objects.hash(params, Arrays.hashCode(seeds.toArray()),dbVersion);
+        return Objects.hash(params, Arrays.hashCode(seeds==null ? new Integer[]{} : seeds.toArray()),dbVersion);
     }
 }

@@ -47,6 +47,10 @@ public class DisorderComorbidWithDisorder extends RepoTrialEdge implements Seria
 
     @Transient
     @JsonIgnore
+    public static Boolean[] detailAttributes;
+
+    @Transient
+    @JsonIgnore
     public static String[] allAttributeTypes;
 
     @Transient
@@ -186,7 +190,7 @@ public class DisorderComorbidWithDisorder extends RepoTrialEdge implements Seria
         memberOne = memberTwo;
         Float tempf = rr12;
         rr12 = rr21;
-        rr12 = tempf;
+        rr21 = tempf;
         memberTwo = tmp;
     }
 

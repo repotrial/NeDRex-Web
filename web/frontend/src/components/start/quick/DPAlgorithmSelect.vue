@@ -2,64 +2,61 @@
   <v-card
     class="mb-4"
     min-height="80vh"
+    :flat="flat"
   >
-    <v-card-subtitle class="headline">{{ step }}. Drug Prioritization Algorithm Selection</v-card-subtitle>
-    <v-card-subtitle style="margin-top: -25px">Select and adjust the algorithm you want to apply on your seeds
-      to identify a ranked list of drug candidates.
-    </v-card-subtitle>
-    <v-divider style="margin: 15px;"></v-divider>
+    <template v-if="header">
+      <v-card-subtitle class="headline">{{ step }}. Drug Prioritization Algorithm Selection</v-card-subtitle>
+      <v-card-subtitle style="margin-top: -25px">Select and adjust the algorithm you want to apply on your seeds
+        to identify a ranked list of drug candidates.
+      </v-card-subtitle>
+      <v-divider style="margin: 15px;"></v-divider>
+    </template>
     <v-container style="height: 80%; max-width: 100%">
       <v-row style="height: 100%">
         <v-col>
           <v-card-title style="margin-left: -25px">Select the Base-Algorithm</v-card-title>
-          <v-radio-group v-model="methodModel" row>
-            <v-radio v-for="method in methods"
-                     :label="method.label"
-                     :key="method.label"
-                     :disabled="seeds.length===0"
-            >
-            </v-radio>
-          </v-radio-group>
-          <template v-if="methodModel!==undefined">
-            <v-card-title style="margin-left:-25px">Configure Parameters</v-card-title>
-            <div>
-              <v-slider
-                hide-details
-                class="align-center"
-                v-model="getAlgorithmModels().topX"
-                step="1"
-                min="1"
-                max="2000"
-              >
-                <template v-slot:prepend>
-                  <v-text-field
-                    v-model="getAlgorithmModels().topX"
-                    class="mt-0 pt-0"
-                    type="integer"
-                    style="width: 100px"
-                    label="visualize topX"
-                  ></v-text-field>
-                </template>
-                <template v-slot:append>
-                  <v-tooltip left>
-                    <template v-slot:activator="{ on, attrs }">
-                      <v-icon
-                        v-bind="attrs"
-                        v-on="on"
-                        left> far fa-question-circle
-                      </v-icon>
-                    </template>
-                    <span>A integer X limiting the visualization to the top X drugs that were found.</span>
-                  </v-tooltip>
-                </template>
-              </v-slider>
+          <v-tabs v-model="methodModel" optional>
+            <v-tab v-for="method in methods" :key="method.id">{{ method.label }}</v-tab>
+          </v-tabs>
+          <div v-if="methodModel!==undefined" style="margin-left: 20px">
+            <div v-for="method in methods" :key="'desc_'+method.id" v-show="method.id===getAlgorithmMethod()">
+              <v-card-title style="margin-left:-15px; padding-top:10px; padding-bottom: 5px"
+                            @click="showDescription = !showDescription">{{ method.descType }}
+                <v-icon right>{{ showDescription ? 'fas fa-angle-up' : 'fas fa-angle-down' }}</v-icon>
+              </v-card-title>
+              <div style="display: flex; justify-content: flex-start; margin-left: 15px" v-show="showDescription">
+                <div>
+                  <div style="text-align: justify; color: dimgray" v-html="getAlgorithm().description">
+                  </div>
+                  <div style="display: flex; justify-content: flex-start">
+                    <v-chip outlined><a :href="getAlgorithm().link" target="_blank" style="text-decoration: none">Read
+                      more
+                      <v-icon right>fas fa-angle-double-right</v-icon>
+                    </a></v-chip>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div style="display: flex">
+            <v-card-title style="margin-left:-15px; padding-top:10px; padding-bottom: 15px">Parameters</v-card-title>
+            <div style=" margin-left: 15px">
               <div>
-                <v-switch
-                  label="Only use experimentally validated interaction networks"
-                  v-model="experimentalSwitch"
+                <v-slider
+                  hide-details
+                  class="align-center"
+                  v-model="getAlgorithmModels().topX"
+                  step="1"
+                  min="1"
+                  max="2000"
                 >
+                  <template v-slot:prepend>
+                    <v-text-field
+                      v-model="getAlgorithmModels().topX"
+                      class="mt-0 pt-0"
+                      type="integer"
+                      style="width: 100px"
+                      label="visualize topX"
+                    ></v-text-field>
+                  </template>
                   <template v-slot:append>
                     <v-tooltip left>
                       <template v-slot:activator="{ on, attrs }">
@@ -69,110 +66,130 @@
                           left> far fa-question-circle
                         </v-icon>
                       </template>
-                      <span>Restricts the edges in the {{
-                          ['Gene', 'Protein'][seedTypeId] + '-' + ['Gene', 'Protein'][seedTypeId]
-                        }} network to experimentally validated ones.</span>
+                      <span>A integer X limiting the visualization to the top X drugs that were found.</span>
                     </v-tooltip>
                   </template>
-                </v-switch>
+                </v-slider>
               </div>
-            </div>
-            <div style="display:flex; width: 100%">
-              <div style="justify-self: flex-start">
-                <v-switch
-                  label="Only direct Drugs"
-                  v-model="getAlgorithmModels().onlyDirect"
-                >
-                  <template v-slot:append>
-                    <v-tooltip left>
-                      <template v-slot:activator="{ on, attrs }">
-                        <v-icon
-                          v-bind="attrs"
-                          v-on="on"
-                          left> far fa-question-circle
-                        </v-icon>
-                      </template>
-                      <span>If only the drugs interacting directly with seeds should be considered in the ranking,
-                             this should be selected. If including the non-direct drugs is desired unselect.</span>
-                    </v-tooltip>
-                  </template>
-                </v-switch>
-              </div>
-              <div style="justify-self: center; margin-left: auto">
-                <v-switch
-                  label="Only approved Drugs"
-                  v-model="getAlgorithmModels().onlyApproved"
-                >
-                  <template v-slot:append>
-                    <v-tooltip left>
-                      <template v-slot:activator="{ on, attrs }">
-                        <v-icon
-                          v-bind="attrs"
-                          v-on="on"
-                          left> far fa-question-circle
-                        </v-icon>
-                      </template>
-                      <span>If only approved drugs should be considered in the ranking,
-                             this should be selected. If including all approved and unapproved drugs is desired unselect.</span>
-                    </v-tooltip>
-                  </template>
-                </v-switch>
-              </div>
-              <div style="justify-self: flex-end; margin-left: auto">
-                <v-switch
-                  label="Filter Element 'Drugs'"
-                  v-model="getAlgorithmModels().filterElements"
-                >
-                  <template v-slot:append>
-                    <v-tooltip left>
-                      <template v-slot:activator="{ on, attrs }">
-                        <v-icon
-                          v-bind="attrs"
-                          v-on="on"
-                          left> far fa-question-circle
-                        </v-icon>
-                      </template>
-                      <span>Filters:<br><b>chemical elements:</b> <i>Gold</i>, <i>Zinc</i>, ...<br><b>metals and metal cations:</b> <i>Cupric Chloride</i>, <i>Aluminium acetoacetate</i>, ...<br><b>minerals and mineral supplements:</b> <i>Calcium silicate</i>, <i>Sodium chloride</i>, ...</span>
-                    </v-tooltip>
-                  </template>
-                </v-switch>
-              </div>
-            </div>
-            <div>
-              <v-slider
-                v-show="getAlgorithmModels().damping!=null"
-                hide-details
-                class="align-center"
-                v-model="getAlgorithmModels().damping"
-                step="0.01"
-                min="0"
-                max="1"
-              >
-                <template v-slot:prepend>
-                  <v-text-field
-                    v-model="getAlgorithmModels().damping"
-                    class="mt-0 pt-0"
-                    type="float"
-                    style="width: 60px"
-                    label="damping-factor"
-                  ></v-text-field>
-                </template>
-                <template v-slot:append>
-                  <v-tooltip left>
-                    <template v-slot:activator="{ on, attrs }">
-                      <v-icon
-                        v-bind="attrs"
-                        v-on="on"
-                        left> far fa-question-circle
-                      </v-icon>
+              <div style="display: flex">
+                <div>
+                  <v-switch
+                    label="Only use experimentally validated interaction networks"
+                    v-model="experimentalSwitch"
+                  >
+                    <template v-slot:append>
+                      <v-tooltip left>
+                        <template v-slot:activator="{ on, attrs }">
+                          <v-icon
+                            v-bind="attrs"
+                            v-on="on"
+                            left> far fa-question-circle
+                          </v-icon>
+                        </template>
+                        <span>Restricts the edges in the {{
+                            ['Gene', 'Protein'][seedTypeId] + '-' + ['Gene', 'Protein'][seedTypeId]
+                          }} network to experimentally validated ones.</span>
+                      </v-tooltip>
                     </template>
-                    <span>A float value between 0-1 to be used as damping factor parameter.</span>
-                  </v-tooltip>
-                </template>
-              </v-slider>
+                  </v-switch>
+                </div>
+              </div>
+              <div style="display:flex; width: 100%">
+                <div style="justify-self: flex-start">
+                  <v-switch
+                    label="Only direct Drugs"
+                    v-model="getAlgorithmModels().onlyDirect"
+                  >
+                    <template v-slot:append>
+                      <v-tooltip left>
+                        <template v-slot:activator="{ on, attrs }">
+                          <v-icon
+                            v-bind="attrs"
+                            v-on="on"
+                            left> far fa-question-circle
+                          </v-icon>
+                        </template>
+                        <span>If only the drugs interacting directly with seeds should be considered in the ranking,
+                             this should be selected. If including the non-direct drugs is desired unselect.</span>
+                      </v-tooltip>
+                    </template>
+                  </v-switch>
+                </div>
+                <div style="justify-self: center; margin-left: auto">
+                  <v-switch
+                    label="Only approved Drugs"
+                    v-model="getAlgorithmModels().onlyApproved"
+                  >
+                    <template v-slot:append>
+                      <v-tooltip left>
+                        <template v-slot:activator="{ on, attrs }">
+                          <v-icon
+                            v-bind="attrs"
+                            v-on="on"
+                            left> far fa-question-circle
+                          </v-icon>
+                        </template>
+                        <span>If only approved drugs should be considered in the ranking,
+                             this should be selected. If including all approved and unapproved drugs is desired unselect.</span>
+                      </v-tooltip>
+                    </template>
+                  </v-switch>
+                </div>
+                <div style="justify-self: flex-end; margin-left: auto">
+                  <v-switch
+                    label="Filter Element 'Drugs'"
+                    v-model="getAlgorithmModels().filterElements"
+                  >
+                    <template v-slot:append>
+                      <v-tooltip left>
+                        <template v-slot:activator="{ on, attrs }">
+                          <v-icon
+                            v-bind="attrs"
+                            v-on="on"
+                            left> far fa-question-circle
+                          </v-icon>
+                        </template>
+                        <span>Filters:<br><b>chemical elements:</b> <i>Gold</i>, <i>Zinc</i>, ...<br><b>metals and metal cations:</b> <i>Cupric Chloride</i>, <i>Aluminium acetoacetate</i>, ...<br><b>minerals and mineral supplements:</b> <i>Calcium silicate</i>, <i>Sodium chloride</i>, ...</span>
+                      </v-tooltip>
+                    </template>
+                  </v-switch>
+                </div>
+              </div>
+              <div>
+                <v-slider
+                  v-show="getAlgorithmModels().damping!=null"
+                  hide-details
+                  class="align-center"
+                  v-model="getAlgorithmModels().damping"
+                  step="0.01"
+                  min="0"
+                  max="1"
+                >
+                  <template v-slot:prepend>
+                    <v-text-field
+                      v-model="getAlgorithmModels().damping"
+                      class="mt-0 pt-0"
+                      type="float"
+                      style="width: 60px"
+                      label="damping-factor"
+                    ></v-text-field>
+                  </template>
+                  <template v-slot:append>
+                    <v-tooltip left>
+                      <template v-slot:activator="{ on, attrs }">
+                        <v-icon
+                          v-bind="attrs"
+                          v-on="on"
+                          left> far fa-question-circle
+                        </v-icon>
+                      </template>
+                      <span>A float value between 0-1 to be used as damping factor parameter.</span>
+                    </v-tooltip>
+                  </template>
+                </v-slider>
+              </div>
             </div>
-          </template>
-
+          </div>
         </v-col>
       </v-row>
     </v-container>
@@ -185,20 +202,36 @@ export default {
     seeds: Array,
     seedTypeId: Number,
     step: Number,
+    socketEvent: String,
     blitz: {
       type: Boolean,
       default: false
+    },
+    flat: {
+      default: false,
+      type: Boolean,
+    },
+    goal: {
+      type: String,
+      default: "drug_prioritization",
+    },
+    header: {
+      type: Boolean,
+      default: true
     }
   },
 
   data() {
     return {
       methodModel: undefined,
-      rankingMethodModel: undefined,
       experimentalSwitch: true,
+      showDescription: false,
       methods: [{
         id: "trustrank",
         label: "TrustRank",
+        description: "TrustRank is derived from the well known PageRank algorithm. Its  original purpose is to filter spam-sites that are not highly supported by other pages. This is achieved by assigning weights based on in- and out-going edges to favor highly and punish weakly supported nodes. In theory, these weights are iteratively propagated through the network until the assigned scores or ranks stabilize. In a biological application, the ranked websites are drugs, and the most trusted ones are drugs that have high chances of targeting a large number of seeds.",
+        link: "https://en.wikipedia.org/wiki/TrustRank",
+        descType: "Description",
         models: {
           topX: 100,
           onlyApproved: true,
@@ -218,6 +251,9 @@ export default {
         {
           id: "centrality",
           label: "Closeness Centrality",
+          description: "Like the name suggests, closeness centrality is one of several centrality measurements. These generally are used in network analysis to derive scores that translate to the importance of the nodes in its specific network. Closeness, in particular, is derived by calculating the sum over all shortest paths between the specific node n and any other to the power of the negative one. A low average shortest path is then used as an indicator for possible candidates that target the module.",
+          link: "https://en.wikipedia.org/wiki/Closeness_centrality",
+          descType: "Description",
           models: {
             topX: 100,
             onlyApproved: true,
@@ -270,13 +306,32 @@ export default {
       return undefined
     },
 
+    setMethod: async function (method, params) {
+      method = method.toLowerCase()
+      let algos = this.methods.filter(m => m.group === this.groupModel)
+      for (let i = 0; i < algos.length; i++) {
+        if (algos[i].id === method) {
+          this.methodModel = i
+          break
+        }
+      }
+      if (params) {
+        let models = this.getAlgorithmModels()
+        Object.keys(models).forEach(key => {
+          if (params[key] != null) {
+            models[key] = params[key]
+          }
+        })
+      }
+    },
+
     getParams: async function () {
       let params = {}
       let models = this.getAlgorithmModels()
       params.experimentalOnly = this.experimentalSwitch
 
       params["addInteractions"] = true
-      params["nodesOnly"] = true
+      params["nodesOnly"] = false
 
       params['direct'] = models.onlyDirect;
       params['approved'] = models.onlyApproved;
@@ -289,32 +344,41 @@ export default {
       return params;
     },
 
+    getParamString: async function () {
+      let params = await this.getParams()
+      delete params.nodesOnly
+      delete params.addInteractions
+      let str = ""
+      Object.keys(params).forEach(key => {
+        str += key + "=" + params[key] + ", "
+      })
+      str = str.substring(0, str.length - 2)
+      return str
+    },
+
     getHeaders: function () {
-      if (this.getAlgorithm() != null || this.getAlgorithm().scores != null)
+      if (this.getAlgorithm() != null && this.getAlgorithm().scores != null)
         return this.getAlgorithm().scores;
       return []
     },
-    run: async function (gid) {
+    runLater: async function (jid) {
       let params = await this.getParams();
       let payload = {
         userId: this.$cookies.get("uid"),
         dbVersion: this.$global.metadata.repotrial.version,
         algorithm: this.getAlgorithmMethod(),
+        goal: this.goal,
         params: params
       }
 
       payload.experimentalOnly = params.experimentalOnly
-      payload.selection = gid==null
-      if (gid != null) {
-        payload.graphId = gid
-      }else {
-        payload["nodes"] = this.seeds.map(n => n.id)
-      }
-      let ctx = this
-      if (this.seeds.length === 0) {
+      if (this.seeds.length === 0 && jid == null) {
         this.printNotification("Cannot execute " + this.getAlgorithm().label + " without seed nodes!", 1)
         return;
       }
+      payload.jobId = jid
+      let ctx = this
+
       this.$http.post("/submitJob", payload).then(response => {
         if (response.data !== undefined)
           return response.data
@@ -322,13 +386,49 @@ export default {
         if (data.state === "DONE") {
           ctx.$emit("jobEvent", data, true)
         } else {
-          this.$socket.subscribeJob(data.jid, "quickRankingFinishedEvent");
+          this.$socket.subscribeJob(data.jid, this.socketEvent);
           ctx.$emit("jobEvent", data)
         }
       }).catch(console.error)
+    },
+    run: async function (gid) {
+      let params = await this.getParams();
+      let payload = {
+        userId: this.$cookies.get("uid"),
+        dbVersion: this.$global.metadata.repotrial.version,
+        algorithm: this.getAlgorithmMethod(),
+        goal: this.goal,
+        params: params
+      }
 
-    }
+      payload.experimentalOnly = params.experimentalOnly
+      if (this.seeds.length === 0 && gid == null) {
+        this.printNotification("Cannot execute " + this.getAlgorithm().label + " without seed nodes!", 1)
+        return;
+      }
+      payload.selection = gid == null
+      if (gid != null) {
+        payload.graphId = gid
+      } else {
+        payload["nodes"] = this.seeds.map(n => n.id)
+      }
+      let ctx = this
 
+      this.$http.post("/submitJob", payload).then(response => {
+        if (response.data !== undefined)
+          return response.data
+      }).then(data => {
+        if (data.state === "DONE") {
+          ctx.$emit("jobEvent", data, true)
+        } else {
+          this.$socket.subscribeJob(data.jid, this.socketEvent);
+          ctx.$emit("jobEvent", data)
+        }
+      }).catch(console.error)
+    },
+    printNotification(message, type) {
+      this.$emit("printNotification", message, type)
+    },
   }
 
 }

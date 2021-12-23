@@ -77,6 +77,22 @@
           "detail": true,
           "id": false,
           "label": "Type"
+        },
+        {
+          "name": "created",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Created"
+        },
+        {
+          "name": "updated",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Updated"
         }
       ]
     },
@@ -155,7 +171,7 @@
         {
           "name": "molecularFormula",
           "source": true,
-          "list": true,
+          "list": false,
           "detail": true,
           "id": false,
           "label": "Formula"
@@ -210,16 +226,7 @@
           "label": "Indication"
         },
         {
-          "name": "_cls",
-          "source": true,
-          "list": false,
-          "detail": true,
-          "id": false,
-          "label": "Drug-CLS",
-          "disctinct": true
-        },
-        {
-          "name": "sequences",
+          "name": "sequence",
           "source": true,
           "list": false,
           "detail": true,
@@ -252,6 +259,22 @@
           "detail": true,
           "id": false,
           "label": "Type"
+        },
+        {
+          "name": "created",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Created"
+        },
+        {
+          "name": "updated",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Updated"
         }
       ]
     },
@@ -366,6 +389,22 @@
           "detail": true,
           "id": false,
           "label": "Type"
+        },
+        {
+          "name": "created",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Created"
+        },
+        {
+          "name": "updated",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Updated"
         }
       ]
     },
@@ -422,12 +461,36 @@
           "label": "Species"
         },
         {
+          "name": "taxid",
+          "source": true,
+          "list": false,
+          "id": false,
+          "detail": true,
+          "label": "TaxID"
+        },
+        {
           "name": "type",
           "source": true,
           "list": false,
           "detail": true,
           "id": false,
           "label": "Type"
+        },
+        {
+          "name": "created",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Created"
+        },
+        {
+          "name": "updated",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Updated"
         }
       ]
     },
@@ -525,6 +588,22 @@
           "detail": true,
           "id": false,
           "label": "Type"
+        },
+        {
+          "name": "created",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Created"
+        },
+        {
+          "name": "updated",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Updated"
         }
       ]
     }
@@ -627,6 +706,16 @@
           "distinct": false
         },
         {
+          "name": "tags",
+          "source": true,
+          "list": true,
+          "detail": true,
+          "id": false,
+          "type": "array",
+          "label": "Tags",
+          "distinct": true
+        },
+        {
           "name": "type",
           "source": true,
           "list": false,
@@ -634,7 +723,24 @@
           "id": false,
           "label": "Type",
           "distinct": false
+        },
+        {
+          "name": "created",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Created"
+        },
+        {
+          "name": "updated",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Updated"
         }
+
       ]
     },
     {
@@ -707,18 +813,53 @@
           "distinct": false
         },
         {
+          "name": "actions",
+          "list": true,
+          "detail": true,
+          "id": false,
+          "type": "array",
+          "label": "Actions",
+          "distinct": false
+        },
+        {
+          "name": "databases",
+          "list": false,
+          "detail": true,
+          "id": false,
+          "type": "array",
+          "label": "Databases",
+          "distinct": false
+        },
+        {
           "name": "type",
           "list": false,
           "detail": true,
           "id": false,
           "label": "Type",
           "distinct": false
+        },
+        {
+          "name": "created",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Created"
+        },
+        {
+          "name": "updated",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Updated"
         }
       ]
     },
     {
       "id": 2,
       "name": "protein_interacts_with_protein",
+      "paginatedName": "ppi_paginated",
       "label": "ProteinInteractsWithProtein",
       "original": true,
       "directed": false,
@@ -813,14 +954,73 @@
           "distinct": true
         },
         {
-          "name": "databases",
+          "name": "assertedBy",
           "source": true,
-          "list": false,
+          "list": true,
           "detail": true,
           "id": false,
           "type": "array",
-          "label": "Databases",
+          "label": "AssertedBy",
           "distinct": true
+        },
+        {
+          "name": "developmentStages",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Developmental Stages",
+          "distinct":true
+        },
+        {
+          "name": "developmentStages",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "type": "array",
+          "label": "Developmental Stages",
+          "distinct":true
+        },
+        {
+          "name": "tissues",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "type": "array",
+          "label": "Tissues",
+          "distinct":true
+        },
+        {
+          "name": "subcellularLocations",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "type": "array",
+          "label": "Subcellular Locations",
+          "distinct":true
+        },
+        {
+          "name": "jointTissues",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "type": "array",
+          "label": "Joint Tissues",
+          "distinct":true
+        },
+        {
+          "name": "brainTissues",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "type": "array",
+          "label": "Brain Tissues",
+          "distinct":true
         },
         {
           "name": "methods",
@@ -831,6 +1031,22 @@
           "type": "array",
           "label": "Methods",
           "distinct": false
+        },
+        {
+          "name": "created",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Created"
+        },
+        {
+          "name": "updated",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Updated"
         }
       ]
     },
@@ -919,12 +1135,28 @@
           "id": false,
           "label": "Type",
           "distinct": false
+        },
+        {
+          "name": "created",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Created"
+        },
+        {
+          "name": "updated",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Updated"
         }
       ]
     },
     {
       "id": 4,
-      "name": "protein_encoded_by",
+      "name": "protein_encoded_by_gene",
       "label": "ProteinEncodedBy",
       "original": true,
       "directed": true,
@@ -1007,6 +1239,22 @@
           "id": false,
           "label": "Type",
           "distinct": false
+        },
+        {
+          "name": "created",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Created"
+        },
+        {
+          "name": "updated",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Updated"
         }
       ]
     },
@@ -1104,6 +1352,22 @@
           "type": "array",
           "label": "AssertedBy",
           "distinct": true
+        },
+        {
+          "name": "created",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Created"
+        },
+        {
+          "name": "updated",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Updated"
         }
       ]
     },
@@ -1194,14 +1458,82 @@
           "distinct": true
         },
         {
-          "name": "databases",
-          "source": true,
+          "name": "assertedBy",
           "list": true,
           "detail": true,
           "id": false,
           "type": "array",
-          "label": "Databases",
+          "label": "AssertedBy",
           "distinct": true
+        },
+        {
+          "name": "developmentStages",
+          "list": false,
+          "detail": false,
+          "id": false,
+          "type": "array",
+          "label": "Developmental Stages",
+          "distinct":true
+        },
+        {
+          "name": "tissues",
+          "list": false,
+          "detail": false,
+          "id": false,
+          "type": "array",
+          "label": "Tissues",
+          "distinct":true
+        },
+        {
+          "name": "subcellularLocations",
+          "list": false,
+          "detail": false,
+          "id": false,
+          "type": "array",
+          "label": "Subcellular Locations",
+          "distinct":true
+        },
+        {
+          "name": "jointTissues",
+          "list": false,
+          "detail": false,
+          "id": false,
+          "type": "array",
+          "label": "Joint Tissues",
+          "distinct":true
+        },
+        {
+          "name": "brainTissues",
+          "list": false,
+          "detail": false,
+          "id": false,
+          "type": "array",
+          "label": "Brain Tissues",
+          "distinct":true
+        },
+        {
+          "name": "methods",
+          "source": true,
+          "list": false,
+          "detail": true,
+          "id": false,
+          "type": "array",
+          "label": "Methods",
+          "distinct": false
+        },
+        {
+          "name": "created",
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Created"
+        },
+        {
+          "name": "updated",
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Updated"
         }
       ]
     },
@@ -1310,6 +1642,42 @@
           "type": "array",
           "label": "assertedBy",
           "distinct": true
+        },
+        {
+          "name": "omimFlags",
+          "source": true,
+          "list": false,
+          "detail": true,
+          "id": false,
+          "type": "array",
+          "label": "OMIM-Flags",
+          "distinct": true
+        },
+        {
+          "name": "omimMappingCode",
+          "source": true,
+          "list": false,
+          "detail": true,
+          "id": false,
+          "type": "numeric",
+          "label": "OMIM-MappingCode",
+          "distinct": true
+        },
+        {
+          "name": "created",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Created"
+        },
+        {
+          "name": "updated",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Updated"
         }
       ]
     },
@@ -1439,6 +1807,22 @@
           "type": "numeric",
           "label": "RR-21",
           "distinct": false
+        },
+        {
+          "name": "created",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Created"
+        },
+        {
+          "name": "updated",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Updated"
         }
       ]
     },
@@ -1527,6 +1911,22 @@
           "id": false,
           "label": "Type",
           "distinct": false
+        },
+        {
+          "name": "created",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Created"
+        },
+        {
+          "name": "updated",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Updated"
         }
       ]
     },
@@ -1608,6 +2008,16 @@
           "distinct": false
         },
         {
+          "name": "assertedBy",
+          "source": true,
+          "list": true,
+          "detail": true,
+          "id": false,
+          "type": "array",
+          "label": "assertedBy",
+          "distinct": true
+        },
+        {
           "name": "type",
           "source": true,
           "list": false,
@@ -1615,6 +2025,22 @@
           "id": false,
           "label": "Type",
           "distinct": false
+        },
+        {
+          "name": "created",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Created"
+        },
+        {
+          "name": "updated",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Updated"
         }
       ]
     },
@@ -1696,6 +2122,16 @@
           "distinct": false
         },
         {
+          "name": "assertedBy",
+          "source": true,
+          "list": true,
+          "detail": true,
+          "id": false,
+          "type": "array",
+          "label": "assertedBy",
+          "distinct": true
+        },
+        {
           "name": "type",
           "source": true,
           "list": false,
@@ -1703,6 +2139,22 @@
           "id": false,
           "label": "Type",
           "distinct": false
+        },
+        {
+          "name": "created",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Created"
+        },
+        {
+          "name": "updated",
+          "source": true,
+          "list": false,
+          "detail": false,
+          "id": false,
+          "label": "Updated"
         }
       ]
     }

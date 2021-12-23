@@ -34,19 +34,19 @@
             </v-chip>
           </v-list-item-subtitle>
         </v-list-item>
-        <v-list-item>
-          <v-list-item-icon>
-            <v-icon left>fas fa-table</v-icon>
-          </v-list-item-icon>
-          <v-list-item-title>Adding to spreadsheet:</v-list-item-title>
-          <v-list-item-subtitle>
-            <v-chip outlined
-                    @click="openExternal('https://docs.google.com/spreadsheets/d/15ZqaWko_EH4filOLfwC_ZxtEAb-FxJ2sKSPv9MmV75I/edit?usp=sharing')">
-              Google-Spreadsheet
-              <v-icon right>fas fa-external-link-alt</v-icon>
-            </v-chip>
-          </v-list-item-subtitle>
-        </v-list-item>
+<!--        <v-list-item>-->
+<!--          <v-list-item-icon>-->
+<!--            <v-icon left>fas fa-table</v-icon>-->
+<!--          </v-list-item-icon>-->
+<!--          <v-list-item-title>Adding to spreadsheet:</v-list-item-title>-->
+<!--          <v-list-item-subtitle>-->
+<!--            <v-chip outlined-->
+<!--                    @click="openExternal('https://docs.google.com/spreadsheets/d/15ZqaWko_EH4filOLfwC_ZxtEAb-FxJ2sKSPv9MmV75I/edit?usp=sharing')">-->
+<!--              Google-Spreadsheet-->
+<!--              <v-icon right>fas fa-external-link-alt</v-icon>-->
+<!--            </v-chip>-->
+<!--          </v-list-item-subtitle>-->
+<!--        </v-list-item>-->
         <v-divider style="margin: 15px;"></v-divider>
         <v-list-item>
           <v-list-item-subtitle>UID: {{$cookies.get("uid")? $cookies.get("uid") : "N/A"}}</v-list-item-subtitle>

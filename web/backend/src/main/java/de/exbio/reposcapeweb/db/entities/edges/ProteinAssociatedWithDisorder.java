@@ -54,7 +54,7 @@ public class ProteinAssociatedWithDisorder extends RepoTrialEdge implements Seri
     private String nodeTwo;
 
 
-    private String score;
+    private Float score;
 
     private String assertedBy;
 
@@ -66,6 +66,10 @@ public class ProteinAssociatedWithDisorder extends RepoTrialEdge implements Seri
     @Transient
     @JsonIgnore
     public static String[] allAttributeTypes;
+
+    @Transient
+    @JsonIgnore
+    public static Boolean[] detailAttributes;
 
     @Transient
     @JsonIgnore
@@ -149,7 +153,7 @@ public class ProteinAssociatedWithDisorder extends RepoTrialEdge implements Seri
         return "ProteinAssociatedWithDisorder";
     }
 
-    public String getScore() {
+    public Float getScore() {
         return score;
     }
 

@@ -3,7 +3,7 @@
     <div style="display: flex; justify-content: flex-end; margin-left: auto; ">
       <v-tooltip left>
         <template v-slot:activator="{on, attrs}">
-          <v-btn icon style="padding:1em" color="red darker" @click="makeStep(0,'cancel')" v-on="on" v-bind="attrs">
+          <v-btn icon style="padding:1em" color="red darker" @click="makeStep('cancel')" v-on="on" v-bind="attrs">
             <v-icon size="2em">far fa-times-circle</v-icon>
           </v-btn>
         </template>
@@ -30,11 +30,20 @@
         <v-divider></v-divider>
         <v-stepper-step step="2" :complete="step>2 || blitz">
           Select Method
-          <small v-if=" $refs.algorithm!=null && $refs.algorithms.getAlgorithm() !=null">{{ $refs.algorithms.getAlgorithm().label }}</small>
+          <small v-if="$refs.algorithms!=null && $refs.algorithms.getAlgorithm()!=null">{{
+              $refs.algorithms.getAlgorithm().label
+            }}</small>
         </v-stepper-step>
         <v-divider></v-divider>
-        <v-stepper-step step="3">
+        <v-stepper-step step="3" :complete="step>3">
           Results
+          <small v-if="results.targets!=null && results.targets.length>0">Module ({{
+              results.targets.length
+            }})</small>
+        </v-stepper-step>
+        <v-divider></v-divider>
+        <v-stepper-step step="4">
+          Validation
         </v-stepper-step>
       </v-stepper-header>
       <v-stepper-items>
@@ -48,7 +57,7 @@
             <v-card-subtitle style="margin-top: -25px">Add seeds to your
               list
               <span v-if="!blitz">{{ blitz ? "." : " or use an expression data based algorithm (" }}<a
-                @click="seedTypeId=0; methodModel=1; makeStep(1,'continue')">BiCoN
+                @click="seedTypeId=0; methodModel=1; makeStep('continue'); setBicon()">BiCoN
                 <v-icon right size="1em" style="margin-left: 0">fas fa-caret-right</v-icon>
               </a>{{ ")." }}
               </span>
@@ -68,7 +77,7 @@
                     </i>
                         </v-col>
                       <v-col>
-                  <b >{{ $refs.algorithms.getAlgorithm().label }}</b>
+                  <b>{{ $refs.algorithms.getAlgorithm().label }}</b>
                   </v-col>
                       </v-row>
                       <v-row>
@@ -92,12 +101,11 @@
             <v-divider style="margin: 15px;"></v-divider>
             <v-row>
               <v-col>
-                <v-list-item-subtitle v-if="!validationDrugView" class="title">Select the seed type
+                <v-list-item-subtitle class="title">Select the seed type
                 </v-list-item-subtitle>
-                <v-list-item-subtitle v-else class="title">Select Validation Drugs</v-list-item-subtitle>
                 <v-list-item-action>
                   <v-radio-group row v-model="seedTypeId"
-                                 :disabled="validationDrugView || (this.seedTypeId !=null && $refs.seedTable !=null && $refs.seedTable.getSeeds()!=null && $refs.seedTable.getSeeds().length>0)">
+                                 :disabled="(seedTypeId !=null && $refs.seedTable !=null && $refs.seedTable.getSeeds()!=null && $refs.seedTable.getSeeds().length>0)">
                     <v-radio label="Gene">
                     </v-radio>
                     <v-radio label="Protein">
@@ -106,8 +114,10 @@
                 </v-list-item-action>
               </v-col>
             </v-row>
-            <ExampleSeeds :seedTypeId="seedTypeId" @addSeedsEvent="addToSelection"
-                          :disabled="validationDrugView"></ExampleSeeds>
+            <QuickExamples v-if="$refs.validation" :seedType="['gene','protein'][seedTypeId]"
+                           @drugsEvent="$refs.validation.addDrugs" @exampleEvent="applyExample"
+                           @disorderEvent="saveDisorders" @suggestionEvent="addToSuggestions"
+                           @addNodesEvent="addToSelection"></QuickExamples>
             <v-container style="height: 560px; margin-top: 15px; max-width: 100%">
               <v-row style="height: 100%">
                 <v-col cols="6">
@@ -116,24 +126,24 @@
                       <div style="display: flex">
                         <div style="justify-content: flex-start">
                           <v-card-title style="margin-left: -25px;" class="subtitle-1">Add
-                            {{ validationDrugView ? 'drugs' : ['genes', 'proteins'][this.seedTypeId] }} associated to
+                            {{ ['genes', 'proteins'][this.seedTypeId] }} associated to
                           </v-card-title>
                         </div>
-                        <v-tooltip top>
-                          <template v-slot:activator="{on,attrs}">
-                            <div v-on="on" v-bind="attrs" style="justify-content: flex-end; margin-left: auto">
-                              <LabeledSwitch v-model="advancedOptions"
-                                             @click="suggestionType = advancedOptions ? suggestionType : 'disorder'"
-                                             label-off="Limited" label-on="Full" v-on="on"
-                                             v-bind="attrs"></LabeledSwitch>
-                            </div>
-                          </template>
-                          <div style="width: 300px"><b>Limited Mode:</b><br>The options are limited to the most
-                            interesting and generally used ones to not overcomplicate the user interface <br>
-                            <b>Full Mode:</b><br> The full mode provides a wider list of options to select from for more
-                            specific queries.
-                          </div>
-                        </v-tooltip>
+                        <div style="justify-content: flex-end; margin-left: auto">
+                          <LabeledSwitch v-model="advancedOptions"
+                                         @click="suggestionType = advancedOptions ? suggestionType : 'disorder'"
+                                         label-off="Limited" label-on="Full">
+                            <template v-slot:tooltip>
+                              <div style="width: 300px"><b>Limited Mode:</b><br>The options are limited to the most
+                                interesting and generally used ones to not overcomplicate the user interface <br>
+                                <b>Full Mode:</b><br> The full mode provides a wider list of options to select from
+                                for
+                                more
+                                specific queries.
+                              </div>
+                            </template>
+                          </LabeledSwitch>
+                        </div>
                       </div>
 
                       <div style="display: flex">
@@ -156,15 +166,18 @@
                             through association the 'Limited' switch has to be toggled.
                           </div>
                         </v-tooltip>
-                        <SuggestionAutocomplete :suggestion-type="suggestionType" :emit-drugs="!validationDrugView"
-                                                @drugsEvent="$refs.validationTable.addDrugs"
-                                                :target-node-type="validationDrugView ? 'drug' : ['gene', 'protein'][seedTypeId]"
-                                                @addToSelectionEvent="addToSelection"
+                        <SuggestionAutocomplete ref="suggestions" :suggestion-type="suggestionType" :emit-drugs="true"
+                                                @drugsEvent="$refs.validation.addDrugs" :disorder-select="true"
+                                                :emit-disorders="true"
+                                                :target-node-type="['gene', 'protein'][seedTypeId]"
+                                                @disorderEvent="saveDisorders"
+                                                @addToSelectionEvent="addToSelection" @subtypeSelection="subtypePopup"
+                                                @suggestionEvent="addToSuggestions" :add-all="true"
                                                 style="justify-self: flex-end;margin-left: auto"></SuggestionAutocomplete>
                       </div>
                       <NodeInput text="or provide Seed IDs by" @addToSelectionEvent="addToSelection"
-                                 :idName="validationDrugView? 'drugbank':['entrez','uniprot'][seedTypeId]"
-                                 :nodeType="validationDrugView? 'drug':['gene', 'protein'][seedTypeId]"
+                                 :idName="['entrez','uniprot'][seedTypeId]"
+                                 :nodeType="['gene', 'protein'][seedTypeId]"
                                  @printNotificationEvent="printNotification"></NodeInput>
                     </template>
                   </div>
@@ -176,61 +189,54 @@
                     <template v-slot:activator="{attrs,on}">
                       <v-chip style="position: absolute; left:auto; right:0" v-on="on" v-bind="attrs"
                               v-show="seedTypeId!=null"
-                              @click="toggleValidationDrugView()" :color="validationDrugView ? 'green':'primary'">
+                              :disabled="$refs.seedTable==null || $refs.seedTable.getSeeds().length===0"
+                              color="primary" @click="showInteractionNetwork()">
+                        <v-icon>fas fa-project-diagram</v-icon>
+                      </v-chip>
+                    </template>
+                    <span>Display an interaction network with all your current seeds</span>
+                  </v-tooltip>
+                  <v-tooltip left>
+                    <template v-slot:activator="{attrs,on}">
+                      <v-chip style="position: absolute; left:auto; right:55px" v-on="on" v-bind="attrs"
+                              v-show="seedTypeId!=null"
+                              color="primary">
                         <v-icon left>fas fa-capsules</v-icon>
                         {{ validationDrugCount }}
                       </v-chip>
                     </template>
-                    <span>There are {{ validationDrugCount }} drugs that were associated with your query.<br> These are saved for validation purposes later.<br><br><i>To see or even adjust the list, toggle this button!</i></span>
+                    <span>There are {{ validationDrugCount }} drugs that were associated with your query.<br> These are saved for validation purposes later.</span>
                   </v-tooltip>
-                  <SeedTable ref="seedTable" v-show="seedTypeId!=null && !validationDrugView" :download="true"
+
+                  <SeedTable ref="seedTable" v-show="seedTypeId!=null" :download="true"
                              :remove="true"
-                             :filter="true"
+                             :filter="true" @clearEvent="clearData"
                              @printNotificationEvent="printNotification"
                              height="405px"
                              :title="'Selected Seeds ('+($refs.seedTable ? $refs.seedTable.getSeeds().length : 0)+')'"
                              :nodeName="['gene','protein'][seedTypeId]"
                   ></SeedTable>
-                  <ValidationDrugTable v-show="seedTypeId!=null && validationDrugView" ref="validationTable"
-                                       @printNotificationEvent="printNotification"
-                                       @drugCountUpdate="updateDrugCount()"></ValidationDrugTable>
                 </v-col>
               </v-row>
             </v-container>
 
 
           </v-card>
-          <v-btn
-            color="primary"
-            @click="makeStep(1,'continue')"
-            :disabled="seedTypeId<0 || $refs.seedTable == null || $refs.seedTable.getSeeds().length===0"
-          >
-            Continue
-          </v-btn>
-
-          <v-btn text @click="makeStep(1,'cancel')">
-            Cancel
-          </v-btn>
+          <ButtonCancel @click="makeStep"></ButtonCancel>
+          <ButtonNext @click="makeStep"
+                      :disabled="seedTypeId<0 || $refs.seedTable == null || $refs.seedTable.getSeeds().length===0"></ButtonNext>
         </v-stepper-content>
 
         <v-stepper-content step="2">
           <template>
-            <MIAlgorithmSelect ref="algorithms" :blitz="blitz" type="mi" :seeds="seeds" :seed-type-id="seedTypeId" @algorithmSelectedEvent="acceptAlgorithmSelectEvent" @jobEvent="readJob" ></MIAlgorithmSelect>
-            <v-btn text @click="makeStep(2,'back')">
-              Back
-            </v-btn>
-
-            <v-btn
-              @click="makeStep(2,'continue')"
-              color="primary"
-              :disabled=" !algorithmSelected  || ($refs.algorithms.getAlgorithmMethod()==='bicon' && $refs.algorithms.getAlgorithmModels().exprFile ===undefined)"
-            >
-              Run
-            </v-btn>
-
-            <v-btn text @click="makeStep(2,'cancel')">
-              Cancel
-            </v-btn>
+            <MIAlgorithmSelect ref="algorithms" :blitz="blitz" type="mi" :seeds="seeds"
+                               socket-event="quickModuleFinishedEvent" :seed-type-id="seedTypeId"
+                               @algorithmSelectedEvent="acceptAlgorithmSelectEvent"
+                               @jobEvent="readJob" @clearSeedsEvent="seeds = []"></MIAlgorithmSelect>
+            <ButtonCancel @click="makeStep"></ButtonCancel>
+            <ButtonBack @click="makeStep"></ButtonBack>
+            <ButtonNext @click="makeStep" label="RUN"
+                        :disabled=" !algorithmSelected  || ($refs.algorithms.getAlgorithmMethod()==='bicon' && $refs.algorithms.getAlgorithmModels().exprFile ===undefined)"></ButtonNext>
           </template>
         </v-stepper-content>
 
@@ -246,14 +252,12 @@
               <v-row>
                 <v-col cols="3" style="padding: 0 50px 0 0; margin-right: -50px">
                   <v-card-title class="subtitle-1">Seeds ({{ seeds.length }}) {{
-                      (results.targets.length !== undefined && results.targets.length > 0 ? ("& Module (" + getTargetCount() + ") " + ["Genes", "Proteins"][seedTypeId]) : ": Processing")
+                      (results.targets.length !== undefined && results.targets.length > 0 ? ("& Module (" + getTargetCount() + ") " + ["Genes", "Proteins"][seedTypeId]) : (": " + (state != null ? ("[" + state + "]") : "Processing")))
                     }}
                     <v-progress-circular indeterminate size="25" v-if="this.results.targets.length===0"
                                          style="margin-left:15px; z-index:50">
                     </v-progress-circular>
                   </v-card-title>
-
-                  <ValidationBox ref="validation"></ValidationBox>
 
                   <template v-if="!loadingResults">
                     <v-data-table max-height="50vh" height="50vh" fixed-header dense item-key="id"
@@ -270,12 +274,15 @@
                         <span v-else>{{ item.displayName }}</span>
                       </template>
                       <template v-slot:item.data-table-expand="{expand, item,isExpanded}">
-                        <v-icon v-show="!isExpanded" @click="expand(true)">fas fa-angle-down</v-icon>
-                        <v-icon v-show="isExpanded" @click="expand(false)">fas fa-angle-up</v-icon>
+                        <v-icon v-show="!isExpanded" @click="expand(true)" :color="getColor(item)">fas fa-angle-down
+                        </v-icon>
+                        <v-icon v-show="isExpanded" @click="expand(false)" :color="getColor(item)">fas fa-angle-up
+                        </v-icon>
                       </template>
                       <template v-slot:expanded-item="{ headers, item }">
                         <td :colspan="headers.length">
                           <EntryDetails max-width="15vw" :gid="currentGid"
+                                        :attributes="[geneDetailAttributes,proteinDetailAttributes][seedTypeId]"
                                         :detail-request="{edge:false, type:['gene', 'protein'][seedTypeId], id:item.id}"></EntryDetails>
                         </td>
                       </template>
@@ -296,8 +303,8 @@
                                 :single-expand="true"
                                 hide-default-footer @click:row="rowClicked">
                     <template v-slot:item.data-table-expand="{expand, item,isExpanded}">
-                      <v-icon v-show="!isExpanded" @click="expand(true)">fas fa-angle-down</v-icon>
-                      <v-icon v-show="isExpanded" @click="expand(false)">fas fa-angle-up</v-icon>
+                      <v-icon v-show="!isExpanded" @click="expand(true)" color="#e4ca02">fas fa-angle-down</v-icon>
+                      <v-icon v-show="isExpanded" @click="expand(false)" color="#e4ca02">fas fa-angle-up</v-icon>
                     </template>
                     <template v-slot:expanded-item="{ headers, item }">
                       <td :colspan="headers.length">
@@ -310,9 +317,12 @@
                   </v-data-table>
                 </v-col>
                 <v-col>
+                  <i v-if="!this.currentGid">The execution could take a moment. Save the current URL and return at any
+                    time!</i>
                   <Network ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle"
                            :legend="results.targets.length>0" :tools="results.targets.length>0" :secondaryViewer="true"
-                           @loadIntoAdvancedEvent="$emit('graphLoadEvent',{post: {id: currentGid}})">
+                           @loadIntoAdvancedEvent="$emit('graphLoadEvent',{post: {id: currentGid}})"
+                           :show-vis-option="showVisOption">
                     <template v-slot:legend v-if="results.targets.length>0">
                       <v-card style="width: 15vw; max-width: 17vw; padding-top: 35px">
                         <v-list>
@@ -340,88 +350,109 @@
                       </v-card>
                     </template>
                     <template v-slot:tools v-if="results.targets.length>0">
-                      <v-card elevation="3" style="width: 15vw; max-width: 17vw; padding-top: 35px">
-                        <v-container>
-                          <v-list ref="list" style="margin-top: 10px;">
-                            <v-tooltip left>
-                              <template v-slot:activator="{on, attrs}">
-                                <v-list-item v-on="on" v-bind="attrs">
-                                  <v-list-item-action>
-                                    <v-chip outlined v-on:click="$refs.graph.setSelection()">
-                                      <v-icon left>fas fa-globe</v-icon>
-                                      Overview
-                                    </v-chip>
-                                  </v-list-item-action>
-                                </v-list-item>
-                              </template>
-                              <span>Fits the view to the whole network.</span>
-                            </v-tooltip>
-                            <v-tooltip left>
-                              <template v-slot:activator="{on, attrs}">
-                                <v-list-item v-on="on" v-bind="attrs">
-                                  <v-list-item-action-text>Enable node interactions</v-list-item-action-text>
-                                  <v-list-item-action>
-                                    <v-switch v-model="physicsOn"
-                                              @click="$refs.graph.setPhysics(physicsOn)"></v-switch>
-                                  </v-list-item-action>
-                                </v-list-item>
-                              </template>
-                              <span>This option enables a physics based layouting where nodes and <br>edges interact with each other. Be careful on large graphs.</span>
-                            </v-tooltip>
-                            <v-tooltip left>
-                              <template v-slot:activator="{on, attrs}">
-                                <v-list-item v-on="on" v-bind="attrs">
-                                  <v-list-item-action>
-                                    <v-chip outlined v-if="currentGid"
-                                            style="margin-top:15px"
-                                            @click="$emit('graphLoadNewTabEvent',{post: {id: currentGid}})">
-                                      <v-icon left>fas fa-angle-double-right</v-icon>
-                                      To Advanced View
-                                    </v-chip>
-                                  </v-list-item-action>
-                                </v-list-item>
-                              </template>
-                              <span>Opens a new tab with an advanced view of the current network.</span>
-                            </v-tooltip>
-                            <v-tooltip left>
-                              <template v-slot:activator="{on, attrs}">
-                                <v-list-item v-on="on" v-bind="attrs">
-                                  <v-list-item-action>
-                                    <v-chip outlined v-show="results.targets.length>0" style="margin-top:15px"
-                                            @click="loadDrugTargets">
-                                      <v-icon left>fas fa-angle-double-right</v-icon>
-                                      Continue to Drug-Ranking
-                                    </v-chip>
-                                  </v-list-item-action>
-                                </v-list-item>
-                              </template>
-                              <span>Opens a dialog for the selection of seed nodes for a subsequent drug prioritization execution.</span>
-                            </v-tooltip>
-                          </v-list>
-                        </v-container>
-                      </v-card>
+                      <Tools :physics="true" :cc="false" :loops="false"
+                             @toggleOptionEvent="toggleToolOption" @clickOptionEvent="clickToolOption"></Tools>
                     </template>
                   </Network>
                 </v-col>
               </v-row>
             </v-container>
           </v-card>
-          <v-btn
-            color="primary"
-            @click="makeStep(3,'back')"
-          >
-            Back
-          </v-btn>
-
-          <v-btn text @click="makeStep(3,'cancel')">
-            Restart
-          </v-btn>
+          <ButtonCancel @click="makeStep"></ButtonCancel>
+          <ButtonBack @click="makeStep" v-if="!reloaded"></ButtonBack>
+          <ButtonNext @click="makeStep" label="VALIDATE" :disabled="currentGid==null"></ButtonNext>
+          <v-tooltip top>
+            <template v-slot:activator="{attrs, on}">
+              <v-btn v-bind="attrs" v-on="on" @click="loadDrugTargets" color="primary"
+                     :disabled="results.targets.length===0">
+                <v-icon left>fas fa-angle-double-right</v-icon>
+                Drug Ranking
+              </v-btn>
+            </template>
+            <span>Use the results of this execution to now identify potential drug candidates.</span>
+          </v-tooltip>
+          <ButtonAdvanced @click="$emit('graphLoadNewTabEvent',{post: {id: currentGid}})"
+                          :disabled="currentGid==null"></ButtonAdvanced>
+        </v-stepper-content>
+        <v-stepper-content step="4">
+          <Validation ref="validation" :step="4" :seed-type-id="seedTypeId" :module="results.targets"
+                      @drugCountUpdate="updateDrugCount" @printNotificationEvent="printNotification"></Validation>
+          <ButtonCancel @click="makeStep"></ButtonCancel>
+          <ButtonBack @click="makeStep" label="RESULTS" save></ButtonBack>
         </v-stepper-content>
       </v-stepper-items>
+      <v-dialog v-model="namePopup"
+                persistent
+                max-width="500px"
+                style="z-index: 1001"
+      >
+        <v-card>
+          <v-card-title>Set graph name</v-card-title>
+          <v-card-text>Please enter a useful graph name, to find your graph easier in the history again. Or select one
+            of
+            the autogenerated options that are based on your input.
+          </v-card-text>
+          <v-card-actions>
+            <v-text-field label="Name" v-model="graphName"></v-text-field>
+          </v-card-actions>
+          <v-card-text v-for="option in nameOptions" :key="option">
+            <div>{{ option }}</div>
+            <v-chip @click="graphName=option" style="font-size: 8pt">Load
+              <v-icon right>fas fa-angle-double-right</v-icon>
+            </v-chip>
+          </v-card-text>
+
+          <v-divider></v-divider>
+
+          <v-card-actions>
+            <v-btn
+              text
+              @click="resolveNamingDialog()"
+            >
+              Cancel
+            </v-btn>
+            <v-btn
+              color="green darken-1"
+              text
+              @click="resolveNamingDialog(graphName)"
+              :disabled="graphName==null || graphName.length ===0"
+            >
+              Accept
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+      <v-dialog
+        v-model="error"
+        max-width="300"
+        style="z-index: 1001"
+      >
+        <v-card>
+          <v-card-title>Error</v-card-title>
+          <v-card-text>
+            <div>
+              Unfortunately there was an error during the execution of your job. That can sometimes be the case when
+              choosing compatible parameters. <br>
+              So you might either reach out to us or retry with slightly adjusted parameters.
+            </div>
+          </v-card-text>
+          <v-card-actions>
+            <v-btn
+              text
+              @click="error=false"
+            >
+              Close
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+
+
+      </v-dialog>
       <v-dialog
         v-model="drugTargetPopup"
         persistent
         max-width="500"
+        style="z-index: 1001"
       >
         <v-card>
           <v-card-title>Continue to Drug-Ranking</v-card-title>
@@ -430,7 +461,6 @@
           <v-card-actions>
             <v-radio-group v-model="rankingSelect" row>
               <v-radio :label="'Original seeds ('+seeds.length+')'">
-
               </v-radio>
               <v-radio :label="'whole Module ('+(getTargetCount()+seeds.length)+')'">
               </v-radio>
@@ -459,6 +489,9 @@
 
       </v-dialog>
     </v-stepper>
+    <DisorderHierarchyDialog v-if="$refs.suggestions!=null" ref="disorderHierarchy"
+                             @addDisorders="$refs.suggestions.loadDisorders"></DisorderHierarchyDialog>
+    <InteractionNetworkDialog ref="interactionDialog"></InteractionNetworkDialog>
   </v-card>
 </template>
 
@@ -467,25 +500,35 @@ import Network from "../../graph/Network";
 import * as CONFIG from "../../../../Config"
 import SuggestionAutocomplete from "@/components/app/suggestions/SuggestionAutocomplete";
 import SeedDownload from "@/components/app/tables/menus/SeedDownload";
-import SeedRemove from "@/components/app/tables/menus/SeedRemove";
 import SeedTable from "@/components/app/tables/SeedTable";
 import ResultDownload from "@/components/app/tables/menus/ResultDownload";
 import HeaderBar from "@/components/app/Header";
 import NodeInput from "@/components/app/input/NodeInput";
-import ExampleSeeds from "@/components/start/quick/ExampleSeeds";
-import ValidationBox from "@/components/start/quick/ValidationBox";
-import ValidationDrugTable from "@/components/app/tables/ValidationDrugTable";
 import EntryDetails from "@/components/app/EntryDetails";
 import LabeledSwitch from "@/components/app/input/LabeledSwitch";
 import MIAlgorithmSelect from "@/components/start/quick/MIAlgorithmSelect";
+import Validation from "@/components/start/quick/Validation";
+import DisorderHierarchyDialog from "@/components/start/quick/DisorderHierarchyDialog";
+import Tools from "@/components/views/graph/Tools";
+import ButtonNext from "@/components/start/quick/ButtonNext";
+import ButtonCancel from "@/components/start/quick/ButtonCancel";
+import ButtonBack from "@/components/start/quick/ButtonBack";
+import ButtonAdvanced from "@/components/start/quick/ButtonAdvanced";
+import QuickExamples from "@/components/start/quick/QuickExamples";
+import InteractionNetworkDialog from "@/components/start/quick/InteractionNetworkDialog";
 
 export default {
   name: "ModuleIdentification",
 
   props: {
     blitz: Boolean,
+    reload: {
+      default: undefined,
+      type: Object,
+    }
   },
   sugQuery: undefined,
+  disorderIds: [],
 
   data() {
     return {
@@ -493,32 +536,46 @@ export default {
         height: '60vh',
         'min-height': '60vh',
       },
+      example: undefined,
       targetColorStyle: {},
       currentJid: undefined,
       currentGid: undefined,
       graphConfig: {visualized: false},
+      showVisOption: false,
       uid: undefined,
       seedTypeId: undefined,
       seeds: [],
-      seedOrigin: {},
+      reloaded: false,
+      // seedOrigin: {},
       sourceType: undefined,
       step: 1,
       suggestionType: undefined,
       fileInputModel: undefined,
       seedInput: false,
-      algorithmSelected:false,
+      algorithmSelected: false,
 
       graph: {physics: false},
-
       results: {targets: [], drugs: []},
       loadingResults: true,
       advancedOptions: false,
       physicsOn: false,
 
+      state: undefined,
+
+      geneDetailAttributes: ["Name", "SourceIDs", "Symbols", "Chromosome", "Genomic Location", "Synonyms", "Description"],
+      proteinDetailAttributes: ["Name", "SourceIDs", "Gene", "Synonyms", "Comments"],
+
       drugTargetPopup: false,
       rankingSelect: 1,
       validationDrugCount: 0,
-      validationDrugView: false,
+
+      selectedSuggestions: [],
+      namePopup: false,
+      nameOptions: [],
+      graphName: "",
+
+      showSubtypeSelection: false,
+      error: false,
     }
 
   },
@@ -527,26 +584,40 @@ export default {
     this.$socket.$on("quickModuleFinishedEvent", this.convertJobResult)
     this.uid = this.$cookies.get("uid")
     this.init()
+    if (this.reload)
+      this.reloadJob(this.reload);
   },
 
   methods: {
-    init: function () {
+    init: function (keepSeedType) {
+      if (!keepSeedType)
+        this.seedTypeId = undefined
+      if (this.$refs.seedTable)
+        this.$refs.seedTable.clear()
+      else this.clearData()
       this.sourceType = undefined
       this.step = 1
-      this.seedTypeId = undefined
       this.seeds = []
       this.currentJid = undefined
       this.currentGid = undefined
+      this.graphName = undefined
+      this.showVisOption = false
+      this.example = undefined
       this.results.targets = []
       this.results.drugs = []
-      this.seedOrigin = {}
       this.validationDrugCount = 0
-      if (this.$refs.graph)
-        this.$refs.graph.reload()
+      this.reloaded = false;
     },
 
-    reset: function () {
-      this.init()
+    reset: function (keepSeedType) {
+      this.init(keepSeedType)
+    },
+
+    clearData: function () {
+      this.selectedSuggestions = []
+      this.disorderIds = []
+      if (this.$refs.validation)
+        this.$refs.validation.clear()
     },
 
     getSuggestionSelection: function () {
@@ -575,22 +646,33 @@ export default {
       this.$refs.graph.zoomToNode(id)
     },
 
-    makeStep: function (s, button) {
+    makeStep: function (button) {
       if (button === "continue") {
         this.step++
-        if (this.step === 2)
+        if (this.step === 2) {
           this.seeds = this.$refs.seedTable.getSeeds()
 
-        if (this.blitz)
-          this.step++
+          if (this.blitz)
+            this.step++
+        }
+        if (this.step === 3) {
+          this.$refs.algorithms.run()
+        }
       }
       if (button === "back") {
+        this.step--
         if (this.step === 3) {
+          this.loadGraph(this.currentGid)
+        }
+        if (this.step === 2) {
           this.results.targets = []
+          this.graphName = undefined
+          this.currentGid = undefined
           this.$refs.graph.reload()
+          this.$refs.validation.resetValidation();
           this.$socket.unsubscribeJob(this.currentJid)
         }
-        this.step--
+
         if (this.step === 2 && this.blitz)
           this.step--
       }
@@ -599,8 +681,10 @@ export default {
         this.init()
         this.$emit("resetEvent")
       }
-      if (this.step === 3)
-        this.$refs.algorithms.run()
+      if (this.step === 3) {
+        if (this.currentGid == null || this.currentGid === this.graphName)
+          this.graphNamePopup()
+      }
 
     },
     loadDrugTargets: function () {
@@ -610,6 +694,10 @@ export default {
     rowClicked: function (item) {
       this.focusNode(['gen_', 'pro_'][this.seedTypeId] + item.id)
 
+    },
+
+    subtypePopup: function (item) {
+      this.$refs.disorderHierarchy.loadDisorder(item.sid)
     },
     resolveRankingDialog: function (apply) {
       this.drugTargetPopup = false;
@@ -630,8 +718,19 @@ export default {
           this.seeds.forEach(s => drugSeeds.splice(drugSeeds.indexOf(s.id), 1))
         }
       }
-      this.$emit("loadDrugTargetEvent", this.blitz, drugSeeds, ["gene", "protein"][this.seedTypeId], "Module Identification: " + this.$refs.algorithms.getAlgorithm().label)
+      this.$emit("loadDrugTargetEvent", {
+        blitz: this.blitz,
+        seeds: drugSeeds,
+        type: ["gene", "protein"][this.seedTypeId],
+        origin: "Module Identification: " + this.$refs.algorithms.getAlgorithm().label,
+        disorders: this.disorderIds,
+        drugs: this.$refs.validation.getDrugs(),
+        suggestions: this.selectedSuggestions
+      })
       this.init()
+    },
+    saveDisorders: function (list) {
+      this.disorderIds = this.disorderIds.concat(list.filter(id => this.disorderIds.indexOf(id) === -1))
     }
     ,
     getHeaders: function (seeds) {
@@ -657,40 +756,47 @@ export default {
     }
     ,
 
-    loadExample: async function (nr) {
-      let example = await this.$http.getQuickExample(nr, ["gene", "protein"][this.seedTypeId])
-      let origin = "Example " + (nr + 1) + ": ("
-      switch (nr) {
-        case 0:
-          origin += "Alzheimer)";
-          break;
-        case 1:
-          origin += "Somatostatine and Analogues";
-          break;
-        case 2:
-          origin += "Cancer Genes";
-          break;
-      }
-      origin += ")"
-      this.addToSelection({data: example, origin: origin})
+    setBicon: function () {
+      this.$refs.algorithms.setExpMethod("bicon")
     },
 
+    applyExample: function (example) {
+      this.reset(true)
+      this.example = example
+      this.$nextTick(() => {
+        this.$refs.algorithms.setNWMethod(example.mi.algorithm, example.mi.params)
+      })
+    },
+
+
     readJob: function (data, notSubbed) {
+      this.state = data.state
+      if (data.state === "ERROR") {
+        this.error = true;
+        return;
+      }
       let jid = data.jid
+      this.setURL(jid)
       this.currentJid = jid
       this.currentGid = data.gid
       if (this.currentGid != null && data.state === "DONE") {
         if (!notSubbed)
           this.$socket.unsubscribeJob(jid)
         this.loadTargetTable(this.currentGid).then(() => {
-          this.$refs.validation.validate(this.results.targets, this.$refs.validationTable.getDrugs(), false, ["gene", "protein"][this.seedTypeId])
           this.loadGraph(this.currentGid)
         })
       }
+
     }
     ,
+    setURL: function (jid) {
+      let route = location.pathname + "?job=" + jid
+      if (location.origin + route !== location.href) {
+        this.$router.push(route)
+      }
+    },
     updateDrugCount: function () {
-      this.validationDrugCount = this.$refs.validationTable.getDrugs().length;
+      this.validationDrugCount = this.$refs.validation ? this.$refs.validation.getDrugs().length : 0;
     },
     getTargetCount: function () {
       let seedids = this.seeds.map(s => s.id)
@@ -698,20 +804,49 @@ export default {
     },
 
     addToSelection: function (data) {
-      if (this.validationDrugView)
-        this.$refs.validationTable.addDrugs(data)
-      else
-        this.$refs.seedTable.addSeeds(data)
+      this.$refs.seedTable.addSeeds(data)
     }
     ,
     methodScores: function () {
-     return this.$refs.algorithms.getHeaders()
+      return this.$refs.algorithms.getHeaders()
     }
     ,
-    toggleValidationDrugView: function () {
-      this.$set(this, "validationDrugView", !this.validationDrugView)
+    reloadJob: async function (job) {
+      try {
+        this.reloaded = true;
+        this.step = 3;
+        await setTimeout(() => {
+        }, 200)
+        this.seedTypeId = ["gene", "protein"].indexOf(job.target)
+        await setTimeout(() => {
+        }, 1000)
+        this.currentJid = job.jobId
+        this.state = job.state
+        await this.$refs.algorithms.setMethod(job.method)
+        if (this.$refs.algorithms.getGroup() !== "exp" && (!job.seeds || job.seeds.length === 0))
+          this.$emit("jobReloadError")
+        if (job.seeds && job.seeds.length > 0)
+          this.$http.getNodes(job.target, job.seeds, ["id", "displayName"]).then(response => {
+            if (!response || response.length === 0) {
+              this.$emit("jobReloadError")
+            }
+            this.seeds = response
+          })
+        if (job.derivedGraph && job.state === "DONE") {
+          this.currentGid = job.derivedGraph;
+          this.loadTargetTable(this.currentGid).then(() => {
+            this.loadGraph(this.currentGid)
+          })
+        } else {
+          this.$socket.subscribeJob(this.currentJid, "quickModuleFinishedEvent");
+        }
+      } catch (e) {
+        this.$emit("jobReloadError")
+      }
     },
-
+    showInteractionNetwork: function () {
+      this.$refs.interactionDialog.show(["gene", "protein"][this.seedTypeId], this.$refs.seedTable.getSeeds().map(n => n.id))
+    },
     downloadList: function (names, sep) {
       this.$http.post("mapToDomainIds", {
         type: ['gene', 'protein'][this.seedTypeId],
@@ -725,7 +860,10 @@ export default {
         if (!names) {
           Object.values(data).forEach(id => text += id + "\n")
         } else {
-          this.seeds.forEach(s => text += data[s.id] + sep + s.displayName + "\n")
+          this.seeds.forEach(s => {
+            let escape = s.displayName.indexOf(sep) > -1 ? "\"" : "";
+            text += data[s.id] + sep + escape + s.displayName + escape + "\n"
+          })
         }
         this.download(dlName, text)
       }).catch(console.error)
@@ -749,7 +887,8 @@ export default {
         scores.forEach(s => text += sep + s.name)
         text += "\n"
         this.results.targets.forEach(t => {
-            text += data[t.id] + (names ? sep + t.displayName : "")
+            let escape = t.displayName.indexOf(sep) > -1 ? "\"" : "";
+            text += data[t.id] + (names ? sep + escape + t.displayName + escape : "")
             scores.forEach(s => text += sep + t[s.id])
             text += "\n"
           }
@@ -773,8 +912,8 @@ export default {
       this.readJob(data)
     }
     ,
-    acceptAlgorithmSelectEvent: function(value){
-      this.$set(this,"algorithmSelected",value)
+    acceptAlgorithmSelectEvent: function (value) {
+      this.$set(this, "algorithmSelected", value)
     },
 
 
@@ -803,7 +942,8 @@ export default {
 
     seedValueReplacement: function (list, method) {
       let seedIds = this.seeds.map(n => n.id)
-      let seeds = list.filter(n => seedIds.indexOf(n.id > -1))
+      let seeds = list.filter(n => seedIds.indexOf(n.id) > -1)
+      seeds.forEach(s => s.isSeed = true)
       method.scores.forEach(score => seeds.filter(n => n[score.id] == null).forEach(n => n[score.id] = score.seed))
     },
 
@@ -855,10 +995,41 @@ export default {
       })
     }
     ,
+    addToSuggestions: function (item) {
+      this.selectedSuggestions.push(item.text)
+    },
+    graphNamePopup: async function () {
+      let sources = ""
+      if (this.selectedSuggestions.length > 0) {
+        this.selectedSuggestions.forEach(s => sources += s + "; ")
+        sources = sources.substr(0, sources.length - 2)
+      }
+      this.nameOptions = []
+      this.nameOptions.push(sources)
+      this.nameOptions.push((sources + " (" + this.$refs.algorithms.getAlgorithmMethod() + ")"))
+      this.nameOptions.push((sources + " (" + this.$refs.algorithms.getAlgorithmMethod() + ") [" + (await this.$refs.algorithms.getParamString()) + "]"))
+      this.namePopup = true
 
+    },
+    resolveNamingDialog: function (value) {
+      this.namePopup = false
+      if (value == null || value.length === 0)
+        return
+      this.setName(value)
+    },
+    setName: function (name) {
+      if (this.currentGid == null)
+        setTimeout(() => {
+          this.setName(name)
+        }, 500)
+      else
+        this.$http.post("setGraphName", {gid: this.currentGid, name: name}).then(() => {
+          this.$emit("newGraphEvent")
+        }).catch(console.error)
+    },
     waitForGraph: function (resolve) {
       if (this.$refs.graph === undefined)
-        setTimeout(this.waitForGraph, 100)
+        setTimeout(() => this.waitForGraph(resolve), 100)
       else
         resolve()
     },
@@ -870,39 +1041,73 @@ export default {
         return this.$refs.graph;
       })
     },
+    getColor: function (item) {
+      if (item.isSeed)
+        return "#e4ca02"
+      return this.getColoring('nodes', ['gene', 'protein'][this.seedTypeId])
+    },
     getColoring: function (entity, name, style) {
       return this.$utils.getColoring(this.$global.metagraph, entity, name, style);
     },
     focus: function () {
       this.$emit("focusEvent")
     },
+    toggleToolOption: function (option, value) {
+      if (option === "physics")
+        this.$refs.graph.setPhysics(value);
+      if (option === "loops")
+        this.$refs.graph.showLoops(value)
+      if (option === "unconnected")
+        this.$refs.graph.showUnconnected(value)
+      if (option === "isolation")
+        this.$refs.graph.graphViewEvent(value)
+      if (option === 'shadow')
+        this.$refs.graph.setShadow(value)
+    },
+
+    clickToolOption: function (option) {
+      if (option === "fit")
+        this.$refs.graph.setSelection()
+    },
     loadGraph: function (graphId) {
-      this.getGraph().then(graph => {
-        graph.loadNetworkById(graphId).then(() => {
-          graph.showLoops(false)
-          let seedIds = this.seeds.map(s => s.id)
-          graph.modifyGroups(this.results.targets.filter(n => seedIds.indexOf(n.id) > -1).map(n => ["gen_", "pro_"][this.seedTypeId] + n.id), ["seedGene", "seedProtein"][this.seedTypeId])
+      if (this.namePopup)
+        setTimeout(() => {
+          this.loadGraph(graphId)
+        }, 500)
+      else
+        this.getGraph().then(graph => {
+          this.showVisOption = false
+          graph.loadNetworkById(graphId).then(() => {
+            graph.showLoops(false)
+            let seedIds = this.seeds.map(s => s.id)
+            graph.modifyGroups(this.results.targets.filter(n => seedIds.indexOf(n.id) > -1).map(n => ["gen_", "pro_"][this.seedTypeId] + n.id), ["seedGene", "seedProtein"][this.seedTypeId])
+            this.showVisOption = !this.graphConfig.visualized
+          })
         })
-      })
     },
   }
   ,
 
   components: {
+    InteractionNetworkDialog,
+    QuickExamples,
+    ButtonAdvanced,
+    ButtonBack,
+    ButtonCancel,
+    ButtonNext,
+    Tools,
+    DisorderHierarchyDialog,
     EntryDetails,
     LabeledSwitch,
-    ValidationBox,
-    ValidationDrugTable,
     HeaderBar,
     SuggestionAutocomplete,
     NodeInput,
     SeedDownload,
-    SeedRemove,
     SeedTable,
     ResultDownload,
     Network,
     MIAlgorithmSelect,
-    ExampleSeeds
+    Validation
   }
 }
 </script>

@@ -12,17 +12,49 @@
       or file upload
     </v-card-subtitle>
     <div style="justify-content: center; display: flex; width: 100%">
-      <v-file-input :label="'by '+idName+' ids'"
-                    v-on:change="onFileSelected"
-                    show-size
-                    prepend-icon="far fa-list-alt"
-                    v-model="fileInputModel"
-                    dense
-                    style="width: 75%; max-width: 75%"
-      ></v-file-input>
+      <v-file-input
+        ref="upload"
+        v-on:change="onFileSelected"
+        @focus="$refs.upload.blur()"
+        show-size
+        outlined
+        v-model="fileInputModel"
+        prepend-icon=""
+        dense
+        solo
+        style="width:300px; max-width: 300px;"
+      >
+        <template v-slot:label>
+          <v-icon small>fas fa-file-upload</v-icon>
+          Upload {{ idName }} ID list
+        </template>
+        <template v-slot:append-outer>
+          <v-tooltip left>
+            <template v-slot:activator="{on,attrs}">
+              <a :href="exampleFile"
+                 target="_blank" style="text-decoration: none">
+                <v-icon
+                  v-bind="attrs"
+                  v-on="on"
+                  left
+                >
+                  fas fa-download
+                </v-icon>
+              </a>
+            </template>
+            <div style="width: 400px">The ID list has to be newline ("\n") separated but can contain multiple columns,
+              separated by tab ("\t") or comma (",") as long as the ID is in the first column. Headers or lines without
+              ids should be marked as comment with the prefix "#"!
+              <br>
+              <i>Also you can click here to look at an example file!</i>
+            </div>
+          </v-tooltip>
+        </template>
+      </v-file-input>
     </div>
     <v-dialog v-model="seedInput"
               persistent
+              style="z-index: 1001"
               max-width="500">
       <v-card>
         <v-card-title>Paste Nodes</v-card-title>
@@ -91,10 +123,15 @@ export default {
       data: "",
       list: [],
       customSep: undefined,
+      exampleFile: undefined,
     }
   },
 
   watch: {
+    nodeType: function(value){
+      this.updateExampleFile(value)
+    },
+
     data: function (value) {
       if (value.length === 0) {
         this.list = []
@@ -123,11 +160,14 @@ export default {
       }
     },
   },
-
+  created() {
+    if(this.nodeType!=null)
+      this.updateExampleFile(this.nodeType);
+  },
 
   methods: {
     clear: function () {
-      this.seedInput=false;
+      this.seedInput = false;
       this.data = ""
       this.separator = undefined
       this.customSep = undefined;
@@ -138,8 +178,9 @@ export default {
     },
 
     onFileSelected: function (file) {
-      if (file == null)
+      if (file == null) {
         return
+      }
       this.$utils.readFile(file).then(content => {
         this.$http.post("mapFileListToItems", {
           type: this.nodeType,
@@ -148,12 +189,27 @@ export default {
           if (response.data)
             return response.data
         }).then(data => {
-          this.$emit("addToSelectionEvent", {data:data,origin: "FILE:" + file.name})
+          this.$emit("addToSelectionEvent", {data: data, origin: "FILE:" + file.name})
         }).then(() => {
           this.fileInputModel = undefined
+        }).then(() => {
+          this.$nextTick(() => {
+            this.$refs.upload.blur()
+          })
         }).catch(console.error)
       }).catch(console.error)
     },
+
+    updateExampleFile: function(type){
+      if(type!=null){
+        return this.$http.getExampleInputFile(type).then(data=>{
+          this.exampleFile=data;
+        }).catch(console.error)
+      }else{
+        this.exampleFile=undefined;
+      }
+    },
+
     setSep: function (sep, state) {
       if (state)
         this.$set(this.sepModel, sep, true)
@@ -166,7 +222,7 @@ export default {
     prepareList: function () {
       this.list = this.data.split(this.separator).map(e => e.trim()).filter(e => e.length > 0)
     },
-    mapNodes: function(){
+    mapNodes: function () {
       this.$http.post("mapListToItems", {
         type: this.nodeType,
         list: this.list
@@ -174,18 +230,23 @@ export default {
         if (response.data)
           return response.data
       }).then(data => {
-        this.$emit("addToSelectionEvent", {data:data, origin: "PASTED"})
+        this.$emit("addToSelectionEvent", {data: data, origin: "PASTED"})
       }).then(() => {
         this.clear()
-      }).catch(error=>{
+      }).catch(error => {
         console.error(error)
-        this.$emit("printNotificationEvent","Something went wrong when converting your seeds!",2)
+        this.$emit("printNotificationEvent", "Something went wrong when converting your seeds!", 2)
       })
     }
   }
 }
 </script>
 
-<style scoped>
+<style lang="scss">
+
+
+.v-input__slot {
+  cursor: pointer !important;
+}
 
 </style>

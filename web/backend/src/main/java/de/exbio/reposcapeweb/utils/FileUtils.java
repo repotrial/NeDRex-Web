@@ -22,13 +22,38 @@ public class FileUtils {
         log.debug("Downloading " + url + " to " + fileName);
         ProcessBuilder pb = new ProcessBuilder("wget", "-O", fileName, url);
         try {
-            ProcessUtils.executeProcessWait(pb);
+            ProcessUtils.executeProcessWait(pb, false);
         } catch (IOException | InterruptedException e) {
             log.error("Error executing download!");
             e.printStackTrace();
             return null;
         }
         return fileName;
+    }
+
+    public static File downloadPaginated(String url, File mergeScript, File file, int total, File jsonFormatter) {
+        int batch = 100000;
+        WriterUtils.writeTo(file, "[");
+        try {
+            for (int i = 0; i < total; i += batch) {
+                File part = new File(file.getParentFile(), file.getName() + "_" + (1 + (i / batch)));
+                log.debug("Downloading part "+(1+(i / batch))+"/"+(1+(total / batch)));
+                download(url + "?skip=" + i + "&limit=" + batch, part.getAbsolutePath()).charAt(0);
+                formatJson(jsonFormatter,part);
+                ProcessBuilder pb = new ProcessBuilder(mergeScript.getAbsolutePath(), part.getAbsolutePath(), file.getAbsolutePath());
+                if (i + batch >= total)
+                    pb.command().add("true");
+                ProcessUtils.executeProcessWait(pb, true);
+                part.delete();
+            }
+        } catch (NullPointerException e) {
+            return null;
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return file;
     }
 
     public static File download(String url, File file) {
@@ -43,7 +68,7 @@ public class FileUtils {
     public static void formatJson(File jsonReformatter, File file) {
         ProcessBuilder pb = new ProcessBuilder(jsonReformatter.getAbsolutePath(), file.getAbsolutePath());
         try {
-            ProcessUtils.executeProcessWait(pb);
+            ProcessUtils.executeProcessWait(pb, false);
         } catch (IOException | InterruptedException e) {
             log.error("Error converting json file!");
             e.printStackTrace();

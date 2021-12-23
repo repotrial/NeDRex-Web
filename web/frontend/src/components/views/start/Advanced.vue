@@ -9,15 +9,17 @@
         </v-list-item>
         <v-list-item>
           <div class="v-card__subtitle">
-            Create a specified starting network by selecting the nodes and edge types it should contain.
-            Apply filters or set options in the "TOOLS" panel by clicking onto the meta-entities in the network.
+            Create a specified starting network by selecting the nodes and edge types it should contain <i>(left
+            side)</i>.
+            Apply filters by clicking on the cog icon <i>(left side)</i> or on the nodes or the edge labels to apply the
+            filter on in the <i>(right panel)</i>.
           </div>
         </v-list-item>
       </v-list>
       <v-divider></v-divider>
       <v-container>
         <v-row>
-          <v-col cols="2">
+          <v-col cols="3">
             <v-list v-model="nodeModel" ref="nodeSelector">
               <v-card-title>Nodes</v-card-title>
               <v-list-item v-for="item in nodes.filter(n=>!n.external)" :key="item.index">
@@ -29,12 +31,15 @@
                   {{ item.label }}
                   <span style="color: gray; margin-left: 3pt"
                         v-show="nodeModel.indexOf(item.index)>-1">({{
+                      (countMap[item.label.toLowerCase()] ? countMap[item.label.toLowerCase()] + '/' : '?/') +
                       $global.metagraph.weights.nodes[item.label.toLowerCase()]
                     }})</span>
                 </v-chip>
+                <v-btn icon @click="nodeSelection(item.index)" small>
+                  <v-icon v-show="nodeModel.indexOf(item.index)>-1" small>fas fa-cog</v-icon>
+                </v-btn>
               </v-list-item>
             </v-list>
-
           </v-col>
           <v-col cols="4">
             <v-list v-model="edgeModel">
@@ -45,7 +50,7 @@
                           :color="edgeModel.indexOf(item.index)===-1?'gray':'primary'"
                           :text-color="edgeModel.indexOf(item.index)===-1?'black':'gray'"
                   >
-                      <v-icon left :color="getColoring('edges',item.label)[0]">fas fa-genderless</v-icon>
+                    <v-icon left :color="getColoring('edges',item.label)[0]">fas fa-genderless</v-icon>
                     <template v-if="direction(item.label)===0">
                       <v-icon left>fas fa-undo-alt</v-icon>
                     </template>
@@ -56,8 +61,13 @@
                     </template>
                     {{ item.label }}
                     <span style="color: gray; margin-left: 3pt"
-                          v-show="edgeModel.indexOf(item.index)>-1">({{ $global.metagraph.weights.edges[item.label] }})</span>
+                          v-show="edgeModel.indexOf(item.index)>-1">({{
+                        $global.metagraph.weights.edges[item.label]
+                      }})</span>
                   </v-chip>
+                  <v-btn icon @click="edgeSelection(item.index)" small>
+                    <v-icon v-show="edgeModel.indexOf(item.index)>-1" small>fas fa-cog</v-icon>
+                  </v-btn>
                 </v-list-item>
                 <v-list-item
                   v-show="edgeModel.indexOf(item.index)>-1 && (item.label==='ProteinInteractsWithProtein' ||item.label==='GeneInteractsWithGene' )">
@@ -71,92 +81,104 @@
                   >
                     all
                   </v-chip>
-
+                  <v-btn icon @click="edgeSelection(item.index)" small>
+                    <v-icon v-show="edgeModel.indexOf(item.index)>-1" small>fas fa-cog</v-icon>
+                  </v-btn>
                 </v-list-item>
               </template>
             </v-list>
           </v-col>
-          <v-col cols="6">
+          <v-col cols="5">
             <Network ref="startgraph" @selectionEvent="graphSelection"
-                   :startGraph="true" tools :configuration="{visualized:true}" :window-style="windowStyle">
-              <template v-slot:tools>
-                <v-card elevation="3">
-                  <v-container v-if="tools.general">
-                    <v-card-title>General</v-card-title>
-                    <v-list>
-                      <v-list-item v-if="filters[selectedEdge.label]">
-                        <v-switch v-model="filters[selectedEdge.label].internalOnly"
-                                  label="Connect filtered nodes only"></v-switch>
-                      </v-list-item>
-                    </v-list>
-                  </v-container>
-                  <v-container v-show="tools.filter">
-                    <v-card-title>Filters</v-card-title>
-                    <v-simple-table fixed-header ref="filterTable" v-if="filterEntity.length>0">
-                      <template v-slot:default>
-                        <thead>
-                        <tr>
-                          <th class="text-center">Type</th>
-                          <th class="text-center">Filter</th>
-                          <th class="text-center">Operation</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr v-for="(item,index) in filters[filterEntity]" :key="item.type+item.expression">
-                          <td>{{ item.type }}</td>
-                          <td>{{ item.expression }}</td>
-                          <td>
-                            <v-chip outlined v-on:click="removeFilter(index)">
-                              <v-icon dense>fas fa-trash</v-icon>
-                            </v-chip>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>
-                            <v-select
-                              v-model="filterTypeModel"
-                              :items="filterTypes"
-                              label="type"
-                            ></v-select>
-                          </td>
-                          <td>
-                            <v-text-field
-                              v-model="filterModel"
-                              :label="filterLabel"
-                              placeholder="Pattern"
-                            ></v-text-field>
-                          </td>
-                          <td>
-                            <v-chip outlined v-on:click="saveFilter"
-                                    :disabled="filterModel ===undefined|| filterModel.length ===0 ||filterTypeModel ===undefined">
-                              <v-icon dense>fas fa-plus</v-icon>
-                            </v-chip>
-                          </td>
-                        </tr>
-                        </tbody>
-                      </template>
-                    </v-simple-table>
-                  </v-container>
-                </v-card>
-
-
-              </template>
+                     :startGraph="true" :configuration="{visualized:true}" :window-style="windowStyle">
             </Network>
           </v-col>
         </v-row>
+        <v-row>
+          <v-col :cols="7">
+            <v-card-title>General Configuration</v-card-title>
+            <v-list-item-subtitle>
+              <LabeledSwitch v-model="options.onlyConnected" label-off="Include all nodes"
+                             label-on="Remove unconnected">
+                <template v-slot:tooltip>
+                  <div>
+                    Removes nodes of network degree zero, so nodes that are not connected by any edge in the
+                    network.<br>
+                    This counts specifically for nodes that were filtered.
+                  </div>
+                </template>
+              </LabeledSwitch>
+            </v-list-item-subtitle>
+          </v-col>
+          <v-col></v-col>
+        </v-row>
+        <v-row>
+          <div style="width:100%; display: flex; justify-content: center; margin-bottom: 5px">
+            <ButtonCancel label="Reset" @click="loadGraph(false)"></ButtonCancel>
+            <ButtonNext :disabled="nodeModel.length===0" label="Generate Network" @click="loadGraph(true)"></ButtonNext>
+          </div>
+        </v-row>
       </v-container>
+      <FilterDialog ref="filter" :filterType="filterTypeMap" :node-id="filterNodeId" @updateNodeCount="setNodeCount"
+                    @filterTypeChangeEvent="setFilterType"></FilterDialog>
+      <OptionsDialog ref="options" :edge-id="optionEdgeId" :edges="edges"></OptionsDialog>
+      <v-dialog width="500px" v-model="missingFilterDialog" style="z-index: 1001">
+        <v-card>
+          <v-card-title>Unfiltered Request</v-card-title>
+          <template v-if="edgeModel.length>1">
+            <v-card-text>
+              <div>You selected edges or nodes without applying any filter to the network. Please either select IDs or
+                add
+                a text filter by clicking on the option button beside the label or on the node in the network
+                representation to at least one of the following nodes to proceed:
+              </div>
+              <div v-for="node in missingFilterNodes"><b>{{ node }}</b></div>
+            </v-card-text>
+          </template>
+          <template v-else>
+            <v-card-text>
+              <div>
+                You selected one edge without applying any filter to a node. You can proceed but be aware that depending
+                on the edge you selected, your browser might have to handle a lot of data and that visualizing it might
+                also be prevented. If you choose to load this network regardlessly you will still be able to either
+                download the network as .graphml file or to filter or adjust your selection in the list view.
+              </div>
+            </v-card-text>
+            <v-card-actions>
+              <v-btn
+              text
+              @click="missingFilterDialog=false"
+              >
+                Cancel
+              </v-btn>
+              <v-btn
+              text
+              @click="loadGraph(true,true)"
+              >
+                Proceed
+              </v-btn>
+            </v-card-actions>
+          </template>
+        </v-card>
+      </v-dialog>
     </v-card>
   </v-container>
 </template>
 
 <script>
 import Network from "@/components/views/graph/Network";
+import FilterDialog from "@/components/views/start/advanced/FilterDialog";
+import OptionsDialog from "@/components/views/start/advanced/OptionsDialog";
+import LabeledSwitch from "@/components/app/input/LabeledSwitch";
+import ButtonAdvanced from "@/components/start/quick/ButtonAdvanced";
+import ButtonNext from "@/components/start/quick/ButtonNext";
+import ButtonCancel from "@/components/start/quick/ButtonCancel";
+
 
 export default {
   name: "Advanced",
   props: {
     options: Object,
-    filters: Object,
     colors: {
       type: Object
     },
@@ -169,25 +191,19 @@ export default {
       edges: [],
       nodeModel: [],
       edgeModel: [],
-      filterId: -1,
-      tools: {general: false, filter: false},
+      countMap: {},
+      filterTypeMap: {},
       windowStyle: {
-        height: '75vh',
-        'min-height': '75vh',
+        height: '50vh',
+        'min-height': '100%',
       },
 
-      filterAdd: false,
-      filterAdding: false,
-      filterSelectDisabled: false,
-      filterTypes: ['startsWith', 'contain', 'match'],
-      filterEntity: "",
       neighborNodes: [],
-      filterLabel: "",
-      filterType: "",
-      filterTypeModel: [],
-      filterModel: "",
-      filterName: "",
       selectedEdge: Object,
+      filterNodeId: undefined,
+      optionEdgeId: undefined,
+      missingFilterNodes: undefined,
+      missingFilterDialog: false,
     }
   },
   created() {
@@ -204,22 +220,26 @@ export default {
   },
   methods: {
     reset: function () {
+      this.filterNodeId = undefined;
+      this.countMap = {}
+      this.filterTypeMap = {}
       this.options.selectedElements.forEach(e => {
         if (e.type === "edge")
           this.toggleEdge(e.index)
       })
-      this.options.selectedElements.forEach(n=>{
-        if(n.type==="node")
+      this.options.selectedElements.forEach(n => {
+        if (n.type === "node")
           this.$refs.startgraph.hideGroupVisibility(this.nodes[n.index].label.toLowerCase(), true)
       })
       this.nodeModel = []
       this.edgeModel = []
       this.options.selectedElements.length = 0
+      this.$refs.filter.clear(true)
 
-      Object.keys(this.filters).forEach(key=>this.$delete(this.filters,key))
       this.graphSelection()
     },
     initLists: function (selectionGraph) {
+      this.countMap = {}
       selectionGraph.nodes.forEach(n => {
         this.nodes.push({index: this.nodes.length, id: parseInt(n.id), label: n.label})
       })
@@ -234,67 +254,138 @@ export default {
     setOptions: function (options) {
       this.options = options;
     },
-    loadGraph: function (bool) {
+    getConnectedMetacomponents: function (edges, nodes) {
+      let allNodes = nodes.map(n => this.$global.metagraph.nodes.filter(no => no.label === n.name)[0].id)
+      let allEdges = edges.map(e => e.name)
+      let edgeObjects = edges.map(e => this.$global.metagraph.edges.filter(ed => ed.label === e.name)[0])
+      let out = []
+      edgeObjects.forEach(e => {
+        if (allNodes.indexOf(e.from) === -1)
+          allNodes.push(e.from)
+        if (allNodes.indexOf(e.to) === -1)
+          allNodes.push(e.to)
+      })
+
+      while (allNodes.length > 0) {
+        let currentNodes = [allNodes[0]]
+        let currentEdges = []
+
+        let change = true
+        while (change) {
+          change = false
+          edgeObjects.forEach(edge => {
+            if (currentNodes.indexOf(edge.from) > -1) {
+              currentEdges.push(edge.label)
+              if (currentNodes.indexOf(edge.to) === -1) {
+                currentNodes.push(edge.to)
+                change = true
+              }
+            } else if (currentNodes.indexOf(edge.to) > -1) {
+              currentEdges.push(edge.label)
+              if (currentNodes.indexOf(edge.from) === -1) {
+                currentNodes.push(edge.from)
+                change = true
+              }
+            }
+          })
+        }
+        out.push(currentNodes.map(n => this.$global.metagraph.nodes.filter(no => no.id === n)[0].label))
+        currentNodes.forEach(n => allNodes.splice(allNodes.indexOf(n), 1))
+        currentEdges.forEach(n => allEdges.splice(allEdges.indexOf(n), 1))
+      }
+      return out
+    },
+
+    graphAllowed: function () {
+      let ccs = this.getConnectedMetacomponents(this.options.selectedElements.filter(e => e.type === 'edge'), this.options.selectedElements.filter(e => e.type === 'node'))
+      this.options.selectedElements.forEach(element => {
+        if (element.type === 'node') {
+          let filter = this.$refs.filter.getFilter(element.name.toLowerCase())
+          if (!filter || (!filter.ids && filter.length === 0))
+            return
+          for (let i = 0; i < ccs.length; i++) {
+            if (ccs[i].indexOf(element.name) > -1)
+              ccs.splice(i, 1)
+          }
+        }
+      });
+      if (ccs.length > 0) {
+        this.missingFilterNodes = ccs[0]
+        this.missingFilterDialog = true
+      }
+      return ccs.length === 0
+    },
+
+    loadGraph: function (bool,force) {
       let graphLoad = {}
       if (!bool) {
         this.reset()
         return
       }
+      if (!force && !this.graphAllowed())
+        return;
       graphLoad = {post: {nodes: {}, edges: {}}}
       this.options.selectedElements.forEach(element => {
-        let filter = this.filters[element.name]
-        if (filter === undefined)
-          filter = []
-        if (element.type === "node") {
-          graphLoad.post.nodes[element.name.toLowerCase()] = {filters: filter}
+        if (element.type === 'node') {
+          let filter = this.$refs.filter.getFilter(element.name.toLowerCase())
+          if (filter == null)
+            filter = {filters: []}
+          if (filter.ids)
+            graphLoad.post.nodes[element.name.toLowerCase()] = {ids: filter.ids}
+          else
+            graphLoad.post.nodes[element.name.toLowerCase()] = {filters: filter.filters}
         } else {
-          graphLoad.post.edges[element.name] = {filters: filter}
+          graphLoad.post.edges[element.name] = {filters: []}
         }
       })
       graphLoad.post.connectedOnly = this.options.onlyConnected
       graphLoad.post.interactions = {...this.interactions}
+      graphLoad.post.options = {nodes: {...this.$refs.filter.getOptions()}, edges: {...this.$refs.options.getOptions()}}
       if (Object.keys(graphLoad.post.nodes).length === 0) {
         this.$emit("printNotificationEvent", "Please select some nodes/edges first!", 1)
         return
       }
       graphLoad.post["uid"] = this.$cookies.get("uid")
-      graphLoad["skipVis"] = this.options.skipVis;
+      graphLoad["skipVis"] = true
+      this.reset()
       this.$emit("graphLoadEvent", graphLoad)
     },
     graphSelection: function (params) {
-      this.$set(this.tools, "general", false)
-      this.$set(this.tools, "filter", false)
-      if (!params) {
+      if (!params)
         return
-      }
-      if (params.nodes.length > 0) {
-        this.$set(this.tools, "filter", true)
-        let node = this.$global.metagraph.nodes.filter(n => n.id === params.nodes[0])[0]
-        this.setFilter(node.label)
-      } else {
-        let edge = this.$global.metagraph.edges.filter(m => params.edges[0] === m.id)[0]
-        this.selectedEdge = edge
-        if (edge.from === edge.to) {
-          if (!this.filters[edge.label])
-            this.filters[edge.label] = {name:edge.label,internalOnly: true}
-          this.$set(this.tools, "general", true)
+      if (params.nodes.length > 0)
+        for (let i = 0; i < this.$global.metagraph.nodes.length; i++) {
+          if (this.$global.metagraph.nodes[i].id === params.nodes[0])
+            this.nodeSelection(i)
         }
+      else if (params.edges.length > 0) {
+        this.edges.forEach(edge => {
+          if (edge.id === params.edges[0].id)
+            this.edgeSelection(edge.index)
+        })
       }
-
     },
-    // evalEdgeOptionUpdate: function (updateName) {
-    //   if (updateName === "internalOnly") {
-    //     let bool = this.filters[this.selectedEdge.label][updateName]
-    //     if(bool && this.selectedEdge.externalNode){
-    //       this.$refs.startgraph.removeNode(externalNode)
-    //     } else{
-    //       this.createExternalNode(this.selectedEdge.from)
-    //     }
-    //   }
-    // },
-    // createExternalNode:function(nodeId){
-    //   let node = this.$refs.startgraph.getNodeById(nodeId)
-    // },
+
+    nodeSelection: function (idx) {
+      if (idx == null)
+        return
+      this.$set(this, 'filterNodeId', idx)
+      this.$refs.filter.show()
+    },
+
+    edgeSelection: function (idx) {
+      this.optionEdgeId = idx;
+      this.$refs.options.show()
+    },
+
+    setFilterType: function (data) {
+      this.$set(this.filterTypeMap, data.node, data.state)
+    },
+
+
+    setNodeCount: function (data) {
+      this.$set(this.countMap, data.node, data.count)
+    },
     toggleNode: function (nodeIndex) {
       let index = this.nodeModel.indexOf(nodeIndex)
       this.$refs.startgraph.hideGroupVisibility(this.nodes[nodeIndex].label.toLowerCase(), index > -1, true)
@@ -320,7 +411,8 @@ export default {
         })
       }
       this.$nextTick(() => {
-        this.$refs.startgraph.focusNode()
+        if (this.$refs.startgraph)
+          this.$refs.startgraph.focusNode()
         this.$refs.nodeSelector.$forceUpdate()
       })
     },
@@ -331,37 +423,17 @@ export default {
         if (params.type === "nodes")
           this.hideGroupVisibility(params.name, params.state, true)
         else if (params.type === "edges")
-          this.setEdgeVisible(params.name,true)
+          this.setEdgeVisible(params.name, true)
       }
       if (data.event === "isolate") {
         this.showOnlyComponent(data.selected, data.state)
       }
-    },
-    saveFilter: function () {
-      let data = {type: this.filterTypeModel, expression: this.filterModel};
-
-      if (this.filters[this.filterEntity] === undefined)
-        this.filters[this.filterEntity] = []
-
-      if (this.filters[this.filterEntity].filter(f => (f.type === this.filterTypeModel && f.expression === this.filterModel)).length === 0) {
-        this.filters[this.filterEntity].push(data)
-      }
-      this.filterTypeModel = ""
-      this.filterModel = ""
     }
     ,
-    removeFilter: function (idx) {
-      this.filters[this.filterEntity].splice(idx, 1)
-      this.$refs.filterTable.$forceUpdate()
-    },
-    setFilter: function (name) {
-      this.filterName = name
-      this.filterEntity = name
-    },
     toggleEdge: function (edgeIndex) {
       let index = this.edgeModel.indexOf(edgeIndex)
       this.edges[edgeIndex].hidden = !(this.edges[edgeIndex].hidden == null || this.edges[edgeIndex].hidden)
-      this.$refs.startgraph.setEdgeVisible(this.edges[edgeIndex].label,!this.edges[edgeIndex].hidden,true)
+      this.$refs.startgraph.setEdgeVisible(this.edges[edgeIndex].label, !this.edges[edgeIndex].hidden, true)
       if (index >= 0) {
         let remove = -1;
         let restDepending = []
@@ -388,11 +460,10 @@ export default {
           name: this.edges[edgeIndex].label,
           filter: []
         })
-        if (!this.filters[this.edges[edgeIndex].label])
-          this.filters[this.edges[edgeIndex].label] = {name:this.edges[edgeIndex].label,internalOnly: true}
       }
       this.$nextTick(() => {
-        this.$refs.startgraph.focusNode()
+        if (this.$refs.startgraph)
+          this.$refs.startgraph.focusNode()
       })
     },
     direction: function (edge) {
@@ -404,10 +475,18 @@ export default {
       let colors = this.$utils.getColoring(this.$global.metagraph, entity, name, "light")
       return colors;
     },
-  },
+  }
+  ,
   components: {
+    ButtonCancel,
+    ButtonNext,
+    ButtonAdvanced,
+    LabeledSwitch,
+    OptionsDialog,
+    FilterDialog,
     Network,
-  },
+  }
+  ,
 }
 </script>
 

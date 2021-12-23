@@ -117,6 +117,7 @@ public class DrugHasTargetService {
                 DrugHasTargetGene dtg = new DrugHasTargetGene(did, gid);
                 dtg.addDatabases(dtp.getDatabases());
                 dtg.addActions(dtp.getActions());
+                dtg.addTags(dtp.getTags());
                 if (!dts.containsKey(did))
                     dts.put(did, new HashMap<>());
                 dts.get(did).put(gid, dtg);

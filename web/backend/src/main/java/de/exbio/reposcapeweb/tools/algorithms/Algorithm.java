@@ -18,6 +18,8 @@ public interface Algorithm {
 
     File[] interactionFiles(JobRequest request);
 
+    String getResultSuffix();
+
     String createCommand(File[] interactions, JobRequest request);
 
     void prepareJobFiles(File tempDir, JobRequest req, Graph g, HashMap<Integer, Pair<String, String>> domainMap);

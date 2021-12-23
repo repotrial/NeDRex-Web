@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import de.exbio.reposcapeweb.db.entities.RepoTrialEdge;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
 import de.exbio.reposcapeweb.utils.Pair;
+import de.exbio.reposcapeweb.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,6 +17,7 @@ import javax.persistence.Transient;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 
 
 /**
@@ -46,6 +48,10 @@ public class DrugHasContraindication extends RepoTrialEdge implements Serializab
     @Transient
     @JsonIgnore
     public static String[] allAttributes;
+
+    @Transient
+    @JsonIgnore
+    public static Boolean[] detailAttributes;
 
     @Transient
     @JsonIgnore
@@ -84,6 +90,8 @@ public class DrugHasContraindication extends RepoTrialEdge implements Serializab
     private String nodeOne;
     @Transient
     private String nodeTwo;
+
+    private String assertedBy;
 
     public DrugHasContraindication() {
     }
@@ -144,6 +152,14 @@ public class DrugHasContraindication extends RepoTrialEdge implements Serializab
         return values;
     }
 
+
+    public List<String> getAssertedBy() {
+        return StringUtils.stringToList(assertedBy);
+    }
+
+    public void setAssertedBy(List<String> databases) {
+        this.assertedBy = StringUtils.listToString(databases);
+    }
 
     public void setValues(DrugHasContraindication other) {
         this.sourceDomainId = other.sourceDomainId;
