@@ -170,7 +170,9 @@ public class ProteinInteractsWithProteinService {
         if (!proteins.containsKey(edge.getId1()))
             proteins.put(edge.getId1(), new HashMap<>());
         proteins.get(edge.getId1()).put(edge, new Pair<>(true, experimental));
-
+        if (!proteins.containsKey(edge.getId2()))
+            proteins.put(edge.getId2(), new HashMap<>());
+        proteins.get(edge.getId2()).put(edge, new Pair<>(true, experimental));
     }
 
 
@@ -178,8 +180,11 @@ public class ProteinInteractsWithProteinService {
         if (!genes.containsKey(edge.getId1()))
             genes.put(edge.getId1(), new HashMap<>());
         genes.get(edge.getId1()).put(edge, new Pair<>(true, experimental));
-
+        if (!genes.containsKey(edge.getId2()))
+            genes.put(edge.getId2(), new HashMap<>());
+        genes.get(edge.getId2()).put(edge, new Pair<>(true, experimental));
     }
+
 
     public boolean isProteinEdge(PairId edge) {
         try {
