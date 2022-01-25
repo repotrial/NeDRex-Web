@@ -669,7 +669,7 @@ public class WebGraphService {
         }
     }
 
-    public void extendGraph(Graph g, String e, boolean endDefined, boolean switched, boolean drugTargetActionFilter, Double disorderGenomeAssociationCutoff, boolean getDisorderParents, boolean interactionFilter) {
+    public void extendGraph(Graph g, String e, boolean endDefined, boolean switched, boolean drugTargetActionFilter, Double disorderGenomeAssociationCutoff, boolean getDisorderParents, boolean experimentalInteractionsOnly) {
         int edgeId = g.getEdge(e);
         boolean extend = !endDefined;
         Pair<Integer, Integer> nodeIds = g.getNodesfromEdge(edgeId);
@@ -686,8 +686,8 @@ public class WebGraphService {
                     }
                     if (edgeIds == null || edgeIds.isEmpty())
                         return;
-                    if (interactionFilter & (e.equals("GeneGeneInteraction") | e.equals("ProteinProteinInteraction"))) {
-                        edgeIds.removeAll(edgeIds.stream().filter(p -> edgeController.isExperimental(edgeId, p.getId1(), p.getId2())).collect(Collectors.toSet()));
+                    if (experimentalInteractionsOnly & (e.equals("GeneGeneInteraction") | e.equals("ProteinProteinInteraction"))) {
+                        edgeIds.removeAll(edgeIds.stream().filter(p -> !edgeController.isExperimental(edgeId, p.getId1(), p.getId2())).collect(Collectors.toSet()));
                     }
 
                     if (drugTargetActionFilter) {
