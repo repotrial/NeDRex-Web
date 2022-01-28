@@ -8,7 +8,7 @@
         <a ref="top"></a>
         <div class="v-card__subtitle">
           Select the method to start exploring the NeDRex network. For immediate and easy algorithmic discovery
-          pipelines use the <i>Quick Start</i> page. <i>Guided Exploration</i> may be used for the creation of
+          pipelines use the <i>Quick Drug Repurposing</i> page. <i>Guided Connectivity Search</i> may be used for the creation of
           networks based on some specific path through the metagraph and the derivation of induced graphs. In the <i>Advanced
           Exploration</i> networks can be freely constructed.
         </div>
@@ -16,8 +16,8 @@
         <v-list-item>
           <v-tabs v-model="startTab" centered>
             <v-tabs-slider color="blue"></v-tabs-slider>
-            <v-tab @click="checkURLclear('quick')">Quick Start</v-tab>
-            <v-tab @click="checkURLclear('guided')">Guided Exploration</v-tab>
+            <v-tab @click="checkURLclear('quick')">Quick Drug Repurposing</v-tab>
+            <v-tab @click="checkURLclear('guided')">Guided Connectivity Search</v-tab>
             <v-tab @click="checkURLclear('advanced')">Advanced Exploration</v-tab>
           </v-tabs>
         </v-list-item>
