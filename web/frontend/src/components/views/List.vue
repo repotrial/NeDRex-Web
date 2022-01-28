@@ -606,7 +606,7 @@
                         v-bind="attrs"
                         v-on="on"
                       >
-                        fas fa-question-circle
+                        far fa-question-circle
                       </v-icon>
                     </template>
                     <span>Activate to keep collapsed entities even if there are no other entities connected.</span>

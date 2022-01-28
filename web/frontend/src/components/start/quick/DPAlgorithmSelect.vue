@@ -155,7 +155,7 @@
                   </v-switch>
                 </div>
               </div>
-              <div>
+              <div v-if="getAlgorithmMethod() === 'trustrank'">
                 <v-slider
                   v-show="getAlgorithmModels().damping!=null"
                   hide-details
