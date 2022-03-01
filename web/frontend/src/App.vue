@@ -986,4 +986,7 @@ li
 a
   color: #42b983
 
+.v-dialog:not(.v-dialog--fullscreen)
+  max-height: none !important
+
 </style>

@@ -2,12 +2,11 @@
   <v-container :style="{maxWidth: modus===0? '50vw':'95vw'}">
     <template v-if="modus===0">
       <v-card>
-        <v-card-title style="display: flex; justify-content: center; font-size: x-large; margin-bottom: 15px;">Guided
-          Network Exploration
+        <v-card-title style="display: flex; justify-content: center; font-size: x-large; margin-bottom: 15px;">Guided Connectivity Search
         </v-card-title>
         <v-card-text style="display: flex;">
           <div style="text-align: justify; margin: 15px">
-            This <b>Guided Exploration</b> provides an easy way to explore some initial input set of any supported type.
+            This <b>Guided Connectivity Search</b> provides an easy way to explore some initial input set of any supported type.
             <b>Direct</b> or <b>indirect (transitive) associations</b> to any data type we have can be constructed with
             or without
             limiting the target entries. Out of a proposed list of <b>available direct and indirect paths</b> connecting

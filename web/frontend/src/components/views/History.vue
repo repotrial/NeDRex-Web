@@ -159,11 +159,11 @@
               </v-row>
               <v-row style="margin: 25px"></v-row>
 <!--/*              <v-row style="margin: 25px" v-if="selected.jobid!=null">*/-->
-                <v-chip outlined @click="loadJob(selected.jobid)" >
+                <v-chip v-show="selected.jobid" outlined @click="loadJob(selected.jobid)" >
 
                   <v-icon left color="success" >far fa-play-circle</v-icon>Reload Result View
                 </v-chip>
-                <v-chip outlined @click="downloadJob(selected.jobid)" style="margin:8px">
+                <v-chip v-show="selected.jobid" outlined @click="downloadJob(selected.jobid)" style="margin:8px">
 
                   <v-icon left small color="primary">fas fa-download</v-icon>{{ selected.method }} Results
                 </v-chip>

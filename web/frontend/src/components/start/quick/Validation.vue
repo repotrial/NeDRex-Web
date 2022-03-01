@@ -163,7 +163,7 @@
                           <v-icon small v-on="on" v-bind="attrs">far fa-question-circle</v-icon>
                         </th>
                       </template>
-                      <div style="width: 300px">:<br>
+                      <div style="width: 300px">
                         <b>normal:</b> Cases in which #ref-drugs(random) > #ref-drugs(observed)
                         <br>
                         <b>precision based:</b> The precision of a module is defined by the drugs that target the module
@@ -218,7 +218,7 @@
                       <template v-slot:activator="{attrs, on}">
                     <th class="text-center">Measure <v-icon v-on="on" v-bind="attrs" small>far fa-question-circle</v-icon></th>
                       </template>
-                      <div style="width: 300px">:<br>
+                      <div style="width: 300px">
                         <b>DCG-based:</b> Observed drug list is compared to random drug lists by discounted cumulative gain
                         <br>
                         <b>without ranks:</b> Only compares #found-drugs in observed and random lists based on the reference list

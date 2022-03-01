@@ -213,6 +213,7 @@ public class ProteinInteractsWithProteinService {
         genes.get(edge.getId2()).put(edge, new Pair<>(true, experimental));
     }
 
+
     public boolean isProteinEdge(PairId edge) {
         try {
             return proteins.get(edge.getId1()).get(edge).first;

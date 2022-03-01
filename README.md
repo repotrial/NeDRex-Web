@@ -1,8 +1,5 @@
 # NeDRex-Web / RepoScape-Web
-Is an interactive and responsive web interface for the heterogenous, molecularbiological network database RepoTrialDB.
-
-## Material
-The folder for data of example cases and according figures can be found [here](/material) 
+Is an interactive and responsive web interface for the heterogenous, molecularbiological network database NeDRexDB. A live instance can be found at [web.nedrex.net](https://web.nedrex.net).
 
 ## Building Docker Images
 Use the `web/docker-compose.sh` to regenerate images.
@@ -11,7 +8,7 @@ Execute the bash script in the `web` directory with following parameter:
 - Local production test images:
     `./docker-compose.sh prod`
 - Current server configuration images:
--   `./docker-compose.sh exbio`
+-   `./docker-compose.sh uhh`
 
 
 ## Deployement with Docker

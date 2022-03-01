@@ -58,3 +58,4 @@ COPY scripts/wait-for-it.sh wait-for-it.sh
 
 #ENTRYPOINT ./wait-for-it.sh nedrex-web-db:3306 -t 30 -- apache-tomcat/bin/catalina.sh run Dspring.profiles.active=prod
 ENTRYPOINT ./wait-for-it.sh nedrex-web-db:3306 -t 30 -- java -Xmx16g -jar nedrexweb-backend.war
+
