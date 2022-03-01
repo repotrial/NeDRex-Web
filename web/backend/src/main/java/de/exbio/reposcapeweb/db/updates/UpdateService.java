@@ -851,6 +851,8 @@ public class UpdateService {
             while ((line = br.readLine()) != null) {
                 if (line.charAt(0) == '[')
                     line = line.substring(1);
+                if (line.charAt(0) != '{')
+                    line = '{' + line;
                 try {
                     T d = objectMapper.readValue(line, valueType);
                     d.setId(mapper.mapIds(d.getIdsToMap()));

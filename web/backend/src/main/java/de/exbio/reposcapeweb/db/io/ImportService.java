@@ -353,7 +353,7 @@ public class ImportService {
                 log.info("Updating nodeIDMaps for " + node.label);
                 s.readIdDomainMapsFromDb();
                 RepoTrialUtils.writeNodeMap(new File(nodeCacheDir, node.label + ".map"), s.getIdToDomainMap());
-                log.info("Done updating nodeIDMaps for " + node.label);
+                log.info("Done updating nodeIDMaps for " + node.label + ": "+s.getDomainToIdMap().size()+" entries!");
             }
         });
     }
