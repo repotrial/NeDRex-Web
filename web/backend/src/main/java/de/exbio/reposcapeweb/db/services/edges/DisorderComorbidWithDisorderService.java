@@ -52,10 +52,28 @@ public class DisorderComorbidWithDisorderService {
         if (updates.containsKey(UpdateOperation.Alteration)) {
             HashMap<PairId, DisorderComorbidWithDisorder> toUpdate = updates.get(UpdateOperation.Alteration);
 
-            disorderComorbidWithDisorderRepository.findDisorderComorbidWithDisordersByIdIn(new HashSet<>(toUpdate.keySet().stream().map(o -> o.getId1()>o.getId2()?o.flipIds():o).collect(Collectors.toSet()))).forEach(d -> {
-                d.setValues(toUpdate.get(d.getPrimaryIds()));
-                toSave.add(d);
+
+            HashSet<PairId> batch = new HashSet<>();
+            toUpdate.keySet().forEach(p -> {
+                batch.add(p);
+                if (batch.size() > 1_000) {
+                    disorderComorbidWithDisorderRepository.findDisorderComorbidWithDisordersByIdIn(batch).forEach(d -> {
+                        d.setValues(toUpdate.get(d.getPrimaryIds()));
+                        toSave.add(d);
+                    });
+                    batch.clear();
+                }
             });
+            if (!batch.isEmpty()) {
+                disorderComorbidWithDisorderRepository.findDisorderComorbidWithDisordersByIdIn(batch).forEach(d -> {
+                    d.setValues(toUpdate.get(d.getPrimaryIds()));
+                    toSave.add(d);
+                });
+                batch.clear();
+            }
+
+
+
         }
 
         disorderComorbidWithDisorderRepository.saveAll(toSave);
@@ -73,6 +91,12 @@ public class DisorderComorbidWithDisorderService {
 
     public List<DisorderComorbidWithDisorder> findAll() {
         return disorderComorbidWithDisorderRepository.findAll();
+    }
+
+    public List<PairId> getAllIDs() {
+        LinkedList<PairId> allIDs = new LinkedList<>();
+        edges.values().forEach(v->allIDs.addAll(v.keySet()));
+        return allIDs;
     }
 
     public void importEdges() {

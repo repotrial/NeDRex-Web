@@ -53,10 +53,25 @@ public class ProteinInPathwayService {
         if (updates.containsKey(UpdateOperation.Alteration)) {
             HashMap<PairId, ProteinInPathway> toUpdate = updates.get(UpdateOperation.Alteration);
 
-            proteinInPathwayRepository.findProteinInPathwaysByIdIn(new HashSet<>(toUpdate.keySet().stream().map(o -> (PairId) o).collect(Collectors.toSet()))).forEach(d -> {
-                d.setValues(toUpdate.get(d.getPrimaryIds()));
-                toSave.add(d);
+
+            HashSet<PairId> batch = new HashSet<>();
+            toUpdate.keySet().forEach(p -> {
+                batch.add(p);
+                if (batch.size() > 1_000) {
+                    proteinInPathwayRepository.findProteinInPathwaysByIdIn(batch).forEach(d -> {
+                        d.setValues(toUpdate.get(d.getPrimaryIds()));
+                        toSave.add(d);
+                    });
+                    batch.clear();
+                }
             });
+            if (!batch.isEmpty()) {
+                proteinInPathwayRepository.findProteinInPathwaysByIdIn(batch).forEach(d -> {
+                    d.setValues(toUpdate.get(d.getPrimaryIds()));
+                    toSave.add(d);
+                });
+                batch.clear();
+            }
         }
         proteinInPathwayRepository.saveAll(toSave);
         log.debug("Updated protein_in_pathway table: " + insertCount + " Inserts, " + (updates.containsKey(UpdateOperation.Alteration) ? updates.get(UpdateOperation.Alteration).size() : 0) + " Changes, " + (updates.containsKey(UpdateOperation.Deletion) ? updates.get(UpdateOperation.Deletion).size() : 0) + " Deletions identified!");
@@ -65,6 +80,12 @@ public class ProteinInPathwayService {
 
     public Iterable<ProteinInPathway> findAll() {
         return proteinInPathwayRepository.findAll();
+    }
+
+    public List<PairId> getAllIDs() {
+        LinkedList<PairId> allIDs = new LinkedList<>();
+        edgesFrom.values().forEach(allIDs::addAll);
+        return allIDs;
     }
 
     public void importEdges() {

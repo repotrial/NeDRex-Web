@@ -1,11 +1,12 @@
 package de.exbio.reposcapeweb.db.io;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.exbio.reposcapeweb.communication.cache.Graphs;
 import de.exbio.reposcapeweb.configs.DBConfig;
 import de.exbio.reposcapeweb.configs.VisConfig;
 import de.exbio.reposcapeweb.configs.schema.Config;
+import de.exbio.reposcapeweb.configs.schema.NodeConfig;
 import de.exbio.reposcapeweb.db.DbCommunicationService;
-import de.exbio.reposcapeweb.db.entities.edges.*;
 import de.exbio.reposcapeweb.db.history.HistoryController;
 import de.exbio.reposcapeweb.db.services.NodeService;
 import de.exbio.reposcapeweb.db.services.controller.EdgeController;
@@ -14,7 +15,6 @@ import de.exbio.reposcapeweb.db.services.edges.*;
 import de.exbio.reposcapeweb.db.services.nodes.*;
 import de.exbio.reposcapeweb.filter.FilterService;
 import de.exbio.reposcapeweb.filter.NodeFilter;
-import de.exbio.reposcapeweb.tools.ToolService;
 import de.exbio.reposcapeweb.utils.Pair;
 import de.exbio.reposcapeweb.utils.ReaderUtils;
 import de.exbio.reposcapeweb.utils.RepoTrialUtils;
@@ -27,11 +27,9 @@ import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 
 @Service
 public class ImportService {
@@ -46,6 +44,7 @@ public class ImportService {
     private final GeneService geneService;
     private final PathwayService pathwayService;
     private final ProteinService proteinService;
+
     private final FilterService filterService;
 
     private final DisorderComorbidWithDisorderService disorderComorbidWithDisorderService;
@@ -113,7 +112,7 @@ public class ImportService {
         this.edgeController = edgeController;
         this.nodeController = nodeController;
 
-        this.dbCacheDir=new File(env.getProperty("path.db.cache"));
+        this.dbCacheDir = new File(env.getProperty("path.db.cache"));
     }
 
     public void importNodeData() {
@@ -126,7 +125,7 @@ public class ImportService {
         }
         File visconf = new File(env.getProperty("file.vis.config"));
         try {
-            VisConfig.importConfig(visconf, objectMapper.readValue(visconf,Object.class));
+            VisConfig.importConfig(visconf, objectMapper.readValue(visconf, Object.class));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -258,5 +257,104 @@ public class ImportService {
                 s.setFilter(nf);
         });
 
+    }
+
+    public void updateNodeData(boolean allowOnUpdate, boolean edgesReady) {
+        log.info("NodeDataMap update: Start!");
+        if (DBConfig.getConfig() == null) {
+            File conf = new File(env.getProperty("file.db.config"));
+            try {
+                DBConfig.importConfig(conf, objectMapper.readValue(conf, Config.class));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            File visconf = new File(env.getProperty("file.vis.config"));
+            try {
+                VisConfig.importConfig(visconf, objectMapper.readValue(visconf, Object.class));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+//        nodeController.setUp();
+//        edgeController.setUp();
+        log.info("Updating nodeIDs");
+        updateIdMaps(allowOnUpdate);
+        log.info("NodeIdMap update: Done!");
+        updateNodeFilters(new File(dbCacheDir, "filters"), edgesReady);
+
+    }
+
+    private void updateNodeFilters(File cacheDir, boolean edgesReady) {
+        cacheDir.mkdirs();
+        DBConfig.getConfig().nodes.forEach(node -> {
+            NodeService s = null;
+            switch (node.name) {
+                case "drug" -> s = drugService;
+                case "pathway" -> s = pathwayService;
+                case "disorder" -> s = disorderService;
+                case "gene" -> s = geneService;
+                case "protein" -> s = proteinService;
+            }
+            File cached = new File(cacheDir, node.label);
+            log.info("Updating filter cache for " + node.label);
+            s.readFilterFromDB();
+            if (node.name.equals("disorder") && edgesReady)
+                disorderIsADisorderService.createDistinctFilters();
+            filterService.writeToFile(s.getFilter(), cached);
+            log.info("Done updating.");
+        });
+    }
+
+    public void updateDisorderFilters() {
+        File cacheDir = new File(dbCacheDir, "filters");
+        cacheDir.mkdirs();
+        NodeConfig node = DBConfig.getConfig().nodes.get(Graphs.getNode("disorder"));
+        NodeService s = disorderService;
+        File cached = new File(cacheDir, node.label);
+        log.info("Updating filter cache for " + node.label);
+        s.readFilterFromDB();
+        if (node.name.equals("disorder"))
+            disorderIsADisorderService.createDistinctFilters();
+        filterService.writeToFile(s.getFilter(), cached);
+        log.info("Done updating.");
+    }
+
+    private void updateIdMaps(boolean allowOnUpdate) {
+        if (dbCommunication.isUpdateInProgress() && !allowOnUpdate) {
+            log.error("DB update in progress and IDMap updated was prohibited!");
+            return;
+        }
+        File nodeCacheDir = new File(dbCacheDir, "nodes");
+        DBConfig.getConfig().nodes.forEach(node -> {
+            NodeService s = null;
+            switch (node.name) {
+                case "drug" -> {
+                    s = drugService;
+                    break;
+                }
+                case "pathway" -> {
+                    s = pathwayService;
+                    break;
+                }
+                case "disorder" -> {
+                    s = disorderService;
+                    break;
+                }
+                case "gene" -> {
+                    s = geneService;
+                    break;
+                }
+                case "protein" -> {
+                    s = proteinService;
+                    break;
+                }
+            }
+            if (s != null) {
+                log.info("Updating nodeIDMaps for " + node.label);
+                s.readIdDomainMapsFromDb();
+                RepoTrialUtils.writeNodeMap(new File(nodeCacheDir, node.label + ".map"), s.getIdToDomainMap());
+                log.info("Done updating nodeIDMaps for " + node.label);
+            }
+        });
     }
 }

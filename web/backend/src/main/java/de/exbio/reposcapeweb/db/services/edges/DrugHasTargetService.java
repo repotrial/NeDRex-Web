@@ -72,10 +72,25 @@ public class DrugHasTargetService {
         if (updates.containsKey(UpdateOperation.Alteration)) {
             HashMap<PairId, DrugHasTargetProtein> toUpdate = updates.get(UpdateOperation.Alteration);
 
-            drugHasTargetProteinRepository.findDrugHasTargetProteinsByIdIn(new HashSet<>(toUpdate.keySet().stream().map(o -> (PairId) o).collect(Collectors.toSet()))).forEach(d -> {
-                d.setValues(toUpdate.get(d.getPrimaryIds()));
-                toSave.add(d);
+
+            HashSet<PairId> batch = new HashSet<>();
+            toUpdate.keySet().forEach(p -> {
+                batch.add(p);
+                if (batch.size() > 1_000) {
+                    drugHasTargetProteinRepository.findDrugHasTargetProteinsByIdIn(batch).forEach(d -> {
+                        d.setValues(toUpdate.get(d.getPrimaryIds()));
+                        toSave.add(d);
+                    });
+                    batch.clear();
+                }
             });
+            if (!batch.isEmpty()) {
+                drugHasTargetProteinRepository.findDrugHasTargetProteinsByIdIn(batch).forEach(d -> {
+                    d.setValues(toUpdate.get(d.getPrimaryIds()));
+                    toSave.add(d);
+                });
+                batch.clear();
+            }
         }
         drugHasTargetProteinRepository.saveAll(toSave);
         log.debug("Updated drug_has_target(_protein) table: " + insertCount + " Inserts, " + (updates.containsKey(UpdateOperation.Alteration) ? updates.get(UpdateOperation.Alteration).size() : 0) + " Changes, " + (updates.containsKey(UpdateOperation.Deletion) ? updates.get(UpdateOperation.Deletion).size() : 0) + " Deletions identified!");
@@ -132,6 +147,18 @@ public class DrugHasTargetService {
 
     public Iterable<DrugHasTargetGene> findAllGenes() {
         return drugHasTargetGeneRepository.findAll();
+    }
+
+    public List<PairId> getAllGeneIDs() {
+        LinkedList<PairId> allIDs = new LinkedList<>();
+        geneEdgesFrom.values().forEach(allIDs::addAll);
+        return allIDs;
+    }
+
+    public List<PairId> getAllProteinIDs() {
+        LinkedList<PairId> allIDs = new LinkedList<>();
+        proteinEdgesFrom.values().forEach(allIDs::addAll);
+        return allIDs;
     }
 
     public void importEdges() {

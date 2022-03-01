@@ -62,6 +62,7 @@ public class Drug extends RepoTrialNode {
 
     @Column(nullable = false)
     private String primaryDomainId;
+    @Column(columnDefinition = "TEXT")
     private String domainIds;
     @Column(nullable = false)
     private String displayName;

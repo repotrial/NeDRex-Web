@@ -53,13 +53,29 @@ public class DrugHasIndicationService {
 
         LinkedList<DrugHasIndication> toSave = new LinkedList(updates.get(UpdateOperation.Insertion).values());
         int insertCount = toSave.size();
+
         if (updates.containsKey(UpdateOperation.Alteration)) {
             HashMap<PairId, DrugHasIndication> toUpdate = updates.get(UpdateOperation.Alteration);
 
-            drugHasIndicationRepository.findDrugHasIndicationsByIdIn(new HashSet<>(toUpdate.keySet().stream().map(o -> (PairId) o).collect(Collectors.toSet()))).forEach(d -> {
-                d.setValues(toUpdate.get(d.getPrimaryIds()));
-                toSave.add(d);
+
+            HashSet<PairId> batch = new HashSet<>();
+            toUpdate.keySet().forEach(p -> {
+                batch.add(p);
+                if (batch.size() > 1_000) {
+                    drugHasIndicationRepository.findDrugHasIndicationsByIdIn(batch).forEach(d -> {
+                        d.setValues(toUpdate.get(d.getPrimaryIds()));
+                        toSave.add(d);
+                    });
+                    batch.clear();
+                }
             });
+            if (!batch.isEmpty()) {
+                drugHasIndicationRepository.findDrugHasIndicationsByIdIn(batch).forEach(d -> {
+                    d.setValues(toUpdate.get(d.getPrimaryIds()));
+                    toSave.add(d);
+                });
+                batch.clear();
+            }
         }
         drugHasIndicationRepository.saveAll(toSave);
         log.debug("Updated drug_has_indication table: " + insertCount + " Inserts, " + (updates.containsKey(UpdateOperation.Alteration) ? updates.get(UpdateOperation.Alteration).size() : 0) + " Changes, " + (updates.containsKey(UpdateOperation.Deletion) ? updates.get(UpdateOperation.Deletion).size() : 0) + " Deletions identified!");
@@ -68,6 +84,12 @@ public class DrugHasIndicationService {
 
     public Iterable<DrugHasIndication> findAll() {
         return drugHasIndicationRepository.findAll();
+    }
+
+    public List<PairId> getAllIDs() {
+        LinkedList<PairId> allIDs = new LinkedList<>();
+        edgesFrom.values().forEach(allIDs::addAll);
+        return allIDs;
     }
 
     public void importEdges() {

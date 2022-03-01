@@ -1,6 +1,7 @@
 package de.exbio.reposcapeweb.db.services.edges;
 
 import de.exbio.reposcapeweb.db.entities.edges.DrugHasContraindication;
+import de.exbio.reposcapeweb.db.entities.edges.ProteinEncodedBy;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
 import de.exbio.reposcapeweb.db.repositories.edges.DrugHasContraindicationRepository;
 import de.exbio.reposcapeweb.db.services.nodes.DisorderService;
@@ -51,10 +52,25 @@ public class DrugHasContraindicationService {
         if (updates.containsKey(UpdateOperation.Alteration)) {
             HashMap<PairId, DrugHasContraindication> toUpdate = updates.get(UpdateOperation.Alteration);
 
-            drugHasContraindicationRepository.findDrugHasContraindicationsByIdIn(new HashSet<>(toUpdate.keySet().stream().map(o -> (PairId) o).collect(Collectors.toSet()))).forEach(d -> {
-                d.setValues(toUpdate.get(d.getPrimaryIds()));
-                toSave.add(d);
+
+            HashSet<PairId> batch = new HashSet<>();
+            toUpdate.keySet().forEach(p -> {
+                batch.add(p);
+                if (batch.size() > 1_000) {
+                    drugHasContraindicationRepository.findDrugHasContraindicationsByIdIn(batch).forEach(d -> {
+                        d.setValues(toUpdate.get(d.getPrimaryIds()));
+                        toSave.add(d);
+                    });
+                    batch.clear();
+                }
             });
+            if (!batch.isEmpty()) {
+                drugHasContraindicationRepository.findDrugHasContraindicationsByIdIn(batch).forEach(d -> {
+                    d.setValues(toUpdate.get(d.getPrimaryIds()));
+                    toSave.add(d);
+                });
+                batch.clear();
+            }
         }
         drugHasContraindicationRepository.saveAll(toSave);
         log.debug("Updated drug_has_indication table: " + insertCount + " Inserts, " + (updates.containsKey(UpdateOperation.Alteration) ? updates.get(UpdateOperation.Alteration).size() : 0) + " Changes, " + (updates.containsKey(UpdateOperation.Deletion) ? updates.get(UpdateOperation.Deletion).size() : 0) + " Deletions identified!");
@@ -63,6 +79,12 @@ public class DrugHasContraindicationService {
 
     public Iterable<DrugHasContraindication> findAll() {
         return drugHasContraindicationRepository.findAll();
+    }
+
+    public List<PairId> getAllIDs() {
+        LinkedList<PairId> allIDs = new LinkedList<>();
+        edgesFrom.values().forEach(allIDs::addAll);
+        return allIDs;
     }
 
     public void importEdges() {

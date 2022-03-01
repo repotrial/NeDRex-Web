@@ -51,11 +51,24 @@ public class ProteinEncodedByService {
         int insertCount = toSave.size();
         if (updates.containsKey(UpdateOperation.Alteration)) {
             HashMap<PairId, ProteinEncodedBy> toUpdate = updates.get(UpdateOperation.Alteration);
-
-            proteinEncodedByRepository.findProteinEncodedsByIdIn(new HashSet<>(toUpdate.keySet().stream().map(o -> (PairId) o).collect(Collectors.toSet()))).forEach(d -> {
-                d.setValues(toUpdate.get(d.getPrimaryIds()));
-                toSave.add(d);
+            HashSet<PairId> batch = new HashSet<>();
+            toUpdate.keySet().forEach(p->{
+                batch.add(p);
+                if(batch.size()>1_000){
+                    proteinEncodedByRepository.findProteinEncodedsByIdIn(batch).forEach(d->{
+                        d.setValues(toUpdate.get(d.getPrimaryIds()));
+                        toSave.add(d);
+                    });
+                    batch.clear();
+                }
             });
+            if(!batch.isEmpty()) {
+                proteinEncodedByRepository.findProteinEncodedsByIdIn(batch).forEach(d -> {
+                    d.setValues(toUpdate.get(d.getPrimaryIds()));
+                    toSave.add(d);
+                });
+                batch.clear();
+            }
         }
         proteinEncodedByRepository.saveAll(toSave);
         log.debug("Updated protein_encoded_by table: " + insertCount + " Inserts, " + (updates.containsKey(UpdateOperation.Alteration) ? updates.get(UpdateOperation.Alteration).size() : 0) + " Changes, " + (updates.containsKey(UpdateOperation.Deletion) ? updates.get(UpdateOperation.Deletion).size() : 0) + " Deletions identified!");
@@ -64,6 +77,12 @@ public class ProteinEncodedByService {
 
     public Iterable<ProteinEncodedBy> findAll() {
         return proteinEncodedByRepository.findAll();
+    }
+
+    public List<PairId> getAllIDs() {
+        LinkedList<PairId> allIDs = new LinkedList<>();
+        edgesFrom.values().forEach(allIDs::addAll);
+        return allIDs;
     }
 
     public void importEdges() {

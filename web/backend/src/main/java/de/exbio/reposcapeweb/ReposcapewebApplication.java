@@ -66,9 +66,6 @@ public class ReposcapewebApplication extends SpringBootServletInitializer {
     WebGraphService webGraphService;
 
 //    @Autowired
-//    private ProteinInteractsWithProteinService ppiService;
-
-//    @Autowired
 //    public ReposcapewebApplication(DbCommunicationService dbService, ProteinInteractsWithProteinService proteinInteractsWithProteinService, JobController jobController, NodeController nodeController, ObjectMapper objectMapper, EdgeController edgeController, DisorderService disorderService, UpdateService updateService, Environment environment, ImportService importService, FilterService filterService, ToolService toolService, WebGraphService graphService) {
 //        this.updateService = updateService;
 //        this.importService = importService;

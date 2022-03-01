@@ -183,6 +183,9 @@ public class UpdateService {
                         bwSife.write(sifLine);
                 } catch (IOException e) {
                     e.printStackTrace();
+                } catch (NullPointerException ex) {
+                    log.warn("Could not map either " + id1 + " or " + id.getId2() + " to internal protein entities.");
+                    return;
                 }
             }));
         } catch (IOException e) {
@@ -410,6 +413,7 @@ public class UpdateService {
     private <T extends RepoTrialEdge> EnumMap<UpdateOperation, HashMap<PairId, T>> runEdgeUpdatesPartitioned(Class<T> valueType, File c, IdMapper mapper, int skip, int count) {
         EnumMap<UpdateOperation, HashMap<PairId, T>> updates = new EnumMap<>(UpdateOperation.class);
         if (RepoTrialUtils.getCachedFile(c, env.getProperty("path.db.cache")).exists()) {
+            readEdgeUpdatesPartitioned(c, updates, valueType, mapper, skip, count);
             if (!readEdgeUpdatesPartitioned(c, updates, valueType, mapper, skip, count)) {
                 updates.put(UpdateOperation.Alteration, null);
             }
@@ -424,6 +428,8 @@ public class UpdateService {
 
         importRepoTrialNodes();
 
+        importService.updateNodeData(true, false);
+
         importRepoTrialEdges();
 
         dbCommunication.setDbLocked(false);
@@ -432,7 +438,7 @@ public class UpdateService {
 
 
     private void importRepoTrialEdges() {
-
+        log.info("Starting edge update import!");
         boolean updateSuccessful = true;
         File filterCacheDir = new File(env.getProperty("path.db.cache") + "filters");
         String first = "protein_encoded_by_gene";
@@ -467,7 +473,8 @@ public class UpdateService {
                     case "DisorderHierarchy":
 //                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, DisorderIsADisorder.sourceAttributes))
                         updateSuccessful = disorderIsADisorderService.submitUpdates(runEdgeUpdates(DisorderIsADisorder.class, edge.file, disorderIsADisorderService::mapIds));
-                        filterService.writeToFile(disorderService.getFilter(), new File(filterCacheDir, "Disorder"));
+                        importService.updateDisorderFilters();
+//                       filterService.writeToFile(disorderService.getFilter(), new File(filterCacheDir, "Disorder"));
                         disorderIsADisorderService.importEdges();
                         break;
                     case "DrugIndication":
@@ -513,9 +520,23 @@ public class UpdateService {
                             } else {
                                 rest.get(UpdateOperation.Insertion).putAll(updates.remove(UpdateOperation.Insertion));
                                 rest.get(UpdateOperation.Deletion).putAll(updates.remove(UpdateOperation.Deletion));
+                                boolean done = updates.get(UpdateOperation.Alteration) == null;
+                                if (done)
+                                    updates.put(UpdateOperation.Alteration, new HashMap<>());
                                 if (!proteinInteractsWithProteinService.submitUpdates(updates))
                                     updateSuccessful = false;
-                                if (updates.get(UpdateOperation.Alteration) == null) {
+                                if (done) {
+                                    HashSet<PairId> overlap = new HashSet<>();
+                                    rest.get(UpdateOperation.Deletion).keySet().forEach(id -> {
+                                        if (rest.get(UpdateOperation.Insertion).containsKey(id))
+                                            overlap.add(id);
+                                    });
+
+                                    overlap.forEach(id -> {
+                                        rest.get(UpdateOperation.Alteration).put(id, rest.get(UpdateOperation.Insertion).get(id));
+                                        rest.get(UpdateOperation.Deletion).remove(id);
+                                        rest.get(UpdateOperation.Insertion).remove(id);
+                                    });
                                     if (!proteinInteractsWithProteinService.submitUpdates(rest))
                                         updateSuccessful = false;
                                     break;
@@ -523,7 +544,7 @@ public class UpdateService {
                             }
                             skip += batch;
                         }
-                        if(updateSuccessful){
+                        if (updateSuccessful) {
                             updateSuccessful = proteinInteractsWithProteinService.generateGeneEntries();
                         }
                         proteinInteractsWithProteinService.importEdges();
@@ -551,6 +572,7 @@ public class UpdateService {
 
 
     private void importRepoTrialNodes() {
+        log.info("Starting node update import!");
         File nodeCacheDir = new File(env.getProperty("path.db.cache") + "nodes");
         nodeCacheDir.mkdirs();
         File filterCacheDir = new File(env.getProperty("path.db.cache") + "filters");
@@ -565,32 +587,32 @@ public class UpdateService {
                 switch (node.name) {
                     case "drug": {
                         updateSuccessful = drugService.submitUpdates(startNodeUpdate(Drug.class, node.file));
-                        RepoTrialUtils.writeNodeMap(new File(nodeCacheDir, node.label + ".map"), drugService.getIdToDomainMap());
-                        filterService.writeToFile(drugService.getFilter(), new File(filterCacheDir, node.label));
+//                        RepoTrialUtils.writeNodeMap(new File(nodeCacheDir, node.label + ".map"), drugService.getIdToDomainMap());
+//                        filterService.writeToFile(drugService.getFilter(), new File(filterCacheDir, node.label));
                         break;
                     }
                     case "pathway": {
                         updateSuccessful = pathwayService.submitUpdates(startNodeUpdate(Pathway.class, node.file));
-                        RepoTrialUtils.writeNodeMap(new File(nodeCacheDir, node.label + ".map"), pathwayService.getIdToDomainMap());
-                        filterService.writeToFile(pathwayService.getFilter(), new File(filterCacheDir, node.label));
+//                        RepoTrialUtils.writeNodeMap(new File(nodeCacheDir, node.label + ".map"), pathwayService.getIdToDomainMap());
+//                        filterService.writeToFile(pathwayService.getFilter(), new File(filterCacheDir, node.label));
                         break;
                     }
                     case "disorder": {
                         updateSuccessful = disorderService.submitUpdates(startNodeUpdate(Disorder.class, node.file));
-                        RepoTrialUtils.writeNodeMap(new File(nodeCacheDir, node.label + ".map"), disorderService.getIdToDomainMap());
-                        filterService.writeToFile(disorderService.getFilter(), new File(filterCacheDir, node.label));
+//                        RepoTrialUtils.writeNodeMap(new File(nodeCacheDir, node.label + ".map"), disorderService.getIdToDomainMap());
+//                        filterService.writeToFile(disorderService.getFilter(), new File(filterCacheDir, node.label));
                         break;
                     }
                     case "gene": {
                         updateSuccessful = geneService.submitUpdates(startNodeUpdate(Gene.class, node.file));
-                        RepoTrialUtils.writeNodeMap(new File(nodeCacheDir, node.label + ".map"), geneService.getIdToDomainMap());
-                        filterService.writeToFile(geneService.getFilter(), new File(filterCacheDir, node.label));
+//                        RepoTrialUtils.writeNodeMap(new File(nodeCacheDir, node.label + ".map"), geneService.getIdToDomainMap());
+//                        filterService.writeToFile(geneService.getFilter(), new File(filterCacheDir, node.label));
                         break;
                     }
                     case "protein": {
                         updateSuccessful = proteinService.submitUpdates(startNodeUpdate(Protein.class, node.file));
-                        RepoTrialUtils.writeNodeMap(new File(nodeCacheDir, node.label + ".map"), proteinService.getIdToDomainMap());
-                        filterService.writeToFile(proteinService.getFilter(), new File(filterCacheDir, node.label));
+//                        RepoTrialUtils.writeNodeMap(new File(nodeCacheDir, node.label + ".map"), proteinService.getIdToDomainMap());
+//                        filterService.writeToFile(proteinService.getFilter(), new File(filterCacheDir, node.label));
                         break;
                     }
                 }
@@ -681,7 +703,12 @@ public class UpdateService {
                 if (startC == '>' | startC == '<') {
                     int start = line.charAt(2) == '[' ? 3 : 2;
                     T d = objectMapper.readValue(line.substring(start), valueType);
-                    d.setId(mapper.mapIds(d.getIdsToMap()));
+                    try {
+                        d.setId(mapper.mapIds(d.getIdsToMap()));
+                    } catch (NullPointerException e) {
+                        log.warn("Entry could not be mapped to current database state! Update will be skipped for :'" + line.substring(start) + "'");
+                        continue;
+                    }
                     if (startC == '<') {
                         dels.put(d.getPrimaryIds(), d);
                     } else {
@@ -713,7 +740,12 @@ public class UpdateService {
         File diff = new File(c.getParent(), c.getName() + "_diff");
         File cached = RepoTrialUtils.getCachedFile(c, env.getProperty("path.db.cache"));
         if (!diff.exists()) {
-            ProcessBuilder pb = new ProcessBuilder("diff " + cached.getAbsolutePath() + " " + c.getAbsolutePath() + " > " + diff);
+            try {
+                diff.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            ProcessBuilder pb = new ProcessBuilder(new File(new File(env.getProperty("path.scripts.dir")), "createBatchDiff.sh").getAbsolutePath(), cached.getAbsolutePath(), c.getAbsolutePath(), diff.getAbsolutePath());
             try {
                 ProcessUtils.executeProcessWait(pb, false);
             } catch (IOException | InterruptedException e) {
@@ -721,7 +753,7 @@ public class UpdateService {
             }
         }
 //        pb.redirectErrorStream(true);
-        Process p = null;
+//        Process p = null;
         HashMap<PairId, T> ins = new HashMap<>();
         HashMap<PairId, T> upd = new HashMap<>();
         HashMap<PairId, T> dels = new HashMap<>();
@@ -741,8 +773,17 @@ public class UpdateService {
                     if (l < skip)
                         continue;
                     int start = line.charAt(2) == '[' ? 3 : 2;
-                    T d = objectMapper.readValue(line.substring(start), valueType);
-                    d.setId(mapper.mapIds(d.getIdsToMap()));
+                    line = line.substring(start);
+                    line = line.charAt(0) == '{' ? line : ('{' + line);
+                    line = line.charAt(line.length() - 1) == ']' | line.charAt(line.length() - 1) == ',' ? line.substring(0, line.length() - 1) : line;
+                    line = line.charAt(line.length() - 1) == '}' ? line : (line + '}');
+                    T d = objectMapper.readValue(line, valueType);
+                    try {
+                        d.setId(mapper.mapIds(d.getIdsToMap()));
+                    } catch (NullPointerException e) {
+                        log.warn("Entry could not be mapped to current database state! Update will be skipped for :'" + line.substring(start) + "'");
+                        continue;
+                    }
                     if (startC == '<') {
                         dels.put(d.getPrimaryIds(), d);
                     } else {
@@ -755,7 +796,6 @@ public class UpdateService {
             if (skip >= l)
                 return false;
 
-            //TODO might be problematic when not all edges are loaded at once
             HashSet<PairId> overlap = new HashSet<>();
             dels.keySet().forEach(id -> {
                 if (ins.containsKey(id))
@@ -768,8 +808,8 @@ public class UpdateService {
                 ins.remove(id);
             });
 
-            p.waitFor();
-        } catch (IOException | InterruptedException e) {
+//            p.waitFor();
+        } catch (IOException e) {
             e.printStackTrace();
         }
         return true;

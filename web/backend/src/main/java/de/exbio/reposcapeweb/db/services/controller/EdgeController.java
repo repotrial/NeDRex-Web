@@ -322,8 +322,8 @@ public class EdgeController {
         return proteinInteractsWithProteinService.getProteins(ids);
     }
 
-    public Iterable<ProteinInteractsWithProtein> findAllProteinInteractsWithProtein() {
-        return proteinInteractsWithProteinService.findAllProteins();
+    public Iterable<ProteinInteractsWithProtein> findAllProteinInteractsWithProtein(int page, int count) {
+        return proteinInteractsWithProteinService.findAllProteins(page, count);
     }
 
     public ProteinInteractsWithProtein findProteinInteractsWithProtein(PairId id) {
@@ -337,20 +337,20 @@ public class EdgeController {
         return isEdgeFrom(edgeId, node2, node1, k2, k1);
     }
 
-    public Iterable findAll(int edgeId) {
+    public List<PairId> findAllIDs(int edgeId) {
         return switch (Graphs.getEdge(edgeId)) {
-            case "GeneAssociatedWithDisorder" -> associatedWithDisorderService.findAllGenes();
-            case "DrugTargetGene" -> drugHasTargetService.findAllGenes();
-            case "ProteinEncodedBy" -> proteinEncodedByService.findAll();
-            case "DrugIndication" -> drugHasIndicationService.findAll();
-            case "DrugContraindication" -> drugHasContraindicationService.findAll();
-            case "DrugTargetProtein" -> drugHasTargetService.findAllProteins();
-            case "ProteinProteinInteraction" -> proteinInteractsWithProteinService.findAllProteins();
-            case "ProteinPathway" -> proteinInPathwayService.findAll();
-            case "ProteinAssociatedWithDisorder" -> associatedWithDisorderService.findAllProteins();
-            case "DisorderHierarchy" -> disorderIsADisorderService.findAll();
-            case "DisorderComorbidity" -> disorderComorbidWithDisorderService.findAll();
-            case "GeneGeneInteraction" -> proteinInteractsWithProteinService.findAllGenes();
+            case "GeneAssociatedWithDisorder" -> associatedWithDisorderService.getAllGeneIDs();
+            case "DrugTargetGene" -> drugHasTargetService.getAllGeneIDs();
+            case "ProteinEncodedBy" -> proteinEncodedByService.getAllIDs();
+            case "DrugIndication" -> drugHasIndicationService.getAllIDs();
+            case "DrugContraindication" -> drugHasContraindicationService.getAllIDs();
+            case "DrugTargetProtein" -> drugHasTargetService.getAllProteinIDs();
+            case "ProteinProteinInteraction" -> proteinInteractsWithProteinService.getAllProteinIDs();
+            case "ProteinPathway" -> proteinInPathwayService.getAllIDs();
+            case "ProteinAssociatedWithDisorder" -> associatedWithDisorderService.getAllProteinIDs();
+            case "DisorderHierarchy" -> disorderIsADisorderService.getAllIDs();
+            case "DisorderComorbidity" -> disorderComorbidWithDisorderService.getAllIDs();
+            case "GeneGeneInteraction" -> proteinInteractsWithProteinService.getAllGeneIDs();
             default -> null;
         };
     }

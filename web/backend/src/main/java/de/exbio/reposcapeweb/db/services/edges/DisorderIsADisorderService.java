@@ -49,10 +49,24 @@ public class DisorderIsADisorderService {
         if (updates.containsKey(UpdateOperation.Alteration)) {
             HashMap<PairId, DisorderIsADisorder> toUpdate = updates.get(UpdateOperation.Alteration);
 
-            disorderIsADisorderRepository.findDisorderIsADisordersByIdIn(new HashSet<>(toUpdate.keySet().stream().map(o -> (PairId) o).collect(Collectors.toSet()))).forEach(d -> {
-                d.setValues(toUpdate.get(d.getPrimaryIds()));
-                toSave.add(d);
+            HashSet<PairId> batch = new HashSet<>();
+            toUpdate.keySet().forEach(p -> {
+                batch.add(p);
+                if (batch.size() > 1_000) {
+                    disorderIsADisorderRepository.findDisorderIsADisordersByIdIn(batch).forEach(d -> {
+                        d.setValues(toUpdate.get(d.getPrimaryIds()));
+                        toSave.add(d);
+                    });
+                    batch.clear();
+                }
             });
+            if (!batch.isEmpty()) {
+                disorderIsADisorderRepository.findDisorderIsADisordersByIdIn(batch).forEach(d -> {
+                    d.setValues(toUpdate.get(d.getPrimaryIds()));
+                    toSave.add(d);
+                });
+                batch.clear();
+            }
         }
         disorderIsADisorderRepository.saveAll(toSave);
 
@@ -67,6 +81,13 @@ public class DisorderIsADisorderService {
 
     public Iterable<DisorderIsADisorder> findAll() {
         return disorderIsADisorderRepository.findAll();
+    }
+
+    public List<PairId> getAllIDs() {
+        HashSet<PairId> allIDs = new HashSet<>();
+        parentEdges.values().forEach(allIDs::addAll);
+        childEdges.values().forEach(allIDs::addAll);
+        return new LinkedList<>(allIDs);
     }
 
     public void importEdges() {

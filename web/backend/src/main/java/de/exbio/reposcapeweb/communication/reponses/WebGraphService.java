@@ -431,8 +431,7 @@ public class WebGraphService {
                 nodes.put(edgeNodes.first, new HashSet<>());
                 nodes.put(edgeNodes.second, new HashSet<>());
                 LinkedList<Edge> edges = new LinkedList<>();
-                edgeController.findAll(Graphs.getEdge(edgeName)).forEach(e -> {
-                    PairId edge = ((RepoTrialEdge) e).getPrimaryIds();
+                edgeController.findAllIDs(Graphs.getEdge(edgeName)).forEach(edge -> {
                     edges.add(new Edge(edge));
                     nodes.get(edgeNodes.first).add(edge.getId1());
                     nodes.get(edgeNodes.second).add(edge.getId2());
@@ -1941,7 +1940,7 @@ public class WebGraphService {
         HashMap<String, HashMap<Integer, Object>> customAttributes = g.getCustomNodeAttributes().containsKey(Graphs.getNode(name)) ? g.getCustomNodeAttributes().get(Graphs.getNode(name)) : new HashMap<>();
 
         for (String a : attributes) {
-            table.append(table.length() == 0 ? "#" : "\t").append(labelMap.getOrDefault(a, g.getCustomNodeAttributeLabels().get(Graphs.getNode(name)).get(a)));
+            table.append(table.length() == 0 ? "#" : "\t").append(labelMap.containsKey(a) ? labelMap.get(a): g.getCustomNodeAttributeLabels().get(Graphs.getNode(name)).get(a));
         }
         table.append("\n");
         HashSet<Integer> ids = g.getNodes().get(Graphs.getNode(name)).values().stream().map(Node::getId).collect(toCollection(HashSet::new));

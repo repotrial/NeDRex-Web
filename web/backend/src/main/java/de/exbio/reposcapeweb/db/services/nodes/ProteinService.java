@@ -123,6 +123,8 @@ public class ProteinService extends NodeService {
 
     @Override
     public void readIdDomainMapsFromDb() {
+        domainToIdMap.clear();
+        idToDomainMap.clear();
         findAll().forEach(n -> {
             domainToIdMap.put(n.getPrimaryDomainId(), n.getId());
             idToDomainMap.put(n.getId(), new Pair<>(n.getPrimaryDomainId(), n.getDisplayName()));

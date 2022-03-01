@@ -22,8 +22,8 @@ public class FilterService {
             nf.getDistinctMap().forEach((type, keys) -> keys.forEach((key, entries) -> entries.forEach(e -> {
                 try {
                     bw.write(type.ordinal() + "\t" + nf.getDistinctID2Keys().get(type).get(key).getKey() + "\t" + nf.getDistinctID2Keys().get(type).get(key).getName().trim()+ "\t"+ e.getNodeId() + "\t" + e.getName() + "\n");
-                } catch (IOException ioException) {
-                    ioException.printStackTrace();
+                } catch (IOException |NullPointerException exception) {
+                    exception.printStackTrace();
                 }
             })));
             bw.close();

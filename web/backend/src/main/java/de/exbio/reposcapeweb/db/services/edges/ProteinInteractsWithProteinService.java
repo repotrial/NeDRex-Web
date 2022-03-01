@@ -12,6 +12,8 @@ import de.exbio.reposcapeweb.utils.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import javax.sql.DataSource;
@@ -19,7 +21,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 
@@ -31,6 +32,7 @@ public class ProteinInteractsWithProteinService {
     private final ProteinInteractsWithProteinRepository proteinInteractsWithProteinRepository;
     private final GeneInteractsWithGeneRepository geneInteractsWithGeneRepository;
     private final ProteinEncodedByService proteinEncodedByService;
+    private final Environment env;
 
     private final ProteinService proteinService;
     private final GeneService geneService;
@@ -46,13 +48,14 @@ public class ProteinInteractsWithProteinService {
     private PreparedStatement generationPs = null;
 
     @Autowired
-    public ProteinInteractsWithProteinService(ProteinEncodedByService proteinEncodedByService, ProteinService proteinService, ProteinInteractsWithProteinRepository proteinInteractsWithProteinRepository, GeneInteractsWithGeneRepository geneInteractsWithGeneRepository, DataSource dataSource, GeneService geneService) {
+    public ProteinInteractsWithProteinService(Environment env, ProteinEncodedByService proteinEncodedByService, ProteinService proteinService, ProteinInteractsWithProteinRepository proteinInteractsWithProteinRepository, GeneInteractsWithGeneRepository geneInteractsWithGeneRepository, DataSource dataSource, GeneService geneService) {
         this.proteinInteractsWithProteinRepository = proteinInteractsWithProteinRepository;
         this.geneInteractsWithGeneRepository = geneInteractsWithGeneRepository;
         this.proteinService = proteinService;
         this.dataSource = dataSource;
         this.geneService = geneService;
         this.proteinEncodedByService = proteinEncodedByService;
+        this.env = env;
     }
 
 
@@ -60,23 +63,39 @@ public class ProteinInteractsWithProteinService {
 
         if (updates == null)
             return false;
-
         if (updates.containsKey(UpdateOperation.Deletion))
             proteinInteractsWithProteinRepository.deleteAll(proteinInteractsWithProteinRepository.findProteinInteractsWithProteinsByIdIn(updates.get(UpdateOperation.Deletion).keySet().stream().map(o -> o.getId1() > o.getId2() ? o.flipIds() : o).collect(Collectors.toSet())));
-
-        LinkedList<ProteinInteractsWithProtein> toSave = new LinkedList(updates.get(UpdateOperation.Insertion).values());
-        int insertCount = toSave.size();
-        toSave.forEach(p -> {
-            if (p.getPrimaryIds().getId1() > p.getPrimaryIds().getId2())
-                p.flipIds();
-        });
+        int insertCount = 0;
+        LinkedList<ProteinInteractsWithProtein> toSave = new LinkedList<>();
+        if (updates.containsKey(UpdateOperation.Insertion)) {
+            toSave.addAll(updates.get(UpdateOperation.Insertion).values());
+            insertCount = toSave.size();
+            toSave.forEach(p -> {
+                if (p.getPrimaryIds().getId1() > p.getPrimaryIds().getId2())
+                    p.flipIds();
+            });
+        }
         if (updates.containsKey(UpdateOperation.Alteration)) {
             HashMap<PairId, ProteinInteractsWithProtein> toUpdate = updates.get(UpdateOperation.Alteration);
 
-            proteinInteractsWithProteinRepository.findProteinInteractsWithProteinsByIdIn(new HashSet<>(toUpdate.keySet().stream().map(o -> o.getId1() <= o.getId2() ? o : o.flipIds()).collect(Collectors.toSet()))).forEach(d -> {
-                d.setValues(toUpdate.get(d.getPrimaryIds()));
-                toSave.add(d);
+            HashSet<PairId> batch = new HashSet<>();
+            toUpdate.keySet().forEach(p -> {
+                batch.add(p);
+                if (batch.size() > 1_000) {
+                    proteinInteractsWithProteinRepository.findProteinInteractsWithProteinsByIdIn(batch).forEach(d -> {
+                        d.setValues(toUpdate.get(d.getPrimaryIds()));
+                        toSave.add(d);
+                    });
+                    batch.clear();
+                }
             });
+            if (!batch.isEmpty()) {
+                proteinInteractsWithProteinRepository.findProteinInteractsWithProteinsByIdIn(batch).forEach(d -> {
+                    d.setValues(toUpdate.get(d.getPrimaryIds()));
+                    toSave.add(d);
+                });
+                batch.clear();
+            }
         }
         proteinInteractsWithProteinRepository.saveAll(toSave);
         int changes = insertCount + (updates.containsKey(UpdateOperation.Alteration) ? updates.get(UpdateOperation.Alteration).size() : 0) + (updates.containsKey(UpdateOperation.Deletion) ? updates.get(UpdateOperation.Deletion).size() : 0);
@@ -105,56 +124,59 @@ public class ProteinInteractsWithProteinService {
             throwables.printStackTrace();
             return false;
         }
-        HashMap<Integer, HashMap<Integer,GeneInteractsWithGene>> ggis = new HashMap<>();
+        HashMap<Integer, HashMap<Integer, GeneInteractsWithGene>> ggis = new HashMap<>();
         LinkedList<GeneInteractsWithGene> ggiList = new LinkedList<>();
 
-        findAllProteins().forEach(ppi -> {
-            try {
-                int gid1 = proteinGeneMap.get(ppi.getPrimaryIds().getId1());
-                int gid2 = proteinGeneMap.get(ppi.getPrimaryIds().getId2());
-                if (gid1 > gid2) {
-                    int tmp = gid2;
-                    gid2 = gid1;
-                    gid1 = tmp;
-                }
-                GeneInteractsWithGene ggi;
-                if (ggis.containsKey(gid1) && ggis.get(gid1).containsKey(gid2)) {
-                    ggi = ggis.get(gid1).get(gid2);
-                    if(ggi==null)
-                        ggi = findGene(new PairId(gid1,gid2)).get();
-                } else {
-                    ggi = new GeneInteractsWithGene(gid1, gid2);
-                    if (!ggis.containsKey(gid1))
-                        ggis.put(gid1, new HashMap<>());
-                    ggis.get(gid1).put(gid2,ggi);
-                    ggiList.add(ggi);
-                }
-                ggi.addEvidenceTypes(ppi.getEvidenceTypes());
+        int pageSize = 100_000;
+        long total = proteinInteractsWithProteinRepository.count();
+        for (long entry = 0; entry < total; entry += pageSize)
+            proteinInteractsWithProteinRepository.findAll(PageRequest.of((int) (entry / pageSize), pageSize)).forEach(ppi -> {
+                try {
+                    int gid1 = proteinGeneMap.get(ppi.getPrimaryIds().getId1());
+                    int gid2 = proteinGeneMap.get(ppi.getPrimaryIds().getId2());
+                    if (gid1 > gid2) {
+                        int tmp = gid2;
+                        gid2 = gid1;
+                        gid1 = tmp;
+                    }
+                    GeneInteractsWithGene ggi;
+                    if (ggis.containsKey(gid1) && ggis.get(gid1).containsKey(gid2)) {
+                        ggi = ggis.get(gid1).get(gid2);
+                        if (ggi == null)
+                            ggi = findGene(new PairId(gid1, gid2)).get();
+                    } else {
+                        ggi = new GeneInteractsWithGene(gid1, gid2);
+                        if (!ggis.containsKey(gid1))
+                            ggis.put(gid1, new HashMap<>());
+                        ggis.get(gid1).put(gid2, ggi);
+                        ggiList.add(ggi);
+                    }
+                    ggi.addEvidenceTypes(ppi.getEvidenceTypes());
 //                ggi.addDatabases(ppi.getDatabases());
-                ggi.addAssertedBy(ppi.getAssertedBy());
-                ggi.addMethod(ppi.getMethods());
-                ggi.addJointTissues(ppi.getJointTissues());
-                ggi.addSubcellularLocations(ppi.getSubcellularLocations());
-                ggi.addTissues(ppi.getTissues());
-                ggi.addDevelopmentStages(ppi.getDevelopmentStages());
-                ggi.addBrainTissues(ppi.getBrainTissues());
+                    ggi.addAssertedBy(ppi.getAssertedBy());
+                    ggi.addMethod(ppi.getMethods());
+                    ggi.addJointTissues(ppi.getJointTissues());
+                    ggi.addSubcellularLocations(ppi.getSubcellularLocations());
+                    ggi.addTissues(ppi.getTissues());
+                    ggi.addDevelopmentStages(ppi.getDevelopmentStages());
+                    ggi.addBrainTissues(ppi.getBrainTissues());
 
 
-                if(ggiList.size()>100_000) {
-                    geneInteractsWithGeneRepository.saveAll(ggiList);
-                    ggis.values().forEach(m->m.keySet().forEach(k->m.put(k,null)));
-                    ggiList.clear();
+                    if (ggiList.size() > 100_000) {
+                        geneInteractsWithGeneRepository.saveAll(ggiList);
+                        ggis.values().forEach(m -> m.keySet().forEach(k -> m.put(k, null)));
+                        ggiList.clear();
+                    }
+
+                } catch (NullPointerException ignore) {
                 }
-
-            } catch (NullPointerException ignore) {
-            }
-        });
+            });
         geneInteractsWithGeneRepository.saveAll(ggiList);
         return true;
     }
 
-    public Iterable<ProteinInteractsWithProtein> findAllProteins() {
-        return proteinInteractsWithProteinRepository.findAll();
+    public Iterable<ProteinInteractsWithProtein> findAllProteins(int page, int count) {
+        return proteinInteractsWithProteinRepository.findAll(PageRequest.of(page,count));
     }
 
     public Iterable<GeneInteractsWithGene> findAllGenes() {
@@ -162,15 +184,23 @@ public class ProteinInteractsWithProteinService {
     }
 
     public void importEdges() {
-        findAllProteins().forEach(edge -> importProteinEdge(edge.getPrimaryIds(), edge.getEvidenceTypes().contains("exp")));
-        findAllGenes().forEach(edge -> importGeneEdge(edge.getPrimaryIds(), edge.getEvidenceTypes().contains("exp")));
+        int pageSize = 100_000;
+        long total = proteinInteractsWithProteinRepository.count();
+        for (long entry = 0; entry < total; entry += pageSize)
+            proteinInteractsWithProteinRepository.findAll(PageRequest.of((int) (entry / pageSize), pageSize)).
+                    forEach(edge -> importProteinEdge(edge.getPrimaryIds(), edge.getEvidenceTypes().contains("exp")));
+        total = geneInteractsWithGeneRepository.count();
+        for (long entry = 0; entry < total; entry += pageSize)
+            geneInteractsWithGeneRepository.findAll(PageRequest.of((int) (entry / pageSize), pageSize)).forEach(edge -> importGeneEdge(edge.getPrimaryIds(), edge.getEvidenceTypes().contains("exp")));
     }
 
     private void importProteinEdge(PairId edge, boolean experimental) {
         if (!proteins.containsKey(edge.getId1()))
             proteins.put(edge.getId1(), new HashMap<>());
         proteins.get(edge.getId1()).put(edge, new Pair<>(true, experimental));
-
+        if (!proteins.containsKey(edge.getId2()))
+            proteins.put(edge.getId2(), new HashMap<>());
+        proteins.get(edge.getId2()).put(edge, new Pair<>(true, experimental));
     }
 
 
@@ -178,7 +208,9 @@ public class ProteinInteractsWithProteinService {
         if (!genes.containsKey(edge.getId1()))
             genes.put(edge.getId1(), new HashMap<>());
         genes.get(edge.getId1()).put(edge, new Pair<>(true, experimental));
-
+        if (!genes.containsKey(edge.getId2()))
+            genes.put(edge.getId2(), new HashMap<>());
+        genes.get(edge.getId2()).put(edge, new Pair<>(true, experimental));
     }
 
     public boolean isProteinEdge(PairId edge) {
@@ -311,5 +343,17 @@ public class ProteinInteractsWithProteinService {
 
     public Long getProteinCount() {
         return proteinInteractsWithProteinRepository.count();
+    }
+
+    public List<PairId> getAllProteinIDs() {
+        LinkedList<PairId> allIDs = new LinkedList<>();
+        proteins.values().forEach(v->allIDs.addAll(v.keySet()));
+        return allIDs;
+    }
+
+    public List<PairId> getAllGeneIDs() {
+        LinkedList<PairId> allIDs = new LinkedList<>();
+        genes.values().forEach(v->allIDs.addAll(v.keySet()));
+        return allIDs;
     }
 }
