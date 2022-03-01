@@ -822,13 +822,9 @@ public class UpdateService {
         try {
             BufferedReader br = ReaderUtils.getBasicReader(updateFile);
             String line = "";
-            boolean first = true;
             while ((line = br.readLine()) != null) {
-                if (first) {
-                    first = false;
-                    if (line.charAt(0) == '[')
-                        line = line.substring(1);
-                }
+                if (line.charAt(0) == '[')
+                    line = line.substring(1);
                 try {
                     T d = objectMapper.readValue(line, valueType);
                     inserts.put(d.getUniqueId(), d);
@@ -836,8 +832,8 @@ public class UpdateService {
                     e.printStackTrace();
                     log.error("Malformed input line in " + updateFile.getName() + ": " + line);
                 }
-                if (line.charAt(line.length() - 1) == ']')
-                    break;
+//                if (line.charAt(line.length() - 1) == ']')
+//                    break;
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -851,14 +847,10 @@ public class UpdateService {
         try {
             BufferedReader br = ReaderUtils.getBasicReader(updateFile);
             String line = "";
-            boolean first = true;
 
             while ((line = br.readLine()) != null) {
-                if (first) {
-                    first = false;
-                    if (line.charAt(0) == '[')
-                        line = line.substring(1);
-                }
+                if (line.charAt(0) == '[')
+                    line = line.substring(1);
                 try {
                     T d = objectMapper.readValue(line, valueType);
                     d.setId(mapper.mapIds(d.getIdsToMap()));
@@ -869,8 +861,8 @@ public class UpdateService {
                 } catch (NullPointerException e) {
                     continue;
                 }
-                if (line.charAt(line.length() - 1) == ']')
-                    break;
+//                if (line.charAt(line.length() - 1) == ']')
+//                    break;
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -884,17 +876,15 @@ public class UpdateService {
         try {
             BufferedReader br = ReaderUtils.getBasicReader(updateFile);
             String line = "";
-            boolean first = true;
             int l = 0;
             while ((line = br.readLine()) != null) {
                 l++;
                 if (l < skip)
                     continue;
-                if (first) {
-                    first = false;
-                    if (line.charAt(0) == '[')
-                        line = line.substring(1);
-                }
+                if (line.charAt(0) == '[')
+                    line = line.substring(1);
+                if (line.charAt(0) != '{')
+                    line = '{' + line;
                 try {
                     T d = objectMapper.readValue(line, valueType);
                     d.setId(mapper.mapIds(d.getIdsToMap()));
@@ -907,8 +897,8 @@ public class UpdateService {
                 } catch (NullPointerException e) {
                     continue;
                 }
-                if (line.charAt(line.length() - 1) == ']')
-                    break;
+//                if (line.charAt(line.length() - 1) == ']')
+//                    break;
 
             }
         } catch (IOException e) {
