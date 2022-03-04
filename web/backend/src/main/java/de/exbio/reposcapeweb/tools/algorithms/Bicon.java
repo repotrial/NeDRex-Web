@@ -66,7 +66,10 @@ public class Bicon implements Algorithm{
 
     @Override
     public File[] interactionFiles(JobRequest request) {
-        return new File[]{new File(utils.dataDir, "gene_gene_interaction_" + (request.experimentalOnly ? "exp" : "all") + ".pairs")};
+        String tissue = "";
+        if(request.tissue!=null && request.tissue.length()>0 && !request.tissue.equals("all"))
+            tissue = "-"+request.tissue.replaceAll(" ","");
+        return new File[]{new File(utils.dataDir, "gene_gene_interaction"+tissue+"_" + (request.experimentalOnly ? "exp" : "all") + ".pairs")};
     }
 
     @Override

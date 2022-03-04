@@ -100,7 +100,11 @@ public class ClosenessCentrality implements Algorithm {
 
     @Override
     public File[] interactionFiles(JobRequest request) {
-        return new File[]{request.getParams().get("type").equals("gene") ? new File(utils.dataDir, "ranking_files/GGDr_" + (request.experimentalOnly ? "exp" : "all") + ".gt") : new File(utils.dataDir, "ranking_files/PPDr_all.gt")};
+        String tissue = "";
+        if(request.tissue!=null && request.tissue.length()>0&& !request.tissue.equals("all"))
+            tissue = "-"+request.tissue.replaceAll(" ","");
+        String suffix = (request.experimentalOnly ? "exp" : "all") + ".gt";
+        return new File[]{request.getParams().get("type").equals("gene") ? new File(utils.dataDir, "ranking_files/GGDr"+tissue+"_" +suffix)  : new File(utils.dataDir, "ranking_files/PPDr"+tissue+"_"+suffix)};
     }
 
     @Override

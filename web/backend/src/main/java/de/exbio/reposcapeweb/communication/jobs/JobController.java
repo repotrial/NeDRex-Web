@@ -81,6 +81,7 @@ public class JobController {
         Job j = createJob(req);
 
         j.addParam("experimentalOnly", req.experimentalOnly);
+        j.addParam("tissue", req.tissue);
         for (String param : req.getParams().keySet()) {
             if (!param.equals("exprData"))
                 j.addParam(param, req.getParams().get(param));

@@ -96,15 +96,16 @@ public class ToolService {
         }
     }
 
-    public void createInteractionFiles(HashMap<Integer, String> tissueMap) {
+    public void createInteractionFiles(TreeMap<Integer, String> tissueMap) {
         File ggi_all = new File(dataDir, "gene_gene_interaction_all.pairs");
         File ggi_exp = new File(dataDir, "gene_gene_interaction_exp.pairs");
         HashMap<Integer, BufferedWriter> all_writers = new HashMap<>();
         HashMap<Integer, BufferedWriter> exp_writers = new HashMap<>();
 
         tissueMap.forEach((k, v) -> {
-            all_writers.put(k, WriterUtils.getBasicWriter(new File(dataDir,"gene_gene_interaction-"+v+"_all.tsv")));
-            exp_writers.put(k, WriterUtils.getBasicWriter(new File(dataDir,"gene_gene_interaction-"+v+"_exp.tsv")));
+            String tissueInFiles = v.replaceAll(" ","");
+            all_writers.put(k, WriterUtils.getBasicWriter(new File(dataDir,"gene_gene_interaction-"+tissueInFiles+"_all.pairs")));
+            exp_writers.put(k, WriterUtils.getBasicWriter(new File(dataDir,"gene_gene_interaction-"+tissueInFiles+"_exp.pairs")));
         });
 
         try (BufferedWriter bw_all = WriterUtils.getBasicWriter(ggi_all); BufferedWriter bw_exp = WriterUtils.getBasicWriter(ggi_exp)) {
@@ -134,8 +135,9 @@ public class ToolService {
         File ppi_all = new File(dataDir, "protein_protein_interaction_all.pairs");
         File ppi_exp = new File(dataDir, "protein_protein_interaction_exp.pairs");
         tissueMap.forEach((k, v) -> {
-            all_writers.put(k, WriterUtils.getBasicWriter(new File(dataDir,"protein_protein_interaction-"+v+"_all.tsv")));
-            exp_writers.put(k, WriterUtils.getBasicWriter(new File(dataDir,"protein_protein_interaction-"+v+"_exp.tsv")));
+            String tissueInFiles = v.replaceAll(" ","");
+            all_writers.put(k, WriterUtils.getBasicWriter(new File(dataDir,"protein_protein_interaction-"+tissueInFiles+"_all.pairs")));
+            exp_writers.put(k, WriterUtils.getBasicWriter(new File(dataDir,"protein_protein_interaction-"+tissueInFiles+"_exp.pairs")));
         });
         try (BufferedWriter bw_all = WriterUtils.getBasicWriter(ppi_all); BufferedWriter bw_exp = WriterUtils.getBasicWriter(ppi_exp)) {
             interactionService.getProteins().forEach((id1, map) -> map.forEach((id, vals) -> {

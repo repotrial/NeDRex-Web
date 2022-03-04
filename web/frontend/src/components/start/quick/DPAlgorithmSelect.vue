@@ -72,8 +72,8 @@
                 </v-slider>
               </div>
               <div style="display: flex">
-                <div>
                   <v-switch
+                    style="justify-self: flex-start; margin-left: 0; margin-right: auto"
                     label="Only use experimentally validated interaction networks"
                     v-model="experimentalSwitch"
                   >
@@ -92,7 +92,7 @@
                       </v-tooltip>
                     </template>
                   </v-switch>
-                </div>
+                <v-select :items="tissues" v-model="tissueFilter" outlined dense label="Tissue" style="max-width: 250px; justify-self: center; margin-left: auto; margin-right: auto"></v-select>
               </div>
               <div style="display:flex; width: 100%">
                 <div style="justify-self: flex-start">
@@ -226,6 +226,8 @@ export default {
       methodModel: undefined,
       experimentalSwitch: true,
       showDescription: false,
+      tissues: undefined,
+      tissueFilter: "all",
       methods: [{
         id: "trustrank",
         label: "TrustRank",
@@ -275,7 +277,7 @@ export default {
   created() {
     if (this.blitz)
       this.methodModel = 1
-
+    this.getTissueTypes()
   },
 
   watch: {
@@ -325,6 +327,18 @@ export default {
       }
     },
 
+    getTissueTypes: function () {
+      this.$http.get("/getTissues").then(response => {
+        if (response.data != null)
+          return response.data
+      }).then(data => {
+        this.tissues = [{text: 'All', value: 'all'}]
+        data.forEach(tissue => {
+          this.tissues.push({text: tissue, value: tissue})
+        })
+      }).catch(console.error)
+    },
+
     getParams: async function () {
       let params = {}
       let models = this.getAlgorithmModels()
@@ -348,7 +362,7 @@ export default {
       let params = await this.getParams()
       delete params.nodesOnly
       delete params.addInteractions
-      let str = ""
+      let str = "Tissue="+this.tissueFilter+", "
       Object.keys(params).forEach(key => {
         str += key + "=" + params[key] + ", "
       })
@@ -368,7 +382,8 @@ export default {
         dbVersion: this.$global.metadata.repotrial.version,
         algorithm: this.getAlgorithmMethod(),
         goal: this.goal,
-        params: params
+        params: params,
+        tissue: this.tissueFilter
       }
 
       payload.experimentalOnly = params.experimentalOnly
@@ -398,7 +413,8 @@ export default {
         dbVersion: this.$global.metadata.repotrial.version,
         algorithm: this.getAlgorithmMethod(),
         goal: this.goal,
-        params: params
+        params: params,
+        tissue: this.tissueFilter
       }
 
       payload.experimentalOnly = params.experimentalOnly

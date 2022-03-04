@@ -38,8 +38,8 @@ public class ProteinInteractsWithProteinService {
     private final GeneService geneService;
 
     private final boolean directed = false;
-    private final HashMap<String, Integer> tissueIDMap = new HashMap<>();
-    private final HashMap<Integer, String> idTissueMap = new HashMap<>();
+    private final TreeMap<String, Integer> tissueIDMap = new TreeMap<>();
+    private final TreeMap<Integer, String> idTissueMap = new TreeMap<>();
     private final HashMap<Integer, HashMap<PairId, Pair<Pair<Boolean, Boolean>, HashSet<Integer>>>> proteins = new HashMap<>();
     private final HashMap<Integer, HashMap<PairId, Pair<Pair<Boolean, Boolean>, HashSet<Integer>>>> genes = new HashMap<>();
 
@@ -324,8 +324,12 @@ public class ProteinInteractsWithProteinService {
         return new HashSet<>(tissueIDMap.keySet());
     }
 
-    public HashMap<Integer,String> getIdTissueMap(){
+    public TreeMap<Integer,String> getIdTissueMap(){
         return idTissueMap;
+    }
+
+    public TreeMap<String,Integer> getTissueIDMap(){
+        return tissueIDMap;
     }
 
     public List<GeneInteractsWithGene> getGenes(Collection<PairId> ids) {
@@ -390,4 +394,21 @@ public class ProteinInteractsWithProteinService {
         genes.values().forEach(v -> allIDs.addAll(v.keySet()));
         return allIDs;
     }
+
+    public boolean isTissueProtein(int id1, int id2, Integer tissueId) {
+        try {
+            return proteins.get(id1).get(new PairId(id1,id2)).second.contains(tissueId);
+        } catch (NullPointerException e) {
+            return false;
+        }
+    }
+
+    public boolean isTissueGene(int id1, int id2, Integer tissueId) {
+        try {
+            return genes.get(id1).get(new PairId(id1,id2)).second.contains(tissueId);
+        } catch (NullPointerException e) {
+            return false;
+        }
+    }
+
 }

@@ -55,8 +55,9 @@
             </div>
             <v-card-title style="margin-left:-15px; padding-top:10px; padding-bottom: 15px">Parameters</v-card-title>
             <div style=" margin-left: 15px">
-              <div style="display: flex; justify-content: flex-start">
+              <div style="display: flex">
                 <v-switch
+                  style="justify-self: flex-start; margin-left: 0; margin-right: auto"
                   label="Only use experimentally validated interaction networks"
                   v-model="experimentalSwitch"
                 >
@@ -76,6 +77,7 @@
                     </v-tooltip>
                   </template>
                 </v-switch>
+                  <v-select :items="tissues" v-model="tissueFilter" outlined dense label="Tissue" style="max-width: 250px; justify-self: center; margin-left: auto; margin-right: auto"></v-select>
               </div>
               <div>
 
@@ -604,13 +606,13 @@ export default {
     seeds: Array,
     seedTypeId: Number,
     socketEvent: String,
-    goal:{
+    goal: {
       type: String,
       default: "module_identification",
     },
-    flat:{
+    flat: {
       default: false,
-      type:Boolean,
+      type: Boolean,
     },
     header: {
       default: true,
@@ -630,6 +632,8 @@ export default {
       groupModel: undefined,
       showDescription: false,
       exprIds: undefined,
+      tissues: undefined,
+      tissueFilter: "all",
       groups: [
         {
           id: "nw",
@@ -735,6 +739,7 @@ export default {
       this.$emit("algorithmSelectedEvent", true)
     }
     this.getExprIDTypes()
+    this.getTissueTypes()
   },
 
   watch: {
@@ -758,14 +763,14 @@ export default {
       return undefined;
     },
 
-    getGroup: function(){
+    getGroup: function () {
       return this.groupModel
     },
 
-    setMethod: async function(method){
+    setMethod: async function (method) {
       method = method.toLowerCase()
-      let m = this.methods.filter(m=>m.id===method)[0]
-      if(m.group === "nw")
+      let m = this.methods.filter(m => m.id === method)[0]
+      if (m.group === "nw")
         await this.setNWMethod(method)
       else
         await this.setExpMethod(method)
@@ -782,14 +787,14 @@ export default {
           }
         }
       })
-      if(params)
-      this.$nextTick(() => {
-        let models = this.getAlgorithmModels()
-        Object.keys(models).forEach(key => {
-          if (params[key] != null)
-            models[key] = params[key]
+      if (params)
+        this.$nextTick(() => {
+          let models = this.getAlgorithmModels()
+          Object.keys(models).forEach(key => {
+            if (params[key] != null)
+              models[key] = params[key]
+          })
         })
-      })
     },
     setExpMethod: async function (method, params) {
       this.groupModel = "exp"
@@ -828,7 +833,7 @@ export default {
       let params = await this.getParams()
       delete params.nodesOnly
       delete params.addInteractions
-      let str = ""
+      let str = "Tissue="+this.tissueFilter+", "
       Object.keys(params).forEach(key => {
         if (key === "exprData")
           str += "Expression-File=" + this.getAlgorithmModels().exprFile.name
@@ -899,8 +904,9 @@ export default {
         userId: this.$cookies.get("uid"),
         dbVersion: this.$global.metadata.repotrial.version,
         algorithm: this.getAlgorithmMethod(),
-        goal:this.goal,
-        params: params
+        goal: this.goal,
+        params: params,
+        tissue: this.tissueFilter
       }
       payload.selection = true
       payload.experimentalOnly = params.experimentalOnly
@@ -920,6 +926,17 @@ export default {
       }).catch(console.error)
     },
 
+    getTissueTypes: function () {
+      this.$http.get("/getTissues").then(response => {
+        if (response.data != null)
+          return response.data
+      }).then(data => {
+        this.tissues = [{text: 'All', value: 'all'}]
+        data.forEach(tissue => {
+          this.tissues.push({text: tissue, value: tissue})
+        })
+      }).catch(console.error)
+    },
 
     getExprIDTypes: function () {
       this.$http.get("/getAllowedExpressionIDs").then(response => {

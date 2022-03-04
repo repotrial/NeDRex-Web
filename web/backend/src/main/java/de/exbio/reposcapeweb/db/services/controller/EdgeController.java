@@ -1,7 +1,6 @@
 package de.exbio.reposcapeweb.db.services.controller;
 
 import de.exbio.reposcapeweb.communication.cache.Graphs;
-import de.exbio.reposcapeweb.configs.DBConfig;
 import de.exbio.reposcapeweb.db.entities.edges.*;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
 import de.exbio.reposcapeweb.db.services.edges.*;
@@ -748,6 +747,29 @@ public class EdgeController {
             case "DisorderComorbidity" -> apply(DisorderComorbidWithDisorder.allAttributes, DisorderComorbidWithDisorder.detailAttributes);
             case "GeneGeneInteraction" -> apply(GeneInteractsWithGene.allAttributes, GeneInteractsWithGene.detailAttributes);
             default -> null;
+        };
+    }
+
+    public TreeMap<String, Integer> getTissueIDMap() {
+        return this.proteinInteractsWithProteinService.getTissueIDMap();
+    }
+
+
+    public boolean isTissue(int type, int id1, int id2, Integer tissueId) {
+        return switch (Graphs.getEdge(type)) {
+            case "GeneAssociatedWithDisorder" -> true;
+            case "DrugTargetGene" -> true;
+            case "ProteinEncodedBy" -> true;
+            case "DrugIndication" -> true;
+            case "DrugContraindication" -> true;
+            case "DrugTargetProtein" -> true;
+            case "ProteinProteinInteraction" -> proteinInteractsWithProteinService.isTissueProtein(id1, id2, tissueId);
+            case "ProteinPathway" -> true;
+            case "ProteinAssociatedWithDisorder" -> true;
+            case "DisorderHierarchy" -> true;
+            case "DisorderComorbidity" -> true;
+            case "GeneGeneInteraction" -> proteinInteractsWithProteinService.isTissueGene(id1, id2, tissueId);
+            default -> true;
         };
     }
 }

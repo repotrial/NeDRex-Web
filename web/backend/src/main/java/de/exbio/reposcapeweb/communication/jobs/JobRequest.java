@@ -18,6 +18,7 @@ public class JobRequest {
     public List<Integer> nodes;
     public String exprData;
     public boolean experimentalOnly;
+    public String tissue;
     public String goal;
     @JsonIgnore
     public HashSet<Integer> ids;

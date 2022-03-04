@@ -445,7 +445,7 @@ public class WebGraphService {
                 });
             } else {
                 boolean extend = (extendPPI & edgeName.equals("ProteinProteinInteraction")) | (extendGGI & edgeName.equals("GeneGeneInteraction")) | edgeName.equals("DisorderHierarchy") | (!Objects.equals(edgeNodes.first, edgeNodes.second) & !(connectedNodes.contains(Graphs.getNodesfromEdge(Graphs.getEdge(edgeName)).first) & connectedNodes.contains(Graphs.getNodesfromEdge(Graphs.getEdge(edgeName)).second)));
-                extendGraph(finalG, edgeName, !extend, false, drugTargetsWithAction, disorderAssociationCutoff, disorderParents, experimentalInteraction);
+                extendGraph(finalG, edgeName, !extend, false, drugTargetsWithAction, disorderAssociationCutoff, disorderParents, experimentalInteraction, "");
 
                 if (request.connectedOnly) {
                     request.nodes.forEach((k, v) -> removeUnconnectedNodes(finalG, Graphs.getNode(k), null));
@@ -660,7 +660,7 @@ public class WebGraphService {
             HashSet<String> added = new HashSet<>();
             requestedEdges.forEach(e -> {
                 added.add(e);
-                extendGraph(g, e, inducedEdges.contains(e), switched.contains(e), false, null, switched.contains(e) && e.equals("DisorderHierarchy"), false);
+                extendGraph(g, e, inducedEdges.contains(e), switched.contains(e), false, null, switched.contains(e) && e.equals("DisorderHierarchy"), false, "");
             });
             if (added.isEmpty())
                 break;
@@ -668,13 +668,18 @@ public class WebGraphService {
         }
     }
 
-    public void extendGraph(Graph g, String e, boolean endDefined, boolean switched, boolean drugTargetActionFilter, Double disorderGenomeAssociationCutoff, boolean getDisorderParents, boolean experimentalInteractionsOnly) {
+    public void extendGraph(Graph g, String e, boolean endDefined, boolean switched, boolean drugTargetActionFilter, Double disorderGenomeAssociationCutoff, boolean getDisorderParents, boolean experimentalInteractionsOnly, String tissueFilter) {
         int edgeId = g.getEdge(e);
         boolean extend = !endDefined;
         Pair<Integer, Integer> nodeIds = g.getNodesfromEdge(edgeId);
         LinkedList<Edge> edges = new LinkedList<>();
         HashSet<Integer> nodes = new HashSet<>();
+        boolean isTissueFilter = tissueFilter != null && this.edgeController.getTissueIDMap().containsKey(tissueFilter);
+        Integer tissueId = null;
+        if(isTissueFilter)
+            tissueId = this.edgeController.getTissueIDMap().get(tissueFilter);
         if (g.getNodes().containsKey(nodeIds.first) & nodeIds.first.equals(nodeIds.second)) {
+            Integer finalTissueId = tissueId;
             g.getNodes().get(nodeIds.first).keySet().forEach(nodeId1 -> {
                 try {
                     HashSet<PairId> edgeIds;
@@ -685,6 +690,9 @@ public class WebGraphService {
                     }
                     if (edgeIds == null || edgeIds.isEmpty())
                         return;
+                    if (isTissueFilter & (e.equals("GeneGeneInteraction") | e.equals("ProteinProteinInteraction"))) {
+                        edgeIds.removeAll(edgeIds.stream().filter(p -> !edgeController.isTissue(edgeId, p.getId1(), p.getId2(), finalTissueId)).collect(Collectors.toSet()));
+                    }
                     if (experimentalInteractionsOnly & (e.equals("GeneGeneInteraction") | e.equals("ProteinProteinInteraction"))) {
                         edgeIds.removeAll(edgeIds.stream().filter(p -> !edgeController.isExperimental(edgeId, p.getId1(), p.getId2())).collect(Collectors.toSet()));
                     }
@@ -1138,7 +1146,7 @@ public class WebGraphService {
         algorithm.createGraph(derived, j, nodeTypeId, g);
 
         if (algorithm.getEnum().equals(ToolService.Tool.BICON)) {
-            extendGraph(derived, "GeneGeneInteraction", true, false, false, 0.0, false, false);
+            extendGraph(derived, "GeneGeneInteraction", true, false, false, 0.0, false, false, "");
         } else {
 
             //TODO maybe as an option
@@ -1199,6 +1207,11 @@ public class WebGraphService {
                 g.getEdges().put(k, v);
         });
         boolean isDrug = nodeTypeId == Graphs.getNode("drug");
+        String tissueFilter = j.getParams().get("tissue");
+        boolean isTissueFilter = tissueFilter != null && edgeController.getTissueIDMap().containsKey(tissueFilter);
+        Integer tissueID = null;
+        if(isTissueFilter)
+            tissueID=edgeController.getTissueIDMap().get(tissueFilter);
         if (!isDrug && j.getParams().containsKey("addInteractions") && j.getParams().get("addInteractions").equals("true")) {
             boolean expOnly = j.getParams().containsKey("experimentalOnly") && j.getParams().get("experimentalOnly").equals("true");
             int typeId1 = nodeTypeId;
@@ -1208,18 +1221,19 @@ public class WebGraphService {
                 if (!g.getEdges().containsKey(edgeId))
                     g.getEdges().put(edgeId, new LinkedList<>());
                 HashMap<Integer, HashSet<Integer>> edges = new HashMap<>();
+                Integer finalTissueID = tissueID;
                 g.getNodes().get(typeId1).keySet().forEach(n -> {
                     try {
                         edgeController.getEdges(edgeId, typeId1, n, false).stream().filter(e -> g.getNodes().get(typeId2).containsKey(e.getId2())).forEach(e -> {
                             int n2 = e.getId2();
                             if (n < n2) {
-                                if (!expOnly | edgeController.isExperimental(edgeId, n, n2)) {
+                                if ((!expOnly | edgeController.isExperimental(edgeId, n, n2)) && (!isTissueFilter | edgeController.isTissue(edgeId, n, n2, finalTissueID))) {
                                     if (!edges.containsKey(n))
                                         edges.put(n, new HashSet<>());
                                     edges.get(n).add(n2);
                                 }
                             } else {
-                                if (!expOnly | edgeController.isExperimental(edgeId, n2, n)) {
+                                if ((!expOnly | edgeController.isExperimental(edgeId, n2, n))&& (!isTissueFilter | edgeController.isTissue(edgeId, n2, n, finalTissueID))) {
                                     if (!edges.containsKey(n2))
                                         edges.put(n2, new HashSet<>());
                                     edges.get(n2).add(n);
@@ -1649,7 +1663,7 @@ public class WebGraphService {
             String edgeName = request.path.get(p).get("label");
             boolean drugTargetFilter = drugTargetWithAction && (edgeName.equals("DrugTargetGene") | edgeName.equals("DrugTargetProtein"));
             boolean interactionFilter = expInteractions && (edgeName.equals("GeneGeneInteraction") | edgeName.equals("ProteinProteinInteraction"));
-            this.extendGraph(g, edgeName, endDefined, false, drugTargetFilter, disorderAssociationCutoff, getDisorderParents, interactionFilter);
+            this.extendGraph(g, edgeName, endDefined, false, drugTargetFilter, disorderAssociationCutoff, getDisorderParents, interactionFilter,"");
 
             String connector = request.path.get(p).get("connector");
             if (connector != null) {

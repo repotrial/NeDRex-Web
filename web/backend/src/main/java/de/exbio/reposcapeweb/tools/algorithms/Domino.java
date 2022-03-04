@@ -53,7 +53,10 @@ public class Domino implements Algorithm {
 
     @Override
     public File[] interactionFiles(JobRequest request) {
-        File interactions = (request.getParams().get("type").equals("gene") ? new File(utils.dataDir, "geneInteractsWithGene_" + (request.experimentalOnly ? "exp" : "all") + ".sif") : new File(utils.dataDir, "proteinInteractsWithProtein_" + (request.experimentalOnly ? "exp" : "all") + ".sif"));
+        String tissue = "";
+        if(request.tissue!=null && request.tissue.length()>0&& !request.tissue.equals("all"))
+            tissue = "-"+request.tissue.replaceAll(" ","");
+        File interactions = (request.getParams().get("type").equals("gene") ? new File(utils.dataDir, "geneInteractsWithGene"+tissue+"_" + (request.experimentalOnly ? "exp" : "all") + ".sif") : new File(utils.dataDir, "proteinInteractsWithProtein"+tissue+"_" + (request.experimentalOnly ? "exp" : "all") + ".sif"));
         return new File[]{interactions, getIndexFile(interactions)};
     }
 

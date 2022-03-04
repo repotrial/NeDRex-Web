@@ -15,6 +15,7 @@ import de.exbio.reposcapeweb.db.entities.ids.PairId;
 import de.exbio.reposcapeweb.db.history.GraphHistoryDetail;
 import de.exbio.reposcapeweb.db.history.HistoryController;
 import de.exbio.reposcapeweb.db.services.controller.NodeController;
+import de.exbio.reposcapeweb.db.services.edges.ProteinInteractsWithProteinService;
 import de.exbio.reposcapeweb.db.services.nodes.GeneService;
 import de.exbio.reposcapeweb.db.services.nodes.ProteinService;
 import de.exbio.reposcapeweb.db.updates.UpdateService;
@@ -120,34 +121,6 @@ public class RequestController {
         return toJson(webGraphService.getEdgeDetails(gid, name, new PairId(id1, id2)));
     }
 
-//    @RequestMapping(value = "/getQuickExample", method = RequestMethod.GET)
-//    @ResponseBody
-//    public String getQuickExample(@RequestParam("nr") int nr, @RequestParam("nodeType") String nodeName) {
-//        HashMap<String, Object> out = new HashMap<>();
-//        LinkedList<Object> nodes = new LinkedList<>();
-//        if (nr == 2) {
-//            webGraphService.getQuickExample(nodeName, nr).forEach(n -> {
-//                nodes.add(nodeController.getNode(nodeName, n).getAsMap(new HashSet<>(Arrays.asList("id", "displayName", "primaryDomainId"))));
-//            });
-//            out.put("data", nodes);
-//            out.put("drugs", new LinkedList<>());
-//            out.put("disorders", new LinkedList<>());
-//            return toJson(out);
-//        } else {
-//            LinkedList<Integer> disorderIds = webGraphService.getQuickExample(nodeName, nr);
-//            out.put("data", webGraphService.getConnectedNodes(nr == 0 ? "disorder" : "drug", nodeName, disorderIds));
-//            if (nr == 1) {
-//                out.put("drugs", webGraphService.getDirectNodes(webGraphService.getQuickExample(nodeName,nr),"drug"));
-//                out.put("disorders",new LinkedList<>());
-//            }
-//            if(nr==0){
-//                out.put("drugs",webGraphService.getConnectedNodes("disorder","drug",disorderIds));
-//                out.put("disorders",disorderIds);
-//            }
-//            return toJson(out);
-//        }
-//
-//    }
 
     @RequestMapping(value = "/getSuggestionEntry", method = RequestMethod.GET)
     @ResponseBody
@@ -486,6 +459,15 @@ public class RequestController {
     }
 
     @Autowired
+    ProteinInteractsWithProteinService ppiService;
+
+    @RequestMapping(value="/getTissues", method=RequestMethod.GET)
+    @ResponseBody
+    public String getTissues(){
+        return toJson(ppiService.getTissueIDMap().keySet());
+    }
+
+    @Autowired
     GeneService geneService;
 
     @Autowired
@@ -496,7 +478,6 @@ public class RequestController {
     public String getAllowedExpressionIDs() {
         HashSet<String> allIds = new HashSet<>();
         allIds.addAll(geneService.getDomainIdTypes());
-//        allIds.addAll(proteinService.getDomainIdTypes());
         return toJson(allIds);
     }
 

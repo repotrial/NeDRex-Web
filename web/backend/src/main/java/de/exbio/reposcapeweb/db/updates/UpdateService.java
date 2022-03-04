@@ -171,15 +171,12 @@ public class UpdateService {
         HashMap<Integer, BufferedWriter> tsv_writers = new HashMap<>();
         HashMap<Integer, BufferedWriter> sif_all_writers = new HashMap<>();
         HashMap<Integer, BufferedWriter> sif_exp_writers = new HashMap<>();
-        HashMap<Integer, String> tissueMap = proteinInteractsWithProteinService.getIdTissueMap();
+        TreeMap<Integer, String> tissueMap = proteinInteractsWithProteinService.getIdTissueMap();
         tissueMap.forEach((k, v) -> {
-            tsv_writers.put(k, WriterUtils.getBasicWriter(new File(dir,"proteinInteractsWithProtein-"+v+".tsv")));
-        });
-        tissueMap.forEach((k, v) -> {
-            sif_all_writers.put(k, WriterUtils.getBasicWriter(new File(dir, "proteinInteractsWithProtein-"+v+"_all.sif")));
-        });
-        tissueMap.forEach((k, v) -> {
-            sif_exp_writers.put(k, WriterUtils.getBasicWriter(new File(dir, "proteinInteractsWithProtein-"+v+"_exp.sif")));
+            String tissueInFile = v.replaceAll(" ","");
+            tsv_writers.put(k, WriterUtils.getBasicWriter(new File(dir,"proteinInteractsWithProtein-"+tissueInFile+".tsv")));
+            sif_all_writers.put(k, WriterUtils.getBasicWriter(new File(dir, "proteinInteractsWithProtein-"+tissueInFile+"_all.sif")));
+            sif_exp_writers.put(k, WriterUtils.getBasicWriter(new File(dir, "proteinInteractsWithProtein-"+tissueInFile+"_exp.sif")));
         });
 
         File ppiFile = new File(dir, "proteinInteractsWithProtein.tsv");
@@ -256,13 +253,10 @@ public class UpdateService {
         sif_all_writers.clear();
         sif_exp_writers.clear();
         tissueMap.forEach((k, v) -> {
-            tsv_writers.put(k, WriterUtils.getBasicWriter(new File(dir, "geneInteractsWithGene-"+v+".tsv")));
-        });
-        tissueMap.forEach((k, v) -> {
-            sif_all_writers.put(k, WriterUtils.getBasicWriter(new File(dir, "geneInteractsWithGene-"+v+"_all.sif")));
-        });
-        tissueMap.forEach((k, v) -> {
-            sif_exp_writers.put(k, WriterUtils.getBasicWriter(new File(dir, "geneInteractsWithGene-"+v+"_exp.sif")));
+            String tissueInFile = v.replaceAll(" ","");
+            tsv_writers.put(k, WriterUtils.getBasicWriter(new File(dir, "geneInteractsWithGene-"+tissueInFile+".tsv")));
+            sif_all_writers.put(k, WriterUtils.getBasicWriter(new File(dir, "geneInteractsWithGene-"+tissueInFile+"_all.sif")));
+            sif_exp_writers.put(k, WriterUtils.getBasicWriter(new File(dir, "geneInteractsWithGene-"+tissueInFile+"_exp.sif")));
         });
         try (BufferedWriter bw = WriterUtils.getBasicWriter(ggiFile); BufferedWriter bwSifa = WriterUtils.getBasicWriter(ggiSif_all); BufferedWriter bwSife = WriterUtils.getBasicWriter(ggiSif_exp)) {
             bwSifa.write(sifHead);
