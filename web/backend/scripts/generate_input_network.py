@@ -20,13 +20,19 @@ data =[]
 
 for file in os.listdir(inputFiles):
     if file.startswith("proteinInteractsWithProtein") & file.endswith(".tsv"):
-        data.append({"name": "PPDr"+file.split("-")[1].split(".")[0], "interactions": file, "targets": "drugHasTargetProtein.tsv"})
+        if "-" in file:
+            data.append({"name": "PPDr-"+file.split("-")[1].split(".")[0], "interactions": file, "targets": "drugHasTargetProtein.tsv"})
+        else:
+            data.append({"name": "PPDr", "interactions": file, "targets": "drugHasTargetProtein.tsv"})
     if file.startswith("geneInteractsWithGene") & file.endswith(".tsv"):
-        data.append({"name": "GGDr" + file.split("-")[1].split(".")[0], "interactions": file,
+        if "-" in file:
+            data.append({"name": "GGDr-" + file.split("-")[1].split(".")[0], "interactions": file,
                          "targets": "drugHasTargetGene.tsv"})
-
+        else:
+            data.append({"name": "GGDr", "interactions": file,
+                         "targets": "drugHasTargetGene.tsv"})
 for d in data:
-
+    print("processing "+d["name"])
     drug_set = set()
     drug_gene_map = dict()
     with open(inputFiles + '/' + d["targets"], 'r') as f:
@@ -100,13 +106,9 @@ for d in data:
     gg = gt.load_graph('temp.graphml')
     gg.save(prefix + '_all.gt')
     os.remove('temp.graphml')
-    print(allNet.number_of_nodes())  # 22619
-    print(allNet.number_of_edges())  # 362801
 
     nx.write_graphml(expNet, 'exp-temp.graphml')
     gg_exp = gt.load_graph('exp-temp.graphml')
     gg_exp.save(prefix + '_exp.gt')
     os.remove('exp-temp.graphml')
 
-    print(expNet.number_of_nodes())  # 22619
-    print(expNet.number_of_edges())
