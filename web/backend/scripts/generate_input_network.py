@@ -16,8 +16,14 @@ with open(inputFiles + '/drugs.tsv', 'r') as f:
         line = i.strip().split('\t')
         drug_groups_map[line[0]] = line[1] if len(line)>1 else ""
 
-data = [{"name": "PPDr", "interactions": "proteinInteractsWithProtein.tsv", "targets": "drugHasTargetProtein.tsv"},
-        {"name": "GGDr", "interactions": "geneInteractsWithGene.tsv", "targets": "drugHasTargetGene.tsv"}]
+data =[]
+
+for file in os.listdir(inputFiles):
+    if file.startswith("proteinInteractsWithProtein") & file.endswith(".tsv"):
+        data.append({"name": "PPDr"+file.split("-")[1].split(".")[0], "interactions": file, "targets": "drugHasTargetProtein.tsv"})
+    if file.startswith("geneInteractsWithGene") & file.endswith(".tsv"):
+        data.append({"name": "GGDr" + file.split("-")[1].split(".")[0], "interactions": file,
+                         "targets": "drugHasTargetGene.tsv"})
 
 for d in data:
 
@@ -31,7 +37,6 @@ for d in data:
                 drug_gene_map[line[0]] = set()
             drug_gene_map[line[0]].add(line[1])
 
-    # evidence_map = dict()
     gene_set = set()
     gene_gene_map = dict()
     gene_set_exp = set()
@@ -43,9 +48,7 @@ for d in data:
                 if line[pos] not in gene_set:
                     gene_set.add(line[pos])
                     gene_gene_map[line[pos]] = set()
-                    # evidence_map[line[pos]] = dict()
                 gene_gene_map[line[pos]].add(line[(pos + 1) % 2])
-                # evidence_map[line[pos]][line[(pos + 1) % 2]] = line[3]
                 if line[2] == "true":
                     if line[pos] not in gene_set_exp:
                         gene_set_exp.add(line[pos])

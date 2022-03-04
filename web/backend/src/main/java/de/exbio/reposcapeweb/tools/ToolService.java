@@ -96,15 +96,29 @@ public class ToolService {
         }
     }
 
-    public void createInteractionFiles() {
+    public void createInteractionFiles(HashMap<Integer, String> tissueMap) {
         File ggi_all = new File(dataDir, "gene_gene_interaction_all.pairs");
         File ggi_exp = new File(dataDir, "gene_gene_interaction_exp.pairs");
+        HashMap<Integer, BufferedWriter> all_writers = new HashMap<>();
+        HashMap<Integer, BufferedWriter> exp_writers = new HashMap<>();
+
+        tissueMap.forEach((k, v) -> {
+            all_writers.put(k, WriterUtils.getBasicWriter(new File(dataDir,"gene_gene_interaction-"+v+"_all.tsv")));
+            exp_writers.put(k, WriterUtils.getBasicWriter(new File(dataDir,"gene_gene_interaction-"+v+"_exp.tsv")));
+        });
+
         try (BufferedWriter bw_all = WriterUtils.getBasicWriter(ggi_all); BufferedWriter bw_exp = WriterUtils.getBasicWriter(ggi_exp)) {
             interactionService.getGenes().forEach((id1, map) -> map.forEach((id, vals) -> {
                         try {
-                            bw_all.write(geneService.map(id1) + "\t" + geneService.map(id.getId2()) + "\n");
-                            if (vals.second) {
-                                bw_exp.write(geneService.map(id1) + "\t" + geneService.map(id.getId2()) + "\n");
+                            String line = geneService.map(id1) + "\t" + geneService.map(id.getId2()) + "\n";
+                            bw_all.write(line);
+                            if (vals.first.second) {
+                                bw_exp.write(line);
+                            }
+                            for (int tissueId : vals.second) {
+                                all_writers.get(tissueId).write(line);
+                                if(vals.first.second)
+                                    exp_writers.get(tissueId).write(line);
                             }
                         } catch (IOException e) {
                             e.printStackTrace();
@@ -114,16 +128,27 @@ public class ToolService {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
+        all_writers.clear();
+        exp_writers.clear();
 
         File ppi_all = new File(dataDir, "protein_protein_interaction_all.pairs");
         File ppi_exp = new File(dataDir, "protein_protein_interaction_exp.pairs");
+        tissueMap.forEach((k, v) -> {
+            all_writers.put(k, WriterUtils.getBasicWriter(new File(dataDir,"protein_protein_interaction-"+v+"_all.tsv")));
+            exp_writers.put(k, WriterUtils.getBasicWriter(new File(dataDir,"protein_protein_interaction-"+v+"_exp.tsv")));
+        });
         try (BufferedWriter bw_all = WriterUtils.getBasicWriter(ppi_all); BufferedWriter bw_exp = WriterUtils.getBasicWriter(ppi_exp)) {
             interactionService.getProteins().forEach((id1, map) -> map.forEach((id, vals) -> {
                 try {
-                    bw_all.write(proteinService.map(id1) + "\t" + proteinService.map(id.getId2()) + "\n");
-                    if (vals.second) {
-                        bw_exp.write(proteinService.map(id1) + "\t" + proteinService.map(id.getId2()) + "\n");
+                    String line = proteinService.map(id1) + "\t" + proteinService.map(id.getId2()) + "\n";
+                    bw_all.write(line);
+                    if (vals.first.second) {
+                        bw_exp.write(line);
+                    }
+                    for (int tissueId : vals.second) {
+                        all_writers.get(tissueId).write(line);
+                        if(vals.first.second)
+                            exp_writers.get(tissueId).write(line);
                     }
                 } catch (IOException e) {
                     e.printStackTrace();

@@ -38,8 +38,10 @@ public class ProteinInteractsWithProteinService {
     private final GeneService geneService;
 
     private final boolean directed = false;
-    private final HashMap<Integer, HashMap<PairId, Pair<Boolean, Boolean>>> proteins = new HashMap<>();
-    private final HashMap<Integer, HashMap<PairId, Pair<Boolean, Boolean>>> genes = new HashMap<>();
+    private final HashMap<String, Integer> tissueIDMap = new HashMap<>();
+    private final HashMap<Integer, String> idTissueMap = new HashMap<>();
+    private final HashMap<Integer, HashMap<PairId, Pair<Pair<Boolean, Boolean>, HashSet<Integer>>>> proteins = new HashMap<>();
+    private final HashMap<Integer, HashMap<PairId, Pair<Pair<Boolean, Boolean>, HashSet<Integer>>>> genes = new HashMap<>();
 
     private final DataSource dataSource;
     private final String clearQuery = "DELETE FROM gene_interacts_with_gene";
@@ -176,7 +178,7 @@ public class ProteinInteractsWithProteinService {
     }
 
     public Iterable<ProteinInteractsWithProtein> findAllProteins(int page, int count) {
-        return proteinInteractsWithProteinRepository.findAll(PageRequest.of(page,count));
+        return proteinInteractsWithProteinRepository.findAll(PageRequest.of(page, count));
     }
 
     public Iterable<GeneInteractsWithGene> findAllGenes() {
@@ -188,35 +190,58 @@ public class ProteinInteractsWithProteinService {
         long total = proteinInteractsWithProteinRepository.count();
         for (long entry = 0; entry < total; entry += pageSize)
             proteinInteractsWithProteinRepository.findAll(PageRequest.of((int) (entry / pageSize), pageSize)).
-                    forEach(edge -> importProteinEdge(edge.getPrimaryIds(), edge.getEvidenceTypes().contains("exp")));
+                    forEach(edge -> importProteinEdge(edge.getPrimaryIds(), edge.getEvidenceTypes().contains("exp"), edge.getTissues()));
         total = geneInteractsWithGeneRepository.count();
         for (long entry = 0; entry < total; entry += pageSize)
-            geneInteractsWithGeneRepository.findAll(PageRequest.of((int) (entry / pageSize), pageSize)).forEach(edge -> importGeneEdge(edge.getPrimaryIds(), edge.getEvidenceTypes().contains("exp")));
+            geneInteractsWithGeneRepository.findAll(PageRequest.of((int) (entry / pageSize), pageSize)).forEach(edge -> importGeneEdge(edge.getPrimaryIds(), edge.getEvidenceTypes().contains("exp"), edge.getTissues()));
     }
 
-    private void importProteinEdge(PairId edge, boolean experimental) {
+    public int addTissue(String tissue) {
+        int id = tissueIDMap.size();
+        tissueIDMap.put(tissue, id);
+        idTissueMap.put(id, tissue);
+        return id;
+    }
+
+    public HashSet<Integer> tissuesToIds(Collection<String> tissues, boolean add) {
+        HashSet<Integer> ids = new HashSet<>();
+        tissues.forEach(t -> {
+            try {
+                ids.add(tissueIDMap.get(t).intValue());
+            } catch (Exception e) {
+                if (add) {
+                    ids.add(addTissue(t));
+                }
+            }
+        });
+        return ids;
+    }
+
+    private void importProteinEdge(PairId edge, boolean experimental, List<String> tissues) {
         if (!proteins.containsKey(edge.getId1()))
             proteins.put(edge.getId1(), new HashMap<>());
-        proteins.get(edge.getId1()).put(edge, new Pair<>(true, experimental));
+        HashSet<Integer> tissueIds = tissuesToIds(tissues, true);
+        proteins.get(edge.getId1()).put(edge, new Pair<>(new Pair<>(true, experimental), tissueIds));
         if (!proteins.containsKey(edge.getId2()))
             proteins.put(edge.getId2(), new HashMap<>());
-        proteins.get(edge.getId2()).put(edge, new Pair<>(true, experimental));
+        proteins.get(edge.getId2()).put(edge, new Pair<>(new Pair<>(true, experimental), tissueIds));
     }
 
 
-    private void importGeneEdge(PairId edge, boolean experimental) {
+    private void importGeneEdge(PairId edge, boolean experimental, List<String> tissues) {
         if (!genes.containsKey(edge.getId1()))
             genes.put(edge.getId1(), new HashMap<>());
-        genes.get(edge.getId1()).put(edge, new Pair<>(true, experimental));
+        HashSet<Integer> tissueIds = tissuesToIds(tissues, true);
+        genes.get(edge.getId1()).put(edge, new Pair<>(new Pair<>(true, experimental), tissueIds));
         if (!genes.containsKey(edge.getId2()))
             genes.put(edge.getId2(), new HashMap<>());
-        genes.get(edge.getId2()).put(edge, new Pair<>(true, experimental));
+        genes.get(edge.getId2()).put(edge, new Pair<>(new Pair<>(true, experimental), tissueIds));
     }
 
 
     public boolean isProteinEdge(PairId edge) {
         try {
-            return proteins.get(edge.getId1()).get(edge).first;
+            return proteins.get(edge.getId1()).get(edge).first.first;
         } catch (NullPointerException e) {
             return false;
         }
@@ -228,7 +253,7 @@ public class ProteinInteractsWithProteinService {
 
     public boolean isExperimentalProtein(PairId edge) {
         try {
-            return proteins.get(edge.getId1()).get(edge).second;
+            return proteins.get(edge.getId1()).get(edge).first.second;
         } catch (NullPointerException e) {
             return false;
         }
@@ -240,7 +265,7 @@ public class ProteinInteractsWithProteinService {
 
     public boolean isExperimentalGene(PairId edge) {
         try {
-            return genes.get(edge.getId1()).get(edge).second;
+            return genes.get(edge.getId1()).get(edge).first.second;
         } catch (NullPointerException e) {
             return false;
         }
@@ -252,7 +277,7 @@ public class ProteinInteractsWithProteinService {
 
     public boolean isGeneEdge(PairId edge) {
         try {
-            return genes.get(edge.getId1()).get(edge).first;
+            return genes.get(edge.getId1()).get(edge).first.first;
         } catch (NullPointerException e) {
             return false;
         }
@@ -263,11 +288,11 @@ public class ProteinInteractsWithProteinService {
     }
 
     public HashSet<PairId> getProteins(int id) {
-        return proteins.get(id).entrySet().stream().filter(e -> e.getValue().first).map(Map.Entry::getKey).collect(Collectors.toCollection(HashSet::new));
+        return proteins.get(id).entrySet().stream().filter(e -> e.getValue().first.first).map(Map.Entry::getKey).collect(Collectors.toCollection(HashSet::new));
     }
 
     public HashSet<PairId> getGenes(int id) {
-        return genes.get(id).entrySet().stream().filter(e -> e.getValue().first).map(Map.Entry::getKey).collect(Collectors.toCollection(HashSet::new));
+        return genes.get(id).entrySet().stream().filter(e -> e.getValue().first.first).map(Map.Entry::getKey).collect(Collectors.toCollection(HashSet::new));
     }
 
 
@@ -287,12 +312,20 @@ public class ProteinInteractsWithProteinService {
         return proteinInteractsWithProteinRepository.findProteinInteractsWithProteinsByIdIn(ids);
     }
 
-    public HashMap<Integer, HashMap<PairId, Pair<Boolean, Boolean>>> getProteins() {
+    public HashMap<Integer, HashMap<PairId, Pair<Pair<Boolean, Boolean>,HashSet<Integer>>>> getProteins() {
         return proteins;
     }
 
-    public HashMap<Integer, HashMap<PairId, Pair<Boolean, Boolean>>> getGenes() {
+    public HashMap<Integer, HashMap<PairId, Pair<Pair<Boolean, Boolean>,HashSet<Integer>>>> getGenes() {
         return genes;
+    }
+
+    public HashSet<String> getTissueNames(){
+        return new HashSet<>(tissueIDMap.keySet());
+    }
+
+    public HashMap<Integer,String> getIdTissueMap(){
+        return idTissueMap;
     }
 
     public List<GeneInteractsWithGene> getGenes(Collection<PairId> ids) {
@@ -348,13 +381,13 @@ public class ProteinInteractsWithProteinService {
 
     public List<PairId> getAllProteinIDs() {
         LinkedList<PairId> allIDs = new LinkedList<>();
-        proteins.values().forEach(v->allIDs.addAll(v.keySet()));
+        proteins.values().forEach(v -> allIDs.addAll(v.keySet()));
         return allIDs;
     }
 
     public List<PairId> getAllGeneIDs() {
         LinkedList<PairId> allIDs = new LinkedList<>();
-        genes.values().forEach(v->allIDs.addAll(v.keySet()));
+        genes.values().forEach(v -> allIDs.addAll(v.keySet()));
         return allIDs;
     }
 }
