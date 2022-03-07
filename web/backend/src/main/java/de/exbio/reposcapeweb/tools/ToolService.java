@@ -129,6 +129,22 @@ public class ToolService {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        all_writers.values().forEach(bw-> {
+            try {
+                bw.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+        exp_writers.values().forEach(bw-> {
+            try {
+                bw.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+
         all_writers.clear();
         exp_writers.clear();
 
@@ -160,6 +176,21 @@ public class ToolService {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        all_writers.values().forEach(bw-> {
+            try {
+                bw.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+        exp_writers.values().forEach(bw-> {
+            try {
+                bw.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
 
         File rankCache = new File(dataDir, "ranking_files");
         if (rankCache.exists())

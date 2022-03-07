@@ -163,193 +163,193 @@ public class UpdateService {
 
     public void renewDBDumps() {
         log.info("Creating database dump files for external Tool");
-        File dir = new File(env.getProperty("path.external.cache"));
-        if (dir.exists())
-            dir.delete();
-        dir.mkdirs();
-        String sifHead = "#node1\tedgetype\tnode2\n";
-        HashMap<Integer, BufferedWriter> tsv_writers = new HashMap<>();
-        HashMap<Integer, BufferedWriter> sif_all_writers = new HashMap<>();
-        HashMap<Integer, BufferedWriter> sif_exp_writers = new HashMap<>();
+//        File dir = new File(env.getProperty("path.external.cache"));
+//        if (dir.exists())
+//            dir.delete();
+//        dir.mkdirs();
+//        String sifHead = "#node1\tedgetype\tnode2\n";
+//        HashMap<Integer, BufferedWriter> tsv_writers = new HashMap<>();
+//        HashMap<Integer, BufferedWriter> sif_all_writers = new HashMap<>();
+//        HashMap<Integer, BufferedWriter> sif_exp_writers = new HashMap<>();
         TreeMap<Integer, String> tissueMap = proteinInteractsWithProteinService.getIdTissueMap();
-        tissueMap.forEach((k, v) -> {
-            String tissueInFile = v.replaceAll(" ","");
-            tsv_writers.put(k, WriterUtils.getBasicWriter(new File(dir,"proteinInteractsWithProtein-"+tissueInFile+".tsv")));
-            sif_all_writers.put(k, WriterUtils.getBasicWriter(new File(dir, "proteinInteractsWithProtein-"+tissueInFile+"_all.sif")));
-            sif_exp_writers.put(k, WriterUtils.getBasicWriter(new File(dir, "proteinInteractsWithProtein-"+tissueInFile+"_exp.sif")));
-        });
-
-        File ppiFile = new File(dir, "proteinInteractsWithProtein.tsv");
-        File ppiSif_all = new File(dir, "proteinInteractsWithProtein_all.sif");
-        File ppiSif_exp = new File(dir, "proteinInteractsWithProtein_exp.sif");
-        try (BufferedWriter bw = WriterUtils.getBasicWriter(ppiFile); BufferedWriter bwSifa = WriterUtils.getBasicWriter(ppiSif_all); BufferedWriter bwSife = WriterUtils.getBasicWriter(ppiSif_exp)) {
-            bwSifa.write(sifHead);
-            bwSife.write(sifHead);
-            sif_all_writers.values().forEach(w-> {
-                try {
-                    w.write(sifHead);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            });
-            sif_exp_writers.values().forEach(w-> {
-                try {
-                    w.write(sifHead);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            });
-            proteinInteractsWithProteinService.getProteins().forEach((id1, map) -> map.forEach((id, vals) -> {
-                try {
-                    String tsvLine = proteinService.map(id1) + "\t" + proteinService.map(id.getId2()) + "\t" + vals.second + "\n";
-                    bw.write(tsvLine);
-                    String sifLine = "_" + id1 + "\tpp\t_" + id.getId2() + "\n";
-                    bwSifa.write(sifLine);
-                    if (vals.first.second)
-                        bwSife.write(sifLine);
-                    for (int tissueId : vals.second) {
-                        tsv_writers.get(tissueId).write(tsvLine);
-                        sif_all_writers.get(tissueId).write(sifLine);
-                        if(vals.first.second)
-                            sif_exp_writers.get(tissueId).write(sifLine);
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (NullPointerException ex) {
-                    ex.printStackTrace();
-                    log.warn("Could not map either " + id1 + " or " + id.getId2() + " to internal protein entities.");
-                    return;
-                }
-            }));
-        } catch (IOException e) {
-            log.error("Error on writing some data-file: " + ppiFile.getAbsolutePath());
-            e.printStackTrace();
-        }
-        tsv_writers.values().forEach(b -> {
-            try {
-                b.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
-        sif_all_writers.values().forEach(b -> {
-            try {
-                b.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
-        sif_exp_writers.values().forEach(b -> {
-            try {
-                b.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
-        File ggiFile = new File(dir, "geneInteractsWithGene.tsv");
-        File ggiSif_all = new File(dir, "geneInteractsWithGene_all.sif");
-        File ggiSif_exp = new File(dir, "geneInteractsWithGene_exp.sif");
-        tsv_writers.clear();
-        sif_all_writers.clear();
-        sif_exp_writers.clear();
-        tissueMap.forEach((k, v) -> {
-            String tissueInFile = v.replaceAll(" ","");
-            tsv_writers.put(k, WriterUtils.getBasicWriter(new File(dir, "geneInteractsWithGene-"+tissueInFile+".tsv")));
-            sif_all_writers.put(k, WriterUtils.getBasicWriter(new File(dir, "geneInteractsWithGene-"+tissueInFile+"_all.sif")));
-            sif_exp_writers.put(k, WriterUtils.getBasicWriter(new File(dir, "geneInteractsWithGene-"+tissueInFile+"_exp.sif")));
-        });
-        try (BufferedWriter bw = WriterUtils.getBasicWriter(ggiFile); BufferedWriter bwSifa = WriterUtils.getBasicWriter(ggiSif_all); BufferedWriter bwSife = WriterUtils.getBasicWriter(ggiSif_exp)) {
-            bwSifa.write(sifHead);
-            bwSife.write(sifHead);
-            proteinInteractsWithProteinService.getGenes().forEach((id1, map) -> map.forEach((id, vals) -> {
-                try {
-                    String tsvLine = geneService.map(id1) + "\t" + geneService.map(id.getId2()) + "\t" + vals.second + "\n";
-                    bw.write(tsvLine);
-                    String sifLine = "_" + id1 + "\tgg\t_" + id.getId2() + "\n";
-                    bwSifa.write(sifLine);
-                    if (vals.first.second)
-                        bwSife.write(sifLine);
-                    for (int tissueId : vals.second) {
-                        tsv_writers.get(tissueId).write(tsvLine);
-                        sif_all_writers.get(tissueId).write(sifLine);
-                        if(vals.first.second)
-                            sif_exp_writers.get(tissueId).write(sifLine);
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }));
-        } catch (IOException e) {
-            log.error("Error on writing some data-file: " + ggiFile.getAbsolutePath());
-            e.printStackTrace();
-        }
-        tsv_writers.values().forEach(b -> {
-            try {
-                b.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
-        sif_all_writers.values().forEach(b -> {
-            try {
-                b.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
-        sif_exp_writers.values().forEach(b -> {
-            try {
-                b.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
-        File gdFile = new File(dir, "drugHasTargetGene.tsv");
-        try (BufferedWriter bw = WriterUtils.getBasicWriter(gdFile)) {
-            drugHasTargetService.getGeneEdgesFrom().forEach((id1, set) -> set.forEach(id -> {
-                try {
-                    bw.write(drugService.map(id1) + "\t" + geneService.map(id.getId2()) + "\n");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }));
-        } catch (IOException e) {
-            log.error("Error on writing some data-file: " + gdFile.getAbsolutePath());
-        }
-
-        File pdFile = new File(dir, "drugHasTargetProtein.tsv");
-        try (BufferedWriter bw = WriterUtils.getBasicWriter(pdFile)) {
-            drugHasTargetService.getProteinEdgesFrom().forEach((id1, set) -> set.forEach(id -> {
-                try {
-                    bw.write(drugService.map(id1) + "\t" + proteinService.map(id.getId2()) + "\n");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }));
-        } catch (IOException e) {
-            log.error("Error on writing some data-file: " + pdFile.getAbsolutePath());
-            e.printStackTrace();
-        }
-
-        File dFile = new File(dir, "drugs.tsv");
-        try (BufferedWriter bw = WriterUtils.getBasicWriter(dFile)) {
-            drugService.findAll().forEach(d -> {
-                try {
-                    bw.write(d.getPrimaryDomainId() + "\t");
-                    Iterator<String> groups = d.getDrugGroups().iterator();
-                    while (groups.hasNext())
-                        bw.write(groups.next() + (groups.hasNext() ? ", " : ""));
-                    bw.write("\n");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            });
-        } catch (IOException e) {
-            log.error("Error on writing some data-file: " + dFile.getAbsolutePath());
-            e.printStackTrace();
-        }
-
-        toolService.createIndexFiles();
+//        tissueMap.forEach((k, v) -> {
+//            String tissueInFile = v.replaceAll(" ","");
+//            tsv_writers.put(k, WriterUtils.getBasicWriter(new File(dir,"proteinInteractsWithProtein-"+tissueInFile+".tsv")));
+//            sif_all_writers.put(k, WriterUtils.getBasicWriter(new File(dir, "proteinInteractsWithProtein-"+tissueInFile+"_all.sif")));
+//            sif_exp_writers.put(k, WriterUtils.getBasicWriter(new File(dir, "proteinInteractsWithProtein-"+tissueInFile+"_exp.sif")));
+//        });
+//
+//        File ppiFile = new File(dir, "proteinInteractsWithProtein.tsv");
+//        File ppiSif_all = new File(dir, "proteinInteractsWithProtein_all.sif");
+//        File ppiSif_exp = new File(dir, "proteinInteractsWithProtein_exp.sif");
+//        try (BufferedWriter bw = WriterUtils.getBasicWriter(ppiFile); BufferedWriter bwSifa = WriterUtils.getBasicWriter(ppiSif_all); BufferedWriter bwSife = WriterUtils.getBasicWriter(ppiSif_exp)) {
+//            bwSifa.write(sifHead);
+//            bwSife.write(sifHead);
+//            sif_all_writers.values().forEach(w-> {
+//                try {
+//                    w.write(sifHead);
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            });
+//            sif_exp_writers.values().forEach(w-> {
+//                try {
+//                    w.write(sifHead);
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            });
+//            proteinInteractsWithProteinService.getProteins().forEach((id1, map) -> map.forEach((id, vals) -> {
+//                try {
+//                    String tsvLine = proteinService.map(id1) + "\t" + proteinService.map(id.getId2()) + "\t" + vals.second + "\n";
+//                    bw.write(tsvLine);
+//                    String sifLine = "_" + id1 + "\tpp\t_" + id.getId2() + "\n";
+//                    bwSifa.write(sifLine);
+//                    if (vals.first.second)
+//                        bwSife.write(sifLine);
+//                    for (int tissueId : vals.second) {
+//                        tsv_writers.get(tissueId).write(tsvLine);
+//                        sif_all_writers.get(tissueId).write(sifLine);
+//                        if(vals.first.second)
+//                            sif_exp_writers.get(tissueId).write(sifLine);
+//                    }
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                } catch (NullPointerException ex) {
+//                    ex.printStackTrace();
+//                    log.warn("Could not map either " + id1 + " or " + id.getId2() + " to internal protein entities.");
+//                    return;
+//                }
+//            }));
+//        } catch (IOException e) {
+//            log.error("Error on writing some data-file: " + ppiFile.getAbsolutePath());
+//            e.printStackTrace();
+//        }
+//        tsv_writers.values().forEach(b -> {
+//            try {
+//                b.close();
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        });
+//        sif_all_writers.values().forEach(b -> {
+//            try {
+//                b.close();
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        });
+//        sif_exp_writers.values().forEach(b -> {
+//            try {
+//                b.close();
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        });
+//        File ggiFile = new File(dir, "geneInteractsWithGene.tsv");
+//        File ggiSif_all = new File(dir, "geneInteractsWithGene_all.sif");
+//        File ggiSif_exp = new File(dir, "geneInteractsWithGene_exp.sif");
+//        tsv_writers.clear();
+//        sif_all_writers.clear();
+//        sif_exp_writers.clear();
+//        tissueMap.forEach((k, v) -> {
+//            String tissueInFile = v.replaceAll(" ","");
+//            tsv_writers.put(k, WriterUtils.getBasicWriter(new File(dir, "geneInteractsWithGene-"+tissueInFile+".tsv")));
+//            sif_all_writers.put(k, WriterUtils.getBasicWriter(new File(dir, "geneInteractsWithGene-"+tissueInFile+"_all.sif")));
+//            sif_exp_writers.put(k, WriterUtils.getBasicWriter(new File(dir, "geneInteractsWithGene-"+tissueInFile+"_exp.sif")));
+//        });
+//        try (BufferedWriter bw = WriterUtils.getBasicWriter(ggiFile); BufferedWriter bwSifa = WriterUtils.getBasicWriter(ggiSif_all); BufferedWriter bwSife = WriterUtils.getBasicWriter(ggiSif_exp)) {
+//            bwSifa.write(sifHead);
+//            bwSife.write(sifHead);
+//            proteinInteractsWithProteinService.getGenes().forEach((id1, map) -> map.forEach((id, vals) -> {
+//                try {
+//                    String tsvLine = geneService.map(id1) + "\t" + geneService.map(id.getId2()) + "\t" + vals.second + "\n";
+//                    bw.write(tsvLine);
+//                    String sifLine = "_" + id1 + "\tgg\t_" + id.getId2() + "\n";
+//                    bwSifa.write(sifLine);
+//                    if (vals.first.second)
+//                        bwSife.write(sifLine);
+//                    for (int tissueId : vals.second) {
+//                        tsv_writers.get(tissueId).write(tsvLine);
+//                        sif_all_writers.get(tissueId).write(sifLine);
+//                        if(vals.first.second)
+//                            sif_exp_writers.get(tissueId).write(sifLine);
+//                    }
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }));
+//        } catch (IOException e) {
+//            log.error("Error on writing some data-file: " + ggiFile.getAbsolutePath());
+//            e.printStackTrace();
+//        }
+//        tsv_writers.values().forEach(b -> {
+//            try {
+//                b.close();
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        });
+//        sif_all_writers.values().forEach(b -> {
+//            try {
+//                b.close();
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        });
+//        sif_exp_writers.values().forEach(b -> {
+//            try {
+//                b.close();
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        });
+//        File gdFile = new File(dir, "drugHasTargetGene.tsv");
+//        try (BufferedWriter bw = WriterUtils.getBasicWriter(gdFile)) {
+//            drugHasTargetService.getGeneEdgesFrom().forEach((id1, set) -> set.forEach(id -> {
+//                try {
+//                    bw.write(drugService.map(id1) + "\t" + geneService.map(id.getId2()) + "\n");
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }));
+//        } catch (IOException e) {
+//            log.error("Error on writing some data-file: " + gdFile.getAbsolutePath());
+//        }
+//
+//        File pdFile = new File(dir, "drugHasTargetProtein.tsv");
+//        try (BufferedWriter bw = WriterUtils.getBasicWriter(pdFile)) {
+//            drugHasTargetService.getProteinEdgesFrom().forEach((id1, set) -> set.forEach(id -> {
+//                try {
+//                    bw.write(drugService.map(id1) + "\t" + proteinService.map(id.getId2()) + "\n");
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }));
+//        } catch (IOException e) {
+//            log.error("Error on writing some data-file: " + pdFile.getAbsolutePath());
+//            e.printStackTrace();
+//        }
+//
+//        File dFile = new File(dir, "drugs.tsv");
+//        try (BufferedWriter bw = WriterUtils.getBasicWriter(dFile)) {
+//            drugService.findAll().forEach(d -> {
+//                try {
+//                    bw.write(d.getPrimaryDomainId() + "\t");
+//                    Iterator<String> groups = d.getDrugGroups().iterator();
+//                    while (groups.hasNext())
+//                        bw.write(groups.next() + (groups.hasNext() ? ", " : ""));
+//                    bw.write("\n");
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            });
+//        } catch (IOException e) {
+//            log.error("Error on writing some data-file: " + dFile.getAbsolutePath());
+//            e.printStackTrace();
+//        }
+//
+//        toolService.createIndexFiles();
         toolService.createInteractionFiles(tissueMap);
         log.info("Done");
     }
