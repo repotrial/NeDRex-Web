@@ -12,7 +12,6 @@ import de.exbio.reposcapeweb.communication.requests.*;
 import de.exbio.reposcapeweb.configs.DBConfig;
 import de.exbio.reposcapeweb.configs.VisConfig;
 import de.exbio.reposcapeweb.db.DbCommunicationService;
-import de.exbio.reposcapeweb.db.entities.RepoTrialEdge;
 import de.exbio.reposcapeweb.db.entities.RepoTrialNode;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
 import de.exbio.reposcapeweb.db.entities.nodes.*;
@@ -42,10 +41,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toCollection;
-import static java.util.stream.Collectors.toSet;
 
 @Service
 public class WebGraphService {
@@ -676,7 +673,7 @@ public class WebGraphService {
         HashSet<Integer> nodes = new HashSet<>();
         boolean isTissueFilter = tissueFilter != null && this.edgeController.getTissueIDMap().containsKey(tissueFilter);
         Integer tissueId = null;
-        if(isTissueFilter)
+        if (isTissueFilter)
             tissueId = this.edgeController.getTissueIDMap().get(tissueFilter);
         if (g.getNodes().containsKey(nodeIds.first) & nodeIds.first.equals(nodeIds.second)) {
             Integer finalTissueId = tissueId;
@@ -1210,8 +1207,8 @@ public class WebGraphService {
         String tissueFilter = j.getParams().get("tissue");
         boolean isTissueFilter = tissueFilter != null && edgeController.getTissueIDMap().containsKey(tissueFilter);
         Integer tissueID = null;
-        if(isTissueFilter)
-            tissueID=edgeController.getTissueIDMap().get(tissueFilter);
+        if (isTissueFilter)
+            tissueID = edgeController.getTissueIDMap().get(tissueFilter);
         if (!isDrug && j.getParams().containsKey("addInteractions") && j.getParams().get("addInteractions").equals("true")) {
             boolean expOnly = j.getParams().containsKey("experimentalOnly") && j.getParams().get("experimentalOnly").equals("true");
             int typeId1 = nodeTypeId;
@@ -1233,7 +1230,7 @@ public class WebGraphService {
                                     edges.get(n).add(n2);
                                 }
                             } else {
-                                if ((!expOnly | edgeController.isExperimental(edgeId, n2, n))&& (!isTissueFilter | edgeController.isTissue(edgeId, n2, n, finalTissueID))) {
+                                if ((!expOnly | edgeController.isExperimental(edgeId, n2, n)) && (!isTissueFilter | edgeController.isTissue(edgeId, n2, n, finalTissueID))) {
                                     if (!edges.containsKey(n2))
                                         edges.put(n2, new HashSet<>());
                                     edges.get(n2).add(n);
@@ -1663,7 +1660,7 @@ public class WebGraphService {
             String edgeName = request.path.get(p).get("label");
             boolean drugTargetFilter = drugTargetWithAction && (edgeName.equals("DrugTargetGene") | edgeName.equals("DrugTargetProtein"));
             boolean interactionFilter = expInteractions && (edgeName.equals("GeneGeneInteraction") | edgeName.equals("ProteinProteinInteraction"));
-            this.extendGraph(g, edgeName, endDefined, false, drugTargetFilter, disorderAssociationCutoff, getDisorderParents, interactionFilter,"");
+            this.extendGraph(g, edgeName, endDefined, false, drugTargetFilter, disorderAssociationCutoff, getDisorderParents, interactionFilter, "");
 
             String connector = request.path.get(p).get("connector");
             if (connector != null) {
@@ -1954,7 +1951,7 @@ public class WebGraphService {
         HashMap<String, HashMap<Integer, Object>> customAttributes = g.getCustomNodeAttributes().containsKey(Graphs.getNode(name)) ? g.getCustomNodeAttributes().get(Graphs.getNode(name)) : new HashMap<>();
 
         for (String a : attributes) {
-            table.append(table.length() == 0 ? "#" : "\t").append(labelMap.containsKey(a) ? labelMap.get(a): g.getCustomNodeAttributeLabels().get(Graphs.getNode(name)).get(a));
+            table.append(table.length() == 0 ? "#" : "\t").append(labelMap.containsKey(a) ? labelMap.get(a) : g.getCustomNodeAttributeLabels().get(Graphs.getNode(name)).get(a));
         }
         table.append("\n");
         HashSet<Integer> ids = g.getNodes().get(Graphs.getNode(name)).values().stream().map(Node::getId).collect(toCollection(HashSet::new));
@@ -2053,18 +2050,23 @@ public class WebGraphService {
         return new HashMap<>();
     }
 
-    public Object getInteractionEdges(String type, LinkedList<Integer> ids) {
+    public Object getInteractionEdges(String type, LinkedList<Integer> ids, Boolean exp, String tissue) {
         String edgeName = type.equals("gene") ? "GeneGeneInteraction" : "ProteinProteinInteraction";
         HashSet<Integer> existingIds = new HashSet<>(ids);
         int edgeId = Graphs.getEdge(edgeName);
         int nodeId = Graphs.getNode(type);
         HashSet<PairId> edges = new HashSet<>();
+        boolean allTissues = tissue == null || !edgeController.getTissueIDMap().containsKey(tissue);
+        int tissueId = -1;
+        if (!allTissues)
+            tissueId = edgeController.getTissueIDMap().get(tissue);
+        int finalTissueId = tissueId;
         ids.forEach(node -> {
             try {
                 edgeController.getEdges(edgeId, nodeId, node, false).forEach(pairid -> {
                     if (existingIds.contains(pairid.getId2()))
-                        edges.add(pairid);
-
+                        if ((!exp || edgeController.isExperimental(edgeId, pairid.getId1(), pairid.getId2())) && (allTissues || edgeController.isTissue(edgeId, pairid.getId1(), pairid.getId2(), finalTissueId)))
+                            edges.add(pairid);
                 });
             } catch (NullPointerException ignore) {
 
@@ -2105,11 +2107,11 @@ public class WebGraphService {
             }
         } else if (jr.state != Job.JobState.DONE) {
 
-            if (jr.goal == Job.JobGoal.MODULE_IDENTIFICATION || jr.goal == Job.JobGoal.DRUG_PRIORITIZATION||(jr.goal == Job.JobGoal.DRUG_REPURPOSING && jr.basisGraph!=null)) {
+            if (jr.goal == Job.JobGoal.MODULE_IDENTIFICATION || jr.goal == Job.JobGoal.DRUG_PRIORITIZATION || (jr.goal == Job.JobGoal.DRUG_REPURPOSING && jr.basisGraph != null)) {
                 Graph parent = getCachedGraph(jr.basisGraph);
                 jr.seeds = new HashSet<>(parent.getNodes().get(Graphs.getNode(jr.target)).keySet());
             } else if (jr.goal == Job.JobGoal.DRUG_REPURPOSING) {
-                jr.type="mi";
+                jr.type = "mi";
                 if (getCachedGraph(jr.parentGraph) != null)
                     jr.seeds = new HashSet<>(getCachedGraph(jr.parentGraph).getNodes().get(Graphs.getNode(jr.target)).keySet());
             }

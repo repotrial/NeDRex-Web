@@ -11,15 +11,35 @@
         </div>
       </v-card-title>
       <div style="height: calc(100% - 120px)">
-        <div v-if="this.edgeCount + this.nodeCount>5000" style="height: 100%; display: flex; justify-content: center"><i>This interaction network contains {{ this.nodeCount }} nodes
-          and {{ this.edgeCount }} which is too much for the quick visualization of the network.</i>
+        <div v-if="this.edgeCount + this.nodeCount>5000" style="height: 100%; display: flex; justify-content: center">
+          <i>This interaction network contains {{ this.nodeCount }} nodes
+            and {{ this.edgeCount }} which is too much for the quick visualization of the network.</i>
         </div>
         <v-progress-circular v-else-if="loading" indeterminate></v-progress-circular>
         <template>
-          <div v-if="this.edgeCount>1000"><i>The interaction network has {{this.edgeCount}}, it might take a moment to define a suitable layout for the network.</i></div>
-        <VisNetwork ref="network" v-if="!loading && this.edgeCount + this.nodeCount<=5000" :nodes="nodes" :edges="edges"
-                    :options="options"
-                    style="position: sticky; height: calc(100% - 25px)"></VisNetwork>
+          <div v-if="this.edgeCount>1000"><i>The interaction network has {{ this.edgeCount }} edges, it might take a
+            moment to define a suitable layout for the network.</i></div>
+          <v-container v-if="!loading">
+            <v-row>
+              <v-col>
+                <LabeledSwitch v-model="exp" label-on="Experimental only" label-off="All Interactions"
+                               @click="reloadNetwork()">
+                  <template v-slot:tooltip>Switch between all and only the experimentally validated interaction edges.
+                  </template>
+                </LabeledSwitch>
+              </v-col>
+              <v-col>
+                <v-select :items="tissues" v-model="tissueFilter" outlined dense label="Tissue"
+                          @change="reloadNetwork()"
+                          style="max-width: 250px; justify-self: center; margin-left: auto; margin-right: auto"></v-select>
+              </v-col>
+            </v-row>
+
+          </v-container>
+          <VisNetwork ref="network" v-if="!loading && this.edgeCount + this.nodeCount<=5000" :nodes="nodes"
+                      :edges="edges"
+                      :options="options"
+                      style="position: sticky; height: calc(100% - 100px)"></VisNetwork>
         </template>
       </div>
       <v-divider></v-divider>
@@ -42,10 +62,12 @@
 <script>
 import {DataSet} from "vue-vis-network";
 import {Network} from "vue-vis-network";
+import LabeledSwitch from "@/components/app/input/LabeledSwitch";
 
 export default {
   name: "InteractionNetworkDialog",
   components: {
+    LabeledSwitch,
     'VisNetwork': Network
   },
   data() {
@@ -57,19 +79,40 @@ export default {
       options: undefined,
       nodeCount: 0,
       edgeCount: 0,
+      tissues: undefined,
+      exp: true,
+      type: undefined,
+      ids: undefined,
+      tissueFilter: 'all',
     }
   },
 
   created() {
     this.options = this.$global.metagraph.options.options;
     this.options.physics.enabled = true
+    this.getTissueTypes()
   },
 
   methods: {
+    getTissueTypes: function () {
+      this.$http.get("/getTissues").then(response => {
+        if (response.data != null)
+          return response.data
+      }).then(data => {
+        this.tissues = [{text: 'All', value: 'all'}]
+        data.forEach(tissue => {
+          this.tissues.push({text: tissue, value: tissue})
+        })
+      }).catch(console.error)
+    },
 
-    show: function (type, ids) {
-      this.model = true;
-      this.$http.getInteractionEdges({type: type, ids: ids}).then(graph => {
+    reloadNetwork: function () {
+      this.loading = true
+      this.loadNetwork(this.type, this.ids, this.exp, this.tissueFilter)
+    },
+
+    loadNetwork: function (type, ids, exp, tissue) {
+      this.$http.getInteractionEdges({type: type, ids: ids, exp: exp, tissue: tissue}).then(graph => {
         this.nodeCount = graph.nodes.length
         this.edgeCount = graph.edges.length
         if (this.nodeCount + this.edgeCount > 5000) {
@@ -80,6 +123,23 @@ export default {
       }).then(() => {
         this.loading = false
       })
+    },
+    show: function (type, ids) {
+      this.model = true;
+      this.type = type
+      this.ids = ids
+      this.loadNetwork(type, ids, this.exp, this.tissueFilter)
+      // this.$http.getInteractionEdges({type: type, ids: ids, exp: this.exp, tissue: this.tissueFilter}).then(graph => {
+      //   this.nodeCount = graph.nodes.length
+      //   this.edgeCount = graph.edges.length
+      //   if (this.nodeCount + this.edgeCount > 5000) {
+      //     return
+      //   }
+      //   this.setEdges(graph.edges);
+      //   this.setNodes(graph.nodes);
+      // }).then(() => {
+      //   this.loading = false
+      // })
     },
     setEdges: function (edges) {
       if (edges != null)
@@ -97,8 +157,8 @@ export default {
     close: function () {
       this.model = false
       this.loading = true
-      this.nodeCount=0
-      this.edgeCount=0
+      this.nodeCount = 0
+      this.edgeCount = 0
     }
     // setOptions: function (options) {
     //   if (options != null) {
