@@ -199,13 +199,14 @@
                   <v-tooltip left>
                     <template v-slot:activator="{attrs,on}">
                       <v-chip style="position: absolute; left:auto; right:55px" v-on="on" v-bind="attrs"
+                              @click="$refs.drugsDialog.show()"
                               v-show="seedTypeId!=null"
                               color="primary">
                         <v-icon left>fas fa-capsules</v-icon>
                         {{ validationDrugCount }}
                       </v-chip>
                     </template>
-                    <span>There are {{ validationDrugCount }} drugs that were associated with your query.<br> These are saved for validation purposes later.</span>
+                    <span>There are {{ validationDrugCount }} drugs that were associated with your query.<br> These are saved for validation purposes later.<br><i>Click here to view the current list!</i></span>
                   </v-tooltip>
 
                   <SeedTable ref="seedTable" v-show="seedTypeId!=null" :download="true"
@@ -219,8 +220,6 @@
                 </v-col>
               </v-row>
             </v-container>
-
-
           </v-card>
           <ButtonCancel @click="makeStep"></ButtonCancel>
           <ButtonNext @click="makeStep"
@@ -262,7 +261,7 @@
                   <template v-if="!loadingResults">
                     <v-data-table max-height="50vh" height="50vh" fixed-header dense item-key="id"
                                   :items="results.targets" :headers="getHeaders()" disable-pagination
-                                  hide-default-footer @click:row="rowClicked" show-expand :single-expand="true">
+                                  hide-default-footer @click:row="rowClicked" @dblclick:row="rowDoubleClicked">
                       <template v-slot:item.displayName="{item}">
                         <v-tooltip v-if="item.displayName.length>12" right>
                           <template v-slot:activator="{attr,on }">
@@ -273,19 +272,26 @@
                         </v-tooltip>
                         <span v-else>{{ item.displayName }}</span>
                       </template>
-                      <template v-slot:item.data-table-expand="{expand, item,isExpanded}">
-                        <v-icon v-show="!isExpanded" @click="expand(true)" :color="getColor(item)">fas fa-angle-down
-                        </v-icon>
-                        <v-icon v-show="isExpanded" @click="expand(false)" :color="getColor(item)">fas fa-angle-up
-                        </v-icon>
+                      <template v-slot:item.seed="{item}">
+                        <v-icon v-if="item.isSeed" color="success">fas fa-check</v-icon>
+                        <v-icon v-else color="error">fas fa-times</v-icon>
                       </template>
-                      <template v-slot:expanded-item="{ headers, item }">
-                        <td :colspan="headers.length">
-                          <EntryDetails max-width="15vw" :gid="currentGid"
-                                        :attributes="[geneDetailAttributes,proteinDetailAttributes][seedTypeId]"
-                                        :detail-request="{edge:false, type:['gene', 'protein'][seedTypeId], id:item.id}"></EntryDetails>
-                        </td>
-                      </template>
+<!--                      <template v-slot:item.details="{item}">-->
+<!--                        <v-icon small>fas fa-info-circle</v-icon>-->
+<!--                      </template>-->
+<!--                      <template v-slot:item.data-table-expand="{expand, item,isExpanded}">-->
+<!--                        <v-icon v-show="!isExpanded" @click="expand(true)" :color="getColor(item)">fas fa-angle-down-->
+<!--                        </v-icon>-->
+<!--                        <v-icon v-show="isExpanded" @click="expand(false)" :color="getColor(item)">fas fa-angle-up-->
+<!--                        </v-icon>-->
+<!--                      </template>-->
+<!--                      <template v-slot:expanded-item="{ headers, item }">-->
+<!--                        <td :colspan="headers.length">-->
+<!--                          <EntryDetails max-width="15vw" :gid="currentGid"-->
+<!--                                        :attributes="[geneDetailAttributes,proteinDetailAttributes][seedTypeId]"-->
+<!--                                        :detail-request="{edge:false, type:['gene', 'protein'][seedTypeId], id:item.id}"></EntryDetails>-->
+<!--                        </td>-->
+<!--                      </template>-->
                       <template v-slot:footer>
                         <div style="display: flex; justify-content: center; margin-left: auto">
                           <div style="padding-top: 16px">
@@ -299,19 +305,18 @@
 
                   </template>
                   <v-data-table v-else max-height="45vh" height="45vh" max-width="100%" fixed-header dense item-key="id"
-                                :items="seeds" :headers="getHeaders(true)" disable-pagination show-expand
-                                :single-expand="true"
+                                :items="seeds" :headers="getHeaders(true)" disable-pagination @dblclick:row="rowDoubleClicked"
                                 hide-default-footer @click:row="rowClicked">
-                    <template v-slot:item.data-table-expand="{expand, item,isExpanded}">
-                      <v-icon v-show="!isExpanded" @click="expand(true)" color="#e4ca02">fas fa-angle-down</v-icon>
-                      <v-icon v-show="isExpanded" @click="expand(false)" color="#e4ca02">fas fa-angle-up</v-icon>
-                    </template>
-                    <template v-slot:expanded-item="{ headers, item }">
-                      <td :colspan="headers.length">
-                        <EntryDetails max-width="15vw" :gid="currentGid"
-                                      :detail-request="{edge:false, type:['gene', 'protein'][seedTypeId], id:item.id}"></EntryDetails>
-                      </td>
-                    </template>
+<!--                    <template v-slot:item.data-table-expand="{expand, item,isExpanded}">-->
+<!--                      <v-icon v-show="!isExpanded" @click="expand(true)" color="#e4ca02">fas fa-angle-down</v-icon>-->
+<!--                      <v-icon v-show="isExpanded" @click="expand(false)" color="#e4ca02">fas fa-angle-up</v-icon>-->
+<!--                    </template>-->
+<!--                    <template v-slot:expanded-item="{ headers, item }">-->
+<!--                      <td :colspan="headers.length">-->
+<!--                        <EntryDetails max-width="15vw" :gid="currentGid"-->
+<!--                                      :detail-request="{edge:false, type:['gene', 'protein'][seedTypeId], id:item.id}"></EntryDetails>-->
+<!--                      </td>-->
+<!--                    </template>-->
 
 
                   </v-data-table>
@@ -381,6 +386,10 @@
           <ButtonBack @click="makeStep" label="RESULTS" save></ButtonBack>
         </v-stepper-content>
       </v-stepper-items>
+      <DetailDialog ref="details" max-width="25vw"
+                    :attributes="[geneDetailAttributes,proteinDetailAttributes][seedTypeId]" :detail-request="detailRequest"
+                    ></DetailDialog>
+      <DrugsDialog v-if="$refs.validation" ref="drugsDialog" :drugs="$refs.validation.getDrugs()"></DrugsDialog>
       <v-dialog v-model="namePopup"
                 persistent
                 max-width="500px"
@@ -516,6 +525,8 @@ import ButtonBack from "@/components/start/quick/ButtonBack";
 import ButtonAdvanced from "@/components/start/quick/ButtonAdvanced";
 import QuickExamples from "@/components/start/quick/QuickExamples";
 import InteractionNetworkDialog from "@/components/start/quick/InteractionNetworkDialog";
+import DetailDialog from "@/components/start/quick/DetailDialog";
+import DrugsDialog from "@/components/start/quick/DrugsDialog";
 
 export default {
   name: "ModuleIdentification",
@@ -576,6 +587,8 @@ export default {
 
       showSubtypeSelection: false,
       error: false,
+
+      detailRequest: undefined,
     }
 
   },
@@ -693,7 +706,12 @@ export default {
     },
     rowClicked: function (item) {
       this.focusNode(['gen_', 'pro_'][this.seedTypeId] + item.id)
+    },
 
+    rowDoubleClicked: function(event,obj){
+      this.detailRequest= undefined
+      this.detailRequest ={edge:false, type:['gene','protein'][this.seedTypeId], id:obj.item.id}
+      this.$refs.details.showDialog()
     },
 
     subtypePopup: function (item) {
@@ -748,7 +766,7 @@ export default {
           } else
             headers.push(entry)
         })
-      headers.push({text: "", value: "data-table-expand", width: "1rem"})
+      headers.push({text: "Seed", value: "seed", sortable:false, align:"center", width: "1rem"})
       return headers
     },
     updateGraphPhysics: function () {
@@ -1089,6 +1107,8 @@ export default {
   ,
 
   components: {
+    DrugsDialog,
+    DetailDialog,
     InteractionNetworkDialog,
     QuickExamples,
     ButtonAdvanced,

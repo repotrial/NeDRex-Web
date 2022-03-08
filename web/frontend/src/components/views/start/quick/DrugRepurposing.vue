@@ -234,14 +234,14 @@
                   </v-tooltip>
                   <v-tooltip left>
                     <template v-slot:activator="{attrs,on}">
-                      <v-chip style="position: absolute; left:auto; right:55px" v-on="on" v-bind="attrs"
+                      <v-chip @click="$refs.drugsDialog.show()" style="position: absolute; left:auto; right:55px" v-on="on" v-bind="attrs"
                               v-show="seedTypeId!=null"
                               color="primary">
                         <v-icon left>fas fa-capsules</v-icon>
                         {{ validationDrugCount }}
                       </v-chip>
                     </template>
-                    <span>There are {{ validationDrugCount }} drugs that were associated with your query.<br> These are saved for validation purposes later.</span>
+                    <span>There are {{ validationDrugCount }} drugs that were associated with your query.<br> These are saved for validation purposes later.<br><i>Click here to view the current list!</i></span>
                   </v-tooltip>
                   <SeedTable ref="seedTable" v-show="seedTypeId!=null" :download="true"
                              :remove="true"
@@ -308,7 +308,7 @@
                                 height="50vh" class="overflow-y-auto" fixed-header dense item-key="id"
                                 :items="(!results.targets ||results.targets.length ===0) ?seeds : results.targets"
                                 :headers="getHeaders(0)"
-                                disable-pagination show-expand :single-expand="true"
+                                disable-pagination @dblclick:row="seedDoubleClicked"
                                 hide-default-footer @click:row="seedClicked">
                     <template v-slot:item.displayName="{item}">
                       <v-tooltip v-if="item.displayName.length>12" right>
@@ -320,19 +320,23 @@
                       </v-tooltip>
                       <span v-else>{{ item.displayName }}</span>
                     </template>
-                    <template v-slot:item.data-table-expand="{expand, item,isExpanded}">
-                      <v-icon v-show="!isExpanded" @click="expand(true)" :color="getColor(item)">fas fa-angle-down
-                      </v-icon>
-                      <v-icon v-show="isExpanded" @click="expand(false)" :color="getColor(item)">fas fa-angle-up
-                      </v-icon>
+                    <template v-slot:item.seed="{item}">
+                      <v-icon v-if="item.isSeed" color="success">fas fa-check</v-icon>
+                      <v-icon v-else color="error">fas fa-times</v-icon>
                     </template>
-                    <template v-slot:expanded-item="{ headers, item }">
-                      <td :colspan="headers.length">
-                        <EntryDetails max-width="17vw"
-                                      :attributes="[geneDetailAttributes,proteinDetailAttributes][seedTypeId]"
-                                      :detail-request="{edge:false, type:['gene','protein'][seedTypeId], id:item.id}"></EntryDetails>
-                      </td>
-                    </template>
+                    <!--                    <template v-slot:item.data-table-expand="{expand, item,isExpanded}">-->
+                    <!--                      <v-icon v-show="!isExpanded" @click="expand(true)" :color="getColor(item)">fas fa-angle-down-->
+                    <!--                      </v-icon>-->
+                    <!--                      <v-icon v-show="isExpanded" @click="expand(false)" :color="getColor(item)">fas fa-angle-up-->
+                    <!--                      </v-icon>-->
+                    <!--                    </template>-->
+                    <!--                    <template v-slot:expanded-item="{ headers, item }">-->
+                    <!--                      <td :colspan="headers.length">-->
+                    <!--                        <EntryDetails max-width="17vw"-->
+                    <!--                                      :attributes="[geneDetailAttributes,proteinDetailAttributes][seedTypeId]"-->
+                    <!--                                      :detail-request="{edge:false, type:['gene','protein'][seedTypeId], id:item.id}"></EntryDetails>-->
+                    <!--                      </td>-->
+                    <!--                    </template>-->
                     <template v-slot:footer>
                       <div style="display: flex; justify-content: center; margin-left: auto">
                         <div style="padding-top: 16px;margin-bottom: 8px;">
@@ -417,7 +421,7 @@
                   <template v-if="results.drugs.length>=0">
                     <v-data-table v-if="$refs.rankingAlgorithms" max-height="50vh" height="50vh" class="overflow-y-auto"
                                   fixed-header dense
-                                  item-key="id" show-expand :single-expand="true"
+                                  item-key="id" @dblclick:row="drugDoubleClicked"
                                   :items="results.drugs"
                                   :headers="getHeaders(1)"
                                   disable-pagination
@@ -461,21 +465,21 @@
                         </v-tooltip>
 
                       </template>
-                      <template v-slot:item.data-table-expand="{expand, item,isExpanded}">
-                        <v-icon v-show="!isExpanded" @click="expand(true)" :color="getColoring('nodes','drug')">fas
-                          fa-angle-down
-                        </v-icon>
-                        <v-icon v-show="isExpanded" @click="expand(false)" :color="getColoring('nodes','drug')">fas
-                          fa-angle-up
-                        </v-icon>
-                      </template>
-                      <template v-slot:expanded-item="{ headers, item }">
-                        <td :colspan="headers.length">
-                          <EntryDetails max-width="25vw" :attributes="drugDetailAttributes"
-                                        :additions="(item.trials != null ?  [{pos:3,key:'ClinicalTrials',value:item.trials}]:null)"
-                                        :detail-request="{edge:false, type:'drug', id:item.id}"></EntryDetails>
-                        </td>
-                      </template>
+                      <!--                      <template v-slot:item.data-table-expand="{expand, item,isExpanded}">-->
+                      <!--                        <v-icon v-show="!isExpanded" @click="expand(true)" :color="getColoring('nodes','drug')">fas-->
+                      <!--                          fa-angle-down-->
+                      <!--                        </v-icon>-->
+                      <!--                        <v-icon v-show="isExpanded" @click="expand(false)" :color="getColoring('nodes','drug')">fas-->
+                      <!--                          fa-angle-up-->
+                      <!--                        </v-icon>-->
+                      <!--                      </template>-->
+                      <!--                      <template v-slot:expanded-item="{ headers, item }">-->
+                      <!--                        <td :colspan="headers.length">-->
+                      <!--                          <EntryDetails max-width="25vw" :attributes="drugDetailAttributes"-->
+                      <!--                                        :additions="(item.trials != null ?  [{pos:3,key:'ClinicalTrials',value:item.trials}]:null)"-->
+                      <!--                                        :detail-request="{edge:false, type:'drug', id:item.id}"></EntryDetails>-->
+                      <!--                        </td>-->
+                      <!--                      </template>-->
                       <template v-slot:footer>
                         <div style="display: flex; justify-content: center">
                           <div style="padding-top: 16px; margin-bottom: 8px;">
@@ -510,6 +514,12 @@
 
 
     </v-stepper>
+    <DetailDialog ref="details" max-width="25vw"
+                  :attributes="detailAttributes"
+                  :detail-request="detailRequest"
+                  :additions="detailAdditions"
+    ></DetailDialog>
+    <DrugsDialog v-if="$refs.validation" ref="drugsDialog" :drugs="$refs.validation.getDrugs()"></DrugsDialog>
     <v-dialog v-model="namePopup"
               persistent
               max-width="500px"
@@ -605,6 +615,8 @@ import ButtonBack from "@/components/start/quick/ButtonBack";
 import ButtonAdvanced from "@/components/start/quick/ButtonAdvanced";
 import QuickExamples from "@/components/start/quick/QuickExamples";
 import InteractionNetworkDialog from "@/components/start/quick/InteractionNetworkDialog";
+import DetailDialog from "@/components/start/quick/DetailDialog";
+import DrugsDialog from "@/components/start/quick/DrugsDialog";
 
 export default {
   name: "CombinedRepurposing",
@@ -665,6 +677,9 @@ export default {
       showVisOption: false,
       loadingTrialData: false,
       error: false,
+      detailRequest: undefined,
+      detailAttributes: undefined,
+      detailAdditions: undefined,
     }
   },
 
@@ -1344,7 +1359,9 @@ export default {
         } else
           headers.push(entry)
       })
-      headers.push({text: "", value: "data-table-expand", width: "1rem"})
+      if (table === 0)
+        headers.push({text: "Seed", value: "seed", sortable: false, align: "center", width: "1rem"})
+      // headers.push({text: "", value: "data-table-expand", width: "1rem"})
       return headers
     }
     ,
@@ -1352,6 +1369,32 @@ export default {
       this.focusNode(['gen_', 'pro_'][this.seedTypeId] + item.id)
     }
     ,
+    seedDoubleClicked: function (event, obj) {
+      this.detailAdditions = undefined
+      this.rowDoubleClicked(obj.item, ['gene', 'protein'][this.seedTypeId])
+    },
+    drugDoubleClicked: function (event, obj) {
+      let item = obj.item
+      this.detailAdditions = item.trials != null ? [{pos: 3, key: 'ClinicalTrials', value: item.trials}] : null
+      this.rowDoubleClicked(item, 'drug')
+    },
+
+    rowDoubleClicked: function (item, type) {
+      switch (type) {
+        case 'gene':
+          this.detailAttributes = this.geneDetailAttributes;
+          break;
+        case 'protein' :
+          this.detailAttributes = this.proteinDetailAttributes;
+          break;
+        case 'drug':
+          this.detailAttributes = this.drugDetailAttributes;
+          break;
+      }
+      this.detailRequest = undefined
+      this.detailRequest = {edge: false, type: type, id: item.id}
+      this.$refs.details.showDialog(this.detailRequest)
+    },
     drugClicked: function (item) {
       this.focusNode(['dru_'] + item.id)
     }
@@ -1369,6 +1412,8 @@ export default {
 
   components: {
     InteractionNetworkDialog,
+    DrugsDialog,
+    DetailDialog,
     ButtonAdvanced,
     ButtonBack,
     ButtonNext,

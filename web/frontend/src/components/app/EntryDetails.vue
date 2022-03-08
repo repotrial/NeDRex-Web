@@ -150,6 +150,14 @@ export default {
     }
   },
 
+  watch:{
+    detailRequest: function(){
+      if (this.detailRequest != null) {
+        this.loadDetails(this.detailRequest)
+      }
+    }
+  },
+
   created() {
     if (this.detailRequest != null) {
       this.loadDetails(this.detailRequest)
