@@ -1,6 +1,6 @@
 <template>
-  <v-dialog v-model="model" max-width="800px" style="z-index: 1001" persistent>
-    <v-card v-if="nodeId!=null">
+  <v-dialog v-model="model" max-width="800px" style="z-index: 1001" persistent >
+    <v-card v-if="nodeId!=null" >
       <v-card-title>Filter the {{ nodeList[nodeId].text }} nodes</v-card-title>
       <v-card-subtitle>
         <LabeledSwitch v-if="model" label-off="Node selection" label-on="Text filter"
@@ -15,7 +15,7 @@
         </LabeledSwitch>
       </v-card-subtitle>
       <v-divider></v-divider>
-      <v-card-text style="max-height: 700px; overflow-y: auto">
+      <v-card-text style=" max-height: calc(80vh - 170px); overflow-y: auto">
         <v-card-title style="margin-left: -25px; margin-bottom: -25px" class="subtitle-1;"
                       v-show="['gene','drug'].indexOf(nodeList[nodeId].value)>-1">General options
         </v-card-title>

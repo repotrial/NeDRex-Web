@@ -1,5 +1,5 @@
 <template>
-  <v-sheet dark :color="color">
+  <v-sheet dark :color="color" style="max-height: 90vh; overflow-y: auto">
     <v-list>
       <v-list-item>
         <v-list-item-title>

@@ -136,18 +136,28 @@
                                 @change="setName" style="margin-left: 20px"></v-text-field>
                 </v-col>
                 <v-col cols="2" style="padding-top: 15px">
-                  <v-btn v-show="selected.owner = $cookies.get('uid')" icon style="margin-top:10px" x-small
-                         @click="toggleEdit()">
-                    <v-icon>{{ edit ? "fas fa-check" : "fas fa-edit" }}</v-icon>
-                  </v-btn>
+                  <template v-show="selected.owner = $cookies.get('uid')">
+                    <v-btn v-if="!edit" icon style="margin-top:10px" x-small color="primary"
+                           @click="toggleEdit()">
+                      <v-icon>fas fa-edit</v-icon>
+                    </v-btn>
+                    <template v-else>
+                      <v-btn icon style="margin-top:10px" x-small @click="toggleEdit()" color="success">
+                        <v-icon>fas fa-check</v-icon>
+                      </v-btn>
+                      <v-btn icon style="margin-top:10px" x-small @click="resetEdit()" color="error">
+                        <v-icon>fas fa-times</v-icon>
+                      </v-btn>
+                    </template>
+                  </template>
                   <v-btn icon style="margin-top:10px" @mouseover="hover.star=true"
                          @mouseleave="hover.star=false"
                          x-small
-                         @click="toggleStar">
+                         @click="toggleStar" color="warning">
                     <v-icon v-if="showStar(false)">far fa-star</v-icon>
                     <v-icon v-if="showStar(true)">fas fa-star</v-icon>
                   </v-btn>
-                  <v-btn v-show="selected.owner = $cookies.get('uid')" icon style="margin-top:10px" x-small
+                  <v-btn v-show="selected.owner = $cookies.get('uid')" icon style="margin-top:10px" x-small color="error"
                          @click="deletePopup=true">
                     <v-icon>
                       fas fa-trash
@@ -427,7 +437,7 @@ export default {
       this.$socket.unsubscribeThumbnail(params.gid)
     },
     getExtendedColoring: function (entity, name) {
-      return this.$utils.getColoringExtended(this.$global.metagraph, this.selected.entityGraph, entity, name,'light')
+      return this.$utils.getColoringExtended(this.$global.metagraph, this.selected.entityGraph, entity, name, 'light')
     },
     handleSelection: function (selected) {
       if (selected == null || selected[0] === undefined || this.selectedId === selected[0]) {
@@ -445,6 +455,7 @@ export default {
           return response.data
       }).then(data => {
         this.selected = data
+        this.resetEdit()
         this.description = data.comment
       }).then(() => {
         if (!this.selected.thumbnailReady) {
@@ -586,25 +597,32 @@ export default {
       }).then(data => {
         this.loadJob(data.jobid)
       })
-  },
+    },
 
-  reverseList: function () {
-    this.list = this.list.reverse()
-  },
+    reverseList: function () {
+      this.list = this.list.reverse()
+    },
 
-  setName: function (newName) {
-    this.selected.name = newName
-  },
+    setName: function (newName) {
+      this.selected.name = newName
+    },
+    resetEdit: function () {
+      if (this.selected.name_backup)
+        this.selected.name = this.selected.name_backup
+      this.edit = false
+    },
 
-  toggleEdit: function () {
-    if (this.edit)
-      this.saveName()
-    this.edit = !this.edit;
+    toggleEdit: function () {
+      if (this.edit) {
+        this.saveName()
+      } else
+        this.selected.name_backup = this.selected.name
+      this.edit = !this.edit;
+    }
+
+
   }
-
-
-}
-,
+  ,
 
 
 }

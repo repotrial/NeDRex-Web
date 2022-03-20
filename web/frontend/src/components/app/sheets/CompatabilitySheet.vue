@@ -1,5 +1,5 @@
 <template>
-  <v-sheet dark :color="color">
+  <v-sheet dark :color="color" style="max-height: 90vh; overflow-y: auto">
     <v-card>
       <v-card-title>Browser Compatability</v-card-title>
       <v-card-text>

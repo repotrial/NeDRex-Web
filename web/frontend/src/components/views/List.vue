@@ -422,7 +422,7 @@
           selection.
         </v-card-text>
         <v-divider></v-divider>
-        <v-list>
+        <v-list style="max-height: calc(80vh - 150px); overflow-y: auto ">
           <template v-for="attr in extension.edges">
             <v-list-item :key="attr.name">
               <v-switch v-model="attr.selected" :disabled="attr.disabled"></v-switch>
@@ -502,38 +502,45 @@
         <v-card-text>Select a node and one or two edges which should be used to create a new user-named edge.
         </v-card-text>
         <v-divider></v-divider>
-        <v-card-subtitle style="font-size: 16pt; margin-top:8px;"><i>General</i></v-card-subtitle>
-        <div style="width: 100%; display: flex; justify-content: center">
-          <LabeledSwitch v-model="collapse.self.selected" :disabled="collapse.self.disabled" @click="isDisabled()" label-on="Allow single edge" label-off="Use two edges">
-            <template v-slot:tooltip>
-              <div style="width: 300px">
-                If disabled, an induced edge using two distinct types of edges is allowed. If enabled, the only one edge will be necessary to select, which allows the creation of for example a Diseasome.
-              </div>
-            </template>
-          </LabeledSwitch>
-        </div>
-        <v-divider></v-divider>
-        <v-card-subtitle style="font-size: 16pt; margin-top:8px;"><i>Nodes</i></v-card-subtitle>
-            <v-list>
-              <template v-for="attr in collapse.nodes">
-                <v-list-item :key="attr.name">
-                  <v-switch v-model="attr.selected" :disabled="attr.disabled" @click="isDisabled('nodes',attr.name)">
-                  </v-switch>
-                  <span>
+        <div style="max-height: calc(80vh - 150px); overflow-y: auto ">
+          <v-card-subtitle style="font-size: 16pt; margin-top:8px;"><i>General</i></v-card-subtitle>
+          <div style="width: 100%; display: flex; justify-content: center; margin-top: -16px;">
+            <LabeledSwitch v-model="collapse.self.selected" :disabled="collapse.self.disabled" @click="isDisabled()"
+                           label-on="Allow single edge" label-off="Use two edges">
+              <template v-slot:tooltip>
+                <div style="width: 300px">
+                  If disabled, an induced edge using two distinct types of edges is allowed. If enabled, the only one
+                  edge will be necessary to select, which allows the creation of for example a Diseasome.
+                </div>
+              </template>
+            </LabeledSwitch>
+          </div>
+          <v-divider></v-divider>
+          <v-card-subtitle style="font-size: 16pt; margin-top:8px;"><i>Nodes</i></v-card-subtitle>
+          <v-card-text style="margin-top:-16px; margin-bottom: -16px"><i style="color: dimgray">Select the node type
+            used as connector node to limit the suggestion for available paths.</i></v-card-text>
+          <v-list>
+            <template v-for="attr in collapse.nodes">
+              <v-list-item :key="attr.name">
+                <v-switch v-model="attr.selected" :disabled="attr.disabled" @click="isDisabled('nodes',attr.name)">
+                </v-switch>
+                <span>
                 <v-icon :color="getColoring('nodes',attr.name,'light')">fas fa-genderless</v-icon>
                 {{ attr.name }}
               </span>
-                </v-list-item>
-              </template>
-            </v-list>
-<v-divider></v-divider>
-        <v-card-subtitle style="font-size: 16pt; margin-top:8px;"><i>Edges</i></v-card-subtitle>
-            <v-list>
-              <template v-for="attr in collapse.edges">
-                <v-list-item :key="attr.name">
-                  <v-switch v-model="attr.selected" :disabled="attr.disabled" @click="isDisabled('edges',attr.name)">
-                  </v-switch>
-                  <span>
+              </v-list-item>
+            </template>
+          </v-list>
+          <v-divider></v-divider>
+          <v-card-subtitle style="font-size: 16pt; margin-top:8px;"><i>Edges</i></v-card-subtitle>
+          <v-card-text style="margin-top:-16px; margin-bottom: -16px"><i style="color: dimgray">Select two edge types,
+            sharing at least one node that will be used to create the paths.</i></v-card-text>
+          <v-list>
+            <template v-for="attr in collapse.edges">
+              <v-list-item :key="attr.name">
+                <v-switch v-model="attr.selected" :disabled="attr.disabled" @click="isDisabled('edges',attr.name)">
+                </v-switch>
+                <span>
                     <v-icon :color="getExtendedColoring('edges',attr.name,'light')[0]">fas fa-genderless</v-icon>
                     <template v-if="directionExtended(attr.name)===0">
                       <v-icon>fas fa-undo-alt</v-icon>
@@ -544,78 +551,79 @@
                     </template>
                 {{ attr.name }}
               </span>
-                </v-list-item>
-              </template>
-            </v-list>
-        <v-divider></v-divider>
-        <v-card-subtitle style="font-size: 16pt; margin-top:8px;"><i>Name</i></v-card-subtitle>
-        <div style="display: flex; justify-content: center">
-          <v-text-field
-            label="Edge Name"
-            outlined
-            v-model="collapse.edgeName" style="margin:25px">
-          </v-text-field>
+              </v-list-item>
+            </template>
+          </v-list>
+          <v-divider></v-divider>
+          <v-card-subtitle style="font-size: 16pt; margin-top:8px;"><i>Name</i></v-card-subtitle>
+          <div style="display: flex; justify-content: center">
+            <v-text-field
+              label="Edge Name"
+              outlined
+              v-model="collapse.edgeName" style="margin:25px">
+            </v-text-field>
+          </div>
+          <div v-if="collapse.accept" style="display: flex; justify-content: center">
+            <v-icon
+              :color="getExtendedColoring('nodes',getExtendedNodes(collapse.edge1,collapse.nodes.filter(n => n.selected)[0].name),'light')">
+              fas fa-genderless
+            </v-icon>
+            <v-icon>fas fa-long-arrow-alt-right</v-icon>
+            <v-icon :color="getExtendedColoring('nodes',collapse.nodes.filter(n => n.selected)[0].name,'light')">fas
+              fa-genderless
+            </v-icon>
+            <v-icon>fas fa-long-arrow-alt-right</v-icon>
+            <v-icon v-if="collapse.self.selected"
+                    :color="getExtendedColoring('nodes',getExtendedNodes(collapse.edge1,collapse.nodes.filter(n => n.selected)[0].name),'light')">
+              fas
+              fa-genderless
+            </v-icon>
+            <v-icon v-else
+                    :color="getExtendedColoring('nodes',getExtendedNodes(collapse.edge2,collapse.nodes.filter(n => n.selected)[0].name),'light')">
+              fas fa-genderless
+            </v-icon>
+          </div>
+          <v-card-text v-if="collapse.accept">
+            <template v-if="!collapse.self.selected">
+              Generate edge by merging {{ collapse.edge1 }} and
+              {{ collapse.edge2 }} (via {{ collapse.nodes.filter(n => n.selected)[0].name }})?
+            </template>
+            <template v-if="collapse.self.selected"> Generate {{ collapse.edgeName }} edge by looping via
+              {{ collapse.edge1 }} and {{ collapse.nodes.filter(n => n.selected)[0].name }}?
+            </template>
+          </v-card-text>
+          <v-container v-if="collapse.accept">
+            <v-row>
+              <v-col v-if="!collapse.self.selected">
+                <v-chip outlined @click="switchCollapseEdges">Switch edges</v-chip>
+              </v-col>
+              <v-col style="margin-top:-15px">
+                <v-switch
+                  v-model="collapse.keep"
+                >
+                  <template v-slot:label>
+                    Keep
+                    <v-tooltip
+                      right>
+                      <template v-slot:activator="{ on, attrs }">
+                        <v-icon
+                          right
+                          color="grey"
+                          dark
+                          v-bind="attrs"
+                          v-on="on"
+                        >
+                          far fa-question-circle
+                        </v-icon>
+                      </template>
+                      <span>Activate to keep collapsed entities even if there are no other entities connected.</span>
+                    </v-tooltip>
+                  </template>
+                </v-switch>
+              </v-col>
+            </v-row>
+          </v-container>
         </div>
-        <div v-if="collapse.accept" style="display: flex; justify-content: center">
-          <v-icon
-            :color="getExtendedColoring('nodes',getExtendedNodes(collapse.edge1,collapse.nodes.filter(n => n.selected)[0].name),'light')">
-            fas fa-genderless
-          </v-icon>
-          <v-icon>fas fa-long-arrow-alt-right</v-icon>
-          <v-icon :color="getExtendedColoring('nodes',collapse.nodes.filter(n => n.selected)[0].name,'light')">fas
-            fa-genderless
-          </v-icon>
-          <v-icon>fas fa-long-arrow-alt-right</v-icon>
-          <v-icon v-if="collapse.self.selected"
-                  :color="getExtendedColoring('nodes',getExtendedNodes(collapse.edge1,collapse.nodes.filter(n => n.selected)[0].name),'light')">
-            fas
-            fa-genderless
-          </v-icon>
-          <v-icon v-else
-                  :color="getExtendedColoring('nodes',getExtendedNodes(collapse.edge2,collapse.nodes.filter(n => n.selected)[0].name),'light')">
-            fas fa-genderless
-          </v-icon>
-        </div>
-        <v-card-text v-if="collapse.accept">
-          <template v-if="!collapse.self.selected">
-            Generate edge by merging {{ collapse.edge1 }} and
-            {{ collapse.edge2 }} (via {{ collapse.nodes.filter(n => n.selected)[0].name }})?
-          </template>
-          <template v-if="collapse.self.selected"> Generate {{ collapse.edgeName }} edge by looping via
-            {{ collapse.edge1 }} and {{ collapse.nodes.filter(n => n.selected)[0].name }}?
-          </template>
-        </v-card-text>
-        <v-container v-if="collapse.accept">
-          <v-row>
-            <v-col v-if="!collapse.self.selected">
-              <v-chip outlined @click="switchCollapseEdges">Switch edges</v-chip>
-            </v-col>
-            <v-col style="margin-top:-15px">
-              <v-switch
-                v-model="collapse.keep"
-              >
-                <template v-slot:label>
-                  Keep
-                  <v-tooltip
-                    right>
-                    <template v-slot:activator="{ on, attrs }">
-                      <v-icon
-                        right
-                        color="grey"
-                        dark
-                        v-bind="attrs"
-                        v-on="on"
-                      >
-                        far fa-question-circle
-                      </v-icon>
-                    </template>
-                    <span>Activate to keep collapsed entities even if there are no other entities connected.</span>
-                  </v-tooltip>
-                </template>
-              </v-switch>
-            </v-col>
-          </v-row>
-        </v-container>
         <v-divider></v-divider>
         <v-card-actions>
           <v-spacer></v-spacer>
@@ -654,7 +662,7 @@
         </v-card-text>
         <v-divider></v-divider>
         <template v-if="Object.keys(options.type).length>0">
-          <v-list>
+          <v-list style="max-height: calc(80vh - 150px); overflow-y: auto">
             <v-list-item v-for="attr in options.attributes" :key="attr.name" dense>
               <v-switch v-model="attr.selected" dense :label="attr.label" :disabled="(attr.name === 'id')"
                         style="margin-top: 0">
@@ -698,31 +706,32 @@
           to not only select edges but also nodes that are directly reachable.
         </v-card-subtitle>
         <v-divider></v-divider>
-        <v-card-subtitle style="font-size: 16pt; margin-top:8px;"><i>Nodes</i></v-card-subtitle>
-        <v-tabs-items>
-          <v-list>
-            <template v-for="attr in selectionDialog.seeds">
-              <v-list-item :key="attr.name">
-                <v-switch v-model="attr.select" :disabled="attr.disabled"></v-switch>
-                <span>
+        <div style="overflow-y: auto; max-height: calc(80vh - 200px)">
+          <v-card-subtitle style="font-size: 16pt; margin-top:8px;"><i>Nodes</i></v-card-subtitle>
+          <v-tabs-items>
+            <v-list>
+              <template v-for="attr in selectionDialog.seeds">
+                <v-list-item :key="attr.name">
+                  <v-switch v-model="attr.select" :disabled="attr.disabled"></v-switch>
+                  <span>
                 <v-icon :color="getColoring('nodes',attr.name,'light')">fas fa-genderless</v-icon>
                 {{ attr.name }} ({{ countSelected('nodes', attr.name) }})
               </span>
-              </v-list-item>
-            </template>
+                </v-list-item>
+              </template>
 
-          </v-list>
-        </v-tabs-items>
+            </v-list>
+          </v-tabs-items>
 
-        <v-divider></v-divider>
-        <v-card-subtitle style="font-size: 16pt; margin-top:8px"><i>Edges</i></v-card-subtitle>
-        <v-tabs-items>
-          <v-list>
-            <template v-for="attr in selectionDialog.targets">
-              <v-list-item :key="attr.name">
-                <v-switch v-model="attr.select" :disabled="attr.disabled">
-                </v-switch>
-                <span>
+          <v-divider></v-divider>
+          <v-card-subtitle style="font-size: 16pt; margin-top:8px"><i>Edges</i></v-card-subtitle>
+          <v-tabs-items>
+            <v-list>
+              <template v-for="attr in selectionDialog.targets">
+                <v-list-item :key="attr.name">
+                  <v-switch v-model="attr.select" :disabled="attr.disabled">
+                  </v-switch>
+                  <span>
                 <v-icon :color="getExtendedColoring('edges',attr.name,'light')[0]">fas fa-genderless</v-icon>
                     <template v-if="directionExtended(attr.name)===0">
                       <v-icon>fas fa-undo-alt</v-icon>
@@ -733,38 +742,40 @@
                     </template>
                 {{ attr.name }} ({{ countSelected('edges', attr.name) }})
               </span>
-              </v-list-item>
-            </template>
-          </v-list>
-        </v-tabs-items>
+                </v-list-item>
+              </template>
+            </v-list>
+          </v-tabs-items>
+          <v-divider></v-divider>
+          <v-card-subtitle style="font-size: 16pt; margin-top:8px;"><i>Options</i></v-card-subtitle>
+          <v-container>
+            <v-row>
+              <v-col v-show="selectionDialog.type === 'nodes'">
+                <v-switch v-model="selectionDialog.extendSelect" label=''>
+                  <template v-slot:label>
+                    Extend start selection
+                    <v-tooltip
+                      right>
+                      <template v-slot:activator="{ on, attrs }">
+                        <v-icon
+                          color="grey"
+                          dark
+                          v-bind="attrs"
+                          v-on="on"
+                          right
+                        >
+                          far fa-question-circle
+                        </v-icon>
+                      </template>
+                      <span>{{ selectionDialog.extendDescription }}</span>
+                    </v-tooltip>
+                  </template>
+                </v-switch>
+              </v-col>
+            </v-row>
+          </v-container>
+        </div>
         <v-divider></v-divider>
-        <v-card-subtitle style="font-size: 16pt; margin-top:8px;"><i>Options</i></v-card-subtitle>
-        <v-container>
-          <v-row>
-            <v-col v-show="selectionDialog.type === 'nodes'">
-              <v-switch v-model="selectionDialog.extendSelect" label=''>
-                <template v-slot:label>
-                  Extend start selection
-                  <v-tooltip
-                    right>
-                    <template v-slot:activator="{ on, attrs }">
-                      <v-icon
-                        color="grey"
-                        dark
-                        v-bind="attrs"
-                        v-on="on"
-                        right
-                      >
-                        far fa-question-circle
-                      </v-icon>
-                    </template>
-                    <span>{{ selectionDialog.extendDescription }}</span>
-                  </v-tooltip>
-                </template>
-              </v-switch>
-            </v-col>
-          </v-row>
-        </v-container>
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn
@@ -801,7 +812,7 @@
           overrides the original group of any node selected!
         </v-card-text>
         <v-divider></v-divider>
-        <v-list>
+        <v-list style="overflow-y: auto; max-height: calc(80vh - 150px ) ">
           <v-list-item>
             <v-list-item-content>
               <v-text-field v-model=selectionColor.name label="Group-Name"

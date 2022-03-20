@@ -123,7 +123,8 @@
                     @filterTypeChangeEvent="setFilterType"></FilterDialog>
       <OptionsDialog ref="options" :edge-id="optionEdgeId" :edges="edges"></OptionsDialog>
       <v-dialog width="500px" v-model="missingFilterDialog" style="z-index: 1001">
-        <v-card>
+        <v-card style="position: relative">
+          <v-btn icon style="position: absolute; right: 0" @click="missingFilterDialog=false" color="error"><v-icon>far fa-times-circle</v-icon></v-btn>
           <v-card-title>Unfiltered Request</v-card-title>
           <template v-if="edgeModel.length>1">
             <v-card-text>

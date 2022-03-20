@@ -461,7 +461,6 @@
           <v-card
             v-if="step===3"
             class="mb-4"
-            max-height="750px"
           >
             <v-card-subtitle class="headline">3. Network</v-card-subtitle>
             <v-card-subtitle style="margin-top: -25px">The network you created
@@ -561,7 +560,7 @@
                     </Legend>
                   </template>
                   <template v-slot:tools v-if="$refs.graph!==undefined">
-                    <Tools physics :cc="false" loops
+                    <Tools physics :cc="false" loops :physicsDisabled="physicsDisabled"
                            @toggleOptionEvent="toggleToolOption" @clickOptionEvent="clickToolOption">
                       <template v-slot:append v-if="options.general.keep">
                         <ToolDropdown
@@ -607,22 +606,6 @@
                       </v-tooltip>
                       <span v-else>{{ item.displayName }}</span>
                     </template>
-                    <!--                    <template v-slot:item.data-table-expand="{expand, item,isExpanded}">-->
-                    <!--                      <v-icon v-show="!isExpanded" @click="expand(true)"-->
-                    <!--                              :color="getColoring('nodes',options.general.keep && resultTableModel ===0 ? getConnectorType() :nodeList[targetTypeId].value)">-->
-                    <!--                        fas fa-angle-down-->
-                    <!--                      </v-icon>-->
-                    <!--                      <v-icon v-show="isExpanded" @click="expand(false)"-->
-                    <!--                              :color="getColoring('nodes',options.general.keep && resultTableModel ===0 ? getConnectorType() :nodeList[targetTypeId].value)">-->
-                    <!--                        fas fa-angle-up-->
-                    <!--                      </v-icon>-->
-                    <!--                    </template>-->
-                    <!--                    <template v-slot:expanded-item="{ headers, item }">-->
-                    <!--                      <td :colspan="headers.length">-->
-                    <!--                        <EntryDetails max-width="280px"-->
-                    <!--                                      :detail-request="{edge:false, type: options.general.keep && resultTableModel ===0 ? getConnectorType() :nodeList[targetTypeId].value, id:item.id}"></EntryDetails>-->
-                    <!--                      </td>-->
-                    <!--                    </template>-->
                     <template v-slot:footer>
                       <v-card-subtitle><i>Click an entry to focus in the network<br>Doubleclick an entry to show details</i>
                       </v-card-subtitle>
@@ -719,7 +702,7 @@ export default {
 
       info: undefined,
       direct: false,
-
+      physicsDisabled: false,
       paths: {0: [], 1: []},
       showVisOption: false,
       options: {
@@ -998,6 +981,10 @@ export default {
       }).then(data => {
         this.$emit('newGraphEvent')
         this.info = data;
+        let count = 0;
+        Object.values(data.edges).forEach(v => count += v)
+        Object.values(data.nodes).forEach(v => count += v)
+        this.physicsDisabled = count > 20000;
         this.gid = data.id
         this.prepareLegend()
         this.showVisOption = !this.graphConfig.visualized
