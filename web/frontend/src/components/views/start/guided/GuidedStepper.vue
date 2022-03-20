@@ -468,7 +468,7 @@
             </v-card-subtitle>
 
             <v-row>
-              <v-col style="padding: 0; max-width: 360px;">
+              <v-col style="padding: 0; max-width: 360px; min-width:350px">
                 <v-card-title class="subtitle-1">{{ resultTableModel !== 2 ? 'Sources' : 'Connectors' }}
                   ({{ sources.length }})
                   <v-tooltip top>
@@ -483,7 +483,8 @@
                 </v-card-title>
                 <v-data-table max-height="550px" height="550px" class="overflow-y-auto" fixed-header dense item-key="id"
                               :items="resultTableModel !==2 ? sources :connectors"
-                              :headers="getHeaders()" show-expand :single-expand="true"
+                              :headers="getHeaders()"
+                              @dblclick:row="sourceDoubleClicked"
                               disable-pagination
                               hide-default-footer @click:row="seedClicked">
                   <template v-slot:item.displayName="{item}">
@@ -496,24 +497,25 @@
                     </v-tooltip>
                     <span v-else>{{ item.displayName }}</span>
                   </template>
-                  <template v-slot:item.data-table-expand="{expand, item,isExpanded}">
-                    <v-icon v-show="!isExpanded" @click="expand(true)"
-                            :color="getColoring('nodes',options.general.keep && resultTableModel ===2 ? getConnectorType() :nodeList[sourceTypeId].value)">
-                      fas fa-angle-down
-                    </v-icon>
-                    <v-icon v-show="isExpanded" @click="expand(false)"
-                            :color="getColoring('nodes',options.general.keep && resultTableModel ===2 ? getConnectorType() :nodeList[sourceTypeId].value)">
-                      fas fa-angle-up
-                    </v-icon>
-                  </template>
-                  <template v-slot:expanded-item="{ headers, item }">
-                    <td :colspan="headers.length">
-                      <EntryDetails max-width="280px"
-                                    :detail-request="{edge:false, type: options.general.keep && resultTableModel ===2 ? getConnectorType() :nodeList[sourceTypeId].value, id:item.id}"></EntryDetails>
-                    </td>
-                  </template>
+                  <!--                  <template v-slot:item.data-table-expand="{expand, item,isExpanded}">-->
+                  <!--                    <v-icon v-show="!isExpanded" @click="expand(true)"-->
+                  <!--                            :color="getColoring('nodes',options.general.keep && resultTableModel ===2 ? getConnectorType() :nodeList[sourceTypeId].value)">-->
+                  <!--                      fas fa-angle-down-->
+                  <!--                    </v-icon>-->
+                  <!--                    <v-icon v-show="isExpanded" @click="expand(false)"-->
+                  <!--                            :color="getColoring('nodes',options.general.keep && resultTableModel ===2 ? getConnectorType() :nodeList[sourceTypeId].value)">-->
+                  <!--                      fas fa-angle-up-->
+                  <!--                    </v-icon>-->
+                  <!--                  </template>-->
+                  <!--                  <template v-slot:expanded-item="{ headers, item }">-->
+                  <!--                    <td :colspan="headers.length">-->
+                  <!--                      <EntryDetails max-width="280px"-->
+                  <!--                                    :detail-request="{edge:false, type: options.general.keep && resultTableModel ===2 ? getConnectorType() :nodeList[sourceTypeId].value, id:item.id}"></EntryDetails>-->
+                  <!--                    </td>-->
+                  <!--                  </template>-->
                   <template v-slot:footer>
-                    <v-card-subtitle><i>Click an entry to focus in the network<br>Doubleclick an entry to show details</i></v-card-subtitle>
+                    <v-card-subtitle><i>Click an entry to focus in the network<br>Doubleclick an entry to show
+                      details</i></v-card-subtitle>
                     <div style="display: flex; justify-content: center; margin-left: auto">
                       <div style="padding-top: 16px; padding-bottom: 8px">
                         <ResultDownload v-show="getNodesForSourceTable() !=null && getNodesForSourceTable().length>0"
@@ -571,7 +573,7 @@
 
                 </Network>
               </v-col>
-              <v-col style="padding: 0 10px 0 0; max-width: 360px">
+              <v-col style="padding: 0 10px 0 0; max-width: 360px; min-width: 350px">
                 <v-card-title class="subtitle-1"> {{ resultTableModel !== 0 ? 'Targets' : 'Connectors' }} {{
                     (gid != null && targets.length != null ? (" (" + (targets.length) + ")") : ": Processing")
                   }}
@@ -590,6 +592,7 @@
                 <template v-if="gid!=null && targets.length>0">
                   <v-data-table max-height="550px" height="550px" class="overflow-y-auto" fixed-header dense
                                 item-key="id"
+                                @dblclick:row="targetDoubleClicked"
                                 :items="resultTableModel !==0 ? targets :connectors"
                                 :headers="getHeaders()"
                                 disable-pagination show-expand :single-expand="true"
@@ -604,24 +607,25 @@
                       </v-tooltip>
                       <span v-else>{{ item.displayName }}</span>
                     </template>
-                    <template v-slot:item.data-table-expand="{expand, item,isExpanded}">
-                      <v-icon v-show="!isExpanded" @click="expand(true)"
-                              :color="getColoring('nodes',options.general.keep && resultTableModel ===0 ? getConnectorType() :nodeList[targetTypeId].value)">
-                        fas fa-angle-down
-                      </v-icon>
-                      <v-icon v-show="isExpanded" @click="expand(false)"
-                              :color="getColoring('nodes',options.general.keep && resultTableModel ===0 ? getConnectorType() :nodeList[targetTypeId].value)">
-                        fas fa-angle-up
-                      </v-icon>
-                    </template>
-                    <template v-slot:expanded-item="{ headers, item }">
-                      <td :colspan="headers.length">
-                        <EntryDetails max-width="280px"
-                                      :detail-request="{edge:false, type: options.general.keep && resultTableModel ===0 ? getConnectorType() :nodeList[targetTypeId].value, id:item.id}"></EntryDetails>
-                      </td>
-                    </template>
+                    <!--                    <template v-slot:item.data-table-expand="{expand, item,isExpanded}">-->
+                    <!--                      <v-icon v-show="!isExpanded" @click="expand(true)"-->
+                    <!--                              :color="getColoring('nodes',options.general.keep && resultTableModel ===0 ? getConnectorType() :nodeList[targetTypeId].value)">-->
+                    <!--                        fas fa-angle-down-->
+                    <!--                      </v-icon>-->
+                    <!--                      <v-icon v-show="isExpanded" @click="expand(false)"-->
+                    <!--                              :color="getColoring('nodes',options.general.keep && resultTableModel ===0 ? getConnectorType() :nodeList[targetTypeId].value)">-->
+                    <!--                        fas fa-angle-up-->
+                    <!--                      </v-icon>-->
+                    <!--                    </template>-->
+                    <!--                    <template v-slot:expanded-item="{ headers, item }">-->
+                    <!--                      <td :colspan="headers.length">-->
+                    <!--                        <EntryDetails max-width="280px"-->
+                    <!--                                      :detail-request="{edge:false, type: options.general.keep && resultTableModel ===0 ? getConnectorType() :nodeList[targetTypeId].value, id:item.id}"></EntryDetails>-->
+                    <!--                      </td>-->
+                    <!--                    </template>-->
                     <template v-slot:footer>
-                      <v-card-subtitle><i>Click an entry to focus in the network<br>Doubleclick an entry to show details</i></v-card-subtitle>
+                      <v-card-subtitle><i>Click an entry to focus in the network<br>Doubleclick an entry to show details</i>
+                      </v-card-subtitle>
                       <div style="display: flex; justify-content: center; margin-left: auto">
                         <div style="padding-top: 16px;padding-bottom: 8px">
                           <ResultDownload v-show="getNodesForTargetTable() !=null && getNodesForTargetTable().length>0"
@@ -645,6 +649,11 @@
         </v-stepper-content>
       </v-stepper-items>
     </v-stepper>
+    <DetailDialog ref="details" max-width="25vw"
+                  :attributes="detailAttributes"
+                  :detail-request="detailRequest"
+                  :additions="detailAdditions"
+    ></DetailDialog>
   </v-card>
 </template>
 
@@ -665,6 +674,7 @@ import ButtonAdvanced from "@/components/start/quick/ButtonAdvanced";
 import Tools from "@/components/views/graph/Tools";
 import ConnectorDialog from "@/components/views/start/guided/ConnectorDialog";
 import ToolDropdown from "@/components/views/graph/tools/ToolDropdown";
+import DetailDialog from "@/components/start/quick/DetailDialog";
 
 
 export default {
@@ -739,7 +749,17 @@ export default {
       connectorTypeId: undefined,
       connectorCount: 0,
       connectorModel: false,
-      resultTableModel: 1
+      resultTableModel: 1,
+      detailAttributes: [],
+      detailRequest: undefined,
+      detailAdditions: [],
+      allDetailAttributes: {
+        'drug': ["Name", "SourceIDs", "Formula", "Indication", "Description", "Synonyms"],
+        'gene': ["Name", "SourceIDs", "Symbols", "Chromosome", "Genomic Location", "Synonyms", "Description"],
+        'protein': ["Name", "SourceIDs", "Gene", "Synonyms", "Comments"],
+        'disorder': ["Name", "SourceIDs", "ICD-10", "Synonyms", "Description"],
+        'pathway': ["Name", "SourceIDs"]
+      },
     }
   },
 
@@ -862,7 +882,7 @@ export default {
         return {value: node.group, text: node.label}
       })
       if (!selfAdded)
-        typeList.push({value: type, text: this.nodeList[[ this.sourceTypeId, this.targetTypeId][index]].text})
+        typeList.push({value: type, text: this.nodeList[[this.sourceTypeId, this.targetTypeId][index]].text})
       return typeList
     },
 
@@ -921,6 +941,25 @@ export default {
 
     updateSourceCount: function () {
       this.$set(this, "sourceCount", this.$refs.sourceTable ? this.$refs.sourceTable.getSeeds().length : 0);
+    },
+
+    sourceDoubleClicked: function (event, obj) {
+      let item = obj.item
+      this.detailAdditions = [{pos: 1, key: 'Degree', value: item.degree}]
+      this.rowDoubleClicked(item, this.nodeList[this.sourceTypeId].value)
+    },
+
+    targetDoubleClicked: function (event, obj) {
+      let item = obj.item
+      this.detailAdditions = [{pos: 1, key: 'Degree', value: item.degree}]
+      this.rowDoubleClicked(item, this.nodeList[this.targetTypeId].value)
+    },
+
+    rowDoubleClicked: function (item, type) {
+      this.detailAttributes = this.allDetailAttributes[type];
+      this.detailRequest = undefined
+      this.detailRequest = {edge: false, type: type, id: item.id}
+      this.$refs.details.showDialog(this.detailRequest)
     },
 
     focusNode: function (id) {
@@ -1275,6 +1314,7 @@ export default {
   }
   ,
   components: {
+    DetailDialog,
     ToolDropdown,
     ConnectorDialog,
     ButtonAdvanced,
