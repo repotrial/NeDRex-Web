@@ -158,10 +158,10 @@
                       @click="$emit('historyReloadEvent')">
             </v-switch>
           </div>
-          <div style="width: 100%; display: flex; justify-content: center">
-            <v-switch v-model="chronological" dense label="Show Chronological"
-                      @click="$emit('historyReloadEvent')"></v-switch>
-          </div>
+<!--          <div style="width: 100%; display: flex; justify-content: center">-->
+<!--            <v-switch v-model="chronological" dense label="Show Chronological"-->
+<!--                      @click="$emit('historyReloadEvent')"></v-switch>-->
+<!--          </div>-->
           <div>
             <!--            <div style="width: 100%; display: flex; justify-content: center">-->
             <!--              <v-switch v-model="options.history.otherUsers" :disabled="!chronological" dense label="Show parent graphs of other users"-->

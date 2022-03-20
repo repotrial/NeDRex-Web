@@ -427,7 +427,7 @@ export default {
       this.$socket.unsubscribeThumbnail(params.gid)
     },
     getExtendedColoring: function (entity, name) {
-      return this.$utils.getColoringExtended(this.$global.metagraph, this.selected.entityGraph, entity, name)
+      return this.$utils.getColoringExtended(this.$global.metagraph, this.selected.entityGraph, entity, name,'light')
     },
     handleSelection: function (selected) {
       if (selected == null || selected[0] === undefined || this.selectedId === selected[0]) {
@@ -540,7 +540,6 @@ export default {
         out = this.getChronologicalList()
       }
       if (this.options.favos) {
-        this.handleSelection(undefined)
         out = this.getChronologicalList().filter(l => l.starred)
       }
       return out
