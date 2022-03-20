@@ -513,6 +513,7 @@
                     </td>
                   </template>
                   <template v-slot:footer>
+                    <v-card-subtitle><i>Click an entry to focus in the network<br>Doubleclick an entry to show details</i></v-card-subtitle>
                     <div style="display: flex; justify-content: center; margin-left: auto">
                       <div style="padding-top: 16px; padding-bottom: 8px">
                         <ResultDownload v-show="getNodesForSourceTable() !=null && getNodesForSourceTable().length>0"
@@ -620,6 +621,7 @@
                       </td>
                     </template>
                     <template v-slot:footer>
+                      <v-card-subtitle><i>Click an entry to focus in the network<br>Doubleclick an entry to show details</i></v-card-subtitle>
                       <div style="display: flex; justify-content: center; margin-left: auto">
                         <div style="padding-top: 16px;padding-bottom: 8px">
                           <ResultDownload v-show="getNodesForTargetTable() !=null && getNodesForTargetTable().length>0"

@@ -665,6 +665,10 @@ public class WebGraphService {
         }
     }
 
+    public void extendGraph(String gid, String e, boolean endDefined, boolean switched, boolean drugTargetActionFilter, Double disorderGenomeAssociationCutoff, boolean getDisorderParents, boolean experimentalInteractionsOnly, String tissueFilter) {
+        this.extendGraph(getCachedGraph(gid), e, endDefined, switched, drugTargetActionFilter, disorderGenomeAssociationCutoff, getDisorderParents, experimentalInteractionsOnly, tissueFilter);
+    }
+
     public void extendGraph(Graph g, String e, boolean endDefined, boolean switched, boolean drugTargetActionFilter, Double disorderGenomeAssociationCutoff, boolean getDisorderParents, boolean experimentalInteractionsOnly, String tissueFilter) {
         int edgeId = g.getEdge(e);
         boolean extend = !endDefined;
@@ -1143,9 +1147,8 @@ public class WebGraphService {
         algorithm.createGraph(derived, j, nodeTypeId, g);
 
         if (algorithm.getEnum().equals(ToolService.Tool.BICON)) {
-            extendGraph(derived, "GeneGeneInteraction", true, false, false, 0.0, false, false, "");
+            extendGraph(derived, "GeneGeneInteraction", true, false, false, 0.0, false, Boolean.parseBoolean(j.getParams().get("experimentalOnly")), j.getParams().get("tissue"));
         } else {
-
             //TODO maybe as an option
             //if (!algorithm.hasCustomEdges())
             updateEdges(derived, j, nodeTypeId);

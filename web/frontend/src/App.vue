@@ -13,8 +13,7 @@
             v-model="selectedTabId"
             :color="colors.main.primary"
           >
-            <v-tabs-slider></v-tabs-slider>
-            <v-tab v-for="tab in tabslist" class="primary--text" v-on:click="selectTab(tab.id)" :key=tab.id>
+            <v-tab v-for="tab in tabslist" class="primary--text" v-on:click="selectTab(tab.id)" :key=tab.id v-show="!(tab.label === 'Graph' || tab.label === 'List') || gid !=null">
               <v-badge
                 dot
                 :color="colors.main.primary"
@@ -22,7 +21,7 @@
               >
                 <i :style="{color:tab.color}">
                   <v-icon dense :color="tab.color">{{ tab.icon }}</v-icon>
-                  {{ tab.label }}
+                  {{ tab.label}}
                 </i>
               </v-badge>
             </v-tab>
@@ -277,12 +276,12 @@ import LegalDialog from "@/components/app/dialogs/LegalDialog";
 export default {
   name: 'app',
   exampleGraph: undefined,
-  gid: undefined,
   tab: undefined,
 
 
   data() {
     return {
+      gid:undefined,
       // graphLoad: {},
       // graphKey: 0,
       showCookieConsent: false,

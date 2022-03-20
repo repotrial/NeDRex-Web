@@ -92,7 +92,27 @@
                       </v-tooltip>
                     </template>
                   </v-switch>
-                <v-select :items="tissues" v-model="tissueFilter" outlined dense label="Tissue" style="max-width: 250px; justify-self: center; margin-left: auto; margin-right: auto"></v-select>
+                <v-switch
+                  style="justify-self: flex-start; margin-left: 0; margin-right: auto"
+                  :label="'Add '+['gene','protein'][seedTypeId]+' interactions'"
+                  v-model="interactionSwitch"
+                >
+                  <template v-slot:append>
+                    <v-tooltip left>
+                      <template v-slot:activator="{ on, attrs }">
+                        <v-icon
+                          v-bind="attrs"
+                          v-on="on"
+                          left> far fa-question-circle
+                        </v-icon>
+                      </template>
+                      <span>Adds {{
+                          ['Gene', 'Protein'][seedTypeId] + '-' + ['Gene', 'Protein'][seedTypeId]
+                        }} interactions between seeds to the generated network.</span>
+                    </v-tooltip>
+                  </template>
+                </v-switch>
+                <v-select :items="tissues" v-model="tissueFilter" outlined dense label="Tissue" style="max-width: 250px; justify-self: center; margin-left: auto; margin-right: auto; margin-top:16px"></v-select>
               </div>
               <div style="display:flex; width: 100%">
                 <div style="justify-self: flex-start">
@@ -225,6 +245,7 @@ export default {
     return {
       methodModel: undefined,
       experimentalSwitch: true,
+      interactionSwitch: true,
       showDescription: false,
       tissues: undefined,
       tissueFilter: "all",
@@ -281,7 +302,6 @@ export default {
   },
 
   watch: {
-
     methodModel: function (value) {
       this.$emit("algorithmSelectedEvent", value != null)
     }
@@ -343,7 +363,7 @@ export default {
       let params = {}
       let models = this.getAlgorithmModels()
       params.experimentalOnly = this.experimentalSwitch
-
+      params.interactions = this.interactionSwitch
       params["addInteractions"] = true
       params["nodesOnly"] = false
 
