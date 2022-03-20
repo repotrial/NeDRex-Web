@@ -39,7 +39,7 @@
           <VisNetwork ref="network" v-if="!loading && this.edgeCount + this.nodeCount<=5000" :nodes="nodes"
                       :edges="edges"
                       :options="options"
-                      style="position: sticky; height: calc(100% - 100px)"></VisNetwork>
+                      style="position: sticky; height: calc(100% - 120px)"></VisNetwork>
         </template>
       </div>
       <v-divider></v-divider>
