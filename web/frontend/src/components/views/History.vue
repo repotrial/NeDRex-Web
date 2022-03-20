@@ -1,7 +1,8 @@
 <template>
   <div>
     <v-container :style="{maxWidth: width+'px', display: 'flex'}">
-      <v-card style="margin:5px;" :width="width*(selectedId?0.5:1)+'px'" :style="{maxWidth: width*(selectedId?0.5:1)-(selectedId?0:60)+'px'}">
+      <v-card style="margin:5px;" :width="width*(selectedId?0.5:1)+'px'"
+              :style="{maxWidth: width*(selectedId?0.5:1)-(selectedId?0:60)+'px'}">
         <v-card-title>History<span
           style="color:gray; padding-left: 7px"> ({{
             options.favos ? "Favourites" : options.chronological ? "List" : "Tree"
@@ -23,13 +24,27 @@
                 <v-tooltip top>
                   <template v-slot:activator="{ on, attrs }">
                     <v-btn
+                      v-if="item.state===undefined"
                       icon
                       :disabled="item.id === current || (item.state !== undefined &&item.state !== 'DONE')"
                       @click="loadGraph(item.id)"
                     >
-                      <v-icon  v-bind="attrs"
-                               v-on="on"
-                        :color="item.id === current ? 'gray': item.state===undefined ?'primary':'green'"
+                      <v-icon v-bind="attrs"
+                              v-on="on"
+                              :color="item.id === current ? 'gray': 'primary'"
+                      >
+                        far fa-play-circle
+                      </v-icon>
+                    </v-btn>
+                    <v-btn
+                      v-else
+                      icon
+                      :disabled="item.id === current || (item.state !== undefined &&item.state !== 'DONE')"
+                      @click="loadJobFromGraph(item.id)"
+                    >
+                      <v-icon v-bind="attrs"
+                              v-on="on"
+                              :color="item.id === current ? 'gray':'green'"
                       >
                         far fa-play-circle
                       </v-icon>
@@ -68,7 +83,8 @@
         </div>
       </v-card>
 
-      <v-card v-if="selectedId!==undefined" :style="{position: 'fixed', overflowY: 'auto', maxHeight: '77vh', maxWidth: width*0.45+'px', width: width*0.45+'px', marginTop: '5px', left: width*0.55+'px', zIndex: 1000}">
+      <v-card v-if="selectedId!==undefined"
+              :style="{position: 'fixed', overflowY: 'auto', maxHeight: '77vh', maxWidth: width*0.45+'px', width: width*0.45+'px', marginTop: '5px', left: width*0.55+'px', zIndex: 1000}">
         <div>
           <v-card v-if="selected===undefined" style="padding-bottom: 15px;">
             <v-card-title>{{ selectedId }}</v-card-title>
@@ -105,7 +121,11 @@
               </v-row>
               <v-row dense>
                 <v-col cols="1">
-                  <v-btn icon :color="selected.method!=null ? 'green':'primary'" x-large
+                  <v-btn icon v-if="selected.method!=null" color="green" x-large
+                         style="background-color: white; margin-top: 5px;" @click="loadJob(selected.jobid)">
+                    <v-icon>far fa-play-circle</v-icon>
+                  </v-btn>
+                  <v-btn icon v-else color='primary' x-large
                          style="background-color: white; margin-top: 5px;" @click="loadGraph(selectedId)">
                     <v-icon>far fa-play-circle</v-icon>
                   </v-btn>
@@ -158,20 +178,26 @@
                 </v-timeline>
               </v-row>
               <v-row style="margin: 25px"></v-row>
-<!--/*              <v-row style="margin: 25px" v-if="selected.jobid!=null">*/-->
-                <v-chip v-show="selected.jobid" outlined @click="loadJob(selected.jobid)" >
+              <!--/*              <v-row style="margin: 25px" v-if="selected.jobid!=null">*/-->
+              <v-chip v-show="selected.jobid" outlined @click="loadJob(selected.jobid)">
+                <v-icon left color="success">far fa-play-circle</v-icon>
+                Reload Result View
+              </v-chip>
+              <v-chip v-show="selected.jobid" outlined @click="loadGraph(selectedId)">
+                <v-icon left color="primary">far fa-play-circle</v-icon>
+                Reload Network
+              </v-chip>
+              <v-chip v-show="selected.jobid" outlined @click="downloadJob(selected.jobid)" style="margin:8px">
 
-                  <v-icon left color="success" >far fa-play-circle</v-icon>Reload Result View
-                </v-chip>
-                <v-chip v-show="selected.jobid" outlined @click="downloadJob(selected.jobid)" style="margin:8px">
-
-                  <v-icon left small color="primary">fas fa-download</v-icon>{{ selected.method }} Results
-                </v-chip>
-                <v-chip v-show="selected.params!=null" outlined style="margin: 8px"
-                        @click="showParams=!showParams">
-                  <v-icon left color="primary" >{{ showParams ? 'fas fa-caret-up' : 'fas fa-caret-down' }}</v-icon>Chosen Parameters
-                </v-chip>
-<!--              </v-row>-->
+                <v-icon left small color="primary">fas fa-download</v-icon>
+                {{ selected.method }} Results
+              </v-chip>
+              <v-chip v-show="selected.jobid && selected.params!=null" outlined style="margin: 8px"
+                      @click="showParams=!showParams">
+                <v-icon left color="primary">{{ showParams ? 'fas fa-caret-up' : 'fas fa-caret-down' }}</v-icon>
+                Chosen Parameters
+              </v-chip>
+              <!--              </v-row>-->
               <div v-if="selected.params" style="width: 100% ; display: flex; justify-content: center">
                 <div style="max-width: 300px">
                   <v-simple-table v-show="showParams">
@@ -317,7 +343,7 @@ import * as CONFIG from "../../Config"
 export default {
   name: "History.vue",
   props: {
-    width:Number,
+    width: Number,
     options: Object,
   },
   data() {
@@ -413,7 +439,7 @@ export default {
       this.selection = selected
       this.selected = undefined;
       this.selectedId = selected[0]
-      this.$set(this,"selectedId", selected[0])
+      this.$set(this, "selectedId", selected[0])
       this.$http.get("getGraphHistory?gid=" + this.selectedId + "&uid=" + this.$cookies.get("uid")).then(response => {
         if (response.data !== undefined)
           return response.data
@@ -549,27 +575,37 @@ export default {
       window.open(CONFIG.HOST_URL + CONFIG.CONTEXT_PATH + '/api/downloadJobResult?jid=' + jobid)
     },
 
-    loadJob: function(jobid){
+    loadJob: function (jobid) {
       this.$router.push({path: "/explore/quick/start?job=" + jobid})
       this.$router.go()
     },
 
-    reverseList: function () {
-      this.list = this.list.reverse()
-    },
-
-    setName: function (newName) {
-      this.selected.name = newName
-    },
-
-    toggleEdit: function () {
-      if (this.edit)
-        this.saveName()
-      this.edit = !this.edit;
-    }
-
-
+    loadJobFromGraph: function (gid) {
+      this.$http.get("getGraphHistory?gid=" + gid + "&uid=" + this.$cookies.get("uid")).then(response => {
+        if (response.data !== undefined)
+          return response.data
+      }).then(data => {
+        this.loadJob(data.jobid)
+      })
   },
+
+  reverseList: function () {
+    this.list = this.list.reverse()
+  },
+
+  setName: function (newName) {
+    this.selected.name = newName
+  },
+
+  toggleEdit: function () {
+    if (this.edit)
+      this.saveName()
+    this.edit = !this.edit;
+  }
+
+
+}
+,
 
 
 }

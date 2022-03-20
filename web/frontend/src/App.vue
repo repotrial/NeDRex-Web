@@ -449,7 +449,7 @@ export default {
         this.setSideVisible(true);
       }
 
-      if (start || home || (path[1] && path[1] === "explore"))
+      if (start || home || (path.length ===1 && path[1] === "explore"))
         this.setSideVisible(false);
 
       if (history) {
