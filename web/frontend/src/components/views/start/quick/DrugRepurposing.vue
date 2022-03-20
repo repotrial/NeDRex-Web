@@ -296,7 +296,7 @@
             <v-divider style="margin: 15px;"></v-divider>
             <v-container style="max-width: 100%">
               <v-row>
-                <v-col cols="3" style="padding: 0 50px 0 0; margin-right: -50px">
+                <v-col cols="3" style="padding: 0 50px 0 0; margin-right: -50px; min-width: 350px">
                   <v-card-title class="subtitle-1">Seeds ({{ seeds.length }}) {{
                       (results.targets.length !== undefined && results.targets.length > 0 ? ("& Module (" + getTargetCount() + ") " + ["Genes", "Proteins"][seedTypeId]) : (": " + (moduleState != null ? ("[" + moduleState + "]") : "Processing")))
                     }}
@@ -324,20 +324,8 @@
                       <v-icon v-if="item.isSeed ==null ||item.isSeed " color="success">fas fa-check</v-icon>
                       <v-icon v-else color="error">fas fa-times</v-icon>
                     </template>
-                    <!--                    <template v-slot:item.data-table-expand="{expand, item,isExpanded}">-->
-                    <!--                      <v-icon v-show="!isExpanded" @click="expand(true)" :color="getColor(item)">fas fa-angle-down-->
-                    <!--                      </v-icon>-->
-                    <!--                      <v-icon v-show="isExpanded" @click="expand(false)" :color="getColor(item)">fas fa-angle-up-->
-                    <!--                      </v-icon>-->
-                    <!--                    </template>-->
-                    <!--                    <template v-slot:expanded-item="{ headers, item }">-->
-                    <!--                      <td :colspan="headers.length">-->
-                    <!--                        <EntryDetails max-width="17vw"-->
-                    <!--                                      :attributes="[geneDetailAttributes,proteinDetailAttributes][seedTypeId]"-->
-                    <!--                                      :detail-request="{edge:false, type:['gene','protein'][seedTypeId], id:item.id}"></EntryDetails>-->
-                    <!--                      </td>-->
-                    <!--                    </template>-->
                     <template v-slot:footer>
+                      <v-card-subtitle><i>Click an entry to focus in the network<br>Doubleclick an entry to show details</i></v-card-subtitle>
                       <div style="display: flex; justify-content: center; margin-left: auto">
                         <div style="padding-top: 16px;margin-bottom: 8px;">
                           <ResultDownload v-show="seeds !=null && seeds.length>0 && results.targets !=null" raw results
@@ -406,7 +394,7 @@
                     </template>
                   </Network>
                 </v-col>
-                <v-col style="padding:0; max-width: 31%; width: 31%">
+                <v-col style="padding:0; max-width: 25%; width: 31%; min-width: 350px">
                   <v-card-title class="subtitle-1"> Drugs{{
                       (results.drugs.length !== undefined && (results.drugs.length > 0 || rankingGid != null) ? (" (" + (results.drugs.length) + ")") : (": " + (rankingState != null ? ("[" + rankingState + "]") : "Processing")))
                     }}
@@ -427,10 +415,10 @@
                                   disable-pagination
                                   hide-default-footer @click:row="drugClicked">
                       <template v-slot:item.displayName="{item}">
-                        <v-tooltip v-if="item.displayName.length>12" right>
+                        <v-tooltip v-if="item.displayName.length>24" right>
                           <template v-slot:activator="{attr,on }">
                           <span v-bind="attr" v-on="on"
-                                style="color: dimgray">{{ item.displayName.substr(0, 12) }}...</span>
+                                style="color: dimgray">{{ item.displayName.substring(0, 21) }}...</span>
                           </template>
                           <span>{{ item.displayName }}</span>
                         </v-tooltip>
@@ -465,22 +453,8 @@
                         </v-tooltip>
 
                       </template>
-                      <!--                      <template v-slot:item.data-table-expand="{expand, item,isExpanded}">-->
-                      <!--                        <v-icon v-show="!isExpanded" @click="expand(true)" :color="getColoring('nodes','drug')">fas-->
-                      <!--                          fa-angle-down-->
-                      <!--                        </v-icon>-->
-                      <!--                        <v-icon v-show="isExpanded" @click="expand(false)" :color="getColoring('nodes','drug')">fas-->
-                      <!--                          fa-angle-up-->
-                      <!--                        </v-icon>-->
-                      <!--                      </template>-->
-                      <!--                      <template v-slot:expanded-item="{ headers, item }">-->
-                      <!--                        <td :colspan="headers.length">-->
-                      <!--                          <EntryDetails max-width="25vw" :attributes="drugDetailAttributes"-->
-                      <!--                                        :additions="(item.trials != null ?  [{pos:3,key:'ClinicalTrials',value:item.trials}]:null)"-->
-                      <!--                                        :detail-request="{edge:false, type:'drug', id:item.id}"></EntryDetails>-->
-                      <!--                        </td>-->
-                      <!--                      </template>-->
                       <template v-slot:footer>
+                        <v-card-subtitle><i>Click an entry to focus in the network<br>Doubleclick an entry to show details</i></v-card-subtitle>
                         <div style="display: flex; justify-content: center">
                           <div style="padding-top: 16px; margin-bottom: 8px;">
                             <ResultDownload v-if="results.drugs.length>0" raw results
@@ -1102,6 +1076,7 @@ export default {
       let seedIds = this.seeds.map(n => n.id)
       let seeds = list.filter(n => seedIds.indexOf(n.id) > -1)
       seeds.forEach(s => s.isSeed = true)
+      list.filter(n=> seedIds.indexOf(n.id) === -1).forEach(s=>s.isSeed=false)
       method.scores.forEach(score => seeds.filter(n => n[score.id] == null).forEach(n => n[score.id] = score.seed))
     },
 

@@ -249,7 +249,7 @@
             <v-divider style="margin: 15px;"></v-divider>
             <v-container style="max-width: 100%">
               <v-row>
-                <v-col cols="3" style="padding: 0 50px 0 0; margin-right: -50px">
+                <v-col cols="3" style="padding: 0 50px 0 0; margin-right: -50px; min-width: 400px">
                   <v-card-title class="subtitle-1">Seeds ({{ seeds.length }}) {{
                       (results.targets.length !== undefined && results.targets.length > 0 ? ("& Module (" + getTargetCount() + ") " + ["Genes", "Proteins"][seedTypeId]) : (": " + (state != null ? ("[" + state + "]") : "Processing")))
                     }}
@@ -276,23 +276,8 @@
                         <v-icon v-if="item.isSeed" color="success">fas fa-check</v-icon>
                         <v-icon v-else color="error">fas fa-times</v-icon>
                       </template>
-                      <!--                      <template v-slot:item.details="{item}">-->
-                      <!--                        <v-icon small>fas fa-info-circle</v-icon>-->
-                      <!--                      </template>-->
-                      <!--                      <template v-slot:item.data-table-expand="{expand, item,isExpanded}">-->
-                      <!--                        <v-icon v-show="!isExpanded" @click="expand(true)" :color="getColor(item)">fas fa-angle-down-->
-                      <!--                        </v-icon>-->
-                      <!--                        <v-icon v-show="isExpanded" @click="expand(false)" :color="getColor(item)">fas fa-angle-up-->
-                      <!--                        </v-icon>-->
-                      <!--                      </template>-->
-                      <!--                      <template v-slot:expanded-item="{ headers, item }">-->
-                      <!--                        <td :colspan="headers.length">-->
-                      <!--                          <EntryDetails max-width="15vw" :gid="currentGid"-->
-                      <!--                                        :attributes="[geneDetailAttributes,proteinDetailAttributes][seedTypeId]"-->
-                      <!--                                        :detail-request="{edge:false, type:['gene', 'protein'][seedTypeId], id:item.id}"></EntryDetails>-->
-                      <!--                        </td>-->
-                      <!--                      </template>-->
                       <template v-slot:footer>
+                        <v-card-subtitle><i>Click an entry to focus in the network<br>Doubleclick an entry to show details</i></v-card-subtitle>
                         <div style="display: flex; justify-content: center; margin-left: auto">
                           <div style="padding-top: 16px">
                             <ResultDownload v-show="seeds && seeds.length>0" raw results seeds
@@ -308,18 +293,6 @@
                                 :items="seeds" :headers="getHeaders(true)" disable-pagination
                                 @dblclick:row="rowDoubleClicked"
                                 hide-default-footer @click:row="rowClicked">
-                    <!--                    <template v-slot:item.data-table-expand="{expand, item,isExpanded}">-->
-                    <!--                      <v-icon v-show="!isExpanded" @click="expand(true)" color="#e4ca02">fas fa-angle-down</v-icon>-->
-                    <!--                      <v-icon v-show="isExpanded" @click="expand(false)" color="#e4ca02">fas fa-angle-up</v-icon>-->
-                    <!--                    </template>-->
-                    <!--                    <template v-slot:expanded-item="{ headers, item }">-->
-                    <!--                      <td :colspan="headers.length">-->
-                    <!--                        <EntryDetails max-width="15vw" :gid="currentGid"-->
-                    <!--                                      :detail-request="{edge:false, type:['gene', 'protein'][seedTypeId], id:item.id}"></EntryDetails>-->
-                    <!--                      </td>-->
-                    <!--                    </template>-->
-
-
                   </v-data-table>
                 </v-col>
                 <v-col>
@@ -965,6 +938,7 @@ export default {
       let seedIds = this.seeds.map(n => n.id)
       let seeds = list.filter(n => seedIds.indexOf(n.id) > -1)
       seeds.forEach(s => s.isSeed = true)
+      list.filter(n=> seedIds.indexOf(n.id) === -1).forEach(s=>s.isSeed=false)
       method.scores.forEach(score => seeds.filter(n => n[score.id] == null).forEach(n => n[score.id] = score.seed))
     },
 
@@ -1092,7 +1066,7 @@ export default {
     },
     loadGraph: async function (graphId, layoutMissing) {
       let ready = await this.$http.get("layoutReady?id=" + graphId).then(response => {
-        if(layoutRequested)
+        if(layoutMissing)
           this.$http.getLayout(graphId,'default')
         return response.data
       })

@@ -240,7 +240,7 @@
             <v-divider style="margin: 15px;"></v-divider>
             <v-container style="max-width: 100%">
               <v-row>
-                <v-col cols="2" style="padding: 0 50px 0 0; margin-right: -50px">
+                <v-col style="padding: 0 50px 0 0; margin-right: -50px; min-width: 350px; max-width: 30px">
                   <v-card-title class="subtitle-1">Seeds ({{ seeds.length }})
                   </v-card-title>
                   <v-data-table max-height="50vh" height="50vh" class="overflow-y-auto" fixed-header dense item-key="id"
@@ -259,22 +259,8 @@
                     <template v-slot:item.seed="{item}">
                       <v-icon  color="success">fas fa-check</v-icon>
                     </template>
-                    <!--                    <template v-slot:item.data-table-expand="{expand, item,isExpanded}">-->
-                    <!--                      <v-icon v-show="!isExpanded" @click="expand(true)"-->
-                    <!--                              :color="getColoring('nodes',['gene','protein'][seedTypeId])">fas fa-angle-down-->
-                    <!--                      </v-icon>-->
-                    <!--                      <v-icon v-show="isExpanded" @click="expand(false)"-->
-                    <!--                              :color="getColoring('nodes',['gene','protein'][seedTypeId])">fas fa-angle-up-->
-                    <!--                      </v-icon>-->
-                    <!--                    </template>-->
-                    <!--                    <template v-slot:expanded-item="{ headers, item }">-->
-                    <!--                      <td :colspan="headers.length">-->
-                    <!--                        <EntryDetails max-width="9vw"-->
-                    <!--                                      :attributes="[geneDetailAttributes,proteinDetailAttributes][seedTypeId]"-->
-                    <!--                                      :detail-request="{edge:false, type:['gene', 'protein'][seedTypeId], id:item.id}"></EntryDetails>-->
-                    <!--                      </td>-->
-                    <!--                    </template>-->
                     <template v-slot:footer>
+                      <v-card-subtitle><i>Click an entry to focus in the network<br>Doubleclick an entry to show details</i></v-card-subtitle>
                       <div style="display: flex; justify-content: center">
                         <div style="padding-top: 16px">
                           <SeedDownload @downloadListEvent="downloadList"></SeedDownload>
@@ -320,7 +306,7 @@
 
                   </Network>
                 </v-col>
-                <v-col style="padding: 0; width: 28%; max-width: 28%">
+                <v-col style="padding: 0; width: 28%; max-width: 28%; min-width: 350px">
                   <v-card-title class="subtitle-1"> Drugs{{
                       (results.targets.length !== undefined && (results.targets.length > 0 || currentGid != null) ? (" (" + (results.targets.length) + ")") : (": " + (state != null ? ("[" + state + "]") : "Processing")))
                     }}
@@ -376,22 +362,8 @@
                         </v-tooltip>
 
                       </template>
-                      <!--                      <template v-slot:expanded-item="{ headers, item }">-->
-                      <!--                        <td :colspan="headers.length">-->
-                      <!--                          <EntryDetails max-width="25vw" :attributes="drugDetailAttributes"-->
-                      <!--                                        :"-->
-                      <!--                                        :detail-request="{edge:false, type:'drug', id:item.id}"></EntryDetails>-->
-                      <!--                        </td>-->
-                      <!--                      </template>-->
-                      <!--                      <template v-slot:item.data-table-expand="{expand, item,isExpanded}">-->
-                      <!--                        <v-icon v-show="!isExpanded" @click="expand(true)" :color="getColoring('nodes','drug','light')">-->
-                      <!--                          fas fa-angle-down-->
-                      <!--                        </v-icon>-->
-                      <!--                        <v-icon v-show="isExpanded" @click="expand(false)" :color="getColoring('nodes','drug','light')">-->
-                      <!--                          fas fa-angle-up-->
-                      <!--                        </v-icon>-->
-                      <!--                      </template>-->
                       <template v-slot:footer>
+                        <v-card-subtitle><i>Click an entry to focus in the network<br>Doubleclick an entry to show details</i></v-card-subtitle>
                         <div style="display: flex; justify-content: center">
                           <div style="padding-top: 16px">
                             <ResultDownload v-if="results.targets.length>0" raw results
