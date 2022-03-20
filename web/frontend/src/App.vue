@@ -448,7 +448,8 @@ export default {
       if ((path[4] != null && path[3] === "list")) {
         this.setSideVisible(true);
       }
-      if (start || home)
+
+      if (start || home || (path[1] && path[1] === "explore"))
         this.setSideVisible(false);
 
       if (history) {
