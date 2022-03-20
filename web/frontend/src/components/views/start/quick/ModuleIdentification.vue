@@ -276,22 +276,22 @@
                         <v-icon v-if="item.isSeed" color="success">fas fa-check</v-icon>
                         <v-icon v-else color="error">fas fa-times</v-icon>
                       </template>
-<!--                      <template v-slot:item.details="{item}">-->
-<!--                        <v-icon small>fas fa-info-circle</v-icon>-->
-<!--                      </template>-->
-<!--                      <template v-slot:item.data-table-expand="{expand, item,isExpanded}">-->
-<!--                        <v-icon v-show="!isExpanded" @click="expand(true)" :color="getColor(item)">fas fa-angle-down-->
-<!--                        </v-icon>-->
-<!--                        <v-icon v-show="isExpanded" @click="expand(false)" :color="getColor(item)">fas fa-angle-up-->
-<!--                        </v-icon>-->
-<!--                      </template>-->
-<!--                      <template v-slot:expanded-item="{ headers, item }">-->
-<!--                        <td :colspan="headers.length">-->
-<!--                          <EntryDetails max-width="15vw" :gid="currentGid"-->
-<!--                                        :attributes="[geneDetailAttributes,proteinDetailAttributes][seedTypeId]"-->
-<!--                                        :detail-request="{edge:false, type:['gene', 'protein'][seedTypeId], id:item.id}"></EntryDetails>-->
-<!--                        </td>-->
-<!--                      </template>-->
+                      <!--                      <template v-slot:item.details="{item}">-->
+                      <!--                        <v-icon small>fas fa-info-circle</v-icon>-->
+                      <!--                      </template>-->
+                      <!--                      <template v-slot:item.data-table-expand="{expand, item,isExpanded}">-->
+                      <!--                        <v-icon v-show="!isExpanded" @click="expand(true)" :color="getColor(item)">fas fa-angle-down-->
+                      <!--                        </v-icon>-->
+                      <!--                        <v-icon v-show="isExpanded" @click="expand(false)" :color="getColor(item)">fas fa-angle-up-->
+                      <!--                        </v-icon>-->
+                      <!--                      </template>-->
+                      <!--                      <template v-slot:expanded-item="{ headers, item }">-->
+                      <!--                        <td :colspan="headers.length">-->
+                      <!--                          <EntryDetails max-width="15vw" :gid="currentGid"-->
+                      <!--                                        :attributes="[geneDetailAttributes,proteinDetailAttributes][seedTypeId]"-->
+                      <!--                                        :detail-request="{edge:false, type:['gene', 'protein'][seedTypeId], id:item.id}"></EntryDetails>-->
+                      <!--                        </td>-->
+                      <!--                      </template>-->
                       <template v-slot:footer>
                         <div style="display: flex; justify-content: center; margin-left: auto">
                           <div style="padding-top: 16px">
@@ -305,18 +305,19 @@
 
                   </template>
                   <v-data-table v-else max-height="45vh" height="45vh" max-width="100%" fixed-header dense item-key="id"
-                                :items="seeds" :headers="getHeaders(true)" disable-pagination @dblclick:row="rowDoubleClicked"
+                                :items="seeds" :headers="getHeaders(true)" disable-pagination
+                                @dblclick:row="rowDoubleClicked"
                                 hide-default-footer @click:row="rowClicked">
-<!--                    <template v-slot:item.data-table-expand="{expand, item,isExpanded}">-->
-<!--                      <v-icon v-show="!isExpanded" @click="expand(true)" color="#e4ca02">fas fa-angle-down</v-icon>-->
-<!--                      <v-icon v-show="isExpanded" @click="expand(false)" color="#e4ca02">fas fa-angle-up</v-icon>-->
-<!--                    </template>-->
-<!--                    <template v-slot:expanded-item="{ headers, item }">-->
-<!--                      <td :colspan="headers.length">-->
-<!--                        <EntryDetails max-width="15vw" :gid="currentGid"-->
-<!--                                      :detail-request="{edge:false, type:['gene', 'protein'][seedTypeId], id:item.id}"></EntryDetails>-->
-<!--                      </td>-->
-<!--                    </template>-->
+                    <!--                    <template v-slot:item.data-table-expand="{expand, item,isExpanded}">-->
+                    <!--                      <v-icon v-show="!isExpanded" @click="expand(true)" color="#e4ca02">fas fa-angle-down</v-icon>-->
+                    <!--                      <v-icon v-show="isExpanded" @click="expand(false)" color="#e4ca02">fas fa-angle-up</v-icon>-->
+                    <!--                    </template>-->
+                    <!--                    <template v-slot:expanded-item="{ headers, item }">-->
+                    <!--                      <td :colspan="headers.length">-->
+                    <!--                        <EntryDetails max-width="15vw" :gid="currentGid"-->
+                    <!--                                      :detail-request="{edge:false, type:['gene', 'protein'][seedTypeId], id:item.id}"></EntryDetails>-->
+                    <!--                      </td>-->
+                    <!--                    </template>-->
 
 
                   </v-data-table>
@@ -387,8 +388,9 @@
         </v-stepper-content>
       </v-stepper-items>
       <DetailDialog ref="details" max-width="25vw"
-                    :attributes="[geneDetailAttributes,proteinDetailAttributes][seedTypeId]" :detail-request="detailRequest"
-                    ></DetailDialog>
+                    :attributes="[geneDetailAttributes,proteinDetailAttributes][seedTypeId]"
+                    :detail-request="detailRequest"
+      ></DetailDialog>
       <DrugsDialog v-if="$refs.validation" ref="drugsDialog" :drugs="$refs.validation.getDrugs()"></DrugsDialog>
       <v-dialog v-model="namePopup"
                 persistent
@@ -675,7 +677,7 @@ export default {
       if (button === "back") {
         this.step--
         if (this.step === 3) {
-          this.loadGraph(this.currentGid)
+          this.loadGraph(this.currentGid,true)
         }
         if (this.step === 2) {
           this.results.targets = []
@@ -708,9 +710,9 @@ export default {
       this.focusNode(['gen_', 'pro_'][this.seedTypeId] + item.id)
     },
 
-    rowDoubleClicked: function(event,obj){
-      this.detailRequest= undefined
-      this.detailRequest ={edge:false, type:['gene','protein'][this.seedTypeId], id:obj.item.id}
+    rowDoubleClicked: function (event, obj) {
+      this.detailRequest = undefined
+      this.detailRequest = {edge: false, type: ['gene', 'protein'][this.seedTypeId], id: obj.item.id}
       this.$refs.details.showDialog()
     },
 
@@ -766,7 +768,7 @@ export default {
           } else
             headers.push(entry)
         })
-      headers.push({text: "Seed", value: "seed", sortable:false, align:"center", width: "1rem"})
+      headers.push({text: "Seed", value: "seed", sortable: false, align: "center", width: "1rem"})
       return headers
     },
     updateGraphPhysics: function () {
@@ -798,10 +800,11 @@ export default {
       this.currentJid = jid
       this.currentGid = data.gid
       if (this.currentGid != null && data.state === "DONE") {
-        if (!notSubbed)
+        if (!notSubbed) {
           this.$socket.unsubscribeJob(jid)
+        }
         this.loadTargetTable(this.currentGid).then(() => {
-          this.loadGraph(this.currentGid)
+          this.loadGraph(this.currentGid, true)
         })
       }
 
@@ -853,7 +856,7 @@ export default {
         if (job.derivedGraph && job.state === "DONE") {
           this.currentGid = job.derivedGraph;
           this.loadTargetTable(this.currentGid).then(() => {
-            this.loadGraph(this.currentGid)
+            this.loadGraph(this.currentGid, true)
           })
         } else {
           this.$socket.subscribeJob(this.currentJid, "quickModuleFinishedEvent");
@@ -1087,7 +1090,18 @@ export default {
       if (option === "fit")
         this.$refs.graph.setSelection()
     },
-    loadGraph: function (graphId) {
+    loadGraph: async function (graphId, layoutMissing) {
+      let ready = await this.$http.get("layoutReady?id=" + graphId).then(response => {
+        if(layoutRequested)
+          this.$http.getLayout(graphId,'default')
+        return response.data
+      })
+      if (!ready) {
+        setTimeout(() => {
+          this.loadGraph(graphId)
+        }, 1000)
+        return
+      }
       if (this.namePopup)
         setTimeout(() => {
           this.loadGraph(graphId)

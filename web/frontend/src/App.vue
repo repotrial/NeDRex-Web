@@ -222,7 +222,8 @@
         </v-col>
       </v-row>
     </v-container>
-    <LegalDialog ref="tos" v-model="cookiesPopup" @initUserEvent="initUser()"></LegalDialog>
+    <LegalDialog ref="tos" v-model="cookiesPopup" @initUserEvent="initUser()"
+                 @acceptCookiesEvent="$cookies.set('cookies',true)"></LegalDialog>
     <v-bottom-sheet inset v-model="showBugInfo" width="30vw" :overlay-color="colors.main.bg1" style="z-index: 1001">
       <BugSheet :color="colors.main.bg1"></BugSheet>
     </v-bottom-sheet>
@@ -236,6 +237,20 @@
     <v-bottom-sheet inset v-model="showCompatability" width="60vw" :overlay-color="colors.main.bg1"
                     style="z-index:1001">
       <CompatabilitySheet :color="colors.main.bg1"></CompatabilitySheet>
+    </v-bottom-sheet>
+    <v-bottom-sheet v-model="showCookieConsent" :overlay-color="colors.main.bg1" style="z-index: 1001">
+      <v-sheet :color="colors.main.bg1">
+        <v-list-item style="padding: 8px" dark>
+          <v-list-item-subtitle>
+            <i>This page stores browser cookies to improve the user experience. To continue you have to confirm once
+              that you comply with NeDRex-Web setting browser cookies.</i>
+            <v-btn small outlined @click="acceptedCookies()" style="margin-left: 8px">
+              <v-icon left>fas fa-check</v-icon>
+              OK
+            </v-btn>
+          </v-list-item-subtitle>
+        </v-list-item>
+      </v-sheet>
     </v-bottom-sheet>
     <Footer :color="colors.main.bg1" style="z-index: 1000;"></Footer>
   </v-app>
@@ -270,6 +285,7 @@ export default {
     return {
       // graphLoad: {},
       // graphKey: 0,
+      showCookieConsent: false,
       neighborNodes: [],
       selectedNode: undefined,
       tabslist: {},
@@ -374,7 +390,7 @@ export default {
     },
 
     loadUser: function () {
-      if (this.$cookies.get("uid") == null) {
+      if (this.$cookies.get("uid") == null || !this.$cookies.get('cookies')) {
         this.showTos()
       } else {
         if (sessionStorage.getItem("tos") == null)

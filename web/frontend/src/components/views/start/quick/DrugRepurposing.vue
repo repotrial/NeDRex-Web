@@ -321,7 +321,7 @@
                       <span v-else>{{ item.displayName }}</span>
                     </template>
                     <template v-slot:item.seed="{item}">
-                      <v-icon v-if="item.isSeed" color="success">fas fa-check</v-icon>
+                      <v-icon v-if="item.isSeed ==null ||item.isSeed " color="success">fas fa-check</v-icon>
                       <v-icon v-else color="error">fas fa-times</v-icon>
                     </template>
                     <!--                    <template v-slot:item.data-table-expand="{expand, item,isExpanded}">-->
@@ -786,7 +786,7 @@ export default {
           if (this.rankingGid == null || this.rankingGid === this.graphName)
             this.graphNamePopup()
           if (this.moduleGid != null && this.resultProgress === 50)
-            this.loadGraph(this.moduleGid, true)
+            this.loadGraph(this.moduleGid,false, true)
           this.submitRankingAlgorithm()
         }
         this.focus()
@@ -796,7 +796,7 @@ export default {
         this.step--
         if (this.step === 4) {
           this.resultProgress = 100
-          this.loadGraph(this.rankingGid, false, true)
+          this.loadGraph(this.rankingGid,false, false, true)
         }
 
         if (this.step === 3) {
@@ -911,7 +911,7 @@ export default {
         this.loadModuleTargetTable(this.moduleGid).then(() => {
           this.$emit("newGraphEvent")
           this.resultProgress = 25
-          this.loadGraph(this.moduleGid, true)
+          this.loadGraph(this.moduleGid,false, true)
         })
       }
 
@@ -943,7 +943,7 @@ export default {
         this.rankingJid = ranking.jobId;
         if (module.derivedGraph && module.state === "DONE") {
           this.loadModuleTargetTable(this.moduleGid).then(() => {
-            this.loadGraph(this.moduleGid)
+            this.loadGraph(this.moduleGid,false)
           })
         } else {
           this.$socket.subscribeJob(this.moduleJid, "quickRepurposeModuleFinishedEvent");
@@ -951,7 +951,7 @@ export default {
         await this.$refs.rankingAlgorithms.setMethod(ranking.method)
         if (ranking.derivedGraph && ranking.state === "DONE") {
           this.loadRankingTargetTable(ranking.derivedGraph).then(() => {
-            this.loadGraph(this.rankingGid)
+            this.loadGraph(this.rankingGid,false)
           })
         } else {
           this.$socket.subscribeJob(this.rankingJid, "quickRepurposeRankingFinishedEvent");
@@ -998,7 +998,7 @@ export default {
         if (!unsubscribed)
           this.$socket.unsubscribeJob(this.rankingJid)
         this.loadRankingTargetTable(this.rankingGid).then(() => {
-          this.loadGraph(this.rankingGid)
+          this.loadGraph(this.rankingGid,false)
         })
 
       }
@@ -1306,10 +1306,23 @@ export default {
       })
     }
     ,
-    loadGraph: function (graphId, disableSkipToAdvanced, noProg) {
+    loadGraph: async function (graphId, layoutRequested, disableSkipToAdvanced, noProg) {
+      if(this.rankingGid && graphId !== this.rankingGid)
+        return
+      let ready = await this.$http.get("layoutReady?id=" + graphId).then(response => {
+        return response.data
+      })
+      if (!ready) {
+        if(!layoutRequested)
+          this.$http.getLayout(graphId,'default')
+        setTimeout(() => {
+          this.loadGraph(graphId,true, disableSkipToAdvanced, noProg)
+        }, 1000)
+        return
+      }
       if (this.namePopup) {
         setTimeout(() => {
-          this.loadGraph(graphId, disableSkipToAdvanced, noProg)
+          this.loadGraph(graphId, true,disableSkipToAdvanced, noProg)
         }, 500)
       } else if (this.rankingGid == null || graphId === this.rankingGid) {
         this.getGraph().then(graph => {

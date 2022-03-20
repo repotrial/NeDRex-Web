@@ -266,6 +266,12 @@ public class RequestController {
         return null;
     }
 
+    @RequestMapping(value="/layoutReady", method = RequestMethod.GET)
+    @ResponseBody
+    public String layoutReady(@RequestParam("id") String id){
+       return toJson(webGraphService.isLayoutReady(id));
+    }
+
     @RequestMapping(value = "/archiveHistory", method = RequestMethod.GET)
     @ResponseBody
     public void archiveHistory(@RequestParam("uid") String uid, @RequestParam("gid") String gid) {

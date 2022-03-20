@@ -663,7 +663,7 @@ export default {
       if (button === "back") {
         this.step--
         if (this.step === 3) {
-          this.loadGraph(this.currentGid)
+          this.loadGraph(this.currentGid,true)
         }
         if (this.step === 2) {
           this.results.targets = []
@@ -799,7 +799,7 @@ export default {
         if (job.derivedGraph && job.state === "DONE") {
           this.currentGid = job.derivedGraph;
           this.loadTargetTable(this.currentGid).then(() => {
-            this.loadGraph(this.currentGid)
+            this.loadGraph(this.currentGid,true)
           })
         } else {
           this.$socket.subscribeJob(this.currentJid, "quickRankingFinishedEvent");
@@ -833,7 +833,7 @@ export default {
           this.$socket.unsubscribeJob(jid)
         this.jobs[jid].result = result
         this.loadTargetTable(result).then(() => {
-          this.loadGraph(result)
+          this.loadGraph(result,true)
         })
       }
 
@@ -1122,7 +1122,18 @@ export default {
       })
     }
     ,
-    loadGraph: function (graphId) {
+    loadGraph: async function (graphId, layoutMissing) {
+      let ready = await this.$http.get("layoutReady?id=" + graphId).then(response => {
+        if (layoutMissing)
+          this.$http.getLayout(graphId, 'default')
+        return response.data
+      })
+      if (!ready) {
+        setTimeout(() => {
+          this.loadGraph(graphId)
+        }, 1000)
+        return
+      }
       if (this.namePopup)
         setTimeout(() => {
           this.loadGraph(graphId)

@@ -28,34 +28,46 @@
       Video-Tutorials
     </v-card-title>
     <v-card-text>
-      <iframe width="480" height="270" src="https://www.youtube.com/embed/NDx2YVN7TpQ" title="YouTube video player"
+      <iframe  v-if="cookiesAccepted" width="480" height="270" src="https://www.youtube.com/embed/NDx2YVN7TpQ" title="YouTube video player"
               frameborder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowfullscreen></iframe>
+      <div v-else style="width: 480px; height: 270px">
+
+      </div>
       <div style="display: flex; justify-content: center; margin-top:16px;">
         <div style="">
-          <iframe width="240" height="135" src="https://www.youtube.com/embed/lvuS9Bt_T6M" title="YouTube video player"
+          <iframe  v-if="cookiesAccepted" width="240" height="135" src="https://www.youtube.com/embed/lvuS9Bt_T6M" title="YouTube video player"
                   frameborder="0"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowfullscreen></iframe>
+          <div v-else style="width: 240px; height: 135px">
+
+          </div>
           <div style="color: white; width: 240px">
             Quck Start & Drug Repurposing
           </div>
         </div>
         <div>
-        <iframe width="240" height="135" src="https://www.youtube.com/embed/ftLDwNTcLD4" title="YouTube video player"
+        <iframe  v-if="cookiesAccepted" width="240" height="135" src="https://www.youtube.com/embed/ftLDwNTcLD4" title="YouTube video player"
                 frameborder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowfullscreen></iframe>
+          <div v-else style="width: 240px; height: 135px">
+
+          </div>
           <div style="color: white; width: 240px">
             Guided Connectivity Search & Induced Networks (Diseasome)
           </div>
         </div>
         <div>
-        <iframe width="240" height="135" src="https://www.youtube.com/embed/jiMlZceH70E" title="YouTube video player"
+        <iframe v-if="cookiesAccepted" width="240" height="135" src="https://www.youtube.com/embed/jiMlZceH70E" title="YouTube video player"
                 frameborder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowfullscreen></iframe>
+          <div v-else style="width: 240px; height: 135px">
+
+          </div>
           <div style="color: white; width: 240px">
             Advanced Exploration & Research History
           </div>
@@ -81,6 +93,7 @@ export default {
   props: {
     bgColor: String,
     color: String,
+    cookiesAccepted : Boolean,
   },
 
 }

@@ -2041,6 +2041,10 @@ public class WebGraphService {
         return "not requested";
     }
 
+    public Boolean isLayoutReady(String gid) {
+        return !layoutGenerating.contains(gid) && historyController.getLayoutPath(gid).exists();
+    }
+
     public Object loadLayout(String gid, String type) {
         Graph g = getCachedGraph(gid);
         if (type.equals("default"))

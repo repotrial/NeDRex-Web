@@ -37,9 +37,10 @@
     <v-card-text>
       <div
         style="justify-self: center; margin-left: auto; margin-right: auto; padding-left: 10px; padding-right: 10px">
-        <b> This platform which is part of REPO-TRIAL project has received funding from the European Union’s Horizon
-          2020
-          research and innovation programme under grant agreement No 777111.</b>
+        <b>This application which is part of REPO-TRIAL project has received funding from the European Union’s Horizon
+          2020 research and innovation programme under grant agreement No 777111. This reflects only the author’s view
+          and the European Commission is not responsible for any use that may be made of the information it
+          contains.</b>
       </div>
       <div style="display: flex; justify-content: center">
         <div style="width: 200px; height: 75px; display: flex; ">
