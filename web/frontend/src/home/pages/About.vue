@@ -8,11 +8,6 @@
       focus lies on module identification, drug repurposing and general network exploration. NeDRex-Web utilizes the <b>NeDRexDB</b>
       accessed through the <b>NeDRexAPI</b>.
     </v-card-text>
-
-    <v-card-title>Disclaimer</v-card-title>
-    <v-card-text>
-      <b><i>This website is free and open to all users and there is no login requirement</i></b>
-    </v-card-text>
     <v-card-title>Contact</v-card-title>
     <v-card-text>
       <v-tooltip right>
@@ -26,6 +21,12 @@
         <div>Open in your default mail client</div>
       </v-tooltip>
     </v-card-text>
+    <v-card-title>Disclaimer</v-card-title>
+    <v-card-text>
+      <b><i>This website is free and open to all users, subject to agreeing with terms of use described in the End User
+        License Agreement below, and there is no login requirement.</i></b>
+    </v-card-text>
+
     <template v-for="entry in eula">
       <v-card-title :key="entry.title+'_title'">
         {{ entry.title }}

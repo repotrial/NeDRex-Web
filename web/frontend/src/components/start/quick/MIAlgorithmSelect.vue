@@ -657,7 +657,7 @@ export default {
           models: {
             nModel: 200,
             alphaModel: 1,
-            pModel: 0
+            pModel: -3
           },
           scores: [{id: "rank", name: "Rank", order: "ascending", primary: true, seed: 0}, {
             id: "p_hyper",

@@ -254,8 +254,9 @@ public class JobController {
                     j.setBasisGraph(null);
                 }
             }
+
             if(j.getParams().containsKey("interactions") && j.getParams().get("interactions").equals("true")){
-                graphService.extendGraph(j.getDerivedGraph(),j.getParams().get("type").equals("gene") ?"GeneGeneInteraction":"ProteinProteinInteraction", true, false, false, 0.0, false, Boolean.parseBoolean(j.getParams().get("experimentalOnly")), j.getParams().get("tissue"));
+                graphService.addInteractionsToDPResult(j.getDerivedGraph(),j.getParams().get("type").equals("gene") ?"GeneGeneInteraction":"ProteinProteinInteraction",  Boolean.parseBoolean(j.getParams().get("experimentalOnly")), j.getParams().get("tissue"), j);
             }
         } catch (Exception e) {
             log.error("Error on finishing job: " + id);

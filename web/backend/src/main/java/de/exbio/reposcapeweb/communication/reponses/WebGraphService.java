@@ -665,11 +665,11 @@ public class WebGraphService {
         }
     }
 
-    public void extendGraph(String gid, String e, boolean endDefined, boolean switched, boolean drugTargetActionFilter, Double disorderGenomeAssociationCutoff, boolean getDisorderParents, boolean experimentalInteractionsOnly, String tissueFilter) {
-        this.extendGraph(getCachedGraph(gid), e, endDefined, switched, drugTargetActionFilter, disorderGenomeAssociationCutoff, getDisorderParents, experimentalInteractionsOnly, tissueFilter);
+    public Graph extendGraph(String gid, String e, boolean endDefined, boolean switched, boolean drugTargetActionFilter, Double disorderGenomeAssociationCutoff, boolean getDisorderParents, boolean experimentalInteractionsOnly, String tissueFilter) {
+        return this.extendGraph(getCachedGraph(gid), e, endDefined, switched, drugTargetActionFilter, disorderGenomeAssociationCutoff, getDisorderParents, experimentalInteractionsOnly, tissueFilter);
     }
 
-    public void extendGraph(Graph g, String e, boolean endDefined, boolean switched, boolean drugTargetActionFilter, Double disorderGenomeAssociationCutoff, boolean getDisorderParents, boolean experimentalInteractionsOnly, String tissueFilter) {
+    public Graph extendGraph(Graph g, String e, boolean endDefined, boolean switched, boolean drugTargetActionFilter, Double disorderGenomeAssociationCutoff, boolean getDisorderParents, boolean experimentalInteractionsOnly, String tissueFilter) {
         int edgeId = g.getEdge(e);
         boolean extend = !endDefined;
         Pair<Integer, Integer> nodeIds = g.getNodesfromEdge(edgeId);
@@ -747,7 +747,7 @@ public class WebGraphService {
             if (extend)
                 g.addNodes(nodeIds.first, nodeMap);
             g.addEdges(edgeId, edges);
-            return;
+            return g;
         }
         int[] existing = new int[]{g.getNodes().containsKey(nodeIds.first) ? nodeIds.first : nodeIds.second};
         int[] adding = new int[]{(existing[0] == nodeIds.first ? nodeIds.second : nodeIds.first)};
@@ -790,7 +790,7 @@ public class WebGraphService {
             });
             if (!extend) {
                 g.addEdges(edgeId, edges);
-                return;
+                return g;
             }
         }
         HashMap<Integer, HashMap<Integer, Node>> nodeMap = new HashMap<>();
@@ -850,6 +850,7 @@ public class WebGraphService {
         }
         nodeMap.forEach(g::addNodes);
         g.addEdges(edgeId, edges);
+        return g;
     }
 
     public WebGraphInfo getExtension(ExtensionRequest request) {
@@ -2123,5 +2124,19 @@ public class WebGraphService {
                     jr.seeds = new HashSet<>(getCachedGraph(jr.parentGraph).getNodes().get(Graphs.getNode(jr.target)).keySet());
             }
         }
+    }
+
+    public void addInteractionsToDPResult(String gid, String edgeType, boolean experimentalOnly, String tissue, Job j) {
+        Graph g =extendGraph(gid,edgeType, true, false, false, 0.0, false, experimentalOnly, tissue);
+        g.calculateDegrees();
+        AtomicInteger size = new AtomicInteger();
+        g.getNodes().forEach((k, v) -> size.addAndGet(v.size()));
+        g.getEdges().forEach((k, v) -> size.addAndGet(v.size()));
+        if (size.get() < 100_000) {
+            cache.put(g.getId(), g);
+            j.setDerivedGraph(g.getId());
+            addGraphToHistory(j.getUserId(), g.getId());
+        } else
+            j.setStatus(Job.JobState.LIMITED);
     }
 }

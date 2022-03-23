@@ -69,6 +69,12 @@ export default {
       cookiesAccepted: false,
       colors: {},
       tabModel: 0,
+      anchors:[
+        '#app',
+        '#help',
+        '#about',
+        '#cite'
+      ]
     }
   },
 
@@ -78,14 +84,25 @@ export default {
       buttons: {graphs: {active: "deep-purple accent-2", inactive: undefined}},
       tabs: {active: "#35d0d4", inactive: "white"}
     }
+    this.checkAnchor();
     this.cookiesAccepted = this.$cookies.get('cookies')
     if(!this.cookiesAccepted)
       this.showCookieConsent =true
+  },
+  watch: {
+    '$route'() {
+      this.checkAnchor()
+    },
   },
 
   methods: {
     getConfig: function () {
       return CONFIG;
+    },
+    checkAnchor: function(){
+      let idx = this.anchors.indexOf(this.$route.hash)
+      if(idx>-1 && this.$route.path ==="/")
+        this.tabModel=idx
     },
     acceptedCookies: function(){
       this.$cookies.set('cookies',true)
