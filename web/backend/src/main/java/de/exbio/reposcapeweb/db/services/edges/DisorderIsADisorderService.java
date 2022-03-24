@@ -91,6 +91,8 @@ public class DisorderIsADisorderService {
     }
 
     public void importEdges() {
+        parentEdges.clear();
+        childEdges.clear();
         findAll().forEach(edge -> {
             importEdge(edge.getPrimaryIds());
         });

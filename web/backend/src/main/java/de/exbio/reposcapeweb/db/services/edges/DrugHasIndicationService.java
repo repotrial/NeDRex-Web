@@ -93,6 +93,8 @@ public class DrugHasIndicationService {
     }
 
     public void importEdges() {
+        edgesFrom.clear();
+        edgesTo.clear();
         findAll().forEach(edge -> {
             importEdge(edge.getPrimaryIds());
         });

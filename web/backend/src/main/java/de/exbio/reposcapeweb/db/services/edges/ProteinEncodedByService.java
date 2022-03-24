@@ -70,7 +70,9 @@ public class ProteinEncodedByService {
                 batch.clear();
             }
         }
-        proteinEncodedByRepository.saveAll(toSave);
+        proteinEncodedByRepository.saveAll(toSave).forEach(edge->{
+            importEdge(edge.getPrimaryIds());
+        });
         log.debug("Updated protein_encoded_by table: " + insertCount + " Inserts, " + (updates.containsKey(UpdateOperation.Alteration) ? updates.get(UpdateOperation.Alteration).size() : 0) + " Changes, " + (updates.containsKey(UpdateOperation.Deletion) ? updates.get(UpdateOperation.Deletion).size() : 0) + " Deletions identified!");
         return true;
     }
@@ -86,6 +88,8 @@ public class ProteinEncodedByService {
     }
 
     public void importEdges() {
+        edgesFrom.clear();
+        edgesTo.clear();
         findAll().forEach(edge -> {
             importEdge(edge.getPrimaryIds());
         });

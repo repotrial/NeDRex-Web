@@ -188,10 +188,12 @@ public class ProteinInteractsWithProteinService {
     public void importEdges() {
         int pageSize = 100_000;
         long total = proteinInteractsWithProteinRepository.count();
+        proteins.clear();
         for (long entry = 0; entry < total; entry += pageSize)
             proteinInteractsWithProteinRepository.findAll(PageRequest.of((int) (entry / pageSize), pageSize)).
                     forEach(edge -> importProteinEdge(edge.getPrimaryIds(), edge.getEvidenceTypes().contains("exp"), edge.getTissues()));
         total = geneInteractsWithGeneRepository.count();
+        genes.clear();
         for (long entry = 0; entry < total; entry += pageSize)
             geneInteractsWithGeneRepository.findAll(PageRequest.of((int) (entry / pageSize), pageSize)).forEach(edge -> importGeneEdge(edge.getPrimaryIds(), edge.getEvidenceTypes().contains("exp"), edge.getTissues()));
     }

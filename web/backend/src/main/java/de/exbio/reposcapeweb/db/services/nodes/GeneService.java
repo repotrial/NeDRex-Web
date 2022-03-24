@@ -38,11 +38,11 @@ public class GeneService extends NodeService {
             return false;
         if (updates.containsKey(UpdateOperation.Deletion)) {
             geneRepository.deleteAll(geneRepository.findAllByPrimaryDomainIdIn(updates.get(UpdateOperation.Deletion).keySet()));
-            updates.get(UpdateOperation.Deletion).values().forEach(d -> {
-                idToDomainMap.remove(d.getId());
-                domainToIdMap.remove(d.getPrimaryDomainId());
-            });
-            allFilter.removeByNodeIds(updates.get(UpdateOperation.Deletion).values().stream().map(Gene::getId).collect(Collectors.toSet()));
+//            updates.get(UpdateOperation.Deletion).values().forEach(d -> {
+//                idToDomainMap.remove(d.getId());
+//                domainToIdMap.remove(d.getPrimaryDomainId());
+//            });
+//            allFilter.removeByNodeIds(updates.get(UpdateOperation.Deletion).values().stream().map(Gene::getId).collect(Collectors.toSet()));
 
         }
 
@@ -56,11 +56,12 @@ public class GeneService extends NodeService {
                 toSave.add(d);
             });
         }
-        geneRepository.saveAll(toSave).forEach(d -> {
-            idToDomainMap.put(d.getId(), new Pair<>(d.getPrimaryDomainId(), d.getDisplayName()));
-            domainToIdMap.put(d.getPrimaryDomainId(), d.getId());
-            allFilter.add(d.toDistinctFilter(), d.toUniqueFilter());
-        });
+        geneRepository.saveAll(toSave);
+//                .forEach(d -> {
+//            idToDomainMap.put(d.getId(), new Pair<>(d.getPrimaryDomainId(), d.getDisplayName()));
+//            domainToIdMap.put(d.getPrimaryDomainId(), d.getId());
+//            allFilter.add(d.toDistinctFilter(), d.toUniqueFilter());
+//        });
         log.debug("Updated gene table: " + insertCount + " Inserts, " + (updates.containsKey(UpdateOperation.Alteration) ? updates.get(UpdateOperation.Alteration).size() : 0) + " Changes, " + (updates.containsKey(UpdateOperation.Deletion) ? updates.get(UpdateOperation.Deletion).size() : 0) + " Deletions identified!");
         return true;
     }

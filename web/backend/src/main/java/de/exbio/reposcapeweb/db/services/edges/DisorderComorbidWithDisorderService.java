@@ -100,6 +100,7 @@ public class DisorderComorbidWithDisorderService {
     }
 
     public void importEdges() {
+        edges.clear();
         findAll().forEach(edge -> {
             importEdge(edge.getPrimaryIds());
         });

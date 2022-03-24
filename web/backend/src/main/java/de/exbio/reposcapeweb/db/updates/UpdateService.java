@@ -518,10 +518,9 @@ public class UpdateService {
 
         importRepoTrialNodes();
 
-        importService.updateNodeData(true, false);
-
         importRepoTrialEdges();
 
+        importService.updateNodeData(true, false);
         dbCommunication.setDbLocked(false);
 
     }
@@ -530,14 +529,13 @@ public class UpdateService {
     private void importRepoTrialEdges() {
         log.info("Starting edge update import!");
         boolean updateSuccessful = true;
-        File filterCacheDir = new File(env.getProperty("path.db.cache") + "filters");
+//        File filterCacheDir = new File(env.getProperty("path.db.cache") + "filters");
         String first = "protein_encoded_by_gene";
-        HashSet<String> attributeDefinition = null;
+//        HashSet<String> attributeDefinition = null;
         if (!skipUpdateList().contains(first)) {
             try {
-                attributeDefinition = getAttributeNames(ReaderUtils.getUrlContent(new URL(env.getProperty("url.api.db") + first + "/attributes")));
+                getAttributeNames(ReaderUtils.getUrlContent(new URL(env.getProperty("url.api.db") + first + "/attributes")));
                 updateSuccessful = proteinEncodedByService.submitUpdates(runEdgeUpdates(ProteinEncodedBy.class, DBConfig.getConfig().edges.stream().filter(edge -> edge.mapsTo.equals("ProteinEncodedBy")).collect(Collectors.toList()).get(0).file, proteinEncodedByService::mapIds));
-                proteinEncodedByService.importEdges();
             } catch (MalformedURLException e) {
                 e.printStackTrace();
             }
@@ -551,49 +549,40 @@ public class UpdateService {
             if (skipUpdateList().contains(edge.name))
                 continue;
             try {
-                attributeDefinition = getAttributeNames(ReaderUtils.getUrlContent(new URL(env.getProperty("url.api.db") + edge.name + "/attributes")));
+                getAttributeNames(ReaderUtils.getUrlContent(new URL(env.getProperty("url.api.db") + edge.name + "/attributes")));
                 updateSuccessful = true;
 
                 switch (edge.mapsTo) {
                     case "DisorderComorbidity":
-//                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, DisorderComorbidWithDisorder.sourceAttributes))
                         updateSuccessful = disorderComorbidWithDisorderService.submitUpdates(runEdgeUpdates(DisorderComorbidWithDisorder.class, edge.file, disorderComorbidWithDisorderService::mapIds));
                         disorderComorbidWithDisorderService.importEdges();
                         break;
                     case "DisorderHierarchy":
-//                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, DisorderIsADisorder.sourceAttributes))
                         updateSuccessful = disorderIsADisorderService.submitUpdates(runEdgeUpdates(DisorderIsADisorder.class, edge.file, disorderIsADisorderService::mapIds));
                         importService.updateDisorderFilters();
-//                       filterService.writeToFile(disorderService.getFilter(), new File(filterCacheDir, "Disorder"));
                         disorderIsADisorderService.importEdges();
                         break;
                     case "DrugIndication":
-//                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, DrugHasIndication.sourceAttributes))
                         updateSuccessful = drugHasIndicationService.submitUpdates(runEdgeUpdates(DrugHasIndication.class, edge.file, drugHasIndicationService::mapIds));
                         drugHasIndicationService.importEdges();
                         break;
                     case "DrugContraindication":
-//                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, DrugHasContraindication.sourceAttributes))
                         updateSuccessful = drugHasContraindicationService.submitUpdates(runEdgeUpdates(DrugHasContraindication.class, edge.file, drugHasContraindicationService::mapIds));
                         drugHasContraindicationService.importEdges();
                         break;
                     case "DrugTargetProtein":
-//                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, DrugHasTargetProtein.sourceAttributes))
                         updateSuccessful = drugHasTargetService.submitUpdates(runEdgeUpdates(DrugHasTargetProtein.class, edge.file, drugHasTargetService::mapIds));
                         drugHasTargetService.importEdges();
                         break;
                     case "GeneAssociatedWithDisorder":
-//                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, GeneAssociatedWithDisorder.sourceAttributes))
                         updateSuccessful = associatedWithDisorderService.submitUpdates(runEdgeUpdates(GeneAssociatedWithDisorder.class, edge.file, associatedWithDisorderService::mapIds));
                         associatedWithDisorderService.importEdges();
                         break;
                     case "ProteinPathway":
-//                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, ProteinInPathway.sourceAttributes))
                         updateSuccessful = proteinInPathwayService.submitUpdates(runEdgeUpdates(ProteinInPathway.class, edge.file, proteinInPathwayService::mapIds));
                         proteinInPathwayService.importEdges();
                         break;
                     case "ProteinProteinInteraction":
-//                        if (updateSuccessful = RepoTrialUtils.validateFormat(attributeDefinition, ProteinInteractsWithProtein.sourceAttributes))
                         int skip = 0;
                         int batch = 100_000;
                         boolean full = !RepoTrialUtils.getCachedFile(edge.file, env.getProperty("path.db.cache")).exists();
@@ -644,6 +633,8 @@ public class UpdateService {
                     log.debug("Update execution for " + edge.label + ": Success!");
                 else
                     log.error("Update execution for " + edge.label + ": Error!");
+//              Update protein-gene mapping
+                proteinEncodedByService.importEdges();
             } catch (MalformedURLException e) {
                 e.printStackTrace();
             }
@@ -671,38 +662,28 @@ public class UpdateService {
             if (skipUpdateList().contains(node.name))
                 return;
             try {
-                HashSet<String> attributeDefinition = getAttributeNames(ReaderUtils.getUrlContent(new URL(env.getProperty("url.api.db") + node.name + "/attributes")));
+                getAttributeNames(ReaderUtils.getUrlContent(new URL(env.getProperty("url.api.db") + node.name + "/attributes")));
                 boolean updateSuccessful = true;
 
                 switch (node.name) {
                     case "drug": {
                         updateSuccessful = drugService.submitUpdates(startNodeUpdate(Drug.class, node.file));
-//                        RepoTrialUtils.writeNodeMap(new File(nodeCacheDir, node.label + ".map"), drugService.getIdToDomainMap());
-//                        filterService.writeToFile(drugService.getFilter(), new File(filterCacheDir, node.label));
                         break;
                     }
                     case "pathway": {
                         updateSuccessful = pathwayService.submitUpdates(startNodeUpdate(Pathway.class, node.file));
-//                        RepoTrialUtils.writeNodeMap(new File(nodeCacheDir, node.label + ".map"), pathwayService.getIdToDomainMap());
-//                        filterService.writeToFile(pathwayService.getFilter(), new File(filterCacheDir, node.label));
                         break;
                     }
                     case "disorder": {
                         updateSuccessful = disorderService.submitUpdates(startNodeUpdate(Disorder.class, node.file));
-//                        RepoTrialUtils.writeNodeMap(new File(nodeCacheDir, node.label + ".map"), disorderService.getIdToDomainMap());
-//                        filterService.writeToFile(disorderService.getFilter(), new File(filterCacheDir, node.label));
                         break;
                     }
                     case "gene": {
                         updateSuccessful = geneService.submitUpdates(startNodeUpdate(Gene.class, node.file));
-//                        RepoTrialUtils.writeNodeMap(new File(nodeCacheDir, node.label + ".map"), geneService.getIdToDomainMap());
-//                        filterService.writeToFile(geneService.getFilter(), new File(filterCacheDir, node.label));
                         break;
                     }
                     case "protein": {
                         updateSuccessful = proteinService.submitUpdates(startNodeUpdate(Protein.class, node.file));
-//                        RepoTrialUtils.writeNodeMap(new File(nodeCacheDir, node.label + ".map"), proteinService.getIdToDomainMap());
-//                        filterService.writeToFile(proteinService.getFilter(), new File(filterCacheDir, node.label));
                         break;
                     }
                 }
@@ -713,7 +694,6 @@ public class UpdateService {
             } catch (MalformedURLException e) {
                 e.printStackTrace();
             }
-
         });
     }
 

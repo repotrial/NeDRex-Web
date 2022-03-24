@@ -134,13 +134,16 @@ public class AssociatedWithDisorderService {
     }
 
     public void importEdges() {
+        geneEdgesFrom.clear();
+        geneEdgesTo.clear();
         findAllGenes().forEach(edge -> {
             importGeneEdge(edge.getPrimaryIds());
         });
         findAllGenes().forEach(edge -> {
             importGeneEdge(edge.getPrimaryIds());
         });
-
+        proteinEdgesFrom.clear();
+        proteinEdgesTo.clear();
         findAllProteins().forEach(edge -> {
             importProteinEdge(edge.getPrimaryIds());
         });

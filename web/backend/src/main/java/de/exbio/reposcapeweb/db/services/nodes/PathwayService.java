@@ -37,11 +37,11 @@ public class PathwayService extends NodeService {
             return false;
         if (updates.containsKey(UpdateOperation.Deletion)) {
             pathwayRepository.deleteAll(pathwayRepository.findAllByPrimaryDomainIdIn(updates.get(UpdateOperation.Deletion).keySet()));
-            updates.get(UpdateOperation.Deletion).values().forEach(d -> {
-                idToDomainMap.remove(d.getId());
-                domainToIdMap.remove(d.getPrimaryDomainId());
-            });
-            allFilter.removeByNodeIds(updates.get(UpdateOperation.Deletion).values().stream().map(Pathway::getId).collect(Collectors.toSet()));
+//            updates.get(UpdateOperation.Deletion).values().forEach(d -> {
+//                idToDomainMap.remove(d.getId());
+//                domainToIdMap.remove(d.getPrimaryDomainId());
+//            });
+//            allFilter.removeByNodeIds(updates.get(UpdateOperation.Deletion).values().stream().map(Pathway::getId).collect(Collectors.toSet()));
 
         }
 
@@ -55,11 +55,12 @@ public class PathwayService extends NodeService {
                 toSave.add(d);
             });
         }
-        pathwayRepository.saveAll(toSave).forEach(d -> {
-            idToDomainMap.put(d.getId(), new Pair<>(d.getPrimaryDomainId(),d.getDisplayName()));
-            domainToIdMap.put(d.getPrimaryDomainId(), d.getId());
-            allFilter.add(d.toDistinctFilter(), d.toUniqueFilter());
-        });
+        pathwayRepository.saveAll(toSave);
+//                .forEach(d -> {
+//            idToDomainMap.put(d.getId(), new Pair<>(d.getPrimaryDomainId(),d.getDisplayName()));
+//            domainToIdMap.put(d.getPrimaryDomainId(), d.getId());
+//            allFilter.add(d.toDistinctFilter(), d.toUniqueFilter());
+//        });
         log.debug("Updated pathway table: " + insertCount + " Inserts, " + (updates.containsKey(UpdateOperation.Alteration) ? updates.get(UpdateOperation.Alteration).size() : 0) + " Changes, " + (updates.containsKey(UpdateOperation.Deletion) ? updates.get(UpdateOperation.Deletion).size() : 0) + " Deletions identified!");
         return true;
     }

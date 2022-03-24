@@ -88,6 +88,8 @@ public class DrugHasContraindicationService {
     }
 
     public void importEdges() {
+        edgesFrom.clear();
+        edgesTo.clear();
         findAll().forEach(edge -> {
             importEdge(edge.getPrimaryIds());
         });
