@@ -86,9 +86,7 @@ public class ReposcapewebApplication extends SpringBootServletInitializer {
         toolService.validateTools();
         dbService.setImportInProgress(false);
         if (Boolean.parseBoolean(env.getProperty("update.onstartup"))) {
-            webGraphService.remapHistory(new File(env.getProperty("path.usr.cache")));
             updateService.scheduleDataUpdate();
-            webGraphService.remapHistory(new File(env.getProperty("path.usr.cache")));
         } else {
             webGraphService.remapHistory(new File(env.getProperty("path.usr.cache")));
             importService.importEdges(false);
@@ -101,6 +99,7 @@ public class ReposcapewebApplication extends SpringBootServletInitializer {
 
         if (env.getProperty("update.db-dump").equals("true"))
             updateService.renewDBDumps();
+        webGraphService.remapHistory(new File(env.getProperty("path.usr.cache")));
 
         log.info("Startup took " + (int) ((System.currentTimeMillis() - start) / 1000) + "s");
         log.debug("Current RAM usage: " + (int) ((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024)
