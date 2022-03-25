@@ -374,7 +374,8 @@ public class WebGraphService {
         HashSet<Integer> connectedNodes = new HashSet<>();
 
         request.nodes.forEach((k, v) -> {
-            nodesExtendable.put(Graphs.getNode(k), true);
+            int nodeTypeID = Graphs.getNode(k);
+            nodesExtendable.put(nodeTypeID, true);
             NodeFilter nf = nodeController.getFilter(k);
             boolean filtered = false;
             if (v.ids != null) {
@@ -385,7 +386,7 @@ public class WebGraphService {
                 for (Filter filter : v.filters) {
                     filtered = true;
                     nf = nf.apply(filter);
-                    nodesExtendable.put(Graphs.getNode(k), false);
+                    nodesExtendable.put(nodeTypeID, false);
                 }
             }
 
@@ -405,7 +406,7 @@ public class WebGraphService {
                 finalG.saveNodeFilter(k, nf);
                 HashMap<Integer, Node> ids = new HashMap<>();
                 nf.toList(-1).forEach(entry -> {
-                    ids.put(entry.getNodeId(), new Node(entry.getNodeId(), entry.getName()));
+                    ids.put(entry.getNodeId(), new Node(entry.getNodeId(), nodeController.getDomainId(nodeTypeID, entry.getNodeId()), entry.getName()));
                 });
                 finalG.addNodes(Graphs.getNode(k), ids);
             }
@@ -742,7 +743,7 @@ public class WebGraphService {
             HashMap<Integer, Node> nodeMap = g.getNodes().get(nodeIds.first);
             nf.toList(-1).forEach(entry -> {
                 if (!nodeMap.containsKey(entry.getNodeId()))
-                    nodeMap.put(entry.getNodeId(), new Node(entry.getNodeId(), entry.getName()));
+                    nodeMap.put(entry.getNodeId(), new Node(entry.getNodeId(), nodeController.getDomainId(nodeIds.first, entry.getNodeId()), entry.getName()));
             });
             if (extend)
                 g.addNodes(nodeIds.first, nodeMap);
@@ -846,7 +847,7 @@ public class WebGraphService {
             g.saveNodeFilter(Graphs.getNode(node2), nf);
 
             nodeMap.put(node2, new HashMap<>());
-            nf.toList(-1).forEach(entry -> nodeMap.get(node2).put(entry.getNodeId(), new Node(entry.getNodeId(), entry.getName())));
+            nf.toList(-1).forEach(entry -> nodeMap.get(node2).put(entry.getNodeId(), new Node(entry.getNodeId(), nodeController.getDomainId(nodeIds.first, entry.getNodeId()), entry.getName())));
         }
         nodeMap.forEach(g::addNodes);
         g.addEdges(edgeId, edges);
@@ -1572,7 +1573,7 @@ public class WebGraphService {
     public HashMap<Integer, Node> nodeFilterToNode(NodeFilter nf) {
         HashMap<Integer, Node> nodes = new HashMap<>();
         nf.toList(-1).forEach(entry -> {
-            nodes.put(entry.getNodeId(), new Node(entry.getNodeId(), entry.getName()));
+            nodes.put(entry.getNodeId(), new Node(entry.getNodeId(), nodeController.getDomainId(nf.getType(), entry.getNodeId()), entry.getName()));
         });
         return nodes;
     }
@@ -1581,7 +1582,7 @@ public class WebGraphService {
         Graph g = new Graph(historyController.getGraphId());
         NodeFilter nf = new NodeFilter(nodeController.getFilter(type), nodes);
         g.saveNodeFilter(type, nf);
-        g.addNodes(Graphs.getNode(type), nf.toList(-1).stream().map(e -> new Node(e.getNodeId(), e.getName())).collect(Collectors.toList()));
+        g.addNodes(Graphs.getNode(type), nf.toList(-1).stream().map(e -> new Node(e.getNodeId(), nodeController.getDomainId(Graphs.getNode(type), e.getNodeId()), e.getName())).collect(Collectors.toList()));
         cache.put(g.getId(), g);
         addGraphToHistory(uid, g.getId());
         return g;
@@ -2082,9 +2083,9 @@ public class WebGraphService {
         });
         Graph g = new Graph();
         if (type.equals("gene")) {
-            nodeController.findGenes(existingIds).forEach(n -> g.addNode(nodeId, new Node(n.getId(), n.getDisplayName())));
+            nodeController.findGenes(existingIds).forEach(n -> g.addNode(nodeId, new Node(n.getId(), nodeController.getDomainId(nodeId, n.getId()), n.getDisplayName())));
         } else
-            nodeController.findProteins(existingIds).forEach(n -> g.addNode(nodeId, new Node(n.getId(), n.getDisplayName())));
+            nodeController.findProteins(existingIds).forEach(n -> g.addNode(nodeId, new Node(n.getId(), nodeController.getDomainId(nodeId, n.getId()), n.getDisplayName())));
 
         g.addEdges(edgeId, edges.stream().map(Edge::new).collect(Collectors.toList()));
         return g.toWebGraph(getColorMap(g.getNodes().keySet().stream().map(Graphs::getNode).collect(Collectors.toSet())), null);
@@ -2126,8 +2127,125 @@ public class WebGraphService {
         }
     }
 
+    public void remapHistory(File wd) {
+        this.historyController.setLocked(true);
+        this.historyController.importHistory();
+        try {
+            File cachedir = new File(wd, "users");
+            Arrays.stream(cachedir.listFiles()).forEach(user -> {
+                Arrays.stream(new File(user, "graphs").listFiles()).forEach(graph -> {
+                    String gid = graph.getName().split("[.]")[0];
+                    Graph g = null;
+                    try {
+                        g = objectMapper.readValue(graph, Graph.class);
+                        Graph remap = remapGraph(g);
+                        GraphHistory history = historyController.getHistory(remap.getId());
+                        history.setInfo(remap.toInfo());
+                        historyController.save(history);
+                        WriterUtils.writeTo(graph, objectMapper.writeValueAsString(remap));
+                    } catch (IOException e) {
+                        log.error("Problem when reading graph " + gid + " of " + user.getName());
+                        e.printStackTrace();
+                    }
+                });
+            });
+        } catch (Error e) {
+            log.error("Error when remapping user history:");
+            e.printStackTrace();
+        } finally {
+            this.historyController.setLocked(false);
+        }
+    }
+
+    private Node remapNode(String type, Node n) {
+        if (n.getSourceID() == null) {
+            try {
+                n.setSourceID(nodeController.getDomainId(Graphs.getNode(type), n.getId()));
+                return n;
+            } catch (NullPointerException e) {
+                log.warn(Graphs.getNode(type) + " " + n.getId() + " was not able to be mapped anymore!");
+                return null;
+            }
+        }
+        int remapID = nodeController.getId(type, n.getSourceID());
+        return new Node(remapID, n.getSourceID(), n.getName());
+
+    }
+
+    private Graph remapGraph(Graph g) {
+        Graph remap = new Graph(g.getId());
+        HashMap<Integer, HashMap<Integer, Integer>> nodeRemap = new HashMap<>();
+        g.getNodes().forEach((k, v) -> {
+            String nodeType = Graphs.getNode(k);
+            v.forEach((id, n) -> {
+                Node re = remapNode(nodeType, n);
+                if (re == null)
+                    return;
+                if (!nodeRemap.containsKey(k))
+                    nodeRemap.put(k, new HashMap<>());
+                nodeRemap.get(k).put(id, re.getId());
+                remap.addNode(k, re);
+            });
+        });
+
+        g.getEdges().forEach((et, es) -> {
+            Pair<Integer, Integer> nodeTypes = g.getNodesfromEdge(et);
+            remap.addEdges(et, remapEdges(nodeTypes.getFirst(), nodeTypes.getSecond(), nodeRemap, es));
+        });
+
+
+        g.getCustomEdgeNodes().forEach((k, v) -> {
+            remap.addCustomEdge(v.getFirst(), v.getSecond(), g.getCustomEdges().get(k), new LinkedList<>());
+        });
+
+        if (g.getMarks().containsKey("nodes"))
+            g.getMarks().get("nodes").forEach((k, v) -> remap.addNodeMarks(k, ((Collection<Integer>) v).stream().map(id -> nodeRemap.get(k).get(id)).collect(Collectors.toList())));
+        if (g.getMarks().containsKey("edges"))
+            g.getMarks().get("edges").forEach((k, v) -> {
+                Pair<Integer, Integer> nodeIds = g.getNodesfromEdge(k);
+                remap.addEdgeMarks(k, remapEdges(nodeIds.getFirst(), nodeIds.getSecond(), nodeRemap, (HashMap<Integer, List<Integer>>) v));
+            });
+
+        remap.setParent(g.getParent());
+        g.getCustomEdgeAttributeTypes().forEach((eid, vals) -> remap.addCustomEdgeAttributeTypes(eid, vals, g.getCustomEdgeAttributeLabels().get(eid)));
+        g.getCustomEdgeAttributes().forEach(remap::addCustomEdgeAttribute);
+
+        g.getCustomNodeAttributeTypes().forEach((nid, vals) -> remap.addCustomNodeAttributeTypes(nid, vals, g.getCustomEdgeAttributeLabels().get(nid)));
+        g.getCustomNodeAttributes().forEach(remap::addCustomNodeAttributes);
+        return remap;
+    }
+
+    public LinkedList<Edge> remapEdges(int nodeType1, int nodeType2, HashMap<Integer, HashMap<Integer, Integer>> nodeRemap, Collection<Edge> edges) {
+        LinkedList<Edge> remappedEdges = new LinkedList<>();
+        edges.forEach(e -> {
+            try {
+                Edge e_remap = new Edge(nodeRemap.get(nodeType1).get(e.getId1()), nodeRemap.get(nodeType2).get(e.getId2()));
+                remappedEdges.add(e_remap);
+            } catch (NullPointerException ex) {
+                log.warn("Edge could not be mapped due to missing node");
+            }
+        });
+        return remappedEdges;
+    }
+
+    public HashMap<Integer, List<Integer>> remapEdges(int nodeType1, int nodeType2, HashMap<Integer, HashMap<Integer, Integer>> nodeRemap, HashMap<Integer, List<Integer>> edges) {
+        HashMap<Integer, List<Integer>> remappedEdges = new HashMap<>();
+        edges.forEach((n1, n2s) -> {
+            try {
+                int reN1 = nodeRemap.get(nodeType1).get(n1);
+                LinkedList<Integer> reN2s = new LinkedList<>();
+                n2s.forEach(n2 -> reN2s.add(nodeRemap.get(nodeType2).get(n2)));
+                if (n2s.size() > 0)
+                    remappedEdges.put(reN1, reN2s);
+            } catch (NullPointerException ex) {
+                log.warn("Edge could not be mapped due to missing node");
+            }
+        });
+        return remappedEdges;
+    }
+
     public void addInteractionsToDPResult(String gid, String edgeType, boolean experimentalOnly, String tissue, Job j) {
-        Graph g =extendGraph(gid,edgeType, true, false, false, 0.0, false, experimentalOnly, tissue);
+        Graph g = extendGraph(gid, edgeType, true, false, false, 0.0, false, experimentalOnly, tissue);
         g.calculateDegrees();
         AtomicInteger size = new AtomicInteger();
         g.getNodes().forEach((k, v) -> size.addAndGet(v.size()));

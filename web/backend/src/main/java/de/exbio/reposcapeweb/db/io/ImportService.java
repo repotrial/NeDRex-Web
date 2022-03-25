@@ -245,7 +245,7 @@ public class ImportService {
                 case "protein" -> s = proteinService;
             }
             File cached = new File(cacheDir, node.label);
-            NodeFilter nf = filterService.readFromFiles(cached);
+            NodeFilter nf = filterService.readFromFiles(Graphs.getNode(node.name),cached);
             if (nf == null || nf.size() == 0) {
                 log.info("Fixing filter cache for " + node.label);
                 s.readFilterFromDB();

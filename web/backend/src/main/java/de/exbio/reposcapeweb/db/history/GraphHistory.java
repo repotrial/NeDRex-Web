@@ -80,7 +80,8 @@ public class GraphHistory {
 
     public GraphHistory(String userId, String graphId, WebGraphInfo graphInfo, GraphHistory parent) {
         this(userId, graphId, graphInfo);
-        parent.addDerivate(this);
+        if (parent != null)
+            parent.addDerivate(this);
         this.parent = parent;
     }
 
@@ -127,6 +128,11 @@ public class GraphHistory {
 
     public HashMap<String, Integer> getNodeMap() {
         return nodeMap;
+    }
+
+    public void setInfo(WebGraphInfo info){
+        edgeMap = info.getEdges();
+        nodeMap = info.getNodes();
     }
 
     public void serialize(String edges, String nodes) {

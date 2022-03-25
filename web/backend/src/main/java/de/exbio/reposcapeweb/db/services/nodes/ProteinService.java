@@ -1,5 +1,6 @@
 package de.exbio.reposcapeweb.db.services.nodes;
 
+import de.exbio.reposcapeweb.communication.cache.Graphs;
 import de.exbio.reposcapeweb.db.entities.nodes.Disorder;
 import de.exbio.reposcapeweb.db.entities.nodes.Protein;
 import de.exbio.reposcapeweb.db.repositories.nodes.ProteinRepository;
@@ -30,7 +31,7 @@ public class ProteinService extends NodeService {
     @Autowired
     public ProteinService(ProteinRepository proteinRepository) {
         this.proteinRepository = proteinRepository;
-        allFilter = new NodeFilter();
+//        allFilter = new NodeFilter(Graphs.getNode("protein"));
     }
 
     public boolean submitUpdates(EnumMap<UpdateOperation, HashMap<String, Protein>> updates) {
@@ -134,7 +135,7 @@ public class ProteinService extends NodeService {
 
     @Override
     public void readFilterFromDB() {
-        allFilter = new NodeFilter();
+        allFilter = new NodeFilter(Graphs.getNode("protein"));
         findAll().forEach(n -> {
             allFilter.add(n.toDistinctFilter(), n.toUniqueFilter());
         });

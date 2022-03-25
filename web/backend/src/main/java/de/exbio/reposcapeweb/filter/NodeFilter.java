@@ -8,7 +8,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 public class NodeFilter {
-
+    private int nodeType;
     private EnumMap<FilterType, HashMap<Integer, List<FilterEntry>>> distinctMap;
     private EnumMap<FilterType, HashMap<Integer, FilterKey>> distinctID2Keys;
     private EnumMap<FilterType, HashMap<FilterKey, Integer>> distinctKeys2ID;
@@ -19,7 +19,8 @@ public class NodeFilter {
 
     //TODO text filter (elastic search?)
 
-    public NodeFilter() {
+    public NodeFilter(int type) {
+        this.nodeType= type;
         distinctMap = new EnumMap<>(FilterType.class);
         distinctKeys2ID = new EnumMap<>(FilterType.class);
         distinctID2Keys = new EnumMap<>(FilterType.class);
@@ -29,6 +30,7 @@ public class NodeFilter {
     }
 
     public NodeFilter(NodeFilter all, Collection<Integer> ids) {
+        this.nodeType=all.nodeType;
         set(all.filteredByIds(ids));
     }
 
@@ -38,7 +40,7 @@ public class NodeFilter {
     }
 
     private NodeFilter filteredByIds(Collection<Integer> ids) {
-        NodeFilter filtered = new NodeFilter();
+        NodeFilter filtered = new NodeFilter(this.nodeType);
 
         distinctMap.forEach((type, keys) -> keys.forEach((key, entries) -> {
             List<FilterEntry> es = entries.stream().filter(e -> ids.contains(e.getNodeId())).collect(Collectors.toList());
@@ -162,21 +164,21 @@ public class NodeFilter {
     }
 
     public NodeFilter startsWith(String key) {
-        NodeFilter filtered = new NodeFilter();
+        NodeFilter filtered = new NodeFilter(this.nodeType);
         uniqueMap.keySet().forEach(type -> filtered.setUniqueEntry(type, uniqueStartsWith(type, key), this.uniqueID2Keys.get(type)));
         distinctMap.keySet().forEach(type -> filtered.setDistinctEntry(type, distinctStartsWith(type, key), this.distinctID2Keys.get(type)));
         return filtered;
     }
 
     public NodeFilter matches(String key) {
-        NodeFilter filtered = new NodeFilter();
+        NodeFilter filtered = new NodeFilter(this.nodeType);
         uniqueMap.keySet().forEach(type -> filtered.setUniqueEntry(type, uniqueMatches(type, key), this.uniqueID2Keys.get(type)));
         distinctMap.keySet().forEach(type -> filtered.setDistinctEntry(type, distinctMatches(type, key), this.distinctID2Keys.get(type)));
         return filtered;
     }
 
     public NodeFilter contains(String key) {
-        NodeFilter filtered = new NodeFilter();
+        NodeFilter filtered = new NodeFilter(this.nodeType);
         uniqueMap.keySet().forEach(type -> filtered.setUniqueEntry(type, uniqueContains(type, key), this.uniqueID2Keys.get(type)));
         distinctMap.keySet().forEach(type -> filtered.setDistinctEntry(type, distinctContains(type, key), this.distinctID2Keys.get(type)));
         return filtered;
@@ -475,5 +477,9 @@ public class NodeFilter {
     public List<FilterEntry> getEntry(String sid) {
         LinkedList<String> id = StringUtils.split(sid, "_");
         return distinctMap.get(FilterType.values()[Integer.parseInt(id.get(0))]).get(Integer.parseInt(id.get(1)));
+    }
+
+    public Integer getType() {
+        return nodeType;
     }
 }

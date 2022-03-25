@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
+import de.exbio.reposcapeweb.communication.reponses.WebGraphService;
 import de.exbio.reposcapeweb.configs.DBConfig;
 import de.exbio.reposcapeweb.configs.schema.EdgeConfig;
 import de.exbio.reposcapeweb.db.DbCommunicationService;
@@ -73,6 +74,8 @@ public class UpdateService {
     private final DrugHasContraindicationService drugHasContraindicationService;
     private final ToolService toolService;
 
+    private final WebGraphService webGraphService;
+
     private Metadata metadata;
     private long lastUpdate;
     private long lastCheck;
@@ -81,6 +84,7 @@ public class UpdateService {
 
     @Autowired
     public UpdateService(Environment environment,
+                         WebGraphService webGraphService,
                          ObjectMapper objectMapper,
                          ImportService importService,
                          DbCommunicationService dbCommunicationService,
@@ -105,6 +109,7 @@ public class UpdateService {
                          EdgeController edgeController
     ) {
         this.env = environment;
+        this.webGraphService=webGraphService;
         this.objectMapper = objectMapper;
         this.importService = importService;
         this.dbCommunication = dbCommunicationService;
@@ -140,6 +145,7 @@ public class UpdateService {
             return;
         }
         dbCommunication.scheduleUpdate();
+        webGraphService.remapHistory(new File(env.getProperty("path.usr.cache")));
         executeDataUpdate();
         if (!skipUpdateList().isEmpty()) {
             DBConfig.getConfig().edges.forEach(edge -> {

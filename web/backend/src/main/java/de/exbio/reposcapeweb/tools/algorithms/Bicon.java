@@ -123,7 +123,7 @@ public class Bicon implements Algorithm{
         j.setUpdate("" + (allNodes.size() - beforeCount));
         NodeFilter nf = new NodeFilter(nodeController.getFilter(Graphs.getNode(nodeTypeId)), allNodes);
         derived.saveNodeFilter(Graphs.getNode(nodeTypeId), nf);
-        derived.addNodes(nodeTypeId, nf.toList(-1).stream().map(e -> new Node(e.getNodeId(), e.getName())).collect(Collectors.toList()));
+        derived.addNodes(nodeTypeId, nf.toList(-1).stream().map(e -> new Node(e.getNodeId(), nodeController.getDomainId(nodeTypeId,e.getNodeId()), e.getName())).collect(Collectors.toList()));
     }
 
     @Override

@@ -1,5 +1,6 @@
 package de.exbio.reposcapeweb.db.services.nodes;
 
+import de.exbio.reposcapeweb.communication.cache.Graphs;
 import de.exbio.reposcapeweb.db.entities.nodes.Disorder;
 import de.exbio.reposcapeweb.db.entities.nodes.Drug;
 import de.exbio.reposcapeweb.db.repositories.nodes.DisorderRepository;
@@ -130,7 +131,7 @@ public class DisorderService extends NodeService {
 
     @Override
     public void readFilterFromDB(){
-        allFilter = new NodeFilter();
+        allFilter = new NodeFilter(Graphs.getNode("disorder"));
         findAll().forEach(n->{
             allFilter.add(n.toDistinctFilter(),n.toUniqueFilter());
         });

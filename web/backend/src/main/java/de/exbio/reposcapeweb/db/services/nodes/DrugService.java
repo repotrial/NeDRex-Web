@@ -1,5 +1,6 @@
 package de.exbio.reposcapeweb.db.services.nodes;
 
+import de.exbio.reposcapeweb.communication.cache.Graphs;
 import de.exbio.reposcapeweb.db.entities.nodes.Disorder;
 import de.exbio.reposcapeweb.db.entities.nodes.Drug;
 import de.exbio.reposcapeweb.db.repositories.nodes.DrugRepository;
@@ -30,7 +31,7 @@ public class DrugService extends NodeService {
     @Autowired
     public DrugService(DrugRepository drugRepository) {
         this.drugRepository = drugRepository;
-        allFilter = new NodeFilter();
+//        allFilter = new NodeFilter(Graphs.getNode("drug"));
     }
 
     public boolean submitUpdates(EnumMap<UpdateOperation, HashMap<String, Drug>> updates) {
@@ -128,7 +129,7 @@ public class DrugService extends NodeService {
     }
     @Override
     public void readFilterFromDB(){
-        allFilter = new NodeFilter();
+        allFilter = new NodeFilter(Graphs.getNode("drug"));
         findAll().forEach(n->{
             allFilter.add(n.toDistinctFilter(),n.toUniqueFilter());
         });

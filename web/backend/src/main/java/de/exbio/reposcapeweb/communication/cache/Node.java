@@ -6,6 +6,7 @@ import de.exbio.reposcapeweb.communication.reponses.WebNode;
 public class Node {
 
     private int id;
+    private String sourceID =null;
     private String name;
     private boolean hasEdge =false;
     private int degree = 0;
@@ -14,15 +15,16 @@ public class Node {
     public Node(){
     }
 
-    public Node(int id, String name){
+    public Node(int id, String sourceID, String name){
         this.id = id;
+        this.sourceID=sourceID;
         this.name = name;
     }
 
-    public Node (int id, String name, boolean hasEdge){
-        this(id,name);
-        this.hasEdge=hasEdge;
-    }
+//    public Node (int id,String sourceID,  String name, boolean hasEdge){
+//        this(id,sourceID, name);
+//        this.hasEdge=hasEdge;
+//    }
 
     public int getId() {
         return id;
@@ -67,5 +69,13 @@ public class Node {
 
     public void addDegree() {
         this.degree++;
+    }
+
+    public String getSourceID() {
+        return sourceID;
+    }
+
+    public void setSourceID(String domainId) {
+        this.sourceID = domainId;
     }
 }

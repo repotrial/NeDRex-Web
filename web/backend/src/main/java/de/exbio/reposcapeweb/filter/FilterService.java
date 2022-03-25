@@ -47,8 +47,8 @@ public class FilterService {
         }
     }
 
-    public NodeFilter readFromFiles(File f) {
-        NodeFilter nf = new NodeFilter();
+    public NodeFilter readFromFiles(int nodeType, File f) {
+        NodeFilter nf = new NodeFilter(nodeType);
         String line = "";
 
         try {

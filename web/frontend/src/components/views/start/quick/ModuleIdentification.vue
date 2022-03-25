@@ -819,11 +819,14 @@ export default {
         this.currentJid = job.jobId
         this.state = job.state
         await this.$refs.algorithms.setMethod(job.method)
-        if (this.$refs.algorithms.getGroup() !== "exp" && (!job.seeds || job.seeds.length === 0))
+        if (this.$refs.algorithms.getGroup() !== "exp" && (!job.seeds || job.seeds.length === 0)) {
+          console.log("seeds missing")
           this.$emit("jobReloadError")
+        }
         if (job.seeds && job.seeds.length > 0)
           this.$http.getNodes(job.target, job.seeds, ["id", "displayName"]).then(response => {
             if (!response || response.length === 0) {
+              console.log("no response")
               this.$emit("jobReloadError")
             }
             this.seeds = response
@@ -837,6 +840,7 @@ export default {
           this.$socket.subscribeJob(this.currentJid, "quickModuleFinishedEvent");
         }
       } catch (e) {
+        console.error(e)
         this.$emit("jobReloadError")
       }
     },
@@ -921,7 +925,6 @@ export default {
           return response.data
       }).then(data => {
         data.nodes[seedType].forEach(n => n.displayName = this.$utils.adjustLabels(n.displayName))
-
         let method = this.$refs.algorithms.getAlgorithm()
         let primaryAttribute = method.scores.filter(s => s.primary)[0]
         this.seedValueReplacement(data.nodes[seedType], method)

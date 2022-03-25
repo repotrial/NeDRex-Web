@@ -1,5 +1,6 @@
 package de.exbio.reposcapeweb.db.services.nodes;
 
+import de.exbio.reposcapeweb.communication.cache.Graphs;
 import de.exbio.reposcapeweb.db.entities.nodes.Disorder;
 import de.exbio.reposcapeweb.db.entities.nodes.Pathway;
 import de.exbio.reposcapeweb.db.repositories.nodes.PathwayRepository;
@@ -29,7 +30,7 @@ public class PathwayService extends NodeService {
     @Autowired
     public PathwayService(PathwayRepository pathwayRepository) {
         this.pathwayRepository = pathwayRepository;
-        allFilter = new NodeFilter();
+//        allFilter = new NodeFilter(Graphs.getNode("pathway"));
     }
 
     public boolean submitUpdates(EnumMap<UpdateOperation, HashMap<String, Pathway>> updates) {
@@ -132,7 +133,7 @@ public class PathwayService extends NodeService {
 
     @Override
     public void readFilterFromDB(){
-        allFilter = new NodeFilter();
+        allFilter = new NodeFilter(Graphs.getNode("pathway"));
         findAll().forEach(n->{
             allFilter.add(n.toDistinctFilter(),n.toUniqueFilter());
         });

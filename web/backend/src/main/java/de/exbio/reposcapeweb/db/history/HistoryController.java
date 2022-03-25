@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import javax.print.attribute.standard.JobState;
 import java.io.File;
+import java.io.IOException;
 import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
@@ -36,6 +37,8 @@ public class HistoryController {
     private HashMap<String, GraphHistory> graphMap;
     private HashMap<String, HashSet<String>> userMap;
 
+    private boolean locked = false;
+
 
     @Autowired
     public HistoryController(HistoryRepository historyRepository, ObjectMapper objectMapper, Environment env, ToolService toolService) {
@@ -50,11 +53,6 @@ public class HistoryController {
         graphMap = new HashMap<>();
         userMap = new HashMap<>();
         historyRepository.findAll().forEach(this::addHistory);
-//        graphMap.values().forEach(h->{
-//            GraphHistory parent = h.getParent();
-//            if(parent!=null)
-//                parent.addDerivate(h);
-//        });
     }
 
     public GraphHistory save(GraphHistory history) {
@@ -158,6 +156,10 @@ public class HistoryController {
 
 
     public File getGraphPath(String id) {
+        if(locked) {
+            log.warn("History is locked at the moment!");
+            return null;
+        }
         String cachedir = env.getProperty("path.usr.cache");
         GraphHistory history = getHistory(id);
         try {
@@ -307,5 +309,9 @@ public class HistoryController {
             historyRepository.delete(g);
         }
         graphMap.remove(gid);
+    }
+
+    public void setLocked(boolean b) {
+        this.locked=b;
     }
 }

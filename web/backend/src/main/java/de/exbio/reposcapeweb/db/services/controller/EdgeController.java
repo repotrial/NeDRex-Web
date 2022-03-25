@@ -713,7 +713,7 @@ public class EdgeController {
         size+=proteinInteractsWithProteinService.getProteinCount()+ proteinInteractsWithProteinService.getGeneCount();
         size+= proteinInPathwayService.getCount();
         size+= disorderComorbidWithDisorderService.getCount();
-        size+= disorderComorbidWithDisorderService.getCount();
+        size+= disorderIsADisorderService.getCount();
         return size;
     }
 
