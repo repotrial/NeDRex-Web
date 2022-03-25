@@ -939,8 +939,6 @@ public class UpdateService {
                 } catch (NullPointerException e) {
                     continue;
                 }
-//                if (line.charAt(line.length() - 1) == ']')
-//                    break;
             }
         } catch (IOException e) {
             e.printStackTrace();
