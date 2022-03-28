@@ -137,7 +137,6 @@ public class UpdateService {
 
     }
 
-//TODO maybe make variable?
     @Scheduled(cron = "${update.interval}", zone = "${update.interval.zone}")
     public void scheduleDataUpdate() {
         if (dbCommunication.isUpdateInProgress()) {
@@ -145,26 +144,7 @@ public class UpdateService {
             return;
         }
         dbCommunication.scheduleUpdate();
-        webGraphService.remapHistory(new File(env.getProperty("path.usr.cache")));
         executeDataUpdate();
-        if (!skipUpdateList().isEmpty()) {
-            DBConfig.getConfig().edges.forEach(edge -> {
-                if (!skipUpdateList().contains(edge.name))
-                    return;
-                switch (edge.mapsTo) {
-                    case "DisorderComorbidity" -> disorderComorbidWithDisorderService.importEdges();
-                    case "DisorderHierarchy" -> disorderIsADisorderService.importEdges();
-                    case "DrugIndication" -> drugHasIndicationService.importEdges();
-                    case "DrugTargetProtein" -> drugHasTargetService.importEdges();
-                    case "GeneAssociatedWithDisorder" -> associatedWithDisorderService.importEdges();
-                    case "ProteinPathway" -> proteinInPathwayService.importEdges();
-                    case "ProteinProteinInteraction" -> proteinInteractsWithProteinService.importEdges();
-                    case "ProteinEncodedBy" -> proteinEncodedByService.importEdges();
-                    case "DrugContraindication" -> drugHasContraindicationService.importEdges();
-                }
-            });
-        }
-        renewDBDumps();
     }
 
     public void renewDBDumps() {
@@ -374,8 +354,27 @@ public class UpdateService {
             e.printStackTrace();
             log.error("Update could not be executed correctly: " + e.getMessage());
         }
-        dbCommunication.setUpdateInProgress(false);
         Runtime.getRuntime().gc();
+//        if (!skipUpdateList().isEmpty()) {
+//            DBConfig.getConfig().edges.forEach(edge -> {
+//                if (!skipUpdateList().contains(edge.name))
+//                    return;
+//                switch (edge.mapsTo) {
+//                    case "DisorderComorbidity" -> disorderComorbidWithDisorderService.importEdges();
+//                    case "DisorderHierarchy" -> disorderIsADisorderService.importEdges();
+//                    case "DrugIndication" -> drugHasIndicationService.importEdges();
+//                    case "DrugTargetProtein" -> drugHasTargetService.importEdges();
+//                    case "GeneAssociatedWithDisorder" -> associatedWithDisorderService.importEdges();
+//                    case "ProteinPathway" -> proteinInPathwayService.importEdges();
+//                    case "ProteinProteinInteraction" -> proteinInteractsWithProteinService.importEdges();
+//                    case "ProteinEncodedBy" -> proteinEncodedByService.importEdges();
+//                    case "DrugContraindication" -> drugHasContraindicationService.importEdges();
+//                }
+//            });
+//        }
+        renewDBDumps();
+        webGraphService.remapHistory(new File(env.getProperty("path.usr.cache")));
+        dbCommunication.setUpdateInProgress(false);
     }
 
     private void cleanUpdateDirectories(File cacheDir) {

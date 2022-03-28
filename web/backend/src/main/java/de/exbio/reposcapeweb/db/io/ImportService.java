@@ -330,23 +330,18 @@ public class ImportService {
             switch (node.name) {
                 case "drug" -> {
                     s = drugService;
-                    break;
                 }
                 case "pathway" -> {
                     s = pathwayService;
-                    break;
                 }
                 case "disorder" -> {
                     s = disorderService;
-                    break;
                 }
                 case "gene" -> {
                     s = geneService;
-                    break;
                 }
                 case "protein" -> {
                     s = proteinService;
-                    break;
                 }
             }
             if (s != null) {

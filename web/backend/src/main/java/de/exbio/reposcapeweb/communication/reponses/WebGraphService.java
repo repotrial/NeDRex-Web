@@ -2167,9 +2167,13 @@ public class WebGraphService {
                 return null;
             }
         }
-        int remapID = nodeController.getId(type, n.getSourceID());
-        return new Node(remapID, n.getSourceID(), n.getName());
-
+        try {
+            int remapID = nodeController.getId(type, n.getSourceID());
+            return new Node(remapID, n.getSourceID(), n.getName());
+        }catch (NullPointerException e){
+            log.warn(Graphs.getNode(type) + " " + n.getSourceID() + " is not existent anymore!");
+            return null;
+        }
     }
 
     private Graph remapGraph(Graph g) {
