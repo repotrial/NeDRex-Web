@@ -72,26 +72,26 @@
                 </v-slider>
               </div>
               <div style="display: flex">
-                  <v-switch
-                    style="justify-self: flex-start; margin-left: 0; margin-right: auto"
-                    label="Only use experimentally validated interaction networks"
-                    v-model="experimentalSwitch"
-                  >
-                    <template v-slot:append>
-                      <v-tooltip left>
-                        <template v-slot:activator="{ on, attrs }">
-                          <v-icon
-                            v-bind="attrs"
-                            v-on="on"
-                            left> far fa-question-circle
-                          </v-icon>
-                        </template>
-                        <span>Restricts the edges in the {{
-                            ['Gene', 'Protein'][seedTypeId] + '-' + ['Gene', 'Protein'][seedTypeId]
-                          }} network to experimentally validated ones.</span>
-                      </v-tooltip>
-                    </template>
-                  </v-switch>
+                <v-switch v-if="connectionSelect"
+                  style="justify-self: flex-start; margin-left: 0; margin-right: auto"
+                  label="Only use experimentally validated interaction networks"
+                  v-model="experimentalSwitch"
+                >
+                  <template v-slot:append>
+                    <v-tooltip left>
+                      <template v-slot:activator="{ on, attrs }">
+                        <v-icon
+                          v-bind="attrs"
+                          v-on="on"
+                          left> far fa-question-circle
+                        </v-icon>
+                      </template>
+                      <span>Restricts the edges in the {{
+                          ['Gene', 'Protein'][seedTypeId] + '-' + ['Gene', 'Protein'][seedTypeId]
+                        }} network to experimentally validated ones.</span>
+                    </v-tooltip>
+                  </template>
+                </v-switch>
                 <v-switch
                   style="justify-self: flex-start; margin-left: 0; margin-right: auto"
                   :label="'Add '+['gene','protein'][seedTypeId]+' interactions'"
@@ -112,7 +112,8 @@
                     </v-tooltip>
                   </template>
                 </v-switch>
-                <v-select :items="tissues" v-model="tissueFilter" outlined dense label="Tissue" style="max-width: 250px; justify-self: center; margin-left: auto; margin-right: auto; margin-top:16px"></v-select>
+                <v-select :items="tissues" v-model="tissueFilter" outlined dense label="Tissue"
+                          style="max-width: 250px; justify-self: center; margin-left: auto; margin-right: auto; margin-top:16px"></v-select>
               </div>
               <div style="display:flex; width: 100%">
                 <div style="justify-self: flex-start">
@@ -223,6 +224,10 @@ export default {
     seedTypeId: Number,
     step: Number,
     socketEvent: String,
+    connectionSelect: {
+      type: Boolean,
+      default: false,
+    },
     blitz: {
       type: Boolean,
       default: false
@@ -245,7 +250,7 @@ export default {
     return {
       methodModel: undefined,
       experimentalSwitch: true,
-      interactionSwitch: true,
+      interactionSwitch: this.connectionSelect,
       showDescription: false,
       tissues: undefined,
       tissueFilter: "all",
@@ -382,7 +387,7 @@ export default {
       let params = await this.getParams()
       delete params.nodesOnly
       delete params.addInteractions
-      let str = "Tissue="+this.tissueFilter+", "
+      let str = "Tissue=" + this.tissueFilter + ", "
       Object.keys(params).forEach(key => {
         str += key + "=" + params[key] + ", "
       })

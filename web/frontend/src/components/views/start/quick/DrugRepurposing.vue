@@ -320,8 +320,8 @@
                       </v-tooltip>
                       <span v-else>{{ item.displayName }}</span>
                     </template>
-                    <template v-slot:item.seed="{item}">
-                      <v-icon v-if="item.isSeed ==null ||item.isSeed " color="success">fas fa-check</v-icon>
+                    <template v-slot:item.seed="{item}" v-if="seeds || (reload && reloaded)">
+                      <v-icon v-if="item.isSeed == null || item.isSeed " color="success">fas fa-check</v-icon>
                       <v-icon v-else color="error">fas fa-times</v-icon>
                     </template>
                     <template v-slot:footer>
@@ -393,6 +393,59 @@
                              @toggleOptionEvent="toggleToolOption" @clickOptionEvent="clickToolOption"></Tools>
                     </template>
                   </Network>
+                  <div style="display: flex; justify-content: center">
+                    <v-tooltip top>
+                      <template v-slot:activator="{attrs, on}">
+                        <v-chip
+                          :disabled="!rankingGid"
+                          outlined
+                          icon
+                          v-on="on"
+                          v-bind="attrs"
+                          style="margin:8px"
+                          @click="requestGraphDownload"
+                        >
+                          <v-icon
+                            left
+                            small
+                            color="primary"
+                          >
+                            far fa-arrow-alt-circle-down
+                          </v-icon>
+                          Download
+                        </v-chip>
+                      </template>
+                      <div style="width: 250px">Download a .graphml file containing the current network with all available
+                        attributes.
+                      </div>
+                    </v-tooltip>
+                    <v-tooltip top>
+                      <template v-slot:activator="{attrs, on}">
+                        <v-chip
+                          :disabled="!rankingJid"
+                          v-on="on"
+                          v-bind="attrs"
+                          outlined
+                          icon
+                          style="margin:8px"
+                          @click="copyLink(); printNotification('Copied graph link to clipboard!',1)"
+                        >
+                          <v-icon
+                            left
+                            small
+                            color="primary"
+                          >
+                            far fa-copy
+                          </v-icon>
+                          Copy URL
+                        </v-chip>
+                      </template>
+                      <div style="width: 250px">
+                        Copies the unique link of this network to your clipboard to save it to some document or to share it with
+                        others.
+                      </div>
+                    </v-tooltip>
+                  </div>
                 </v-col>
                 <v-col style="padding:0; max-width: 25%; width: 31%; min-width: 350px">
                   <v-card-title class="subtitle-1"> Drugs{{
@@ -1191,7 +1244,25 @@ export default {
         method.scores.push({id: "trialCount", name: "Use"})
       this.loadingTrialData = false
     },
-
+    requestGraphDownload: function () {
+      window.open(CONFIG.HOST_URL + CONFIG.CONTEXT_PATH + '/api/downloadGraph?gid=' + this.rankingGid)
+    },
+    copyLink: function () {
+      const el = document.createElement('textarea');
+      el.value = location.host + "/explore/quick/start?job=" + this.rankingJid;
+      el.setAttribute('readonly', '');
+      el.style.position = 'absolute';
+      el.style.left = '-9999px';
+      document.body.appendChild(el);
+      const selected = document.getSelection().rangeCount > 0 ? document.getSelection().getRangeAt(0) : false;
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+      if (selected) {
+        document.getSelection().removeAllRanges();
+        document.getSelection().addRange(selected);
+      }
+    },
     rank: function (list, attribute) {
       if (attribute == null || (list.length > 0 && list[0].rank != null))
         return list;

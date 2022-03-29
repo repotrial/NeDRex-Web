@@ -245,7 +245,7 @@ public class ImportService {
                 case "protein" -> s = proteinService;
             }
             File cached = new File(cacheDir, node.label);
-            NodeFilter nf = filterService.readFromFiles(Graphs.getNode(node.name),cached);
+            NodeFilter nf = filterService.readFromFiles(Graphs.getNode(node.name), cached);
             if (nf == null || nf.size() == 0) {
                 log.info("Fixing filter cache for " + node.label);
                 s.readFilterFromDB();
@@ -277,9 +277,8 @@ public class ImportService {
         }
 //        nodeController.setUp();
 //        edgeController.setUp();
-        log.info("Updating nodeIDs");
         updateIdMaps(allowOnUpdate);
-        log.info("NodeIdMap update: Done!");
+
         updateNodeFilters(new File(dbCacheDir, "filters"), edgesReady);
 
     }
@@ -319,11 +318,12 @@ public class ImportService {
         log.info("Done updating.");
     }
 
-    private void updateIdMaps(boolean allowOnUpdate) {
+    public void updateIdMaps(boolean allowOnUpdate) {
         if (dbCommunication.isUpdateInProgress() && !allowOnUpdate) {
             log.error("DB update in progress and IDMap updated was prohibited!");
             return;
         }
+        log.info("Updating nodeIDs");
         File nodeCacheDir = new File(dbCacheDir, "nodes");
         DBConfig.getConfig().nodes.forEach(node -> {
             NodeService s = null;
@@ -348,8 +348,9 @@ public class ImportService {
                 log.info("Updating nodeIDMaps for " + node.label);
                 s.readIdDomainMapsFromDb();
                 RepoTrialUtils.writeNodeMap(new File(nodeCacheDir, node.label + ".map"), s.getIdToDomainMap());
-                log.info("Done updating nodeIDMaps for " + node.label + ": "+s.getDomainToIdMap().size()+" entries!");
+                log.info("Done updating nodeIDMaps for " + node.label + ": " + s.getDomainToIdMap().size() + " entries!");
             }
         });
+        log.info("NodeIdMap update: Done!");
     }
 }

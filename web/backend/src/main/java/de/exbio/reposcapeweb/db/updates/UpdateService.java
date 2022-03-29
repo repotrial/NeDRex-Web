@@ -523,6 +523,7 @@ public class UpdateService {
 
         importRepoTrialNodes();
 
+        importService.updateIdMaps(true);
         importRepoTrialEdges();
 
         importService.updateNodeData(true, false);
@@ -936,6 +937,7 @@ public class UpdateService {
                     e.printStackTrace();
                     log.error("Malformed input line in " + updateFile.getName() + ": " + line);
                 } catch (NullPointerException e) {
+                    log.debug("Edge could not be mapped in "+ updateFile.getName() + ": " + line);
                     continue;
                 }
             }
