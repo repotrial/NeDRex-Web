@@ -501,7 +501,7 @@
                               left> far fa-question-circle
                             </v-icon>
                           </template>
-                          <span>Choose this option if you want to return multiple results.</span>
+                          <span>Defines a penalty for hubs and preferring lower network-degree nodes (0 = no penalty)</span>
                         </v-tooltip>
                       </template>
                     </v-slider>

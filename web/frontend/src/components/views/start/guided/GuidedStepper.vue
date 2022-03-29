@@ -594,7 +594,7 @@
                                 @dblclick:row="targetDoubleClicked"
                                 :items="resultTableModel !==0 ? targets :connectors"
                                 :headers="getHeaders()"
-                                disable-pagination show-expand :single-expand="true"
+                                disable-pagination
                                 hide-default-footer @click:row="targetClicked">
                     <template v-slot:item.displayName="{item}">
                       <v-tooltip v-if="item.displayName.length>32" right>

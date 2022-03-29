@@ -191,7 +191,7 @@
                       v-model="getAlgorithmModels().damping"
                       class="mt-0 pt-0"
                       type="float"
-                      style="width: 60px"
+                      style="width: 100px"
                       label="damping-factor"
                     ></v-text-field>
                   </template>
