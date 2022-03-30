@@ -725,8 +725,14 @@ public class WebGraphService {
                         Set<Integer> existing = g.getNodes().get(nodeIds.first).keySet();
                         boolean existing1 = existing.contains(id.getId1());
                         boolean existing2 = existing.contains(id.getId2());
-                        if ((existing1 & existing2) | extend)
-                            edges.add(!edgeController.getDirection(edgeId) & id.getId1() > id.getId2() ? new Edge(id.flipIds()) : new Edge(id));
+                        if ((existing1 & existing2) | extend) {
+                            if (!edgeController.getDirection(edgeId) & id.getId1() > id.getId2()) {
+                                id.flipIds();
+                                existing1 = existing.contains(id.getId1());
+                                existing2 = existing.contains(id.getId2());
+                            }
+                            edges.add(new Edge(id));
+                        }
                         if (!existing1 & extend)
                             nodes.add(id.getId1());
                         if (!existing2 & extend)
@@ -846,8 +852,9 @@ public class WebGraphService {
             NodeFilter nf = new NodeFilter(nodeController.getFilter(Graphs.getNode(node2)), nodes);
             g.saveNodeFilter(Graphs.getNode(node2), nf);
 
-            nodeMap.put(node2, new HashMap<>());
-            nf.toList(-1).forEach(entry -> nodeMap.get(node2).put(entry.getNodeId(), new Node(entry.getNodeId(), nodeController.getDomainId(nodeIds.first, entry.getNodeId()), entry.getName())));
+            if (!nodeMap.containsKey(node2))
+                nodeMap.put(node2, new HashMap<>());
+            nf.toList(-1).forEach(entry -> nodeMap.get(node2).put(entry.getNodeId(), new Node(entry.getNodeId(), nodeController.getDomainId(node2, entry.getNodeId()), entry.getName())));
         }
         nodeMap.forEach(g::addNodes);
         g.addEdges(edgeId, edges);
@@ -1678,7 +1685,6 @@ public class WebGraphService {
                         ids = request.connectors;
                     }
                 }
-
                 if (connector.equals("drug") && (elementFilter || approvedFilter)) {
                     ids = elementFilter ? getElementFilteredDrugs(nodes.keySet()) : ids;
                     ids = approvedFilter ? getApprovedOnlyDrugs(ids) : ids;
@@ -1698,7 +1704,8 @@ public class WebGraphService {
                         targets = request.targets;
                     else {
                         targets = new HashSet<>(g.getNodes().get(Graphs.getNode(request.targetType)).keySet());
-                        targets.removeAll(request.sources);
+                        if (request.targetType.equals(request.sourceType))
+                            targets.removeAll(request.sources);
                     }
                     removeNonConnectingNodes(g, Graphs.getNode(connector), request.sources, Graphs.getNode(request.sourceType), targets, Graphs.getNode(request.targetType));
                 }
@@ -1869,6 +1876,10 @@ public class WebGraphService {
         set1Connectors.addAll(set2Connectors);
         if (!set1Connectors.isEmpty()) {
             NodeFilter nf = g.getNodeFilter(Graphs.getNode(connectType));
+            if (connectType == type1 && set1 != null)
+                set1Connectors.removeAll(set1);
+            if (connectType == type2 && set2 != null)
+                set2Connectors.removeAll(set2);
             nf.removeByNodeIds(set1Connectors);
             g.getNodes().put(connectType, nodeFilterToNode(nf));
             g.saveNodeFilter(Graphs.getNode(connectType), nf);
@@ -2170,7 +2181,7 @@ public class WebGraphService {
         try {
             int remapID = nodeController.getId(type, n.getSourceID());
             return new Node(remapID, n.getSourceID(), n.getName());
-        }catch (NullPointerException e){
+        } catch (NullPointerException e) {
             log.warn(Graphs.getNode(type) + " " + n.getSourceID() + " is not existent anymore!");
             return null;
         }

@@ -72,7 +72,7 @@
                 </v-slider>
               </div>
               <div style="display: flex">
-                <v-switch v-if="connectionSelect"
+                <v-switch
                   style="justify-self: flex-start; margin-left: 0; margin-right: auto"
                   label="Only use experimentally validated interaction networks"
                   v-model="experimentalSwitch"
@@ -93,6 +93,7 @@
                   </template>
                 </v-switch>
                 <v-switch
+                  v-if="connectionSelect"
                   style="justify-self: flex-start; margin-left: 0; margin-right: auto"
                   :label="'Add '+['gene','protein'][seedTypeId]+' interactions'"
                   v-model="interactionSwitch"

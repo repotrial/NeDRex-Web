@@ -447,7 +447,7 @@
                     </v-tooltip>
                   </div>
                 </v-col>
-                <v-col style="padding:0; max-width: 25%; width: 31%; min-width: 350px">
+                <v-col style="padding:0; max-width: 28%; width: 31%; min-width: 370px">
                   <v-card-title class="subtitle-1"> Drugs{{
                       (results.drugs.length !== undefined && (results.drugs.length > 0 || rankingGid != null) ? (" (" + (results.drugs.length) + ")") : (": " + (rankingState != null ? ("[" + rankingState + "]") : "Processing")))
                     }}
@@ -1241,7 +1241,7 @@ export default {
         this.results.drugs.filter(d => ids.indexOf(d.id) > -1).forEach(d => d.known = true)
       }
       if (method.scores.filter(s => s.id === "trialCount").length === 0)
-        method.scores.push({id: "trialCount", name: "Use"})
+        method.scores.push({id: "trialCount", name: "Use", width:"80px"})
       this.loadingTrialData = false
     },
     requestGraphDownload: function () {

@@ -412,7 +412,7 @@ public class Graph {
                     this.getNodes().get(nodes.first).get(edge.getId1()).addDegree();
                     this.getNodes().get(nodes.second).get(edge.getId2()).addDegree();
                 } catch (NullPointerException e) {
-                    e.printStackTrace();
+                    log.error("Error when accessing nodes for "+getEdge(edgeId)+": "+edge.getId1()+"/"+edge.getId2());
                 }
             });
         });
