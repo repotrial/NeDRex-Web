@@ -109,7 +109,7 @@ public class UpdateService {
                          EdgeController edgeController
     ) {
         this.env = environment;
-        this.webGraphService=webGraphService;
+        this.webGraphService = webGraphService;
         this.objectMapper = objectMapper;
         this.importService = importService;
         this.dbCommunication = dbCommunicationService;
@@ -139,6 +139,10 @@ public class UpdateService {
 
     @Scheduled(cron = "${update.interval}", zone = "${update.interval.zone}")
     public void scheduleDataUpdate() {
+        if (env.getProperty("update.auto") !=null && env.getProperty("update.auto").equals("false")) {
+            log.warn("Auto updates disabled by config!");
+            return;
+        }
         if (dbCommunication.isUpdateInProgress()) {
             log.warn("Update already in progress!");
             return;
@@ -159,10 +163,10 @@ public class UpdateService {
         HashMap<Integer, BufferedWriter> sif_exp_writers = new HashMap<>();
         TreeMap<Integer, String> tissueMap = proteinInteractsWithProteinService.getIdTissueMap();
         tissueMap.forEach((k, v) -> {
-            String tissueInFile = v.replaceAll(" ","");
-            tsv_writers.put(k, WriterUtils.getBasicWriter(new File(dir,"proteinInteractsWithProtein-"+tissueInFile+".tsv")));
-            sif_all_writers.put(k, WriterUtils.getBasicWriter(new File(dir, "proteinInteractsWithProtein-"+tissueInFile+"_all.sif")));
-            sif_exp_writers.put(k, WriterUtils.getBasicWriter(new File(dir, "proteinInteractsWithProtein-"+tissueInFile+"_exp.sif")));
+            String tissueInFile = v.replaceAll(" ", "");
+            tsv_writers.put(k, WriterUtils.getBasicWriter(new File(dir, "proteinInteractsWithProtein-" + tissueInFile + ".tsv")));
+            sif_all_writers.put(k, WriterUtils.getBasicWriter(new File(dir, "proteinInteractsWithProtein-" + tissueInFile + "_all.sif")));
+            sif_exp_writers.put(k, WriterUtils.getBasicWriter(new File(dir, "proteinInteractsWithProtein-" + tissueInFile + "_exp.sif")));
         });
 
         File ppiFile = new File(dir, "proteinInteractsWithProtein.tsv");
@@ -171,14 +175,14 @@ public class UpdateService {
         try (BufferedWriter bw = WriterUtils.getBasicWriter(ppiFile); BufferedWriter bwSifa = WriterUtils.getBasicWriter(ppiSif_all); BufferedWriter bwSife = WriterUtils.getBasicWriter(ppiSif_exp)) {
             bwSifa.write(sifHead);
             bwSife.write(sifHead);
-            sif_all_writers.values().forEach(w-> {
+            sif_all_writers.values().forEach(w -> {
                 try {
                     w.write(sifHead);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             });
-            sif_exp_writers.values().forEach(w-> {
+            sif_exp_writers.values().forEach(w -> {
                 try {
                     w.write(sifHead);
                 } catch (IOException e) {
@@ -186,7 +190,7 @@ public class UpdateService {
                 }
             });
             proteinInteractsWithProteinService.getProteins().forEach((id1, map) -> map.forEach((id, vals) -> {
-                if(id.getId1()!=id1)
+                if (id.getId1() != id1)
                     return;
                 try {
                     String tsvLine = proteinService.map(id.getId1()) + "\t" + proteinService.map(id.getId2()) + "\t" + vals.first.second + "\n";
@@ -198,7 +202,7 @@ public class UpdateService {
                     for (int tissueId : vals.second) {
                         tsv_writers.get(tissueId).write(tsvLine);
                         sif_all_writers.get(tissueId).write(sifLine);
-                        if(vals.first.second)
+                        if (vals.first.second)
                             sif_exp_writers.get(tissueId).write(sifLine);
                     }
                 } catch (IOException e) {
@@ -241,16 +245,16 @@ public class UpdateService {
         sif_all_writers.clear();
         sif_exp_writers.clear();
         tissueMap.forEach((k, v) -> {
-            String tissueInFile = v.replaceAll(" ","");
-            tsv_writers.put(k, WriterUtils.getBasicWriter(new File(dir, "geneInteractsWithGene-"+tissueInFile+".tsv")));
-            sif_all_writers.put(k, WriterUtils.getBasicWriter(new File(dir, "geneInteractsWithGene-"+tissueInFile+"_all.sif")));
-            sif_exp_writers.put(k, WriterUtils.getBasicWriter(new File(dir, "geneInteractsWithGene-"+tissueInFile+"_exp.sif")));
+            String tissueInFile = v.replaceAll(" ", "");
+            tsv_writers.put(k, WriterUtils.getBasicWriter(new File(dir, "geneInteractsWithGene-" + tissueInFile + ".tsv")));
+            sif_all_writers.put(k, WriterUtils.getBasicWriter(new File(dir, "geneInteractsWithGene-" + tissueInFile + "_all.sif")));
+            sif_exp_writers.put(k, WriterUtils.getBasicWriter(new File(dir, "geneInteractsWithGene-" + tissueInFile + "_exp.sif")));
         });
         try (BufferedWriter bw = WriterUtils.getBasicWriter(ggiFile); BufferedWriter bwSifa = WriterUtils.getBasicWriter(ggiSif_all); BufferedWriter bwSife = WriterUtils.getBasicWriter(ggiSif_exp)) {
             bwSifa.write(sifHead);
             bwSife.write(sifHead);
             proteinInteractsWithProteinService.getGenes().forEach((id1, map) -> map.forEach((id, vals) -> {
-                if(id.getId1()!=id1)
+                if (id.getId1() != id1)
                     return;
                 try {
                     String tsvLine = geneService.map(id.getId1()) + "\t" + geneService.map(id.getId2()) + "\t" + vals.first.second + "\n";
@@ -262,7 +266,7 @@ public class UpdateService {
                     for (int tissueId : vals.second) {
                         tsv_writers.get(tissueId).write(tsvLine);
                         sif_all_writers.get(tissueId).write(sifLine);
-                        if(vals.first.second)
+                        if (vals.first.second)
                             sif_exp_writers.get(tissueId).write(sifLine);
                     }
                 } catch (IOException e) {
@@ -941,7 +945,7 @@ public class UpdateService {
                     e.printStackTrace();
                     log.error("Malformed input line in " + updateFile.getName() + ": " + line);
                 } catch (NullPointerException e) {
-                    log.debug("Edge could not be mapped in "+ updateFile.getName() + ": " + line);
+                    log.debug("Edge could not be mapped in " + updateFile.getName() + ": " + line);
                     continue;
                 }
             }

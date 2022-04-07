@@ -1,7 +1,7 @@
 version: "3.3"
 services:
   db:
-    container_name: nedrex-web-db
+    container_name: nedrex-web-db_dev
     image: mysql
     command: --default-authentication-plugin=mysql_native_password
     restart: on-failure
@@ -11,34 +11,34 @@ services:
       MYSQL_USER: reposcaper
       MYSQL_PASSWORD: nedrex
     volumes:
-      - nedrex-db-volume:/var/lib/mysql
+      - dev_nedrex-db-volume:/var/lib/mysql
     cap_add:
       - SYS_NICE
   web:
-    container_name: nedrex-web-frontend
-    image: andimajore/nedrex_repo:web_arenal
+    container_name: nedrex-web-frontend_dev
+    image: andimajore/nedrex_repo:web_arenal-dev
     build: frontend
     ports:
-      - "8022:8080"
+      - "8061:8080"
     restart: on-failure
   server:
-    container_name: nedrex-web-backend
-    image: andimajore/nedrex_repo:server_arenal
+    container_name: nedrex-web-backend_dev
+    image: andimajore/nedrex_repo:server_arenal-dev
     depends_on:
       - "db"
     build: backend
     environment:
-      - spring_profiles_active=arenal
+      - spring_profiles_active=arenal_dev
     volumes:
-      - nedrex-cache-volume:/etc/data/db
-      - nedrex-usr-volume:/etc/data/usr
+      - dev_nedrex-cache-volume:/etc/data/db
+      - dev_nedrex-usr-volume:/etc/data/usr
     ports:
-      - "8022:8090"
+      - "8062:8090"
     restart: on-failure
 volumes:
-  nedrex-db-volume:
+  dev_nedrex-db-volume:
     external: true
-  nedrex-usr-volume:
+  dev_nedrex-usr-volume:
     external: true
-  nedrex-cache-volume:
+  dev_nedrex-cache-volume:
     external: true
