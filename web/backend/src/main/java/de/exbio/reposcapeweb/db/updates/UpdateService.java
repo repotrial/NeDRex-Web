@@ -186,10 +186,12 @@ public class UpdateService {
                 }
             });
             proteinInteractsWithProteinService.getProteins().forEach((id1, map) -> map.forEach((id, vals) -> {
+                if(id.getId1()!=id1)
+                    return;
                 try {
-                    String tsvLine = proteinService.map(id1) + "\t" + proteinService.map(id.getId2()) + "\t" + vals.second + "\n";
+                    String tsvLine = proteinService.map(id.getId1()) + "\t" + proteinService.map(id.getId2()) + "\t" + vals.first.second + "\n";
                     bw.write(tsvLine);
-                    String sifLine = "_" + id1 + "\tpp\t_" + id.getId2() + "\n";
+                    String sifLine = "_" + id.getId1() + "\tpp\t_" + id.getId2() + "\n";
                     bwSifa.write(sifLine);
                     if (vals.first.second)
                         bwSife.write(sifLine);
@@ -203,7 +205,7 @@ public class UpdateService {
                     e.printStackTrace();
                 } catch (NullPointerException ex) {
                     ex.printStackTrace();
-                    log.warn("Could not map either " + id1 + " or " + id.getId2() + " to internal protein entities.");
+                    log.warn("Could not map either " + id.getId1() + " or " + id.getId2() + " to internal protein entities.");
                     return;
                 }
             }));
@@ -248,10 +250,12 @@ public class UpdateService {
             bwSifa.write(sifHead);
             bwSife.write(sifHead);
             proteinInteractsWithProteinService.getGenes().forEach((id1, map) -> map.forEach((id, vals) -> {
+                if(id.getId1()!=id1)
+                    return;
                 try {
-                    String tsvLine = geneService.map(id1) + "\t" + geneService.map(id.getId2()) + "\t" + vals.second + "\n";
+                    String tsvLine = geneService.map(id.getId1()) + "\t" + geneService.map(id.getId2()) + "\t" + vals.first.second + "\n";
                     bw.write(tsvLine);
-                    String sifLine = "_" + id1 + "\tgg\t_" + id.getId2() + "\n";
+                    String sifLine = "_" + id.getId1() + "\tgg\t_" + id.getId2() + "\n";
                     bwSifa.write(sifLine);
                     if (vals.first.second)
                         bwSife.write(sifLine);
@@ -294,7 +298,7 @@ public class UpdateService {
         try (BufferedWriter bw = WriterUtils.getBasicWriter(gdFile)) {
             drugHasTargetService.getGeneEdgesFrom().forEach((id1, set) -> set.forEach(id -> {
                 try {
-                    bw.write(drugService.map(id1) + "\t" + geneService.map(id.getId2()) + "\n");
+                    bw.write(drugService.map(id.getId1()) + "\t" + geneService.map(id.getId2()) + "\n");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -307,7 +311,7 @@ public class UpdateService {
         try (BufferedWriter bw = WriterUtils.getBasicWriter(pdFile)) {
             drugHasTargetService.getProteinEdgesFrom().forEach((id1, set) -> set.forEach(id -> {
                 try {
-                    bw.write(drugService.map(id1) + "\t" + proteinService.map(id.getId2()) + "\n");
+                    bw.write(drugService.map(id.getId1()) + "\t" + proteinService.map(id.getId2()) + "\n");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

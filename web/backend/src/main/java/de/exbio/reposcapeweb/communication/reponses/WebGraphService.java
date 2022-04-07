@@ -2157,6 +2157,9 @@ public class WebGraphService {
                     } catch (IOException e) {
                         log.error("Problem when reading graph " + gid + " of " + user.getName());
                         e.printStackTrace();
+                    } catch (NullPointerException ex){
+                        log.error("Problem when converting the graph "+gid+" of "+user.getName());
+                        ex.printStackTrace();
                     }
                 });
             });

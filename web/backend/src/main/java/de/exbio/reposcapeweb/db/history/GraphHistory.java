@@ -21,6 +21,7 @@ public class GraphHistory {
     @Id
     @Column(name = "graph_id")
     private String graphId;
+    @Column(columnDefinition = "text")
     private String name;
     private String userId;
     //    @ElementCollection(fetch = FetchType.EAGER)
