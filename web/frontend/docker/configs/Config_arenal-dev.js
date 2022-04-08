@@ -1,5 +1,5 @@
 
-const HOST = "msa.zbh.uni-hamburg.de"
+const HOST = "dev-nedrex-backend.zbh.uni-hamburg.de"
 const PROTOCOL = "https"
 export const CONTEXT_PATH=""
 export const HOST_URL = PROTOCOL+"://" + HOST
