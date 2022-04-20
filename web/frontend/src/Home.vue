@@ -25,7 +25,8 @@
         </v-tab>
         <v-tabs-items dark v-model="tabModel">
           <v-tab-item>
-            <Project :bg-color="colors.main.bg1" :color="colors.main.primary" :cookiesAccepted="cookiesAccepted"></Project>
+            <Project :bg-color="colors.main.bg1" :color="colors.main.primary"
+                     :cookiesAccepted="cookiesAccepted"></Project>
           </v-tab-item>
           <v-tab-item>
             <Help :bg-color="colors.main.bg1" :color="colors.main.primary" :cookiesAccepted="cookiesAccepted"></Help>
@@ -41,12 +42,18 @@
     </div>
     <v-bottom-sheet v-model="showCookieConsent" :overlay-color="colors.main.bg1" style="z-index: 1001">
       <v-sheet :color="colors.main.bg2">
-          <v-list-item style="padding: 8px">
-            <v-list-item-subtitle>
-              <i>This page stores browser cookies to improve the user experience. To continue you have to confirm once that you comply with NeDRex-Web setting browser cookies.</i>
-              <v-btn small outlined @click="acceptedCookies()" style="margin-left: 8px"><v-icon left>fas fa-check</v-icon>OK</v-btn>
-            </v-list-item-subtitle>
-          </v-list-item>
+        <v-container>
+          <v-row justify="center">
+            <v-col>
+              <div><i>This page stores browser cookies to improve the user experience. To continue you have to confirm once
+                that you comply with NeDRex-Web setting browser cookies.</i></div>
+              <div><v-btn small outlined @click="acceptedCookies()" style="margin-left: 8px">
+                <v-icon left>fas fa-check</v-icon>
+                OK
+              </v-btn></div>
+            </v-col>
+          </v-row>
+        </v-container>
       </v-sheet>
     </v-bottom-sheet>
   </v-app>
@@ -69,7 +76,7 @@ export default {
       cookiesAccepted: false,
       colors: {},
       tabModel: 0,
-      anchors:[
+      anchors: [
         '#app',
         '#help',
         '#about',
@@ -80,14 +87,14 @@ export default {
 
   created: function () {
     this.colors = {
-      main: {bg1: '#383838', bg2:'#dedede', primary: '#35d0d4'},
+      main: {bg1: '#383838', bg2: '#dedede', primary: '#35d0d4'},
       buttons: {graphs: {active: "deep-purple accent-2", inactive: undefined}},
       tabs: {active: "#35d0d4", inactive: "white"}
     }
     this.checkAnchor();
     this.cookiesAccepted = this.$cookies.get('cookies')
-    if(!this.cookiesAccepted)
-      this.showCookieConsent =true
+    if (!this.cookiesAccepted)
+      this.showCookieConsent = true
   },
   watch: {
     '$route'() {
@@ -99,15 +106,15 @@ export default {
     getConfig: function () {
       return CONFIG;
     },
-    checkAnchor: function(){
+    checkAnchor: function () {
       let idx = this.anchors.indexOf(this.$route.hash)
-      if(idx>-1 && this.$route.path ==="/")
-        this.tabModel=idx
+      if (idx > -1 && this.$route.path === "/")
+        this.tabModel = idx
     },
-    acceptedCookies: function(){
-      this.$cookies.set('cookies',true)
+    acceptedCookies: function () {
+      this.$cookies.set('cookies', true)
       this.cookiesAccepted = true;
-      this.showCookieConsent =false;
+      this.showCookieConsent = false;
     }
   }
 }
