@@ -308,8 +308,8 @@ public class RequestController {
     public @ResponseBody
     String getLicence() {
 //       TODO while db update is not regular
-        return updateService.queryLicenseText();
-//        return updateService.getLicenceText();
+//        return updateService.queryLicenseText();
+        return updateService.getLicenceText();
     }
 
     @RequestMapping(value = "/getLayout", method = RequestMethod.GET)
