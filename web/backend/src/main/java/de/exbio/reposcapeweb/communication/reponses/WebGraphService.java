@@ -2143,6 +2143,7 @@ public class WebGraphService {
         this.historyController.importHistory();
         try {
             File cachedir = new File(wd, "users");
+            if(cachedir.listFiles() !=null){
             Arrays.stream(cachedir.listFiles()).forEach(user -> {
                 Arrays.stream(new File(user, "graphs").listFiles()).forEach(graph -> {
                     String gid = graph.getName().split("[.]")[0];
@@ -2163,6 +2164,7 @@ public class WebGraphService {
                     }
                 });
             });
+            }
         } catch (Error e) {
             log.error("Error when remapping user history:");
             e.printStackTrace();
