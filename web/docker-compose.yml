@@ -9,33 +9,36 @@ services:
       MYSQL_DATABASE: reposcape
       MYSQL_ROOT_PASSWORD: example
       MYSQL_USER: reposcaper
-      MYSQL_PASSWORD: repotrial
+      MYSQL_PASSWORD: nedrex
     volumes:
       - nedrex-db-volume:/var/lib/mysql
     cap_add:
       - SYS_NICE
   web:
-    container_name: nedrex-web-view
-    image: andimajore/nedrex_repo:web
+    container_name: nedrex-web-frontend
+    image: andimajore/nedrex_repo:web_prod
     build: frontend
     ports:
-      - "8024:8080"
+      - "8021:8080"
     restart: on-failure
-  server:
-    container_name: nedrex-web-server
-    image: andimajore/nedrex_repo:server
-    depends_on:
-      - "db"
-    build: backend
-    environment:
-       - spring_profiles_active=prod
-    volumes:
-      - nedrex-cache-volume:/etc/data/db
-      - nedrex-usr-volume:/etc/data/usr
-    ports:
-      - "8034:8090"
-    restart: on-failure
+#  server:
+#    container_name: nedrex-web-backend
+#    image: andimajore/nedrex_repo:server_prod
+#    depends_on:
+#      - "db"
+#    build: backend
+#    environment:
+#      - spring_profiles_active=arenal
+#    volumes:
+#      - nedrex-cache-volume:/etc/data/db
+#      - nedrex-usr-volume:/etc/data/usr
+#    ports:
+#      - "8022:8090"
+#    restart: on-failure
 volumes:
   nedrex-db-volume:
+    external: true
   nedrex-usr-volume:
+    external: true
   nedrex-cache-volume:
+    external: true
