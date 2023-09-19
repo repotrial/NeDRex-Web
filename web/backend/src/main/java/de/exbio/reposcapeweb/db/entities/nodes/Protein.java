@@ -11,7 +11,7 @@ import de.exbio.reposcapeweb.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.util.*;
 
 @Entity
@@ -68,6 +68,8 @@ public class Protein extends RepoTrialNode {
 
     @Column(nullable = false)
     public String primaryDomainId;
+
+    @Column(columnDefinition = "TEXT")
     public String domainIds;
     @Column(columnDefinition = "TEXT")
     public String sequence;
@@ -91,6 +93,7 @@ public class Protein extends RepoTrialNode {
         values.put("sequence", getSequence());
         values.put("synonyms", getSynonyms());
         values.put("geneName", getGeneName());
+        values.put("dataSources", getDataSources());
         values.put("primaryDomainId", getPrimaryDomainId());
         values.put("comments", getComments());
         return values;
@@ -127,6 +130,18 @@ public class Protein extends RepoTrialNode {
     @JsonSetter
     public void setDomainIds(List<String> domainIds) {
         this.domainIds = StringUtils.listToString(domainIds);
+    }
+
+    @Column(columnDefinition = "TEXT")
+    private String dataSources;
+    @JsonGetter
+    public LinkedList<String> getDataSources() {
+        return StringUtils.stringToList(dataSources);
+    }
+
+    @JsonSetter
+    public void setDataSources(List<String> dataSources) {
+        this.dataSources = StringUtils.listToString(dataSources);
     }
 
     public String getSequence() {
@@ -176,6 +191,7 @@ public class Protein extends RepoTrialNode {
         this.taxid = other.taxid;
         this.displayName = other.displayName;
         this.primaryDomainId = other.primaryDomainId;
+        this.dataSources = other.dataSources;
         this.synonyms = other.synonyms;
 
     }

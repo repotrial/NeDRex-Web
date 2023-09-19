@@ -1,7 +1,7 @@
 package de.exbio.reposcapeweb.db.statistics;
 
 
-import javax.persistence.Id;
+import jakarta.persistence.Id;
 
 public interface Degrees {
 //    @Id

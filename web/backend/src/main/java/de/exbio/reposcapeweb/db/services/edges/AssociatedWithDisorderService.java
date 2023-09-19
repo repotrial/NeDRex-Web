@@ -41,7 +41,7 @@ public class AssociatedWithDisorderService {
 
     private final DataSource dataSource;
     private final String clearQuery = "DELETE FROM protein_associated_with_disorder";
-    private final String generationQuery = "INSERT IGNORE INTO protein_associated_with_disorder (id_1 , id_2, score,asserted_by) SELECT protein_encoded_by.id_1, gene_associated_with_disorder.id_2,gene_associated_with_disorder.score, gene_associated_with_disorder.asserted_by " +
+    private final String generationQuery = "INSERT IGNORE INTO protein_associated_with_disorder (id_1 , id_2, score, data_sources) SELECT protein_encoded_by.id_1, gene_associated_with_disorder.id_2,gene_associated_with_disorder.score, gene_associated_with_disorder.data_sources " +
             "FROM protein_encoded_by INNER JOIN gene_associated_with_disorder " +
             "ON protein_encoded_by.id_2=gene_associated_with_disorder.id_1;";
     private PreparedStatement clearPs = null;

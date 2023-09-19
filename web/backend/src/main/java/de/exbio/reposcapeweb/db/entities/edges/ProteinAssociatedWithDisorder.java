@@ -11,15 +11,9 @@ import de.exbio.reposcapeweb.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.persistence.EmbeddedId;
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import jakarta.persistence.*;
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 
 /**
@@ -56,7 +50,6 @@ public class ProteinAssociatedWithDisorder extends RepoTrialEdge implements Seri
 
     private Float score;
 
-    private String assertedBy;
 
 
     @Transient
@@ -106,7 +99,7 @@ public class ProteinAssociatedWithDisorder extends RepoTrialEdge implements Seri
         values.put("node1", RepoTrialUtils.adjustLabels(nodeOne));
         values.put("node2",nodeTwo);
         values.put("score",score);
-        values.put("assertedBy",getAssertedBy());
+        values.put("dataSources",dataSources);
         values.put("type",getType());
         values.put("id",id.getId1()+"-"+id.getId2());
         return values;
@@ -153,6 +146,18 @@ public class ProteinAssociatedWithDisorder extends RepoTrialEdge implements Seri
         return "ProteinAssociatedWithDisorder";
     }
 
+    @Column(columnDefinition = "TEXT")
+    private String dataSources;
+    @JsonGetter
+    public LinkedList<String> getDataSources() {
+        return StringUtils.stringToList(dataSources);
+    }
+
+    @JsonSetter
+    public void setDataSources(List<String> dataSources) {
+        this.dataSources = StringUtils.listToString(dataSources);
+    }
+
     public Float getScore() {
         return score;
     }
@@ -161,19 +166,12 @@ public class ProteinAssociatedWithDisorder extends RepoTrialEdge implements Seri
     public void setType(String type) {
     }
 
-    public List<String> getAssertedBy() {
-        return StringUtils.stringToList(assertedBy);
-    }
-
-    public void setAssertedBy(List<String> assertedBy) {
-        this.assertedBy = StringUtils.listToString(assertedBy);
-    }
 
     public void setValues(ProteinAssociatedWithDisorder other) {
         this.sourceDomainId = other.sourceDomainId;
         this.targetDomainId = other.targetDomainId;
-        this.assertedBy = other.assertedBy;
         this.score = other.score;
+        this.dataSources = other.dataSources;
     }
 
     @Override

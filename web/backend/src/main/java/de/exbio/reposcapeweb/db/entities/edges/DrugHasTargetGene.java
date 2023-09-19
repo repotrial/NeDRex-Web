@@ -10,10 +10,7 @@ import de.exbio.reposcapeweb.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.persistence.EmbeddedId;
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import jakarta.persistence.*;
 import java.io.Serializable;
 import java.util.*;
 
@@ -128,6 +125,7 @@ public class DrugHasTargetGene extends RepoTrialEdge implements Serializable {
         values.put("node2",nodeTwo);
         values.put("databases",getDatabases());
         values.put("actions",getActions());
+        values.put("dataSources", getDataSources());
         values.put("tags",getTags());
         values.put("type",getType());
         values.put("id",id.getId1()+"-"+id.getId2());
@@ -190,6 +188,7 @@ public class DrugHasTargetGene extends RepoTrialEdge implements Serializable {
         this.actions = other.actions;
         this.sourceDatabases = other.sourceDatabases;
         this.tags = other.tags;
+        this.dataSources = other.dataSources;
     }
 
     public void addActions(Collection<String> actions){
@@ -232,6 +231,18 @@ public class DrugHasTargetGene extends RepoTrialEdge implements Serializable {
             }
         }
         setDatabases(all);
+    }
+
+    @Column(columnDefinition = "TEXT")
+    private String dataSources;
+    @JsonGetter
+    public LinkedList<String> getDataSources() {
+        return StringUtils.stringToList(dataSources);
+    }
+
+    @JsonSetter
+    public void setDataSources(List<String> dataSources) {
+        this.dataSources = StringUtils.listToString(dataSources);
     }
 
     @Override

@@ -10,7 +10,7 @@ import de.exbio.reposcapeweb.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.util.*;
 
 @Entity
@@ -64,6 +64,7 @@ public class Pathway extends RepoTrialNode {
     private String primaryDomainId;
     @Column(nullable = false)
     private String displayName;
+    @Column(columnDefinition = "TEXT")
     private String domainIds;
     private Integer taxid;
 
@@ -81,6 +82,7 @@ public class Pathway extends RepoTrialNode {
         values.put("domainIds", getDomainIds());
         values.put("taxid",getTaxid());
         values.put("primaryDomainId", getPrimaryDomainId());
+        values.put("dataSources", getDataSources());
         values.put("species", getSpecies());
         return values;
     }
@@ -140,6 +142,18 @@ public class Pathway extends RepoTrialNode {
     public void setType(String type) {
     }
 
+    @Column(columnDefinition = "TEXT")
+    private String dataSources;
+    @JsonGetter
+    public LinkedList<String> getDataSources() {
+        return StringUtils.stringToList(dataSources);
+    }
+
+    @JsonSetter
+    public void setDataSources(List<String> dataSources) {
+        this.dataSources = StringUtils.listToString(dataSources);
+    }
+
     public Integer getTaxid() {
         return taxid;
     }
@@ -152,6 +166,7 @@ public class Pathway extends RepoTrialNode {
         this.domainIds = other.domainIds;
         this.primaryDomainId = other.primaryDomainId;
         this.displayName = other.displayName;
+        this.dataSources = other.dataSources;
 
     }
 

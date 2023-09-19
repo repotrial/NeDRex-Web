@@ -10,7 +10,7 @@ import de.exbio.reposcapeweb.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.io.Serializable;
 import java.util.*;
 
@@ -42,7 +42,6 @@ public class GeneInteractsWithGene extends RepoTrialEdge implements Serializable
     private String nodeTwo;
 
     private String evidenceTypes;
-    private String assertedBy;
 
     @Column(columnDefinition = "TEXT")
     private String developmentStages;
@@ -116,10 +115,10 @@ public class GeneInteractsWithGene extends RepoTrialEdge implements Serializable
         values.put("node1", nodeOne);
         values.put("node2", nodeTwo);
         values.put("type", getType());
-        values.put("assertedBy", getAssertedBy());
         values.put("evidenceTypes", getEvidenceTypes());
         values.put("id", id.getId1() + "-" + id.getId2());
         values.put("methods", getMethods());
+        values.put("dataSources",getDataSources());
         values.put("developmentStages", getDevelopmentStages());
         values.put("tissues", getTissues());
         values.put("subcellularLocations", getSubcellularLocations());
@@ -143,13 +142,16 @@ public class GeneInteractsWithGene extends RepoTrialEdge implements Serializable
         return values;
     }
 
-
-    public List<String> getAssertedBy() {
-        return StringUtils.stringToList(assertedBy);
+    @Column(columnDefinition = "TEXT")
+    private String dataSources;
+    @JsonGetter
+    public LinkedList<String> getDataSources() {
+        return StringUtils.stringToList(dataSources);
     }
 
-    public void setAssertedBy(List<String> databases) {
-        this.assertedBy = StringUtils.listToString(databases);
+    @JsonSetter
+    public void setDataSources(List<String> dataSources) {
+        this.dataSources = StringUtils.listToString(dataSources);
     }
 
     public List<String> getMethods() {
@@ -244,6 +246,7 @@ public class GeneInteractsWithGene extends RepoTrialEdge implements Serializable
         this.tissues = other.tissues;
         this.subcellularLocations = other.subcellularLocations;
         this.evidenceTypes = other.evidenceTypes;
+        this.dataSources = other.dataSources;
     }
 
     @Override
@@ -282,18 +285,18 @@ public class GeneInteractsWithGene extends RepoTrialEdge implements Serializable
         setEvidenceTypes(all);
     }
 
-    public void addAssertedBy(List<String> databases) {
+    public void addDataSources(List<String> databases) {
         List<String> all;
-        if (this.assertedBy == null) {
+        if (this.dataSources == null) {
             all = new LinkedList<>(databases);
         } else {
-            all = getAssertedBy();
+            all = getDataSources();
             for (String t : databases) {
                 if (!all.contains(t))
                     all.add(t);
             }
         }
-        setAssertedBy(all);
+        setDataSources(all);
     }
 
     public void addMethod(List<String> methods) {

@@ -62,6 +62,15 @@
           "label": "Synonyms"
         },
         {
+          "name": "dataSources",
+          "source": true,
+          "list": true,
+          "detail": true,
+          "id": false,
+          "type": "array",
+          "label": "DataSources"
+        },
+        {
           "name": "description",
           "source": true,
           "list": false,
@@ -161,22 +170,6 @@
           "distinct": false
         },
         {
-          "name": "iupacName",
-          "source": true,
-          "list": false,
-          "detail": true,
-          "id": false,
-          "label": "IUPAC-Name"
-        },
-        {
-          "name": "molecularFormula",
-          "source": true,
-          "list": false,
-          "detail": true,
-          "id": false,
-          "label": "Formula"
-        },
-        {
           "name": "casNumber",
           "source": true,
           "list": true,
@@ -185,37 +178,13 @@
           "label": "CAS-Number"
         },
         {
-          "name": "primaryDataset",
+          "name": "dataSources",
           "source": true,
-          "list": false,
-          "detail": true,
-          "id": false,
-          "label": "Primary Dataset"
-        },
-        {
-          "name": "allDatasets",
-          "source": true,
-          "list": false,
+          "list": true,
           "detail": true,
           "id": false,
           "type": "array",
-          "label": "Datasets"
-        },
-        {
-          "name": "inchi",
-          "source": true,
-          "list": false,
-          "detail": true,
-          "id": false,
-          "label": "InChI"
-        },
-        {
-          "name": "smiles",
-          "source": true,
-          "list": false,
-          "detail": true,
-          "id": false,
-          "label": "SMILES"
+          "label": "DataSources"
         },
         {
           "name": "indication",
@@ -224,15 +193,6 @@
           "detail": true,
           "id": false,
           "label": "Indication"
-        },
-        {
-          "name": "sequence",
-          "source": true,
-          "list": false,
-          "detail": true,
-          "id": false,
-          "type": "array",
-          "label": "Sequences"
         },
         {
           "name": "synonyms",
@@ -374,6 +334,15 @@
           "label": "Synonyms"
         },
         {
+          "name": "dataSources",
+          "source": true,
+          "list": true,
+          "detail": true,
+          "id": false,
+          "type": "array",
+          "label": "DataSources"
+        },
+        {
           "name": "description",
           "source": true,
           "list": false,
@@ -451,6 +420,15 @@
           "id": true,
           "type": "array",
           "label": "SourceIDs"
+        },
+        {
+          "name": "dataSources",
+          "source": true,
+          "list": true,
+          "detail": true,
+          "id": false,
+          "type": "array",
+          "label": "DataSources"
         },
         {
           "name": "species",
@@ -545,6 +523,15 @@
           "detail": true,
           "id": false,
           "label": "Gene"
+        },
+        {
+          "name": "dataSources",
+          "source": true,
+          "list": true,
+          "detail": true,
+          "id": false,
+          "type": "array",
+          "label": "DataSources"
         },
         {
           "name": "taxid",
@@ -696,14 +683,13 @@
           "distinct": false
         },
         {
-          "name": "databases",
+          "name": "dataSources",
           "source": true,
-          "list": false,
+          "list": true,
           "detail": true,
           "id": false,
           "type": "array",
-          "label": "Databases",
-          "distinct": false
+          "label": "DataSources"
         },
         {
           "name": "tags",
@@ -822,13 +808,13 @@
           "distinct": false
         },
         {
-          "name": "databases",
-          "list": false,
+          "name": "dataSources",
+          "source": true,
+          "list": true,
           "detail": true,
           "id": false,
           "type": "array",
-          "label": "Databases",
-          "distinct": false
+          "label": "DataSources"
         },
         {
           "name": "type",
@@ -859,7 +845,6 @@
     {
       "id": 2,
       "name": "protein_interacts_with_protein",
-      "paginatedName": "ppi_paginated",
       "label": "ProteinInteractsWithProtein",
       "original": true,
       "directed": false,
@@ -954,16 +939,6 @@
           "distinct": true
         },
         {
-          "name": "assertedBy",
-          "source": true,
-          "list": true,
-          "detail": true,
-          "id": false,
-          "type": "array",
-          "label": "AssertedBy",
-          "distinct": true
-        },
-        {
           "name": "developmentStages",
           "source": true,
           "list": false,
@@ -1021,6 +996,15 @@
           "type": "array",
           "label": "Methods",
           "distinct": false
+        },
+        {
+          "name": "dataSources",
+          "source": true,
+          "list": true,
+          "detail": true,
+          "id": false,
+          "type": "array",
+          "label": "DataSources"
         },
         {
           "name": "created",
@@ -1127,6 +1111,15 @@
           "distinct": false
         },
         {
+          "name": "dataSources",
+          "source": true,
+          "list": true,
+          "detail": true,
+          "id": false,
+          "type": "array",
+          "label": "DataSources"
+        },
+        {
           "name": "created",
           "source": true,
           "list": false,
@@ -1229,6 +1222,15 @@
           "id": false,
           "label": "Type",
           "distinct": false
+        },
+        {
+          "name": "dataSources",
+          "source": true,
+          "list": true,
+          "detail": true,
+          "id": false,
+          "type": "array",
+          "label": "DataSources"
         },
         {
           "name": "created",
@@ -1335,13 +1337,13 @@
           "distinct": false
         },
         {
-          "name": "assertedBy",
+          "name": "dataSources",
+          "source": true,
           "list": true,
           "detail": true,
           "id": false,
           "type": "array",
-          "label": "AssertedBy",
-          "distinct": true
+          "label": "DataSources"
         },
         {
           "name": "created",
@@ -1448,15 +1450,6 @@
           "distinct": true
         },
         {
-          "name": "assertedBy",
-          "list": true,
-          "detail": true,
-          "id": false,
-          "type": "array",
-          "label": "AssertedBy",
-          "distinct": true
-        },
-        {
           "name": "developmentStages",
           "list": false,
           "detail": true,
@@ -1510,6 +1503,15 @@
           "type": "array",
           "label": "Methods",
           "distinct": false
+        },
+        {
+          "name": "dataSources",
+          "source": true,
+          "list": true,
+          "detail": true,
+          "id": false,
+          "type": "array",
+          "label": "DataSources"
         },
         {
           "name": "created",
@@ -1624,16 +1626,6 @@
           "distinct": false
         },
         {
-          "name": "assertedBy",
-          "source": true,
-          "list": true,
-          "detail": true,
-          "id": false,
-          "type": "array",
-          "label": "assertedBy",
-          "distinct": true
-        },
-        {
           "name": "omimFlags",
           "source": true,
           "list": false,
@@ -1644,14 +1636,13 @@
           "distinct": true
         },
         {
-          "name": "omimMappingCode",
+          "name": "dataSources",
           "source": true,
-          "list": false,
+          "list": true,
           "detail": true,
           "id": false,
-          "type": "numeric",
-          "label": "OMIM-MappingCode",
-          "distinct": true
+          "type": "array",
+          "label": "DataSources"
         },
         {
           "name": "created",
@@ -1799,6 +1790,15 @@
           "distinct": false
         },
         {
+          "name": "dataSources",
+          "source": true,
+          "list": true,
+          "detail": true,
+          "id": false,
+          "type": "array",
+          "label": "DataSources"
+        },
+        {
           "name": "created",
           "source": true,
           "list": false,
@@ -1903,6 +1903,15 @@
           "distinct": false
         },
         {
+          "name": "dataSources",
+          "source": true,
+          "list": true,
+          "detail": true,
+          "id": false,
+          "type": "array",
+          "label": "DataSources"
+        },
+        {
           "name": "created",
           "source": true,
           "list": false,
@@ -1998,16 +2007,6 @@
           "distinct": false
         },
         {
-          "name": "assertedBy",
-          "source": true,
-          "list": true,
-          "detail": true,
-          "id": false,
-          "type": "array",
-          "label": "assertedBy",
-          "distinct": true
-        },
-        {
           "name": "type",
           "source": true,
           "list": false,
@@ -2015,6 +2014,15 @@
           "id": false,
           "label": "Type",
           "distinct": false
+        },
+        {
+          "name": "dataSources",
+          "source": true,
+          "list": true,
+          "detail": true,
+          "id": false,
+          "type": "array",
+          "label": "DataSources"
         },
         {
           "name": "created",
@@ -2112,16 +2120,6 @@
           "distinct": false
         },
         {
-          "name": "assertedBy",
-          "source": true,
-          "list": true,
-          "detail": true,
-          "id": false,
-          "type": "array",
-          "label": "assertedBy",
-          "distinct": true
-        },
-        {
           "name": "type",
           "source": true,
           "list": false,
@@ -2129,6 +2127,15 @@
           "id": false,
           "label": "Type",
           "distinct": false
+        },
+        {
+          "name": "dataSources",
+          "source": true,
+          "list": true,
+          "detail": true,
+          "id": false,
+          "type": "array",
+          "label": "DataSources"
         },
         {
           "name": "created",

@@ -10,7 +10,7 @@ import de.exbio.reposcapeweb.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.util.*;
 
 @Entity
@@ -64,6 +64,7 @@ public class Gene extends RepoTrialNode {
 
     @Column(nullable = false)
     private String primaryDomainId;
+    @Column(columnDefinition = "TEXT")
     private String domainIds;
     @Column(nullable = false)
     private String displayName;
@@ -89,6 +90,7 @@ public class Gene extends RepoTrialNode {
         values.put("geneType", getGeneType());
         values.put("symbols", getSymbols());
         values.put("approvedSymbol", getApprovedSymbol());
+        values.put("dataSources", getDataSources());
         values.put("description", getDescription());
         values.put("chromosome", getChromosome());
         values.put("mapLocation", getMapLocation());
@@ -127,6 +129,18 @@ public class Gene extends RepoTrialNode {
     @JsonSetter
     public void setDomainIds(List<String> domainIds) {
         this.domainIds = StringUtils.listToString(domainIds);
+    }
+
+    @Column(columnDefinition = "TEXT")
+    private String dataSources;
+    @JsonGetter
+    public LinkedList<String> getDataSources() {
+        return StringUtils.stringToList(dataSources);
+    }
+
+    @JsonSetter
+    public void setDataSources(List<String> dataSources) {
+        this.dataSources = StringUtils.listToString(dataSources);
     }
 
     public String getDisplayName() {
@@ -189,6 +203,7 @@ public class Gene extends RepoTrialNode {
         this.chromosome = other.chromosome;
         this.description = other.description;
         this.displayName = other.displayName;
+        this.dataSources = other.dataSources;
         this.geneType = other.geneType;
         this.mapLocation = other.mapLocation;
         this.primaryDomainId = other.primaryDomainId;

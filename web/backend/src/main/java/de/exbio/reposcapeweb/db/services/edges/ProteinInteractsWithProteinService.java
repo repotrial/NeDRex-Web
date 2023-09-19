@@ -4,6 +4,8 @@ import de.exbio.reposcapeweb.db.entities.edges.GeneInteractsWithGene;
 import de.exbio.reposcapeweb.db.entities.edges.ProteinInteractsWithProtein;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
 import de.exbio.reposcapeweb.db.repositories.edges.GeneInteractsWithGeneRepository;
+import de.exbio.reposcapeweb.db.repositories.edges.GeneInteractsWithGenePagingRepository;
+import de.exbio.reposcapeweb.db.repositories.edges.ProteinInteractsWithProteinPagingRepository;
 import de.exbio.reposcapeweb.db.repositories.edges.ProteinInteractsWithProteinRepository;
 import de.exbio.reposcapeweb.db.services.nodes.GeneService;
 import de.exbio.reposcapeweb.db.services.nodes.ProteinService;
@@ -30,6 +32,10 @@ public class ProteinInteractsWithProteinService {
     private final Logger log = LoggerFactory.getLogger(ProteinInteractsWithProteinService.class);
 
     private final ProteinInteractsWithProteinRepository proteinInteractsWithProteinRepository;
+
+    private final ProteinInteractsWithProteinPagingRepository proteinInteractsWithProteinPagingRepository;
+
+    private final GeneInteractsWithGenePagingRepository geneInteractsWithGenePagingRepository;
     private final GeneInteractsWithGeneRepository geneInteractsWithGeneRepository;
     private final ProteinEncodedByService proteinEncodedByService;
     private final Environment env;
@@ -50,9 +56,11 @@ public class ProteinInteractsWithProteinService {
     private PreparedStatement generationPs = null;
 
     @Autowired
-    public ProteinInteractsWithProteinService(Environment env, ProteinEncodedByService proteinEncodedByService, ProteinService proteinService, ProteinInteractsWithProteinRepository proteinInteractsWithProteinRepository, GeneInteractsWithGeneRepository geneInteractsWithGeneRepository, DataSource dataSource, GeneService geneService) {
+    public ProteinInteractsWithProteinService(Environment env, ProteinEncodedByService proteinEncodedByService, ProteinService proteinService, ProteinInteractsWithProteinRepository proteinInteractsWithProteinRepository, ProteinInteractsWithProteinPagingRepository proteinInteractsWithProteinPagingRepository, GeneInteractsWithGeneRepository geneInteractsWithGeneRepository, GeneInteractsWithGenePagingRepository geneInteractsWithGenePagingRepository, DataSource dataSource, GeneService geneService) {
         this.proteinInteractsWithProteinRepository = proteinInteractsWithProteinRepository;
+        this.proteinInteractsWithProteinPagingRepository = proteinInteractsWithProteinPagingRepository;
         this.geneInteractsWithGeneRepository = geneInteractsWithGeneRepository;
+        this.geneInteractsWithGenePagingRepository = geneInteractsWithGenePagingRepository;
         this.proteinService = proteinService;
         this.dataSource = dataSource;
         this.geneService = geneService;
@@ -132,7 +140,7 @@ public class ProteinInteractsWithProteinService {
         int pageSize = 100_000;
         long total = proteinInteractsWithProteinRepository.count();
         for (long entry = 0; entry < total; entry += pageSize)
-            proteinInteractsWithProteinRepository.findAll(PageRequest.of((int) (entry / pageSize), pageSize)).forEach(ppi -> {
+            proteinInteractsWithProteinPagingRepository.findAll(PageRequest.of((int) (entry / pageSize), pageSize)).forEach(ppi -> {
                 try {
                     int gid1 = proteinGeneMap.get(ppi.getPrimaryIds().getId1());
                     int gid2 = proteinGeneMap.get(ppi.getPrimaryIds().getId2());
@@ -155,7 +163,7 @@ public class ProteinInteractsWithProteinService {
                     }
                     ggi.addEvidenceTypes(ppi.getEvidenceTypes());
 //                ggi.addDatabases(ppi.getDatabases());
-                    ggi.addAssertedBy(ppi.getAssertedBy());
+                    ggi.addDataSources(ppi.getDataSources());
                     ggi.addMethod(ppi.getMethods());
                     ggi.addJointTissues(ppi.getJointTissues());
                     ggi.addSubcellularLocations(ppi.getSubcellularLocations());
@@ -178,7 +186,7 @@ public class ProteinInteractsWithProteinService {
     }
 
     public Iterable<ProteinInteractsWithProtein> findAllProteins(int page, int count) {
-        return proteinInteractsWithProteinRepository.findAll(PageRequest.of(page, count));
+        return proteinInteractsWithProteinPagingRepository.findAll(PageRequest.of(page, count));
     }
 
     public Iterable<GeneInteractsWithGene> findAllGenes() {
@@ -190,12 +198,12 @@ public class ProteinInteractsWithProteinService {
         long total = proteinInteractsWithProteinRepository.count();
         proteins.clear();
         for (long entry = 0; entry < total; entry += pageSize)
-            proteinInteractsWithProteinRepository.findAll(PageRequest.of((int) (entry / pageSize), pageSize)).
+            proteinInteractsWithProteinPagingRepository.findAll(PageRequest.of((int) (entry / pageSize), pageSize)).
                     forEach(edge -> importProteinEdge(edge.getPrimaryIds(), edge.getEvidenceTypes().contains("exp"), edge.getTissues()));
         total = geneInteractsWithGeneRepository.count();
         genes.clear();
         for (long entry = 0; entry < total; entry += pageSize)
-            geneInteractsWithGeneRepository.findAll(PageRequest.of((int) (entry / pageSize), pageSize)).forEach(edge -> importGeneEdge(edge.getPrimaryIds(), edge.getEvidenceTypes().contains("exp"), edge.getTissues()));
+            geneInteractsWithGenePagingRepository.findAll(PageRequest.of((int) (entry / pageSize), pageSize)).forEach(edge -> importGeneEdge(edge.getPrimaryIds(), edge.getEvidenceTypes().contains("exp"), edge.getTissues()));
     }
 
     public int addTissue(String tissue) {

@@ -187,7 +187,7 @@ public class Domino implements Algorithm {
         wd.mkdir();
         Arrays.stream(utils.dataDir.listFiles()).filter(file -> file.getName().endsWith(".sif")).forEach(sif -> {
             try {
-                ProcessUtils.executeProcessWait(getExecutionEnvironment(new String[]{"slicer", "-n", sif.getAbsolutePath(), "-o", getIndexFile(sif).getAbsolutePath()}), false);
+                ProcessUtils.executeProcessWait(getExecutionEnvironment(new String[]{env.getProperty("path.tool.python3-7.bin")+"/slicer", "-n", sif.getAbsolutePath(), "-o", getIndexFile(sif).getAbsolutePath()}), false);
             } catch (IOException | InterruptedException e) {
                 e.printStackTrace();
             }

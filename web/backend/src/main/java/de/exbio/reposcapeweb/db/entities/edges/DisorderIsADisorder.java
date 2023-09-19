@@ -6,13 +6,11 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import de.exbio.reposcapeweb.db.entities.RepoTrialEdge;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
 import de.exbio.reposcapeweb.utils.Pair;
+import de.exbio.reposcapeweb.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.persistence.EmbeddedId;
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import jakarta.persistence.*;
 import java.io.Serializable;
 import java.util.*;
 
@@ -98,6 +96,7 @@ public class DisorderIsADisorder extends RepoTrialEdge implements Serializable {
         values.put("targetId",id.getId2());
         values.put("node1",nodeOne);
         values.put("node2",nodeTwo);
+        values.put("dataSources",getDataSources());
         values.put("type",getType());
         values.put("id",id.getId1()+"-"+id.getId2());
         return values;
@@ -147,10 +146,21 @@ public class DisorderIsADisorder extends RepoTrialEdge implements Serializable {
     public void setType(String type) {
     }
 
+    @Column(columnDefinition = "TEXT")
+    private String dataSources;
+    @JsonGetter
+    public LinkedList<String> getDataSources() {
+        return StringUtils.stringToList(dataSources);
+    }
 
+    @JsonSetter
+    public void setDataSources(List<String> dataSources) {
+        this.dataSources = StringUtils.listToString(dataSources);
+    }
     public void setValues(DisorderIsADisorder other) {
         this.sourceDomainId = other.sourceDomainId;
         this.targetDomainId = other.targetDomainId;
+        this.dataSources = other.dataSources;
     }
 
     @Override

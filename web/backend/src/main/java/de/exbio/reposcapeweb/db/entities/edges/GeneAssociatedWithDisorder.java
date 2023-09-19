@@ -10,15 +10,9 @@ import de.exbio.reposcapeweb.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.persistence.EmbeddedId;
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import jakarta.persistence.*;
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 /**
  * Entity class for a transitive edge "GeneAssociatedWithDisorder" (gene_associated_with_disorder in db).
@@ -94,11 +88,8 @@ public class GeneAssociatedWithDisorder extends RepoTrialEdge implements Seriali
 
     private Float score;
 
-    private String assertedBy;
-
     private String omimFlags;
 
-    private Integer omimMappingCode;
 
 
     @Override
@@ -112,9 +103,8 @@ public class GeneAssociatedWithDisorder extends RepoTrialEdge implements Seriali
         values.put("node2",nodeTwo);
         values.put("type",getType());
         values.put("score",getScore());
-        values.put("assertedBy",getAssertedBy());
+        values.put("dataSources", getDataSources());
         values.put("omimFlags",getOmimFlags());
-        values.put("omimMappingCode", getOmimMappingCode());
         values.put("id",id.getId1()+"-"+id.getId2());
         return values;
     }
@@ -163,23 +153,29 @@ public class GeneAssociatedWithDisorder extends RepoTrialEdge implements Seriali
         return score;
     }
 
+    @Column(columnDefinition = "TEXT")
+    private String dataSources;
+    @JsonGetter
+    public LinkedList<String> getDataSources() {
+        return StringUtils.stringToList(dataSources);
+    }
+
+    @JsonSetter
+    public void setDataSources(List<String> dataSources) {
+        this.dataSources = StringUtils.listToString(dataSources);
+    }
+
     @JsonSetter
     public void setType(String type) {
     }
 
-    public List<String> getAssertedBy() {
-        return StringUtils.stringToList(assertedBy);
-    }
 
-    public void setAssertedBy(List<String> assertedBy) {
-        this.assertedBy = StringUtils.listToString(assertedBy);
-    }
 
     public void setValues(GeneAssociatedWithDisorder other) {
         this.sourceDomainId = other.sourceDomainId;
         this.targetDomainId = other.targetDomainId;
-        this.assertedBy = other.assertedBy;
         this.score = other.score;
+        this.dataSources = other.dataSources;
     }
 
     public List<String> getOmimFlags() {
@@ -190,13 +186,6 @@ public class GeneAssociatedWithDisorder extends RepoTrialEdge implements Seriali
         this.omimFlags = StringUtils.listToString(omimFlags);
     }
 
-    public Integer getOmimMappingCode() {
-        return omimMappingCode;
-    }
-
-    public void setOmimMappingCode(Integer omimMappingCode) {
-        this.omimMappingCode = omimMappingCode;
-    }
 
     @Override
     public PairId getPrimaryIds() {

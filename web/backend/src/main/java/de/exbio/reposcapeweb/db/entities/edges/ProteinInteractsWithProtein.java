@@ -11,10 +11,11 @@ import de.exbio.reposcapeweb.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 
 
@@ -126,6 +127,7 @@ public class ProteinInteractsWithProtein extends RepoTrialEdge implements Serial
         values.put("subcellularLocations",getSubcellularLocations());
         values.put("jointTissues",getJointTissues());
         values.put("brainTissues",getBrainTissues());
+        values.put("dataSources", getDataSources());
         return values;
     }
 
@@ -149,6 +151,19 @@ public class ProteinInteractsWithProtein extends RepoTrialEdge implements Serial
         String tmp = memberOne;
         memberOne=memberTwo;
         memberTwo=tmp;
+    }
+
+
+    @Column(columnDefinition = "TEXT")
+    private String dataSources;
+    @JsonGetter
+    public LinkedList<String> getDataSources() {
+        return StringUtils.stringToList(dataSources);
+    }
+
+    @JsonSetter
+    public void setDataSources(List<String> dataSources) {
+        this.dataSources = StringUtils.listToString(dataSources);
     }
 
 
@@ -253,6 +268,7 @@ public class ProteinInteractsWithProtein extends RepoTrialEdge implements Serial
         this.jointTissues = other.jointTissues;
         this.tissues = other.tissues;
         this.subcellularLocations = other.subcellularLocations;
+        this.dataSources = other.dataSources;
     }
 
     @Override

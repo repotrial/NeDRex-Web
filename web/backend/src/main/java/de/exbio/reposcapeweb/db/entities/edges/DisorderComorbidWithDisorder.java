@@ -6,14 +6,13 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
 import de.exbio.reposcapeweb.db.entities.RepoTrialEdge;
 import de.exbio.reposcapeweb.utils.Pair;
+import de.exbio.reposcapeweb.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 
 
 /**
@@ -133,6 +132,7 @@ public class DisorderComorbidWithDisorder extends RepoTrialEdge implements Seria
         this.phiCor = other.phiCor;
         this.rr12 = other.rr12;
         this.rr21 = other.rr21;
+        this.dataSources = other.dataSources;
         this.rrGeoMean = other.rrGeoMean;
     }
 
@@ -148,6 +148,7 @@ public class DisorderComorbidWithDisorder extends RepoTrialEdge implements Seria
         values.put("idTwo", id.getId2());
         values.put("node1", nodeOne);
         values.put("node2", nodeTwo);
+        values.put("dataSources", getDataSources());
         values.put("rrGeoMean", getRrGeoMean());
         values.put("phiCor", getPhiCor());
         values.put("id", id.getId1() + "-" + id.getId2());
@@ -168,7 +169,17 @@ public class DisorderComorbidWithDisorder extends RepoTrialEdge implements Seria
             name2labelMap.put(attributeLabels[i], allAttributes[i]);
         }
     }
+    @Column(columnDefinition = "TEXT")
+    private String dataSources;
+    @JsonGetter
+    public LinkedList<String> getDataSources() {
+        return StringUtils.stringToList(dataSources);
+    }
 
+    @JsonSetter
+    public void setDataSources(List<String> dataSources) {
+        this.dataSources = StringUtils.listToString(dataSources);
+    }
     @Override
     public HashMap<String, Object> getAsMap(HashSet<String> attributes) {
         HashMap<String, Object> values = new HashMap<>();

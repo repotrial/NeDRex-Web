@@ -10,7 +10,7 @@ import de.exbio.reposcapeweb.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.util.*;
 
 @Entity
@@ -69,6 +69,9 @@ public class Disorder extends RepoTrialNode {
     @Column(columnDefinition = "TEXT")
     private String synonyms;
     private String icd10;
+
+
+
     @Column(columnDefinition = "TEXT")
     private String description;
 
@@ -99,6 +102,17 @@ public class Disorder extends RepoTrialNode {
         //TODO cache lists
 
         this.domainIds = StringUtils.listToString(domainIds);
+    }
+    @Column(columnDefinition = "TEXT")
+    private String dataSources;
+    @JsonGetter
+    public LinkedList<String> getDataSources() {
+        return StringUtils.stringToList(dataSources);
+    }
+
+    @JsonSetter
+    public void setDataSources(List<String> dataSources) {
+        this.dataSources = StringUtils.listToString(dataSources);
     }
 
     public String getDisplayName() {
@@ -151,6 +165,7 @@ public class Disorder extends RepoTrialNode {
         this.domainIds = other.domainIds;
         this.description = other.description;
         this.displayName = other.displayName;
+        this.dataSources = other.dataSources;
         this.primaryDomainId = other.primaryDomainId;
     }
 
@@ -190,6 +205,7 @@ public class Disorder extends RepoTrialNode {
         values.put("domainIds",getDomainIds());
         values.put("primaryDomainId",getPrimaryDomainId());
         values.put("description",getDescription());
+        values.put("dataSources", getDataSources());
         values.put("icd10",getIcd10());
         return values;
     }

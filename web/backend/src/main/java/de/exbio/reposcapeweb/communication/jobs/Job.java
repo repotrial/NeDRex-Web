@@ -4,7 +4,7 @@ package de.exbio.reposcapeweb.communication.jobs;
 import de.exbio.reposcapeweb.tools.ToolService;
 import de.exbio.reposcapeweb.utils.StringUtils;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;

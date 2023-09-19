@@ -8,7 +8,7 @@ import de.exbio.reposcapeweb.communication.reponses.WebGraphInfo;
 import de.exbio.reposcapeweb.tools.ToolService;
 import de.exbio.reposcapeweb.utils.StringUtils;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;

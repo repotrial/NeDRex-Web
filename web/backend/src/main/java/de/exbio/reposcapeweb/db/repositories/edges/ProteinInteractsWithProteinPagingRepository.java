@@ -2,7 +2,6 @@ package de.exbio.reposcapeweb.db.repositories.edges;
 
 import de.exbio.reposcapeweb.db.entities.edges.ProteinInteractsWithProtein;
 import de.exbio.reposcapeweb.db.entities.ids.PairId;
-import jakarta.transaction.Transactional;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Repository;
@@ -12,6 +11,6 @@ import java.util.List;
 
 
 @Repository
-public interface ProteinInteractsWithProteinRepository extends CrudRepository<ProteinInteractsWithProtein, PairId> {
+public interface ProteinInteractsWithProteinPagingRepository extends PagingAndSortingRepository<ProteinInteractsWithProtein, PairId> {
     List<ProteinInteractsWithProtein> findProteinInteractsWithProteinsByIdIn(Collection<PairId> list);
 }

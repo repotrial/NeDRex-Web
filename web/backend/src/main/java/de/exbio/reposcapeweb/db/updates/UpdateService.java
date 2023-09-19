@@ -734,8 +734,10 @@ public class UpdateService {
             while ((line = br.readLine()) != null) {
                 char startC = line.charAt(0);
                 if (startC == '>' | startC == '<') {
-                    int start = line.charAt(2) == '[' ? 3 : 2;
-                    T d = objectMapper.readValue(line.substring(start), valueType);
+//                    int start = line.charAt(2) == '[' ? 3 : 2;
+                    System.out.println(line);
+                    System.out.println(line.substring(2));
+                    T d = objectMapper.readValue(line.substring(2), valueType);
                     if (startC == '<') {
                         dels.put(d.getUniqueId(), d);
                     } else {
@@ -907,8 +909,6 @@ public class UpdateService {
             BufferedReader br = ReaderUtils.getBasicReader(updateFile);
             String line = "";
             while ((line = br.readLine()) != null) {
-                if (line.charAt(0) == '[')
-                    line = line.substring(1);
                 try {
                     T d = objectMapper.readValue(line, valueType);
                     inserts.put(d.getUniqueId(), d);
@@ -916,8 +916,6 @@ public class UpdateService {
                     e.printStackTrace();
                     log.error("Malformed input line in " + updateFile.getName() + ": " + line);
                 }
-//                if (line.charAt(line.length() - 1) == ']')
-//                    break;
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -1057,12 +1055,14 @@ public class UpdateService {
     private void downloadUpdates(String api, File destDir, String fileType) {
         destDir.mkdirs();
 
-        DBConfig.getConfig().nodes.stream().filter(n -> !skipUpdateList().contains(n.name)).forEach(node -> node.file = FileUtils.download(createUrl(api, node.name), createFile(destDir, node.name, fileType)));
+//        DBConfig.getConfig().nodes.stream().filter(n -> !skipUpdateList().contains(n.name)).forEach(node -> node.file = FileUtils.download(createUrl(api, node.name), createFile(destDir, node.name, fileType)));
+        DBConfig.getConfig().nodes.stream().filter(n -> !skipUpdateList().contains(n.name)).forEach(node -> node.file = FileUtils.downloadPaginated(createPaginatedUrl(api, node.name), new File(env.getProperty("path.scripts.dir"), "mergeParts.sh"),createFile(destDir, node.name, fileType), getEntryCount(api, node.name), jsonReformatter));
+
         DBConfig.getConfig().edges.stream().filter(e -> e.original).filter(e -> !skipUpdateList().contains(e.name)).forEach(edge -> {
-            if (edge.name.equals("protein_interacts_with_protein")) {
-                edge.file = FileUtils.downloadPaginated(createPaginatedUrl(api, edge.paginatedName), new File(env.getProperty("path.scripts.dir"), "mergeParts.sh"), createFile(destDir, edge.mapsTo, fileType), getEntryCount(api, edge.name), jsonReformatter);
-            } else
-                edge.file = FileUtils.download(createUrl(api, edge.name), createFile(destDir, edge.mapsTo, fileType));
+//            if (edge.name.equals("protein_interacts_with_protein")) {
+                edge.file = FileUtils.downloadPaginated(createPaginatedUrl(api, edge.name), new File(env.getProperty("path.scripts.dir"), "mergeParts.sh"), createFile(destDir, edge.mapsTo, fileType), getEntryCount(api, edge.name), jsonReformatter);
+//            } else
+//                edge.file = FileUtils.download(createUrl(api, edge.name), createFile(destDir, edge.mapsTo, fileType));
 
         });
     }
@@ -1084,7 +1084,7 @@ public class UpdateService {
     }
 
     private String createPaginatedUrl(String api, String k) {
-        return api + k;
+        return api + k +"/all";
     }
 
     private File createFile(File destDir, String k, String fileType) {

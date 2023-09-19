@@ -10,15 +10,9 @@ import de.exbio.reposcapeweb.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.persistence.EmbeddedId;
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import jakarta.persistence.*;
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 
 /**
@@ -92,7 +86,6 @@ public class DrugHasIndication extends RepoTrialEdge implements Serializable {
     @Transient
     private String nodeTwo;
 
-    private String assertedBy;
 
     public DrugHasIndication() {
     }
@@ -123,10 +116,10 @@ public class DrugHasIndication extends RepoTrialEdge implements Serializable {
         values.put(("sourceDomainId"),getSourceDomainId());
         values.put(("sourceId"),id.getId1());
         values.put(("targetId"),id.getId2());
-        values.put(("node1"),nodeOne);
-        values.put(("node2"),nodeTwo);
+        values.put("node1",nodeOne);
+        values.put("node2",nodeTwo);
+        values.put("dataSources", getDataSources());
         values.put(("type"),getType());
-        values.put("assertedBy",getAssertedBy());
         values.put(("id"),id.getId1()+"-"+id.getId2());
         return values;
     }
@@ -152,17 +145,22 @@ public class DrugHasIndication extends RepoTrialEdge implements Serializable {
         }
     }
 
-    public List<String> getAssertedBy() {
-        return StringUtils.stringToList(assertedBy);
-    }
-
-    public void setAssertedBy(List<String> databases) {
-        this.assertedBy = StringUtils.listToString(databases);
-    }
 
     public void setNodeNames(String node1, String node2){
         nodeOne=node1;
         nodeTwo=node2;
+    }
+
+    @Column(columnDefinition = "TEXT")
+    private String dataSources;
+    @JsonGetter
+    public LinkedList<String> getDataSources() {
+        return StringUtils.stringToList(dataSources);
+    }
+
+    @JsonSetter
+    public void setDataSources(List<String> dataSources) {
+        this.dataSources = StringUtils.listToString(dataSources);
     }
 
     @Override
@@ -179,6 +177,7 @@ public class DrugHasIndication extends RepoTrialEdge implements Serializable {
     public void setValues(DrugHasIndication other) {
         this.sourceDomainId = other.sourceDomainId;
         this.targetDomainId = other.targetDomainId;
+        this.dataSources = other.dataSources;
     }
 
     @Override
