@@ -18,9 +18,9 @@ public class FileUtils {
      * @param fileName Destination of the downloaded file.
      * @return Path of the downloaded file.
      */
-    public static String download(String url, String fileName) {
+    public static String download(String url, String fileName, String APIKey) {
         log.debug("Downloading " + url + " to " + fileName);
-        ProcessBuilder pb = new ProcessBuilder("wget", "-O", fileName, url, "--no-check-certificate");
+        ProcessBuilder pb = new ProcessBuilder("curl","-H", "@{'apikey' = '"+APIKey+"'}", "-o", fileName, url, "-k");
         try {
             ProcessUtils.executeProcessWait(pb, false);
         } catch (IOException | InterruptedException e) {
@@ -31,14 +31,14 @@ public class FileUtils {
         return fileName;
     }
 
-    public static File downloadPaginated(String url, File mergeScript, File file, int total, File jsonFormatter) {
+    public static File downloadPaginated(String url, File mergeScript, File file, int total, File jsonFormatter, String APIKey) {
         int batch = 10000;
 //        WriterUtils.writeTo(file, "[");
         try {
             for (int i = 0; i < total; i += batch) {
                 File part = new File(file.getParentFile(), file.getName() + "_" + (1 + (i / batch)));
                 log.debug("Downloading part "+(1+(i / batch))+"/"+(1+(total / batch)));
-                download(url + "?offset=" + i + "&limit=" + batch, part.getAbsolutePath()).charAt(0);
+                download(url + "?offset=" + i + "&limit=" + batch, part.getAbsolutePath(), APIKey).charAt(0);
                 formatJson(jsonFormatter,part);
                 ProcessBuilder pb = new ProcessBuilder(mergeScript.getAbsolutePath(), part.getAbsolutePath(), file.getAbsolutePath());
                 if (i + batch >= total)
@@ -56,9 +56,9 @@ public class FileUtils {
         return file;
     }
 
-    public static File download(String url, File file) {
+    public static File download(String url, File file, String APIKey) {
         try {
-            download(url, file.getAbsolutePath()).charAt(0);
+            download(url, file.getAbsolutePath(), APIKey).charAt(0);
         } catch (NullPointerException e) {
             return null;
         }

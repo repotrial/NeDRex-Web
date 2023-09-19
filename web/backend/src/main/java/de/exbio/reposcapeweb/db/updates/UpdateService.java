@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
+import de.exbio.reposcapeweb.communication.controller.NedrexService;
 import de.exbio.reposcapeweb.communication.reponses.WebGraphService;
 import de.exbio.reposcapeweb.configs.DBConfig;
 import de.exbio.reposcapeweb.configs.schema.EdgeConfig;
@@ -54,6 +55,8 @@ public class UpdateService {
     private final DataSource dataSource;
     private final FilterService filterService;
 
+    private final NedrexService nedrexService;
+
     private final NodeController nodeController;
     private final EdgeController edgeController;
 
@@ -91,6 +94,7 @@ public class UpdateService {
                          DataSource dataSource,
                          FilterService filterServic,
                          DrugService drugService,
+                         NedrexService nedrexService,
                          PathwayService pathwayService,
                          DisorderService disorderService,
                          GeneService geneService,
@@ -120,6 +124,7 @@ public class UpdateService {
         this.disorderService = disorderService;
         this.geneService = geneService;
         this.proteinService = proteinService;
+        this.nedrexService = nedrexService;
         this.disorderComorbidWithDisorderService = disorderComorbidWithDisorderService;
         this.disorderIsADisorderService = disorderIsADisorderService;
         this.drugHasIndicationService = drugHasIndicationService;
@@ -452,7 +457,7 @@ public class UpdateService {
                 return;
             HashSet<String> attributes = null;
             try {
-                attributes = getAttributeNames(ReaderUtils.getUrlContent(new URL(env.getProperty("url.api.db") + n.name + "/attributes")));
+                attributes = getAttributeNames(ReaderUtils.getUrlContent(new URL(env.getProperty("url.api.db") + n.name + "/attributes"), this.nedrexService.getAPIKey()));
                 if (!RepoTrialUtils.validateFormat((HashSet<String>) attributes.clone(), nodeController.getSourceAttributes(n.name))) {
                     valid.set(false);
                     log.error("Node " + n.name + " changed schema in NeDRexDB! please update the database-config file and internal structure.");
@@ -475,7 +480,7 @@ public class UpdateService {
             HashSet<String> attributes = null;
             if (e.original)
                 try {
-                    attributes = getAttributeNames(ReaderUtils.getUrlContent(new URL(env.getProperty("url.api.db") + e.name + "/attributes")));
+                    attributes = getAttributeNames(ReaderUtils.getUrlContent(new URL(env.getProperty("url.api.db") + e.name + "/attributes"), this.nedrexService.getAPIKey()));
                     if (!RepoTrialUtils.validateFormat((HashSet<String>) attributes.clone(), edgeController.getSourceAttributes(e.mapsTo))) {
                         valid.set(false);
                         log.error("Edge " + e.name + " changed schema in RepoTrialDB! please update the database-config file and internal structure.");
@@ -548,7 +553,7 @@ public class UpdateService {
 //        HashSet<String> attributeDefinition = null;
         if (!skipUpdateList().contains(first)) {
             try {
-                getAttributeNames(ReaderUtils.getUrlContent(new URL(env.getProperty("url.api.db") + first + "/attributes")));
+                getAttributeNames(ReaderUtils.getUrlContent(new URL(env.getProperty("url.api.db") + first + "/attributes"), this.nedrexService.getAPIKey()));
                 updateSuccessful = proteinEncodedByService.submitUpdates(runEdgeUpdates(ProteinEncodedBy.class, DBConfig.getConfig().edges.stream().filter(edge -> edge.mapsTo.equals("ProteinEncodedBy")).collect(Collectors.toList()).get(0).file, proteinEncodedByService::mapIds));
             } catch (MalformedURLException e) {
                 e.printStackTrace();
@@ -563,7 +568,7 @@ public class UpdateService {
             if (skipUpdateList().contains(edge.name))
                 continue;
             try {
-                getAttributeNames(ReaderUtils.getUrlContent(new URL(env.getProperty("url.api.db") + edge.name + "/attributes")));
+                getAttributeNames(ReaderUtils.getUrlContent(new URL(env.getProperty("url.api.db") + edge.name + "/attributes"), this.nedrexService.getAPIKey()));
                 updateSuccessful = true;
 
                 switch (edge.mapsTo) {
@@ -676,7 +681,7 @@ public class UpdateService {
             if (skipUpdateList().contains(node.name))
                 return;
             try {
-                getAttributeNames(ReaderUtils.getUrlContent(new URL(env.getProperty("url.api.db") + node.name + "/attributes")));
+                getAttributeNames(ReaderUtils.getUrlContent(new URL(env.getProperty("url.api.db") + node.name + "/attributes"), this.nedrexService.getAPIKey()));
                 boolean updateSuccessful = true;
 
                 switch (node.name) {
@@ -1019,7 +1024,7 @@ public class UpdateService {
 
     private int getCountFromDetails(String name) {
         try {
-            BufferedReader br = ReaderUtils.getBufferedReader(new URL(env.getProperty("url.api.db") + name + "/details"));
+            BufferedReader br = ReaderUtils.getBufferedReader(new URL(env.getProperty("url.api.db") + name + "/details"), nedrexService.getAPIKey());
             String line = "";
             while ((line = br.readLine()) != null) {
                 for (String l : StringUtils.split(line, ","))
@@ -1054,13 +1059,13 @@ public class UpdateService {
 
     private void downloadUpdates(String api, File destDir, String fileType) {
         destDir.mkdirs();
-
+        String APIkey = this.nedrexService.getAPIKey();
 //        DBConfig.getConfig().nodes.stream().filter(n -> !skipUpdateList().contains(n.name)).forEach(node -> node.file = FileUtils.download(createUrl(api, node.name), createFile(destDir, node.name, fileType)));
-        DBConfig.getConfig().nodes.stream().filter(n -> !skipUpdateList().contains(n.name)).forEach(node -> node.file = FileUtils.downloadPaginated(createPaginatedUrl(api, node.name), new File(env.getProperty("path.scripts.dir"), "mergeParts.sh"),createFile(destDir, node.name, fileType), getEntryCount(api, node.name), jsonReformatter));
+        DBConfig.getConfig().nodes.stream().filter(n -> !skipUpdateList().contains(n.name)).forEach(node -> node.file = FileUtils.downloadPaginated(createPaginatedUrl(api, node.name), new File(env.getProperty("path.scripts.dir"), "mergeParts.sh"),createFile(destDir, node.name, fileType), getEntryCount(api, node.name), jsonReformatter, APIkey));
 
         DBConfig.getConfig().edges.stream().filter(e -> e.original).filter(e -> !skipUpdateList().contains(e.name)).forEach(edge -> {
 //            if (edge.name.equals("protein_interacts_with_protein")) {
-                edge.file = FileUtils.downloadPaginated(createPaginatedUrl(api, edge.name), new File(env.getProperty("path.scripts.dir"), "mergeParts.sh"), createFile(destDir, edge.mapsTo, fileType), getEntryCount(api, edge.name), jsonReformatter);
+                edge.file = FileUtils.downloadPaginated(createPaginatedUrl(api, edge.name), new File(env.getProperty("path.scripts.dir"), "mergeParts.sh"), createFile(destDir, edge.mapsTo, fileType), getEntryCount(api, edge.name), jsonReformatter, APIkey);
 //            } else
 //                edge.file = FileUtils.download(createUrl(api, edge.name), createFile(destDir, edge.mapsTo, fileType));
 
@@ -1069,7 +1074,7 @@ public class UpdateService {
 
     private int getEntryCount(String api, String name) {
         try {
-            String details = ReaderUtils.getUrlContent(new URL(api + name + "/details"));
+            String details = ReaderUtils.getUrlContent(new URL(api + name + "/details"), this.nedrexService.getAPIKey());
             HashMap<String, Object> map = objectMapper.readValue(details, HashMap.class);
             return (Integer) map.get("count");
         } catch (MalformedURLException | JsonProcessingException e) {
@@ -1105,7 +1110,7 @@ public class UpdateService {
 
     public void buildMetadata() {
         try {
-            String meta = ReaderUtils.getUrlContent(new URL(env.getProperty("url.api.db") + "static/metadata"));
+            String meta = ReaderUtils.getUrlContent(new URL(env.getProperty("url.api.db") + "static/metadata"), this.nedrexService.getAPIKey());
             this.metadata = new Metadata(objectMapper.readValue(meta, HashMap.class));
             metadata.setLastCheck(this.lastCheck);
             metadata.setLastUpdate(this.lastUpdate);
@@ -1143,7 +1148,7 @@ public class UpdateService {
 
     public String queryLicenseText() {
         try {
-            return ReaderUtils.getUrlContent(new URL(env.getProperty("url.api.db") + "static/licence"));
+            return ReaderUtils.getUrlContent(new URL(env.getProperty("url.api.db") + "static/licence"), this.nedrexService.getAPIKey());
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }

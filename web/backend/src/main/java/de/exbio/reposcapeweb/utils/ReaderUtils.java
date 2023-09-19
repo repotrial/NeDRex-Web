@@ -1,6 +1,7 @@
 package de.exbio.reposcapeweb.utils;
 
 import java.io.*;
+import java.net.HttpURLConnection;
 import java.net.URL;
 
 public class ReaderUtils {
@@ -26,18 +27,22 @@ public class ReaderUtils {
         return getInputStream(file.getAbsolutePath());
     }
 
-    public static BufferedReader getBufferedReader(URL url) {
+    public static BufferedReader getBufferedReader(URL url, String APIKey) {
         try {
-            return new BufferedReader(new InputStreamReader(url.openStream()));
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("x-api-key", APIKey);
+
+            return new BufferedReader(new InputStreamReader(conn.getInputStream()));
         } catch (IOException e) {
             e.printStackTrace();
             throw new RuntimeException("Unable to read attributes from "+url+ "! Either the network is down or names have changed.");
         }
     }
 
-    public static String getUrlContent(URL url) {
+    public static String getUrlContent(URL url, String APIKey) {
         StringBuilder content = new StringBuilder();
-        BufferedReader br = getBufferedReader(url);
+        BufferedReader br = getBufferedReader(url, APIKey);
         String line = "";
         try {
             while ((line = br.readLine()) != null) {
