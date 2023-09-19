@@ -7,10 +7,10 @@ import de.exbio.reposcapeweb.db.entities.RepoTrialNode;
 import de.exbio.reposcapeweb.filter.FilterEntry;
 import de.exbio.reposcapeweb.filter.FilterType;
 import de.exbio.reposcapeweb.utils.StringUtils;
+import jakarta.persistence.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jakarta.persistence.*;
 import java.util.*;
 
 @Entity
@@ -68,7 +68,7 @@ public class Drug extends RepoTrialNode {
     private String displayName;
     @Column(columnDefinition = "TEXT")
     private String synonyms;
-//    @Column(nullable = false)
+    //    @Column(nullable = false)
 //    private DrugType drugType;
     @Column(columnDefinition = "TEXT")
     private String drugCategories;
@@ -78,11 +78,17 @@ public class Drug extends RepoTrialNode {
     private String casNumber;
     @Column(columnDefinition = "TEXT")
     private String indication;
-//        @Column(columnDefinition = "TEXT")
+    //        @Column(columnDefinition = "TEXT")
 //    private String sequences;
-
-
-
+    @Column(columnDefinition = "TEXT")
+    private String sequence;
+    @Column(columnDefinition = "TEXT")
+    private String iupacName;
+    @Column(columnDefinition = "TEXT")
+    private String smiles;
+    @Column(columnDefinition = "TEXT")
+    private String inchi;
+    private String molecularFormula;
 
 
     public Drug() {
@@ -95,7 +101,6 @@ public class Drug extends RepoTrialNode {
                 return false;
         return attributes.isEmpty();
     }
-
 
     public static void setUpNameMaps() {
         label2NameMap = new HashMap<>();
@@ -111,15 +116,21 @@ public class Drug extends RepoTrialNode {
     public HashMap<String, Object> getAsMap() {
         HashMap<String, Object> values = new HashMap<>();
         values.put("id", id);
+        values.put("molecularFormula", getMolecularFormula());
         values.put("displayName", getDisplayName());
+        values.put("inchi", getInchi());
         values.put("type", getType());
         values.put("domainIds", getDomainIds());
+        values.put("smiles", getSmiles());
         values.put("synonyms", getSynonyms());
         values.put("primaryDomainId", getPrimaryDomainId());
         values.put("casNumber", getCasNumber());
         values.put("drugCategories", getDrugCategories());
         values.put("drugGroups", getDrugGroups());
-        values.put("dataSources",getDataSources());
+//        values.put("_cls", drugType.name());
+//        values.put("sequences", getSequences());
+        values.put("sequence", getSequence());
+        values.put("iupacName", getIupacName());
         values.put("primaryDataset", getPrimaryDataset());
         values.put("indication", getIndication());
         values.put("allDatasets", getAllDatasets());
@@ -135,18 +146,6 @@ public class Drug extends RepoTrialNode {
                 values.put(k, v);
         });
         return values;
-    }
-
-    @Column(columnDefinition = "TEXT")
-    private String dataSources;
-    @JsonGetter
-    public LinkedList<String> getDataSources() {
-        return StringUtils.stringToList(dataSources);
-    }
-
-    @JsonSetter
-    public void setDataSources(List<String> dataSources) {
-        this.dataSources = StringUtils.listToString(dataSources);
     }
 
     @Override
@@ -227,7 +226,7 @@ public class Drug extends RepoTrialNode {
     public String getIndication() {
         return indication;
     }
-//
+    //
 //        public List<String> getSequences() {
 //        try {
 //            return StringUtils.stringToList(sequences);
@@ -235,7 +234,29 @@ public class Drug extends RepoTrialNode {
 //            return new LinkedList<>();
 //        }
 //    }
+    public List<String> getSequence() {
+        try {
+            return StringUtils.stringToList(sequence);
+        } catch (NullPointerException e) {
+            return new LinkedList<>();
+        }
+    }
 
+    public String getIupacName() {
+        return iupacName;
+    }
+
+    public String getSmiles() {
+        return smiles;
+    }
+
+    public String getInchi() {
+        return inchi;
+    }
+
+    public String getMolecularFormula() {
+        return molecularFormula;
+    }
 
     @JsonSetter
     public void setDomainIds(List<String> domainIds) {
@@ -257,10 +278,15 @@ public class Drug extends RepoTrialNode {
         this.drugGroups = StringUtils.listToString(drugGroups);
     }
 
-//        @JsonSetter
+    //        @JsonSetter
 //    public void setSequences(List<String> sequences) {
 //        this.sequences = StringUtils.listToString(sequences);
 //    }
+    @JsonSetter
+    public void setSequence(List<String> sequence) {
+        this.sequence = StringUtils.listToString(sequence);
+    }
+
 
     @JsonSetter
     public void setAllDatasets(List<String> allDatasets) {
@@ -270,12 +296,18 @@ public class Drug extends RepoTrialNode {
         this.domainIds = other.domainIds;
         this.displayName = other.displayName;
         this.synonyms = other.synonyms;
-        this.dataSources = other.dataSources;
+//        this.drugType = other.drugType;
         this.drugCategories = other.drugCategories;
         this.drugGroups = other.drugGroups;
         this.description = other.description;
         this.casNumber = other.casNumber;
         this.indication = other.indication;
+//        this.sequences = other.sequences;
+        this.sequence = other.sequence;
+        this.iupacName = other.iupacName;
+        this.smiles = other.smiles;
+        this.inchi = other.inchi;
+        this.molecularFormula = other.molecularFormula;
     }
 
 
@@ -312,6 +344,12 @@ public class Drug extends RepoTrialNode {
                 if (!displayName.equals(syn) && syn.length() > 0)
                     map.get(FilterType.SYNONYM).put(syn, syns);
             });
+        }
+        try {
+            iupacName.charAt(0);
+            map.put(FilterType.IUPAC, new HashMap<>());
+            map.get(FilterType.IUPAC).put(iupacName, new FilterEntry(displayName, FilterType.IUPAC, id));
+        } catch (NullPointerException | IndexOutOfBoundsException ignore) {
         }
         return map;
     }
