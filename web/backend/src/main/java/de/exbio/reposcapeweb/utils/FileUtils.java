@@ -20,7 +20,7 @@ public class FileUtils {
      */
     public static String download(String url, String fileName, String APIKey) {
         log.debug("Downloading " + url + " to " + fileName);
-        ProcessBuilder pb = new ProcessBuilder("curl","-H", "@{'apikey' = '"+APIKey+"'}", "-o", fileName, url, "-k");
+        ProcessBuilder pb = new ProcessBuilder("curl","-k","-H", "x-api-key: "+APIKey, "-o", fileName, url);
         try {
             ProcessUtils.executeProcessWait(pb, false);
         } catch (IOException | InterruptedException e) {
@@ -33,12 +33,14 @@ public class FileUtils {
 
     public static File downloadPaginated(String url, File mergeScript, File file, int total, File jsonFormatter, String APIKey) {
         int batch = 10000;
-//        WriterUtils.writeTo(file, "[");
         try {
             for (int i = 0; i < total; i += batch) {
                 File part = new File(file.getParentFile(), file.getName() + "_" + (1 + (i / batch)));
                 log.debug("Downloading part "+(1+(i / batch))+"/"+(1+(total / batch)));
-                download(url + "?offset=" + i + "&limit=" + batch, part.getAbsolutePath(), APIKey).charAt(0);
+                int retries = 5;
+                while (retries-- > 0 && !part.exists()){
+                    download(url + "?offset=" + i + "&limit=" + batch, part.getAbsolutePath(), APIKey).charAt(0);
+                }
                 formatJson(jsonFormatter,part);
                 ProcessBuilder pb = new ProcessBuilder(mergeScript.getAbsolutePath(), part.getAbsolutePath(), file.getAbsolutePath());
                 if (i + batch >= total)

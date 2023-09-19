@@ -127,13 +127,12 @@ public class Drug extends RepoTrialNode {
         values.put("casNumber", getCasNumber());
         values.put("drugCategories", getDrugCategories());
         values.put("drugGroups", getDrugGroups());
+        values.put("dataSources", getDataSources());
 //        values.put("_cls", drugType.name());
 //        values.put("sequences", getSequences());
         values.put("sequence", getSequence());
         values.put("iupacName", getIupacName());
-        values.put("primaryDataset", getPrimaryDataset());
         values.put("indication", getIndication());
-        values.put("allDatasets", getAllDatasets());
         values.put("description", getDescription());
         return values;
     }
@@ -177,20 +176,6 @@ public class Drug extends RepoTrialNode {
 
     public List<String> getSynonyms() {
         return StringUtils.stringToList(synonyms);
-    }
-
-    @JsonGetter
-    public String getPrimaryDataset() {
-        return "DrugBank";
-    }
-
-    @JsonSetter
-    public void setPrimaryDataset(String dataset) {
-    }
-
-    @JsonGetter
-    public List<String> getAllDatasets() {
-        return new ArrayList<>(Collections.singletonList("DrugBank"));
     }
 
     public String getDisplayName() {
@@ -288,10 +273,6 @@ public class Drug extends RepoTrialNode {
     }
 
 
-    @JsonSetter
-    public void setAllDatasets(List<String> allDatasets) {
-    }
-
     public void setValues(Drug other) {
         this.domainIds = other.domainIds;
         this.displayName = other.displayName;
@@ -302,6 +283,7 @@ public class Drug extends RepoTrialNode {
         this.description = other.description;
         this.casNumber = other.casNumber;
         this.indication = other.indication;
+        this.dataSources = other.dataSources;
 //        this.sequences = other.sequences;
         this.sequence = other.sequence;
         this.iupacName = other.iupacName;
@@ -353,6 +335,19 @@ public class Drug extends RepoTrialNode {
         }
         return map;
     }
+
+    @Column(columnDefinition = "TEXT")
+    private String dataSources;
+    @JsonGetter
+    public LinkedList<String> getDataSources() {
+        return StringUtils.stringToList(dataSources);
+    }
+
+    @JsonSetter
+    public void setDataSources(List<String> dataSources) {
+        this.dataSources = StringUtils.listToString(dataSources);
+    }
+
 
     @Override
     public EnumMap<FilterType, Map<String, FilterEntry>> toDistinctFilter() {

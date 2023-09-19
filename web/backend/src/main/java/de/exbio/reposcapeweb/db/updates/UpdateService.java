@@ -1060,15 +1060,10 @@ public class UpdateService {
     private void downloadUpdates(String api, File destDir, String fileType) {
         destDir.mkdirs();
         String APIkey = this.nedrexService.getAPIKey();
-//        DBConfig.getConfig().nodes.stream().filter(n -> !skipUpdateList().contains(n.name)).forEach(node -> node.file = FileUtils.download(createUrl(api, node.name), createFile(destDir, node.name, fileType)));
         DBConfig.getConfig().nodes.stream().filter(n -> !skipUpdateList().contains(n.name)).forEach(node -> node.file = FileUtils.downloadPaginated(createPaginatedUrl(api, node.name), new File(env.getProperty("path.scripts.dir"), "mergeParts.sh"),createFile(destDir, node.name, fileType), getEntryCount(api, node.name), jsonReformatter, APIkey));
 
         DBConfig.getConfig().edges.stream().filter(e -> e.original).filter(e -> !skipUpdateList().contains(e.name)).forEach(edge -> {
-//            if (edge.name.equals("protein_interacts_with_protein")) {
                 edge.file = FileUtils.downloadPaginated(createPaginatedUrl(api, edge.name), new File(env.getProperty("path.scripts.dir"), "mergeParts.sh"), createFile(destDir, edge.mapsTo, fileType), getEntryCount(api, edge.name), jsonReformatter, APIkey);
-//            } else
-//                edge.file = FileUtils.download(createUrl(api, edge.name), createFile(destDir, edge.mapsTo, fileType));
-
         });
     }
 

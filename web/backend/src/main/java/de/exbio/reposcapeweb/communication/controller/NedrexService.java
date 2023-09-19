@@ -3,6 +3,7 @@ package de.exbio.reposcapeweb.communication.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.exbio.reposcapeweb.utils.ProcessUtils;
+import de.exbio.reposcapeweb.utils.ReaderUtils;
 import de.exbio.reposcapeweb.utils.WriterUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -37,7 +38,6 @@ public class NedrexService {
     }
 
     public void initAPIKey(){
-//        TODO figure out when to reload the API key
         URL url = null;
         try {
             url = new URL(getAPI()+"/admin/api_key/generate");
@@ -70,13 +70,20 @@ public class NedrexService {
     }
 
     public String getAPIKey(){
+        try {
+            ReaderUtils.getBufferedReader(new URL(getAPI()+"static/metadata"), this.APIKey);
+        } catch (RuntimeException e) {
+            this.initAPIKey();
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
         return this.APIKey;
     }
 
     public String get(String path) {
         StringBuffer sb = new StringBuffer();
         try {
-            ProcessUtils.executeProcessWait(new ProcessBuilder("curl", "-s", "-k","-H", "@{'apikey' = '"+this.getAPIKey()+"'}", getAPI() +(path.charAt(0)=='/' ? path.substring(1):path)), sb);
+            ProcessUtils.executeProcessWait(new ProcessBuilder("curl", "-s", "-k","-H", "x-api-key: "+this.getAPIKey(), getAPI() +(path.charAt(0)=='/' ? path.substring(1):path)), sb);
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
@@ -91,7 +98,7 @@ public class NedrexService {
             BufferedWriter bw = WriterUtils.getBasicWriter(input);
             bw.write(toJson(data));
             bw.close();
-            ProcessUtils.executeProcessWait(new ProcessBuilder("curl", "-s", "-X", "POST","-k", "-H", "Content-Type: application/json", "-H", "@{'apikey' = '"+this.getAPIKey()+"'}","-d", "@" + input.getAbsolutePath() ,getAPI()+(path.charAt(0)=='/' ? path.substring(1):path)), sb);
+            ProcessUtils.executeProcessWait(new ProcessBuilder("curl", "-s", "-X", "POST","-k", "-H", "Content-Type: application/json", "-H", "x-api-key: "+this.getAPIKey(),"-d", "@" + input.getAbsolutePath() ,getAPI()+(path.charAt(0)=='/' ? path.substring(1):path)), sb);
             input.delete();
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();

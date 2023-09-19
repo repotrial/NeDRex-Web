@@ -104,8 +104,7 @@
           "label": "Updated"
         }
       ]
-    },
-    {
+    },{
       "id": 1,
       "name": "drug",
       "label": "Drug",
@@ -170,6 +169,22 @@
           "distinct": false
         },
         {
+          "name": "iupacName",
+          "source": true,
+          "list": false,
+          "detail": true,
+          "id": false,
+          "label": "IUPAC-Name"
+        },
+        {
+          "name": "molecularFormula",
+          "source": true,
+          "list": false,
+          "detail": true,
+          "id": false,
+          "label": "Formula"
+        },
+        {
           "name": "casNumber",
           "source": true,
           "list": true,
@@ -187,12 +202,37 @@
           "label": "DataSources"
         },
         {
+          "name": "inchi",
+          "source": true,
+          "list": false,
+          "detail": true,
+          "id": false,
+          "label": "InChI"
+        },
+        {
+          "name": "smiles",
+          "source": true,
+          "list": false,
+          "detail": true,
+          "id": false,
+          "label": "SMILES"
+        },
+        {
           "name": "indication",
           "source": true,
           "list": false,
           "detail": true,
           "id": false,
           "label": "Indication"
+        },
+        {
+          "name": "sequence",
+          "source": true,
+          "list": false,
+          "detail": true,
+          "id": false,
+          "type": "array",
+          "label": "Sequences"
         },
         {
           "name": "synonyms",
