@@ -1,22 +1,22 @@
 <template>
   <v-card dark :color="bgColor" elevation="5">
     <v-card-text style="margin-top: 64px;">
-      <div style="display: flex; justify-content: center">
-        <div style="width: 200px; height: 75px; display: flex; ">
-          <img :src="getConfig().STATIC_PATH+'/assets/EU-emblem.png'" :width="75"
-               style="align-self: center; margin-top: auto; margin-bottom: auto"/>
-          <div style="width: 25px"></div>
-          <img :src="getConfig().STATIC_PATH+'/assets/cropped-repo-trial_logo.png'" :width="75"
-               style="align-self: center; margin-top: auto; margin-bottom: auto; background-color: white"/>
-        </div>
-      </div>
-      <div
-        style="justify-self: center; margin-left: auto; margin-right: auto; padding-left: 10px; padding-right: 10px">
-        <b>This application which is part of REPO-TRIAL project has received funding from the European Union’s Horizon
-          2020 research and innovation programme under grant agreement No 777111. This reflects only the author’s view
-          and the European Commission is not responsible for any use that may be made of the information it
-          contains.</b>
-      </div>
+<!--      <div style="display: flex; justify-content: center">-->
+<!--        <div style="width: 200px; height: 75px; display: flex; ">-->
+<!--          <img :src="getConfig().STATIC_PATH+'/assets/EU-emblem.png'" :width="75"-->
+<!--               style="align-self: center; margin-top: auto; margin-bottom: auto"/>-->
+<!--          <div style="width: 25px"></div>-->
+<!--          <img :src="getConfig().STATIC_PATH+'/assets/cropped-repo-trial_logo.png'" :width="75"-->
+<!--               style="align-self: center; margin-top: auto; margin-bottom: auto; background-color: white"/>-->
+<!--        </div>-->
+<!--      </div>-->
+<!--      <div-->
+<!--        style="justify-self: center; margin-left: auto; margin-right: auto; padding-left: 10px; padding-right: 10px">-->
+<!--        <b>This application which is part of REPO-TRIAL project has received funding from the European Union’s Horizon-->
+<!--          2020 research and innovation programme under grant agreement No 777111. This reflects only the author’s view-->
+<!--          and the European Commission is not responsible for any use that may be made of the information it-->
+<!--          contains.</b>-->
+<!--      </div>-->
 
     </v-card-text>
 
