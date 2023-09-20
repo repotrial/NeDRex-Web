@@ -76,6 +76,7 @@ export default {
       cookiesAccepted: false,
       colors: {},
       tabModel: 0,
+      video: false,
       anchors: [
         '#app',
         '#help',
@@ -92,7 +93,7 @@ export default {
       tabs: {active: "#35d0d4", inactive: "white"}
     }
     this.checkAnchor();
-    this.cookiesAccepted = this.$cookies.get('cookies')
+    this.cookiesAccepted = this.$cookies.get('cookies') === 'true'
     if (!this.cookiesAccepted)
       this.showCookieConsent = true
   },

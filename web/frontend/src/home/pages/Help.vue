@@ -27,48 +27,50 @@
     <v-card-title>
       Video-Tutorials
     </v-card-title>
-    <v-card-text>
-      <iframe  v-if="cookiesAccepted" width="480" height="270" src="https://www.youtube.com/embed/NDx2YVN7TpQ" title="YouTube video player"
+    <v-card-text style="width: 100%">
+      <div style="width: 480px; height: 270px; display: flex; align-items: center; justify-content: center; margin: auto">
+        <v-btn @click="video = true" v-if="!video && cookiesAccepted" style="align-self: center; justify-self: center; margin: auto">
+          <v-icon left>fab fa-youtube</v-icon>Allow videos
+        </v-btn>
+      <iframe width="480" height="270" v-if="video" src="https://www.youtube.com/embed/NDx2YVN7TpQ" title="YouTube video player"
               frameborder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowfullscreen></iframe>
-      <div v-else style="width: 480px; height: 270px">
-
       </div>
       <div style="display: flex; justify-content: center; margin-top:16px;">
         <div style="">
-          <iframe  v-if="cookiesAccepted" width="240" height="135" src="https://www.youtube.com/embed/lvuS9Bt_T6M" title="YouTube video player"
+          <iframe  v-if="video" width="240" height="135" src="https://www.youtube.com/embed/lvuS9Bt_T6M" title="YouTube video player"
                   frameborder="0"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowfullscreen></iframe>
           <div v-else style="width: 240px; height: 135px">
 
           </div>
-          <div style="color: white; width: 240px">
+          <div style="color: white; width: 240px"  v-if="video" >
             Quck Start & Drug Repurposing
           </div>
         </div>
         <div>
-        <iframe  v-if="cookiesAccepted" width="240" height="135" src="https://www.youtube.com/embed/ftLDwNTcLD4" title="YouTube video player"
+        <iframe  v-if="video" width="240" height="135" src="https://www.youtube.com/embed/ftLDwNTcLD4" title="YouTube video player"
                 frameborder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowfullscreen></iframe>
           <div v-else style="width: 240px; height: 135px">
 
           </div>
-          <div style="color: white; width: 240px">
+          <div style="color: white; width: 240px"  v-if="video" >
             Guided Connectivity Search & Induced Networks (Diseasome)
           </div>
         </div>
         <div>
-        <iframe v-if="cookiesAccepted" width="240" height="135" src="https://www.youtube.com/embed/jiMlZceH70E" title="YouTube video player"
+        <iframe v-if="video" width="240" height="135" src="https://www.youtube.com/embed/jiMlZceH70E" title="YouTube video player"
                 frameborder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowfullscreen></iframe>
           <div v-else style="width: 240px; height: 135px">
 
           </div>
-          <div style="color: white; width: 240px">
+          <div style="color: white; width: 240px" v-if="video" >
             Advanced Exploration & Research History
           </div>
         </div>
@@ -94,6 +96,11 @@ export default {
     bgColor: String,
     color: String,
     cookiesAccepted : Boolean,
+  },
+  data() {
+    return {
+      video: false,
+    }
   },
 
 }

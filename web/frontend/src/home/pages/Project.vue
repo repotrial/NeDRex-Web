@@ -11,19 +11,22 @@
         giving
         as much control and exploratory power as possible to users.
         <div style=" margin-top: 10px;">
-          <v-btn outlined :color="color" @click="$router.push('/explore'); $router.go()">Web-App
+          <v-btn outlined :color="color" @click="$router.push('/explore'); $router.go()">Start Here
             <v-icon right>fas fa-angle-right</v-icon>
           </v-btn>
         </div>
       </div>
       <div style="justify-self: flex-end; margin-right: auto; margin-left: auto; padding-left: 10px; margin-top: -50px">
-        <iframe width="360" height="203" src="https://www.youtube.com/embed/NDx2YVN7TpQ" title="YouTube video player"
-                frameborder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowfullscreen v-if="cookiesAccepted"></iframe>
-        <div v-else style="width: 360px; height: 203px">
-
+        <div style="width: 360px; height: 203px; display: flex; align-items: center; justify-content: center;">
+          <v-btn @click="video = true" v-if="!video && cookiesAccepted" style="align-self: center; justify-self: center;">
+            <v-icon left>fab fa-youtube</v-icon>Allow video
+          </v-btn>
+          <iframe width="360" height="203" src="https://www.youtube.com/embed/NDx2YVN7TpQ" title="YouTube video player"
+                  frameborder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowfullscreen v-if="video"></iframe>
         </div>
+
         <div style="display: flex; justify-content: center"><i style="padding-top: 3px">Go to tutorial playlist:</i>
           <a style="text-decoration: none"
              href="https://www.youtube.com/watch?v=NDx2YVN7TpQ&list=PLY5U8UsdXZRncOAO5f9QjCMZSbO65WKfV" target="_blank">
@@ -44,27 +47,9 @@
       <div>
         <v-btn outlined :color="color" style="margin-top:10px"><a :style="{textDecoration: 'none', color: color}"
                                                                   href="https://nedrex.net"
-                                                                  target="_blank">NeDRex</a>
+                                                                  target="_blank">NeDRex Platform</a>
           <v-icon right>fas fa-angle-right</v-icon>
         </v-btn>
-      </div>
-    </v-card-text>
-    <v-card-text style="margin-top: 64px;">
-      <div
-        style="justify-self: center; margin-left: auto; margin-right: auto; padding-left: 10px; padding-right: 10px">
-        <b>This application which is part of REPO-TRIAL project has received funding from the European Union’s Horizon
-          2020 research and innovation programme under grant agreement No 777111. This reflects only the author’s view
-          and the European Commission is not responsible for any use that may be made of the information it
-          contains.</b>
-      </div>
-      <div style="display: flex; justify-content: center">
-        <div style="width: 200px; height: 75px; display: flex; ">
-          <img :src="getConfig().STATIC_PATH+'/assets/EU-emblem.png'" :width="75"
-               style="align-self: center; margin-top: auto; margin-bottom: auto"/>
-          <div style="width: 25px"></div>
-          <img :src="getConfig().STATIC_PATH+'/assets/cropped-repo-trial_logo.png'" :width="75"
-               style="align-self: center; margin-top: auto; margin-bottom: auto; background-color: white"/>
-        </div>
       </div>
     </v-card-text>
   </v-card>
@@ -78,7 +63,12 @@ export default {
   props: {
     bgColor: String,
     color: String,
-    cookiesAccepted : Boolean,
+    cookiesAccepted: Boolean,
+  },
+  data() {
+    return {
+      video: false,
+    }
   },
   methods: {
     getConfig: function () {
