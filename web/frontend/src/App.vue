@@ -445,17 +445,20 @@ export default {
       let home = path.indexOf('home') > -1
       let history = path.indexOf('history') > -1
       let mode = path.length > 1 ? path[2] : undefined
+      console.log(path)
       if ((path[4] != null && path[3] === "list")) {
         this.setSideVisible(true);
       }
-
+      console.log(start)
+      console.log(home)
       if (start || home || (path.length ===1 && path[1] === "explore"))
         this.setSideVisible(false);
 
       if (history) {
         this.selectTab(3, true)
       }
-
+      if(this.gid == null && path[1] === "explore")
+        this.setSideVisible(0, false)
     }
     ,
     selectionColorSelect: function () {
