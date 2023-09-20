@@ -37,6 +37,9 @@
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowfullscreen></iframe>
       </div>
+      <div style="color: white; width: 480px; margin: auto;" v-if="video" >
+        Conceptual introduction of network-based drug repurposing with the NeDRex platform
+      </div>
       <div style="display: flex; justify-content: center; margin-top:16px;">
         <div style="">
           <iframe  v-if="video" width="240" height="135" src="https://www.youtube.com/embed/lvuS9Bt_T6M" title="YouTube video player"
@@ -46,8 +49,8 @@
           <div v-else style="width: 240px; height: 135px">
 
           </div>
-          <div style="color: white; width: 240px"  v-if="video" >
-            Quck Start & Drug Repurposing
+          <div style="color: white; width: 240px" v-if="video" >
+            First steps in NeDRex-Web application: Quck Start & Drug Repurposing
           </div>
         </div>
         <div>
@@ -59,7 +62,7 @@
 
           </div>
           <div style="color: white; width: 240px"  v-if="video" >
-            Guided Connectivity Search & Induced Networks (Diseasome)
+            Application example of NeDRex-Web and Guided Connectivity Search: Induced Networks (Diseasome)
           </div>
         </div>
         <div>
@@ -71,7 +74,7 @@
 
           </div>
           <div style="color: white; width: 240px" v-if="video" >
-            Advanced Exploration & Research History
+            Advanced exploration in NeDRex-Web & Research History
           </div>
         </div>
       </div>
