@@ -1,12 +1,12 @@
 <template>
-  <v-sheet dark :color="color" style="max-height: 90vh; overflow-y: auto">
+  <v-sheet dark :color="color" style="max-height: 90vh;">
     <v-list>
       <v-list-item>
         <v-card-title>DATA SOURCE INFORMATION</v-card-title>
       </v-list-item>
       <v-list-item>
         <v-row>
-          <v-col cols="5">
+          <v-col cols="6">
             <v-list>
               <v-list-item>
                 <v-list-item-icon>
@@ -42,8 +42,8 @@
             </v-list>
           </v-col>
           <v-divider vertical></v-divider>
-          <v-col cols="6">
-            <v-list v-if="$global.metadata.repotrial && $global.metadata.repotrial.source_databases">
+          <v-col cols="6" style="height: 80vh;overflow-y: auto">
+            <v-list v-if="$global.metadata.repotrial && $global.metadata.repotrial.source_databases" >
               <v-list-item v-for="source in Object.keys($global.metadata.repotrial.source_databases)" :key="source">
                 <v-list-item-icon>
                   <v-icon left>fas fa-database</v-icon>

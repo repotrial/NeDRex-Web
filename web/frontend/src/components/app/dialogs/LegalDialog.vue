@@ -50,12 +50,10 @@
         </div>
         <v-divider></v-divider>
         <v-card-actions style="justify-content: center; display: flex">
-          <v-btn
-            color="green darken-1"
-            text
-            @click="resolveDialog()"
-          >
+          <v-btn style="margin-left: 5px; margin-right: 5px;" color="success"
+                 @click="resolveDialog()">
             <v-icon left>fas fa-check</v-icon>
+            <v-divider vertical style="border-color: white; margin-right: 5px;"></v-divider>
             Accept
           </v-btn>
         </v-card-actions>

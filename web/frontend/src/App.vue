@@ -1,8 +1,6 @@
 <template style="overflow-y: hidden">
   <v-app :style="{marginTop:selectedTabId===0 ? '60px': '0px'}" id="app">
-    <headerBar @showVersionEvent="showVersionInfo=true" @showBugEvent="showBugInfo=true"
-               @showHelpEvent="showHelp=true"
-               @showCompatability="showCompatability=true"
+    <headerBar
                @redirectEvent="redirect"
                :prominent="selectedTabId===0" style="z-index: 1000;"/>
     <v-card style="position: sticky ; top: 0; margin-top: -10px; z-index: 999 ">
@@ -13,7 +11,8 @@
             v-model="selectedTabId"
             :color="colors.main.primary"
           >
-            <v-tab v-for="tab in tabslist" class="primary--text" v-on:click="selectTab(tab.id)" :key=tab.id v-show="!(tab.label === 'Graph' || tab.label === 'List') || gid !=null">
+            <v-tab v-for="tab in tabslist" class="primary--text" v-on:click="selectTab(tab.id)" :key=tab.id
+                   v-show="!(tab.label === 'Graph' || tab.label === 'List') || gid !=null">
               <v-badge
                 dot
                 :color="colors.main.primary"
@@ -21,7 +20,7 @@
               >
                 <i :style="{color:tab.color}">
                   <v-icon dense :color="tab.color">{{ tab.icon }}</v-icon>
-                  {{ tab.label}}
+                  {{ tab.label }}
                 </i>
               </v-badge>
             </v-tab>
@@ -29,8 +28,75 @@
         </template>
       </v-toolbar>
     </v-card>
+    <div style="position: sticky;padding-top: 10px; top: 110px; z-index: 1001">
+        <v-menu bottom transition="slide-y-transition">
+          <template v-slot:activator="{on,attrs}">
+            <v-btn icon style="background-color: #383838; position: absolute; left: 10px" v-bind="attrs"
+                   v-on="on">
+              <v-icon color="primary">
+                fas fa-question
+              </v-icon>
+            </v-btn>
+          </template>
+          <v-list color="#383838">
+            <v-list-item>
+              <v-tooltip left>
+                <template v-slot:activator="{on, attrs}">
+                  <v-btn icon small @click="showVersionInfo=true" style="background-color: #383838" v-on="on"
+                         v-bind="attrs">
+                    <v-icon color="primary">
+                      fas fa-info-circle
+                    </v-icon>
+                  </v-btn>
+                </template>
+                Source Information
+              </v-tooltip>
+            </v-list-item>
+            <v-list-item>
+              <v-tooltip left>
+                <template v-slot:activator="{on, attrs}">
+                  <v-btn small icon @click="showBugInfo=true" style="background-color:  #383838" v-on="on"
+                         v-bind="attrs">
+                    <v-icon color="primary">
+                      fas fa-bug
+                    </v-icon>
+                  </v-btn>
+                </template>
+                Report Bug
+              </v-tooltip>
+            </v-list-item>
+            <v-list-item>
+              <v-tooltip left>
+                <template v-slot:activator="{on, attrs}">
+                  <v-btn small icon @click="showHelp=true" style="background-color:  #383838" v-on="on"
+                         v-bind="attrs">
+                    <v-icon color="primary">
+                      fas fa-question-circle
+                    </v-icon>
+                  </v-btn>
+                </template>
+                Contact & Help
+              </v-tooltip>
+            </v-list-item>
+            <v-list-item>
+              <v-tooltip left>
+                <template v-slot:activator="{on, attrs}">
+                  <v-btn small icon @click="showCompatability=true" style="background-color:  #383838" v-on="on"
+                         v-bind="attrs">
+                    <v-icon color="primary">
+                      fas fa-laptop-code
+                    </v-icon>
+                  </v-btn>
+                </template>
+                Browser Compatability
+              </v-tooltip>
+            </v-list-item>
+          </v-list>
+        </v-menu>
+    </div>
     <v-container ref="mainContainer" align-self="start" v-if="metaLoaded"
                  style="width: 100%; max-width:95vw; margin-left: 1%; margin-right: 1%" @mouseup="resizeUp">
+
       <v-row>
         <v-col v-resize="setMainWidth"
                :style="{width: (mainWidth - (sideHidden ? 0 :sideCardWidth))+'px', minWidth: (mainWidth  - (sideHidden? 0 :sideCardWidth))+'px'}">
@@ -281,7 +347,7 @@ export default {
 
   data() {
     return {
-      gid:undefined,
+      gid: undefined,
       // graphLoad: {},
       // graphKey: 0,
       showCookieConsent: false,
@@ -448,13 +514,13 @@ export default {
       if ((path[4] != null && path[3] === "list")) {
         this.setSideVisible(true);
       }
-      if (start || home || (path.length ===1 && path[1] === "explore"))
+      if (start || home || (path.length === 1 && path[1] === "explore"))
         this.setSideVisible(false);
 
       if (history) {
         this.selectTab(3, true)
       }
-      if(this.gid == null && path[1] === "explore")
+      if (this.gid == null && path[1] === "explore")
         this.setSideVisible(0, false)
     }
     ,
@@ -1013,7 +1079,6 @@ a
 
 .theme--light.v-btn.v-btn--has-bg.warn
   background-color: #b86109 !important
-
 
 
 </style>

@@ -10,67 +10,7 @@
       <v-col cols="1" style="padding-top: 0">
         <v-row>
           <v-col style=" padding-right:0; padding-bottom: 0">
-            <v-menu bottom transition="slide-y-transition">
-              <template v-slot:activator="{on,attrs}">
-                <v-btn icon small right style="background-color: #383838" v-bind="attrs" v-on="on">
-                  <v-icon color="primary">
-                    fas fa-bars
-                  </v-icon>
-                </v-btn>
-              </template>
-              <v-list color="#383838">
-                <v-list-item>
-                  <v-tooltip left>
-                    <template v-slot:activator="{on, attrs}">
-                      <v-btn icon small @click="$emit('showVersionEvent')" style="background-color: #383838" v-on="on"
-                             v-bind="attrs">
-                        <v-icon color="primary">
-                          fas fa-info-circle
-                        </v-icon>
-                      </v-btn>
-                    </template>
-                    Source Information
-                  </v-tooltip>
-                </v-list-item>
-                <v-list-item>
-                  <v-tooltip left>
-                    <template v-slot:activator="{on, attrs}">
-                      <v-btn small icon @click="$emit('showBugEvent')" style="background-color:  #383838" v-on="on"
-                             v-bind="attrs">
-                        <v-icon color="primary">
-                          fas fa-bug
-                        </v-icon>
-                      </v-btn>
-                    </template>
-                    Report Bug
-                  </v-tooltip>
-                </v-list-item>
-                <v-list-item>
-                  <v-tooltip left>
-                    <template v-slot:activator="{on, attrs}">
-                      <v-btn small icon @click="$emit('showHelpEvent')" style="background-color:  #383838" v-on="on" v-bind="attrs">
-                        <v-icon color="primary">
-                          fas fa-question-circle
-                        </v-icon>
-                      </v-btn>
-                    </template>
-                    Contact & Help
-                  </v-tooltip>
-                </v-list-item>
-                <v-list-item>
-                  <v-tooltip left>
-                    <template v-slot:activator="{on, attrs}">
-                      <v-btn small icon @click="$emit('showCompatability')" style="background-color:  #383838" v-on="on" v-bind="attrs">
-                        <v-icon color="primary">
-                          fas fa-laptop-code
-                        </v-icon>
-                      </v-btn>
-                    </template>
-                    Browser Compatability
-                  </v-tooltip>
-                </v-list-item>
-              </v-list>
-            </v-menu>
+
           </v-col>
         </v-row>
       </v-col>
