@@ -4,7 +4,7 @@ services:
     container_name: nedrex-web-db
     image: mysql
     command: --default-authentication-plugin=mysql_native_password
-    restart: on-failure
+    restart: always
     environment:
       MYSQL_DATABASE: reposcape
       MYSQL_ROOT_PASSWORD: example
@@ -14,13 +14,13 @@ services:
       - nedrex-db-volume:/var/lib/mysql
     cap_add:
       - SYS_NICE
-#  web:
-#    container_name: nedrex-web-frontend
-#    image: andimajore/nedrex_repo:web_prod
-#    build: frontend
-#    ports:
-#      - "8021:8080"
-#    restart: on-failure
+  web:
+    container_name: nedrex-web-frontend
+    image: andimajore/nedrex_repo:web_prod
+    build: frontend
+    ports:
+      - "8021:8080"
+    restart: always
   server:
     container_name: nedrex-web-backend
     image: andimajore/nedrex_repo:server_prod
@@ -34,7 +34,7 @@ services:
       - nedrex-usr-volume:/etc/data/usr
     ports:
       - "8022:8090"
-    restart: on-failure
+    restart: always
 volumes:
   nedrex-db-volume:
     external: true
