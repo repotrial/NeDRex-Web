@@ -1468,7 +1468,8 @@ public class WebGraphService {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        removeTempDir(g.getId());
+//        TODO reenable
+//        removeTempDir(g.getId());
         return coords;
     }
 

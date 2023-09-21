@@ -6,7 +6,7 @@ import 'vuetify/dist/vuetify.min.css'
 Vue.use(Vuetify)
 const opts = {
   icons: {
-    iconfont:'fa',
+    iconfont: 'fa',
   },
 }
 

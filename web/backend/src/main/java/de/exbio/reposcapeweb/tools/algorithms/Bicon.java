@@ -29,7 +29,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
-public class Bicon implements Algorithm{
+public class Bicon implements Algorithm {
 
 
     private Environment env;
@@ -41,7 +41,7 @@ public class Bicon implements Algorithm{
     private Logger log = LoggerFactory.getLogger(Bicon.class);
 
     @Autowired
-    public Bicon(Environment env, AlgorithmUtils utils, NodeController nodeController){
+    public Bicon(Environment env, AlgorithmUtils utils, NodeController nodeController) {
         this.env = env;
         this.nodeController = nodeController;
         this.utils = utils;
@@ -67,9 +67,9 @@ public class Bicon implements Algorithm{
     @Override
     public File[] interactionFiles(JobRequest request) {
         String tissue = "";
-        if(request.tissue!=null && request.tissue.length()>0 && !request.tissue.equals("all"))
-            tissue = "-"+request.tissue.replaceAll(" ","");
-        return new File[]{new File(utils.dataDir, "gene_gene_interaction"+tissue+"_" + (request.experimentalOnly ? "exp" : "all") + ".pairs")};
+        if (request.tissue != null && request.tissue.length() > 0 && !request.tissue.equals("all"))
+            tissue = "-" + request.tissue.replaceAll(" ", "");
+        return new File[]{new File(utils.dataDir, "gene_gene_interaction" + tissue + "_" + (request.experimentalOnly ? "exp" : "all") + ".pairs")};
     }
 
     @Override
@@ -85,7 +85,7 @@ public class Bicon implements Algorithm{
     @Override
     public void prepareJobFiles(File tempDir, JobRequest req, Graph g, HashMap<Integer, Pair<String, String>> domainMap) {
         File exprFile = new File(tempDir, "exprFile");
-        WriterUtils.writeTo(exprFile,req.getParams().get("exprData"));
+        WriterUtils.writeTo(exprFile, req.getParams().get("exprData"));
     }
 
     @Override
@@ -123,13 +123,14 @@ public class Bicon implements Algorithm{
         j.setUpdate("" + (allNodes.size() - beforeCount));
         NodeFilter nf = new NodeFilter(nodeController.getFilter(Graphs.getNode(nodeTypeId)), allNodes);
         derived.saveNodeFilter(Graphs.getNode(nodeTypeId), nf);
-        derived.addNodes(nodeTypeId, nf.toList(-1).stream().map(e -> new Node(e.getNodeId(), nodeController.getDomainId(nodeTypeId,e.getNodeId()), e.getName())).collect(Collectors.toList()));
+        derived.addNodes(nodeTypeId, nf.toList(-1).stream().map(e -> new Node(e.getNodeId(), nodeController.getDomainId(nodeTypeId, e.getNodeId()), e.getName())).collect(Collectors.toList()));
     }
 
     @Override
     public boolean usesExpressionInput() {
         return true;
     }
+
     @Override
     public boolean usesSeedInput() {
         return false;
@@ -149,6 +150,7 @@ public class Bicon implements Algorithm{
     public void createIndex() {
 
     }
+
     @Override
     public boolean hasCustomEdges() {
         return false;
@@ -157,7 +159,9 @@ public class Bicon implements Algorithm{
 
     @Override
     public ProcessBuilder getExecutionEnvironment(String[] command) {
-        return new ProcessBuilder(command);
+        ProcessBuilder pb = new ProcessBuilder(command);
+        pb.environment().put("PYTHON", env.getProperty("path.tool.python", "python3"));
+        return pb;
     }
 
     @Override

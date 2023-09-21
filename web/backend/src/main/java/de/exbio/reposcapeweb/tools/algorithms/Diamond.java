@@ -138,9 +138,10 @@ public class Diamond implements Algorithm {
 
     @Override
     public ProcessBuilder getExecutionEnvironment(String[] command) {
-        return new ProcessBuilder(command);
+        ProcessBuilder pb = new ProcessBuilder(command);
+        pb.environment().put("PYTHON", env.getProperty("path.tool.python", "python3"));
+        return pb;
     }
-
     public void prepareJobFiles(File wd, JobRequest req, Graph g, HashMap<Integer, Pair<String, String>> domainMap) {
         File seed = new File(wd, "seeds.list");
         if (req.selection)

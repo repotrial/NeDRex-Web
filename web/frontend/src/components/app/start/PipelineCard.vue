@@ -62,7 +62,8 @@ export default {
     getImgHeight:function () {
       if (this.$refs.img != null && this.$refs.img.$el.clientHeight > 0 && this.$refs.img.$el.clientWidth > 0) {
         this.loading = false
-        this.imgHeight = "calc(max(25vw," + this.minWidth + ")/" + (this.$refs.img.$el.clientWidth / this.$refs.img.$el.clientHeight) + ")"
+        let aspectRatio = this.$refs.img.$el.clientWidth / this.$refs.img.$el.clientHeight;
+        this.imgHeight = `calc((max(25vw, ${this.minWidth}) / ${aspectRatio}) + 0.5px)`;
       } else
         setTimeout(this.getImgHeight, 200)
     }

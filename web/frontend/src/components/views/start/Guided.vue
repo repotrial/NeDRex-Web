@@ -27,8 +27,10 @@
           </div>
 
         </v-card-text>
-        <v-btn @click="modus=1; $emit('clearURLEvent')" color="primary" style="margin-bottom: 15px">Start
-          <v-icon right>fas fa-angle-double-right</v-icon>
+        <v-btn @click="modus=1; $emit('clearURLEvent')" color="primary" style="margin-bottom: 15px">
+          <v-icon left>fas fa-angle-double-right</v-icon>
+          <v-divider vertical style="border-color: white; margin-right: 5px;"></v-divider>
+          Start
         </v-btn>
       </v-card>
     </template>

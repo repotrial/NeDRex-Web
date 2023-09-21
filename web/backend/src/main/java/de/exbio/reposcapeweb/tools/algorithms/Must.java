@@ -127,9 +127,10 @@ public class Must implements Algorithm{
 
     @Override
     public ProcessBuilder getExecutionEnvironment(String[] command) {
-        return new ProcessBuilder(command);
+        ProcessBuilder pb = new ProcessBuilder(command);
+        pb.environment().put("PYTHON", env.getProperty("path.tool.python", "python3"));
+        return pb;
     }
-
     @Override
     public void getResults(HashMap<Integer, HashMap<String, Object>> nodes, HashMap<Integer, HashMap<Integer, HashMap<String, Object>>> edges, File tempDir, Job j, HashMap<Integer, HashMap<String, Integer>> domainMaps) {
         HashMap<String, Integer> domainMap = domainMaps.get(Graphs.getNode(j.getTarget()));

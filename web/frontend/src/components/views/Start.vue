@@ -3,14 +3,26 @@
     <v-card v-show="showStartSelection">
       <v-list>
         <v-list-item>
-          <v-list-item-title class="title">Select your exploration path</v-list-item-title>
+          <v-list-item-title class="title">Select the method to start exploring the NeDRex network!</v-list-item-title>
         </v-list-item>
         <a ref="top"></a>
-        <div class="v-card__subtitle">
-          Select the method to start exploring the NeDRex network. For immediate and easy algorithmic discovery
-          pipelines use the <i>Quick Drug Repurposing</i> page. <i>Guided Connectivity Search</i> may be used for the creation of
-          networks based on some specific path through the metagraph and the derivation of induced graphs. In the <i>Advanced
-          Exploration</i> networks can be freely constructed.
+        <div class="v-card__subtitle" style="width: 100%; align-content: center; display: flex; font-size: .9rem">
+          <div style="width: 70vw; margin: auto">
+<!--            <span >Select the method to <b><i>start exploring the NeDRex network!</i></b></span>-->
+            <ul>
+              <li>
+                <b><i><v-icon left small>fas fa-arrow-right</v-icon>Quick Drug Repurposing:</i></b> For immediate and easy algorithmic drug-repurposing candidate discovery
+                pipelines
+              </li>
+              <li>
+                <b><i><v-icon left small>fas fa-arrow-right</v-icon>Guided Connectivity Search:</i></b> May be used for the creation of networks based on some specific path
+                through the metagraph and the derivation of induced graphs
+              </li>
+              <li>
+                <b><i><v-icon left small>fas fa-arrow-right</v-icon>Advanced Exploration:</i></b> Networks can be freely constructed
+              </li>
+            </ul>
+          </div>
         </div>
         <v-divider></v-divider>
         <v-list-item>
@@ -24,10 +36,12 @@
       </v-list>
     </v-card>
     <Quick v-if="startTab===0" @printNotificationEvent="printNotification"
-           @graphLoadNewTabEvent="loadGraphNewTab" @graphLoadEvent="loadGraph" @focusEvent="focusTop" @clearURLEvent="$emit('clearURLEvent','quick')"
+           @graphLoadNewTabEvent="loadGraphNewTab" @graphLoadEvent="loadGraph" @focusEvent="focusTop"
+           @clearURLEvent="$emit('clearURLEvent','quick')"
            ref="quick" @showStartSelectionEvent="toggleStartSelection" @newGraphEvent="$emit('newGraphEvent')"></Quick>
     <Guided v-if="startTab===1" @printNotificationEvent="printNotification" @newGraphEvent="$emit('newGraphEvent')"
-            @graphLoadEvent="loadGraph" @graphLoadNewTabEvent="loadGraphNewTab" @clearURLEvent="$emit('clearURLEvent', 'guided')" ref="guided"></Guided>
+            @graphLoadEvent="loadGraph" @graphLoadNewTabEvent="loadGraphNewTab"
+            @clearURLEvent="$emit('clearURLEvent', 'guided')" ref="guided"></Guided>
     <Advanced ref="advanced" v-if="startTab===2" :options="options" :colors="colors" :filters="filters"
               @printNotificationEvent="printNotification"
               @graphLoadEvent="loadGraph"
@@ -69,7 +83,7 @@ export default {
     //   this.$emit("showSideEvent", this.startTab === 2)
     this.setView()
     this.job = this.$route.query["job"]
-    if(this.job!=null)
+    if (this.job != null)
       this.loadJob();
   },
   mounted() {
@@ -80,16 +94,16 @@ export default {
       this.startTab = 0;
     }
     ,
-    reload: function(){
-      if(this.job!=null)
+    reload: function () {
+      if (this.job != null)
         this.loadJob();
     },
 
-    loadJob: function(){
-      this.$http.get("getJob?id="+this.job).then(response=>{
+    loadJob: function () {
+      this.$http.get("getJob?id=" + this.job).then(response => {
         console.log(response.data)
-        this.startTab=0
-        this.$nextTick(()=>{
+        this.startTab = 0
+        this.$nextTick(() => {
           this.$refs.quick.reloadJob(response.data)
         })
       })
@@ -103,15 +117,15 @@ export default {
       if (idx === 2 && this.$refs.advanced)
         this.$refs.advanced.reset()
     },
-    printNotification: function (message, style,timeout) {
-      this.$emit("printNotificationEvent", message, style,timeout)
+    printNotification: function (message, style, timeout) {
+      this.$emit("printNotificationEvent", message, style, timeout)
     },
 
     checkURLclear: function (view) {
       if (!this.$route.params.gid)
         this.$emit("clearURLEvent", view)
       else
-        this.$emit("modifyURLEvent",view)
+        this.$emit("modifyURLEvent", view)
     },
 
     executeGraphLoad: function (bool) {
@@ -176,5 +190,19 @@ export default {
 </script>
 
 <style scoped>
+.title {
+  font-weight: bold !important;
+}
+
+.v-card__subtitle ul {
+  padding-left: 20px; /* Adjusts space from the left */
+  margin: 0; /* Removes default margin */
+}
+
+.v-card__subtitle ul li {
+  display: block; /* Ensures each item appears on a new line */
+  text-align: left; /* Left-aligns the text */
+}
+
 
 </style>

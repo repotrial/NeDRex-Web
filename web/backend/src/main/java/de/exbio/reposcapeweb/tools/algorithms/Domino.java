@@ -14,6 +14,8 @@ import de.exbio.reposcapeweb.utils.Pair;
 import de.exbio.reposcapeweb.utils.ProcessUtils;
 import de.exbio.reposcapeweb.utils.ReaderUtils;
 import de.exbio.reposcapeweb.utils.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
@@ -30,6 +32,11 @@ public class Domino implements Algorithm {
     private AlgorithmUtils utils;
     private Environment env;
     private NodeController nodeController;
+
+    private File executable;
+
+
+    private Logger log = LoggerFactory.getLogger(Diamond.class);
 
 
     @Autowired
@@ -49,6 +56,13 @@ public class Domino implements Algorithm {
 
     @Override
     public void prepare() {
+        log.info("Setting up DOMINO");
+        executable = new File(env.getProperty("path.tool.domino"));
+        log.info("DOMINO path=" + executable.getAbsolutePath());
+        if (!executable.exists()) {
+            log.error("DOMINO executable was not found in config. Please make sure it is referenced correctly!");
+            new RuntimeException("Missing reference.");
+        }
     }
 
     @Override
@@ -67,7 +81,7 @@ public class Domino implements Algorithm {
 
     @Override
     public String createCommand(File[] interactions, JobRequest request) {
-        return "domino seeds.list " + interactions[0].getName() + " " + interactions[1].getName() + " result";
+        return "domino "+executable.getAbsolutePath()+" seeds.list " + interactions[0].getName() + " " + interactions[1].getName() + " result";
     }
 
     @Override
@@ -178,6 +192,9 @@ public class Domino implements Algorithm {
     public ProcessBuilder getExecutionEnvironment(String[] command) {
         ProcessBuilder pb = new ProcessBuilder(command);
         pb.environment().put("LD_LIBRARY_PATH", env.getProperty("path.tool.python3-7.ldlib"));
+        pb.environment().put("PYTHONPATH", env.getProperty("path.tool.python3-7.pythonpath"));
+        pb.environment().put("PYTHON", env.getProperty("path.tool.python3-7.python"));
+        pb.environment().put("PATH", env.getProperty("path.tool.python3-7.bin")+":"+System.getenv("PATH"));
         return pb;
     }
 

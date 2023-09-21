@@ -184,9 +184,10 @@ public class TrustRank implements Algorithm {
 
     @Override
     public ProcessBuilder getExecutionEnvironment(String[] command) {
-        return new ProcessBuilder(command);
+        ProcessBuilder pb = new ProcessBuilder(command);
+        pb.environment().put("PYTHON", env.getProperty("path.tool.python", "python3"));
+        return pb;
     }
-
     private HashMap<Integer, HashMap<String, Object>> readResults(File f, HashMap<Integer, HashMap<String, Integer>> domainMap, String target) {
         HashMap<Integer, HashMap<String, Object>> out = new HashMap<>();
         HashMap<String, Integer> drugMap = domainMap.get(Graphs.getNode("drug"));

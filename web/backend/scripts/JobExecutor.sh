@@ -9,15 +9,15 @@ tool=$3
 cd $wd
 if [ $tool == "diamond" ]
 then
-  python3 $4 $5 $6 $7 $8
+  $PYTHON $4 $5 $6 $7 $8
 fi
 if [ $tool == "bicon" ]
 then
-  python3 $4 $5 $6 $7 $8 $9
+  $PYTHON $4 $5 $6 $7 $8 $9
 fi
 if [ $tool == "trustrank" ] || [ $tool == "centrality" ]
 then
-  python3 $4 $5 $6 $7 $8 $9
+  $PYTHON $4 $5 $6 $7 $8 $9
 fi
 
 if [ $tool == "must" ]
@@ -32,7 +32,7 @@ fi
 
 if [ $tool == 'domino' ]
 then
-  domino -a $4 -n $5 -s $6 -o $7
+  $4 -a $5 -n $6 -s $7 -o $8
 fi
 
 if [ $tool == 'robust' ]

@@ -445,12 +445,9 @@ export default {
       let home = path.indexOf('home') > -1
       let history = path.indexOf('history') > -1
       let mode = path.length > 1 ? path[2] : undefined
-      console.log(path)
       if ((path[4] != null && path[3] === "list")) {
         this.setSideVisible(true);
       }
-      console.log(start)
-      console.log(home)
       if (start || home || (path.length ===1 && path[1] === "explore"))
         this.setSideVisible(false);
 
@@ -1007,5 +1004,16 @@ a
 
 .v-dialog:not(.v-dialog--fullscreen)
   max-height: none !important
+
+.theme--light.v-btn.v-btn--has-bg.error
+  background-color: #b80c09 !important
+
+.theme--light.v-btn.v-btn--has-bg.success
+  background-color: #29b809 !important
+
+.theme--light.v-btn.v-btn--has-bg.warn
+  background-color: #b86109 !important
+
+
 
 </style>

@@ -1,7 +1,7 @@
 <template>
   <v-tooltip top>
     <template v-slot:activator="{attrs, on}">
-      <v-btn style="margin-left: 5px; margin-right: 5px;" v-on="on" v-bind="attrs" :color="!save? 'warning':'primary'" :disabled="disabled" @click="$emit('click','back')"><v-icon left>fas fa-angle-left</v-icon>{{label}}</v-btn>
+      <v-btn style="margin-left: 5px; margin-right: 5px;" v-on="on" v-bind="attrs" :color="!save? 'warning':'primary'" :disabled="disabled" @click="$emit('click','back')"><v-icon left>fas fa-angle-left</v-icon><v-divider vertical style="border-color: white; margin-right: 5px;"></v-divider>{{label}}</v-btn>
     </template>
     <span v-if="!save">Return to the last step. This will potentially reset the <br> progress from this site and trigger some re-execution!</span>
     <span v-else>Return to the last step. Progress from this step will not be lost.</span>

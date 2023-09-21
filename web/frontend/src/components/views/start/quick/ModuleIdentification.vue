@@ -105,12 +105,11 @@
                 </v-list-item-subtitle>
                 <v-list-item-action>
                   <v-radio-group row v-model="seedTypeId"
-                                 :disabled="(seedTypeId !=null && $refs.seedTable !=null && $refs.seedTable.getSeeds()!=null && $refs.seedTable.getSeeds().length>0)">
-                    <v-radio label="Gene">
-                    </v-radio>
-                    <v-radio label="Protein">
-                    </v-radio>
+                                 :disabled="(seedTypeId != null && $refs.seedTable != null && $refs.seedTable.getSeeds() != null && $refs.seedTable.getSeeds().length > 0)">
+                    <v-radio label="Gene" :value="0"></v-radio>
+                    <v-radio label="Protein" :value="1"></v-radio>
                   </v-radio-group>
+
                 </v-list-item-action>
               </v-col>
             </v-row>
@@ -585,6 +584,7 @@ export default {
       showVisOption: false,
       uid: undefined,
       seedTypeId: undefined,
+      methodModel: undefined,
       seeds: [],
       reloaded: false,
       // seedOrigin: {},

@@ -1,7 +1,7 @@
 <template>
   <v-tooltip top>
     <template v-slot:activator="{attrs, on}">
-      <v-btn style="margin-left: 5px; margin-right: 5px;" v-on="on" v-bind="attrs" color="error" @click="$emit('click','cancel')" :disabled="disabled"><v-icon left>fas fa-times</v-icon>{{label}}</v-btn>
+      <v-btn style="margin-left: 5px; margin-right: 5px;" v-on="on" v-bind="attrs" color="error" @click="$emit('click','cancel')" :disabled="disabled"><v-icon left>fas fa-times</v-icon><v-divider vertical style="border-color: white; margin-right: 5px;"></v-divider>{{label}}</v-btn>
     </template>
     <span>Return to the pipeline selection and reset all progress!</span>
   </v-tooltip>

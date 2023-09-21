@@ -16,29 +16,31 @@
             </template>
             <template slot="actions">
               <div>
-                <v-btn plain @click="start(1,false)" dark>
+                <v-btn color="rgba(56, 56, 56, .6)" @click="start(1,false)" dark>
                   <v-icon left>
                     fas fa-angle-double-right
                   </v-icon>
+                  <v-divider vertical style="border-color: white; margin-right: 5px;"></v-divider>
                   Run Module Identification
                 </v-btn>
               </div>
-              <div>
-                <v-btn plain @click="start(1,true)" dark>
+              <div style="margin-top: 5px">
+                <v-btn color="rgba(56, 56, 56, .6)" @click="start(1,true)" dark>
                   <v-icon left>
                     fas fa-bolt
                   </v-icon>
+                  <v-divider vertical style="border-color: white; margin-right: 5px;"></v-divider>
                   Quick Mode
                 </v-btn>
               </div>
             </template>
           </PipelineCard>
         </div>
-        <div v-show="hoverDrugRep" style="display: flex; align-content: center">
-          <v-icon size="2vw">
-            fas fa-plus
-          </v-icon>
-        </div>
+<!--        <div v-show="hoverDrugRep" style="display: flex; align-content: center">-->
+<!--          <v-icon size="2vw">-->
+<!--            fas fa-plus-->
+<!--          </v-icon>-->
+<!--        </div>-->
         <div style="display: flex; justify-content: center; justify-self: flex-end">
           <PipelineCard :image="getConfig().STATIC_PATH+'/assets/drug_prio.png'" title="Drug Prioritization">
 
@@ -53,18 +55,20 @@
             </template>
             <template slot="actions">
               <div>
-                <v-btn plain @click="start(2,false)" dark>
+                <v-btn color="rgba(56, 56, 56, .6)" @click="start(2,false)" dark>
                   <v-icon left>
                     fas fa-angle-double-right
                   </v-icon>
+                  <v-divider vertical style="border-color: white; margin-right: 5px;"></v-divider>
                   Run Drug Prioritization
                 </v-btn>
               </div>
-              <div>
-                <v-btn plain @click="start(2,true)" dark>
+              <div style="margin-top: 5px">
+                <v-btn color="rgba(56, 56, 56, .6)" @click="start(2,true)" dark>
                   <v-icon left>
                     fas fa-bolt
                   </v-icon>
+                  <v-divider vertical style="border-color: white; margin-right: 5px;"></v-divider>
                   Quick Mode
                 </v-btn>
               </div>
@@ -76,7 +80,7 @@
         <v-icon size="4vw">fas fa-chevron-down</v-icon>
       </div>
       <div style="display: flex; justify-content: center;">
-        <div @mouseenter="hoverDrugRep=true" @mouseleave="hoverDrugRep=false">
+        <div>
           <PipelineCard :image="getConfig().STATIC_PATH+'/assets/drug_rep.png'" title="Drug Repurposing"
                         subtitle="Module Identification + Drug Prioritization">
             <template slot="description">
@@ -90,18 +94,20 @@
             </template>
             <template slot="actions">
               <div>
-                <v-btn plain @click="start(0,false)" dark>
+                <v-btn color="rgba(56, 56, 56, .6)" @click="start(0,false)" dark>
                   <v-icon left>
                     fas fa-angle-double-right
                   </v-icon>
+                  <v-divider vertical style="border-color: white; margin-right: 5px;"></v-divider>
                   Run Drug Repurposing
                 </v-btn>
               </div>
-              <div>
-                <v-btn plain @click="start(0,true)" dark>
+              <div style="margin-top: 5px">
+                <v-btn color="rgba(56, 56, 56, .6)" @click="start(0,true)" dark>
                   <v-icon left>
                     fas fa-bolt
                   </v-icon>
+                  <v-divider vertical style="border-color: white; margin-right: 5px;"></v-divider>
                   Quick Mode
                 </v-btn>
               </div>
@@ -155,7 +161,7 @@ export default {
     return {
       modus: -1,
       blitz: false,
-      hoverDrugRep: false,
+      // hoverDrugRep: false,
       reload: undefined,
     }
   },

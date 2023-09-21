@@ -1,3 +1,4 @@
+// const HOST = "dev-api.web.nedrex.net"
 const HOST = "localhost"
 export const CONTEXT_PATH="/backend"
 export const BACKEND_PORT= "8090"
@@ -6,4 +7,4 @@ export const SOCKET_URL = "http://" + HOST + ":8090"
 export const PATH_PREFIX= ""
 export const STATIC_PATH="/static/"
 
-export const NEDREX_API="http://api.nedrex.net"
+export const NEDREX_API="https://api.nedrex.net/open"
