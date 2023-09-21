@@ -1,25 +1,10 @@
 <template>
   <v-container>
     <v-card class="mx-auto">
-      <v-list>
-        <v-list-item>
-          <v-list-item-title class="title">
-            Customized Exploration
-          </v-list-item-title>
-        </v-list-item>
-        <v-list-item>
-          <div class="v-card__subtitle">
-            Create a specified starting network by selecting the nodes and edge types it should contain <i>(left
-            side)</i>.
-            Apply filters by clicking on the cog icon <i>(left side)</i> or on the nodes or the edge labels to apply the
-            filter on in the <i>(right panel)</i>.
-          </div>
-        </v-list-item>
-      </v-list>
-      <v-divider></v-divider>
+      <v-card-title style="display: flex; justify-content: center; font-size: x-large; margin-bottom: 15px;">Configure your Network</v-card-title>
       <v-container>
         <v-row>
-          <v-col cols="3">
+          <v-col cols="4">
             <v-list v-model="nodeModel" ref="nodeSelector">
               <v-card-title>Nodes</v-card-title>
               <v-list-item v-for="item in nodes.filter(n=>!n.external)" :key="item.index">
@@ -29,7 +14,7 @@
                 >
                   <v-icon left :color="getColoring('nodes',item.label)">fas fa-genderless</v-icon>
                   {{ item.label }}
-                  <span style="color: gray; margin-left: 3pt"
+                  <span style="color: rgb(128,128,128); margin-left: 3pt"
                         v-show="nodeModel.indexOf(item.index)>-1">({{
                       (countMap[item.label.toLowerCase()] ? countMap[item.label.toLowerCase()] + '/' : '?/') +
                       $global.metagraph.weights.nodes[item.label.toLowerCase()]
@@ -40,8 +25,6 @@
                 </v-btn>
               </v-list-item>
             </v-list>
-          </v-col>
-          <v-col cols="4">
             <v-list v-model="edgeModel">
               <v-card-title>Edges</v-card-title>
               <template v-for="item in edges.filter(e=>!e.external)">
@@ -88,15 +71,7 @@
               </template>
             </v-list>
           </v-col>
-          <v-col cols="5">
-            <Network ref="startgraph" @selectionEvent="graphSelection"
-                     :startGraph="true" :configuration="{visualized:true}" :window-style="windowStyle">
-            </Network>
-          </v-col>
-        </v-row>
-        <v-row>
-          <v-col :cols="7">
-            <v-card-title>General Configuration</v-card-title>
+          <v-col cols="8">
             <v-list-item-subtitle>
               <LabeledSwitch v-model="options.onlyConnected" label-off="Include all nodes"
                              label-on="Remove unconnected">
@@ -109,14 +84,10 @@
                 </template>
               </LabeledSwitch>
             </v-list-item-subtitle>
+            <Network ref="startgraph" @selectionEvent="graphSelection"
+                     :startGraph="true" :configuration="{visualized:true}" :window-style="windowStyle">
+            </Network>
           </v-col>
-          <v-col></v-col>
-        </v-row>
-        <v-row>
-          <div style="width:100%; display: flex; justify-content: center; margin-bottom: 5px">
-            <ButtonCancel label="Reset" @click="loadGraph(false)"></ButtonCancel>
-            <ButtonNext :disabled="nodeModel.length===0" label="Generate Network" @click="loadGraph(true)"></ButtonNext>
-          </div>
         </v-row>
       </v-container>
       <FilterDialog ref="filter" :filterType="filterTypeMap" :node-id="filterNodeId" @updateNodeCount="setNodeCount"
@@ -162,6 +133,12 @@
           </template>
         </v-card>
       </v-dialog>
+      <v-card-actions style="margin-top: 64px;">
+        <div style="width:100%; display: flex; justify-content: flex-end; margin-bottom: 5px">
+          <ButtonCancel label="Reset" @click="loadGraph(false)"></ButtonCancel>
+          <ButtonNext :disabled="nodeModel.length===0" label="Generate Network" @click="loadGraph(true)"></ButtonNext>
+        </div>
+      </v-card-actions>
     </v-card>
   </v-container>
 </template>

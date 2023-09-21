@@ -167,12 +167,12 @@
             <!--              <v-switch v-model="options.history.otherUsers" :disabled="!chronological" dense label="Show parent graphs of other users"-->
             <!--                        @click="$emit('historyReloadEvent')"></v-switch>-->
             <!--            </div>-->
-            <div style="width: 100%; display: flex; justify-content: center">
-              <v-chip outlined style="margin:8px" :disabled="!chronological" @click="$emit('reverseSortingEvent')">
-                <v-icon small left color="primary">fas fa-sort</v-icon>
-                Reverse Sorting
-              </v-chip>
-            </div>
+<!--            <div style="width: 100%; display: flex; justify-content: center">-->
+<!--              <v-chip outlined style="margin:8px" :disabled="!chronological" @click="$emit('reverseSortingEvent')">-->
+<!--                <v-icon small left color="primary">fas fa-sort</v-icon>-->
+<!--                Reverse Sorting-->
+<!--              </v-chip>-->
+<!--            </div>-->
           </div>
         </template>
       </v-card>

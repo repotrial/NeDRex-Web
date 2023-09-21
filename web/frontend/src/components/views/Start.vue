@@ -3,37 +3,87 @@
     <v-card v-show="showStartSelection">
       <v-list>
         <v-list-item>
-          <v-list-item-title class="title">Select the method to start exploring the NeDRex network!</v-list-item-title>
+          <v-list-item-title class="title">Select one way to start exploring the NeDRex knowledge-graph!
+          </v-list-item-title>
         </v-list-item>
         <a ref="top"></a>
         <div class="v-card__subtitle" style="width: 100%; align-content: center; display: flex; font-size: .9rem">
           <div style="width: 70vw; margin: auto">
-<!--            <span >Select the method to <b><i>start exploring the NeDRex network!</i></b></span>-->
             <ul>
               <li>
-                <b><i><v-icon left small>fas fa-arrow-right</v-icon>Quick Drug Repurposing:</i></b> For immediate and easy algorithmic drug-repurposing candidate discovery
-                pipelines
+                <b><i>
+                  <v-icon left small>fas fa-arrow-right</v-icon>
+                  Quick Drug Repurposing:</i></b> For quick and easy algorithmic drug-repurposing candidate discovery
+                pipelines.
               </li>
               <li>
-                <b><i><v-icon left small>fas fa-arrow-right</v-icon>Guided Connectivity Search:</i></b> May be used for the creation of networks based on some specific path
-                through the metagraph and the derivation of induced graphs
+                <b style="margin-left: 32px">Starting point</b> is a list of genes/proteins or a disease of interest.
+              </li>
+              <li style="margin-top: 8px">
+                <b><i>
+                  <v-icon left small>fas fa-arrow-right</v-icon>
+                  Guided Connectivity Search:</i></b> May be used for the creation of networks based on some specific
+                path
+                through the metagraph and the derivation of induced graphs.
               </li>
               <li>
-                <b><i><v-icon left small>fas fa-arrow-right</v-icon>Advanced Exploration:</i></b> Networks can be freely constructed
+                <b style="margin-left: 32px">Starting point</b> is a list of any entities of interest.
+              </li>
+              <li style="margin-top: 8px">
+                <b><i>
+                  <v-icon left small>fas fa-arrow-right</v-icon>
+                  Advanced Exploration:</i></b> Networks can be freely constructed and explored using more powerful
+                functions.
+              </li>
+              <li>
+                <b style="margin-left: 32px">Starting point</b> is a metagraph representation of the initial network
+                with filters applied to nodes and edges.
               </li>
             </ul>
           </div>
         </div>
         <v-divider></v-divider>
-        <v-list-item>
-          <v-tabs v-model="startTab" centered>
-            <v-tabs-slider color="blue"></v-tabs-slider>
-            <v-tab @click="checkURLclear('quick')">Quick Drug Repurposing</v-tab>
-            <v-tab @click="checkURLclear('guided')">Guided Connectivity Search</v-tab>
-            <v-tab @click="checkURLclear('advanced')">Advanced Exploration</v-tab>
-          </v-tabs>
+        <v-list-item class="justify-center">
+          <v-radio-group v-model="startTab" row>
+            <v-radio label="Quick Drug Repurposing" @change="checkURLclear('quick')" :value="0"></v-radio>
+            <v-radio label="Guided Connectivity Search" @change="checkURLclear('guided')" :value="1"></v-radio>
+            <v-radio label="Advanced Exploration" @change="checkURLclear('advanced')" :value="2"></v-radio>
+          </v-radio-group>
         </v-list-item>
       </v-list>
+      <v-divider v-if="startTab !== 1"></v-divider>
+      <div class="v-card__subtitle" style="width: 100%; align-content: center; display: flex; font-size: .9rem">
+        <div style="margin-left: 15vw">
+          <div v-if="startTab===0">
+            <ul>
+              <li>
+                Pick one of the three following options for quick drug repurposing:
+              </li>
+              <li><b>1. Module Identification:</b> Identifies a disease module based on a set of given input genes or a
+                disease.
+              </li>
+              <li><b>2. Drug Prioritization:</b> Identifies a ranked list of drugs given a set of input genes or a
+                disease.
+              </li>
+              <li><b>3. Drug Repurposing:</b> Chains <i>Module Identification</i> and<i>Drug Prioritization</i></li>
+              <li style="margin-top: 8px"><i>For each method you can choose a 'Quick Mode' in which a default method
+                with default parameters is used.</i></li>
+            </ul>
+          </div>
+        </div>
+        <div v-if="startTab===1"></div>
+        <div v-if="startTab===2">
+          <ul>
+            <li>
+              Create a specified starting network by selecting the nodes and edge types it should contain:
+            </li>
+            <li><b>1. Meta-network: </b>Select nodes and edges from the left. You will see the connections between selected entities on the right.</li>
+            <li><b>2. Filtering: </b>Click on <i>edges</i> and <i>nodes</i> in the meta-network right side to select of filter elements of this kind.</li>
+            <li><b>3. Create: </b>Scroll down and click on 'Generate Network'!</li>
+          </ul>
+        </div>
+
+      </div>
     </v-card>
     <Quick v-if="startTab===0" @printNotificationEvent="printNotification"
            @graphLoadNewTabEvent="loadGraphNewTab" @graphLoadEvent="loadGraph" @focusEvent="focusTop"

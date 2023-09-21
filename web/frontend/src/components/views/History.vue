@@ -324,25 +324,21 @@
         <v-card-text>Do you really want to delete the selected Network?
         </v-card-text>
         <v-divider></v-divider>
-
-        <v-card-actions>
-          <v-btn
-            color="green darken-1"
-            text
-            @click="closeDeletePop(false)"
-          >
-            Dismiss
+        <v-card-actions style="display: flex; justify-content: flex-end">
+          <v-btn style="margin-left: 5px; margin-right: 5px;" color="success"
+                 @click="closeDeletePop(false)">
+            <v-icon left>fas fa-angle-left</v-icon>
+            <v-divider vertical style="border-color: white; margin-right: 5px;"></v-divider>
+            Keep
           </v-btn>
-          <v-btn
-            color="red darken-1"
-            text
-            @click="closeDeletePop(true)"
-          >
+          <v-btn style="margin-left: 5px; margin-right: 5px;" color="error"
+                 @click="closeDeletePop(true)">
+            <v-icon left>fas fa-trash</v-icon>
+            <v-divider vertical style="border-color: white; margin-right: 5px;"></v-divider>
             Delete
           </v-btn>
         </v-card-actions>
       </v-card>
-
     </v-dialog>
   </div>
 </template>
