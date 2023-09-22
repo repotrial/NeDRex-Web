@@ -1,14 +1,14 @@
 <template>
   <v-tooltip bottom v-if="node.length>0">
     <template v-slot:activator="{attrs,on}">
-      <v-chip style="font-size: smaller; color: gray;" pill v-on="on" v-bind="attrs">{{ getNiceDBName(db) }}</v-chip>
+      <v-chip small style="font-size: smaller; color: rgb(128,128,128);" pill v-on="on" v-bind="attrs">{{ getNiceDBName(db) }}</v-chip>
     </template>
     <span v-if="!directHit(db)">The association between this <b>{{ nodeName }}</b> and <br> at least one of the selected <b>{{ node }}s</b> was extracted from <b><i>{{ getFullDBName(db) }}</i></b></span>
     <span v-else><b>{{ nodeName }}</b> was directly added by searching for <b>{{node}}s</b>. The main information is extracted from <b><i>{{ getFullDBName(db) }}</i></b></span>
   </v-tooltip>
   <v-tooltip bottom v-else>
     <template v-slot:activator="{attrs,on}">
-      <v-chip style="font-size: smaller; color: gray;" pill v-on="on" v-bind="attrs">{{ getNiceDBName(db) }}</v-chip>
+      <v-chip small style="font-size: smaller; color: rgb(128,128,128);" pill v-on="on" v-bind="attrs">{{ getNiceDBName(db) }}</v-chip>
     </template>
     <span v-if="!directHit(db)">The association between this <b>{{ nodeName }}</b> and <br> at least one of the selected connected nodes was extracted from <b><i>{{ getFullDBName(db) }}</i></b></span>
     <span v-else>This <b>{{ nodeName }}</b> was directly added by searching for names or properties of <b>{{nodeName}}s</b>. The main information is extracted from <b><i>{{ getFullDBName(db) }}</i></b></span>

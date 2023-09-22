@@ -1,9 +1,38 @@
 <template>
   <v-card style="margin-bottom: 25px">
+    <v-dialog
+      v-model="verify"
+      persistent
+      style="z-index: 1001"
+      max-width="500"
+    >
+      <v-card>
+        <v-card-title>Confirm Navigation</v-card-title>
+        <v-card-text>Do you really ant to reset the current page?
+        </v-card-text>
+        <v-divider></v-divider>
+
+        <v-card-actions style="display: flex; justify-content: flex-end">
+          <v-btn style="margin-left: 5px; margin-right: 5px;" color="primary"
+                 @click="verify = false">
+            <v-icon left>fas fa-angle-left</v-icon>
+            <v-divider vertical style="border-color: white; margin-right: 5px;"></v-divider>
+            Stay
+          </v-btn>
+          <v-btn style="margin-left: 5px; margin-right: 5px;" color="error"
+                 @click="verify = false; makeStep('cancel')">
+            <v-icon left>fas fa-times</v-icon>
+            <v-divider vertical style="border-color: white; margin-right: 5px;"></v-divider>
+            Cancel
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+
+    </v-dialog>
     <div style="display: flex; justify-content: flex-end; margin-left: auto; ">
       <v-tooltip left>
         <template v-slot:activator="{on, attrs}">
-          <v-btn icon style="padding:1em" color="red darker" @click="makeStep('cancel')" v-on="on" v-bind="attrs">
+          <v-btn icon style="padding:1em" color="red darker" @click="verify=true" v-on="on" v-bind="attrs">
             <v-icon size="2em">far fa-times-circle</v-icon>
           </v-btn>
         </template>
@@ -53,15 +82,13 @@
             class="mb-4"
             min-height="80vh"
           >
-            <v-card-subtitle class="headline">1. Seed Configuration</v-card-subtitle>
-            <v-card-subtitle style="margin-top: -25px">Add seeds to your
-              list
-              <span v-if="!blitz">{{ blitz ? "." : " or use an expression data based algorithm (" }}<a
-                @click="seedTypeId=0; methodModel=1; makeStep('continue'); setBicon()">BiCoN
-                <v-icon right size="1em" style="margin-left: 0">fas fa-caret-right</v-icon>
-              </a>{{ ")." }}
-              </span>
-              <span v-else-if="algorithmSelected"> In Quick Module Identification a
+            <v-card-subtitle class="headline" style="color: black; text-align: left; margin-left: 5vw">1. Seed
+              Configuration
+            </v-card-subtitle>
+            <v-card-subtitle style="margin-top: -25px">
+              <ul>
+                <li v-if="algorithmSelected"  style="margin-left: 0;">
+                  <span > In Quick Module Identification a
                 <v-tooltip bottom>
                 <template v-slot:activator="{on, attrs}">
                   <span v-on="on" v-bind="attrs">
@@ -97,51 +124,85 @@
                     </v-container>
                 </span>
               </v-tooltip> is used.</span>
+                </li>
+                <li style="margin-left: 0;">Add seeds genes or proteins to the list. You can either:</li>
+                <li style="margin-top: 8px">
+                  <v-icon style="font-size: 8px" left>fas fa-circle</v-icon>
+                  Select genes or proteins directly
+                </li>
+                <li>
+                  <v-icon style="font-size: 8px" left>fas fa-circle</v-icon>
+                  Select associated genes based on diseases or drugs
+                </li>
+                <li v-if="!blitz">
+                  <v-icon style="font-size: 8px" left>fas fa-circle</v-icon>
+                  Extract them from expression data (here:
+                  {{ blitz ? "." : " or use an expression data based algorithm (" }}<a
+                  @click="seedTypeId=0; methodModel=1; makeStep('continue'); setBicon()">BiCoN
+                  <v-icon right size="1em" style="margin-left: 0">fas fa-caret-right</v-icon>
+                </a>)
+                </li>
+              </ul>
             </v-card-subtitle>
             <v-divider style="margin: 15px;"></v-divider>
             <v-row>
               <v-col>
-                <v-list-item-subtitle class="title">Select the seed type
-                </v-list-item-subtitle>
-                <v-list-item-action>
-                  <v-radio-group row v-model="seedTypeId"
+                <v-card-title style="text-align: left"><i v-show="seedTypeId==null" style="color: red">*</i><b>Select the
+                  seed type:</b>
+                  <v-radio-group row v-model="seedTypeId" style="display: inline-block; margin-left: 32px"
                                  :disabled="(seedTypeId != null && $refs.seedTable != null && $refs.seedTable.getSeeds() != null && $refs.seedTable.getSeeds().length > 0)">
                     <v-radio label="Gene" :value="0"></v-radio>
                     <v-radio label="Protein" :value="1"></v-radio>
                   </v-radio-group>
-
-                </v-list-item-action>
+                </v-card-title>
               </v-col>
             </v-row>
-            <QuickExamples v-if="$refs.validation" :seedType="['gene','protein'][seedTypeId]"
-                           @drugsEvent="$refs.validation.addDrugs" @exampleEvent="applyExample"
-                           @disorderEvent="saveDisorders" @suggestionEvent="addToSuggestions"
-                           @addNodesEvent="addToSelection"></QuickExamples>
+            <div v-if="seedTypeId!=null">
+              <v-card-title><i v-show="$refs.seedTable ==null || $refs.seedTable.getSeeds().length===0"
+                               style="color: red">*</i><b>Select seeds:</b>
+              </v-card-title>
+            </div>
             <v-container style="height: 560px; margin-top: 15px; max-width: 100%">
               <v-row style="height: 100%">
-                <v-col cols="6">
+                <v-col cols="5">
                   <div style="height: 40vh; max-height: 40vh;">
                     <template v-if="seedTypeId!==undefined">
-                      <div style="display: flex">
+                      <v-card-title style="margin-left: 20px; color: rgb(128,128,128)">Option 1: From example
+                      <QuickExamples v-if="$refs.validation" :seedType="['gene','protein'][seedTypeId]" style="display: inline-block; margin-left: 16px"
+                                     @drugsEvent="$refs.validation.addDrugs" @exampleEvent="applyExample"
+                                     @disorderEvent="saveDisorders" @suggestionEvent="addToSuggestions"
+                                     @addNodesEvent="addToSelection"></QuickExamples>
+                      </v-card-title>
+                      <div style="display: flex; margin-top: 16px">
                         <div style="justify-content: flex-start">
-                          <v-card-title style="margin-left: -25px;" class="subtitle-1">Add
-                            {{ ['genes', 'proteins'][this.seedTypeId] }} associated to
+                          <v-card-title style="text-align: left; margin-left: 20px;  color: rgb(128,128,128)" class="title"> Option 2: Add
+                            {{ ['genes', 'proteins'][this.seedTypeId] }} by association to <i style="margin-left: 8px">{{suggestionType}}</i>
                           </v-card-title>
                         </div>
                         <div style="justify-content: flex-end; margin-left: auto">
-                          <LabeledSwitch v-model="advancedOptions"
-                                         @click="suggestionType = advancedOptions ? suggestionType : 'disorder'"
-                                         label-off="Limited" label-on="Full">
-                            <template v-slot:tooltip>
+                          <v-radio-group row v-model="advancedOptions" style="display: inline-block; margin-left: 32px"
+                                         :disabled="(seedTypeId != null && $refs.seedTable != null && $refs.seedTable.getSeeds() != null && $refs.seedTable.getSeeds().length > 0)">
+                            <v-tooltip left>
+                              <template v-slot:activator="{on,attrs}">
+                                <v-radio label="Limited" @click="suggestionType = 'disorder'" :value="false" v-bind="attrs"
+                                         v-on="on"></v-radio>
+                              </template>
                               <div style="width: 300px"><b>Limited Mode:</b><br>The options are limited to the most
-                                interesting and generally used ones to not overcomplicate the user interface <br>
-                                <b>Full Mode:</b><br> The full mode provides a wider list of options to select from
+                                interesting and generally used ones to not overcomplicate the user interface
+                              </div>
+                            </v-tooltip>
+                            <v-tooltip left>
+                              <template v-slot:activator="{on,attrs}">
+                                <v-radio label="Full" :value="true" v-bind="attrs"
+                                         v-on="on"></v-radio>
+                              </template>
+                              <div style="width: 300px"><b>Full Mode:</b><br> The full mode provides a wider list of options to select from
                                 for
                                 more
                                 specific queries.
                               </div>
-                            </template>
-                          </LabeledSwitch>
+                            </v-tooltip>
+                          </v-radio-group>
                         </div>
                       </div>
 
@@ -172,38 +233,40 @@
                                                 @disorderEvent="saveDisorders"
                                                 @addToSelectionEvent="addToSelection" @subtypeSelection="subtypePopup"
                                                 @suggestionEvent="addToSuggestions" :add-all="true"
-                                                style="justify-self: flex-end;margin-left: auto"></SuggestionAutocomplete>
+                                                style="justify-self: flex-end;margin-left: 20px"></SuggestionAutocomplete>
                       </div>
-                      <NodeInput text="or provide Seed IDs by" @addToSelectionEvent="addToSelection"
-                                 :idName="['entrez','uniprot'][seedTypeId]"
-                                 :nodeType="['gene', 'protein'][seedTypeId]"
-                                 @printNotificationEvent="printNotification"></NodeInput>
+                      <div style="display: flex; justify-content: flex-start; margin-top: 32px; margin-left: 20px">
+                        <NodeInput :text="'Option 3: Provide '+['gene','protein'][seedTypeId]+'s IDs by'" @addToSelectionEvent="addToSelection"
+                                   :idName="['entrez','uniprot'][seedTypeId]"
+                                   :nodeType="['gene', 'protein'][seedTypeId]"
+                                   @printNotificationEvent="printNotification"></NodeInput>
+                      </div>
                     </template>
                   </div>
                 </v-col>
 
                 <v-divider vertical v-show="seedTypeId!==undefined"></v-divider>
-                <v-col cols="6" style="padding-top:0">
+                <v-col cols="7" style="padding-top:0">
                   <v-tooltip left>
                     <template v-slot:activator="{attrs,on}">
-                      <v-chip style="position: absolute; left:auto; right:0" v-on="on" v-bind="attrs"
+                      <v-btn small style="position: absolute; left:auto; right:0; margin-top: 16px ;" v-on="on" v-bind="attrs"
                               v-show="seedTypeId!=null"
                               :disabled="$refs.seedTable==null || $refs.seedTable.getSeeds().length===0"
                               color="primary" @click="showInteractionNetwork()">
-                        <v-icon>fas fa-project-diagram</v-icon>
-                      </v-chip>
+                        <v-icon small>fas fa-project-diagram</v-icon>
+                      </v-btn>
                     </template>
                     <span>Display an interaction network with all your current seeds</span>
                   </v-tooltip>
                   <v-tooltip left>
                     <template v-slot:activator="{attrs,on}">
-                      <v-chip style="position: absolute; left:auto; right:55px" v-on="on" v-bind="attrs"
+                      <v-btn small style="position: absolute; left:auto; right:60px; margin-top: 16px" v-on="on" v-bind="attrs"
                               @click="$refs.drugsDialog.show()"
                               v-show="seedTypeId!=null"
                               color="primary">
-                        <v-icon left>fas fa-capsules</v-icon>
+                        <v-icon small left>fas fa-capsules</v-icon>
                         {{ validationDrugCount }}
-                      </v-chip>
+                      </v-btn>
                     </template>
                     <span>There are {{ validationDrugCount }} drugs that were associated with your query.<br> These are saved for validation purposes later.<br><i>Click here to view the current list!</i></span>
                   </v-tooltip>
@@ -220,9 +283,11 @@
               </v-row>
             </v-container>
           </v-card>
+          <v-card-actions style="display: flex; justify-content: flex-end">
           <ButtonCancel @click="makeStep"></ButtonCancel>
           <ButtonNext @click="makeStep"
                       :disabled="seedTypeId<0 || $refs.seedTable == null || $refs.seedTable.getSeeds().length===0"></ButtonNext>
+          </v-card-actions>
         </v-stepper-content>
 
         <v-stepper-content step="2">
@@ -231,10 +296,12 @@
                                socket-event="quickModuleFinishedEvent" :seed-type-id="seedTypeId"
                                @algorithmSelectedEvent="acceptAlgorithmSelectEvent"
                                @jobEvent="readJob" @clearSeedsEvent="seeds = []"></MIAlgorithmSelect>
+            <v-card-actions style="display: flex; justify-content: flex-end">
             <ButtonCancel @click="makeStep"></ButtonCancel>
             <ButtonBack @click="makeStep"></ButtonBack>
             <ButtonNext @click="makeStep" label="RUN"
                         :disabled=" !algorithmSelected  || ($refs.algorithms.getAlgorithmMethod()==='bicon' && $refs.algorithms.getAlgorithmModels().exprFile ===undefined)"></ButtonNext>
+            </v-card-actions>
           </template>
         </v-stepper-content>
 
@@ -244,21 +311,44 @@
             class="mb-4"
             min-height="80vh"
           >
-            <v-card-subtitle class="headline">3. Module Identification Results</v-card-subtitle>
+            <v-card-subtitle class="headline" style="color: black; text-align: left; margin-left: 5vw">3. Module Identification Results</v-card-subtitle>
+
+            <v-card-subtitle style="margin-top: -25px">
+              <ul>
+                <li style="margin-left: 0;">Explore the results of Module Identification:</li>
+                <li style="margin-top: 8px">
+                  <v-icon style="font-size: 8px" left>fas fa-circle</v-icon>
+                  Explore the network
+                </li>
+                <li>
+                  <v-icon style="font-size: 8px" left>fas fa-circle</v-icon>
+                  Click on nodes in a list to highlight it in the network
+                </li>
+                <li>
+                  <v-icon style="font-size: 8px" left>fas fa-circle</v-icon>
+                  Double click a nodes in a list to get details
+                </li>
+              </ul>
+            </v-card-subtitle>
             <v-divider style="margin: 15px;"></v-divider>
             <v-container style="max-width: 100%">
               <v-row>
-                <v-col cols="3" style="padding: 0 50px 0 0; margin-right: -50px; min-width: 400px">
-                  <v-card-title class="subtitle-1">Seeds ({{ seeds.length }}) {{
+                <v-col cols="3" style="padding: 0 50px 0 0; margin-right: -50px; min-width: 400px; ">
+                  <v-card-title class="subtitle-1" style="display: flex">
+                    <span style="justify-content: flex-start">Seeds ({{ seeds.length }}) {{
                       (results.targets.length !== undefined && results.targets.length > 0 ? ("& Module (" + getTargetCount() + ") " + ["Genes", "Proteins"][seedTypeId]) : (": " + (state != null ? ("[" + state + "]") : "Processing")))
                     }}
+                    </span>
                     <v-progress-circular indeterminate size="25" v-if="this.results.targets.length===0"
                                          style="margin-left:15px; z-index:50">
                     </v-progress-circular>
+                    <ResultDownload v-else v-show="seeds && seeds.length>0" raw results seeds style="margin: auto; justify-self: flex-end; display: inline-block"
+                                    @downloadEvent="downloadList" @downloadResultsEvent="downloadResultList"
+                                    @downloadRawEvent="downloadFullResultList"></ResultDownload>
                   </v-card-title>
 
                   <template v-if="!loadingResults">
-                    <v-data-table max-height="50vh" height="50vh" fixed-header dense item-key="id"
+                    <v-data-table max-height="55vh" height="55vh" fixed-header dense item-key="id"
                                   :items="results.targets" :headers="getHeaders()" disable-pagination
                                   hide-default-footer @click:row="rowClicked" @dblclick:row="rowDoubleClicked">
                       <template v-slot:item.displayName="{item}">
@@ -271,20 +361,9 @@
                         </v-tooltip>
                         <span v-else>{{ item.displayName }}</span>
                       </template>
-                      <template v-slot:item.seed="{item}"  v-if="seeds || (reload && reloaded)">
+                      <template v-slot:item.seed="{item}" v-if="seeds || (reload && reloaded)">
                         <v-icon v-if="item.isSeed" color="success">fas fa-check</v-icon>
                         <v-icon v-else color="error">fas fa-times</v-icon>
-                      </template>
-                      <template v-slot:footer>
-                        <v-card-subtitle><i>Click an entry to focus in the network<br>Doubleclick an entry to show
-                          details</i></v-card-subtitle>
-                        <div style="display: flex; justify-content: center; margin-left: auto">
-                          <div style="padding-top: 16px">
-                            <ResultDownload v-show="seeds && seeds.length>0" raw results seeds
-                                            @downloadEvent="downloadList" @downloadResultsEvent="downloadResultList"
-                                            @downloadRawEvent="downloadFullResultList"></ResultDownload>
-                          </div>
-                        </div>
                       </template>
                     </v-data-table>
 
@@ -296,6 +375,63 @@
                   </v-data-table>
                 </v-col>
                 <v-col>
+                  <div style="display: flex; justify-content: center">
+                    <v-tooltip top>
+                      <template v-slot:activator="{attrs, on}">
+                        <v-btn
+                          :disabled="!currentGid"
+                          outlined
+                          small
+                          v-on="on"
+                          v-bind="attrs"
+                          style="margin:8px"
+                          @click="requestGraphDownload"
+                        >
+                          <v-icon
+                            left
+                            small
+                            color="primary"
+                          >
+                            far fa-arrow-alt-circle-down
+                          </v-icon>
+                          <v-divider vertical style="border-color: black; margin-right: 5px;"></v-divider>
+                          Download
+                        </v-btn>
+                      </template>
+                      <div style="width: 250px">Download a .graphml file containing the current network with all
+                        available
+                        attributes.
+                      </div>
+                    </v-tooltip>
+                    <v-tooltip top>
+                      <template v-slot:activator="{attrs, on}">
+                        <v-btn
+                          :disabled="!currentJid"
+                          v-on="on"
+                          v-bind="attrs"
+                          outlined
+                          small
+                          style="margin:8px"
+                          @click="copyLink(); printNotification('Copied graph link to clipboard!',1)"
+                        >
+                          <v-icon
+                            left
+                            small
+                            color="primary"
+                          >
+                            far fa-copy
+                          </v-icon>
+                          <v-divider vertical style="border-color: black; margin-right: 5px;"></v-divider>
+                          Copy URL
+                        </v-btn>
+                      </template>
+                      <div style="width: 250px">
+                        Copies the unique link of this network to your clipboard to save it to some document or to share
+                        it with
+                        others.
+                      </div>
+                    </v-tooltip>
+                  </div>
                   <i v-if="!this.currentGid">The execution could take a moment. Save the current URL and return at any
                     time!</i>
                   <Network ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle"
@@ -333,63 +469,12 @@
                              @toggleOptionEvent="toggleToolOption" @clickOptionEvent="clickToolOption"></Tools>
                     </template>
                   </Network>
-                  <div style="display: flex; justify-content: center">
-                    <v-tooltip top>
-                      <template v-slot:activator="{attrs, on}">
-                        <v-chip
-                          :disabled="!currentGid"
-                          outlined
-                          icon
-                          v-on="on"
-                          v-bind="attrs"
-                          style="margin:8px"
-                          @click="requestGraphDownload"
-                        >
-                          <v-icon
-                            left
-                            small
-                            color="primary"
-                          >
-                            far fa-arrow-alt-circle-down
-                          </v-icon>
-                          Download
-                        </v-chip>
-                      </template>
-                      <div style="width: 250px">Download a .graphml file containing the current network with all available
-                        attributes.
-                      </div>
-                    </v-tooltip>
-                    <v-tooltip top>
-                      <template v-slot:activator="{attrs, on}">
-                        <v-chip
-                          :disabled="!currentJid"
-                          v-on="on"
-                          v-bind="attrs"
-                          outlined
-                          icon
-                          style="margin:8px"
-                          @click="copyLink(); printNotification('Copied graph link to clipboard!',1)"
-                        >
-                          <v-icon
-                            left
-                            small
-                            color="primary"
-                          >
-                            far fa-copy
-                          </v-icon>
-                          Copy URL
-                        </v-chip>
-                      </template>
-                      <div style="width: 250px">
-                        Copies the unique link of this network to your clipboard to save it to some document or to share it with
-                        others.
-                      </div>
-                    </v-tooltip>
-                  </div>
+
                 </v-col>
               </v-row>
             </v-container>
           </v-card>
+          <v-card-actions style="display: flex; justify-content: flex-end; margin-right: 16px">
           <ButtonCancel @click="makeStep"></ButtonCancel>
           <ButtonBack @click="makeStep" v-if="!reloaded"></ButtonBack>
           <ButtonNext @click="makeStep" label="VALIDATE" :disabled="currentGid==null"></ButtonNext>
@@ -398,6 +483,7 @@
               <v-btn v-bind="attrs" v-on="on" @click="loadDrugTargets" color="primary"
                      :disabled="results.targets.length===0">
                 <v-icon left>fas fa-angle-double-right</v-icon>
+                <v-divider vertical style="border-color: white; margin-right: 5px;"></v-divider>
                 Drug Ranking
               </v-btn>
             </template>
@@ -405,6 +491,7 @@
           </v-tooltip>
           <ButtonAdvanced @click="$emit('graphLoadNewTabEvent',{post: {id: currentGid}})"
                           :disabled="currentGid==null"></ButtonAdvanced>
+          </v-card-actions>
         </v-stepper-content>
         <v-stepper-content step="4">
           <Validation ref="validation" :step="4" :seed-type-id="seedTypeId" :module="results.targets"
@@ -424,37 +511,40 @@
                 style="z-index: 1001"
       >
         <v-card>
-          <div style="overflow-y: auto; max-height: calc(80vh - 50px)">
-            <v-card-title>Set graph name</v-card-title>
-            <v-card-text>Please enter a useful graph name, to find your graph easier in the history again. Or select one
-              of
-              the autogenerated options that are based on your input.
-            </v-card-text>
-            <v-card-actions>
-              <v-text-field label="Name" v-model="graphName"></v-text-field>
-            </v-card-actions>
-            <v-card-text v-for="option in nameOptions" :key="option">
-              <div>{{ option }}</div>
-              <v-chip @click="graphName=option" style="font-size: 8pt">Load
-                <v-icon right>fas fa-angle-double-right</v-icon>
-              </v-chip>
-            </v-card-text>
-          </div>
+          <v-card-title>Set graph name</v-card-title>
+          <v-card-text>Please enter a useful graph name, to find your graph easier in the history again. Or select one
+            of
+            the autogenerated options that are based on your input.
+          </v-card-text>
+          <v-card-actions>
+            <v-text-field label="Name" v-model="graphName"></v-text-field>
+          </v-card-actions>
+          <v-card-text v-for="option in nameOptions" :key="option">
+            <div>{{ option }}</div>
+            <v-btn outlined @click="graphName=option" style="font-size: 8pt" color="primary">
+              <v-icon left>fas fa-angle-double-right</v-icon>
+              Load
+            </v-btn>
+          </v-card-text>
+
           <v-divider></v-divider>
 
-          <v-card-actions>
+          <v-card-actions style="justify-content: flex-end; display: flex; margin-right: 16px">
             <v-btn
-              text
               @click="resolveNamingDialog()"
+              color="error"
             >
+              <v-icon left>fas fa-times</v-icon>
+              <v-divider vertical style="border-color: white; margin-right: 5px;"></v-divider>
               Cancel
             </v-btn>
             <v-btn
-              color="green darken-1"
-              text
+              color="success"
               @click="resolveNamingDialog(graphName)"
               :disabled="graphName==null || graphName.length ===0"
             >
+              <v-icon left>fas fa-check</v-icon>
+              <v-divider vertical style="border-color: white; margin-right: 5px;"></v-divider>
               Accept
             </v-btn>
           </v-card-actions>
@@ -476,9 +566,10 @@
           </v-card-text>
           <v-card-actions>
             <v-btn
-              text
               @click="error=false"
             >
+              <v-icon size="2em">far fa-times</v-icon>
+              <v-divider vertical style="border-color: white; margin-right: 5px;"></v-divider>
               Close
             </v-btn>
           </v-card-actions>
@@ -497,29 +588,31 @@
           <v-card-text>Do you want to use the whole module as input for the drug ranking or just a subset?
           </v-card-text>
           <v-card-actions>
-            <v-radio-group v-model="rankingSelect" row>
+            <v-radio-group v-model="rankingSelect" style="margin-left: 128px">
               <v-radio :label="'Original seeds ('+seeds.length+')'">
               </v-radio>
-              <v-radio :label="'whole Module ('+(getTargetCount()+seeds.length)+')'">
+              <v-radio :label="'Whole module ('+(getTargetCount()+seeds.length)+')'">
               </v-radio>
-              <v-radio :label="'non-seeds only ('+getTargetCount()+')'">
+              <v-radio :label="'Non-seeds only ('+getTargetCount()+')'">
               </v-radio>
             </v-radio-group>
           </v-card-actions>
           <v-divider></v-divider>
 
-          <v-card-actions>
-            <v-btn
-              text
+          <v-card-actions style="display: flex; justify-content: flex-end; margin-left: 16px">
+            <v-btn color="error"
               @click="resolveRankingDialog(false)"
             >
+              <v-icon left>fas fa-times</v-icon>
+              <v-divider vertical style="border-color: white; margin-right: 5px;"></v-divider>
               Cancel
             </v-btn>
             <v-btn
-              color="green darken-1"
-              text
+              color="success"
               @click="resolveRankingDialog(true)"
             >
+              <v-icon left>fas fa-angle-double-right</v-icon>
+              <v-divider vertical style="border-color: white; margin-right: 5px;"></v-divider>
               Accept
             </v-btn>
           </v-card-actions>
@@ -576,6 +669,7 @@ export default {
         height: '60vh',
         'min-height': '60vh',
       },
+      verify: false,
       example: undefined,
       targetColorStyle: {},
       currentJid: undefined,
@@ -1214,5 +1308,13 @@ th
 .td-result
   font-size: smaller !important
 
+ul
+  margin-left: 4vw
+
+
+ul li
+  display: block
+  margin-left: 32px
+  text-align: left
 
 </style>

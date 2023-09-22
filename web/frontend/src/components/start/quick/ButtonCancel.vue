@@ -48,7 +48,7 @@ export default {
   props: {
     label: {
       type: String,
-      default: "CANCEL"
+      default: "RESTART"
     },
     disabled: {
       type: Boolean,

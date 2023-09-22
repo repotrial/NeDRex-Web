@@ -7,8 +7,15 @@
                   style="margin-top: 16px">
       <template v-slot:top>
         <div style="display: flex">
-          <v-card-title style="justify-self: flex-start; padding-top: 0" class="subtitle-1">{{ title }}
+          <v-card-title style="justify-self: flex-start; padding-top: 0" class="subtitle-1"><b>{{ title }}</b>
           </v-card-title>
+          <div style="display:flex; justify-content: center; margin-right: 135px ;" v-if="nodes !=null && nodes.length>0">
+            <SeedDownload v-show="download" @downloadListEvent="downloadNodes"></SeedDownload>
+            <SeedRemove v-show="remove" @clearEvent="clear" @intersectionEvent="keepIntersection"
+                        :attributes="attributes" @removeEvent="removeNodes"></SeedRemove>
+            <SeedFilter v-show="filter" :attributes="attributes" @filterEvent="filterNodes"></SeedFilter>
+          </div>
+
         </div>
       </template>
       <template v-slot:item.displayName="{item}">
@@ -111,12 +118,7 @@
         </v-tooltip>
       </template>
     </v-data-table>
-    <div style="display:flex; justify-content: center; ;" v-if="nodes !=null && nodes.length>0">
-      <SeedDownload v-show="download" @downloadListEvent="downloadNodes"></SeedDownload>
-      <SeedRemove v-show="remove" @clearEvent="clear" @intersectionEvent="keepIntersection"
-                  :attributes="attributes" @removeEvent="removeNodes"></SeedRemove>
-      <SeedFilter v-show="filter" :attributes="attributes" @filterEvent="filterNodes"></SeedFilter>
-    </div>
+
   </div>
 </template>
 
@@ -184,10 +186,10 @@ export default {
       this.$emit("updateCount")
     },
 
-    setValues(origins, nodes, attributes){
-      this.origins= {...origins}
-      this.$set(this,"nodes",[...nodes])
-      this.$set(this,"attributes",{...attributes})
+    setValues(origins, nodes, attributes) {
+      this.origins = {...origins}
+      this.$set(this, "nodes", [...nodes])
+      this.$set(this, "attributes", {...attributes})
       this.$emit("updateCount")
     },
 
@@ -273,9 +275,8 @@ export default {
           if (e.sourceDBs != null) {
             let node = ids[e.id]
             if (node.sourceDBs != null) {
-              node.sourceDBs = node.sourceDBs.concat(e.sourceDBs.filter(n=>node.sourceDBs.indexOf(n)===-1))
-            }
-            else node.sourceDBs = [].concat(e.sourceDBs)
+              node.sourceDBs = node.sourceDBs.concat(e.sourceDBs.filter(n => node.sourceDBs.indexOf(n) === -1))
+            } else node.sourceDBs = [].concat(e.sourceDBs)
           }
         }
         if (this.origins[e.id] !== undefined) {
@@ -293,11 +294,11 @@ export default {
       return this.nodes;
     },
 
-    allOrigins(){
+    allOrigins() {
       return this.origins
     },
 
-    getAttributes(){
+    getAttributes() {
       return this.attributes
     },
 

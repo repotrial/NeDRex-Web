@@ -27,11 +27,13 @@
           </div>
 
         </v-card-text>
+        <v-card-actions style="display: flex; justify-content: flex-end; margin-right: 32px">
         <v-btn @click="modus=1; $emit('clearURLEvent')" color="primary" style="margin-bottom: 15px">
           <v-icon left>fas fa-angle-double-right</v-icon>
           <v-divider vertical style="border-color: white; margin-right: 5px;"></v-divider>
           Start
         </v-btn>
+        </v-card-actions>
       </v-card>
     </template>
     <GuidedStepper ref="guidedSteps" v-if="modus===1"

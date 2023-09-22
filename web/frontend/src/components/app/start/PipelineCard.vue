@@ -17,7 +17,7 @@
       <div v-if="imgHeight!=='0' && !loading" class="content" v-show="cardHover"
            :style="{marginTop: 'calc(-1*'+imgHeight+')', minHeight: imgHeight,maxHeight: imgHeight , fontSize: 'medium',height: imgHeight}">
         <div style="padding: 15px; height: 70%; width:100%; display: flex">
-          <div style="align-content: center; margin:auto">
+          <div style="align-content: center; margin:auto; " >
             <slot name="description">
             </slot>
           </div>

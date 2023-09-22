@@ -5,215 +5,227 @@
     :flat="flat"
   >
     <template v-if="header">
-      <v-card-subtitle class="headline">{{ step }}. Drug Prioritization Algorithm Selection</v-card-subtitle>
-      <v-card-subtitle style="margin-top: -25px">Select and adjust the algorithm you want to apply on your seeds
-        to identify a ranked list of drug candidates.
+      <v-card-subtitle class="headline" style="color: black; text-align: left; margin-left: 5vw">{{ step }}. Drug
+        Prioritization Algorithm Selection
+      </v-card-subtitle>
+      <v-card-subtitle style="margin-top: -25px">
+        <ul>
+          <li style="margin-left: 0;">Select an algorithm to rank drugs based on your selected seeds and configure it:
+          </li>
+          <li style="margin-top: 8px">
+            <b>1.</b> Select network-based (starting from seeds) or expression-based (starting from expression data)
+            algorithm group
+          </li>
+          <li>
+            <b>2.</b> Select the algorithm
+          </li>
+          <li>
+            <b>3.</b> Configure the algorithm by changing parameters
+          </li>
+        </ul>
       </v-card-subtitle>
       <v-divider style="margin: 15px;"></v-divider>
     </template>
     <v-container style="height: 80%; max-width: 100%">
-      <v-row style="height: 100%">
-        <v-col>
-          <v-card-title style="margin-left: -25px">Select the Base-Algorithm</v-card-title>
-          <v-tabs v-model="methodModel" optional>
-            <v-tab v-for="method in methods" :key="method.id">{{ method.label }}</v-tab>
-          </v-tabs>
-          <div v-if="methodModel!==undefined" style="margin-left: 20px">
-            <div v-for="method in methods" :key="'desc_'+method.id" v-show="method.id===getAlgorithmMethod()">
-              <v-card-title style="margin-left:-15px; padding-top:10px; padding-bottom: 5px"
-                            @click="showDescription = !showDescription">{{ method.descType }}
-                <v-icon right>{{ showDescription ? 'fas fa-angle-up' : 'fas fa-angle-down' }}</v-icon>
-              </v-card-title>
-              <div style="display: flex; justify-content: flex-start; margin-left: 15px" v-show="showDescription">
-                <div>
-                  <div style="text-align: justify; color: dimgray" v-html="getAlgorithm().description">
-                  </div>
-                  <div style="display: flex; justify-content: flex-start">
-                    <v-chip outlined><a :href="getAlgorithm().link" target="_blank" style="text-decoration: none">Read
-                      more
-                      <v-icon right>fas fa-angle-double-right</v-icon>
-                    </a></v-chip>
-                  </div>
-                </div>
+      <v-card-title style="text-align: left"><b>Select the Base-Algorithm:</b>
+        <v-radio-group style="margin-left: 32px" row v-model="methodModel" optional>
+          <v-radio v-for="(method,index) in methods" :key="method.id" :value="index" :label="method.label">
+            {{ method.label }}
+          </v-radio>
+        </v-radio-group>
+      </v-card-title>
+      <div v-if="methodModel!==undefined" style="margin-left: 20px">
+        <div v-for="method in methods" :key="'desc_'+method.id" v-show="method.id===getAlgorithmMethod()">
+          <v-card-title style="margin-left:-15px; padding-top:10px; padding-bottom: 5px">{{ method.descType }}
+          </v-card-title>
+          <div style="display: flex; justify-content: flex-start; margin-left: 15px">
+            <div>
+              <div style="text-align: justify; color: dimgray" v-html="getAlgorithm().description">
               </div>
-            </div>
-            <v-card-title style="margin-left:-15px; padding-top:10px; padding-bottom: 15px">Parameters</v-card-title>
-            <div style=" margin-left: 15px">
-              <div>
-                <v-slider
-                  hide-details
-                  class="align-center"
-                  v-model="getAlgorithmModels().topX"
-                  step="1"
-                  min="1"
-                  max="2000"
-                >
-                  <template v-slot:prepend>
-                    <v-text-field
-                      v-model="getAlgorithmModels().topX"
-                      class="mt-0 pt-0"
-                      type="integer"
-                      style="width: 100px"
-                      label="visualize topX"
-                    ></v-text-field>
-                  </template>
-                  <template v-slot:append>
-                    <v-tooltip left>
-                      <template v-slot:activator="{ on, attrs }">
-                        <v-icon
-                          v-bind="attrs"
-                          v-on="on"
-                          left> far fa-question-circle
-                        </v-icon>
-                      </template>
-                      <span>A integer X limiting the visualization to the top X drugs that were found.</span>
-                    </v-tooltip>
-                  </template>
-                </v-slider>
-              </div>
-              <div style="display: flex">
-                <v-switch
-                  style="justify-self: flex-start; margin-left: 0; margin-right: auto"
-                  label="Only use experimentally validated interaction networks"
-                  v-model="experimentalSwitch"
-                >
-                  <template v-slot:append>
-                    <v-tooltip left>
-                      <template v-slot:activator="{ on, attrs }">
-                        <v-icon
-                          v-bind="attrs"
-                          v-on="on"
-                          left> far fa-question-circle
-                        </v-icon>
-                      </template>
-                      <span>Restricts the edges in the {{
-                          ['Gene', 'Protein'][seedTypeId] + '-' + ['Gene', 'Protein'][seedTypeId]
-                        }} network to experimentally validated ones.</span>
-                    </v-tooltip>
-                  </template>
-                </v-switch>
-                <v-switch
-                  v-if="connectionSelect"
-                  style="justify-self: flex-start; margin-left: 0; margin-right: auto"
-                  :label="'Add '+['gene','protein'][seedTypeId]+' interactions'"
-                  v-model="interactionSwitch"
-                >
-                  <template v-slot:append>
-                    <v-tooltip left>
-                      <template v-slot:activator="{ on, attrs }">
-                        <v-icon
-                          v-bind="attrs"
-                          v-on="on"
-                          left> far fa-question-circle
-                        </v-icon>
-                      </template>
-                      <span>Adds {{
-                          ['Gene', 'Protein'][seedTypeId] + '-' + ['Gene', 'Protein'][seedTypeId]
-                        }} interactions between seeds to the generated network.</span>
-                    </v-tooltip>
-                  </template>
-                </v-switch>
-                <v-select :items="tissues" v-model="tissueFilter" outlined dense label="Tissue"
-                          style="max-width: 250px; justify-self: center; margin-left: auto; margin-right: auto; margin-top:16px"></v-select>
-              </div>
-              <div style="display:flex; width: 100%">
-                <div style="justify-self: flex-start">
-                  <v-switch
-                    label="Only direct Drugs"
-                    v-model="getAlgorithmModels().onlyDirect"
-                  >
-                    <template v-slot:append>
-                      <v-tooltip left>
-                        <template v-slot:activator="{ on, attrs }">
-                          <v-icon
-                            v-bind="attrs"
-                            v-on="on"
-                            left> far fa-question-circle
-                          </v-icon>
-                        </template>
-                        <span>If only the drugs interacting directly with seeds should be considered in the ranking,
-                             this should be selected. If including the non-direct drugs is desired unselect.</span>
-                      </v-tooltip>
-                    </template>
-                  </v-switch>
-                </div>
-                <div style="justify-self: center; margin-left: auto">
-                  <v-switch
-                    label="Only approved Drugs"
-                    v-model="getAlgorithmModels().onlyApproved"
-                  >
-                    <template v-slot:append>
-                      <v-tooltip left>
-                        <template v-slot:activator="{ on, attrs }">
-                          <v-icon
-                            v-bind="attrs"
-                            v-on="on"
-                            left> far fa-question-circle
-                          </v-icon>
-                        </template>
-                        <span>If only approved drugs should be considered in the ranking,
-                             this should be selected. If including all approved and unapproved drugs is desired unselect.</span>
-                      </v-tooltip>
-                    </template>
-                  </v-switch>
-                </div>
-                <div style="justify-self: flex-end; margin-left: auto">
-                  <v-switch
-                    label="Filter Element 'Drugs'"
-                    v-model="getAlgorithmModels().filterElements"
-                  >
-                    <template v-slot:append>
-                      <v-tooltip left>
-                        <template v-slot:activator="{ on, attrs }">
-                          <v-icon
-                            v-bind="attrs"
-                            v-on="on"
-                            left> far fa-question-circle
-                          </v-icon>
-                        </template>
-                        <span>Filters:<br><b>chemical elements:</b> <i>Gold</i>, <i>Zinc</i>, ...<br><b>metals and metal cations:</b> <i>Cupric Chloride</i>, <i>Aluminium acetoacetate</i>, ...<br><b>minerals and mineral supplements:</b> <i>Calcium silicate</i>, <i>Sodium chloride</i>, ...</span>
-                      </v-tooltip>
-                    </template>
-                  </v-switch>
-                </div>
-              </div>
-              <div v-if="getAlgorithmMethod() === 'trustrank'">
-                <v-slider
-                  v-show="getAlgorithmModels().damping!=null"
-                  hide-details
-                  class="align-center"
-                  v-model="getAlgorithmModels().damping"
-                  step="0.01"
-                  min="0"
-                  max="1"
-                >
-                  <template v-slot:prepend>
-                    <v-text-field
-                      v-model="getAlgorithmModels().damping"
-                      class="mt-0 pt-0"
-                      type="float"
-                      style="width: 100px"
-                      label="damping-factor"
-                    ></v-text-field>
-                  </template>
-                  <template v-slot:append>
-                    <v-tooltip left>
-                      <template v-slot:activator="{ on, attrs }">
-                        <v-icon
-                          v-bind="attrs"
-                          v-on="on"
-                          left> far fa-question-circle
-                        </v-icon>
-                      </template>
-                      <span>A float value between 0-1 to be used as damping factor parameter.</span>
-                    </v-tooltip>
-                  </template>
-                </v-slider>
+              <div style="display: flex; justify-content: flex-start">
+                <v-chip outlined><a :href="getAlgorithm().link" target="_blank" style="text-decoration: none">Read
+                  more
+                  <v-icon right>fas fa-angle-double-right</v-icon>
+                </a></v-chip>
               </div>
             </div>
           </div>
-        </v-col>
-      </v-row>
+        </div>
+        <v-card-title style="margin-left:-15px; padding-top:10px; padding-bottom: 15px">Parameters</v-card-title>
+        <div style=" margin-left: 15px">
+          <div>
+            <v-slider
+              hide-details
+              class="align-center"
+              v-model="getAlgorithmModels().topX"
+              step="1"
+              min="1"
+              max="2000"
+            >
+              <template v-slot:prepend>
+                <v-text-field
+                  v-model="getAlgorithmModels().topX"
+                  class="mt-0 pt-0"
+                  type="integer"
+                  style="width: 100px"
+                  label="visualize topX"
+                ></v-text-field>
+              </template>
+              <template v-slot:append>
+                <v-tooltip left>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-icon
+                      v-bind="attrs"
+                      v-on="on"
+                      left> far fa-question-circle
+                    </v-icon>
+                  </template>
+                  <span>A integer X limiting the visualization to the top X drugs that were found.</span>
+                </v-tooltip>
+              </template>
+            </v-slider>
+          </div>
+          <div style="display: flex">
+            <v-switch
+              style="justify-self: flex-start; margin-left: 0; margin-right: auto"
+              label="Only use experimentally validated interaction networks"
+              v-model="experimentalSwitch"
+            >
+              <template v-slot:append>
+                <v-tooltip left>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-icon
+                      v-bind="attrs"
+                      v-on="on"
+                      left> far fa-question-circle
+                    </v-icon>
+                  </template>
+                  <span>Restricts the edges in the {{
+                      ['Gene', 'Protein'][seedTypeId] + '-' + ['Gene', 'Protein'][seedTypeId]
+                    }} network to experimentally validated ones.</span>
+                </v-tooltip>
+              </template>
+            </v-switch>
+            <v-switch
+              v-if="connectionSelect"
+              style="justify-self: flex-start; margin-left: 0; margin-right: auto"
+              :label="'Add '+['gene','protein'][seedTypeId]+' interactions'"
+              v-model="interactionSwitch"
+            >
+              <template v-slot:append>
+                <v-tooltip left>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-icon
+                      v-bind="attrs"
+                      v-on="on"
+                      left> far fa-question-circle
+                    </v-icon>
+                  </template>
+                  <span>Adds {{
+                      ['Gene', 'Protein'][seedTypeId] + '-' + ['Gene', 'Protein'][seedTypeId]
+                    }} interactions between seeds to the generated network.</span>
+                </v-tooltip>
+              </template>
+            </v-switch>
+            <v-select :items="tissues" v-model="tissueFilter" outlined dense label="Tissue"
+                      style="max-width: 250px; justify-self: center; margin-left: auto; margin-right: auto; margin-top:16px"></v-select>
+          </div>
+          <div style="display:flex; width: 100%">
+            <div style="justify-self: flex-start">
+              <v-switch
+                label="Only direct Drugs"
+                v-model="getAlgorithmModels().onlyDirect"
+              >
+                <template v-slot:append>
+                  <v-tooltip left>
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-icon
+                        v-bind="attrs"
+                        v-on="on"
+                        left> far fa-question-circle
+                      </v-icon>
+                    </template>
+                    <span>If only the drugs interacting directly with seeds should be considered in the ranking,
+                             this should be selected. If including the non-direct drugs is desired unselect.</span>
+                  </v-tooltip>
+                </template>
+              </v-switch>
+            </div>
+            <div style="justify-self: center; margin-left: auto">
+              <v-switch
+                label="Only approved Drugs"
+                v-model="getAlgorithmModels().onlyApproved"
+              >
+                <template v-slot:append>
+                  <v-tooltip left>
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-icon
+                        v-bind="attrs"
+                        v-on="on"
+                        left> far fa-question-circle
+                      </v-icon>
+                    </template>
+                    <span>If only approved drugs should be considered in the ranking,
+                             this should be selected. If including all approved and unapproved drugs is desired unselect.</span>
+                  </v-tooltip>
+                </template>
+              </v-switch>
+            </div>
+            <div style="justify-self: flex-end; margin-left: auto">
+              <v-switch
+                label="Filter Element 'Drugs'"
+                v-model="getAlgorithmModels().filterElements"
+              >
+                <template v-slot:append>
+                  <v-tooltip left>
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-icon
+                        v-bind="attrs"
+                        v-on="on"
+                        left> far fa-question-circle
+                      </v-icon>
+                    </template>
+                    <span>Filters:<br><b>chemical elements:</b> <i>Gold</i>, <i>Zinc</i>, ...<br><b>metals and metal cations:</b> <i>Cupric Chloride</i>, <i>Aluminium acetoacetate</i>, ...<br><b>minerals and mineral supplements:</b> <i>Calcium silicate</i>, <i>Sodium chloride</i>, ...</span>
+                  </v-tooltip>
+                </template>
+              </v-switch>
+            </div>
+          </div>
+          <div v-if="getAlgorithmMethod() === 'trustrank'">
+            <v-slider
+              v-show="getAlgorithmModels().damping!=null"
+              hide-details
+              class="align-center"
+              v-model="getAlgorithmModels().damping"
+              step="0.01"
+              min="0"
+              max="1"
+            >
+              <template v-slot:prepend>
+                <v-text-field
+                  v-model="getAlgorithmModels().damping"
+                  class="mt-0 pt-0"
+                  type="float"
+                  style="width: 100px"
+                  label="damping-factor"
+                ></v-text-field>
+              </template>
+              <template v-slot:append>
+                <v-tooltip left>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-icon
+                      v-bind="attrs"
+                      v-on="on"
+                      left> far fa-question-circle
+                    </v-icon>
+                  </template>
+                  <span>A float value between 0-1 to be used as damping factor parameter.</span>
+                </v-tooltip>
+              </template>
+            </v-slider>
+          </div>
+        </div>
+      </div>
     </v-container>
   </v-card>
 </template>

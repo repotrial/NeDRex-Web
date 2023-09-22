@@ -3,35 +3,57 @@
     class="mb-4"
     min-height="80vh"
   >
-    <v-card-subtitle class="headline">{{ step }}. Validation</v-card-subtitle>
-    <v-card-subtitle style="margin-top: -25px">Validate the results by selecting drugs known to be effective in the
-      current scenario.
+    <v-card-subtitle class="headline" style="color: black; text-align: left; margin-left: 5vw">{{ step }}. Validation</v-card-subtitle>
+    <v-card-subtitle style="margin-top: -25px">
+      <ul>
+        <li style="margin-left: 0; margin-top: 8px">
+      Validate the results by selecting drugs known to be effective in the
+      current scenario:
+        </li>
+        <li><v-icon style="font-size: 8px" left>fas fa-circle</v-icon>Drugs might have been automatically added when selecting seeds based on a disorder</li>
+        <li><v-icon style="font-size: 8px" left>fas fa-circle</v-icon>Search for or upload drugs directly</li>
+        <li><v-icon style="font-size: 8px" left>fas fa-circle</v-icon>Select linked drugs based on disease indications or protein targets</li>
+        <li><v-icon style="font-size: 8px" left>fas fa-circle</v-icon>Adjust the validation parameters</li>
+</ul>
     </v-card-subtitle>
     <v-divider style="margin: 15px;"></v-divider>
     <v-container style="height: 80%; max-width: 100%">
       <v-row>
         <v-col cols="6">
+          <v-card-title><i v-show="!$refs.drugTable || $refs.drugTable.getSeeds().length===0"
+                           style="color: red">*</i><b>Select drugs:</b>
+          </v-card-title>
           <div style="height: 820px; max-height: 820px;">
             <template>
               <div style="display: flex">
                 <div style="justify-content: flex-start">
-                  <v-card-title style="margin-left: -25px;" class="subtitle-1">Add drugs associated to
+                  <v-card-title style="text-align: left; margin-left: 20px;  color: rgb(128,128,128)" class="title">Option 1: Add drugs directly or by association to <i style="margin-left: 8px">{{suggestionType}}</i>
                   </v-card-title>
                 </div>
                 <div style="justify-content: flex-end; margin-left: auto">
-                  <LabeledSwitch v-model="advancedOptions"
-                                 @click="suggestionType = advancedOptions ? suggestionType : 'disorder'"
-                                 label-off="Limited" label-on="Full">
-                    <template v-slot:tooltip>
+                  <v-radio-group row v-model="advancedOptions" style="display: inline-block; margin-left: 32px"
+                                 :disabled="(seedTypeId != null && $refs.seedTable != null && $refs.seedTable.getSeeds() != null && $refs.seedTable.getSeeds().length > 0)">
+                    <v-tooltip left>
+                      <template v-slot:activator="{on,attrs}">
+                        <v-radio label="Limited" @click="suggestionType = 'disorder'" :value="false" v-bind="attrs"
+                                 v-on="on"></v-radio>
+                      </template>
                       <div style="width: 300px"><b>Limited Mode:</b><br>The options are limited to the most
-                        interesting and generally used ones to not overcomplicate the user interface <br>
-                        <b>Full Mode:</b><br> The full mode provides a wider list of options to select from for
+                        interesting and generally used ones to not overcomplicate the user interface
+                      </div>
+                    </v-tooltip>
+                    <v-tooltip left>
+                      <template v-slot:activator="{on,attrs}">
+                        <v-radio label="Full" :value="true" v-bind="attrs"
+                                 v-on="on"></v-radio>
+                      </template>
+                      <div style="width: 300px"><b>Full Mode:</b><br> The full mode provides a wider list of options to select from
+                        for
                         more
                         specific queries.
                       </div>
-                    </template>
-
-                  </LabeledSwitch>
+                    </v-tooltip>
+                  </v-radio-group>
                 </div>
               </div>
 
@@ -57,10 +79,12 @@
                                         @addToSelectionEvent="addToSelection"
                                         style="justify-self: flex-end;margin-left: auto"></SuggestionAutocomplete>
               </div>
-              <NodeInput text="or provide Seed IDs by" @addToSelectionEvent="addToSelection"
+              <div style="display: flex; justify-content: flex-start; margin-top: 32px; margin-left: 20px">
+              <NodeInput text="Option 2: Provide drug IDs by" @addToSelectionEvent="addToSelection"
                          idName="drugbank"
                          nodeType="drug"
                          @printNotificationEvent="printNotification"></NodeInput>
+              </div>
             </template>
             <SeedTable ref="drugTable" :download="true"
                        :remove="true"
@@ -72,11 +96,12 @@
             ></SeedTable>
           </div>
         </v-col>
-
         <v-divider vertical style="margin-bottom: 10px"></v-divider>
-        <div style="justify-self: flex-end; margin-left: auto; width: 48%;"
+        <v-col>
+          <v-card-title style="margin-left: 32px; margin-right: 32px"><b>Adjust and run validation:</b>
+          </v-card-title>
+        <div style="margin-left: 32px; margin-right: 32px"
              v-if="$refs.drugTable && $refs.drugTable.getSeeds().length>0">
-          <v-card-title class="subtitle-1">Adjust validation parameters</v-card-title>
           <div style="width: 100%; display: flex; justify-content: left">
             <v-tooltip top>
               <template v-slot:activator="{attrs, on}">
@@ -124,14 +149,19 @@
               </v-tooltip>
             </template>
           </v-slider>
-          <v-card-subtitle style="margin-top: 16px; color: #383838">{{ models.perms }} random modules with same node
+          <v-card-subtitle style="margin-top: 16px; color: #383838; text-align: left">{{ models.perms }} random modules with same node
             count and number of connected components or drug lists with the same number of drugs are computed and
             p-values derived by determining the fraction of cases in which random networks have a better score than the
             observed network.
           </v-card-subtitle>
-          <v-btn @click="validate()" color="primary">Run Validation
-            <v-icon right>fas fa-angle-double-right</v-icon>
+          <v-card-actions style="display: flex; justify-content: flex-end">
+          <v-btn @click="validate()" color="success">
+            <v-icon left>fas fa-angle-double-right</v-icon>
+            <v-divider vertical style="border-color: white; margin-right: 5px;"></v-divider>
+            Run Validation
+
           </v-btn>
+          </v-card-actions>
           <div v-if="module!=null">
             <v-card-subtitle v-if="moduleValidationStatus !=null" class="title">Module Validation Result:
             </v-card-subtitle>
@@ -189,12 +219,10 @@
             </div>
           </div>
           <div v-if="ranking!=null">
-            <v-card-subtitle v-if="rankingValidationStatus !=null" class="title">Ranking Validation Result:
-            </v-card-subtitle>
-            <v-card-subtitle style="margin-top: -25px">
+            <v-card-title v-if="rankingValidationStatus !=null" style="margin-top:64px"><b>Ranking Validation Result:</b>
               <v-tooltip bottom v-if="styleMap[rankingValidationStatus]!=null">
                 <template v-slot:activator="{attrs, on}">
-                  <v-chip style="color: white; margin-left: 10px" v-on="on" v-bind="attrs"
+                  <v-chip style="color: white; margin-left: 10px; display: inline-block" v-on="on" v-bind="attrs"
                           :color="styleMap[rankingValidationStatus][0]"><a style="color: white;text-decoration: none"
                                                                            target="_blank"
                                                                            :href="'http://82.148.225.92:8022/validation/status?uid='+rankingValidationUID">
@@ -206,9 +234,9 @@
                 <div><b>Current State: </b>{{ rankingValidationStatus }}<br><i>Click here to show the raw server
                   response!</i></div>
               </v-tooltip>
-            </v-card-subtitle>
+            </v-card-title>
 
-            <div style="display: flex; justify-content: center; width: 100%">
+            <div style="width: 100%">
               <v-simple-table v-if="rankingValidationError == null ||rankingValidationError.length===0"
                               style="max-width: 400px;">
                 <template v-slot:default>
@@ -243,6 +271,8 @@
             </div>
           </div>
         </div>
+
+        </v-col>
       </v-row>
     </v-container>
   </v-card>

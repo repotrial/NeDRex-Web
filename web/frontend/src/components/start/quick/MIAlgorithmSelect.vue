@@ -5,17 +5,26 @@
     :flat="flat"
   >
     <template v-if="header">
-      <v-card-subtitle class="headline">2. Module Identification Algorithm Selection</v-card-subtitle>
-      <v-card-subtitle style="margin-top: -25px">Select and adjust the algorithm you want to apply on your seeds
-        to construct a disease module.
+      <v-card-subtitle class="headline" style="color: black; text-align: left; margin-left: 5vw">2. Module Identification Algorithm Selection</v-card-subtitle>
+      <v-card-subtitle style="margin-top: -25px">
+        <ul>
+          <li style="margin-left: 0;">Select an algorithm for disease module identification and configure it:</li>
+          <li style="margin-top: 8px">
+            <b>1.</b> Select network-based (starting from seeds) or expression-based (starting from expression data) algorithm group
+          </li>
+          <li>
+            <b>2.</b> Select the algorithm
+          </li>
+          <li>
+            <b>3.</b> Configure the algorithm by changing parameters
+          </li>
+        </ul>
       </v-card-subtitle>
       <v-divider style="margin: 15px;"></v-divider>
     </template>
     <v-container style="height: 80%; max-width: 100%">
-      <v-list-item-title>Select the Algorithm group!</v-list-item-title>
-      <v-list-item-action>
-
-        <v-radio-group row v-model="groupModel">
+      <v-card-title style="text-align: left"><b>Select the Algorithm group!</b>
+        <v-radio-group row v-model="groupModel" style="display: inline-block; margin-left: 32px">
           <v-tooltip bottom v-for="group in groups" :key="group.id">
             <template v-slot:activator="{attrs, on}">
               <v-radio :label="group.label" :value="group.id" v-on="on" v-bind="attrs"
@@ -25,22 +34,20 @@
             <span>{{ group.tooltip }}</span>
           </v-tooltip>
         </v-radio-group>
-
-      </v-list-item-action>
+      </v-card-title>
       <v-row style="height: 100%">
         <v-col>
-          <v-card-title style="margin-left: -25px">Select the Base-Algorithm</v-card-title>
-          <v-tabs v-model="methodModel" v-for="group in groups" :key="'tabs_'+group.id" v-if="group.id===groupModel"
+          <v-card-title style="text-align: left"><b>Select the Base-Algorithm:</b>
+          <v-radio-group style="margin-left: 32px" row v-model="methodModel" v-for="group in groups" :key="'tabs_'+group.id" v-if="group.id===groupModel"
                   optional>
-            <v-tab v-for="method in methods.filter(m=>m.group===group.id)" :key="method.id">{{ method.label }}</v-tab>
-          </v-tabs>
-          <div v-if="methodModel!==undefined" style="margin-left: 20px">
+            <v-radio v-for="(method,index) in methods.filter(m=>m.group===group.id)" @click="methodModel=index" :value="index" :label="method.label" :key="method.id"></v-radio>
+          </v-radio-group>
+          </v-card-title>
+            <div v-if="methodModel!==undefined" style="margin-left: 20px">
             <div v-for="method in methods" :key="'desc_'+method.id" v-show="method.id===getAlgorithmMethod()">
-              <v-card-title style="margin-left:-15px; padding-top:10px; padding-bottom: 5px"
-                            @click="showDescription = !showDescription">{{ method.descType }}
-                <v-icon right>{{ showDescription ? 'fas fa-angle-up' : 'fas fa-angle-down' }}</v-icon>
+              <v-card-title style="margin-left:-15px; padding-top:10px; padding-bottom: 5px">{{ method.descType }}
               </v-card-title>
-              <div style="display: flex; justify-content: flex-start; margin-left: 15px" v-show="showDescription">
+              <div style="display: flex; justify-content: flex-start; margin-left: 15px">
                 <div>
                   <div style="text-align: justify; color: dimgray" v-html="getAlgorithm().description">
                   </div>
@@ -629,7 +636,7 @@ export default {
       methodModel: undefined,
       rankingMethodModel: undefined,
       experimentalSwitch: true,
-      groupModel: undefined,
+      groupModel: "nw",
       showDescription: false,
       exprIds: undefined,
       tissues: undefined,

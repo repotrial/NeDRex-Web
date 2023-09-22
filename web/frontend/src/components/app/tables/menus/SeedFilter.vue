@@ -1,15 +1,17 @@
 <template>
   <div style="margin-left: 5px;">
-    <v-menu top offset-y transition="slide-y-reverse-transition">
+    <v-menu bottom offset-y transition="slide-y-transition">
       <template v-slot:activator="{on,attrs}">
-        <v-btn small outlined right v-bind="attrs" v-on="on" :disabled="attributes==null || Object.keys(attributes).length===0">
-          <v-icon left color="primary">
+        <v-btn x-small outlined right v-bind="attrs" v-on="on" :disabled="attributes==null || Object.keys(attributes).length===0">
+          <v-icon x-small left color="primary">
             fas fa-filter
           </v-icon>
+          <v-divider vertical style="border-color: black; margin-right: 5px; margin-top: 3px; margin-bottom: 3px;"></v-divider>
           Filter
+          <v-icon right>fas fa-caret-down</v-icon>
         </v-btn>
       </template>
-      <v-list style="font-size: smaller; color: gray" dense>
+      <v-list style="font-size: smaller; color: rgb(128,128,128)" dense>
         <template v-if="attributes!=null">
           <v-menu right offset-x transition="slide-x-transition" open-on-hover v-for="(list,attribute) in attributes"
                   :key="attribute">

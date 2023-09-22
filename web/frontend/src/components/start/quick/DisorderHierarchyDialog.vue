@@ -19,18 +19,20 @@
       </v-card-subtitle>
       <v-divider></v-divider>
 
-      <v-card-actions>
-        <v-btn
-          text
+      <v-card-actions style="display: flex; justify-content: flex-end; margin-left: 16px">
+        <v-btn color="error"
           @click="resolvePopup(false)"
         >
+          <v-icon left>fas fa-times</v-icon>
+          <v-divider vertical style="border-color: white; margin-right: 5px;"></v-divider>
           Cancel
         </v-btn>
         <v-btn
-          color="green darken-1"
-          text
+          color="success"
           @click="resolvePopup(true)"
         >
+          <v-icon left>fas fa-plus</v-icon>
+          <v-divider vertical style="border-color: white; margin-right: 5px;"></v-divider>
           {{ sizeProblem ? "Add all" : "Add Selected" }}
         </v-btn>
       </v-card-actions>

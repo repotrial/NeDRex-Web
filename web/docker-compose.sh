@@ -15,5 +15,7 @@ cp frontend/docker/configs/vue.config_prod.js frontend/docker/vue.config.js
 cp frontend/docker/configs/index_prod.html frontend/docker/index.html
 cp compose-scripts/docker-compose_prod.yml ./docker-compose.yml
 
-docker push andimajore/nedrex_repo:server_prod
+docker tag andimajore/nedrex_repo:server_prod andimajore/nedrex_repo:server_dev
+
+docker push andimajore/nedrex_repo:server_dev
 docker push andimajore/nedrex_repo:web_prod

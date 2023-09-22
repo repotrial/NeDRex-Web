@@ -1,15 +1,17 @@
 <template>
   <div style="margin-left: 5px;">
-    <v-menu top offset-y transition="slide-y-reverse-transition">
+    <v-menu bottom offset-y transition="slide-y-transition">
       <template v-slot:activator="{on,attrs}">
-        <v-btn small outlined right v-bind="attrs" v-on="on">
-          <v-icon left color="primary">
+        <v-btn x-small outlined right v-bind="attrs" v-on="on">
+          <v-icon x-small left color="primary">
             fas fa-trash-alt
           </v-icon>
+          <v-divider vertical style="border-color: black; margin-top: 3px; margin-bottom: 3px; margin-right: 5px;"></v-divider>
           Remove
+          <v-icon right>fas fa-caret-down</v-icon>
         </v-btn>
       </template>
-      <v-list style="font-size: smaller; color: gray" dense>
+      <v-list style="font-size: smaller; color: rgb(128,128,128)" dense>
         <v-list-item @click="$emit('clearEvent')" style="cursor:pointer">
           All
         </v-list-item>
@@ -24,13 +26,13 @@
             </template>
             <v-list dense>
               <template v-for="value in list">
-                <v-list-item style="cursor:pointer; font-size: smaller; color: gray" :key="'only_'+attribute+'-'+value" @click="$emit('removeEvent',{all:false,attribute:attribute, value:value})">
+                <v-list-item style="cursor:pointer; font-size: smaller; color: rgb(128,128,128)" :key="'only_'+attribute+'-'+value" @click="$emit('removeEvent',{all:false,attribute:attribute, value:value})">
                   <v-icon left size="1em">
                     fas fa-trash-alt
                   </v-icon>
                   with only {{ getLabel(value) }}
                 </v-list-item>
-                <v-list-item style="cursor:pointer; font-size: smaller; color: gray" :key="'all_'+attribute+'-'+value" @click="$emit('removeEvent',{all:true,attribute:attribute, value:value})">
+                <v-list-item style="cursor:pointer; font-size: smaller; color: rgb(128,128,128)" :key="'all_'+attribute+'-'+value" @click="$emit('removeEvent',{all:true,attribute:attribute, value:value})">
                   <v-icon left size="1em">
                     fas fa-trash-alt
                   </v-icon>

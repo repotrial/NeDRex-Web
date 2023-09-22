@@ -1,16 +1,17 @@
 <template>
-  <v-row style="margin-top:0">
-    <v-col>
+  <div>
       <v-menu bottom offset-y :disabled="disabled">
         <template v-slot:activator="{on,attrs}">
           <v-btn small outlined right v-bind="attrs" v-on="on" :disabled="disabled">
-            <v-icon left color="primary">
+            <v-icon small left color="primary">
               fas fa-graduation-cap
             </v-icon>
+            <v-divider vertical style="border-color: black; margin-right: 5px;"></v-divider>
             Examples
+            <v-icon right>fas fa-caret-down</v-icon>
           </v-btn>
         </template>
-        <v-list style="font-size: smaller; color: gray" dense>
+        <v-list style="font-size: smaller; color: rgb(128,128,128)" dense>
           <v-list-item v-for="example in examples" @click="loadExample(example.id)" :key="example.id">
             <v-icon left size="1em">fas fa-plus</v-icon>
             {{ example.text }}
@@ -25,8 +26,7 @@
           anything you want or just <b>continue</b> straight to the result page!
         </div>
       </v-tooltip>
-    </v-col>
-  </v-row>
+  </div>
 </template>
 
 <script>

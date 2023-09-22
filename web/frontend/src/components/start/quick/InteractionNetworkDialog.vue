@@ -11,15 +11,10 @@
         </div>
       </v-card-title>
       <div style="height: calc(100% - 120px)">
-        <div v-if="this.edgeCount + this.nodeCount>5000" style="height: 100%; display: flex; justify-content: center">
-          <i>This interaction network contains {{ this.nodeCount }} nodes
-            and {{ this.edgeCount }} which is too much for the quick visualization of the network.</i>
-        </div>
-        <v-progress-circular v-else-if="loading" indeterminate></v-progress-circular>
         <template>
-          <div v-if="this.edgeCount>1000"><i>The interaction network has {{ this.edgeCount }} edges, it might take a
+          <div v-if="this.edgeCount + this.nodeCount<5000 && this.edgeCount>1000 && loading"><i>The interaction network has {{ this.edgeCount }} edges, it might take a
             moment to define a suitable layout for the network.</i></div>
-          <v-container v-if="!loading">
+          <v-container v-if=" !loading">
             <v-row>
               <v-col>
                 <LabeledSwitch v-model="exp" label-on="Experimental only" label-off="All Interactions"
@@ -41,6 +36,11 @@
                       :options="options"
                       style="position: sticky; height: calc(100% - 120px)"></VisNetwork>
         </template>
+        <div v-if="this.edgeCount + this.nodeCount>5000" style="height: 100%; display: flex; justify-content: center">
+          <i>This interaction network contains {{ this.nodeCount }} nodes
+            and {{ this.edgeCount }} which is too much for the quick visualization of the network. You can try to filter by tissue type!</i>
+        </div>
+        <v-progress-circular v-else-if="loading" indeterminate></v-progress-circular>
       </div>
       <v-divider></v-divider>
 

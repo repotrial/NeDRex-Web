@@ -179,11 +179,11 @@
               ></History>
             </v-container>
             <v-snackbar v-model="notifications.style1.show" :multi-line="true" :timeout="notifications.style1.timeout"
-                        color="green" dark>
+                        color="green" dark top>
               {{ notifications.style1.message }}
             </v-snackbar>
             <v-snackbar v-model="notifications.style2.show" :multi-line="true" :timeout="notifications.style2.timeout"
-                        color="red">
+                        color="red" top>
               {{ notifications.style2.message }}
             </v-snackbar>
             <v-dialog

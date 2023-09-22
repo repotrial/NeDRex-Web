@@ -1,17 +1,18 @@
 <template>
   <div>
-    <v-card-subtitle>{{ text }}
+    <v-card-title style=" color: rgb(128,128,128)">{{ text }}
       <v-tooltip top>
         <template v-slot:activator="{on,attrs}">
-          <v-chip v-on="on" v-bind="attrs" outlined @click="seedInput=true">text input
-            <v-icon right>fas fa-caret-right</v-icon>
-          </v-chip>
+          <v-btn v-on="on" v-bind="attrs" outlined @click="seedInput=true" small style="margin-left: 8px">
+            <v-icon left>fas fa-caret-right</v-icon><v-divider vertical style="border-color: black; margin-right: 5px;"></v-divider>
+            text input
+          </v-btn>
         </template>
         <span>Open a text-box to paste a list of seed ids.</span>
       </v-tooltip>
-      or file upload
-    </v-card-subtitle>
-    <div style="justify-content: center; display: flex; width: 100%">
+    </v-card-title>
+    <v-card-title style="margin-left: 32px; color: rgb(128,128,128)">or file upload
+    <div >
       <v-file-input
         ref="upload"
         v-on:change="onFileSelected"
@@ -22,10 +23,10 @@
         prepend-icon=""
         dense
         solo
-        style="width:300px; max-width: 300px;"
+        style="width:300px; max-width: 300px; margin-left: 8px; margin-top: 8px; padding-top: 8px"
       >
         <template v-slot:label>
-          <v-icon small>fas fa-file-upload</v-icon>
+          <v-icon left>fas fa-file-upload</v-icon><v-divider vertical style="border-color: black; margin-right: 5px;"></v-divider>
           Upload {{ idName }} ID list
         </template>
         <template v-slot:append-outer>
@@ -52,6 +53,7 @@
         </template>
       </v-file-input>
     </div>
+    </v-card-title>
     <v-dialog v-model="seedInput"
               persistent
               style="z-index: 1001"
@@ -79,11 +81,14 @@
           <v-text-field v-model="customSep" label="custom"></v-text-field>
         </v-card-actions>
         <v-divider></v-divider>
-        <v-card-actions>
+        <v-card-actions style="display: flex; justify-content: flex-end">
           <v-btn
-            text
+            style="margin-left: 16px"
+            color="error"
             @click="clear()"
           >
+            <v-icon left>fas fa-times</v-icon>
+            <v-divider vertical style="border-color: white; margin-right: 5px;"></v-divider>
             Cancel
           </v-btn>
           <v-btn

@@ -7,10 +7,12 @@
             <v-icon left color="primary">
               fas fa-graduation-cap
             </v-icon>
+            <v-divider vertical style="border-color: black; margin-right: 5px;"></v-divider>
             Examples
+            <v-icon right>fas fa-caret-down</v-icon>
           </v-btn>
         </template>
-        <v-list style="font-size: smaller; color: gray" dense>
+        <v-list style="font-size: smaller; color: rgb(128,128,128)" dense>
           <v-list-item v-for="example in examples" @click="loadExample(example.id)" :key="example.id">
             <v-icon left size="1em">fas fa-plus</v-icon>
             {{ example.text }}

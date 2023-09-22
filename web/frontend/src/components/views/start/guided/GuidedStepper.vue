@@ -1,5 +1,34 @@
 <template>
   <v-card style="margin-bottom: 35px">
+    <v-dialog
+      v-model="verify"
+      persistent
+      style="z-index: 1001"
+      max-width="500"
+    >
+      <v-card>
+        <v-card-title>Confirm Navigation</v-card-title>
+        <v-card-text>Do you really ant to reset the current page?
+        </v-card-text>
+        <v-divider></v-divider>
+
+        <v-card-actions style="display: flex; justify-content: flex-end">
+          <v-btn style="margin-left: 5px; margin-right: 5px;" color="primary"
+                 @click="verify = false">
+            <v-icon left>fas fa-angle-left</v-icon>
+            <v-divider vertical style="border-color: white; margin-right: 5px;"></v-divider>
+            Stay
+          </v-btn>
+          <v-btn style="margin-left: 5px; margin-right: 5px;" color="error"
+                 @click="verify = false; makeStep('cancel')">
+            <v-icon left>fas fa-times</v-icon>
+            <v-divider vertical style="border-color: white; margin-right: 5px;"></v-divider>
+            Cancel
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+
+    </v-dialog>
     <ConnectorDialog ref="connectors" :node-source-type="nodeIdTypeList[connectorTypeId]"
                      :node-type="connectorTypeId!=null ? nodeList[connectorTypeId].value: undefined"
                      @printNotification="printNotification"
@@ -7,7 +36,7 @@
     <div style="display: flex; justify-content: flex-end; margin-left: auto; ">
       <v-tooltip left>
         <template v-slot:activator="{on, attrs}">
-          <v-btn icon style="padding:1em" color="red darker" @click="makeStep('cancel')" v-on="on" v-bind="attrs">
+          <v-btn icon style="padding:1em" color="red darker" @click="verify=true" v-on="on" v-bind="attrs">
             <v-icon size="2em">far fa-times-circle</v-icon>
           </v-btn>
         </template>
@@ -60,19 +89,36 @@
           <v-card
             v-show="step===1"
             class="mb-4"
-            max-height="1100px"
-            height="1100px"
+            max-height="1350px"
+            height="1350px"
           >
 
-            <v-card-subtitle class="headline">Node Configuration</v-card-subtitle>
-            <v-card-subtitle style="margin-top: -25px">Select the starting node type (e.g. Disorder) and then a target
-              of
-              interest (e.g Drug or Gene/Protein).
-              Select specific start nodes of the selected type by using the auto-complete system or list upload.
-              Manually adjust the list. <i>Optional:</i> Also specify the target nodes in the same way in case only
-              specific connections might be of interest.
+            <v-card-subtitle class="headline" style="color: black; text-align: left; margin-left: 5vw">Node
+              configuration
+              <GuidedExamples style="display: inline-block" @exampleEvent="applyExample"
+                              @addNodesEvent="addToSelection"/>
             </v-card-subtitle>
-            <GuidedExamples @exampleEvent="applyExample" @addNodesEvent="addToSelection"/>
+            <v-card-subtitle style="margin-top: -25px">
+              <ul>
+                <li style="margin-left: 0;">
+                  Configure start and target nodes of interest:
+                </li>
+                <li>
+                  <b>1. </b>Source node configuration
+                </li>
+                <li style="padding-left: 32px;">
+                  <b>a. </b>Select the type of the source node
+                </li>
+                <li style="padding-left: 32px;">
+                  <b>b. </b>Select specific entries
+                </li>
+                <li>
+                  <b>2. </b>Target node configuration
+                </li>
+                <li style="padding-left: 32px;"><b>a. </b>Select the type of the target node</li>
+                <li style="padding-left: 32px;"><b>b. </b>(Optionally: select specific target entries)</li>
+              </ul>
+            </v-card-subtitle>
             <v-tooltip top>
               <template v-slot:activator="{on, attrs}">
                 <v-btn @click="copySourcesToTargets" outlined icon style="margin-top: 5px" v-bind="attrs" v-on="on"
@@ -86,16 +132,29 @@
             <div style="height: 940px; display: flex; margin-top:10px;">
               <div style="justify-self: flex-start; width: 48%;">
                 <div style="display: flex; justify-content: flex-start;">
-                  <div class="title" style="padding-top: 16px;">1a. Select the source node type:</div>
-                  <v-select item-value="id" :items="nodeList" v-model="sourceTypeId"
-                            placeholder="Select start type"
-                            :disabled="$refs.sourceTable!=null && $refs.sourceTable.getSeeds().length>0"
-                            style="min-width: 9.5em; max-width: 11.2em; margin-left: 25px">
-                  </v-select>
+                  <v-card-title style="padding-top: 16px;"><i v-show="!sourceTypeId"
+                                                              style="color: red">*</i>1a. Select the source node type:
+                    <v-select item-value="id" :items="nodeList" v-model="sourceTypeId"
+                              placeholder="Select start type"
+                              :disabled="$refs.sourceTable!=null && $refs.sourceTable.getSeeds().length>0"
+                              style="display: inline-block; min-width: 9.5em; max-width: 11.2em; margin-left: 25px">
+                    </v-select>
+                  </v-card-title>
                 </div>
                 <div v-if="sourceTypeId!==undefined" style="margin-top: 25px;">
                   <div style="display: flex">
-                    <div class="title" style="padding-top: 16px;justify-self: flex-start">1b. Prefilter the sources:
+                    <v-card-title style="padding-top: 16px;justify-self: flex-start"><i
+                      v-show="!$refs.sourceTable || $refs.sourceTable.getSeeds().length<1"
+                      style="color: red">*</i>1b. Prefilter the sources:
+                    </v-card-title>
+                  </div>
+                  <div style="display: flex; margin-top: 16px">
+                    <div style="justify-content: flex-start">
+                      <v-card-title style="text-align: left; margin-left: 20px;  color: rgb(128,128,128)" class="title">
+                        Option 1: Add
+                        {{ nodeList[sourceTypeId].value }} by association to <i
+                        style="margin-left: 8px">{{ suggestionType[0] }}</i>
+                      </v-card-title>
                     </div>
                   </div>
                   <div style="display: flex">
@@ -107,9 +166,12 @@
                                             @addToSelectionEvent="addToSelection"
                                             style="justify-self: flex-end;margin-left: auto"></SuggestionAutocomplete>
                   </div>
-                  <NodeInput text="or provide Node IDs by" @addToSelectionEvent="addToSourceSelection"
-                             :idName="nodeIdTypeList[sourceTypeId]" :nodeType="nodeList[sourceTypeId].value"
-                             @printNotificationEvent="printNotification"></NodeInput>
+                  <div style="display: flex; justify-content: flex-start; margin-top: 32px; margin-left: 20px">
+
+                    <NodeInput text="Option 2: Provide node IDs by" @addToSelectionEvent="addToSourceSelection"
+                               :idName="nodeIdTypeList[sourceTypeId]" :nodeType="nodeList[sourceTypeId].value"
+                               @printNotificationEvent="printNotification"></NodeInput>
+                  </div>
                   <SeedTable ref="sourceTable" v-show="sourceTypeId!==undefined" :download="true" :remove="true"
                              :filter="true"
                              @printNotificationEvent="printNotification"
@@ -123,17 +185,28 @@
               </div>
               <div ref="targetSide" style="justify-self: flex-end; margin-left: auto; width: 48%;">
                 <div style="display: flex; justify-content: flex-start;">
-                  <div class="title" style="padding-top: 16px;">2a. Select the target node type:</div>
-                  <v-select item-value="id" :items="nodeList" v-model="targetTypeId"
-                            placeholder="Select target type"
-                            :disabled="$refs.targetTable!=null && $refs.targetTable.getSeeds().length>0"
-                            style="min-width: 9.5em; max-width: 11.2em; margin-left: 25px">
-                  </v-select>
+                  <v-card-title style=""><i v-show="!sourceTypeId"
+                                            style="color: red">*</i>2a. Select the target node type:
+                    <v-select item-value="id" :items="nodeList" v-model="targetTypeId"
+                              placeholder="Select target type"
+                              :disabled="$refs.targetTable!=null && $refs.targetTable.getSeeds().length>0"
+                              style="min-width: 9.5em; max-width: 11.2em; margin-left: 25px; display: inline-block">
+                    </v-select>
+                  </v-card-title>
                 </div>
                 <div v-if="targetTypeId!==undefined" style="margin-top: 25px;">
                   <div style="display: flex">
-                    <div class="title" style="padding-top: 16px;justify-self: flex-start">2b. Prefilter the targets
+                    <v-card-title style="justify-self: flex-start">2b. Prefilter the targets
                       (optional):
+                    </v-card-title>
+                  </div>
+                  <div style="display: flex; margin-top: 16px">
+                    <div style="justify-content: flex-start">
+                      <v-card-title style="text-align: left; margin-left: 20px;  color: rgb(128,128,128)" class="title">
+                        Option 1: Add
+                        {{ nodeList[targetTypeId].value }} by association to <i
+                        style="margin-left: 8px">{{ suggestionType[1] }}</i>
+                      </v-card-title>
                     </div>
                   </div>
                   <div style="display: flex">
@@ -145,9 +218,11 @@
                                             @addToSelectionEvent="addToSelection"
                                             style="justify-self: flex-end;margin-left: auto"></SuggestionAutocomplete>
                   </div>
-                  <NodeInput text="or provide Node IDs by" @addToSelectionEvent="addToTargetSelection"
-                             :idName="nodeIdTypeList[targetTypeId]" :nodeType="nodeList[targetTypeId].value"
-                             @printNotificationEvent="printNotification"></NodeInput>
+                  <div style="display: flex; justify-content: flex-start; margin-top: 32px; margin-left: 20px">
+                    <NodeInput text="Option 2: Provide node IDs by" @addToSelectionEvent="addToTargetSelection"
+                               :idName="nodeIdTypeList[targetTypeId]" :nodeType="nodeList[targetTypeId].value"
+                               @printNotificationEvent="printNotification"></NodeInput>
+                  </div>
 
                   <SeedTable ref="targetTable" v-show="targetTypeId!==undefined" :download="true" :remove="true"
                              @printNotificationEvent="printNotification"
@@ -158,10 +233,12 @@
               </div>
             </div>
           </v-card>
-          <ButtonNext
-            :disabled="sourceTypeId===undefined || targetTypeId===undefined  ||  ($refs.sourceTable &&$refs.sourceTable.getSeeds().length<1)"
-            @click="makeStep"></ButtonNext>
-          <ButtonCancel @click="makeStep"></ButtonCancel>
+          <v-card-actions style="display: flex; margin-left: 18px; justify-content: flex-end">
+            <ButtonNext
+              :disabled="sourceTypeId===undefined || targetTypeId===undefined  ||  ($refs.sourceTable &&$refs.sourceTable.getSeeds().length<1)"
+              @click="makeStep"></ButtonNext>
+            <ButtonCancel @click="makeStep"></ButtonCancel>
+          </v-card-actions>
         </v-stepper-content>
         <v-stepper-content step="2">
           <div style="display: flex">
@@ -172,19 +249,48 @@
               flat
               style="justify-content: center; margin-right: auto; margin-left: auto"
             >
-              <v-card-subtitle class="headline">Path Selection</v-card-subtitle>
-              <v-card-subtitle style="margin-top: -25px">Select a path connecting
-                {{ nodeList[sourceTypeId].text + ' and ' + nodeList[targetTypeId].text }}. Further decide to keep the
-                intermediate node (in case an indirect path is selected) or to create a new edge type given a user
-                defined
-                name. Additional path specific configuration may be available.
+              <v-card-subtitle class="headline" style="color: black; text-align: left; margin-left: 5vw">Path
+                Selection
               </v-card-subtitle>
+              <v-card-subtitle style="margin-top: -25px">
+                <ul>
+                  <li style="margin-left: 0;"><b>1. </b>Select a path connecting
+                    {{ nodeList[sourceTypeId].text + ' and ' + nodeList[targetTypeId].text }}:
+                  </li>
+                  <li style="margin-top: 8px">
+                    <v-icon style="font-size: 8px" left>fas fa-circle</v-icon>
+                    Either directly
+                  </li>
+                  <li>
+                    <v-icon style="font-size: 8px" left>fas fa-circle</v-icon>
+                    Or inirectly through an intermediate node
+                  </li>
+                  <li style="margin-left: 0;"><b>2. </b>Configure the result network:</li>
+                  <li style="margin-top: 8px">
+                    <v-icon style="font-size: 8px" left>fas fa-circle</v-icon>
+                    Decide to keep the
+                    intermediate node (in case an indirect path is selected) or to create a new edge type given a user
+                    defined name
+                  </li>
+                  <li>
+                    <v-icon style="font-size: 8px" left>fas fa-circle</v-icon>
+                    Allow or filter the use of specific intermediate nodes
+                  </li>
+                  <li>
+                    <v-icon style="font-size: 8px" left>fas fa-circle</v-icon>
+                    Additional path specific configuration may be available
+                  </li>
+                </ul>
+              </v-card-subtitle>
+              <v-divider></v-divider>
               <v-row style="min-height: 35vh; margin-bottom: 15px; margin-top: 15px">
                 <v-col cols="3">
+                  <v-card-title style="text-align: left"><i v-show="pathModel==null" style="color: red">*</i><b>Select a
+                    path:</b></v-card-title>
                   <v-radio-group v-model="pathModel">
                     <v-list-item-subtitle class="title">Direct-Paths</v-list-item-subtitle>
                     <v-list>
-                      <v-list-item v-for="(path,idx) in paths[0]" :key="idx" v-if="paths[0].length>0">
+                      <v-list-item v-for="(path,idx) in paths[0]" :key="'direct'+idx" v-if="paths[0].length>0">
                         <v-list-item-title>
                           <v-tooltip top>
                             <template v-slot:activator="{on,attrs}">
@@ -218,7 +324,7 @@
                       </span>
                         </v-list-item-title>
                         <v-list-item-action>
-                          <v-radio></v-radio>
+                          <v-radio :value="idx"></v-radio>
                         </v-list-item-action>
                       </v-list-item>
                       <v-list-item v-if="paths[0].length===0">
@@ -227,7 +333,7 @@
                     </v-list>
                     <v-list-item-subtitle class="title">Indirect-Paths</v-list-item-subtitle>
                     <v-list>
-                      <v-list-item v-for="(path,idx) in paths[1]" :key="idx">
+                      <v-list-item v-for="(path,idx) in paths[1]" :key="'indirect_'+idx">
                         <v-list-item-title>
                           <v-tooltip top>
                             <template v-slot:activator="{on,attrs}">
@@ -260,7 +366,7 @@
                       </span>
                         </v-list-item-title>
                         <v-list-item-action>
-                          <v-radio>
+                          <v-radio :value="idx+paths[0].length">
                           </v-radio>
                         </v-list-item-action>
                       </v-list-item>
@@ -270,11 +376,13 @@
                 <div style="margin-bottom: 20px">
                   <v-divider vertical></v-divider>
                 </div>
-                <v-col v-if="pathModel!=null && pathModel>-1">
-                  <v-list-item-subtitle class="title">Additional Options</v-list-item-subtitle>
-                  <v-card-subtitle>General</v-card-subtitle>
-                  <v-list>
-                    <v-list-item v-if="!direct">
+                <v-col cols="9" v-if="pathModel!=null && pathModel>-1">
+                  <v-card-title style="text-align: left"><b>Additional Options</b></v-card-title>
+                  <v-card-title style="text-align: left; margin-left: 20px;  color: rgb(128,128,128)" class="title">
+                    General
+                  </v-card-title>
+                  <v-list v-if="!direct">
+                    <v-list-item>
                       <v-list-item-content>
                         <v-tooltip top>
                           <template v-slot:activator="{on,attrs}">
@@ -291,6 +399,8 @@
                           <span>Decide if you want to keep all edges or replace the created paths by generating one connecting your source and target nodes directly.</span>
                         </v-tooltip>
                       </v-list-item-content>
+                    </v-list-item>
+                    <v-list-item>
                       <v-list-item-action style="min-width: 400px" v-if="!options.general.keep">
                         <v-text-field v-model="options.general.name"
                                       label="Combined Edge Name"
@@ -308,6 +418,7 @@
                         </LabeledSwitch>
                       </v-list-item-content>
                     </v-list-item>
+
                     <v-list-item v-show="!direct">
                       <v-list-item-content>
                         <LabeledSwitch :disabled="connectorCount ===0" label-off="Exclude selected connectors"
@@ -330,7 +441,9 @@
                     </v-list-item>
                   </v-list>
                   <v-divider></v-divider>
-                  <v-card-subtitle>Node specific</v-card-subtitle>
+                  <v-card-title style="text-align: left; margin-left: 20px;  color: rgb(128,128,128)" class="title">Node
+                    Specific
+                  </v-card-title>
                   <v-list>
                     <v-list-item v-if="isPathNode('gene')">
                       <v-list-item-title style="padding-top: 5px; padding-bottom: 3px">
@@ -369,7 +482,9 @@
                     </v-list-item>
                   </v-list>
                   <v-divider></v-divider>
-                  <v-card-subtitle>Edge specific</v-card-subtitle>
+                  <v-card-title style="text-align: left; margin-left: 20px;  color: rgb(128,128,128)" class="title">Edge
+                    Specific
+                  </v-card-title>
                   <v-list>
                     <v-list-item v-if="isPathEdge('GeneGeneInteraction') || isPathEdge('ProteinProteinInteraction')">
                       <v-list-item-title style="padding-top: 5px; padding-bottom: 3px">
@@ -452,24 +567,55 @@
               </v-row>
             </v-card>
           </div>
-          <ButtonBack @click="makeStep"></ButtonBack>
-          <ButtonNext @click="makeStep"
-                      :disabled="(selectedPath === undefined || selectedPath.length === 0) || (!options.general.keep&&!direct && (options.general.name === undefined || options.general.name.length===0))"></ButtonNext>
-          <ButtonCancel @click="makeStep"></ButtonCancel>
+          <v-card-actions style="display: flex; justify-content: flex-end; margin-left: 16px">
+            <ButtonBack @click="makeStep"></ButtonBack>
+            <ButtonNext @click="makeStep"
+                        :disabled="(selectedPath === undefined || selectedPath.length === 0) || (!options.general.keep&&!direct && (options.general.name === undefined || options.general.name.length===0))"></ButtonNext>
+            <ButtonCancel @click="makeStep"></ButtonCancel>
+          </v-card-actions>
         </v-stepper-content>
         <v-stepper-content step="3">
           <v-card
             v-if="step===3"
             class="mb-4"
           >
-            <v-card-subtitle class="headline">3. Network</v-card-subtitle>
-            <v-card-subtitle style="margin-top: -25px">The network you created
+            >
+            <v-card-subtitle class="headline" style="color: black; text-align: left; margin-left: 5vw">3. Connectivity
+              Results
+            </v-card-subtitle>
+
+            <v-card-subtitle style="margin-top: -25px">
+              <ul>
+                <li style="margin-left: 0;">Explore the extracted paths linking your queried entries:</li>
+                <li style="margin-top: 8px">
+                  <v-icon style="font-size: 8px" left>fas fa-circle</v-icon>
+                  Explore the network
+                </li>
+                <li>
+                  <v-icon style="font-size: 8px" left>fas fa-circle</v-icon>
+                  Click on nodes in a list to highlight it in the network
+                </li>
+                <li>
+                  <v-icon style="font-size: 8px" left>fas fa-circle</v-icon>
+                  Double click a nodes in a list to get details
+                </li>
+                <li>
+                  <v-icon style="font-size: 8px" left>fas fa-circle</v-icon>
+                  Changed the contents of the tables to check the connector nodes
+                </li>
+                <li>
+                  <v-icon style="font-size: 8px" left>fas fa-circle</v-icon>
+                  Use the 'tripartite' layout to organize sources to the left and targets to the right
+                </li>
+              </ul>
             </v-card-subtitle>
 
             <v-row>
               <v-col style="padding: 0; max-width: 360px; min-width:350px">
-                <v-card-title class="subtitle-1">{{ resultTableModel !== 2 ? 'Sources' : 'Connectors' }}
-                  ({{ sources.length }})
+
+                <v-card-title class="subtitle-1" style="display: flex"><span
+                  style="justify-content: flex-start">{{ resultTableModel !== 2 ? 'Sources' : 'Connectors' }}
+                  ({{ resultTableModel !== 2 ? sources.length : connectors.length }})</span>
                   <v-tooltip top>
                     <template v-slot:activator="{attrs, on}">
                       <v-icon right size="12pt" v-on="on" v-bind="attrs">far fa-question-circle</v-icon>
@@ -479,6 +625,10 @@
                       entries!
                     </div>
                   </v-tooltip>
+                  <ResultDownload v-show="getNodesForSourceTable() !=null && getNodesForSourceTable().length>0"
+                                  seeds style="margin: auto; justify-self: flex-end; display: inline-block"
+                                  :label="options.general.keep && resultTableModel===2 ? 'Connectors' :'Sources'"
+                                  @downloadEvent="downloadSourceList"></ResultDownload>
                 </v-card-title>
                 <v-data-table max-height="550px" height="550px" class="overflow-y-auto" fixed-header dense item-key="id"
                               :items="resultTableModel !==2 ? sources :connectors"
@@ -496,59 +646,76 @@
                     </v-tooltip>
                     <span v-else>{{ item.displayName }}</span>
                   </template>
-                  <!--                  <template v-slot:item.data-table-expand="{expand, item,isExpanded}">-->
-                  <!--                    <v-icon v-show="!isExpanded" @click="expand(true)"-->
-                  <!--                            :color="getColoring('nodes',options.general.keep && resultTableModel ===2 ? getConnectorType() :nodeList[sourceTypeId].value)">-->
-                  <!--                      fas fa-angle-down-->
-                  <!--                    </v-icon>-->
-                  <!--                    <v-icon v-show="isExpanded" @click="expand(false)"-->
-                  <!--                            :color="getColoring('nodes',options.general.keep && resultTableModel ===2 ? getConnectorType() :nodeList[sourceTypeId].value)">-->
-                  <!--                      fas fa-angle-up-->
-                  <!--                    </v-icon>-->
-                  <!--                  </template>-->
-                  <!--                  <template v-slot:expanded-item="{ headers, item }">-->
-                  <!--                    <td :colspan="headers.length">-->
-                  <!--                      <EntryDetails max-width="280px"-->
-                  <!--                                    :detail-request="{edge:false, type: options.general.keep && resultTableModel ===2 ? getConnectorType() :nodeList[sourceTypeId].value, id:item.id}"></EntryDetails>-->
-                  <!--                    </td>-->
-                  <!--                  </template>-->
-                  <template v-slot:footer>
-                    <v-card-subtitle><i>Click an entry to focus in the network<br>Doubleclick an entry to show
-                      details</i></v-card-subtitle>
-                    <div style="display: flex; justify-content: center; margin-left: auto">
-                      <div style="padding-top: 16px; padding-bottom: 8px">
-                        <ResultDownload v-show="getNodesForSourceTable() !=null && getNodesForSourceTable().length>0"
-                                        seeds
-                                        :label="options.general.keep && resultTableModel===2 ? 'Connectors' :'Sources'"
-                                        @downloadEvent="downloadSourceList"></ResultDownload>
-                      </div>
-                    </div>
+                  <template v-slot:item.data-table-expand="{expand, item,isExpanded}">
+                    <v-icon v-show="!isExpanded"
+                            color="primary" @click="sourceDoubleClicked(null,{item:item},resultTableModel===2)">
+                      fas fa-info-circle
+                    </v-icon>
                   </template>
                 </v-data-table>
               </v-col>
               <v-col>
-                <div style="width: 100%; display: flex; padding-left: 50px; padding-right: 50px; margin-bottom: 16px"
-                     v-if="options.general.keep && selectedPath!=null && selectedPath.length>1">
-                  <v-chip :color="resultTableModel===0? 'green':'primary'"
-                          style="justify-self: left; margin-right: auto; color: white"
-                          @click="resultTableModel=0">{{ nodeList[sourceTypeId].text }}
-                    <v-icon size="18" style="margin-left: 5px; margin-right: 5px">fas fa-angle-right</v-icon>
-                    {{ getNodeLabel(selectedPath[0].label, [selectedPath[0].direction ? 1 : 0]) }}
-                  </v-chip>
-                  <v-chip :color="resultTableModel===1? 'green':'primary'"
-                          style="justify-self: center; margin-left: auto; margin-right: auto; color: white"
-                          @click="resultTableModel=1">{{ nodeList[sourceTypeId].text }}
-                    <v-icon size="18" style="margin-left: 5px; margin-right: 5px">fas fa-angle-double-right</v-icon>
-                    {{ nodeList[targetTypeId].text }}
-                  </v-chip>
-                  <v-chip :color="resultTableModel===2? 'green':'primary'"
-                          style="justify-self: right; margin-left: auto;color: white"
-                          @click="resultTableModel=2">
-                    {{ getNodeLabel(selectedPath[0].label, [selectedPath[0].direction ? 1 : 0]) }}
-                    <v-icon size="18" style="margin-left: 5px; margin-right: 5px">fas fa-angle-right</v-icon>
-                    {{ nodeList[targetTypeId].text }}
-                  </v-chip>
-                </div>
+                <v-list-item>
+                  <v-list-item-title>
+                    <div style="display: inline-block; margin:4px">
+                      <v-icon style="display: block" size="30px"
+                              :color="getColoring('nodes',nodeList[sourceTypeId].value,'light')">
+                        fas fa-genderless
+                      </v-icon>
+                      <v-radio-group v-model="radio0">
+                        <v-radio style="margin-left: 8px" value="0" @change="setLatestRadio(0)"></v-radio>
+                      </v-radio-group>
+                      <span style="font-size: .7rem;">{{ nodeList[sourceTypeId].text }}</span>
+                    </div>
+                    <span v-for="(edge,idx2) in selectedPath" :key="'1_'+idx2+'_'+edge.label">
+                    <div style="display: inline-block; margin: 4px">
+                                  <v-icon style="display: block"
+                                          size="30px"
+                                  >{{
+                                      edge.direction ? "fas fa-long-arrow-alt-right" : "fas fa-long-arrow-alt-left"
+                                    }}</v-icon>
+
+                              <span style="font-size: .7rem;">{{ edge.label }}</span>
+                      </div>
+                    <div style="display: inline-block; margin: 4px">
+                          <v-icon style="display: block"
+                                  size="30px"
+                                  :color="getColoring('edges',edge.label,'light')[edge.direction ? 1:0]">fas fa-genderless</v-icon>
+                      <v-radio-group v-if="idx2===0" v-model="radio1">
+                      <v-radio :style="{'margin-left': '10px'}" :value="(1+idx2)+''"
+                               @change="setLatestRadio(1+idx2)"></v-radio>
+                      </v-radio-group>
+                      <v-radio-group v-if="idx2===1" v-model="radio2">
+                      <v-radio :style="{'margin-left': '10px'}" :value="(1+idx2)+''"
+                               @change="setLatestRadio(1+idx2)"></v-radio>
+                      </v-radio-group>
+                        <span style="font-size: .7rem;">{{ getNodeLabel(edge.label, [edge.direction ? 1 : 0]) }}</span>
+                      </div>
+                      </span>
+                  </v-list-item-title>
+                </v-list-item>
+                <!--                <div style="width: 100%; display: flex; padding-left: 50px; padding-right: 50px; margin-bottom: 16px"-->
+                <!--                     v-if="options.general.keep && selectedPath!=null && selectedPath.length>1">-->
+                <!--                  <v-chip :color="resultTableModel===0? 'green':'primary'"-->
+                <!--                          style="justify-self: left; margin-right: auto; color: white"-->
+                <!--                          @click="resultTableModel=0">{{ nodeList[sourceTypeId].text }}-->
+                <!--                    <v-icon size="18" style="margin-left: 5px; margin-right: 5px">fas fa-angle-right</v-icon>-->
+                <!--                    {{ getNodeLabel(selectedPath[0].label, [selectedPath[0].direction ? 1 : 0]) }}-->
+                <!--                  </v-chip>-->
+                <!--                  <v-chip :color="resultTableModel===1? 'green':'primary'"-->
+                <!--                          style="justify-self: center; margin-left: auto; margin-right: auto; color: white"-->
+                <!--                          @click="resultTableModel=1">{{ nodeList[sourceTypeId].text }}-->
+                <!--                    <v-icon size="18" style="margin-left: 5px; margin-right: 5px">fas fa-angle-double-right</v-icon>-->
+                <!--                    {{ nodeList[targetTypeId].text }}-->
+                <!--                  </v-chip>-->
+                <!--                  <v-chip :color="resultTableModel===2? 'green':'primary'"-->
+                <!--                          style="justify-self: right; margin-left: auto;color: white"-->
+                <!--                          @click="resultTableModel=2">-->
+                <!--                    {{ getNodeLabel(selectedPath[0].label, [selectedPath[0].direction ? 1 : 0]) }}-->
+                <!--                    <v-icon size="18" style="margin-left: 5px; margin-right: 5px">fas fa-angle-right</v-icon>-->
+                <!--                    {{ nodeList[targetTypeId].text }}-->
+                <!--                  </v-chip>-->
+                <!--                </div>-->
                 <Network ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle"
                          :show-vis-option="showVisOption"
                          :legend="$refs.graph!==undefined" :tools="$refs.graph!==undefined" secondaryViewer="true"
@@ -573,21 +740,30 @@
                 </Network>
               </v-col>
               <v-col style="padding: 0 10px 0 0; max-width: 360px; min-width: 350px">
-                <v-card-title class="subtitle-1"> {{ resultTableModel !== 0 ? 'Targets' : 'Connectors' }} {{
-                    (gid != null && targets.length != null ? (" (" + (targets.length) + ")") : ": Processing")
-                  }}
+                <v-card-title class="subtitle-1" style="display: flex">
+                  <span style="justify-content: flex-start">{{ resultTableModel !== 0 ? 'Targets' : 'Connectors' }} {{
+                      (gid != null && targets.length != null ? (" (" + (resultTableModel !== 0 ? targets.length : connectors.length) + ")") : ": Processing")
+                    }}</span>
                   <v-progress-circular indeterminate v-if="gid==null || targets.length==null" style="margin-left:15px">
                   </v-progress-circular>
-                  <v-tooltip top v-else>
-                    <template v-slot:activator="{attrs, on}">
-                      <v-icon right size="12pt" v-on="on" v-bind="attrs">far fa-question-circle</v-icon>
-                    </template>
-                    <div>This is the target entries.<br>
-                      If there was an initial selection of those and this number is different to the number in the
-                      graph, some filter you applied removed some entries!
-                    </div>
-                  </v-tooltip>
+                  <template v-else>
+                    <v-tooltip top>
+                      <template v-slot:activator="{attrs, on}">
+                        <v-icon right size="12pt" v-on="on" v-bind="attrs">far fa-question-circle</v-icon>
+                      </template>
+                      <div>This is the target entries.<br>
+                        If there was an initial selection of those and this number is different to the number in the
+                        graph, some filter you applied removed some entries!
+                      </div>
+                    </v-tooltip>
+                    <ResultDownload style="margin: auto; justify-self: flex-end; display: inline-block"
+                                    v-show="getNodesForTargetTable() !=null && getNodesForTargetTable().length>0"
+                                    seeds
+                                    :label="options.general.keep && resultTableModel ===0 ? 'Connectors' :'Targets'"
+                                    @downloadEvent="downloadTargetList"></ResultDownload>
+                  </template>
                 </v-card-title>
+
                 <template v-if="gid!=null && targets.length>0">
                   <v-data-table max-height="550px" height="550px" class="overflow-y-auto" fixed-header dense
                                 item-key="id"
@@ -606,17 +782,11 @@
                       </v-tooltip>
                       <span v-else>{{ item.displayName }}</span>
                     </template>
-                    <template v-slot:footer>
-                      <v-card-subtitle><i>Click an entry to focus in the network<br>Doubleclick an entry to show details</i>
-                      </v-card-subtitle>
-                      <div style="display: flex; justify-content: center; margin-left: auto">
-                        <div style="padding-top: 16px;padding-bottom: 8px">
-                          <ResultDownload v-show="getNodesForTargetTable() !=null && getNodesForTargetTable().length>0"
-                                          seeds
-                                          :label="options.general.keep && resultTableModel ===0 ? 'Connectors' :'Targets'"
-                                          @downloadEvent="downloadTargetList"></ResultDownload>
-                        </div>
-                      </div>
+                    <template v-slot:item.data-table-expand="{expand, item,isExpanded}">
+                      <v-icon v-show="!isExpanded"
+                              color="primary" @click="targetDoubleClicked(null,{item:item}, resultTableModel ===0)">
+                        fas fa-info-circle
+                      </v-icon>
                     </template>
                   </v-data-table>
                 </template>
@@ -624,10 +794,12 @@
             </v-row>
           </v-card>
           <div style="padding-top: 10px">
-            <ButtonBack @click="makeStep"></ButtonBack>
-            <ButtonCancel @click="makeStep"></ButtonCancel>
-            <ButtonAdvanced @click="$emit('graphLoadNewTabEvent',{post: {id: gid}})"
-                            :disabled="gid==null"></ButtonAdvanced>
+            <v-card-actions style="margin-right: 16px; display: flex; justify-content: flex-end">
+              <ButtonBack @click="makeStep"></ButtonBack>
+              <ButtonCancel @click="makeStep"></ButtonCancel>
+              <ButtonAdvanced @click="$emit('graphLoadNewTabEvent',{post: {id: gid}})"
+                              :disabled="gid==null"></ButtonAdvanced>
+            </v-card-actions>
           </div>
         </v-stepper-content>
       </v-stepper-items>
@@ -669,6 +841,7 @@ export default {
     return {
       targetCount: 0,
       sourceCount: 0,
+      verify: false,
 
       sugQuery: [undefined, undefined],
       graphWindowStyle: {
@@ -705,6 +878,10 @@ export default {
       physicsDisabled: false,
       paths: {0: [], 1: []},
       showVisOption: false,
+      radio0: "0",
+      radio1: null,
+      radio2: "2",
+      latestRadio: 2,
       options: {
         general: {
           keep: false,
@@ -869,6 +1046,24 @@ export default {
       return typeList
     },
 
+    setLatestRadio: function (index) {
+      if (this.latestRadio === index)
+        return
+      else {
+        if (this.latestRadio !== 0)
+          this.radio0 = null
+        if (this.latestRadio !== 1)
+          this.radio1 = null
+        if (this.latestRadio !== 2)
+          this.radio2 = null
+        let radios = [this.radio0, this.radio1, this.radio2]
+        radios[index] = "" + index
+        this.latestRadio = index
+      }
+      this.resultTableModel = index + this.latestRadio
+
+    },
+
     generatePaths: function () {
       let sourceId = this.$global.metagraph.nodes[this.sourceTypeId].id + ""
       let targetId = this.$global.metagraph.nodes[this.targetTypeId].id + ""
@@ -926,16 +1121,30 @@ export default {
       this.$set(this, "sourceCount", this.$refs.sourceTable ? this.$refs.sourceTable.getSeeds().length : 0);
     },
 
-    sourceDoubleClicked: function (event, obj) {
-      let item = obj.item
-      this.detailAdditions = [{pos: 1, key: 'Degree', value: item.degree}]
-      this.rowDoubleClicked(item, this.nodeList[this.sourceTypeId].value)
+    sourceDoubleClicked: function (event, obj, connector) {
+      if (connector) {
+        this.connectorDoubleClicked(event, obj)
+      } else {
+        let item = obj.item
+        this.detailAdditions = [{pos: 1, key: 'Degree', value: item.degree}]
+        this.rowDoubleClicked(item, this.nodeList[this.sourceTypeId].value)
+      }
     },
 
-    targetDoubleClicked: function (event, obj) {
+    targetDoubleClicked: function (event, obj, connector) {
+      if (connector) {
+        this.connectorDoubleClicked(event, obj)
+      } else {
+        let item = obj.item
+        this.detailAdditions = [{pos: 1, key: 'Degree', value: item.degree}]
+        this.rowDoubleClicked(item, this.nodeList[this.targetTypeId].value)
+      }
+    },
+
+    connectorDoubleClicked: function (event, obj) {
       let item = obj.item
       this.detailAdditions = [{pos: 1, key: 'Degree', value: item.degree}]
-      this.rowDoubleClicked(item, this.nodeList[this.targetTypeId].value)
+      this.rowDoubleClicked(item, this.nodeList[this.connectorTypeId].value)
     },
 
     rowDoubleClicked: function (item, type) {
