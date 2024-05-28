@@ -178,6 +178,7 @@ public class Domino implements Algorithm {
     public ProcessBuilder getExecutionEnvironment(String[] command) {
         ProcessBuilder pb = new ProcessBuilder(command);
         pb.environment().put("LD_LIBRARY_PATH", env.getProperty("path.tool.python3-7.ldlib"));
+        pb.environment().put("PATH", System.getenv("PATH") + ":" + env.getProperty("path.tool.python3-7.bin"));
         return pb;
     }
 
