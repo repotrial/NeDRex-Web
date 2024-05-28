@@ -2145,24 +2145,29 @@ public class WebGraphService {
             File cachedir = new File(wd, "users");
             if(cachedir.listFiles() !=null){
             Arrays.stream(cachedir.listFiles()).forEach(user -> {
-                Arrays.stream(new File(user, "graphs").listFiles()).forEach(graph -> {
-                    String gid = graph.getName().split("[.]")[0];
-                    Graph g = null;
-                    try {
-                        g = objectMapper.readValue(graph, Graph.class);
-                        Graph remap = remapGraph(g);
-                        GraphHistory history = historyController.getHistory(remap.getId());
-                        history.setInfo(remap.toInfo());
-                        historyController.save(history);
-                        WriterUtils.writeTo(graph, objectMapper.writeValueAsString(remap));
-                    } catch (IOException e) {
-                        log.error("Problem when reading graph " + gid + " of " + user.getName());
-                        e.printStackTrace();
-                    } catch (NullPointerException ex){
-                        log.error("Problem when converting the graph "+gid+" of "+user.getName());
-                        ex.printStackTrace();
-                    }
-                });
+                try {
+                    Arrays.stream(new File(user, "graphs").listFiles()).forEach(graph -> {
+                        String gid = graph.getName().split("[.]")[0];
+                        Graph g = null;
+                        try {
+                            g = objectMapper.readValue(graph, Graph.class);
+                            Graph remap = remapGraph(g);
+                            GraphHistory history = historyController.getHistory(remap.getId());
+                            history.setInfo(remap.toInfo());
+                            historyController.save(history);
+                            WriterUtils.writeTo(graph, objectMapper.writeValueAsString(remap));
+                        } catch (IOException e) {
+                            log.error("Problem when reading graph " + gid + " of " + user.getName());
+                            e.printStackTrace();
+                        } catch (NullPointerException ex) {
+                            log.error("Problem when converting the graph " + gid + " of " + user.getName());
+                            ex.printStackTrace();
+                        }
+                    });
+                }catch (NullPointerException e){
+                    log.error("Problem when reading user " + user.getName());
+                    e.printStackTrace();
+                }
             });
             }
         } catch (Error e) {
