@@ -18,11 +18,12 @@
     "@fortawesome/free-solid-svg-icons": "^5.15.3",
     "@fortawesome/vue-fontawesome": "^2.0.0",
     "@stomp/stompjs": "^6.1.0",
-    "@vue/cli-service": "^4.5.13",
-    "axios": "^0.21.1",
+    "@vue/cli-service": "^4.5.19",
+    "axios": "^1.7.2",
     "babel-polyfill": "^6.26.0",
     "file-saver": "^2.0.5",
     "material-design-icons-iconfont": "^6.1.0",
+    "repeat-string": "^1.6.1",
     "sockjs-client": "^1.5.1",
     "vis-data": "^7.1.2",
     "vis-network": "^9.1.0",
@@ -70,6 +71,8 @@
     "ansi-regex": "3.0.1",
     "unset-value": "2.0.1",
     "d3-color": "3.1.0",
-    "uglify-js": "3.14.3"
+    "uglify-js": "3.14.3",
+    "braces": "3.0.3",
+    "loader-utils": "1.4.1"
   }
 }

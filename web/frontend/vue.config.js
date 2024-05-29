@@ -6,7 +6,7 @@ module.exports = {
 
   devServer: {
     proxy: {
-      "/backend/api": {
+      "/api": {
         target: {
           host: "localhost",
           protocol: 'http',
@@ -14,7 +14,7 @@ module.exports = {
         },
         changeOrigin: true,
       },
-      "/backend/jobs": {
+      "/jobs": {
         target: {
           host: "localhost",
           protocol: 'ws',
