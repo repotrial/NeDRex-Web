@@ -3,10 +3,13 @@ package de.exbio.reposcapeweb;
 import de.exbio.reposcapeweb.communication.jobs.JobController;
 import de.exbio.reposcapeweb.communication.reponses.WebGraphService;
 import de.exbio.reposcapeweb.db.DbCommunicationService;
+import de.exbio.reposcapeweb.db.entities.nodes.Disorder;
 import de.exbio.reposcapeweb.db.io.ImportService;
 import de.exbio.reposcapeweb.db.services.controller.EdgeController;
 import de.exbio.reposcapeweb.db.services.controller.NodeController;
+import de.exbio.reposcapeweb.db.services.edges.DisorderComorbidWithDisorderService;
 import de.exbio.reposcapeweb.db.services.edges.ProteinInteractsWithProteinService;
+import de.exbio.reposcapeweb.db.services.nodes.DisorderService;
 import de.exbio.reposcapeweb.db.updates.UpdateService;
 import de.exbio.reposcapeweb.tools.ToolService;
 import org.slf4j.Logger;
@@ -45,11 +48,15 @@ public class ReposcapewebApplication extends SpringBootServletInitializer {
     @Autowired
     private JobController jobController;
     @Autowired
+    private DisorderService disorderService;
+    @Autowired
     private EdgeController edgeController;
     @Autowired
     private NodeController nodeController;
     @Autowired
     private DbCommunicationService dbService;
+    @Autowired
+    DisorderComorbidWithDisorderService disorderComorbidWithDisorderService;
     @Autowired
     WebGraphService webGraphService;
 
@@ -69,6 +76,7 @@ public class ReposcapewebApplication extends SpringBootServletInitializer {
 
         toolService.validateTools();
         dbService.setImportInProgress(false);
+        System.out.println(disorderComorbidWithDisorderService.getCount());
 //        webGraphService.remapHistory(new File(env.getProperty("path.usr.cache")));
         if (Boolean.parseBoolean(env.getProperty("update.onstartup"))) {
             updateService.scheduleDataUpdate();
@@ -90,7 +98,9 @@ public class ReposcapewebApplication extends SpringBootServletInitializer {
                 + "MB");
         log.info("Loaded " + nodeController.getCount() + " nodes and " + edgeController.getSize() + " edges!");
         log.info("Service can be used!");
-
+//        disorderService.readIdDomainMapsFromDb();
+//        disorderComorbidWithDisorderService.buildComorbiditome();
+//        disorderComorbidWithDisorderService.importComorbiditome(new File("./"));
 
     }
 }

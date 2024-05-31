@@ -86,7 +86,9 @@ public class WebGraphService {
     }
 
     public WebGraph getMetaGraph() {
+        log.info("Create metagraph");
         if (metagraph == null) {
+            log.info("Create new metagraph");
             metagraph = new WebGraph("Metagraph", true, historyController.getGraphId());
             HashMap<String, Object> sourceIds = new HashMap<>();
 
@@ -97,6 +99,10 @@ public class WebGraphService {
             metagraph.getNodes().forEach(n -> metagraph.setWeight("nodes", n.group, nodeController.getNodeCount(n.group)));
 
             DBConfig.getConfig().edges.forEach(edge -> metagraph.addEdge(new WebEdge(Graphs.getNode(edge.source), Graphs.getNode(edge.target)).setLabel(edge.mapsTo).setTitle(edge.mapsTo).setDashes(!edge.original).setArrowHead(edge.directed)));
+            metagraph.getEdges().forEach(e->{
+                log.info(e.label);
+                log.info(edgeController.getEdgeCount(e.label)+"");
+            });
             metagraph.getEdges().forEach(e -> metagraph.setWeight("edges", e.label, edgeController.getEdgeCount(e.label)));
 
             metagraph.setColorMap(this.getColorMap(null));

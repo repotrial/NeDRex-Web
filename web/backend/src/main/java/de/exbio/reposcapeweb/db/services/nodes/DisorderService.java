@@ -12,6 +12,7 @@ import de.exbio.reposcapeweb.utils.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.relational.core.sql.In;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -25,6 +26,8 @@ public class DisorderService extends NodeService {
 
     private HashMap<Integer, Pair<String,String>> idToDomainMap = new HashMap<>();
     private HashMap<String, Integer> domainToIdMap = new HashMap<>();
+
+    private HashMap<String, HashSet<Integer>> icd10ToIdMap = new HashMap<>();
 
     private NodeFilter allFilter;
 
@@ -77,6 +80,11 @@ public class DisorderService extends NodeService {
         return idToDomainMap;
     }
 
+    public HashMap<String, HashSet<Integer>> getIcd10ToIdMap() {
+        return icd10ToIdMap;
+    }
+
+
     @Override
     public String[] getListAttributes() {
         return Disorder.getListAttributes();
@@ -123,10 +131,17 @@ public class DisorderService extends NodeService {
     public void readIdDomainMapsFromDb() {
         domainToIdMap.clear();
         idToDomainMap.clear();
+        icd10ToIdMap.clear();
         findAll().forEach(n->{
             domainToIdMap.put(n.getPrimaryDomainId(),n.getId());
             idToDomainMap.put(n.getId(),new Pair<>(n.getPrimaryDomainId(),n.getDisplayName()));
+            n.getIcd10().forEach(icd10->{
+                if(!icd10ToIdMap.containsKey(icd10))
+                    icd10ToIdMap.put(icd10,new HashSet<>());
+                icd10ToIdMap.get(icd10).add(n.getId());
+            });
         });
+
     }
 
     @Override

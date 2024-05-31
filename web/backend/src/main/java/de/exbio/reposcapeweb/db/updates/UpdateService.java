@@ -431,6 +431,8 @@ public class UpdateService {
             DBConfig.getConfig().edges.stream().filter(e -> e.original).filter(e -> !skipUpdateList().contains(e.name)).forEach(edge -> restructureUpdates(edge.file, edge.name));
 
             executingUpdates();
+            log.info("Update Comorbiditome");
+            disorderComorbidWithDisorderService.importComorbiditome(updateDir);
             log.info("Update Metadata");
             buildMetadata();
             if (this.lastUpdate != this.metadata.getLastUpdate()) {
@@ -573,7 +575,7 @@ public class UpdateService {
 
                 switch (edge.mapsTo) {
                     case "DisorderComorbidity":
-                        updateSuccessful = disorderComorbidWithDisorderService.submitUpdates(runEdgeUpdates(DisorderComorbidWithDisorder.class, edge.file, disorderComorbidWithDisorderService::mapIds));
+                        updateSuccessful = disorderComorbidWithDisorderService.importComorbiditome(edge.file.getParentFile());
                         disorderComorbidWithDisorderService.importEdges();
                         break;
                     case "DisorderHierarchy":
@@ -695,6 +697,9 @@ public class UpdateService {
                     }
                     case "disorder": {
                         updateSuccessful = disorderService.submitUpdates(startNodeUpdate(Disorder.class, node.file));
+                        if(updateSuccessful){
+                            disorderComorbidWithDisorderService.buildComorbiditome();
+                        }
                         break;
                     }
                     case "gene": {

@@ -1,5 +1,5 @@
 
-const HOST = "dev-api.web.nedrex.net"
+const HOST = "api.web.nedrex.net"
 const PROTOCOL = "https"
 export const CONTEXT_PATH=""
 export const HOST_URL = PROTOCOL+"://" + HOST

@@ -81,10 +81,10 @@ public class DisorderComorbidWithDisorder extends RepoTrialEdge implements Seria
     @Transient
     private String memberTwo;
     private Float phiCor;
-    private Float rr12;
-    private Float rr21;
-    private Float rrGeoMean;
 
+    private Float pValue;
+
+    private Integer occurrences;
     @Transient
     private String nodeOne;
     @Transient
@@ -105,16 +105,24 @@ public class DisorderComorbidWithDisorder extends RepoTrialEdge implements Seria
         return phiCor;
     }
 
-    public Float getRr12() {
-        return rr12;
+    public Float getpValue() {
+        return pValue;
     }
 
-    public Float getRr21() {
-        return rr21;
+    public void setpValue(Float pValue) {
+        this.pValue = pValue;
     }
 
-    public Float getRrGeoMean() {
-        return rrGeoMean;
+    public Integer getOccurrences() {
+        return occurrences;
+    }
+
+    public void setOccurrences(Integer occurrences) {
+        this.occurrences = occurrences;
+    }
+
+    public void setPhiCor(Float phiCor) {
+        this.phiCor = phiCor;
     }
 
     @JsonGetter
@@ -130,17 +138,16 @@ public class DisorderComorbidWithDisorder extends RepoTrialEdge implements Seria
         this.memberOne = other.memberOne;
         this.memberTwo = other.memberTwo;
         this.phiCor = other.phiCor;
-        this.rr12 = other.rr12;
-        this.rr21 = other.rr21;
+        this.occurrences = other.occurrences;
+        this.pValue = other.pValue;
         this.dataSources = other.dataSources;
-        this.rrGeoMean = other.rrGeoMean;
     }
 
     @Override
     public HashMap<String, Object> getAsMap() {
         HashMap<String, Object> values = new HashMap<>();
-        values.put("rr21", getRr21());
-        values.put("rr12", getRr12());
+        values.put("pValue", getpValue());
+        values.put("occurences", getOccurrences());
         values.put("type", getType());
         values.put("memberOne", getMemberOne());
         values.put("memberTwo", getMemberTwo());
@@ -149,7 +156,6 @@ public class DisorderComorbidWithDisorder extends RepoTrialEdge implements Seria
         values.put("node1", nodeOne);
         values.put("node2", nodeTwo);
         values.put("dataSources", getDataSources());
-        values.put("rrGeoMean", getRrGeoMean());
         values.put("phiCor", getPhiCor());
         values.put("id", id.getId1() + "-" + id.getId2());
         return values;
@@ -199,9 +205,6 @@ public class DisorderComorbidWithDisorder extends RepoTrialEdge implements Seria
         this.id.flipIds();
         String tmp = memberOne;
         memberOne = memberTwo;
-        Float tempf = rr12;
-        rr12 = rr21;
-        rr21 = tempf;
         memberTwo = tmp;
     }
 

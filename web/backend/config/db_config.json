@@ -1706,9 +1706,9 @@
       "id": 8,
       "name": "disorder_comorbid_with_disorder",
       "label": "DisorderComorbidWithDisorder",
-      "original": true,
+      "original": false,
       "directed": false,
-      "disabled": true,
+      "disabled": false,
       "databases": [""],
       "source": "disorder",
       "target": "disorder",
@@ -1790,6 +1790,26 @@
           "distinct": false
         },
         {
+          "name": "occurrences",
+          "source": true,
+          "list": false,
+          "detail": true,
+          "id": false,
+          "type": "numeric",
+          "label": "Occurences",
+          "distinct": false
+        },
+        {
+          "name": "pValue",
+          "source": true,
+          "list": false,
+          "detail": true,
+          "id": false,
+          "type": "numeric",
+          "label": "p-value",
+          "distinct": false
+        },
+        {
           "name": "phiCor",
           "source": false,
           "list": true,
@@ -1798,45 +1818,6 @@
           "type": "numeric",
           "label": "Phi-Correlation",
           "distinct": false
-        },
-        {
-          "name": "rrGeoMean",
-          "source": false,
-          "list": true,
-          "detail": true,
-          "id": false,
-          "type": "numeric",
-          "label": "RR-Geometric-Mean",
-          "distinct": false
-        },
-        {
-          "name": "rr12",
-          "source": false,
-          "list": true,
-          "detail": true,
-          "id": false,
-          "type": "numeric",
-          "label": "RR-12",
-          "distinct": false
-        },
-        {
-          "name": "rr21",
-          "source": false,
-          "list": true,
-          "detail": true,
-          "id": false,
-          "type": "numeric",
-          "label": "RR-21",
-          "distinct": false
-        },
-        {
-          "name": "dataSources",
-          "source": true,
-          "list": true,
-          "detail": true,
-          "id": false,
-          "type": "array",
-          "label": "DataSources"
         },
         {
           "name": "created",
