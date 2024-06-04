@@ -1,19 +1,39 @@
 FROM andimajore/nedrex_repo:server_base as production-stage
 
-ENV JAVA_HOME=/usr/app/jdk-20.0.2
+
+ENV PYTHON=/usr/bin/python3
+ENV PYTHONPATH=$PYTHONPATH:/usr/local/lib/python3.8/dist-packages/
+ENV JAVA_HOME=/usr/app/jdk-15.0.1
 ENV PATH=$PATH:$JAVA_HOME/bin
 
 RUN mkdir cache scripts
 WORKDIR /usr/app/scripts
 COPY scripts/ ./
 
-RUN pipreqs ./
-RUN cat requirements.txt | grep -v "graph_tool" | grep -v "pcst_fast" | grep -v "matplotlib" | grep -v "bicon" | grep -v "pandas" | grep -v "libglib" | grep -v "networkx"> reqs.txt
-RUN mamba install -c conda-forge -c anaconda --file reqs.txt
+RUN pip install --upgrade pip
 
-RUN mamba uninstall -y networkx numpy pyparsing
-RUN pip install bicon
-RUN mamba install -y -c conda-forge networkx==2.5.1 numpy==1.21.0 pyparsing==2.4.6 matplotlib libglib pandas graph-tool
+RUN pipreqs ./
+RUN cat requirements.txt | grep -v "graph_tool" | grep -v "pcst_fast" | grep -v 'bicon' | grep -v 'networkx' > reqs.txt
+RUN pip3 install -r reqs.txt
+
+RUN git clone https://github.com/AndiMajore/BiCoN.git
+WORKDIR BiCoN
+RUN python3 setup.py install
+WORKDIR /usr/app
+RUN rm -rf BiCoN
+
+RUN pip3 uninstall -y pyparsing
+RUN pip3 install networkx==2.5.1 pyparsing==2.4.6
+
+RUN apt update
+RUN apt install -y software-properties-common
+
+RUN conda install -c conda-forge graph-tool
+
+
+RUN  /opt/conda/envs/domino_env/bin/pip install domino-python numpy==1.18.1 matplotlib pandas==1.0.1 networkx==2.4
+RUN  /opt/conda/envs/domino_env/bin/pip uninstall -y pyparsing
+RUN  /opt/conda/envs/domino_env/bin/pip install pyparsing==2.4.7
 
 WORKDIR /usr/app
 
@@ -24,6 +44,6 @@ RUN mkdir cache
 COPY target/nedrexweb-backend.war ./
 
 COPY scripts/wait-for-it.sh wait-for-it.sh
-EXPOSE 8022
+
 ENTRYPOINT ./wait-for-it.sh nedrex-web-db:3306 -t 30 -- java -Xmx16g -jar nedrexweb-backend.war
 
