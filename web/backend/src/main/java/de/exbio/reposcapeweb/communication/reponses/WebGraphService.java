@@ -99,9 +99,9 @@ public class WebGraphService {
             metagraph.getNodes().forEach(n -> metagraph.setWeight("nodes", n.group, nodeController.getNodeCount(n.group)));
 
             DBConfig.getConfig().edges.forEach(edge -> metagraph.addEdge(new WebEdge(Graphs.getNode(edge.source), Graphs.getNode(edge.target)).setLabel(edge.mapsTo).setTitle(edge.mapsTo).setDashes(!edge.original).setArrowHead(edge.directed)));
-            metagraph.getEdges().forEach(e->{
+            metagraph.getEdges().forEach(e -> {
                 log.info(e.label);
-                log.info(edgeController.getEdgeCount(e.label)+"");
+                log.info(edgeController.getEdgeCount(e.label) + "");
             });
             metagraph.getEdges().forEach(e -> metagraph.setWeight("edges", e.label, edgeController.getEdgeCount(e.label)));
 
@@ -2150,27 +2150,32 @@ public class WebGraphService {
         this.historyController.importHistory();
         try {
             File cachedir = new File(wd, "users");
-            if(cachedir.listFiles() !=null){
-            Arrays.stream(cachedir.listFiles()).forEach(user -> {
-                Arrays.stream(new File(user, "graphs").listFiles()).forEach(graph -> {
-                    String gid = graph.getName().split("[.]")[0];
-                    Graph g = null;
+            if (cachedir.listFiles() != null) {
+                Arrays.stream(cachedir.listFiles()).forEach(user -> {
                     try {
-                        g = objectMapper.readValue(graph, Graph.class);
-                        Graph remap = remapGraph(g);
-                        GraphHistory history = historyController.getHistory(remap.getId());
-                        history.setInfo(remap.toInfo());
-                        historyController.save(history);
-                        WriterUtils.writeTo(graph, objectMapper.writeValueAsString(remap));
-                    } catch (IOException e) {
-                        log.error("Problem when reading graph " + gid + " of " + user.getName());
+                        Arrays.stream(new File(user, "graphs").listFiles()).forEach(graph -> {
+                            String gid = graph.getName().split("[.]")[0];
+                            Graph g = null;
+                            try {
+                                g = objectMapper.readValue(graph, Graph.class);
+                                Graph remap = remapGraph(g);
+                                GraphHistory history = historyController.getHistory(remap.getId());
+                                history.setInfo(remap.toInfo());
+                                historyController.save(history);
+                                WriterUtils.writeTo(graph, objectMapper.writeValueAsString(remap));
+                            } catch (IOException e) {
+                                log.error("Problem when reading graph " + gid + " of " + user.getName());
+                                e.printStackTrace();
+                            } catch (NullPointerException ex) {
+                                log.error("Problem when converting the graph " + gid + " of " + user.getName());
+                                ex.printStackTrace();
+                            }
+                        });
+                    } catch (NullPointerException e) {
+                        log.error("Problem when reading user " + user.getName());
                         e.printStackTrace();
-                    } catch (NullPointerException ex){
-                        log.error("Problem when converting the graph "+gid+" of "+user.getName());
-                        ex.printStackTrace();
                     }
                 });
-            });
             }
         } catch (Error e) {
             log.error("Error when remapping user history:");

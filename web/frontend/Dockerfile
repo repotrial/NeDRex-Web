@@ -1,4 +1,4 @@
-FROM node:14.17 as build-stage
+FROM node:18.20 as build-stage
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
@@ -35,8 +35,4 @@ COPY docker/WEB-INF webapps/ROOT/WEB-INF
 
 COPY docker/conf/* conf/
 
-#EXPOSE 8080
-#EXPOSE 8090
-
-#ENTRYPOINT tail -F conf/web.xml
 ENTRYPOINT bin/catalina.sh run

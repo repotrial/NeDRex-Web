@@ -1676,6 +1676,16 @@
           "distinct": true
         },
         {
+          "name": "omimMappingCode",
+          "source": true,
+          "list": false,
+          "detail": true,
+          "id": false,
+          "type": "numeric",
+          "label": "OMIM-Mapping Code",
+          "distinct": true
+        },
+        {
           "name": "dataSources",
           "source": true,
           "list": true,

@@ -90,6 +90,8 @@ public class GeneAssociatedWithDisorder extends RepoTrialEdge implements Seriali
 
     private String omimFlags;
 
+    private Integer omimMappingCode;
+
 
 
     @Override
@@ -105,6 +107,7 @@ public class GeneAssociatedWithDisorder extends RepoTrialEdge implements Seriali
         values.put("score",getScore());
         values.put("dataSources", getDataSources());
         values.put("omimFlags",getOmimFlags());
+        values.put("omimMappingCode", getOmimMappingCode());
         values.put("id",id.getId1()+"-"+id.getId2());
         return values;
     }
@@ -176,6 +179,7 @@ public class GeneAssociatedWithDisorder extends RepoTrialEdge implements Seriali
         this.targetDomainId = other.targetDomainId;
         this.score = other.score;
         this.dataSources = other.dataSources;
+        this.omimMappingCode = other.omimMappingCode;
     }
 
     public List<String> getOmimFlags() {
@@ -186,6 +190,13 @@ public class GeneAssociatedWithDisorder extends RepoTrialEdge implements Seriali
         this.omimFlags = StringUtils.listToString(omimFlags);
     }
 
+    public Integer getOmimMappingCode() {
+        return omimMappingCode;
+    }
+
+    public void setOmimMappingCode(Integer omimMappingCode) {
+        this.omimMappingCode = omimMappingCode;
+    }
 
     @Override
     public PairId getPrimaryIds() {

@@ -1,0 +1,44 @@
+version: "3.3"
+services:
+  db:
+    container_name: nedrex-web-db
+    image: mysql
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_DATABASE: reposcape
+      MYSQL_ROOT_PASSWORD: example
+      MYSQL_USER: reposcaper
+      MYSQL_PASSWORD: nedrex
+    volumes:
+      - nedrex-db-volume:/var/lib/mysql
+    cap_add:
+      - SYS_NICE
+  web:
+    container_name: nedrex-web-frontend
+    image: andimajore/nedrex_repo:web_dev
+    build: frontend
+    ports:
+      - "8080:8080"
+    restart: always
+  server:
+    container_name: nedrex-web-backend
+    image: andimajore/nedrex_repo:server_dev
+    depends_on:
+      - "db"
+    build: backend
+    environment:
+      - spring_profiles_active=dev
+    volumes:
+      - nedrex-cache-volume:/etc/data/db
+      - nedrex-usr-volume:/etc/data/usr
+    ports:
+      - "8090:8090"
+    restart: always
+volumes:
+  nedrex-db-volume:
+    external: true
+  nedrex-usr-volume:
+    external: true
+  nedrex-cache-volume:
+    external: true

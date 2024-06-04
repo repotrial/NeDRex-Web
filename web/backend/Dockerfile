@@ -8,7 +8,7 @@ WORKDIR /usr/app/scripts
 COPY scripts/ ./
 
 RUN pipreqs ./
-RUN cat requirements.txt | grep -v "graph_tool" | grep -v "pcst_fast" | grep -v "matplotlib" | grep -v "bicon" | grep -v "pandas" | grep -v libglib> reqs.txt
+RUN cat requirements.txt | grep -v "graph_tool" | grep -v "pcst_fast" | grep -v "matplotlib" | grep -v "bicon" | grep -v "pandas" | grep -v "libglib" | grep -v "networkx"> reqs.txt
 RUN mamba install -c conda-forge -c anaconda --file reqs.txt
 
 RUN mamba uninstall -y networkx numpy pyparsing
