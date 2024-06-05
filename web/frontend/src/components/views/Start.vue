@@ -151,7 +151,6 @@ export default {
 
     loadJob: function () {
       this.$http.get("getJob?id=" + this.job).then(response => {
-        console.log(response.data)
         this.startTab = 0
         this.$nextTick(() => {
           this.$refs.quick.reloadJob(response.data)

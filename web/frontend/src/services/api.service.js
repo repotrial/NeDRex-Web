@@ -141,9 +141,7 @@ const ApiService = {
 
   },
   getTrials(disorders, drugs, lower, upper) {
-    console.log("https://clinicaltrials.gov/api/query/study_fields?expr=(" + disorders + ")+AND+(" + drugs + ")&min_rnk=" + lower + "&max_rnk=" + upper + "&fields=NCTId,InterventionName,Condition&fmt=json")
     return this.getProxy("https://clinicaltrials.gov/api/query/study_fields?expr=(" + disorders + ")+AND+(" + drugs + ")&min_rnk=" + lower + "&max_rnk=" + upper + "&fields=NCTId,InterventionName,Condition&fmt=json").then(response => {
-      console.log(response)
       return response.data["StudyFieldsResponse"]
     }).catch(console.error)
   },
