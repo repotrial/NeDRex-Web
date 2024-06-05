@@ -7,6 +7,7 @@
 #cp frontend/docker/configs/vue.config_dev.js frontend/docker/vue.config.js
 cp compose-scripts/docker-compose_dev.yml ./docker-compose.yml
 #cp frontend/docker/configs/index_dev.html frontend/docker/index.html
+#docker compose build --no-cache
 docker compose build
 rm docker-compose.yml
 

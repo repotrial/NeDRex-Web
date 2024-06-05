@@ -37,7 +37,7 @@ fi
 
 if [ $tool == 'robust' ]
 then
-  python3.7 $4 $5 $6 $7 $8 $9 ${10} ${11}
+  $PYTHON $4 $5 $6 $7 $8 $9 ${10} ${11}
 fi
 
 if [ $tool == 'kpm' ]

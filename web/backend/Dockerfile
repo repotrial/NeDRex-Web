@@ -1,8 +1,5 @@
 FROM andimajore/nedrex_repo:server_base as production-stage
 
-
-ENV PYTHON=/usr/bin/python3
-ENV PYTHONPATH=$PYTHONPATH:/usr/local/lib/python3.8/dist-packages/
 ENV JAVA_HOME=/usr/app/jdk-15.0.1
 ENV PATH=$PATH:$JAVA_HOME/bin
 
@@ -10,30 +7,32 @@ RUN mkdir cache scripts
 WORKDIR /usr/app/scripts
 COPY scripts/ ./
 
-RUN pip install --upgrade pip
-
-RUN pipreqs ./
-RUN cat requirements.txt | grep -v "graph_tool" | grep -v "pcst_fast" | grep -v 'bicon' | grep -v 'networkx' > reqs.txt
-RUN pip3 install -r reqs.txt
-
-RUN git clone https://github.com/AndiMajore/BiCoN.git
-WORKDIR BiCoN
-RUN python3 setup.py install
-WORKDIR /usr/app
-RUN rm -rf BiCoN
-
-RUN pip3 uninstall -y pyparsing
-RUN pip3 install networkx==2.5.1 pyparsing==2.4.6
-
 RUN apt update
 RUN apt install -y software-properties-common
 
-RUN conda install -c conda-forge graph-tool
+RUN pip install --upgrade pip
 
+RUN mamba create -n default python=3.9
 
-RUN  /opt/conda/envs/domino_env/bin/pip install domino-python numpy==1.18.1 matplotlib pandas==1.0.1 networkx==2.4
-RUN  /opt/conda/envs/domino_env/bin/pip uninstall -y pyparsing
-RUN  /opt/conda/envs/domino_env/bin/pip install pyparsing==2.4.7
+#ENV PYTHON=/opt/conda/envs/default/bin/python
+#ENV PYTHONPATH=$PYTHONPATH:/opt/conda/envs/default/lib/python3.9/site-packages/
+
+RUN pipreqs ./
+RUN cat requirements.txt | grep -v "graph_tool" | grep -v "pcst_fast" | grep -v 'bicon' | grep -v 'networkx' > reqs.txt
+RUN /opt/conda/envs/default/bin/pip install -r reqs.txt
+
+RUN git clone https://github.com/AndiMajore/BiCoN.git
+WORKDIR BiCoN
+RUN /opt/conda/envs/default/bin/python setup.py install
+WORKDIR /usr/app
+RUN rm -rf BiCoN
+
+RUN mamba install -n default networkx==2.5.1 pyparsing==2.4.6 numpy==1.26.4
+RUN mamba install -n default -c conda-forge graph-tool
+
+RUN mamba install -n domino_env pyparsing==2.4.7 numpy==1.18.1
+
+RUN mamba clean --all -y
 
 WORKDIR /usr/app
 
