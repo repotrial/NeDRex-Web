@@ -21,7 +21,9 @@ import de.exbio.reposcapeweb.db.services.nodes.ProteinService;
 import de.exbio.reposcapeweb.db.updates.UpdateService;
 import de.exbio.reposcapeweb.tools.ToolService;
 import de.exbio.reposcapeweb.utils.Pair;
+import de.exbio.reposcapeweb.utils.ProcessUtils;
 import de.exbio.reposcapeweb.utils.StringUtils;
+import de.exbio.reposcapeweb.utils.WriterUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -503,6 +505,35 @@ public class RequestController {
     @ResponseBody
     public String postNedrex(@RequestBody NedrexRequest req) {
         return this.nedrex.post(req.route, req.data);
+    }
+
+    @RequestMapping(value = "/getProxy", method = RequestMethod.POST)
+    @ResponseBody
+    public String get(@RequestBody ProxyRequest req) {
+        StringBuffer sb = new StringBuffer();
+        try {
+            ProcessUtils.executeProcessWait(new ProcessBuilder("curl", "-s", "-k", "-L", req.url), sb);
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+        return sb.toString();
+    }
+
+    @RequestMapping(value = "/postProxy", method = RequestMethod.POST)
+    @ResponseBody
+    public String post(@RequestBody ProxyRequest req) {
+        StringBuffer sb = new StringBuffer();
+        try {
+            File input = File.createTempFile("proxy_post",".txt");
+            BufferedWriter bw = WriterUtils.getBasicWriter(input);
+            bw.write(toJson(req.data));
+            bw.close();
+            ProcessUtils.executeProcessWait(new ProcessBuilder("curl", "-s", "-X", "-L", "POST","-k", "-H", "Content-Type: application/json","-d", "@" + input.getAbsolutePath() ,req.url), sb);
+            input.delete();
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+        return sb.toString();
     }
 
 

@@ -14,13 +14,13 @@ services:
       - nedrex-db-volume:/var/lib/mysql
     cap_add:
       - SYS_NICE
-  web:
-    container_name: nedrex-web-frontend
-    image: andimajore/nedrex_repo:web_dev
-    build: frontend
-    ports:
-      - "8080:8080"
-    restart: always
+#  web:
+#    container_name: nedrex-web-frontend
+#    image: andimajore/nedrex_repo:web_dev
+#    build: frontend
+#    ports:
+#      - "8080:8080"
+#    restart: always
   server:
     container_name: nedrex-web-backend
     image: andimajore/nedrex_repo:server_dev
