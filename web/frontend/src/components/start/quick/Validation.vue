@@ -171,7 +171,7 @@
                   <v-chip style="margin-left: 10px" v-on="on" v-bind="attrs"
                           :color="styleMap[moduleValidationStatus][0]"><a style="color: white;text-decoration: none"
                                                                           target="_blank"
-                                                                          :href="apiService.getBaseURL().replace('/api','')+'validation/status?uid='+moduleValidationUID">
+                                                                          :href="apiService.getBaseURL().replace(/api\/?$/,'validation/status?uid=')+moduleValidationUID">
                     {{ moduleValidationStatus }}
                     <v-icon size="10pt">{{ styleMap[moduleValidationStatus][1] }}</v-icon>
                   </a>
@@ -225,7 +225,7 @@
                   <v-chip style="color: white; margin-left: 10px; display: inline-block" v-on="on" v-bind="attrs"
                           :color="styleMap[rankingValidationStatus][0]"><a style="color: white;text-decoration: none"
                                                                            target="_blank"
-                                                                           :href="'http://82.148.225.92:8022/validation/status?uid='+rankingValidationUID">
+                                                                           :href="apiService.getBaseURL().replace(/api\/?$/,'validation/status?uid=')+rankingValidationUID">
                     {{ rankingValidationStatus }}
                     <v-icon size="10pt">{{ styleMap[rankingValidationStatus][1] }}</v-icon>
                   </a>

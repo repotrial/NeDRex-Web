@@ -65,7 +65,7 @@
         <v-divider></v-divider>
         <v-stepper-step step="3" :complete="step>3 || blitz">
           Ranking Method
-          <small v-if="rankingAlgorithmSelected &&(step>2 || blitz)">{{
+          <small v-if="rankingAlgorithmSelected &&(step>2 || blitz) && $refs.rankingAlgorithms!=null && $refs.rankingAlgorithms.getAlgorithm() !=null">{{
               this.$refs.rankingAlgorithms.getAlgorithm().label
             }}</small>
         </v-stepper-step>
@@ -115,7 +115,7 @@
                     </i>
                         </v-col>
                       <v-col>
-                  <b>{{ $refs.algorithms.getAlgorithm().label }}</b>
+                  <b v-if="$refs.moduleAlgorithms!=null && $refs.moduleAlgorithms.getAlgorithm() !=null">{{ $refs.moduleAlgorithms.getAlgorithm().label }}</b>
                   </v-col>
                       </v-row>
                       <v-row>
@@ -371,7 +371,7 @@
                                     @downloadEvent="downloadList" @downloadResultsEvent="downloadResultList"
                                     @downloadRawEvent="downloadFullResultList"></ResultDownload>
                   </v-card-title>
-                  <v-data-table v-if="$refs.moduleAlgorithms && $refs.moduleAlgorithms.getAlgorithm()" max-height="50vh"
+                  <v-data-table v-if="$refs.moduleAlgorithms && $refs.moduleAlgorithms && $refs.moduleAlgorithms.getAlgorithm()" max-height="50vh"
                                 height="55vh" class="overflow-y-auto" fixed-header dense item-key="id"
                                 :items="(!results.targets ||results.targets.length ===0) ?seeds : results.targets"
                                 :headers="getHeaders(0)"

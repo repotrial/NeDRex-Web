@@ -9,7 +9,7 @@
               <v-icon right>fas fa-exclamation-triangle</v-icon>
             </v-chip>
             <a v-on="on" v-bind="attr" v-else target="_blank"
-               :href="'https://api.nedrex.net/validation/status?uid='+validationUID" style="text-decoration:none">
+               :href="apiService.getBaseURL().replace(/api\/?$/,'validation/status?uid=')+validationUID" style="text-decoration:none">
 
               <v-chip v-if="validationStatus==='failed'" color="red" x-small style="color: white">validation error
                 <v-icon right x-small>far fa-times-circle</v-icon>
@@ -65,9 +65,15 @@
 </template>
 
 <script>
+import apiService from "../../../services/api.service";
+
 export default {
   name: "ValidationBox",
-
+  computed: {
+    apiService() {
+      return apiService
+    }
+  },
   props: {
     drugs: {
       default: false,
