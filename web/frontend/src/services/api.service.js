@@ -1,12 +1,17 @@
 import axios from 'axios'
 
 const ApiService = {
-  setNedrex(url) {
-    axios.nedrex = url
-  },
+  // setNedrex(url) {
+  //   axios.nedrex = url
+  // },
+
 
   init(baseURL) {
     axios.defaults.baseURL = baseURL;
+  },
+
+  getBaseURL(){
+    return axios.defaults.baseURL
   },
 
   get(resource) {
@@ -132,6 +137,7 @@ const ApiService = {
 
   },
   getTrials(disorders, drugs, lower, upper) {
+    console.log("https://clinicaltrials.gov/api/query/study_fields?expr=(" + disorders + ")+AND+(" + drugs + ")&min_rnk=" + lower + "&max_rnk=" + upper + "&fields=NCTId,InterventionName,Condition&fmt=json")
     return this.get("https://clinicaltrials.gov/api/query/study_fields?expr=(" + disorders + ")+AND+(" + drugs + ")&min_rnk=" + lower + "&max_rnk=" + upper + "&fields=NCTId,InterventionName,Condition&fmt=json").then(response => {
       return response.data["StudyFieldsResponse"]
     }).catch(console.error)
@@ -167,7 +173,8 @@ const ApiService = {
           let total = data.NStudiesFound
           for (let i = 1; i * 1000 < total; i += 1) {
             await this.getTrials(disorderString, drugString, i * 1000 + 1, (i + 1) * 1000).then(data2 => {
-              data.StudyFields = data.StudyFields.concat(data2.StudyFields)
+              if(data2.StudyFields)
+                data.StudyFields = data.StudyFields.concat(data2.StudyFields)
             })
           }
           return data

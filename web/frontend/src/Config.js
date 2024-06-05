@@ -7,4 +7,4 @@ export const SOCKET_URL = "http://" + HOST + ":8090"
 export const PATH_PREFIX= ""
 export const STATIC_PATH="/static/"
 
-export const NEDREX_API="https://api.nedrex.net/open"
+// export const NEDREX_API="https://apps.cosy.bio/licensed"

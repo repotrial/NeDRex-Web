@@ -69,7 +69,7 @@ export default {
           id: 1,
           text: "Alzheimer disorder associated seeds",
           sourceQuery: "Alzheimer disease",
-          sourceType: "umbrella_disorder",
+          sourceType: "name",
           source: "disorder",
           mi: {
             algorithm: "robust",

@@ -140,7 +140,7 @@
                           <v-tooltip left>
                             <template v-slot:activator="{on,attrs}">
                               <a
-                                href="https://drive.google.com/file/d/14m0LjT33OT2iP_PkoPQgczOOGKFRxOTh/view?usp=sharing"
+                                href="https://drive.google.com/file/d/1zyKDy9rN_3KBDsKmzrqhodLmwAf0Sw3W/view?usp=sharing"
                                 target="_blank" style="text-decoration: none">
                                 <v-icon
                                   v-bind="attrs"

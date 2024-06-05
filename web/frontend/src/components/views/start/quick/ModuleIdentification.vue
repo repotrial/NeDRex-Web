@@ -589,11 +589,11 @@
           </v-card-text>
           <v-card-actions>
             <v-radio-group v-model="rankingSelect" style="margin-left: 128px">
-              <v-radio :label="'Original seeds ('+seeds.length+')'">
+              <v-radio :label="'Original seeds ('+seeds.length+')'" :value="0">
               </v-radio>
-              <v-radio :label="'Whole module ('+(getTargetCount()+seeds.length)+')'">
+              <v-radio :label="'Whole module ('+(getTargetCount()+seeds.length)+')'" :value="1">
               </v-radio>
-              <v-radio :label="'Non-seeds only ('+getTargetCount()+')'">
+              <v-radio :label="'Non-seeds only ('+getTargetCount()+')'" :value="2">
               </v-radio>
             </v-radio-group>
           </v-card-actions>

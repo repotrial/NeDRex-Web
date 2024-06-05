@@ -90,7 +90,7 @@
                        :remove="true"
                        :filter="true"
                        @printNotificationEvent="printNotification"
-                       height="405px"
+                       height="350px"
                        :title="'Selected Drugs ('+($refs.drugTable ? $refs.drugTable.getSeeds().length : 0)+')'"
                        nodeName="drug"
             ></SeedTable>
@@ -171,7 +171,7 @@
                   <v-chip style="margin-left: 10px" v-on="on" v-bind="attrs"
                           :color="styleMap[moduleValidationStatus][0]"><a style="color: white;text-decoration: none"
                                                                           target="_blank"
-                                                                          :href="'http://82.148.225.92:8022/validation/status?uid='+moduleValidationUID">
+                                                                          :href="apiService.getBaseURL().replace('/api','')+'validation/status?uid='+moduleValidationUID">
                     {{ moduleValidationStatus }}
                     <v-icon size="10pt">{{ styleMap[moduleValidationStatus][1] }}</v-icon>
                   </a>
@@ -283,9 +283,15 @@ import LabeledSwitch from "@/components/app/input/LabeledSwitch";
 import SeedTable from "@/components/app/tables/SeedTable";
 import NodeInput from "@/components/app/input/NodeInput";
 import SuggestionAutocomplete from "@/components/app/suggestions/SuggestionAutocomplete";
+import apiService from "../../../services/api.service";
 
 export default {
   name: "Validation",
+  computed: {
+    apiService() {
+      return apiService
+    }
+  },
   props: {
     step: Number,
     seedTypeId: Number,

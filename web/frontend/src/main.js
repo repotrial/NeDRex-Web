@@ -16,10 +16,10 @@ Vue.component('font-awesome-icon', FontAwesomeIcon)
 Vue.use(VueCookies);
 Vue.$cookies.config("10000d")
 import ApiService from "./services/api.service";
-import NedrexService from "./services/nedrex.service"
+// import NedrexService from "./services/nedrex.service"
 
 ApiService.init(CONFIG.HOST_URL+CONFIG.CONTEXT_PATH+"/api/")
-ApiService.setNedrex(CONFIG.NEDREX_API)
+// ApiService.setNedrex(CONFIG.NEDREX_API)
 Vue.prototype.$http = ApiService;
 
 

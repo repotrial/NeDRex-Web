@@ -49,7 +49,7 @@ export default {
           text: "Alzheimer Disorder associated with pathway",
           connector: "protein",
           sourceQuery: "Alzheimer disease",
-          sourceType: "umbrella_disorder",
+          sourceType: "name",
           source: "disorder",
           target: "pathway",
           compress: true,
@@ -73,7 +73,7 @@ export default {
           sourceType: "category",
           source: "drug",
           target: "disorder",
-          targetType: "umbrella_disorder",
+          targetType: "name",
           targetQuery: "depressive disorder",
           compress: true,
           edge: "Indirect antidepressant effect"

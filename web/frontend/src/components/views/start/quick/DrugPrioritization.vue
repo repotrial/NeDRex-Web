@@ -1127,6 +1127,7 @@ export default {
         return data.map(d => d.displayName)
       })
       await this.$http.getAllTrials(disorderNames, drugNames).then(data => {
+        console.log(data)
         if (data.StudyFields != null)
           data.StudyFields.forEach(studie => {
             if (studie != null && studie.InterventionName != null)
