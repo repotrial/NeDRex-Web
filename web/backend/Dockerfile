@@ -1,4 +1,4 @@
-FROM andimajore/nedrex_repo:server_base_2 as production-stage
+FROM andimajore/nedrex_repo:server_base as production-stage
 
 ENV JAVA_HOME=/usr/app/jdk-15.0.1
 ENV PATH=$PATH:$JAVA_HOME/bin

@@ -157,6 +157,8 @@ public class UpdateService {
     }
 
     public void renewDBDumps() {
+        log.info("Updating filters");
+        importService.updateNodeFilters(true);
         log.info("Creating database dump files for external Tool");
         File dir = new File(env.getProperty("path.external.cache"));
         if (dir.exists())
@@ -368,23 +370,6 @@ public class UpdateService {
             log.error("Update could not be executed correctly: " + e.getMessage());
         }
         Runtime.getRuntime().gc();
-//        if (!skipUpdateList().isEmpty()) {
-//            DBConfig.getConfig().edges.forEach(edge -> {
-//                if (!skipUpdateList().contains(edge.name))
-//                    return;
-//                switch (edge.mapsTo) {
-//                    case "DisorderComorbidity" -> disorderComorbidWithDisorderService.importEdges();
-//                    case "DisorderHierarchy" -> disorderIsADisorderService.importEdges();
-//                    case "DrugIndication" -> drugHasIndicationService.importEdges();
-//                    case "DrugTargetProtein" -> drugHasTargetService.importEdges();
-//                    case "GeneAssociatedWithDisorder" -> associatedWithDisorderService.importEdges();
-//                    case "ProteinPathway" -> proteinInPathwayService.importEdges();
-//                    case "ProteinProteinInteraction" -> proteinInteractsWithProteinService.importEdges();
-//                    case "ProteinEncodedBy" -> proteinEncodedByService.importEdges();
-//                    case "DrugContraindication" -> drugHasContraindicationService.importEdges();
-//                }
-//            });
-//        }
         renewDBDumps();
         webGraphService.remapHistory(new File(env.getProperty("path.usr.cache")));
         dbCommunication.setUpdateInProgress(false);
@@ -745,8 +730,6 @@ public class UpdateService {
                 char startC = line.charAt(0);
                 if (startC == '>' | startC == '<') {
 //                    int start = line.charAt(2) == '[' ? 3 : 2;
-                    System.out.println(line);
-                    System.out.println(line.substring(2));
                     T d = objectMapper.readValue(line.substring(2), valueType);
                     if (startC == '<') {
                         dels.put(d.getUniqueId(), d);

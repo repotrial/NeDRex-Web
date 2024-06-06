@@ -2254,7 +2254,7 @@ public class WebGraphService {
                 Edge e_remap = new Edge(nodeRemap.get(nodeType1).get(e.getId1()), nodeRemap.get(nodeType2).get(e.getId2()));
                 remappedEdges.add(e_remap);
             } catch (NullPointerException ex) {
-                log.warn("Edge could not be mapped due to missing node");
+                log.warn("Edge "+nodeType1+ " -> "+nodeType2+ " could not be mapped due to missing node");
             }
         });
         return remappedEdges;
@@ -2270,7 +2270,7 @@ public class WebGraphService {
                 if (n2s.size() > 0)
                     remappedEdges.put(reN1, reN2s);
             } catch (NullPointerException ex) {
-                log.warn("Edge could not be mapped due to missing node");
+                log.warn("Edge "+nodeType1+ " -> "+nodeType2+ " could not be mapped due to missing node");
             }
         });
         return remappedEdges;

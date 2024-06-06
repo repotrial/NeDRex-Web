@@ -76,7 +76,7 @@ public class ReposcapewebApplication extends SpringBootServletInitializer {
 
         toolService.validateTools();
         dbService.setImportInProgress(false);
-        System.out.println(disorderComorbidWithDisorderService.getCount());
+//        System.out.println(disorderComorbidWithDisorderService.getCount());
 //        webGraphService.remapHistory(new File(env.getProperty("path.usr.cache")));
         if (Boolean.parseBoolean(env.getProperty("update.onstartup"))) {
             updateService.scheduleDataUpdate();
@@ -84,7 +84,6 @@ public class ReposcapewebApplication extends SpringBootServletInitializer {
             importService.importEdges(false);
             log.warn("Startup Database update is deactivated! Activate it by setting 'update.onstartup=true' in the application.properties.");
         }
-
 
         jobController.importJobsHistory();
         importService.importHistory();

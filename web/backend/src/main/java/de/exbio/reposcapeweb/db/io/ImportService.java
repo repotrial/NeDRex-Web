@@ -283,6 +283,10 @@ public class ImportService {
 
     }
 
+    public void updateNodeFilters(boolean edgesReady){
+        updateNodeFilters(new File(dbCacheDir, "filters"), edgesReady);
+    }
+
     private void updateNodeFilters(File cacheDir, boolean edgesReady) {
         cacheDir.mkdirs();
         DBConfig.getConfig().nodes.forEach(node -> {

@@ -179,11 +179,13 @@ public class DisorderIsADisorderService {
         entryMap.keySet().forEach(d -> {
             String key = entryMap.get(d).getName();
             HashSet<Integer> children = getChildren(d);
-            if (!children.isEmpty())
+            if (!children.isEmpty()) {
                 disorderService.getFilter().addDistinct(FilterType.UMBRELLA_DISORDER, key, entryMap.get(d));
-            children.forEach(c -> {
-                disorderService.getFilter().addDistinct(FilterType.UMBRELLA_DISORDER, key, entryMap.get(c));
-            });
+                children.forEach(c -> {
+                    if(entryMap.get(c) != null)
+                        disorderService.getFilter().addDistinct(FilterType.UMBRELLA_DISORDER, key, entryMap.get(c));
+                });
+            }
         });
     }
 

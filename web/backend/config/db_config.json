@@ -104,7 +104,8 @@
           "label": "Updated"
         }
       ]
-    },{
+    },
+    {
       "id": 1,
       "name": "drug",
       "label": "Drug",
@@ -563,6 +564,15 @@
           "detail": true,
           "id": false,
           "label": "Gene"
+        },
+        {
+          "name": "is_reviewed",
+          "source": true,
+          "list": true,
+          "detail": true,
+          "id": false,
+          "type": "boolean",
+          "label": "Reviewed"
         },
         {
           "name": "dataSources",

@@ -81,6 +81,7 @@ public class Protein extends RepoTrialNode {
     public String comments;
     public String geneName;
     public Integer taxid;
+    public Boolean reviewed;
 
     @Override
     public HashMap<String, Object> getAsMap() {
@@ -96,6 +97,7 @@ public class Protein extends RepoTrialNode {
         values.put("dataSources", getDataSources());
         values.put("primaryDomainId", getPrimaryDomainId());
         values.put("comments", getComments());
+        values.put("isReviewed", getIsReviewed());
         return values;
     }
 
@@ -183,6 +185,14 @@ public class Protein extends RepoTrialNode {
     public void setType(String type) {
     }
 
+    public Boolean getIsReviewed() {
+        return reviewed;
+    }
+
+    public void setIsReviewed(Boolean reviewed) {
+        this.reviewed = reviewed;
+    }
+
     public void setValues(Protein other) {
         this.sequence = other.sequence;
         this.domainIds = other.domainIds;
@@ -193,6 +203,7 @@ public class Protein extends RepoTrialNode {
         this.primaryDomainId = other.primaryDomainId;
         this.dataSources = other.dataSources;
         this.synonyms = other.synonyms;
+        this.reviewed = other.reviewed;
 
     }
 
