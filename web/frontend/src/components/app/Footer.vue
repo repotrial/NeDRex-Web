@@ -12,7 +12,7 @@
         <v-btn icon @click="openExternal('https://github.com/AndiMajore/RepoScapeWeb')">
           <v-icon size="22px">fab fa-github</v-icon>
         </v-btn>
-        v1.0.0 | {{ new Date().getFullYear() }} | <a href="https://www.cosy.bio/contact"><strong>CosyBio</strong></a>
+        v2.0.0 | {{ new Date().getFullYear() }} | <a href="https://www.cosy.bio/contact" target="_blank"><strong>CoSyBio</strong></a>
       </v-card-text>
     </v-card>
 

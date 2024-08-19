@@ -361,6 +361,11 @@
                         </v-tooltip>
                         <span v-else>{{ item.displayName }}</span>
                       </template>
+                      <template v-slot:item.data-table-expand="{expand, item,isExpanded}">
+                        <v-icon color="primary" @click="rowDoubleClicked(null,{item:item})">
+                          fas fa-info-circle
+                        </v-icon>
+                      </template>
                       <template v-slot:item.seed="{item}" v-if="seeds || (reload && reloaded)">
                         <v-icon v-if="item.isSeed" color="success">fas fa-check</v-icon>
                         <v-icon v-else color="error">fas fa-times</v-icon>
@@ -436,7 +441,7 @@
                     time!</i>
                   <Network ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle"
                            :legend="results.targets.length>0" :tools="results.targets.length>0" :secondaryViewer="true"
-                           @loadIntoAdvancedEvent="$emit('graphLoadEvent',{post: {id: currentGid}})"
+                           @loadIntoAdvancedEvent="$emit('graphLoadEvent',{post: {id: currentGid}})" @toggleNodeSelectEvent=nodeDoubleclicked
                            :show-vis-option="showVisOption">
                     <template v-slot:legend v-if="results.targets.length>0">
                       <v-card style="width: 15vw; max-width: 17vw; padding-top: 35px">
@@ -891,6 +896,7 @@ export default {
             headers.push(entry)
         })
       headers.push({text: "Seed", value: "seed", sortable: false, align: "center", width: "1rem"})
+      headers.push({text: "", value: "data-table-expand", width: "1rem"})
       return headers
     },
     updateGraphPhysics: function () {
@@ -989,6 +995,12 @@ export default {
       } catch (e) {
         console.error(e)
         this.$emit("jobReloadError")
+      }
+    },
+    nodeDoubleclicked: function (obj) {
+      if (obj[0]) {
+        let item = obj[0]
+        this.rowDoubleClicked(null, {item: item})
       }
     },
     showInteractionNetwork: function () {

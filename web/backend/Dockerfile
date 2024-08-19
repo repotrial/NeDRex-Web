@@ -15,7 +15,7 @@ RUN pip install --upgrade pip
 RUN mamba create -n default python=3.9
 
 RUN pipreqs ./
-RUN cat requirements.txt | grep -v "graph_tool" | grep -v "pcst_fast" | grep -v 'bicon' | grep -v 'networkx' | grep -v 'scipy' > reqs.txt
+RUN cat requirements.txt | grep -v "graph_tool" | grep -v "pcst_fast" | grep -v 'bicon' | grep -v 'networkx' | grep -v 'scipy' | grep -v "pandas" > reqs.txt
 RUN /opt/conda/envs/default/bin/pip install -r reqs.txt
 
 RUN git clone https://github.com/AndiMajore/BiCoN.git
@@ -24,7 +24,7 @@ RUN /opt/conda/envs/default/bin/python setup.py install
 WORKDIR /usr/app
 RUN rm -rf BiCoN
 
-RUN mamba install -n default networkx==2.5.1 pyparsing==2.4.6 numpy==1.26.4 scipy==1.12.0
+RUN mamba install -n default networkx==2.5.1 pyparsing==2.4.6 numpy==1.26.4 scipy==1.12.0 pandas==1.5.3
 RUN mamba install -n default -c conda-forge graph-tool
 
 RUN mamba install -n domino_env pyparsing==2.4.7 numpy==1.18.1

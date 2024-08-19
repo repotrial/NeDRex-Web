@@ -2,6 +2,7 @@ package de.exbio.reposcapeweb.db.entities.nodes;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import de.exbio.reposcapeweb.db.entities.RepoTrialNode;
 import de.exbio.reposcapeweb.filter.FilterEntry;
@@ -81,6 +82,7 @@ public class Protein extends RepoTrialNode {
     public String comments;
     public String geneName;
     public Integer taxid;
+    @JsonProperty("is_reviewed")
     public Boolean reviewed;
 
     @Override
@@ -185,10 +187,12 @@ public class Protein extends RepoTrialNode {
     public void setType(String type) {
     }
 
+    @JsonGetter("isReviewed")
     public Boolean getIsReviewed() {
         return reviewed;
     }
 
+    @JsonSetter("isReviewed")
     public void setIsReviewed(Boolean reviewed) {
         this.reviewed = reviewed;
     }

@@ -4,7 +4,8 @@
     <v-progress-linear v-if="progress ===undefined" v-show="loading && !waiting" indeterminate
                        :color=loadingColor></v-progress-linear>
     <template v-else>
-      <v-progress-linear v-if="progressInterminate && progress>0 && progress<100" indeterminate :color="loadingColor"></v-progress-linear>
+      <v-progress-linear v-if="progressInterminate && progress>0 && progress<100" indeterminate
+                         :color="loadingColor"></v-progress-linear>
       <v-progress-linear v-else v-show="progress <100" :value="progress" :color=loadingColor></v-progress-linear>
     </template>
 
@@ -63,39 +64,39 @@
       <div style="position: absolute;"
            v-if=" (!waiting && show )|| keepLegends">
         <div v-if="legend">
-          <v-btn @click="togglePanel(0)" :title="this.showPanels[0] ? 'Hide':'Show'" plain
+          <v-btn @click="togglePanel(0)" :title="showPanels === 0 ? 'Hide':'Show'" plain
                  style="display: flex; justify-content: flex-end; margin-left: auto; z-index: 201; background-color: rgba(255,255,255,0.5)">
             <v-icon left>fas fa-scroll</v-icon>
             Legend
-            <v-icon right>{{ this.showPanels[0] ? "fas fa-angle-up" : "fas fa-angle-down" }}</v-icon>
+            <v-icon right>{{ showPanels === 0 ? "fas fa-angle-up" : "fas fa-angle-down" }}</v-icon>
           </v-btn>
-          <div v-show="this.showPanels[0]"
+          <div v-show="showPanels === 0"
                style="margin-top: -35px; margin-right:1px; z-index: 600; display: flex; justify-content: flex-end;margin-left: auto">
             <slot name="legend"></slot>
           </div>
         </div>
         <div v-if="tools">
           <div style="display: flex; justify-content:flex-end">
-            <v-btn @click="togglePanel(1)" :title="this.showPanels[1] ? 'Hide':'Show'" plain
+            <v-btn @click="togglePanel(1)" :title="showPanels === 1 ? 'Hide':'Show'" plain
                    style="z-index: 201; background-color: rgba(255,255,255,0.5)">
               <v-icon left>fas fa-tools</v-icon>
               Tools
-              <v-icon right>{{ this.showPanels[1] ? "fas fa-angle-up" : "fas fa-angle-down" }}</v-icon>
+              <v-icon right>{{ showPanels === 1 ? "fas fa-angle-up" : "fas fa-angle-down" }}</v-icon>
             </v-btn>
           </div>
-          <div v-show="this.showPanels[1]" style="margin-top:-35px; margin-right:1px;  z-index: 200">
+          <div v-show="showPanels === 1" style="margin-top:-35px; margin-right:1px;  z-index: 200">
             <slot name="tools"></slot>
           </div>
         </div>
         <template v-if="styles">
           <div style="display: flex; justify-content: flex-end;">
-            <v-btn @click="togglePanel(2)" :title="this.showPanels[2] ? 'Hide':'Show'" plain style="z-index: 201">
+            <v-btn @click="togglePanel(2)" :title="showPanels === 2 ? 'Hide':'Show'" plain style="z-index: 201">
               <v-icon left>fas fa-palette</v-icon>
               Styling
-              <v-icon right>{{ this.showPanels[2] ? "fas fa-angle-up" : "fas fa-angle-down" }}</v-icon>
+              <v-icon right>{{ showPanels === 2 ? "fas fa-angle-up" : "fas fa-angle-down" }}</v-icon>
             </v-btn>
           </div>
-          <div v-show="this.showPanels[2]" style="margin-top:-35px; margin-right:1px;  z-index: 200">
+          <div v-show="showPanels === 2" style="margin-top:-35px; margin-right:1px;  z-index: 200">
             <slot name="styles"></slot>
           </div>
         </template>
@@ -158,7 +159,7 @@ export default {
     legend: Boolean,
     tools: Boolean,
     styles: Boolean,
-    progressInterminate:{
+    progressInterminate: {
       default: false,
       type: Boolean
     },
@@ -182,7 +183,7 @@ export default {
 
   data() {
     return {
-      showPanels: [true, false, false],
+      showPanels: 0,
       edgeSet: Object,
       nodeSet: undefined,
       options: Object,
@@ -343,8 +344,7 @@ export default {
         if (this.startGraph) {
           this.options.interaction.multiselect = false
           this.reloadOptions();
-        }
-        else
+        } else
           this.setOptions(graph.options)
         this.checkSizeWarning(graph)
       }
@@ -452,13 +452,7 @@ export default {
     }
     ,
     togglePanel: function (index) {
-      let state = !this.showPanels[index]
-      if (state) {
-        for (let idx = 0; idx < this.showPanels.length; idx++) {
-          this.$set(this.showPanels, idx, false)
-        }
-      }
-      this.$set(this.showPanels, index, state)
+      this.showPanels = this.showPanels === index ? -1 : index
     },
 
     modifyGroups: function (nodeIds, group) {
@@ -494,6 +488,7 @@ export default {
           return {from: e.from, to: e.to, group: e.title}
         }))
       }
+
     },
 
     onClick: function (params) {

@@ -333,6 +333,11 @@
                       </v-tooltip>
                       <span v-else>{{ item.displayName }}</span>
                     </template>
+                    <template v-slot:item.data-table-expand="{expand, item,isExpanded}">
+                      <v-icon color="primary" @click="seedDoubleClicked(null,{item:item})">
+                        fas fa-info-circle
+                      </v-icon>
+                    </template>
                     <template v-slot:item.seed="{item}">
                       <v-icon color="success">fas fa-check</v-icon>
                     </template>
@@ -400,7 +405,7 @@
                     time!</i>
                   <Network ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle"
                            :show-vis-option="showVisOption"
-                           :legend="results.targets.length>0" :tools="results.targets.length>0" :secondaryViewer="true"
+                           :legend="results.targets.length>0" :tools="results.targets.length>0" :secondaryViewer="true" @toggleNodeSelectEvent=nodeDoubleclicked
                            @loadIntoAdvancedEvent="$emit('graphLoadEvent',{post: {id: jobs[currentJid].result}})">
                     <template v-slot:legend v-if="results.targets.length>0">
                       <v-card style="width: 13vw; max-width: 13vw;padding-top: 35px">
@@ -465,6 +470,11 @@
                           <span>{{ item.displayName }}</span>
                         </v-tooltip>
                         <span v-else>{{ item.displayName }}</span>
+                      </template>
+                      <template v-slot:item.data-table-expand="{expand, item,isExpanded}">
+                        <v-icon color="primary" @click="drugDoubleClicked(null,{item:item})">
+                          fas fa-info-circle
+                        </v-icon>
                       </template>
                       <template v-slot:header.trialCount="{header}">
                         <v-tooltip bottom>
@@ -773,13 +783,13 @@ export default {
     makeStep: function (button) {
       if (button === "continue") {
         this.step++
-        if (this.step === 3)
-          this.$refs.algorithms.run()
         if (this.step === 2) {
           this.seeds = this.$refs.seedTable.getSeeds()
           if (this.blitz)
             this.step++
         }
+        if (this.step === 3)
+          this.$refs.algorithms.run()
       }
       if (button === "back") {
         this.step--
@@ -855,7 +865,12 @@ export default {
       this.detailAdditions = (item.trials != null ? [{pos: 3, key: 'ClinicalTrials', value: item.trials}] : null)
       this.rowDoubleClicked(item, 'drug')
     },
-
+    nodeDoubleclicked: function (obj) {
+      if (obj[0]) {
+        let item = obj[0]
+        this.rowDoubleClicked(item, item.group)
+      }
+    },
     rowDoubleClicked: function (item, type) {
       switch (type) {
         case 'gene':
@@ -890,6 +905,7 @@ export default {
         })
       if (seed)
         headers.push({text: "Seed", value: "seed", sortable: false, align: "center", width: "1rem"})
+      headers.push({text: "", value: "data-table-expand", width: "1rem"})
       return headers
     },
     seedClicked: function (item) {
@@ -1127,19 +1143,18 @@ export default {
         return data.map(d => d.displayName)
       })
       await this.$http.getAllTrials(disorderNames, drugNames).then(data => {
-        if (data.StudyFields != null)
-          data.StudyFields.forEach(studie => {
-            if (studie != null && studie.InterventionName != null)
-              studie.InterventionName.forEach(target => {
+        if (data.studies)
+          data.studies.forEach(study => {
+            if (study && study.protocolSection && study.protocolSection.armsInterventionsModule && study.protocolSection.armsInterventionsModule.interventions)
+              study.protocolSection.armsInterventionsModule.interventions.forEach(target => {
                 list.forEach(drug => {
-                  if (target.toLowerCase().indexOf(drug.displayName.toLowerCase()) > -1) {
-                    if (drug.trials == null)
-                      drug.trials = studie.NCTId
-                    else {
-                      studie.NCTId.forEach(id => {
-                        if (drug.trials.indexOf(id) === -1)
-                          drug.trials.push(id)
-                      })
+                  if (target.name.toLowerCase().includes(drug.displayName.toLowerCase())) {
+                    if (drug.trials == null) {
+                      drug.trials = [study.protocolSection.identificationModule.nctId]
+                    } else {
+                      let id = study.protocolSection.identificationModule.nctId
+                      if (drug.trials.indexOf(id) === -1)
+                        drug.trials.push(id)
                     }
                   }
                 })

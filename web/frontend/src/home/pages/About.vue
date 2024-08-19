@@ -40,32 +40,39 @@
     <v-card-text>
       <div
         style="justify-self: center; margin-left: auto; margin-right: auto; padding-left: 10px; padding-right: 10px">
-        <b>This application which is part of REPO-TRIAL project has received funding from the European Union’s Horizon
-          2020 research and innovation programme under grant agreement No 777111. This reflects only the author’s view
-          and the European Commission is not responsible for any use that may be made of the information it
-          contains.</b>
+        <b>This project has received funding from the European Union’s Horizon 2020 research and innovation
+          programme under grant agreement No 777111. This publication reflects only the authors' view and the
+          European Commission is not responsible for any use that may be made of the information it contains. This
+          project is funded by the European Union under grant agreement No. 101057619. Views and opinions
+          expressed are however those of the author(s) only and do not necessarily reflect those of the European
+          Union or European Health and Digital Executive Agency (HADEA). Neither the European Union nor the
+          granting authority can be held responsible for them. This work was also partly supported by the Swiss
+          State Secretariat for Education, Research and Innovation (SERI) under contract No. 22.00115.</b>
       </div>
       <div style="display: flex; justify-content: center">
-        <div style="width: 200px; height: 75px; display: flex; ">
-          <img :src="getConfig().STATIC_PATH+'/assets/EU-emblem.png'" :width="75"
-               style="align-self: center; margin-top: auto; margin-bottom: auto"/>
-          <div style="width: 25px"></div>
-          <img :src="getConfig().STATIC_PATH+'/assets/cropped-repo-trial_logo.png'" :width="75"
-               style="align-self: center; margin-top: auto; margin-bottom: auto; background-color: white"/>
+        <div style="width: 500px; height: 75px; display: flex; ">
+          <div style="margin: auto; display: flex">
+            <img :src="getConfig().STATIC_PATH+'/assets/EU-emblem.png'" :height="50"
+                 style="align-self: center; margin-top: auto; margin-bottom: auto"/>
+            <img :src="getConfig().STATIC_PATH+'/assets/cropped-repo-trial_logo.png'" :height="50"
+                 style="align-self: center; background-color: white; margin: auto 15px; padding: 5px"/>
+            <img :src="getConfig().STATIC_PATH+'/assets/REPO4EU-logo-main.png'" :height="50"
+                 style="align-self: center; margin-top: auto; margin-bottom: auto; background-color: white; padding: 5px"/>
+          </div>
         </div>
       </div>
     </v-card-text>
     <v-card-subtitle style="font-size: 1.75rem; color: white">Impressum</v-card-subtitle>
     <v-card-text style="text-align: center !important; margin-top: 15px;">
       <div>Prof. Dr. Jan Baumbach</div>
-      <div>Chair of Computational Systems Biology</div>
+      <div>Institute for Computational Systems Biology</div>
       <br>
       <div>Phone: +49-40-42838-7313</div>
       <div>E-Mail: <a :href="'mailto:cosyb@zbh.uni-hamburg.de'">cosyb[at)zbh.uni-hamburg.de</a></div>
       <div>Address: Prof. Dr. Jan Baumbach</div>
       <div>University of Hamburg</div>
-      <div>Notkestraße 9</div>
-      <div>22607 Hamburg</div>
+      <div>Albert-Einstein-Ring 8-10</div>
+      <div>22761 Hamburg</div>
       <div>Germany</div>
     </v-card-text>
   </v-card>

@@ -49,9 +49,9 @@ export default {
   data(){
     return{
       table:[
-        {os:"Linux", version:"Mint 20.2 Cinnamon", chrome:"95.0.4638.54", firefox:"93.0", safari:"n/a", edge:"95.0.1020.30-1"},
-        {os:"MacOS", version:"Big Sur 11.6.1", chrome:"96.0.4664.55", firefox:"94.0.2", safari:"15.1", edge:"n/a"},
-        {os:"Windows", version:"10", chrome:"95.0.4638.54", firefox:"93.0", safari:"n/a", edge:"95.0.1020.30"}
+        {os:"Linux", version:"Mint 22 Cinnamon", chrome:"127.0.6533.119", firefox:"129.0", safari:"n/a", edge:"n/a"},
+        {os:"MacOS", version:"Big Sur 11.6.1", chrome:"127.0.6533.119", firefox:"123.0.1", safari:"17.5", edge:"n/a"},
+        {os:"Windows", version:"10/11", chrome:"127.0.6533.200", firefox:"192.0.1", safari:"n/a", edge:"127.0.2651.98"}
       ]
     }
   },

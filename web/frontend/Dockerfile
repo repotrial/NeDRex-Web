@@ -1,4 +1,4 @@
-FROM node:18.20 as build-stage
+FROM node:18.20 AS build-stage
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
@@ -9,7 +9,7 @@ COPY docker/Config.js src/Config.js
 
 RUN npm run build
 
-FROM ubuntu:latest as production-stage
+FROM ubuntu:latest AS production-stage
 WORKDIR /usr/app
 
 RUN apt-get update && apt-get upgrade -y

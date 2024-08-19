@@ -10,7 +10,7 @@ const ApiService = {
     axios.defaults.baseURL = baseURL;
   },
 
-  getBaseURL(){
+  getBaseURL() {
     return axios.defaults.baseURL
   },
 
@@ -67,13 +67,13 @@ const ApiService = {
     }).catch(console.error)
   },
 
-  getJobByGraph(gid){
-    return this.get("/getJobByGraph?gid="+gid).then(response=>{
+  getJobByGraph(gid) {
+    return this.get("/getJobByGraph?gid=" + gid).then(response => {
       return response.data
     }).catch(console.error)
   },
   getJob(jid) {
-    return this.get("/getJob?id="+jid).then(response=>{
+    return this.get("/getJob?id=" + jid).then(response => {
       return response.data
     }).catch(console.error)
   },
@@ -140,10 +140,15 @@ const ApiService = {
     })
 
   },
-  getTrials(disorders, drugs, lower, upper) {
-    return this.getProxy("https://clinicaltrials.gov/api/query/study_fields?expr=(" + disorders + ")+AND+(" + drugs + ")&min_rnk=" + lower + "&max_rnk=" + upper + "&fields=NCTId,InterventionName,Condition&fmt=json").then(response => {
-      return response.data["StudyFieldsResponse"]
-    }).catch(console.error)
+  getTrials(disorders, drugs, nextPageToken) {
+    if (nextPageToken)
+      return this.getProxy("https://clinicaltrials.gov/api/v2/studies?query.cond=" + disorders + "&query.term=" + drugs + "&fields=NCTId,InterventionName,Condition&pageSize=1000&pageToken=" + nextPageToken).then(response => {
+        return response.data
+      }).catch(console.error)
+    else
+      return this.getProxy("https://clinicaltrials.gov/api/v2/studies?query.cond=" + disorders + "&query.term=" + drugs + "&fields=NCTId,InterventionName,Condition&pageSize=1000").then(response => {
+        return response.data
+      }).catch(console.error)
   },
 
   createTrialRequestStrings(list) {
@@ -169,23 +174,26 @@ const ApiService = {
   async getAllTrials(disorders, drugs) {
     let disorderStrings = this.createTrialRequestStrings(disorders)
     let drugStrings = this.createTrialRequestStrings(drugs)
-    let data = undefined
+    let data = {studies: []}
     for (const disorderString of disorderStrings) {
       for (const drugString of drugStrings) {
-        await this.getTrials(disorderString, drugString, 1, 1000).then(async data => {
-          let total = data.NStudiesFound
-          for (let i = 1; i * 1000 < total; i += 1) {
-            await this.getTrials(disorderString, drugString, i * 1000 + 1, (i + 1) * 1000).then(data2 => {
-              if(data2.StudyFields)
-                data.StudyFields = data.StudyFields.concat(data2.StudyFields)
+        await this.getTrials(disorderString, drugString).then(async data1 => {
+          let nextPageToken = data1.nextPageToken
+          while (nextPageToken) {
+            await this.getTrials(disorderString, drugString, nextPageToken).then(data2 => {
+              nextPageToken = data2.nextPageToken
+              if (data2.studies) {
+                if (data1.studies)
+                  data1.studies = data1.studies.concat(data2.studies)
+                else
+                  data1.studies = data2.studies
+              }
             })
           }
-          return data
+          return data1
         }).then(resp => {
-          if (data === undefined)
-            data = resp
-          else
-            data.StudyFields = data.StudyFields != null ? data.StudyFields.concat(resp.StudyFields) : []
+          if(resp.studies)
+            data.studies = data.studies.concat(resp.studies)
         }).catch(console.error)
       }
     }
@@ -203,8 +211,8 @@ const ApiService = {
   },
 
 
-  getExampleInputFile(type){
-    return this.get("/getExampleInputFileLink?type="+type).then(response=>{
+  getExampleInputFile(type) {
+    return this.get("/getExampleInputFileLink?type=" + type).then(response => {
       return response.data;
     })
   },
@@ -223,29 +231,29 @@ const ApiService = {
       text.split("\n").forEach(line => {
         if (line.indexOf("====") > -1) {
           if (lastHeader != null) {
-            if(bulletPointDoubleIntent)
-              lastContent = lastContent+"</div>"
-            if(bulletPointIndent)
-              lastContent = lastContent+"</div>"
-            bulletPointDoubleIntent=false;
+            if (bulletPointDoubleIntent)
+              lastContent = lastContent + "</div>"
+            if (bulletPointIndent)
+              lastContent = lastContent + "</div>"
+            bulletPointDoubleIntent = false;
             eula.push({title: lastHeader, content: this.formatEULA(lastContent)})
           }
           lastHeader = line.replaceAll("=", "").trim()
           lastContent = ""
         } else {
           line = line.trim()
-          if (new RegExp("^[0-9]","i").test(line)) {
+          if (new RegExp("^[0-9]", "i").test(line)) {
             if (bulletPointDoubleIntent)
               lastContent += "</div>"
-            if(bulletPointIndent)
-              lastContent+="</div>"
-            bulletPointIndent=true
+            if (bulletPointIndent)
+              lastContent += "</div>"
+            bulletPointIndent = true
 
-            bulletPointDoubleIntent=new RegExp("^[0-9]\.[0-9]","i").test(line);
-            if(bulletPointDoubleIntent){
-              line="<div style=\"margin-left:50px\">"+line
-            }else{
-              line = "<div style=\"margin-left:25px\">"+line
+            bulletPointDoubleIntent = new RegExp("^[0-9]\.[0-9]", "i").test(line);
+            if (bulletPointDoubleIntent) {
+              line = "<div style=\"margin-left:50px\">" + line
+            } else {
+              line = "<div style=\"margin-left:25px\">" + line
             }
           }
           lastContent += line + "<br>"
@@ -254,7 +262,10 @@ const ApiService = {
       if (lastHeader != null) {
         eula.push({title: lastHeader, content: this.formatEULA(lastContent)})
       }
-      eula.push({title:"Redistribution",content:"It is prohibited to distribute downloaded data containing DrugBank drug-target information to any third party!"})
+      eula.push({
+        title: "Redistribution",
+        content: "It is prohibited to distribute downloaded data containing DrugBank drug-target information to any third party!"
+      })
       return eula
     })
 
@@ -263,21 +274,21 @@ const ApiService = {
   formatEULA: function (text) {
     if (text.indexOf("https:\/\/omim\.org\/downloads"))
       text = text.replace("https:\/\/omim\.org\/downloads", "<a href='https://omim.org/downloads' target='_blank'>https://omim.org/downloads")
-    text = text.replaceAll("OMIM��","OMIM®")
-    text = text.replaceAll("OMIM Data��","OMIM®")
-    text = text.replaceAll("Online Mendelian Inheritance in Man��","Online Mendelian Inheritance in Man®")
+    text = text.replaceAll("OMIM��", "OMIM®")
+    text = text.replaceAll("OMIM Data��", "OMIM®")
+    text = text.replaceAll("Online Mendelian Inheritance in Man��", "Online Mendelian Inheritance in Man®")
     text = text.replaceAll("JHU���", "JHU'")
-    text = text.replaceAll("���claims","‘claims")
-    text = text.replaceAll("made���","made’")
-    text = text.replaceAll("UH���s","UH's")
+    text = text.replaceAll("���claims", "‘claims")
+    text = text.replaceAll("made���", "made’")
+    text = text.replaceAll("UH���s", "UH's")
     text = text.replaceAll("Copyright ��", "Copyright ©")
-    text = text.replaceAll("���JHU Parties���",'“JHU Parties”')
-    text = text.replaceAll("���prior acts���","'prior acts'")
+    text = text.replaceAll("���JHU Parties���", '“JHU Parties”')
+    text = text.replaceAll("���prior acts���", "'prior acts'")
     return text
   },
-  getInteractionEdges: function(data) {
-    return this.post("/getInteractionEdges",data).then(response=>{
-      if(response.data!=null)
+  getInteractionEdges: function (data) {
+    return this.post("/getInteractionEdges", data).then(response => {
+      if (response.data != null)
         return response.data
     }).catch(console.error)
   },

@@ -65,7 +65,8 @@
         <v-divider></v-divider>
         <v-stepper-step step="3" :complete="step>3 || blitz">
           Ranking Method
-          <small v-if="rankingAlgorithmSelected &&(step>2 || blitz) && $refs.rankingAlgorithms!=null && $refs.rankingAlgorithms.getAlgorithm() !=null">{{
+          <small
+            v-if="rankingAlgorithmSelected &&(step>2 || blitz) && $refs.rankingAlgorithms!=null && $refs.rankingAlgorithms.getAlgorithm() !=null">{{
               this.$refs.rankingAlgorithms.getAlgorithm().label
             }}</small>
         </v-stepper-step>
@@ -115,7 +116,9 @@
                     </i>
                         </v-col>
                       <v-col>
-                  <b v-if="$refs.moduleAlgorithms!=null && $refs.moduleAlgorithms.getAlgorithm() !=null">{{ $refs.moduleAlgorithms.getAlgorithm().label }}</b>
+                  <b v-if="$refs.moduleAlgorithms!=null && $refs.moduleAlgorithms.getAlgorithm() !=null">{{
+                      $refs.moduleAlgorithms.getAlgorithm().label
+                    }}</b>
                   </v-col>
                       </v-row>
                       <v-row>
@@ -190,8 +193,9 @@
                       </v-card-title>
                       <div style="display: flex">
                         <div style="justify-content: flex-start">
-                          <v-card-title style="text-align: left; margin-left: 20px;  color: rgb(128,128,128)" class="title"> Option 2: Add
-                            {{ ['genes', 'proteins'][this.seedTypeId] }} by association to <i style="margin-left: 8px">{{suggestionType}}</i>
+                          <v-card-title style="text-align: left; margin-left: 20px;  color: rgb(128,128,128)"
+                                        class="title"> Option 2: Add
+                            {{ ['genes', 'proteins'][this.seedTypeId] }} by association to <i style="margin-left: 8px">{{ suggestionType }}</i>
                           </v-card-title>
                         </div>
                         <div style="justify-content: flex-end; margin-left: auto">
@@ -199,7 +203,8 @@
                                          :disabled="(seedTypeId != null && $refs.seedTable != null && $refs.seedTable.getSeeds() != null && $refs.seedTable.getSeeds().length > 0)">
                             <v-tooltip left>
                               <template v-slot:activator="{on,attrs}">
-                                <v-radio label="Limited" @click="suggestionType = 'disorder'" :value="false" v-bind="attrs"
+                                <v-radio label="Limited" @click="suggestionType = 'disorder'" :value="false"
+                                         v-bind="attrs"
                                          v-on="on"></v-radio>
                               </template>
                               <div style="width: 300px"><b>Limited Mode:</b><br>The options are limited to the most
@@ -211,7 +216,8 @@
                                 <v-radio label="Full" :value="true" v-bind="attrs"
                                          v-on="on"></v-radio>
                               </template>
-                              <div style="width: 300px"><b>Full Mode:</b><br> The full mode provides a wider list of options to select from
+                              <div style="width: 300px"><b>Full Mode:</b><br> The full mode provides a wider list of
+                                options to select from
                                 for
                                 more
                                 specific queries.
@@ -251,7 +257,8 @@
                                                 style="justify-self: flex-end;margin-left: auto"></SuggestionAutocomplete>
                       </div>
                       <div style="display: flex; justify-content: flex-start; margin-top: 32px; margin-left: 20px">
-                        <NodeInput :text="'Option 3: Provide '+['gene','protein'][seedTypeId]+'s IDs by'" @addToSelectionEvent="addToSelection"
+                        <NodeInput :text="'Option 3: Provide '+['gene','protein'][seedTypeId]+'s IDs by'"
+                                   @addToSelectionEvent="addToSelection"
                                    :idName="['entrez','uniprot'][seedTypeId]"
                                    :nodeType="['gene', 'protein'][seedTypeId]"
                                    @printNotificationEvent="printNotification"></NodeInput>
@@ -300,9 +307,9 @@
 
           </v-card>
           <v-card-actions style="display: flex; justify-content: flex-end">
-          <ButtonCancel @click="makeStep"></ButtonCancel>
-          <ButtonNext @click="makeStep"
-                      :disabled="seedTypeId<0 || $refs.seedTable == null || $refs.seedTable.getSeeds().length===0"></ButtonNext>
+            <ButtonCancel @click="makeStep"></ButtonCancel>
+            <ButtonNext @click="makeStep"
+                        :disabled="seedTypeId<0 || $refs.seedTable == null || $refs.seedTable.getSeeds().length===0"></ButtonNext>
           </v-card-actions>
         </v-stepper-content>
 
@@ -312,10 +319,10 @@
                              @algorithmSelectedEvent="acceptModuleAlgorithmSelectEvent"
                              @jobEvent="readModuleJob" @clearSeedsEvent="seeds = []"></MIAlgorithmSelect>
           <v-card-actions style="display: flex; justify-content: flex-end">
-          <ButtonCancel @click="makeStep"></ButtonCancel>
-          <ButtonBack @click="makeStep"></ButtonBack>
-          <ButtonNext @click="makeStep"
-                      :disabled=" !moduleAlgorithmSelected  || ($refs.moduleAlgorithms.getAlgorithmMethod()==='bicon' && $refs.moduleAlgorithms.getAlgorithmModels().exprFile ===undefined)"></ButtonNext>
+            <ButtonCancel @click="makeStep"></ButtonCancel>
+            <ButtonBack @click="makeStep"></ButtonBack>
+            <ButtonNext @click="makeStep"
+                        :disabled=" !moduleAlgorithmSelected  || ($refs.moduleAlgorithms.getAlgorithmMethod()==='bicon' && $refs.moduleAlgorithms.getAlgorithmModels().exprFile ===undefined)"></ButtonNext>
           </v-card-actions>
         </v-stepper-content>
 
@@ -337,7 +344,9 @@
             min-height="90vh"
             max-height="775px"
           >
-            <v-card-subtitle class="headline" style="color: black; text-align: left; margin-left: 5vw">4. Drug Repurposing Results</v-card-subtitle>
+            <v-card-subtitle class="headline" style="color: black; text-align: left; margin-left: 5vw">4. Drug
+              Repurposing Results
+            </v-card-subtitle>
             <v-card-subtitle style="margin-top: -25px">
               <ul>
                 <li style="margin-left: 0;">Explore the results of Module Identification and Drug Ranking:</li>
@@ -358,7 +367,7 @@
             <v-divider style="margin: 15px;"></v-divider>
             <v-container style="max-width: 100%">
               <v-row>
-                <v-col cols="3" style="padding: 0 50px 0 0; margin-right: -50px; min-width: 350px">
+                <v-col cols="4" style="padding: 0 50px 0 0; margin-right: -50px; min-width: 375px">
                   <v-card-title class="subtitle-1" style="display: flex">
                     <span style="justify-content: flex-start">Seeds ({{ seeds.length }}) {{
                         (results.targets.length !== undefined && results.targets.length > 0 ? ("& Module (" + getTargetCount() + ") " + ["Genes", "Proteins"][seedTypeId]) : (": " + (state != null ? ("[" + state + "]") : "Processing")))
@@ -367,16 +376,19 @@
                     <v-progress-circular indeterminate size="25" v-if="this.results.targets.length===0"
                                          style="margin-left:15px; z-index:50">
                     </v-progress-circular>
-                    <ResultDownload v-else v-show="seeds && seeds.length>0" raw results seeds style="margin: auto; justify-self: flex-end; display: inline-block"
+                    <ResultDownload v-else v-show="seeds && seeds.length>0" raw results seeds
+                                    style="margin: auto; justify-self: flex-end; display: inline-block"
                                     @downloadEvent="downloadList" @downloadResultsEvent="downloadResultList"
                                     @downloadRawEvent="downloadFullResultList"></ResultDownload>
                   </v-card-title>
-                  <v-data-table v-if="$refs.moduleAlgorithms && $refs.moduleAlgorithms && $refs.moduleAlgorithms.getAlgorithm()" max-height="50vh"
-                                height="55vh" class="overflow-y-auto" fixed-header dense item-key="id"
-                                :items="(!results.targets ||results.targets.length ===0) ?seeds : results.targets"
-                                :headers="getHeaders(0)"
-                                disable-pagination @dblclick:row="seedDoubleClicked"
-                                hide-default-footer @click:row="seedClicked">
+                  <v-data-table
+                    v-if="$refs.moduleAlgorithms && $refs.moduleAlgorithms && $refs.moduleAlgorithms.getAlgorithm()"
+                    max-height="50vh"
+                    height="55vh" class="overflow-y-auto" fixed-header dense item-key="id"
+                    :items="(!results.targets ||results.targets.length ===0) ?seeds : results.targets"
+                    :headers="getHeaders(0)"
+                    disable-pagination @dblclick:row="seedDoubleClicked"
+                    hide-default-footer @click:row="seedClicked">
                     <template v-slot:item.displayName="{item}">
                       <v-tooltip v-if="item.displayName.length>12" right>
                         <template v-slot:activator="{attr,on }">
@@ -385,7 +397,12 @@
                         </template>
                         <span>{{ item.displayName }}</span>
                       </v-tooltip>
-                      <span v-else>{{ item.displayName }}</span>
+                      <span v-else>sla {{ item.displayName }}</span>
+                    </template>
+                    <template v-slot:item.data-table-expand="{expand, item,isExpanded}">
+                      <v-icon color="primary" @click="seedDoubleClicked(null,{item:item})">
+                        fas fa-info-circle
+                      </v-icon>
                     </template>
                     <template v-slot:item.seed="{item}" v-if="seeds || (reload && reloaded)">
                       <v-icon v-if="item.isSeed == null || item.isSeed " color="success">fas fa-check</v-icon>
@@ -453,15 +470,15 @@
                     </v-tooltip>
                   </div>
                   <i v-if="!this.rankingGid">The execution could take a moment. Save the current URL and return at any
-                  time!</i>
+                    time!</i>
                   <Network ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle"
                            :progress="resultProgress" :progress-interminate="reloaded && !rankingGid"
                            :legend="resultProgress>=50"
                            :tools="resultProgress===100"
-                           :secondaryViewer="true" :show-vis-option="showVisOption"
+                           :secondaryViewer="true" :show-vis-option="showVisOption"  @toggleNodeSelectEvent="nodeDoubleclicked"
                            @loadIntoAdvancedEvent="$emit('graphLoadEvent',{post: {id: rankingGid}})">
                     <template v-slot:legend v-if="results.targets.length>0">
-                      <v-card style="width: 15vw; max-width: 20vw; padding-top: 35px">
+                      <v-card style="width: 13vw; max-width: 18vw; padding-top: 35px">
                         <v-list dense>
                           <v-list-item>
                             <v-list-item-icon>
@@ -508,11 +525,11 @@
                   </Network>
 
                 </v-col>
-                <v-col style="padding:0; max-width: 28%; width: 31%; min-width: 370px">
+                <v-col style="padding:0; max-width: 30%; width: 31%; min-width: 400px">
                   <v-card-title class="subtitle-1" style="display: flex">
                     <span style="justify-content: flex-start">Drugs{{
-                      (results.drugs.length !== undefined && (results.drugs.length > 0 || rankingGid != null) ? (" (" + (results.drugs.length) + ")") : (": " + (rankingState != null ? ("[" + rankingState + "]") : "Processing")))
-                    }}</span>
+                        (results.drugs.length !== undefined && (results.drugs.length > 0 || rankingGid != null) ? (" (" + (results.drugs.length) + ")") : (": " + (rankingState != null ? ("[" + rankingState + "]") : "Processing")))
+                      }}</span>
                     <span v-show="loadingTrialData">: Loading Trial
                       Data</span>
                     <v-progress-circular indeterminate
@@ -521,7 +538,8 @@
                                          style="margin-left:15px; z-index:50">
                     </v-progress-circular>
                     <ResultDownload v-if="results.drugs.length>0" raw results
-                                    result-label="Drug Ranking" style="margin: auto; justify-self: flex-end; display: inline-block"
+                                    result-label="Drug Ranking"
+                                    style="margin: auto; justify-self: flex-end; display: inline-block"
                                     @downloadResultsEvent="downloadRankingResultList"
                                     @downloadRawEvent="downloadFullResultList(rankingJid)"></ResultDownload>
                   </v-card-title>
@@ -554,6 +572,11 @@
                                     size="12pt">fas fa-clinic-medical</v-icon> This drug has some clinical trial entries for treatments of the selected disorders.</span>
                         </v-tooltip>
                       </template>
+                      <template v-slot:item.data-table-expand="{expand, item,isExpanded}">
+                        <v-icon color="primary" @click="drugDoubleClicked(null,{item:item})">
+                          fas fa-info-circle
+                        </v-icon>
+                      </template>
                       <template v-slot:item.trialCount="{item}">
                         <v-tooltip v-if="item.known" left>
                           <template v-slot:activator="{attr,on }">
@@ -579,12 +602,13 @@
             </v-container>
           </v-card>
           <v-card-actions style="justify-content: flex-end; display: flex">
-          <ButtonCancel @click="makeStep"></ButtonCancel>
-          <ButtonBack @click="makeStep" v-if="!reloaded"></ButtonBack>
-          <ButtonNext @click="makeStep" label="VALIDATE" :disabled="rankingGid ==null"></ButtonNext>
-          <ButtonAdvanced @click="$emit('graphLoadNewTabEvent',{post: {id: rankingGid}})" :disabled="rankingGid==null">
-            Advanced
-          </ButtonAdvanced>
+            <ButtonCancel @click="makeStep"></ButtonCancel>
+            <ButtonBack @click="makeStep" v-if="!reloaded"></ButtonBack>
+            <ButtonNext @click="makeStep" label="VALIDATE" :disabled="rankingGid ==null"></ButtonNext>
+            <ButtonAdvanced @click="$emit('graphLoadNewTabEvent',{post: {id: rankingGid}})"
+                            :disabled="rankingGid==null">
+              Advanced
+            </ButtonAdvanced>
           </v-card-actions>
         </v-stepper-content>
         <v-stepper-content step="5">
@@ -1273,19 +1297,18 @@ export default {
         return data.map(d => d.displayName)
       })
       await this.$http.getAllTrials(disorderNames, drugNames).then(data => {
-        if (data.StudyFields != null)
-          data.StudyFields.forEach(studie => {
-            if (studie != null && studie.InterventionName != null)
-              studie.InterventionName.forEach(target => {
+        if (data.studies)
+          data.studies.forEach(study => {
+            if (study && study.protocolSection && study.protocolSection.armsInterventionsModule && study.protocolSection.armsInterventionsModule.interventions)
+              study.protocolSection.armsInterventionsModule.interventions.forEach(target => {
                 list.forEach(drug => {
-                  if (target.toLowerCase().indexOf(drug.displayName.toLowerCase()) > -1) {
-                    if (drug.trials == null)
-                      drug.trials = studie.NCTId
-                    else {
-                      studie.NCTId.forEach(id => {
-                        if (drug.trials.indexOf(id) === -1)
-                          drug.trials.push(id)
-                      })
+                  if (target.name.toLowerCase().includes(drug.displayName.toLowerCase())) {
+                    if (drug.trials == null) {
+                      drug.trials = [study.protocolSection.identificationModule.nctId]
+                    } else {
+                      let id = study.protocolSection.identificationModule.nctId
+                      if (drug.trials.indexOf(id) === -1)
+                        drug.trials.push(id)
                     }
                   }
                 })
@@ -1482,7 +1505,7 @@ export default {
       })
       if (table === 0)
         headers.push({text: "Seed", value: "seed", sortable: false, align: "center", width: "1rem"})
-      // headers.push({text: "", value: "data-table-expand", width: "1rem"})
+      headers.push({text: "", value: "data-table-expand", width: "1rem"})
       return headers
     }
     ,
@@ -1490,7 +1513,14 @@ export default {
       this.focusNode(['gen_', 'pro_'][this.seedTypeId] + item.id)
     }
     ,
+    nodeDoubleclicked: function (obj) {
+      if (obj[0]) {
+        let item = obj[0]
+        this.rowDoubleClicked(item, item.group)
+      }
+    },
     seedDoubleClicked: function (event, obj) {
+      console.log(obj)
       this.detailAdditions = undefined
       this.rowDoubleClicked(obj.item, ['gene', 'protein'][this.seedTypeId])
     },

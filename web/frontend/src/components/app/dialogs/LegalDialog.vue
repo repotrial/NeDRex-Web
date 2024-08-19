@@ -32,18 +32,25 @@
           <v-card-text>
             <div
               style="justify-self: center; margin-left: auto; margin-right: auto; padding-left: 10px; padding-right: 10px">
-              <b>This application which is part of REPO-TRIAL project has received funding from the European Union’s Horizon
-                2020 research and innovation programme under grant agreement No 777111. This reflects only the author’s view
-                and the European Commission is not responsible for any use that may be made of the information it
-                contains.</b>
+              <b>This project has received funding from the European Union’s Horizon 2020 research and innovation
+                programme under grant agreement No 777111. This publication reflects only the authors' view and the
+                European Commission is not responsible for any use that may be made of the information it contains. This
+                project is funded by the European Union under grant agreement No. 101057619. Views and opinions
+                expressed are however those of the author(s) only and do not necessarily reflect those of the European
+                Union or European Health and Digital Executive Agency (HADEA). Neither the European Union nor the
+                granting authority can be held responsible for them. This work was also partly supported by the Swiss
+                State Secretariat for Education, Research and Innovation (SERI) under contract No. 22.00115.</b>
             </div>
             <div style="display: flex; justify-content: center">
-              <div style="width: 200px; height: 75px; display: flex; ">
-                <img :src="$config.STATIC_PATH+'/assets/EU-emblem.png'" :width="75"
-                     style="align-self: center; margin-top: auto; margin-bottom: auto"/>
-                <div style="width: 25px"></div>
-                <img :src="$config.STATIC_PATH+'/assets/cropped-repo-trial_logo.png'" :width="75"
-                     style="align-self: center; margin-top: auto; margin-bottom: auto; background-color: white"/>
+              <div style="width: 500px; height: 75px; display: flex; ">
+                <div style="margin: auto; display: flex">
+                  <img :src="$config.STATIC_PATH+'/assets/EU-emblem.png'" :height="50"
+                       style="align-self: center; margin-top: auto; margin-bottom: auto"/>
+                  <img :src="$config.STATIC_PATH+'/assets/cropped-repo-trial_logo.png'" :height="50"
+                       style="align-self: center; background-color: white; margin: auto 15px; padding: 5px"/>
+                  <img :src="$config.STATIC_PATH+'/assets/REPO4EU-logo-main.png'" :height="50"
+                       style="align-self: center; margin-top: auto; margin-bottom: auto; background-color: white; padding: 5px"/>
+                </div>
               </div>
             </div>
           </v-card-text>

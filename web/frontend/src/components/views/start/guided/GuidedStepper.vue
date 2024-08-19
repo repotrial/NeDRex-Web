@@ -662,35 +662,37 @@
                               :color="getColoring('nodes',nodeList[sourceTypeId].value,'light')">
                         fas fa-genderless
                       </v-icon>
-                      <v-radio-group v-model="radio0">
+                      <v-radio-group v-model="radio0" v-if="options.general.keep && !direct">
                         <v-radio style="margin-left: 8px" value="0" @change="setLatestRadio(0)"></v-radio>
                       </v-radio-group>
                       <span style="font-size: .7rem;">{{ nodeList[sourceTypeId].text }}</span>
                     </div>
                     <span v-for="(edge,idx2) in selectedPath" :key="'1_'+idx2+'_'+edge.label">
-                    <div style="display: inline-block; margin: 4px">
-                                  <v-icon style="display: block"
-                                          size="30px"
-                                  >{{
-                                      edge.direction ? "fas fa-long-arrow-alt-right" : "fas fa-long-arrow-alt-left"
-                                    }}</v-icon>
+                      <div style="display: inline-block; margin: 4px">
+                                    <v-icon style="display: block"
+                                            size="30px"
+                                    >{{
+                                        edge.direction ? "fas fa-long-arrow-alt-right" : "fas fa-long-arrow-alt-left"
+                                      }}</v-icon>
 
-                              <span style="font-size: .7rem;">{{ edge.label }}</span>
-                      </div>
-                    <div style="display: inline-block; margin: 4px">
-                          <v-icon style="display: block"
-                                  size="30px"
-                                  :color="getColoring('edges',edge.label,'light')[edge.direction ? 1:0]">fas fa-genderless</v-icon>
-                      <v-radio-group v-if="idx2===0" v-model="radio1">
-                      <v-radio :style="{'margin-left': '10px'}" :value="(1+idx2)+''"
-                               @change="setLatestRadio(1+idx2)"></v-radio>
-                      </v-radio-group>
-                      <v-radio-group v-if="idx2===1" v-model="radio2">
-                      <v-radio :style="{'margin-left': '10px'}" :value="(1+idx2)+''"
-                               @change="setLatestRadio(1+idx2)"></v-radio>
-                      </v-radio-group>
-                        <span style="font-size: .7rem;">{{ getNodeLabel(edge.label, [edge.direction ? 1 : 0]) }}</span>
-                      </div>
+                                <span style="font-size: .7rem;">{{ edge.label }}</span>
+                        </div>
+                      <div style="display: inline-block; margin: 4px">
+                            <v-icon style="display: block"
+                                    size="30px"
+                                    :color="idx2 === 1 || options.general.keep ? getColoring('edges',edge.label,'light')[edge.direction ? 1:0] : 'gray'">fas fa-genderless</v-icon>
+                        <v-radio-group v-if="options.general.keep && !direct && idx2===0" v-model="radio1">
+                        <v-radio :style="{'margin-left': '10px'}" :value="(1+idx2)+''"
+                                 @change="setLatestRadio(1+idx2)"></v-radio>
+                        </v-radio-group>
+                        <v-radio-group v-if="options.general.keep && !direct && idx2===1" v-model="radio2">
+                        <v-radio :style="{'margin-left': '10px'}" :value="(1+idx2)+''"
+                                 @change="setLatestRadio(1+idx2)"></v-radio>
+                        </v-radio-group>
+                          <span style="font-size: .7rem;">{{
+                              getNodeLabel(edge.label, [edge.direction ? 1 : 0])
+                            }}</span>
+                        </div>
                       </span>
                   </v-list-item-title>
                 </v-list-item>
@@ -719,7 +721,8 @@
                 <Network ref="graph" :configuration="graphConfig" :window-style="graphWindowStyle"
                          :show-vis-option="showVisOption"
                          :legend="$refs.graph!==undefined" :tools="$refs.graph!==undefined" secondaryViewer="true"
-                         @loadIntoAdvancedEvent="$emit('graphLoadEvent',{post: {id: gid}})">
+                         @loadIntoAdvancedEvent="$emit('graphLoadEvent',{post: {id: gid}})"
+                         @toggleNodeSelectEvent="nodeDoubleclicked">
                   <template v-slot:legend>
                     <Legend :countMap="legend.countMap" :entityGraph="legend.entityGraph" :options="legend.options"
                             @graphViewEvent="toggleGraphElement"
@@ -1121,6 +1124,13 @@ export default {
       this.$set(this, "sourceCount", this.$refs.sourceTable ? this.$refs.sourceTable.getSeeds().length : 0);
     },
 
+    nodeDoubleclicked: function (obj) {
+      if (obj[0]) {
+        let item = obj[0]
+        this.rowDoubleClicked(item, item.group)
+      }
+    },
+
     sourceDoubleClicked: function (event, obj, connector) {
       if (connector) {
         this.connectorDoubleClicked(event, obj)
@@ -1148,6 +1158,7 @@ export default {
     },
 
     rowDoubleClicked: function (item, type) {
+      console.log(item.id + " -> " + type)
       this.detailAttributes = this.allDetailAttributes[type];
       this.detailRequest = undefined
       this.detailRequest = {edge: false, type: type, id: item.id}

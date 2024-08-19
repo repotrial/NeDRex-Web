@@ -1,61 +1,72 @@
 <template>
+  <!--  <v-app :style="{backgroundColor: colors.main.bg1}">-->
   <v-app :style="{backgroundColor: colors.main.bg1}">
-    <div>
-      <img :src="getConfig().STATIC_PATH+'nedrex-web-logo-transparent.png'" :width="600"
-           :style="{'padding-top':'25px', cursor: 'pointer'}" @click="$emit('redirectEvent','/home',true)">
+    <div class="content-container">
+      <div class="gradient-overlay"></div>
+      <div class="content">
+        <div>
+          <img :src="getConfig().STATIC_PATH+'nedrex-web-logo-transparent.png'" :width="600"
+               :style="{'padding-top':'25px', cursor: 'pointer'}" @click="$emit('redirectEvent','/home',true)">
+        </div>
+        <div style="display: flex; justify-content: center; width: 100%">
+          <v-tabs fixed-tabs :color="colors.main.primary" :background-color="colors.main.bg1" dark
+                  style="max-width: 1000px" v-model="tabModel">
+            <v-tab>
+              <v-icon left size="16">fas fa-project-diagram</v-icon>
+              Application
+            </v-tab>
+            <v-tab>
+              <v-icon left size="16">fas fa-question-circle</v-icon>
+              Help
+            </v-tab>
+            <v-tab>
+              <v-icon left size="16">fas fa-info-circle</v-icon>
+              About
+            </v-tab>
+            <v-tab>
+              <v-icon left size="16">fas fa-feather</v-icon>
+              Cite
+            </v-tab>
+            <v-tabs-items dark v-model="tabModel">
+              <v-tab-item>
+                <Project :bg-color="colors.main.bg1" :color="colors.main.primary"
+                         :cookiesAccepted="cookiesAccepted"></Project>
+              </v-tab-item>
+              <v-tab-item>
+                <Help :bg-color="colors.main.bg1" :color="colors.main.primary"
+                      :cookiesAccepted="cookiesAccepted"></Help>
+              </v-tab-item>
+              <v-tab-item>
+                <About :bg-color="colors.main.bg1" :color="colors.main.primary"></About>
+              </v-tab-item>
+              <v-tab-item>
+                <Cite :bg-color="colors.main.bg1" :color="colors.main.primary"></Cite>
+              </v-tab-item>
+            </v-tabs-items>
+          </v-tabs>
+        </div>
+        <v-bottom-sheet v-model="showCookieConsent" :overlay-color="colors.main.bg1" style="z-index: 1001">
+          <v-sheet :color="colors.main.bg2">
+            <v-container>
+              <v-row justify="center">
+                <v-col>
+                  <div><i>This page stores browser cookies to improve the user experience. To continue you have to
+                    confirm
+                    once
+                    that you comply with NeDRex-Web setting browser cookies.</i></div>
+                  <div>
+                    <v-btn small outlined @click="acceptedCookies()" style="margin-left: 8px">
+                      <v-icon left>fas fa-check</v-icon>
+                      OK
+                    </v-btn>
+                  </div>
+                </v-col>
+              </v-row>
+            </v-container>
+          </v-sheet>
+        </v-bottom-sheet>
+      </div>
     </div>
-    <div style="display: flex; justify-content: center; width: 100%">
-      <v-tabs fixed-tabs :color="colors.main.primary" :background-color="colors.main.bg1" dark
-              style="max-width: 1000px" v-model="tabModel">
-        <v-tab>
-          <v-icon left size="16">fas fa-project-diagram</v-icon>
-          Application
-        </v-tab>
-        <v-tab>
-          <v-icon left size="16">fas fa-question-circle</v-icon>
-          Help
-        </v-tab>
-        <v-tab>
-          <v-icon left size="16">fas fa-info-circle</v-icon>
-          About
-        </v-tab>
-        <v-tab>
-          <v-icon left size="16">fas fa-feather</v-icon>
-          Cite
-        </v-tab>
-        <v-tabs-items dark v-model="tabModel">
-          <v-tab-item>
-            <Project :bg-color="colors.main.bg1" :color="colors.main.primary"
-                     :cookiesAccepted="cookiesAccepted"></Project>
-          </v-tab-item>
-          <v-tab-item>
-            <Help :bg-color="colors.main.bg1" :color="colors.main.primary" :cookiesAccepted="cookiesAccepted"></Help>
-          </v-tab-item>
-          <v-tab-item>
-            <About :bg-color="colors.main.bg1" :color="colors.main.primary"></About>
-          </v-tab-item>
-          <v-tab-item>
-            <Cite :bg-color="colors.main.bg1" :color="colors.main.primary"></Cite>
-          </v-tab-item>
-        </v-tabs-items>
-      </v-tabs>
-    </div>
-    <v-bottom-sheet v-model="showCookieConsent" :overlay-color="colors.main.bg1" style="z-index: 1001">
-      <v-sheet :color="colors.main.bg2">
-        <v-container>
-          <v-row justify="center">
-            <v-col>
-              <div><i>This page stores browser cookies to improve the user experience. To continue you have to confirm once
-                that you comply with NeDRex-Web setting browser cookies.</i></div>
-              <div><v-btn small outlined @click="acceptedCookies()" style="margin-left: 8px">
-                <v-icon left>fas fa-check</v-icon>
-                OK
-              </v-btn></div>
-            </v-col>
-          </v-row>
-        </v-container>
-      </v-sheet>
-    </v-bottom-sheet>
   </v-app>
 </template>
 
@@ -134,6 +145,33 @@ export default {
 .v-tabs-items {
   padding: 15px;
   background-color: transparent !important;
+}
+
+.content-container {
+  position: relative;
+  min-height: 100vh;
+}
+
+.gradient-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+      to right,
+      rgb(237, 137, 244),
+      rgb(0, 37, 169) 62%,
+      rgb(0, 37, 169) 99%
+  );
+  opacity: 0.5;
+  z-index: 1;
+}
+
+.content {
+  position: relative;
+  z-index: 2;
+  /* Add padding or other styles as needed */
 }
 
 </style>

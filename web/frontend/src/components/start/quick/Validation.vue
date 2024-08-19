@@ -163,7 +163,7 @@
           </v-btn>
           </v-card-actions>
           <div v-if="module!=null">
-            <v-card-subtitle v-if="moduleValidationStatus !=null" class="title">Module Validation Result:
+            <v-card-subtitle v-if="moduleValidationStatus !=null" class="title"><b>Module Validation Result:</b>
             </v-card-subtitle>
             <v-card-subtitle style="margin-top: -25px">
               <v-tooltip bottom v-if="styleMap[moduleValidationStatus]!=null">
@@ -194,9 +194,9 @@
                         </th>
                       </template>
                       <div style="width: 300px">
-                        <b>normal:</b> Cases in which #ref-drugs(random) > #ref-drugs(observed)
+                        <b>empirical:</b> Cases in which #ref-drugs(random) > #ref-drugs(observed)
                         <br>
-                        <b>precision based:</b> The precision of a module is defined by the drugs that target the module
+                        <b>empirical precision based:</b> The precision of a module is defined by the drugs that target the module
                         (#ref-drugs/#all-drugs)
                       </div>
                     </v-tooltip>
@@ -219,7 +219,9 @@
             </div>
           </div>
           <div v-if="ranking!=null">
-            <v-card-title v-if="rankingValidationStatus !=null" style="margin-top:64px"><b>Ranking Validation Result:</b>
+            <v-card-subtitle v-if="rankingValidationStatus !=null" class="title"><b>Ranking Validation Result:</b>
+              </v-card-subtitle>
+              <v-card-subtitle style="margin-top: -25px">
               <v-tooltip bottom v-if="styleMap[rankingValidationStatus]!=null">
                 <template v-slot:activator="{attrs, on}">
                   <v-chip style="color: white; margin-left: 10px; display: inline-block" v-on="on" v-bind="attrs"
@@ -234,9 +236,9 @@
                 <div><b>Current State: </b>{{ rankingValidationStatus }}<br><i>Click here to show the raw server
                   response!</i></div>
               </v-tooltip>
-            </v-card-title>
+            </v-card-subtitle>
 
-            <div style="width: 100%">
+            <div style="display: flex; justify-content: center;width: 100%">
               <v-simple-table v-if="rankingValidationError == null ||rankingValidationError.length===0"
                               style="max-width: 400px;">
                 <template v-slot:default>

@@ -169,6 +169,8 @@ export default {
 
 
     format: function (item, value) {
+      if(item==="Reviewed")
+        return value ? "Yes" : "No"
       if (value == null)
         return ""
       if (item === "SourceIDs" || item === "SourceID" || item === "TargetID" || item === "TargetIDs" || item === "MemberOne" || item === "MemberTwo") {
