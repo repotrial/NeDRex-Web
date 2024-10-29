@@ -36,6 +36,7 @@ public class ToolService {
 
     private File scriptDir;
     private File dataDir;
+    private File layoutDir;
     private File executor;
     private EnumMap<Tool, Algorithm> algorithms = new EnumMap<>(Tool.class);
 
@@ -58,11 +59,16 @@ public class ToolService {
 
         dataDir = new File(env.getProperty("path.external.cache"));
         scriptDir = new File(env.getProperty("path.scripts.dir"));
+        layoutDir = new File(scriptDir, "layouts");
         validateEnvironment();
     }
 
     private String getPythonPath(){
         return env.getProperty("path.tool.python", "python3");
+    }
+
+    private String getLayoutingPythonPath(){
+        return env.getProperty("path.tool.layout.python", "python3");
     }
 
     private void validateEnvironment() {
@@ -319,7 +325,7 @@ public class ToolService {
     public void createThumbnail(File graphml, File thumb) {
         thumb.getParentFile().mkdirs();
         try {
-            ProcessUtils.executeProcessWait(new ProcessBuilder(getPythonPath(), new File(scriptDir, "computeLayouting.py").getAbsolutePath(), graphml.getAbsolutePath(), "1", thumb.getAbsolutePath(), DBConfig.getConfFile().getAbsolutePath()), false);
+            ProcessUtils.executeProcessWait(new ProcessBuilder(getPythonPath(), new File(layoutDir, "computeLayouting.py").getAbsolutePath(), graphml.getAbsolutePath(), "1", thumb.getAbsolutePath(), DBConfig.getConfFile().getAbsolutePath()), false);
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
@@ -328,7 +334,7 @@ public class ToolService {
     public void createLayoutAndThumbnail(File graphml, File layout, File thumb) {
         layout.getParentFile().mkdirs();
         try {
-            ProcessUtils.executeProcessWait(new ProcessBuilder(getPythonPath(), new File(scriptDir, "computeLayouting.py").getAbsolutePath(), graphml.getAbsolutePath(), "2", layout.getAbsolutePath(), thumb.getAbsolutePath(), DBConfig.getConfFile().getAbsolutePath()), false);
+            ProcessUtils.executeProcessWait(new ProcessBuilder(getPythonPath(), new File(layoutDir, "computeLayouting.py").getAbsolutePath(), graphml.getAbsolutePath(), "2", layout.getAbsolutePath(), thumb.getAbsolutePath(), DBConfig.getConfFile().getAbsolutePath()), false);
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
@@ -337,7 +343,16 @@ public class ToolService {
     public void createLayout(File graphml, File layout) {
         layout.getParentFile().mkdirs();
         try {
-            ProcessUtils.executeProcessWait(new ProcessBuilder(getPythonPath(), new File(scriptDir, "computeLayouting.py").getAbsolutePath(), graphml.getAbsolutePath(), "0", layout.getAbsolutePath(), DBConfig.getConfFile().getAbsolutePath()), false);
+            ProcessUtils.executeProcessWait(new ProcessBuilder(getPythonPath(), new File(layoutDir, "computeLayouting.py").getAbsolutePath(), graphml.getAbsolutePath(), "0", layout.getAbsolutePath(), DBConfig.getConfFile().getAbsolutePath()), false);
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void createLayout(File layout, File nodes, File edges, String layout_type) {
+        layout.getParentFile().mkdirs();
+        try {
+            ProcessUtils.executeProcessWait(new ProcessBuilder(getLayoutingPythonPath(), new File(layoutDir, "cartographs.py").getAbsolutePath(), nodes.getAbsolutePath(), edges.getAbsolutePath(), layout.getAbsolutePath(), layout_type), false);
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
@@ -346,7 +361,7 @@ public class ToolService {
     public void createTripartiteLayout(File graphml, File layout, File sources, File targets) {
         layout.getParentFile().mkdirs();
         try {
-            ProcessUtils.executeProcessWait(new ProcessBuilder(getPythonPath(), new File(scriptDir, "tripartiteLayout.py").getAbsolutePath(), graphml.getAbsolutePath(), layout.getAbsolutePath(), sources.getAbsolutePath(), targets.getAbsolutePath(), DBConfig.getConfFile().getAbsolutePath()), false);
+            ProcessUtils.executeProcessWait(new ProcessBuilder(getPythonPath(), new File(layoutDir, "tripartiteLayout.py").getAbsolutePath(), graphml.getAbsolutePath(), layout.getAbsolutePath(), sources.getAbsolutePath(), targets.getAbsolutePath(), DBConfig.getConfFile().getAbsolutePath()), false);
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }

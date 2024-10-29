@@ -60,6 +60,7 @@ public class WebGraphService {
     private HashMap<String, Object> colorMap;
     private HashSet<String> thumbnailGenerating = new HashSet<>();
     private HashSet<String> layoutGenerating = new HashSet<>();
+    private HashMap<String, HashSet<String>> otherLayoutGeneration = new HashMap<>();
     private HashSet<String> graphmlGenerating = new HashSet<>();
     private WebGraph metagraph = null;
     private EnumMap<ToolService.Tool, Algorithm> algorithms;
@@ -1439,6 +1440,7 @@ public class WebGraphService {
         return getLayout(g, historyController.getLayoutPath(g.getId()));
     }
 
+
     public HashMap<Integer, HashMap<Integer, Point2D>> getLayout(Graph g, File lay) {
         if (!lay.exists()) {
             lay.getParentFile().mkdirs();
@@ -1769,6 +1771,85 @@ public class WebGraphService {
         }
     }
 
+    public boolean createLayout(String gid, String layoutType){
+        Graph g = new Graph(gid);
+        cache.put(g.getId(), g);
+        createLayout(g, layoutType, historyController.getLayoutPath(g.getId(), layoutType));
+        return true;
+    }
+
+    public void createLayout(Graph g, String layout_type, File lay) {
+        if (!lay.exists()) {
+            if (!otherLayoutGeneration.containsKey(layout_type))
+                otherLayoutGeneration.put(layout_type, new HashSet<>());
+            if (!otherLayoutGeneration.get(layout_type).contains(g.getId())) {
+                otherLayoutGeneration.get(layout_type).add(g.getId());
+            } else {
+                return;
+            }
+            File wd = new File(getGraphWD(g.getId()).getAbsolutePath() + "_" + layout_type);
+            lay.getParentFile().mkdirs();
+            File nodeFile = new File(wd, "nodes.tsv");
+            try (BufferedWriter bw = WriterUtils.getBasicWriter(nodeFile)) {
+                g.getNodes().forEach((type, nodes) -> {
+                    nodes.forEach((id, node) -> {
+                        try {
+                            bw.write(nodeController.getDomainId(type, id) + "\t" + Graphs.getNode(type) + "\n");
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    });
+                });
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            File edgeFile = new File(wd, "edges.tsv");
+            try (BufferedWriter bw = WriterUtils.getBasicWriter(edgeFile)) {
+                g.getEdges().forEach((type, edges) -> {
+                    edges.forEach(edge -> {
+                        try {
+                            bw.write(nodeController.getDomainId(Graphs.getNodesfromEdge(type).first, edge.getId1()) + "\t" + nodeController.getDomainId(Graphs.getNodesfromEdge(type).second, edge.getId2()) + "\t{}\n");
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    });
+                });
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            toolService.createLayout(lay, nodeFile, edgeFile, layout_type);
+            removeTempDir(wd);
+            otherLayoutGeneration.get(layout_type).remove(g.getId());
+        }
+    }
+
+    public HashMap<Integer, HashMap<Integer, Point2D>> getLayout(Graph g, String layout_type) {
+        File lay = historyController.getLayoutPath(g.getId(), layout_type);
+        HashMap<Integer, HashMap<Integer, Point2D>> coords = new HashMap<>();
+        if (!lay.exists()) {
+            return coords;
+        }
+
+        try (BufferedReader br = ReaderUtils.getBasicReader(lay)) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                LinkedList<String> l = StringUtils.split(line, "\t");
+                if (l.getFirst().length() == 0)
+                    continue;
+                int typeId = Graphs.getNode(l.getFirst());
+                int nodeid = nodeController.getId(l.getFirst(), l.get(1));
+                if (!coords.containsKey(typeId))
+                    coords.put(typeId, new HashMap<>());
+                coords.get(typeId).put(nodeid, new Point2D.Double(Double.parseDouble(l.get(2)), Double.parseDouble(l.get(3))));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return coords;
+    }
+
     public HashMap<Integer, HashMap<Integer, Point2D>> getTripartiteLayout(Graph g) {
         File lay = historyController.getTriLayoutPath(g.getId());
         HashMap<Integer, HashMap<Integer, Point2D>> coords = new HashMap<>();
@@ -2068,12 +2149,18 @@ public class WebGraphService {
         return !layoutGenerating.contains(gid) && historyController.getLayoutPath(gid).exists();
     }
 
+    public Boolean isLayoutReady(String gid, String layoutType) {
+        return (otherLayoutGeneration.get(layoutType) == null || otherLayoutGeneration.get(layoutType).contains(gid)) && historyController.getLayoutPath(gid, layoutType).exists();
+    }
+
     public Object loadLayout(String gid, String type) {
         Graph g = getCachedGraph(gid);
         if (type.equals("default"))
             return getLayout(g);
         if (type.equals("tripartite"))
             return getTripartiteLayout(g);
+        if (type.equals("geodesic") | type.equals("topographic") | type.equals("portrait"))
+            return getLayout(g, type);
         return new HashMap<>();
     }
 
@@ -2254,7 +2341,7 @@ public class WebGraphService {
                 Edge e_remap = new Edge(nodeRemap.get(nodeType1).get(e.getId1()), nodeRemap.get(nodeType2).get(e.getId2()));
                 remappedEdges.add(e_remap);
             } catch (NullPointerException ex) {
-                log.warn("Edge "+nodeType1+ " -> "+nodeType2+ " could not be mapped due to missing node");
+                log.warn("Edge " + nodeType1 + " -> " + nodeType2 + " could not be mapped due to missing node");
             }
         });
         return remappedEdges;
@@ -2270,7 +2357,7 @@ public class WebGraphService {
                 if (n2s.size() > 0)
                     remappedEdges.put(reN1, reN2s);
             } catch (NullPointerException ex) {
-                log.warn("Edge "+nodeType1+ " -> "+nodeType2+ " could not be mapped due to missing node");
+                log.warn("Edge " + nodeType1 + " -> " + nodeType2 + " could not be mapped due to missing node");
             }
         });
         return remappedEdges;

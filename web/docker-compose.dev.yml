@@ -18,7 +18,7 @@ services:
       - SYS_NICE
   server:
     container_name: nedrex-web-backend
-    image: andimajore/nedrex_repo:server_dev
+    image: andimajore/nedrex_repo:dev
     depends_on:
       - "db"
     build: backend

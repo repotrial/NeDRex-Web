@@ -192,6 +192,18 @@ public class HistoryController {
         return null;
     }
 
+    public File getLayoutPath(String id, String layoutType) {
+        String cachedir = env.getProperty("path.usr.cache");
+        GraphHistory history = getHistory(id);
+        try {
+            return new File(cachedir, "users/" + history.getUserId() + "/layouts/" + id +"_"+layoutType+ ".tsv");
+        } catch (NullPointerException e) {
+            log.warn("Broken history request!");
+        }
+        return null;
+    }
+
+
     public File getTriLayoutPath(String id) {
         String cachedir = env.getProperty("path.usr.cache");
         GraphHistory history = getHistory(id);

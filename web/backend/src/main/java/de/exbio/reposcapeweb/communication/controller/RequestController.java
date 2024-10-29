@@ -270,9 +270,20 @@ public class RequestController {
 
     @RequestMapping(value="/layoutReady", method = RequestMethod.GET)
     @ResponseBody
-    public String layoutReady(@RequestParam("id") String id){
-       return toJson(webGraphService.isLayoutReady(id));
+    public String layoutReady(@RequestParam("id") String id, @RequestParam(value = "type", defaultValue = "force") String type){
+        if (type.equals("force"))
+            return toJson(webGraphService.isLayoutReady(id));
+       return toJson(webGraphService.isLayoutReady(id, type));
     }
+
+    @RequestMapping(value="/createLayout", method = RequestMethod.GET)
+    @ResponseBody
+    public Boolean createLayout(@RequestParam("id") String id, @RequestParam(value = "type") String type){
+        if(!webGraphService.isLayoutReady(id, type))
+            return webGraphService.createLayout(id, type);
+        return true;
+    }
+
 
     @RequestMapping(value = "/archiveHistory", method = RequestMethod.GET)
     @ResponseBody
