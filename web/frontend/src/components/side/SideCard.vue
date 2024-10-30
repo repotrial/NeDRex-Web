@@ -730,6 +730,8 @@ export default {
     ,
 
     submitAlgorithm: function (data) {
+      console.log("openAlgorithmDialogEvent")
+      console.log(data)
       this.$emit('openAlgorithmDialogEvent', data)
     },
     graphViewEvent: function (data) {

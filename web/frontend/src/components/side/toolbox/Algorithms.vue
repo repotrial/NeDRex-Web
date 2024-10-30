@@ -11,8 +11,8 @@
       <div>
         <div style="display: flex; justify-content: center">
           <v-radio-group v-model="nodeModel" dense row>
-            <v-radio label="Gene"></v-radio>
-            <v-radio label="Protein"></v-radio>
+            <v-radio label="Gene" value="gene"></v-radio>
+            <v-radio label="Protein" vale="protein"></v-radio>
           </v-radio-group>
         </div>
         <LabeledSwitch label-on="Use selection" label-off="Use all" :disabled="nodeModel==null"
@@ -25,11 +25,11 @@
         </LabeledSwitch>
         <div>
           <v-chip style="margin: 8px" outlined :disabled="nodeModel==null"
-                 @click="$emit('openAlgorithmDialogEvent',{selection:selectionSwitch, type:['gene','protein'][nodeModel], algorithms:'mi'})">
+                 @click="$emit('openAlgorithmDialogEvent',{selection:selectionSwitch, type:nodeModel, algorithms:'mi'})">
             <v-icon left small color="primary">fas fa-cog</v-icon>Module Identification
           </v-chip>
           <v-chip style="margin: 8px" outlined :disabled="nodeModel==null"
-                 @click="$emit('openAlgorithmDialogEvent',{selection:selectionSwitch, type:['gene','protein'][nodeModel], algorithms:'dp'})">
+                 @click="$emit('openAlgorithmDialogEvent',{selection:selectionSwitch, type:nodeModel, algorithms:'dp'})">
             <v-icon left small color="primary">fas fa-cog</v-icon>Drug Ranking
           </v-chip>
         </div>

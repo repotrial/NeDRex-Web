@@ -1806,8 +1806,41 @@ public class WebGraphService {
             }
             File wd = new File(getGraphWD(g.getId()).getAbsolutePath() + "_" + layoutType);
             lay.getParentFile().mkdirs();
+            File nodeFile = new File(wd, "nodes.tsv");
+            try (BufferedWriter bw = WriterUtils.getBasicWriter(nodeFile)) {
+                g.getNodes().forEach((type, nodes) -> {
+                    nodes.forEach((id, node) -> {
+                        try {
+                            bw.write(nodeController.getDomainId(type, id) + "\t" + Graphs.getNode(type) + "\n");
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    });
+                });
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
-            toolService.createLayout(getDownload(g.getId(), wd, true), lay, layoutType);
+            File edgeFile = new File(wd, "edges.tsv");
+            try (BufferedWriter bw = WriterUtils.getBasicWriter(edgeFile)) {
+                HashMap<Integer, Pair<Integer, Integer>> customEdges = g.getCustomEdgeNodes();
+                g.getEdges().forEach((type, edges) -> {
+                    edges.forEach(edge -> {
+                        try {
+                            if(customEdges != null && customEdges.containsKey(type))
+                                bw.write(nodeController.getDomainId(customEdges.get(type).first, edge.getId1()) + "\t" + nodeController.getDomainId(customEdges.get(type).second, edge.getId2()) + "\t{}\n");
+                            else
+                                bw.write(nodeController.getDomainId(Graphs.getNodesfromEdge(type).first, edge.getId1()) + "\t" + nodeController.getDomainId(Graphs.getNodesfromEdge(type).second, edge.getId2()) + "\t{}\n");
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    });
+                });
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            toolService.createLayout(getDownload(g.getId(), wd, true), lay, nodeFile, edgeFile, layoutType);
             removeTempDir(wd);
             otherLayoutGeneration.get(layoutType).remove(g.getId());
         }

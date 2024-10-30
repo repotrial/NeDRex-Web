@@ -43,8 +43,11 @@
               <div style="text-align: justify; color: dimgray" v-html="getAlgorithm().description">
               </div>
               <div style="display: flex; justify-content: flex-start">
-                <v-chip outlined><a :href="getAlgorithm().link" target="_blank" style="text-decoration: none">Read
+                <v-chip outlined class="mx-2"><a :href="getAlgorithm().link" target="_blank" style="text-decoration: none">Read
                   more
+                  <v-icon right>fas fa-angle-double-right</v-icon>
+                </a></v-chip>
+                <v-chip outlined class="mx-2"><a :href="getAlgorithm().docu_link" target="_blank" style="text-decoration: none">Documentation
                   <v-icon right>fas fa-angle-double-right</v-icon>
                 </a></v-chip>
               </div>
@@ -272,6 +275,7 @@ export default {
         label: "TrustRank",
         description: "TrustRank is derived from the well known PageRank algorithm. Its  original purpose is to filter spam-sites that are not highly supported by other pages. This is achieved by assigning weights based on in- and out-going edges to favor highly and punish weakly supported nodes. In theory, these weights are iteratively propagated through the network until the assigned scores or ranks stabilize. In a biological application, the ranked websites are drugs, and the most trusted ones are drugs that have high chances of targeting a large number of seeds.",
         link: "https://en.wikipedia.org/wiki/TrustRank",
+        docu_link: "https://docs.google.com/document/d/1BGp0wovJk_ERonojc6s9XQ7W2sV_Bgb-ljtjI7yj2bg/edit?tab=t.0#heading=h.1ksv4uv",
         descType: "Description",
         models: {
           topX: 100,
@@ -294,6 +298,7 @@ export default {
           label: "Closeness Centrality",
           description: "Like the name suggests, closeness centrality is one of several centrality measurements. These generally are used in network analysis to derive scores that translate to the importance of the nodes in its specific network. Closeness, in particular, is derived by calculating the sum over all shortest paths between the specific node n and any other to the power of the negative one. A low average shortest path is then used as an indicator for possible candidates that target the module.",
           link: "https://en.wikipedia.org/wiki/Closeness_centrality",
+          docu_link: "https://docs.google.com/document/d/1BGp0wovJk_ERonojc6s9XQ7W2sV_Bgb-ljtjI7yj2bg/edit?tab=t.0#heading=h.1ksv4uv",
           descType: "Description",
           models: {
             topX: 100,

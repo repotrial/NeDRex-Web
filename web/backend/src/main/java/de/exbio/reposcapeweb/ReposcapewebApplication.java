@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 @SpringBootApplication
@@ -56,7 +57,7 @@ public class ReposcapewebApplication extends SpringBootServletInitializer {
     @Autowired
     private DbCommunicationService dbService;
     @Autowired
-    DisorderComorbidWithDisorderService disorderComorbidWithDisorderService;
+    ProteinInteractsWithProteinService proteinInteractsWithProteinService;
     @Autowired
     WebGraphService webGraphService;
 
