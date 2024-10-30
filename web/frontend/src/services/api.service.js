@@ -211,13 +211,17 @@ const ApiService = {
   },
 
   getLayoutReady(gid, type) {
+    console.log("layout ready")
     return this.get("/layoutReady?id=" + gid + "&type=" + type).then(response => {
+      console.log(response.data)
       return response.data
     })
   },
 
   createLayout(gid, type){
+    console.log("create layout")
     return this.get("/createLayout?id=" + gid + "&type=" + type).then(response => {
+      console.log(response.data)
       return response.data
     })
   },

@@ -1771,8 +1771,8 @@ public class WebGraphService {
         }
     }
 
-    public void createDefaultLayout(Graph g, File lay){
-        if(layoutGenerating.contains(g.getId()) | lay.exists())
+    public void createDefaultLayout(Graph g, File lay) {
+        if (layoutGenerating.contains(g.getId()) | lay.exists())
             return;
         layoutGenerating.add(g.getId());
         if (!this.getThumbnail(g.getId()).exists()) {
@@ -1788,58 +1788,28 @@ public class WebGraphService {
 
     public void createLayout(String gid, String layoutType) {
         Graph g = getCachedGraph(gid);
-        File layoutFile = historyController.getLayoutPath(g.getId());
         if (layoutType.equals("default")) {
-           createDefaultLayout(g, layoutFile);
+            createDefaultLayout(g, historyController.getLayoutPath(g.getId()));
         } else {
-            createLayout(g, layoutType, layoutFile);
+            createLayout(g, layoutType, historyController.getLayoutPath(g.getId(), layoutType));
         }
     }
 
-    public void createLayout(Graph g, String layout_type, File lay) {
+    public void createLayout(Graph g, String layoutType, File lay) {
         if (!lay.exists()) {
-            if (!otherLayoutGeneration.containsKey(layout_type))
-                otherLayoutGeneration.put(layout_type, new HashSet<>());
-            if (!otherLayoutGeneration.get(layout_type).contains(g.getId())) {
-                otherLayoutGeneration.get(layout_type).add(g.getId());
+            if (!otherLayoutGeneration.containsKey(layoutType))
+                otherLayoutGeneration.put(layoutType, new HashSet<>());
+            if (!otherLayoutGeneration.get(layoutType).contains(g.getId())) {
+                otherLayoutGeneration.get(layoutType).add(g.getId());
             } else {
                 return;
             }
-            File wd = new File(getGraphWD(g.getId()).getAbsolutePath() + "_" + layout_type);
+            File wd = new File(getGraphWD(g.getId()).getAbsolutePath() + "_" + layoutType);
             lay.getParentFile().mkdirs();
-            File nodeFile = new File(wd, "nodes.tsv");
-            try (BufferedWriter bw = WriterUtils.getBasicWriter(nodeFile)) {
-                g.getNodes().forEach((type, nodes) -> {
-                    nodes.forEach((id, node) -> {
-                        try {
-                            bw.write(nodeController.getDomainId(type, id) + "\t" + Graphs.getNode(type) + "\n");
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    });
-                });
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
 
-            File edgeFile = new File(wd, "edges.tsv");
-            try (BufferedWriter bw = WriterUtils.getBasicWriter(edgeFile)) {
-                g.getEdges().forEach((type, edges) -> {
-                    edges.forEach(edge -> {
-                        try {
-                            bw.write(nodeController.getDomainId(Graphs.getNodesfromEdge(type).first, edge.getId1()) + "\t" + nodeController.getDomainId(Graphs.getNodesfromEdge(type).second, edge.getId2()) + "\t{}\n");
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    });
-                });
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            toolService.createLayout(getDownload(g.getId(), wd, true), lay, nodeFile, edgeFile, layout_type);
+            toolService.createLayout(getDownload(g.getId(), wd, true), lay, layoutType);
             removeTempDir(wd);
-            otherLayoutGeneration.get(layout_type).remove(g.getId());
+            otherLayoutGeneration.get(layoutType).remove(g.getId());
         }
     }
 

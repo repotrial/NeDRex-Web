@@ -57,7 +57,7 @@ for e in g.edges():
 scale = edgeCount/nodeCount
 imageHeight = max(500,int(math.sqrt(nodeCount) * 10 + max(500, int(500 / scale))))
 
-factor = 10 ** int(math.log10(number_of_nodes)) *5
+factor = 10 ** int(math.log10(g.num_vertices())) *5
 
 if makeLayout:
     layoutScale = min(factor,max(25,10*math.log2(edgeCount)))

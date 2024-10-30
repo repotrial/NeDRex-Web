@@ -1,105 +1,132 @@
 import sys
-import json
 import math
-from cartoGRAPHs import *
+import argparse
+from typing import Dict, Tuple, List
+import networkx as nx
+from cartoGRAPHs import generate_layout, layout_topographic, layout_geodesic
+from graph_tool.all import load_graph, sfdp_layout
 
-graph = sys.argv[1]
-nodes_in = sys.argv[2]
-edges_in = sys.argv[3]
-outfile = sys.argv[4]
-layout = sys.argv[5]
+class NetworkLayouter:
+    LAYOUTS = ["portrait", "topographic_x", "topographic_y", "geodesic", "geodesic_x", "geodesic_y"]
 
-layouts = ["portrait", "topographic_x", "topographic_y" , "geodesic", "geodesic_x", "geodesic_y"]
+    def __init__(self, graphml_path: str, layout_type: str):
+        self.graphml_path = graphml_path
+        if layout_type not in self.LAYOUTS:
+            raise ValueError(f"Invalid layout. Please choose from: {', '.join(self.LAYOUTS)}")
+        self.layout_type = layout_type
 
-if layout not in layouts:
-    print("Invalid layout. Please choose from: portrait, topographic, geodesic")
-    sys.exit(1)
+        # Load the graph in both formats we need
+        self.g_tool = load_graph(graphml_path)
+        self.g_nx = nx.read_graphml(graphml_path)
 
-node_map = {}
+        # Create mapping between vertex IDs and domain IDs
+        self.domain_map = {
+            self.g_tool.properties[('v', "primaryDomainId")][v]: v
+            for v in self.g_tool.vertices()
+        }
 
-with open(nodes_in, 'r') as fh:
-    for v in fh:
-        line = v.strip()
-        spl = line.split("\t")
-        node_map[spl[0]] = spl[1]
+    def compute_cartograph_layout(self) -> Dict[str, Tuple[float, float]]:
+        """Compute the initial layout using cartoGRAPHs."""
+        if self.layout_type == "portrait":
+            pos2D = generate_layout(
+                self.g_nx,
+                dim=2,
+                layoutmethod='global',
+                dimred_method='umap'
+            )
+            return {k: (v[0], v[1]) for k, v in pos2D.items()}
 
-G = nx.read_edgelist(edges_in, delimiter="\t")
+        elif "topographic" in self.layout_type:
+            pos2D = generate_layout(
+                self.g_nx,
+                dim=2,
+                layoutmethod='global',
+                dimred_method='umap'
+            )
+            degree_cent = dict(nx.degree_centrality(self.g_nx))
+            z_values = dict(zip(self.g_nx.nodes(), degree_cent.values()))
+            pos_topo = layout_topographic(pos2D, z_values)
 
-d_nodecolors = dict(zip(list(G.nodes()),['#0000FF']*len(list(G.nodes()))))
-d_linkcolors = dict(zip(list(G.edges()),['#0000FF']*len(list(G.edges()))))
+            if "x" in self.layout_type:
+                return {k: (v[0], v[2]) for k, v in pos_topo.items()}
+            else:  # y
+                return {k: (v[1], v[2]) for k, v in pos_topo.items()}
 
-d_deg=dict(G.degree())
-l_annotations_csv = ['Node: '+str(i)+'; Node: '+str(j) for i,j in zip(list(G.nodes()), d_deg.values())]
-l_annotations_json = [list(("Node: "+str(i),"Node: "+str(j))) for i,j in zip(list(G.nodes()), d_deg.values())]
-d_annotations_csv = dict(zip(list(G.nodes()),l_annotations_csv))
-d_annotations_json = dict(zip(list(G.nodes()),l_annotations_json))
+        elif "geodesic" in self.layout_type:
+            degree_cent = dict(nx.degree_centrality(self.g_nx))
+            rad_values = {k: (1-v) for k, v in degree_cent.items()}
+            pos_geo = layout_geodesic(self.g_nx, rad_values)
 
-layouting = {}
+            if "x" in self.layout_type:
+                return {k: (v[0], v[2]) for k, v in pos_geo.items()}
+            elif "y" in self.layout_type:
+                return {k: (v[1], v[2]) for k, v in pos_geo.items()}
+            else:
+                return {k: (v[0], v[1]) for k, v in pos_geo.items()}
 
-if layout == "portrait":
-    posG2D = generate_layout(G,
-                            dim = 2,
-                            layoutmethod = 'global',
-                            dimred_method='umap',
-                            )
-    layouting = {k:(v[0],v[1]) for k,v in posG2D.items()}
+    def refine_with_sfdp(self, initial_layout: Dict[str, Tuple[float, float]]) -> Dict[int, Tuple[float, float]]:
+        """Refine the layout using graph-tool's SFDP layout."""
+        # Initialize properties
+        pos = sfdp_layout(self.g_tool, C=0.15, p=1.5, r=2, K=6)
+        pin = self.g_tool.new_vertex_property("boolean")
 
-elif "topographic" in layout:
-    posG2D = generate_layout(G,
-                            dim = 2,
-                            layoutmethod = 'global',
-                            dimred_method='umap',
-                            )
-    d_deg = dict(nx.degree_centrality(G))
+        # Scale and set initial positions
+        scaled_layout = {
+            k: ((v[0]-0.5)*-100, (v[1]-0.5)*-100)
+            for k, v in initial_layout.items()
+        }
 
-    z_list = list(d_deg.values())
-    d_z = dict(zip(list(G.nodes()),z_list))
-    posG_topographic = layout_topographic(posG2D, d_z)
-    if "x" in layout:
-        layouting = {k:(v[0],v[2]) for k,v in posG_topographic.items()}
-    elif "y" in layout:
-        layouting = {k:(v[1],v[2]) for k,v in posG_topographic.items()}
+        # Pin vertices from the initial layout
+        for domain_id, coords in scaled_layout.items():
+            vertex = self.g_tool.vertex(self.domain_map[domain_id])
+            pos[vertex] = coords
+            pin[vertex] = True
 
+        # Compute final layout
+        return sfdp_layout(
+            self.g_tool,
+            C=0.15,
+            p=1.5,
+            r=2,
+            K=6,
+            pos=pos,
+            pin=pin
+        )
 
-elif "geodesic" in layout:
-    rad_list = list([(1-i) for i in d_deg.values()])
-    d_rad = dict(zip(list(G.nodes()), rad_list))
-    posG_geodesic = layout_geodesic(G, d_rad)
-    if "x" in layout:
-        layouting = {k:(v[0],v[2]) for k,v in posG_geodesic.items()}
-    elif "y" in layout:
-        layouting = {k:(v[1],v[2]) for k,v in posG_geodesic.items()}
-    else:
-        layouting = {k:(v[0],v[1]) for k,v in posG_geodesic.items()}
+    def compute_scale_factor(self) -> float:
+        """Compute scaling factor based on number of nodes."""
+        return 10 ** int(math.log10(self.g_tool.num_vertices())) * 5
 
+    def save_layout(self, final_pos, output_path: str):
+        """Save the layout to file."""
+        scale = self.compute_scale_factor()
 
-final_layout = {k:((v[0]-0.5)*-100,(v[1]-0.5)*-100) for k,v in layouting.items()}
+        with open(output_path, 'w') as fh:
+            for v in self.g_tool.vertices():
+                fh.write(f"{self.g_tool.properties[('v', 'type')][v]}\t"
+                        f"{self.g_tool.properties[('v', 'primaryDomainId')][v]}\t"
+                        f"{final_pos[v][0] * scale}\t"
+                        f"{final_pos[v][1] * scale}\n")
 
-from graph_tool.all import *
-from graph_tool.draw import *
+def main():
+    if len(sys.argv) != 4:
+        print("Usage: python script.py graphml_file nodes_file edges_file output_file layout_type")
+        print(f"Available layouts: {', '.join(NetworkLayouter.LAYOUTS)}")
+        sys.exit(1)
 
-g = load_graph(graph)
-pos = sfdp_layout(g, C=0.15, p=1.5, r=2, K=6)
-pin = g.new_vertex_property("boolean")
-groups = g.new_vertex_property("int")
-domainMap = {}
-for v in g.vertices():
-    domainMap[g.properties[('v', "primaryDomainId")][v]] = v
+    graphml_file = sys.argv[1]
+    output_file = sys.argv[2]
+    layout_type = sys.argv[3]
 
+    try:
+        layouter = NetworkLayouter(graphml_file, layout_type)
+        initial_layout = layouter.compute_cartograph_layout()
+        final_positions = layouter.refine_with_sfdp(initial_layout)
+        layouter.save_layout(final_positions, output_file)
 
-for k,v in final_layout.items():
-    id = g.vertex(domainMap[k])
-    pos[id] = (v[0],v[1])
-    pin[id] = True
+    except Exception as e:
+        print(f"Error: {str(e)}", file=sys.stderr)
+        sys.exit(1)
 
-pos = sfdp_layout(g, C=0.15, p=1.5, r=2, K=6, pos=pos, pin=pin)
-
-number_of_nodes = g.num_vertices()
-factor = 10 ** int(math.log10(number_of_nodes)) *5
-
-with open(outfile, 'w') as fh:
-    for x in g.vertices():
-        fh.write(
-            g.properties[('v', "type")][x] + "\t" + str(g.properties[('v', "primaryDomainId")][x]) + "\t" + str(
-                pos[x][0]*factor) + "\t" + str(pos[x][1]*factor) + "\n")
-
+if __name__ == "__main__":
+    main()
