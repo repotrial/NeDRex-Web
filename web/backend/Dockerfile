@@ -15,7 +15,7 @@ RUN pip install --upgrade pip
 RUN mamba create -n default python=3.9
 
 RUN pipreqs ./
-RUN cat requirements.txt | grep -v "graph_tool" | grep -v "pcst_fast" | grep -v 'bicon' | grep -v 'networkx' | grep -v 'scipy' | grep -v "pandas" | grep -v "numpy" > reqs.txt
+RUN cat requirements.txt | grep -v "graph_tool" | grep -v "pcst_fast" | grep -v 'bicon' | grep -v 'networkx' | grep -v 'scipy' | grep -v "pandas" | grep -v "numpy" | grep -v "cartoGRAPHs" > reqs.txt
 RUN /opt/conda/envs/default/bin/pip install -r reqs.txt
 
 RUN git clone https://github.com/AndiMajore/BiCoN.git
@@ -29,9 +29,10 @@ RUN mamba install -n default -c conda-forge graph-tool
 
 RUN mamba install -n domino_env pyparsing==2.4.7 numpy==1.18.1
 
-RUN mamba create -n cartographs python=3.10
-RUN mamba install -n cartographs numpy==1.26.4
-RUN /opt/conda/envs/cartographs/bin/pip install cartoGRAPHs
+RUN mamba create -n cartographs python=3.10 && \
+    mamba install -n cartographs numpy==1.26.4 && \
+    mamba install -n cartographs -c conda-forge graph-tool && \
+    mamba run -n cartographs pip install cartoGRAPHs
 
 RUN mamba clean --all -y
 
@@ -40,7 +41,6 @@ WORKDIR /usr/app
 COPY config/ config/
 COPY src/main/resources/application-prod.properties config/server/
 RUN mkdir cache
-ENV CACHE_BUST = 1
 COPY target/nedrexweb-backend.war ./
 
 COPY scripts/wait-for-it.sh wait-for-it.sh

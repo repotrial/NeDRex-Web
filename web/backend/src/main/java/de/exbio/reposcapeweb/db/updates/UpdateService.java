@@ -435,6 +435,7 @@ public class UpdateService {
         }
 
         FileUtils.deleteDirectory(updateDir);
+        getMetadata();
     }
 
     private boolean validateSchema() {

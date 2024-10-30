@@ -471,7 +471,25 @@
                     </template>
                     <template v-slot:tools v-if="results.targets.length>0">
                       <Tools :physics="true" :cc="false" :loops="false"
-                             @toggleOptionEvent="toggleToolOption" @clickOptionEvent="clickToolOption"></Tools>
+                             @toggleOptionEvent="toggleToolOption" @clickOptionEvent="clickToolOption">
+                      <template v-slot:append>
+                        <ToolDropdown
+                          :items="[{value:'default', text:'Default'}, {value:'portrait', text:'Portrait'}, {value:'topographic_x', text:'Topographic (X,Z)'}, {value:'topographic_y', text:'Topographic (Y,Z)'}, {value: 'geodesic', text: 'Geodesic (X,Y)'},{value: 'geodesic_x', text: 'Geodesic (X,Z)'},{value: 'geodesic_y', text: 'Geodesic (Y,Z)'}]"
+                          label="Layout" icon="fas fa-project-diagram" @change="$refs.graph.loadLayout">
+                          <template v-slot:tooltip>
+                            <div style="display: inline-block"><i><b>Change the layout of the network!</b></i> <br>Options:<br>
+                            <b>Default:</b> force-directed layout<br>
+                            <b>Portrait:</b> cartoGRAPHs.Portrait layout<br>
+                              <b>Topographic (X,Z):</b> cartoGRAPHs Topographic 3D layout reduced to X and Z coordinates <br>
+                              <b>Topographic (Y,Z):</b> cartoGRAPHs Topographic 3D layout reduced to Y and Z coordinates <br>
+                              <b>Geodesic (X,Y):</b> cartoGRAPHs Geodesic 3D layout reduced to X and Y coordinates <br>
+                              <b>Geodesic (X,Z):</b> cartoGRAPHs Geodesic 3D layout reduced to X and Z coordinates <br>
+                              <b>Geodesic (Y,Z):</b> cartoGRAPHs Geodesic 3D layout reduced to Y and Z coordinates <br>
+                            </div>
+                          </template>
+                        </ToolDropdown>
+                      </template>
+                      </Tools>
                     </template>
                   </Network>
 
@@ -654,6 +672,7 @@ import QuickExamples from "@/components/start/quick/QuickExamples";
 import InteractionNetworkDialog from "@/components/start/quick/InteractionNetworkDialog";
 import DetailDialog from "@/components/start/quick/DetailDialog";
 import DrugsDialog from "@/components/start/quick/DrugsDialog";
+import ToolDropdown from "@/components/views/graph/tools/ToolDropdown";
 
 export default {
   name: "ModuleIdentification",
@@ -1287,6 +1306,7 @@ export default {
     ButtonCancel,
     ButtonNext,
     Tools,
+    ToolDropdown,
     DisorderHierarchyDialog,
     EntryDetails,
     LabeledSwitch,

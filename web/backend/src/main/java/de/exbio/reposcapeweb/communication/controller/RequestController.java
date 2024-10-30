@@ -270,18 +270,17 @@ public class RequestController {
 
     @RequestMapping(value="/layoutReady", method = RequestMethod.GET)
     @ResponseBody
-    public String layoutReady(@RequestParam("id") String id, @RequestParam(value = "type", defaultValue = "force") String type){
-        if (type.equals("force"))
+    public String layoutReady(@RequestParam("id") String id, @RequestParam(value = "type", defaultValue = "default", required = false) String type){
+        if (type.equals("default"))
             return toJson(webGraphService.isLayoutReady(id));
        return toJson(webGraphService.isLayoutReady(id, type));
     }
 
     @RequestMapping(value="/createLayout", method = RequestMethod.GET)
     @ResponseBody
-    public Boolean createLayout(@RequestParam("id") String id, @RequestParam(value = "type") String type){
+    public void createLayout(@RequestParam("id") String id, @RequestParam(value = "type") String type){
         if(!webGraphService.isLayoutReady(id, type))
-            return webGraphService.createLayout(id, type);
-        return true;
+            webGraphService.createLayout(id, type);
     }
 
 
@@ -327,7 +326,7 @@ public class RequestController {
 
     @RequestMapping(value = "/getLayout", method = RequestMethod.GET)
     public @ResponseBody
-    String getLayout(@RequestParam("gid") String gid, @RequestParam("type") String type) {
+    String getLayout(@RequestParam("gid") String gid, @RequestParam(value = "type") String type) {
         return toJson(webGraphService.loadLayout(gid, type));
     }
 

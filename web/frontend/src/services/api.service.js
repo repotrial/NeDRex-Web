@@ -210,6 +210,18 @@ const ApiService = {
     })
   },
 
+  getLayoutReady(gid, type) {
+    return this.get("/layoutReady?id=" + gid + "&type=" + type).then(response => {
+      return response.data
+    })
+  },
+
+  createLayout(gid, type){
+    return this.get("/createLayout?id=" + gid + "&type=" + type).then(response => {
+      return response.data
+    })
+  },
+
 
   getExampleInputFile(type) {
     return this.get("/getExampleInputFileLink?type=" + type).then(response => {

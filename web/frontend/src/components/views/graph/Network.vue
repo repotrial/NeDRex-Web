@@ -70,7 +70,7 @@
             Legend
             <v-icon right>{{ showPanels === 0 ? "fas fa-angle-up" : "fas fa-angle-down" }}</v-icon>
           </v-btn>
-          <div v-show="showPanels === 0"
+          <div v-if="isShowPanel(0)"
                style="margin-top: -35px; margin-right:1px; z-index: 600; display: flex; justify-content: flex-end;margin-left: auto">
             <slot name="legend"></slot>
           </div>
@@ -279,16 +279,49 @@ export default {
     },
 
     loadLayout: function (type) {
+      this.$http.getLayoutReady(this.gid, type).then(data => {
+        if (data === true) {
+          this.getLayout(type)
+        } else {
+          this.setLoading(true)
+          this.$http.createLayout(this.gid, type)
+          this.waitForLayout(type)
+        }
+      })
+    },
+
+    waitForLayout: function (type) {
+      this.$http.getLayoutReady(this.gid, type).then(data => {
+        if (data === true) {
+          this.getLayout(type)
+        } else {
+          setTimeout(this.waitForLayout, 500, type)
+        }
+      })
+    },
+
+    getLayout: function(type){
       this.$http.getLayout(this.gid, type).then(data => {
         let groupMap = {}
         this.$global.metagraph.nodes.forEach(n => groupMap[n.group] = parseInt(n.id))
         let updates = this.nodeSet.get().map(n => {
-          let pos = data[groupMap[n.group]][parseInt(n.id.substring(4))]
+          let group = n.group
+          if (group.includes("Gene")){
+            group = "gene"
+          }
+          else if (group.includes("Protein")){
+            group = "protein"
+          }
+          let pos = data[groupMap[group]][parseInt(n.id.substring(4))]
+          if (pos === undefined)
+            return n
           n.x = pos.x
           n.y = pos.y
           return n
         })
         this.updateNodes(updates)
+        this.setLoading(false)
+        this.viewAll()
       })
     },
 
@@ -452,7 +485,11 @@ export default {
     }
     ,
     togglePanel: function (index) {
-      this.showPanels = this.showPanels === index ? -1 : index
+      this.$set(this, "showPanels", (this.showPanels === index ? -1 : index))
+    },
+
+    isShowPanel: function (index) {
+      return (this.showPanels === index)
     },
 
     modifyGroups: function (nodeIds, group) {

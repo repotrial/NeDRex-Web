@@ -105,12 +105,12 @@ for x in g.vertices():
 
 #scale = edgeCount / nodeCount
 #imageHeight = int(math.sqrt(nodeCount) * 10 + min(500, int(500 / scale)))
-
+factor = 10 ** int(math.log10(number_of_nodes)) *5
 with open(layout, 'w') as fh:
     for x in g.vertices():
         fh.write(
             g.properties[('v', "type")][x] + "\t" + str(g.properties[('v', "primaryDomainId")][x]) + "\t" + str(
-                pos[x][0] * 50) + "\t" + str(pos[x][1] * 50) + "\n")
+                pos[x][0] * factor) + "\t" + str(pos[x][1] * factor) + "\n")
 
 
 #graph_draw(g, pos=pos, output=thumb, vertex_fill_color=g.vertex_properties['plot_color'],

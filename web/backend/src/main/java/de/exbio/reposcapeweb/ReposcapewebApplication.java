@@ -96,6 +96,7 @@ public class ReposcapewebApplication extends SpringBootServletInitializer {
         log.debug("Current RAM usage: " + (int) ((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024)
                 + "MB");
         log.info("Loaded " + nodeController.getCount() + " nodes and " + edgeController.getSize() + " edges!");
+        updateService.getMetadata();
         log.info("Service can be used!");
 //        disorderService.readIdDomainMapsFromDb();
 //        disorderComorbidWithDisorderService.buildComorbiditome();

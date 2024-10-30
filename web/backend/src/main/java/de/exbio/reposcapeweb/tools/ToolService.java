@@ -349,10 +349,10 @@ public class ToolService {
         }
     }
 
-    public void createLayout(File layout, File nodes, File edges, String layout_type) {
+    public void createLayout(File graph, File layout, File nodes, File edges, String layout_type) {
         layout.getParentFile().mkdirs();
         try {
-            ProcessUtils.executeProcessWait(new ProcessBuilder(getLayoutingPythonPath(), new File(layoutDir, "cartographs.py").getAbsolutePath(), nodes.getAbsolutePath(), edges.getAbsolutePath(), layout.getAbsolutePath(), layout_type), false);
+            ProcessUtils.executeProcessWait(new ProcessBuilder(getLayoutingPythonPath(), new File(layoutDir, "cartographs.py").getAbsolutePath(), graph.getAbsolutePath(), nodes.getAbsolutePath(), edges.getAbsolutePath(), layout.getAbsolutePath(), layout_type), false);
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }

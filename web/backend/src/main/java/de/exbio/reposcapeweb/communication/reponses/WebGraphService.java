@@ -1771,11 +1771,29 @@ public class WebGraphService {
         }
     }
 
-    public boolean createLayout(String gid, String layoutType){
-        Graph g = new Graph(gid);
-        cache.put(g.getId(), g);
-        createLayout(g, layoutType, historyController.getLayoutPath(g.getId(), layoutType));
-        return true;
+    public void createDefaultLayout(Graph g, File lay){
+        if(layoutGenerating.contains(g.getId()) | lay.exists())
+            return;
+        layoutGenerating.add(g.getId());
+        if (!this.getThumbnail(g.getId()).exists()) {
+            thumbnailGenerating.add(g.getId());
+            toolService.createLayoutAndThumbnail(getDownload(g.getId(), true), lay, getThumbnail(g.getId()));
+            thumbnailGenerating.remove(g.getId());
+            socketController.setThumbnailReady(g.getId());
+        } else {
+            toolService.createLayout(getDownload(g.getId(), true), lay);
+        }
+        layoutGenerating.remove(g.getId());
+    }
+
+    public void createLayout(String gid, String layoutType) {
+        Graph g = getCachedGraph(gid);
+        File layoutFile = historyController.getLayoutPath(g.getId());
+        if (layoutType.equals("default")) {
+           createDefaultLayout(g, layoutFile);
+        } else {
+            createLayout(g, layoutType, layoutFile);
+        }
     }
 
     public void createLayout(Graph g, String layout_type, File lay) {
@@ -1819,7 +1837,7 @@ public class WebGraphService {
                 e.printStackTrace();
             }
 
-            toolService.createLayout(lay, nodeFile, edgeFile, layout_type);
+            toolService.createLayout(getDownload(g.getId(), wd, true), lay, nodeFile, edgeFile, layout_type);
             removeTempDir(wd);
             otherLayoutGeneration.get(layout_type).remove(g.getId());
         }
@@ -2150,7 +2168,7 @@ public class WebGraphService {
     }
 
     public Boolean isLayoutReady(String gid, String layoutType) {
-        return (otherLayoutGeneration.get(layoutType) == null || otherLayoutGeneration.get(layoutType).contains(gid)) && historyController.getLayoutPath(gid, layoutType).exists();
+        return (otherLayoutGeneration.get(layoutType) == null || !otherLayoutGeneration.get(layoutType).contains(gid)) && historyController.getLayoutPath(gid, layoutType).exists();
     }
 
     public Object loadLayout(String gid, String type) {
@@ -2159,7 +2177,7 @@ public class WebGraphService {
             return getLayout(g);
         if (type.equals("tripartite"))
             return getTripartiteLayout(g);
-        if (type.equals("geodesic") | type.equals("topographic") | type.equals("portrait"))
+        if (type.contains("geodesic") | type.contains("topographic") | type.contains("portrait"))
             return getLayout(g, type);
         return new HashMap<>();
     }
