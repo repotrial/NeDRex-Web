@@ -4,7 +4,7 @@ services:
     container_name: nedrex-web-db
     image: mysql:8.0.29
     command: --default-authentication-plugin=mysql_native_password
-    restart: on-failure
+#    restart: on-failure
     environment:
       MYSQL_DATABASE: reposcape
       MYSQL_ROOT_PASSWORD: example
@@ -29,7 +29,7 @@ services:
       - nedrex-usr-volume:/etc/data/usr
     ports:
       - "8090:8090"
-    restart: on-failure
+ #   restart: on-failure
 volumes:
   nedrex-db-volume:
     external: true

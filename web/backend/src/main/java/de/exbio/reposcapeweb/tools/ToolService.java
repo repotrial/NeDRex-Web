@@ -318,7 +318,7 @@ public class ToolService {
             e.printStackTrace();
         }
         if (!graphml.exists()) {
-            log.error(graphml.getAbsolutePath() + " should hav been created but wasn't!");
+            log.error(graphml.getAbsolutePath() + " should have been created but wasn't!");
         }
     }
 

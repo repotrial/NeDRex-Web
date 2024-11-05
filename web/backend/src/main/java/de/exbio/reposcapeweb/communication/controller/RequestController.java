@@ -469,6 +469,13 @@ public class RequestController {
         jobController.finishJob(id);
     }
 
+//    @RequestMapping(value = "/getJob", method = RequestMethod.GET)
+//    @ResponseBody
+//    public String getJob(@RequestParam("id") String id) {
+//        Job j = jobController.getJobById(id);
+//        return toJson(j.toMap());
+//    }
+
     @RequestMapping(value = "/submitJob", method = RequestMethod.POST)
     @ResponseBody
     public String submitJob(@RequestBody JobRequest request) {
