@@ -502,7 +502,7 @@
                             <v-list-item-title style="margin-left:-25px">{{ ['Gene', 'Protein'][seedTypeId] }} (Module)
                             </v-list-item-title>
                             <v-list-item-subtitle style="margin-right:-25px; margin-left:-25px">
-                              {{ results.targets.length }}
+                              {{ getTargetCount() }}
                             </v-list-item-subtitle>
                           </v-list-item>
                           <v-list-item>
