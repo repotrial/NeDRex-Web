@@ -747,6 +747,7 @@ import QuickExamples from "@/components/start/quick/QuickExamples";
 import InteractionNetworkDialog from "@/components/start/quick/InteractionNetworkDialog";
 import DetailDialog from "@/components/start/quick/DetailDialog";
 import DrugsDialog from "@/components/start/quick/DrugsDialog";
+import ToolDropdown from "@/components/views/graph/tools/ToolDropdown";
 
 export default {
   name: "CombinedRepurposing",
@@ -1601,7 +1602,8 @@ export default {
     EntryDetails,
     MIAlgorithmSelect,
     DPAlgorithmSelect,
-    Validation
+    Validation,
+    ToolDropdown
   }
 }
 </script>
