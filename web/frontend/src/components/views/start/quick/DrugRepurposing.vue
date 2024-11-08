@@ -397,7 +397,7 @@
                         </template>
                         <span>{{ item.displayName }}</span>
                       </v-tooltip>
-                      <span v-else>sla {{ item.displayName }}</span>
+                      <span v-else>{{ item.displayName }}</span>
                     </template>
                     <template v-slot:item.data-table-expand="{expand, item,isExpanded}">
                       <v-icon color="primary" @click="seedDoubleClicked(null,{item:item})">
