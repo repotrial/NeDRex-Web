@@ -1,4 +1,4 @@
-FROM andimajore/mamba_mantic:latest
+FROM andimajore/mamba_noble:latest
 #
 WORKDIR /usr/app
 #

@@ -105,7 +105,7 @@ for x in g.vertices():
 
 #scale = edgeCount / nodeCount
 #imageHeight = int(math.sqrt(nodeCount) * 10 + min(500, int(500 / scale)))
-factor = 10 ** int(math.log10(number_of_nodes)) *5
+factor = 10 ** int(math.log10(nodeCount)) *5
 with open(layout, 'w') as fh:
     for x in g.vertices():
         fh.write(

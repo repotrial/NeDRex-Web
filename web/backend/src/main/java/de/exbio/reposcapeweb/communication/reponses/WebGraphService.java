@@ -1790,6 +1790,8 @@ public class WebGraphService {
         Graph g = getCachedGraph(gid);
         if (layoutType.equals("default")) {
             createDefaultLayout(g, historyController.getLayoutPath(g.getId()));
+        } else if(layoutType.equals("tripartite")){
+            return;
         } else {
             createLayout(g, layoutType, historyController.getLayoutPath(g.getId(), layoutType));
         }

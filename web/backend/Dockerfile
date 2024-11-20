@@ -25,7 +25,7 @@ WORKDIR /usr/app
 RUN rm -rf BiCoN
 
 RUN mamba install -n default networkx==2.5.1 pyparsing==2.4.6 numpy==1.26.4 scipy==1.12.0 pandas==1.5.3
-RUN mamba install -n default -c conda-forge graph-tool
+RUN mamba install -n default -c conda-forge graph-tool==2.58
 
 RUN mamba install -n domino_env pyparsing==2.4.7 numpy==1.18.1
 
