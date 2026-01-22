@@ -173,10 +173,12 @@ public class ImportService {
 
     public void importEdges(boolean allowOnUpdate) {
         log.info("Edge-Data import: Start!");
-        log.info("Importing edgeIds");
+
 //        File cacheDir = new File(env.getProperty("path.db.cache"));
         dbCommunication.scheduleImport(allowOnUpdate);
+        log.info("Importing edgeIds");
         DBConfig.getConfig().edges.forEach(edge -> {
+            log.info("Importing "+edge);
             switch (edge.mapsTo) {
                 case "DisorderComorbidity" -> disorderComorbidWithDisorderService.importEdges();
                 case "DisorderHierarchy" -> disorderIsADisorderService.importEdges();

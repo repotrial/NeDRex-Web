@@ -87,9 +87,8 @@ public class WebGraphService {
     }
 
     public WebGraph getMetaGraph() {
-        log.info("Create metagraph");
         if (metagraph == null) {
-            log.info("Create new metagraph");
+            log.debug("Create metagraph");
             metagraph = new WebGraph("Metagraph", true, historyController.getGraphId());
             HashMap<String, Object> sourceIds = new HashMap<>();
 

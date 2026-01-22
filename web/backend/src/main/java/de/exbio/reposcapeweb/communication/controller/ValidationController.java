@@ -61,7 +61,6 @@ public class ValidationController {
     @RequestMapping(value = "/status", method = RequestMethod.GET)
     @ResponseBody
     public String getMetaGraph(@RequestParam("uid") String uid) {
-        log.info("got request on metagraph");
         try {
             return nedrex.get("validation/status?uid=" + uid);
         } catch (Exception e) {

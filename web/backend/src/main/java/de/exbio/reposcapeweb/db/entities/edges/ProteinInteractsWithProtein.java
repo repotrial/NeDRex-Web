@@ -97,6 +97,9 @@ public class ProteinInteractsWithProtein extends RepoTrialEdge implements Serial
     @Column(columnDefinition = "TEXT")
     private String brainTissues;
 
+//    @Column(columnDefinition = "TEXT")
+    private Double hippieMethodScore;
+
     @Transient
     private String nodeOne;
     @Transient
@@ -128,6 +131,7 @@ public class ProteinInteractsWithProtein extends RepoTrialEdge implements Serial
         values.put("jointTissues",getJointTissues());
         values.put("brainTissues",getBrainTissues());
         values.put("dataSources", getDataSources());
+        values.put("hippie_methods_score", getHippieMethodsScore());
         return values;
     }
 
@@ -233,6 +237,14 @@ public class ProteinInteractsWithProtein extends RepoTrialEdge implements Serial
         this.jointTissues = StringUtils.listToString(jointTissues);
     }
 
+    public Double getHippieMethodsScore() {
+        return this.hippieMethodScore;
+    }
+
+    public void setHippieMethodsScore(Double hippieMethodScore) {
+        this.hippieMethodScore = hippieMethodScore;
+    }
+
     public List<String> getBrainTissues() {
         return StringUtils.stringToList(brainTissues);
     }
@@ -269,6 +281,7 @@ public class ProteinInteractsWithProtein extends RepoTrialEdge implements Serial
         this.tissues = other.tissues;
         this.subcellularLocations = other.subcellularLocations;
         this.dataSources = other.dataSources;
+        this.hippieMethodScore = other.hippieMethodScore;
     }
 
     @Override

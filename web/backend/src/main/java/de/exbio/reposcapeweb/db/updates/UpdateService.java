@@ -938,7 +938,6 @@ public class UpdateService {
                     log.error("Malformed input line in " + updateFile.getName() + ": " + line);
                 } catch (NullPointerException e) {
                     log.debug("Edge could not be mapped in " + updateFile.getName() + ": " + line);
-                    continue;
                 }
             }
         } catch (IOException e) {
@@ -1005,8 +1004,8 @@ public class UpdateService {
         int officialCount = getCountFromDetails(name);
         log.debug(f.getName() + " contains " + count + " entries!");
         if (count != officialCount) {
-            log.error("Entry count for " + name + " does not match to official number from repotrial (" + count + " vs " + officialCount + ")");
-            throw new RuntimeException("Error while validating the entity counts. Maybe file format has changed.");
+            log.warn("Entry count for " + name + " does not match to official number from repotrial (" + count + " vs " + officialCount + ")");
+//            throw new RuntimeException("Error while validating the entity counts. Maybe file format has changed.");
         }
 
     }

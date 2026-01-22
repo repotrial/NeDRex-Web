@@ -40,7 +40,7 @@ public class NedrexService {
     public void initAPIKey(){
         URL url = null;
         try {
-            url = new URL(getAPI()+"/admin/api_key/generate");
+            url = new URL(getAPI()+(getAPI().endsWith("/") ? "": "/") +"admin/api_key/generate");
             BufferedReader in = getBufferedReader(url);
             String inputLine;
             StringBuffer content = new StringBuffer();

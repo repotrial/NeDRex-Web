@@ -12,10 +12,11 @@ RUN apt install -y software-properties-common
 
 RUN pip install --upgrade pip
 
-RUN mamba create -n default python=3.9
+RUN mamba create -n default python=3.10
+RUN pip install --no-deps pipreqs
 
 RUN pipreqs ./
-RUN cat requirements.txt | grep -v "graph_tool" | grep -v "pcst_fast" | grep -v 'bicon' | grep -v 'networkx' | grep -v 'scipy' | grep -v "pandas" | grep -v "numpy" | grep -v "cartoGRAPHs" > reqs.txt
+RUN cat requirements.txt | grep -v 'graph_tool' | grep -v 'pcst_fast' | grep -v 'bicon' | grep -v 'networkx' | grep -v 'scipy' | grep -v 'pandas' | grep -v 'numpy' | grep -v 'cartoGRAPHs' > reqs.txt
 RUN /opt/conda/envs/default/bin/pip install -r reqs.txt
 
 RUN git clone https://github.com/AndiMajore/BiCoN.git

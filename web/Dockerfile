@@ -1,4 +1,4 @@
-FROM andimajore/mamba_noble:latest
+FROM ghcr.io/repotrial/nedrexdb_v2d-base:latest
 #
 WORKDIR /usr/app
 #

@@ -8,6 +8,7 @@ import de.exbio.reposcapeweb.db.services.nodes.DisorderService;
 import de.exbio.reposcapeweb.db.services.nodes.GeneService;
 import de.exbio.reposcapeweb.db.services.nodes.ProteinService;
 import de.exbio.reposcapeweb.db.updates.UpdateOperation;
+import de.exbio.reposcapeweb.db.updates.UpdateService;
 import de.exbio.reposcapeweb.utils.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,10 +59,27 @@ public class AssociatedWithDisorderService {
     }
 
 
+    public boolean openTargetsFilter(GeneAssociatedWithDisorder edge){
+        return !edge.getDataSources().stream().filter(ds -> !ds.contains("opentargets")).collect(Collectors.toSet()).isEmpty();
+    }
+
+
     public boolean submitUpdates(EnumMap<UpdateOperation, HashMap<PairId, GeneAssociatedWithDisorder>> updates) {
 
         if (updates == null)
             return false;
+
+        for(UpdateOperation uo: updates.keySet()){
+            HashMap<PairId, GeneAssociatedWithDisorder> entries = updates.get(uo);
+            HashSet<PairId> toDelete = new HashSet<>();
+            for(PairId id: entries.keySet()){
+                GeneAssociatedWithDisorder entry = entries.get(id);
+                if(!openTargetsFilter(entry))
+                    toDelete.add(id);
+            }
+            for(PairId id: toDelete)
+                entries.remove(id);
+        }
 
         if (updates.containsKey(UpdateOperation.Deletion))
             geneAssociatedWithDisorderRepository.deleteAll(geneAssociatedWithDisorderRepository.findGeneAssociatedWithDisorderByIdIn(updates.get(UpdateOperation.Deletion).keySet().stream().map(o -> (PairId) o).collect(Collectors.toSet())));

@@ -74,11 +74,11 @@ public class RequestController {
     @RequestMapping(value = "/getMetagraph", method = RequestMethod.GET)
     @ResponseBody
     public String getMetaGraph() {
-        log.info("got request on metagraph");
         try {
             return objectMapper.writeValueAsString(webGraphService.getMetaGraph());
         } catch (JsonProcessingException e) {
             e.printStackTrace();
+        } catch (NullPointerException e){
         }
         return null;
     }

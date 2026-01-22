@@ -141,7 +141,6 @@ public class DisorderService extends NodeService {
                 icd10ToIdMap.get(icd10).add(n.getId());
             });
         });
-
     }
 
     @Override
