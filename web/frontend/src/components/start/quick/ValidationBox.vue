@@ -2,13 +2,13 @@
   <div style="display: flex;width: 100%; margin-top: -20px">
     <div style="align-self: flex-start; margin-left:15px">
       <v-tooltip bottom v-if="validationStatus!=null">
-        <template v-slot:activator="{attr, on}">
+        <template v-slot:activator="{ props }">
           <div>
-            <v-chip v-on="on" v-bind="attr" v-if="validationStatus==='no drugs'" color="orange" x-small>could not
+            <v-chip v-bind="props" v-if="validationStatus==='no drugs'" color="orange" x-small>could not
               validate
               <v-icon right>fas fa-exclamation-triangle</v-icon>
             </v-chip>
-            <a v-on="on" v-bind="attr" v-else target="_blank"
+            <a v-bind="props" v-else target="_blank"
                :href="apiService.getBaseURL().replace(/api\/?$/,'validation/status?uid=')+validationUID" style="text-decoration:none">
 
               <v-chip v-if="validationStatus==='failed'" color="red" x-small style="color: white">validation error

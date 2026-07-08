@@ -1,8 +1,8 @@
 <template>
   <div>
     <v-menu bottom offset-y transition="slide-y-transition">
-      <template v-slot:activator="{on,attrs}">
-        <v-btn x-small outlined right v-bind="attrs" v-on="on">
+      <template v-slot:activator="{ props }">
+        <v-btn variant="outlined" x-small right v-bind="props">
           <v-icon left x-small color="primary">
             fas fa-download
           </v-icon>
@@ -21,8 +21,8 @@
           IDs only
         </v-list-item>
         <v-menu right offset-x transition="slide-x-transition" open-on-hover>
-          <template v-slot:activator="{on,attrs}">
-            <v-list-item v-bind="attrs" v-on="on">
+          <template v-slot:activator="{ props }">
+            <v-list-item v-bind="props">
               With names
               <v-icon right>fas fa-caret-right</v-icon>
             </v-list-item>

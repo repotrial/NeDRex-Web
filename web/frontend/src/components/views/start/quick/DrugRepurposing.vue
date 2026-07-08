@@ -31,8 +31,8 @@
     </v-dialog>
     <div style="display: flex; justify-content: flex-end; margin-left: auto; ">
       <v-tooltip left>
-        <template v-slot:activator="{on, attrs}">
-          <v-btn icon style="padding:1em" color="red darker" @click="verify=true" v-on="on" v-bind="attrs">
+        <template v-slot:activator="{ props }">
+          <v-btn icon style="padding:1em" color="red darker" @click="verify=true" v-bind="props">
             <v-icon size="2em">far fa-times-circle</v-icon>
           </v-btn>
         </template>
@@ -102,8 +102,8 @@
                 <li v-if="blitz" style="margin-left: 0;">
                   <span> In Quick Module Identification a
                 <v-tooltip bottom>
-                <template v-slot:activator="{on, attrs}">
-                  <span v-on="on" v-bind="attrs">
+                <template v-slot:activator="{ props }">
+                  <span v-bind="props">
                     <a>default configuration <v-icon color="primary" size="1em">far fa-question-circle</v-icon></a>
                   </span>
                 </template>
@@ -202,19 +202,17 @@
                           <v-radio-group row v-model="advancedOptions" style="display: inline-block; margin-left: 32px"
                                          :disabled="(seedTypeId != null && $refs.seedTable != null && $refs.seedTable.getSeeds() != null && $refs.seedTable.getSeeds().length > 0)">
                             <v-tooltip left>
-                              <template v-slot:activator="{on,attrs}">
+                              <template v-slot:activator="{ props }">
                                 <v-radio label="Limited" @click="suggestionType = 'disorder'" :value="false"
-                                         v-bind="attrs"
-                                         v-on="on"></v-radio>
+                                         v-bind="props"></v-radio>
                               </template>
                               <div style="width: 300px"><b>Limited Mode:</b><br>The options are limited to the most
                                 interesting and generally used ones to not overcomplicate the user interface
                               </div>
                             </v-tooltip>
                             <v-tooltip left>
-                              <template v-slot:activator="{on,attrs}">
-                                <v-radio label="Full" :value="true" v-bind="attrs"
-                                         v-on="on"></v-radio>
+                              <template v-slot:activator="{ props }">
+                                <v-radio label="Full" :value="true" v-bind="props"></v-radio>
                               </template>
                               <div style="width: 300px"><b>Full Mode:</b><br> The full mode provides a wider list of
                                 options to select from
@@ -229,8 +227,8 @@
                       <div style="display: flex">
 
                         <v-tooltip top>
-                          <template v-slot:activator="{on, attrs}">
-                            <div v-on="on" v-bind="attrs" style="width: 35%;justify-self: flex-start">
+                          <template v-slot:activator="{ props }">
+                            <div v-bind="props" style="width: 35%;justify-self: flex-start">
                               <v-select :items="getSuggestionSelection()" v-model="suggestionType"
                                         placeholder="connected to" style="width: 100%"
                                         :disabled="!advancedOptions"></v-select>
@@ -270,8 +268,8 @@
                 <v-divider vertical v-show="seedTypeId!==undefined"></v-divider>
                 <v-col cols="6" style="padding-top:0">
                   <v-tooltip left>
-                    <template v-slot:activator="{attrs,on}">
-                      <v-chip style="position: absolute; left:auto; right:0" v-on="on" v-bind="attrs"
+                    <template v-slot:activator="{ props }">
+                      <v-chip style="position: absolute; left:auto; right:0" v-bind="props"
                               v-show="seedTypeId!=null"
                               :disabled="$refs.seedTable==null || $refs.seedTable.getSeeds().length===0"
                               color="primary" @click="showInteractionNetwork()">
@@ -281,9 +279,8 @@
                     <span>Display an interaction network with all your current seeds</span>
                   </v-tooltip>
                   <v-tooltip left>
-                    <template v-slot:activator="{attrs,on}">
-                      <v-chip @click="$refs.drugsDialog.show()" style="position: absolute; left:auto; right:55px"
-                              v-on="on" v-bind="attrs"
+                    <template v-slot:activator="{ props }">
+                      <v-chip @click="$refs.drugsDialog.show()" style="position: absolute; left:auto; right:55px" v-bind="props"
                               v-show="seedTypeId!=null"
                               color="primary">
                         <v-icon left>fas fa-capsules</v-icon>
@@ -391,8 +388,8 @@
                     hide-default-footer @click:row="seedClicked">
                     <template v-slot:item.displayName="{item}">
                       <v-tooltip v-if="item.displayName.length>12" right>
-                        <template v-slot:activator="{attr,on }">
-                          <span v-bind="attr" v-on="on"
+                        <template v-slot:activator="{ props }">
+                          <span v-bind="props"
                                 style="color: dimgray">{{ item.displayName.substr(0, 12) }}...</span>
                         </template>
                         <span>{{ item.displayName }}</span>
@@ -414,16 +411,14 @@
 
                   <div style="display: flex; justify-content: center">
                     <v-tooltip top>
-                      <template v-slot:activator="{attrs, on}">
-                        <v-btn
-                          :disabled="!rankingGid"
-                          outlined
-                          small
-                          v-on="on"
-                          v-bind="attrs"
-                          style="margin:8px"
-                          @click="requestGraphDownload"
-                        >
+                      <template v-slot:activator="{ props }">
+                        <v-btn variant="outlined"
+ :disabled="!rankingGid"
+ 
+ small
+ v-bind="props"
+ style="margin:8px"
+ @click="requestGraphDownload">
                           <v-icon
                             left
                             small
@@ -441,16 +436,14 @@
                       </div>
                     </v-tooltip>
                     <v-tooltip top>
-                      <template v-slot:activator="{attrs, on}">
-                        <v-btn
-                          :disabled="!rankingJid"
-                          v-on="on"
-                          v-bind="attrs"
-                          outlined
-                          small
-                          style="margin:8px"
-                          @click="copyLink(); printNotification('Copied graph link to clipboard!',1)"
-                        >
+                      <template v-slot:activator="{ props }">
+                        <v-btn variant="outlined"
+ :disabled="!rankingJid"
+ v-bind="props"
+ 
+ small
+ style="margin:8px"
+ @click="copyLink(); printNotification('Copied graph link to clipboard!',1)">
                           <v-icon
                             left
                             small
@@ -481,10 +474,10 @@
                       <v-card style="width: 13vw; max-width: 18vw; padding-top: 35px">
                         <v-list dense>
                           <v-list-item>
-                            <v-list-item-icon>
+                            <div style="display:flex;align-items:center;margin-right:16px">
                               <v-icon left color="#fbe223" size="42">fas fa-genderless
                               </v-icon>
-                            </v-list-item-icon>
+                            </div>
                             <v-list-item-title style="margin-left:-25px">{{ ['Gene', 'Protein'][seedTypeId] }} (Seed)
                             </v-list-item-title>
                             <v-list-item-subtitle style="margin-right:-25px; margin-left:-25px">{{
@@ -493,12 +486,12 @@
                             </v-list-item-subtitle>
                           </v-list-item>
                           <v-list-item>
-                            <v-list-item-icon>
+                            <div style="display:flex;align-items:center;margin-right:16px">
                               <v-icon left :color="getColoring('nodes',['gene','protein'][seedTypeId],'light')"
                                       size="42">fas fa-genderless
                               </v-icon>
 
-                            </v-list-item-icon>
+                            </div>
                             <v-list-item-title style="margin-left:-25px">{{ ['Gene', 'Protein'][seedTypeId] }} (Module)
                             </v-list-item-title>
                             <v-list-item-subtitle style="margin-right:-25px; margin-left:-25px">
@@ -506,10 +499,10 @@
                             </v-list-item-subtitle>
                           </v-list-item>
                           <v-list-item>
-                            <v-list-item-icon>
+                            <div style="display:flex;align-items:center;margin-right:16px">
                               <v-icon left :color="getColoring('nodes','drug','light')" size="42">fas fa-genderless
                               </v-icon>
-                            </v-list-item-icon>
+                            </div>
                             <v-list-item-title style="margin-left:-25px">Drug</v-list-item-title>
                             <v-list-item-subtitle style="margin-right:-25px; margin-left:-25px">
                               {{ results.drugs.length }}
@@ -523,7 +516,7 @@
                              @toggleOptionEvent="toggleToolOption" @clickOptionEvent="clickToolOption">
                         <template v-slot:append>
                           <ToolDropdown
-                            :items="[{value:'default', text:'Default'}, {value:'portrait', text:'Portrait'}, {value:'topographic_x', text:'Topographic (X,Z)'}, {value:'topographic_y', text:'Topographic (Y,Z)'}, {value: 'geodesic', text: 'Geodesic (X,Y)'},{value: 'geodesic_x', text: 'Geodesic (X,Z)'},{value: 'geodesic_y', text: 'Geodesic (Y,Z)'}]"
+                            :items="[{value:'default', title:'Default'}, {value:'portrait', title:'Portrait'}, {value:'topographic_x', title:'Topographic (X,Z)'}, {value:'topographic_y', title:'Topographic (Y,Z)'}, {value: 'geodesic', title: 'Geodesic (X,Y)'},{value: 'geodesic_x', title: 'Geodesic (X,Z)'},{value: 'geodesic_y', title: 'Geodesic (Y,Z)'}]"
                             label="Layout" icon="fas fa-project-diagram" @change="$refs.graph.loadLayout">
                             <template v-slot:tooltip>
                               <div style="display: inline-block"><i><b>Change the layout of the network!</b></i> <br>Options:<br>
@@ -571,8 +564,8 @@
                                   hide-default-footer @click:row="drugClicked">
                       <template v-slot:item.displayName="{item}">
                         <v-tooltip v-if="item.displayName.length>24" right>
-                          <template v-slot:activator="{attr,on }">
-                          <span v-bind="attr" v-on="on"
+                          <template v-slot:activator="{ props }">
+                          <span v-bind="props"
                                 style="color: dimgray">{{ item.displayName.substring(0, 21) }}...</span>
                           </template>
                           <span>{{ item.displayName }}</span>
@@ -581,8 +574,8 @@
                       </template>
                       <template v-slot:header.trialCount="{header}">
                         <v-tooltip bottom>
-                          <template v-slot:activator="{on, attrs}">
-                            <span v-on="on" v-bind="attrs">{{ header.text }}</span>
+                          <template v-slot:activator="{ props }">
+                            <span v-bind="props">{{ header.text }}</span>
                           </template>
                           <span>Entries in this column can contain following values<br><v-icon left color="white"
                                                                                                size="12pt">fas fa-check</v-icon> This drug is already known to be effective against at least one of the selected disorders<br>
@@ -597,15 +590,15 @@
                       </template>
                       <template v-slot:item.trialCount="{item}">
                         <v-tooltip v-if="item.known" left>
-                          <template v-slot:activator="{attr,on }">
-                            <span v-bind="attr" v-on="on"><v-icon size="1rem" left>fas fa-check</v-icon></span>
+                          <template v-slot:activator="{ props }">
+                            <span v-bind="props"><v-icon size="1rem" left>fas fa-check</v-icon></span>
                           </template>
                           <span>This drug is already known to have an effect on at least one of the initially selected disorders.</span>
                         </v-tooltip>
                         <span v-if="item.known && item.trials" style="margin-left: 5px"></span>
                         <v-tooltip v-if="item.trials!=null" left>
-                          <template v-slot:activator="{attr,on }">
-                            <span v-bind="attr" v-on="on"><v-icon size="12pt">fas fa-clinic-medical</v-icon></span>
+                          <template v-slot:activator="{ props }">
+                            <span v-bind="props"><v-icon size="12pt">fas fa-clinic-medical</v-icon></span>
                           </template>
                           <span>There is at least one entry for trials regarding one of the<br> initially selected disorders and this drug on e.g. ClinicalTrial.gov ({{
                               item.trialCount
@@ -662,7 +655,7 @@
         </v-card-actions>
         <v-card-text v-for="option in nameOptions" :key="option">
           <div>{{ option }}</div>
-          <v-btn outlined @click="graphName=option" style="font-size: 8pt" color="primary">
+          <v-btn variant="outlined" @click="graphName=option" style="font-size: 8pt" color="primary">
             <v-icon left>fas fa-angle-double-right</v-icon>
             Load
           </v-btn>
@@ -706,10 +699,9 @@
           </div>
         </v-card-text>
         <v-card-actions>
-          <v-btn
-            text
-            @click="error=false"
-          >
+          <v-btn variant="text"
+ 
+ @click="error=false">
             Close
           </v-btn>
         </v-card-actions>
@@ -816,15 +808,15 @@ export default {
   },
 
   created() {
-    this.$socket.$on("quickRepurposeModuleFinishedEvent", this.convertModuleJob)
-    this.$socket.$on("quickRepurposeRankingFinishedEvent", this.convertRankingJob)
+    this.$socket.on("quickRepurposeModuleFinishedEvent", this.convertModuleJob)
+    this.$socket.on("quickRepurposeRankingFinishedEvent", this.convertRankingJob)
     this.uid = this.$cookies.get("uid")
     this.init()
     if (this.reload)
       this.reloadJob(this.reload);
   },
-  destroyed() {
-    //TODO maybe add destroyed function to be save that all data is removed
+  unmounted() {
+    //TODO maybe add unmounted function to be save that all data is removed
   },
 
   methods: {
@@ -878,7 +870,7 @@ export default {
           if (disorderIdx < 0)
             disorderIdx--;
         }
-        return {value: node.group, text: node.label}
+        return {value: node.group, title: node.label}
       })
       if (!this.advancedOptions) {
         this.suggestionType = out[disorderIdx].value;
@@ -1504,7 +1496,7 @@ export default {
     }
     ,
     getHeaders: function (table) {
-      let headers = [{text: "Name", align: "start", sortable: true, value: "displayName"}]
+      let headers = [{title: "Name", align: "start", sortable: true, value: "displayName"}]
       let scores = []
       if (table === 0)
         scores = this.moduleMethodScores()
@@ -1512,7 +1504,7 @@ export default {
         scores = this.rankingMethodScores();
       scores.forEach(e => {
         let entry = {
-          text: e.name,
+          title: e.name,
           align: e.decimal ? "start" : "end",
           sortable: true,
           value: e.id,
@@ -1523,8 +1515,8 @@ export default {
           headers.push(entry)
       })
       if (table === 0)
-        headers.push({text: "Seed", value: "seed", sortable: false, align: "center", width: "1rem"})
-      headers.push({text: "", value: "data-table-expand", width: "1rem"})
+        headers.push({title: "Seed", value: "seed", sortable: false, align: "center", width: "1rem"})
+      headers.push({title: "", value: "data-table-expand", width: "1rem"})
       return headers
     }
     ,

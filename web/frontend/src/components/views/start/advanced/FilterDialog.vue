@@ -75,8 +75,8 @@
 
             <div style="display: flex">
               <v-tooltip top>
-                <template v-slot:activator="{on, attrs}">
-                  <div v-on="on" v-bind="attrs" style="width: 35%;justify-self: flex-start">
+                <template v-slot:activator="{ props }">
+                  <div v-bind="props" style="width: 35%;justify-self: flex-start">
                     <v-select :items="getSuggestionSelection()" v-model="suggestionType"
                               placeholder="connected to" style="width: 100%"
                               :disabled="!advancedOptions"></v-select>
@@ -111,7 +111,7 @@
         </div>
         <div style="height: 800px; max-height: 800px;" v-show="filterType[nodeList[nodeId].value]">
           <v-card-title style="margin-left: -25px;" class="subtitle-1">Filters</v-card-title>
-          <v-simple-table fixed-header ref="filterTable">
+          <v-table fixed-header ref="filterTable">
             <template v-slot:default>
               <thead>
               <tr>
@@ -154,7 +154,7 @@
               </tr>
               </tbody>
             </template>
-          </v-simple-table>
+          </v-table>
         </div>
       </v-card-text>
 
@@ -280,9 +280,9 @@ export default {
           if (disorderIdx < 0)
             disorderIdx--;
         }
-        return {value: node.group, text: node.label}
+        return {value: node.group, title: node.label}
       })
-      out.push({value: type, text: type.substring(0, 1).toUpperCase() + type.substring(1)})
+      out.push({value: type, title: type.substring(0, 1).toUpperCase() + type.substring(1)})
       if (disorderIdx < 0) {
         this.suggestionType = out[0].value
       } else if(!this.advancedOptions)

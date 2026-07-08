@@ -2,8 +2,8 @@
   <div>
     <v-card-title style=" color: rgb(128,128,128)">{{ text }}
       <v-tooltip top>
-        <template v-slot:activator="{on,attrs}">
-          <v-btn v-on="on" v-bind="attrs" outlined @click="seedInput=true" small style="margin-left: 8px">
+        <template v-slot:activator="{ props }">
+          <v-btn variant="outlined" v-bind="props" @click="seedInput=true" small style="margin-left: 8px">
             <v-icon left>fas fa-caret-right</v-icon><v-divider vertical style="border-color: black; margin-right: 5px;"></v-divider>
             text input
           </v-btn>
@@ -31,12 +31,11 @@
         </template>
         <template v-slot:append-outer>
           <v-tooltip left>
-            <template v-slot:activator="{on,attrs}">
+            <template v-slot:activator="{ props }">
               <a :href="exampleFile"
                  target="_blank" style="text-decoration: none">
                 <v-icon
-                  v-bind="attrs"
-                  v-on="on"
+                  v-bind="props"
                   left
                 >
                   fas fa-download
@@ -178,7 +177,7 @@ export default {
       this.customSep = undefined;
       this.list = []
       Object.keys(this.sepModel).forEach(s => {
-        this.$set(this.sepModel, s, false)
+        this.sepModel[s] = false
       })
     },
 
@@ -217,10 +216,10 @@ export default {
 
     setSep: function (sep, state) {
       if (state)
-        this.$set(this.sepModel, sep, true)
+        this.sepModel[sep] = true
       Object.keys(this.sepModel).forEach(s => {
         if (sep !== s)
-          this.$set(this.sepModel, s, false)
+          this.sepModel[s] = false
       })
       this.separator = this.sepModel[sep] ? sep : undefined;
     },
@@ -247,10 +246,10 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 
 
-.v-input__slot {
+:deep(.v-field) {
   cursor: pointer !important;
 }
 

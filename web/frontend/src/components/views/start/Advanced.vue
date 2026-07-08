@@ -27,8 +27,8 @@
             </v-list>
             <v-list v-model="edgeModel">
               <v-card-title>Edges</v-card-title>
-              <template v-for="item in edges.filter(e=>!e.external)">
-                <v-list-item :key="item.index">
+              <template v-for="item in edges.filter(e=>!e.external)" :key="item.index">
+                <v-list-item>
                   <v-chip outlined v-on:click="toggleEdge(item.index)"
                           :color="edgeModel.indexOf(item.index)===-1?'gray':'primary'"
                           :text-color="edgeModel.indexOf(item.index)===-1?'black':'gray'"
@@ -117,16 +117,14 @@
               </div>
             </v-card-text>
             <v-card-actions>
-              <v-btn
-              text
-              @click="missingFilterDialog=false"
-              >
+              <v-btn variant="text"
+ 
+ @click="missingFilterDialog=false">
                 Cancel
               </v-btn>
-              <v-btn
-              text
-              @click="loadGraph(true,true)"
-              >
+              <v-btn variant="text"
+ 
+ @click="loadGraph(true,true)">
                 Proceed
               </v-btn>
             </v-card-actions>
@@ -347,7 +345,7 @@ export default {
     nodeSelection: function (idx) {
       if (idx == null)
         return
-      this.$set(this, 'filterNodeId', idx)
+      this.filterNodeId = idx
       this.$refs.filter.show()
     },
 
@@ -357,12 +355,12 @@ export default {
     },
 
     setFilterType: function (data) {
-      this.$set(this.filterTypeMap, data.node, data.state)
+      this.filterTypeMap[data.node] = data.state
     },
 
 
     setNodeCount: function (data) {
-      this.$set(this.countMap, data.node, data.count)
+      this.countMap[data.node] = data.count
     },
     toggleNode: function (nodeIndex) {
       let index = this.nodeModel.indexOf(nodeIndex)

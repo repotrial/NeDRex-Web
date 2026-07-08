@@ -18,7 +18,7 @@
         </v-tab>
       </v-tabs>
 
-      <v-simple-table>
+      <v-table>
         <template v-slot:default>
           <thead>
           <tr>
@@ -61,13 +61,13 @@
             <td>
               <template v-if="job.state==='DONE'">
                 <v-tooltip left>
-                  <template v-slot:activator="{ on, attrs }">
-                    <v-icon v-if="job.download" v-bind="attrs" v-on="on" right
+                  <template v-slot:activator="{ props }">
+                    <v-icon v-if="job.download" v-bind="props" right
                             @click="downloadJob(job)"
                     >
                       fas fa-download
                     </v-icon>
-                    <v-icon v-else v-bind="attrs" v-on="on" right
+                    <v-icon v-else v-bind="props" right
                             @click="$emit('printNotificationEvent', 'No Download Available', 1)">fas fa-dna
                     </v-icon>
                   </template>
@@ -78,8 +78,8 @@
             </td>
             <td>
               <v-tooltip left>
-                <template v-slot:activator="{ on, attrs }">
-                  <v-icon v-bind="attrs" v-on="on" right>
+                <template v-slot:activator="{ props }">
+                  <v-icon v-bind="props" right>
                     fas fa-history
                   </v-icon>
                 </template>
@@ -96,7 +96,7 @@
           </tbody>
         </template>
 
-      </v-simple-table>
+      </v-table>
 
     </template>
   </v-card>
@@ -117,7 +117,7 @@ export default {
     }
   },
   created() {
-    this.$socket.$on("jobUpdateEvent", this.updateJob)
+    this.$socket.on("jobUpdateEvent", this.updateJob)
     this.reload()
   },
   methods: {

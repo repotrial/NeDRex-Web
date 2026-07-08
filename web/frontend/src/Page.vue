@@ -6,6 +6,7 @@
 </template>
 
 <script>
+import {START_LOCATION} from "vue-router";
 import Home from "@/Home";
 import App from "@/App";
 
@@ -19,7 +20,7 @@ export default {
   },
   watch: {
     '$route'(to, from) {
-      if (to === from)
+      if (to === from || from === START_LOCATION)
         return
       //TODO think about full always go routing on change to "/explore"
       if ((from.fullPath !== "/" && to.fullPath === "/") || (to.fullPath.startsWith("/explore") && from.fullPath ==="/"))

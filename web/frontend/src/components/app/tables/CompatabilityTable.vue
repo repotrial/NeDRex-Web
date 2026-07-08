@@ -1,5 +1,5 @@
 <template>
-  <v-simple-table :style="{backgroundColor: bgColor}">
+  <v-table :style="{backgroundColor: bgColor}">
     <template v-slot:default>
       <thead>
       <tr>
@@ -37,7 +37,7 @@
       </tr>
       </tbody>
     </template>
-  </v-simple-table>
+  </v-table>
 </template>
 
 <script>

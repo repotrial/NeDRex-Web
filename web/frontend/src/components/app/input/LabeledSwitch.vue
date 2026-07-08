@@ -3,8 +3,8 @@
     <span>
       <span style="color: dimgray">{{ labelOff }}</span>
       <v-tooltip top>
-        <template v-slot:activator="{on, attrs}" style="display: inline-block;">
-          <span v-bind="attrs" v-on="on">
+        <template v-slot:activator="{ props }" style="display: inline-block;">
+          <span v-bind="props">
             <v-switch @change="$emit('input',model)" @click="$emit('click')" v-model="model" :disabled="disabled"
                     style="display: inline-block;margin-left: 10px; margin-top: 0"></v-switch>
           </span>

@@ -1,7 +1,7 @@
 <template>
   <v-tooltip top>
-    <template v-slot:activator="{attrs, on}">
-      <v-btn style="margin-left: 5px; margin-right: 5px;" v-on="on" v-bind="attrs" color="error" @click="verify=true"
+    <template v-slot:activator="{ props }">
+      <v-btn style="margin-left: 5px; margin-right: 5px;" v-bind="props" color="error" @click="verify=true"
              :disabled="disabled">
         <v-icon left>fas fa-times</v-icon>
         <v-divider vertical style="border-color: white; margin-right: 5px;"></v-divider>

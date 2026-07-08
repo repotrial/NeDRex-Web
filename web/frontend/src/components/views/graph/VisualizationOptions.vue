@@ -16,7 +16,7 @@
             <span>Enable or Disable the node labels.</span>
           </template>
         </ToolSwitch>
-        <ToolDropdown v-model="shapeModel" label="Node Shapes" icon="fas fa-shapes" :items="[{text:'Default', value:'shapes'},{text:'Only ellipses', value:'ellipse'},{text:'Only dots',value:'dot'}]" @change="switchNodeStyle">
+        <ToolDropdown v-model="shapeModel" label="Node Shapes" icon="fas fa-shapes" :items="[{title:'Default', value:'shapes'},{title:'Only ellipses', value:'ellipse'},{title:'Only dots',value:'dot'}]" @change="switchNodeStyle">
         <template v-slot:tooltip>
           <span>Changes the shape of all nodes.</span>
         </template>

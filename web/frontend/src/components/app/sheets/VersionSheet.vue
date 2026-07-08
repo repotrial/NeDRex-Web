@@ -9,34 +9,34 @@
           <v-col cols="6">
             <v-list>
               <v-list-item>
-                <v-list-item-icon>
+                <div style="display:flex;align-items:center;margin-right:16px">
                   <v-icon left>fas fa-server</v-icon>
-                </v-list-item-icon>
+                </div>
                 <v-list-item-title>NeDRexDB-version:</v-list-item-title>
                 <span>{{
                     $global.metadata.repotrial && $global.metadata.repotrial.version ? $global.metadata.repotrial.version : "?"
                   }}</span>
               </v-list-item>
               <v-list-item>
-                <v-list-item-icon>
+                <div style="display:flex;align-items:center;margin-right:16px">
                   <v-icon left>fas fa-sync</v-icon>
-                </v-list-item-icon>
+                </div>
                 <v-list-item-title>Last Check:</v-list-item-title>
                 <span>{{
                     $global.metadata.lastCheck !== undefined ? formatTimestamp($global.metadata.lastCheck)[1] + " ago" : "?"
                   }}</span>
               </v-list-item>
               <v-list-item>
-                <v-list-item-icon>
+                <div style="display:flex;align-items:center;margin-right:16px">
                   <v-icon left>fas fa-cloud-download-alt</v-icon>
-                </v-list-item-icon>
+                </div>
                 <v-list-item-title>Last Update:</v-list-item-title>
                 <span>{{
                     $global.metadata.lastUpdate !== undefined ? formatTimestamp($global.metadata.lastUpdate)[1] + " ago" : "?"
                   }}</span>
               </v-list-item>
               <v-list-item>
-                <v-list-item-icon> <v-icon>far fa-question-circle</v-icon></v-list-item-icon>
+                <div style="display:flex;align-items:center;margin-right:16px"> <v-icon>far fa-question-circle</v-icon></div>
                 <v-list-item-title><v-chip color="warning" outlined @click="$emit('showTOSEvent')">Terms of Service</v-chip></v-list-item-title>
               </v-list-item>
             </v-list>
@@ -45,10 +45,10 @@
           <v-col cols="6" style="height: 80vh;overflow-y: auto">
             <v-list v-if="$global.metadata.repotrial && $global.metadata.repotrial.source_databases" >
               <v-list-item v-for="source in Object.keys($global.metadata.repotrial.source_databases)" :key="source">
-                <v-list-item-icon>
+                <div style="display:flex;align-items:center;margin-right:16px">
                   <v-icon left>fas fa-database</v-icon>
                   {{ source }}
-                </v-list-item-icon>
+                </div>
                 <v-list-item-title>
                   <span>{{ $global.metadata.repotrial.source_databases[source].date }}</span>
                 </v-list-item-title>

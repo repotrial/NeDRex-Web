@@ -10,8 +10,8 @@
     <div v-show="show">
       <div style="display: flex; justify-content: center">
         <v-tooltip top>
-          <template v-slot:activator="{attrs, on}">
-            <div v-on="on" v-bind="attrs">
+          <template v-slot:activator="{ props }">
+            <div v-bind="props">
               <v-switch dense label="Selection Mode" v-model="options.selectMode"
                         @click="$emit('selectModeEvent',options.selectMode)"></v-switch>
             </div>
@@ -23,8 +23,8 @@
       </div>
       <div style="display: flex; justify-content: center">
         <v-tooltip top>
-          <template v-slot:activator="{attrs, on}">
-            <v-chip outlined @click="applySelection" style="margin: 8px" v-on="on" v-bind="attrs">
+          <template v-slot:activator="{ props }">
+            <v-chip outlined @click="applySelection" style="margin: 8px" v-bind="props">
               <v-icon small left color="primary">fas fa-plus-circle</v-icon>
               Add to selection
             </v-chip>
@@ -39,7 +39,7 @@
         <v-card-title>Current Manual Selection ({{ selection.length }})</v-card-title>
         <v-card-text>Current selection in Network which can be used to apply this selection on the lists!
         </v-card-text>
-        <v-simple-table fixed-header height="300px" dense v-if="selection.length>0">
+        <v-table fixed-header height="300px" dense v-if="selection.length>0">
           <template v-slot:default>
             <thead>
             <tr>
@@ -55,7 +55,7 @@
             </tr>
             </tbody>
           </template>
-        </v-simple-table>
+        </v-table>
         <i v-else>no selection available</i>
       </v-container>
     </div>

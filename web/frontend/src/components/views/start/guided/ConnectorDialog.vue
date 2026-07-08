@@ -29,8 +29,8 @@
 
             <div style="display: flex">
               <v-tooltip top>
-                <template v-slot:activator="{on, attrs}">
-                  <div v-on="on" v-bind="attrs" style="width: 35%;justify-self: flex-start">
+                <template v-slot:activator="{ props }">
+                  <div v-bind="props" style="width: 35%;justify-self: flex-start">
                     <v-select :items="getSuggestionSelection()" v-model="suggestionType"
                               placeholder="connected to" style="width: 100%"
                               :disabled="!advancedOptions"></v-select>
@@ -139,9 +139,9 @@ export default {
           if (disorderIdx < 0)
             disorderIdx--;
         }
-        return {value: node.group, text: node.label}
+        return {value: node.group, title: node.label}
       })
-      out.push({value: type, text: type.substring(0, 1).toUpperCase() + type.substring(1)})
+      out.push({value: type, title: type.substring(0, 1).toUpperCase() + type.substring(1)})
       if (!this.advancedOptions) {
         this.suggestionType = out[disorderIdx].value;
       }

@@ -34,18 +34,16 @@
                   <v-radio-group row v-model="advancedOptions" style="display: inline-block; margin-left: 32px"
                                  :disabled="(seedTypeId != null && $refs.seedTable != null && $refs.seedTable.getSeeds() != null && $refs.seedTable.getSeeds().length > 0)">
                     <v-tooltip left>
-                      <template v-slot:activator="{on,attrs}">
-                        <v-radio label="Limited" @click="suggestionType = 'disorder'" :value="false" v-bind="attrs"
-                                 v-on="on"></v-radio>
+                      <template v-slot:activator="{ props }">
+                        <v-radio label="Limited" @click="suggestionType = 'disorder'" :value="false" v-bind="props"></v-radio>
                       </template>
                       <div style="width: 300px"><b>Limited Mode:</b><br>The options are limited to the most
                         interesting and generally used ones to not overcomplicate the user interface
                       </div>
                     </v-tooltip>
                     <v-tooltip left>
-                      <template v-slot:activator="{on,attrs}">
-                        <v-radio label="Full" :value="true" v-bind="attrs"
-                                 v-on="on"></v-radio>
+                      <template v-slot:activator="{ props }">
+                        <v-radio label="Full" :value="true" v-bind="props"></v-radio>
                       </template>
                       <div style="width: 300px"><b>Full Mode:</b><br> The full mode provides a wider list of options to select from
                         for
@@ -59,8 +57,8 @@
 
               <div style="display: flex">
                 <v-tooltip top>
-                  <template v-slot:activator="{on, attrs}">
-                    <div v-on="on" v-bind="attrs" style="width: 35%;justify-self: flex-start">
+                  <template v-slot:activator="{ props }">
+                    <div v-bind="props" style="width: 35%;justify-self: flex-start">
                       <v-select :items="getSuggestionSelection()" v-model="suggestionType"
                                 placeholder="connected to" style="width: 100%"
                                 :disabled="!advancedOptions"></v-select>
@@ -104,8 +102,8 @@
              v-if="$refs.drugTable && $refs.drugTable.getSeeds().length>0">
           <div style="width: 100%; display: flex; justify-content: left">
             <v-tooltip top>
-              <template v-slot:activator="{attrs, on}">
-                <div v-on="on" v-bind="attrs">
+              <template v-slot:activator="{ props }">
+                <div v-bind="props">
                   <v-switch v-model="models.onlyApproved" label="Approved Drugs only"></v-switch>
                 </div>
               </template>
@@ -136,10 +134,9 @@
             </template>
             <template v-slot:append>
               <v-tooltip left>
-                <template v-slot:activator="{ on, attrs }">
+                <template v-slot:activator="{ props }">
                   <v-icon
-                    v-bind="attrs"
-                    v-on="on"
+                    v-bind="props"
                     left> far fa-question-circle
                   </v-icon>
                 </template>
@@ -167,8 +164,8 @@
             </v-card-subtitle>
             <v-card-subtitle style="margin-top: -25px">
               <v-tooltip bottom v-if="styleMap[moduleValidationStatus]!=null">
-                <template v-slot:activator="{attrs, on}">
-                  <v-chip style="margin-left: 10px" v-on="on" v-bind="attrs"
+                <template v-slot:activator="{ props }">
+                  <v-chip style="margin-left: 10px" v-bind="props"
                           :color="styleMap[moduleValidationStatus][0]"><a style="color: white;text-decoration: none"
                                                                           target="_blank"
                                                                           :href="apiService.getBaseURL().replace(/api\/?$/,'validation/status?uid=')+moduleValidationUID">
@@ -182,15 +179,15 @@
               </v-tooltip>
             </v-card-subtitle>
             <div style="display: flex; justify-content: center; width: 100%">
-              <v-simple-table v-if="moduleValidationError == null || moduleValidationError.length===0"
+              <v-table v-if="moduleValidationError == null || moduleValidationError.length===0"
                               style="max-width: 400px;">
                 <template v-slot:default>
                   <thead>
                   <tr>
                     <v-tooltip top>
-                      <template v-slot:activator="{attrs, on}">
+                      <template v-slot:activator="{ props }">
                         <th class="text-center">Measure
-                          <v-icon small v-on="on" v-bind="attrs">far fa-question-circle</v-icon>
+                          <v-icon small v-bind="props">far fa-question-circle</v-icon>
                         </th>
                       </template>
                       <div style="width: 300px">
@@ -211,7 +208,7 @@
                   </tr>
                   </tbody>
                 </template>
-              </v-simple-table>
+              </v-table>
               <div v-else>
                 Error:
                 <div style="color: dimgray">{{ moduleValidationError }}</div>
@@ -223,8 +220,8 @@
               </v-card-subtitle>
               <v-card-subtitle style="margin-top: -25px">
               <v-tooltip bottom v-if="styleMap[rankingValidationStatus]!=null">
-                <template v-slot:activator="{attrs, on}">
-                  <v-chip style="color: white; margin-left: 10px; display: inline-block" v-on="on" v-bind="attrs"
+                <template v-slot:activator="{ props }">
+                  <v-chip style="color: white; margin-left: 10px; display: inline-block" v-bind="props"
                           :color="styleMap[rankingValidationStatus][0]"><a style="color: white;text-decoration: none"
                                                                            target="_blank"
                                                                            :href="apiService.getBaseURL().replace(/api\/?$/,'validation/status?uid=')+rankingValidationUID">
@@ -239,14 +236,14 @@
             </v-card-subtitle>
 
             <div style="display: flex; justify-content: center;width: 100%">
-              <v-simple-table v-if="rankingValidationError == null ||rankingValidationError.length===0"
+              <v-table v-if="rankingValidationError == null ||rankingValidationError.length===0"
                               style="max-width: 400px;">
                 <template v-slot:default>
                   <thead>
                   <tr>
                     <v-tooltip top>
-                      <template v-slot:activator="{attrs, on}">
-                    <th class="text-center">Measure <v-icon v-on="on" v-bind="attrs" small>far fa-question-circle</v-icon></th>
+                      <template v-slot:activator="{ props }">
+                    <th class="text-center">Measure <v-icon v-bind="props" small>far fa-question-circle</v-icon></th>
                       </template>
                       <div style="width: 300px">
                         <b>DCG-based:</b> Observed drug list is compared to random drug lists by discounted cumulative gain
@@ -265,7 +262,7 @@
                   </tr>
                   </tbody>
                 </template>
-              </v-simple-table>
+              </v-table>
               <div v-else>
                 Error:
                 <div style="color: dimgray">{{ rankingValidationError }}</div>
@@ -346,9 +343,9 @@ export default {
           if (disorderIdx < 0)
             disorderIdx--;
         }
-        return {value: node.group, text: node.label}
+        return {value: node.group, title: node.label}
       })
-      out.push({value: type, text: "Drug"})
+      out.push({value: type, title: "Drug"})
       if (!this.advancedOptions) {
         this.suggestionType = out[disorderIdx].value;
       }
@@ -454,17 +451,17 @@ export default {
     checkValidationScore: function (id, type) {
       if (this[type + "ValidationScore"] == null && this[type + "ValidationUID"] === id)
         this.$http.getValidationScore(id).then(response => {
-          this.$set(this, type + "ValidationStatus", response.data.status);
+          this[type + "ValidationStatus"] = response.data.status;
           if (this[type + "ValidationStatus"] === "running" || this[type + "ValidationStatus"] === "submitted")
             setTimeout(() => {
               this.checkValidationScore(id, type)
             }, 5000)
           else {
             if (this[type + "ValidationStatus"] === "completed") {
-              this.$set(this, type + "ValidationScore", {})
-              this.scoreIds.forEach(id => this.$set(this[type + "ValidationScore"], id, response.data[id]))
+              this[type + "ValidationScore"] = {}
+              this.scoreIds.forEach(id => this[type + "ValidationScore"][id] = response.data[id])
             } else {
-              this.$set(this, type + "ValidationScore", {})
+              this[type + "ValidationScore"] = {}
               if (response.data.error != null && response.data.error.length > 0) {
                 this.checkResubmission(response.data, type)
               }
@@ -475,13 +472,13 @@ export default {
 
     checkResubmission: function (data, type) {
       if (this[type + "Resubmissions"] < this.resubmissionCount) {
-        this.$set(this, type + "Resubmissions", this[type + "Resubmissions"] + 1)
+        this[type + "Resubmissions"] = this[type + "Resubmissions"] + 1
         this.$http.postNedrex("/admin/resubmit/validation/" + this[type + "ValidationUID"]).then(() => {
           this[type + "ValidationScore"] = undefined
           this.checkValidationScore(this[type + "ValidationUID"], type)
         }).catch(console.error)
       } else {
-        this.$set(this, type + "ValidationError", data.error);
+        this[type + "ValidationError"] = data.error;
       }
     },
   },

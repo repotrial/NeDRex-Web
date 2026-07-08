@@ -27,23 +27,25 @@
               <v-icon left size="16">fas fa-feather</v-icon>
               Cite
             </v-tab>
-            <v-tabs-items dark v-model="tabModel">
-              <v-tab-item>
-                <Project :bg-color="colors.main.bg1" :color="colors.main.primary"
-                         :cookiesAccepted="cookiesAccepted"></Project>
-              </v-tab-item>
-              <v-tab-item>
-                <Help :bg-color="colors.main.bg1" :color="colors.main.primary"
-                      :cookiesAccepted="cookiesAccepted"></Help>
-              </v-tab-item>
-              <v-tab-item>
-                <About :bg-color="colors.main.bg1" :color="colors.main.primary"></About>
-              </v-tab-item>
-              <v-tab-item>
-                <Cite :bg-color="colors.main.bg1" :color="colors.main.primary"></Cite>
-              </v-tab-item>
-            </v-tabs-items>
           </v-tabs>
+        </div>
+        <div style="display: flex; justify-content: center; width: 100%">
+          <v-window v-model="tabModel" style="max-width: 1000px; width: 100%">
+            <v-window-item>
+              <Project :bg-color="colors.main.bg1" :color="colors.main.primary"
+                       :cookiesAccepted="cookiesAccepted"></Project>
+            </v-window-item>
+            <v-window-item>
+              <Help :bg-color="colors.main.bg1" :color="colors.main.primary"
+                    :cookiesAccepted="cookiesAccepted"></Help>
+            </v-window-item>
+            <v-window-item>
+              <About :bg-color="colors.main.bg1" :color="colors.main.primary"></About>
+            </v-window-item>
+            <v-window-item>
+              <Cite :bg-color="colors.main.bg1" :color="colors.main.primary"></Cite>
+            </v-window-item>
+          </v-window>
         </div>
         <v-bottom-sheet v-model="showCookieConsent" :overlay-color="colors.main.bg1" style="z-index: 1001">
           <v-sheet :color="colors.main.bg2">
@@ -55,7 +57,7 @@
                     once
                     that you comply with NeDRex-Web setting browser cookies.</i></div>
                   <div>
-                    <v-btn small outlined @click="acceptedCookies()" style="margin-left: 8px">
+                    <v-btn variant="outlined" small @click="acceptedCookies()" style="margin-left: 8px">
                       <v-icon left>fas fa-check</v-icon>
                       OK
                     </v-btn>
@@ -142,7 +144,7 @@ export default {
   }
 }
 
-.v-tabs-items {
+.v-window {
   padding: 15px;
   background-color: transparent !important;
 }

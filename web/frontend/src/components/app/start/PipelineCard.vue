@@ -9,7 +9,7 @@
     </div>
     <div>
       <v-img ref='img' :class="cardHover ? 'blur': ''"
-             :src="image" width="25vw" contain :style="{minWidth:minWidth}">
+             :src="image" width="25vw" eager :style="{minWidth:minWidth}">
         <div v-show="!cardHover"
              style="height: 100%; width: 100%; display: flex; align-content: center; justify-content: center">
         </div>

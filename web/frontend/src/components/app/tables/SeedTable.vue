@@ -20,8 +20,8 @@
       </template>
       <template v-slot:item.displayName="{item}">
         <v-tooltip v-if="item.displayName.length>36" right>
-          <template v-slot:activator="{attr,on }">
-                          <span v-bind="attr" v-on="on"
+          <template v-slot:activator="{ props }">
+                          <span v-bind="props"
                                 style="color: dimgray">{{ item.displayName.substr(0, 33) }}...</span>
           </template>
           <span>{{ item.displayName }}</span>
@@ -29,10 +29,10 @@
         <span v-else>{{ item.displayName }}</span>
       </template>
       <template v-slot:item.origin="{item}">
-        <template v-for="o in getOrigins(item.id)">
-          <v-tooltip bottom :key="item.id+o">
-            <template v-slot:activator="{attr,on }">
-              <v-chip style="font-size: smaller; color: gray; margin:1px; max-width: 9rem" pill v-on="on" v-bind="attr">
+        <template v-for="o in getOrigins(item.id)" :key="item.id+o">
+          <v-tooltip bottom>
+            <template v-slot:activator="{ props }">
+              <v-chip style="font-size: smaller; color: gray; margin:1px; max-width: 9rem" pill v-bind="props">
                 <div v-if="o[2]" style="background-color: transparent; border:none; box-shadow: none;">
                   <div style="font-size: 0.6rem; margin:0; margin-top:-5px; padding:0; max-height: 0.8rem">
                     <b>{{ o[2].toUpperCase() }}</b></div>
@@ -72,14 +72,14 @@
         </template>
       </template>
       <template v-slot:item.sourceDBs="{item}">
-        <template v-for="o in item.sourceDBs">
-          <SeedTableSourceChip :key="item.id+o" :source="o" :nodeName="nodeName"></SeedTableSourceChip>
+        <template v-for="o in item.sourceDBs" :key="item.id+o">
+          <SeedTableSourceChip :source="o" :nodeName="nodeName"></SeedTableSourceChip>
         </template>
       </template>
       <template v-slot:header.origin="{header}">
         <v-tooltip bottom>
-          <template v-slot:activator="{attr,on }">
-                          <span v-bind="attr" v-on="on">
+          <template v-slot:activator="{ props }">
+                          <span v-bind="props">
                           Origin
                           </span>
 
@@ -89,8 +89,8 @@
       </template>
       <template v-slot:header.sourceDBs="{header}">
         <v-tooltip bottom>
-          <template v-slot:activator="{attr,on }">
-                          <span v-bind="attr" v-on="on">
+          <template v-slot:activator="{ props }">
+                          <span v-bind="props">
                           SourceDBs
                           </span>
           </template>
@@ -99,8 +99,8 @@
       </template>
       <template v-slot:header.displayName="{header}">
         <v-tooltip bottom>
-          <template v-slot:activator="{attr,on }">
-                          <span v-bind="attr" v-on="on">
+          <template v-slot:activator="{ props }">
+                          <span v-bind="props">
                           Name
                           </span>
           </template>
@@ -109,7 +109,7 @@
       </template>
       <template v-slot:item.action="{item}">
         <v-tooltip right>
-          <template v-slot:activator="{attr,on }">
+          <template v-slot:activator="{ props }">
             <v-btn icon @click="removeNode(item.id)" color="red">
               <v-icon>far fa-trash-alt</v-icon>
             </v-btn>
@@ -146,10 +146,10 @@ export default {
       nodes: [],
       attributes: undefined,
       headers: [
-        {text: 'Name', align: 'start', sortable: true, value: 'displayName'},
-        {text: 'SourceDB', align: 'start', sortable: true, value: 'sourceDBs'},
-        {text: 'Origin', align: 'start', sortable: true, value: 'origin'},
-        {text: 'Action', align: 'end', sortable: false, value: 'action'}]
+        {title: 'Name', align: 'start', sortable: true, value: 'displayName'},
+        {title: 'SourceDB', align: 'start', sortable: true, value: 'sourceDBs'},
+        {title: 'Origin', align: 'start', sortable: true, value: 'origin'},
+        {title: 'Action', align: 'end', sortable: false, value: 'action'}]
       ,
     }
   },
@@ -188,8 +188,8 @@ export default {
 
     setValues(origins, nodes, attributes) {
       this.origins = {...origins}
-      this.$set(this, "nodes", [...nodes])
-      this.$set(this, "attributes", {...attributes})
+      this.nodes = [...nodes]
+      this.attributes = {...attributes}
       this.$emit("updateCount")
     },
 
@@ -223,7 +223,7 @@ export default {
           n.sourceDBs.filter(s => attributes.sourceDBs.indexOf(s) === -1).forEach(s => attributes.sourceDBs.push(s))
         }
       })
-      this.$set(this, "attributes", attributes)
+      this.attributes = attributes
     },
 
     clear: function () {

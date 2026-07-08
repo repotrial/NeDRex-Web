@@ -1,12 +1,13 @@
 <template>
   <v-autocomplete
     clearable
-    :search-input.sync="nodeSuggestions"
+    v-model:search-input="nodeSuggestions"
     :disabled="suggestionType===undefined || suggestionType<0"
     :loading="suggestions.loading"
     :items="suggestions.data"
     :filter="()=>{return true}"
     item-value="id"
+    item-title="text"
     v-model="suggestionModel"
     label="by suggestions"
     class="mx-4"
@@ -19,16 +20,16 @@
     </template>
     <template v-slot:append-outer>
       <v-tooltip top v-if="sortSwitch">
-        <template v-slot:activator="{on, attrs}">
-          <v-icon v-on="on" v-bind="attrs" @click="switchSorting()" style="width:25px">
+        <template v-slot:activator="{ props }">
+          <v-icon v-bind="props" @click="switchSorting()" style="width:25px">
             {{ sortings[sortingModel].icon }}
           </v-icon>
         </template>
         <span>{{ sortings[sortingModel].tooltip }}</span>
       </v-tooltip>
       <v-tooltip top v-if="addAll">
-        <template v-slot:activator="{on, attrs}">
-          <v-icon size="16pt" v-on="on" v-bind="attrs" @click="addAllSuggestions()" style="width:25px" :disabled="suggestions.data==null || suggestions.data.length===0">
+        <template v-slot:activator="{ props }">
+          <v-icon size="16pt" v-bind="props" @click="addAllSuggestions()" style="width:25px" :disabled="suggestions.data==null || suggestions.data.length===0">
             fas fa-folder-plus
           </v-icon>
         </template>
@@ -37,13 +38,13 @@
     </template>
     <template v-slot:append-item>
       <v-list-item v-show="suggestions.data != null && suggestions.data.length >0">
-        <v-list-item-content>
+        <div style="flex:1 1 auto;overflow:hidden;padding:12px 0">
           <div style="width: 100%; color: dimgray; display: flex; justify-content: center;">
             <i style="max-width: 400px;">
               There might be more matches but they are
               not associated to any entries of the current target type!</i>
           </div>
-        </v-list-item-content>
+        </div>
       </v-list-item>
     </template>
   </v-autocomplete>

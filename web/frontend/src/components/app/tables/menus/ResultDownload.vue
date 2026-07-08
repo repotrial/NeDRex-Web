@@ -1,7 +1,7 @@
 <template>
   <v-menu bottom offset-y transition="slide-y-transition">
-    <template v-slot:activator="{on,attrs}">
-      <v-btn x-small outlined right v-bind="attrs" v-on="on">
+    <template v-slot:activator="{ props }">
+      <v-btn variant="outlined" x-small right v-bind="props">
         <v-icon left x-small color="primary">
           fas fa-download
         </v-icon>
@@ -14,8 +14,8 @@
     </template>
     <v-list style="font-size: smaller; color: gray" dense>
       <v-menu v-if="seeds" right offset-x transition="slide-x-transition" open-on-hover>
-        <template v-slot:activator="{on,attrs}">
-          <v-list-item v-bind="attrs" v-on="on">
+        <template v-slot:activator="{ props }">
+          <v-list-item v-bind="props">
             {{label}}
             <v-icon right>fas fa-caret-right</v-icon>
           </v-list-item>
@@ -38,8 +38,8 @@
         </v-list>
       </v-menu>
       <v-menu v-if="results" right offset-x transition="slide-x-transition" open-on-hover>
-        <template v-slot:activator="{on,attrs}">
-          <v-list-item v-bind="attrs" v-on="on">
+        <template v-slot:activator="{ props }">
+          <v-list-item v-bind="props">
             {{resultLabel}}
             <v-icon right>fas fa-caret-right</v-icon>
           </v-list-item>

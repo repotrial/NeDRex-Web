@@ -11,7 +11,7 @@
         giving
         as much control and exploratory power as possible to users.
         <div style=" margin-top: 10px;">
-          <v-btn outlined :color="color" @click="$router.push('/explore'); $router.go()">Start Here
+          <v-btn variant="outlined" :color="color" @click="$router.push('/explore'); $router.go()">Start Here
             <v-icon right>fas fa-angle-right</v-icon>
           </v-btn>
         </div>
@@ -45,7 +45,7 @@
         (<b>NeDRexAPI</b>).
       </div>
       <div>
-        <v-btn outlined :color="color" style="margin-top:10px"><a :style="{textDecoration: 'none', color: color}"
+        <v-btn variant="outlined" :color="color" style="margin-top:10px"><a :style="{textDecoration: 'none', color: color}"
                                                                   href="https://nedrex.net"
                                                                   target="_blank">NeDRex Platform</a>
           <v-icon right>fas fa-angle-right</v-icon>

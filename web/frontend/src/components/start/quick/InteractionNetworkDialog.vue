@@ -60,15 +60,15 @@
 </template>
 
 <script>
-import {DataSet} from "vue-vis-network";
-import {Network} from "vue-vis-network";
+import {DataSet} from "vis-data";
+import VisNetworkGraph from "@/components/common/VisNetworkGraph.vue";
 import LabeledSwitch from "@/components/app/input/LabeledSwitch";
 
 export default {
   name: "InteractionNetworkDialog",
   components: {
     LabeledSwitch,
-    'VisNetwork': Network
+    'VisNetwork': VisNetworkGraph
   },
   data() {
     return {
@@ -99,9 +99,9 @@ export default {
         if (response.data != null)
           return response.data
       }).then(data => {
-        this.tissues = [{text: 'All', value: 'all'}]
+        this.tissues = [{title: 'All', value: 'all'}]
         data.forEach(tissue => {
-          this.tissues.push({text: tissue, value: tissue})
+          this.tissues.push({title: tissue, value: tissue})
         })
       }).catch(console.error)
     },

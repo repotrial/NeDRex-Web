@@ -1,26 +1,26 @@
 <template>
   <v-list-item dense style="width: 25vw; max-width: 35vw; max-height: 5vh">
-    <v-list-item-avatar tile style="margin-left: -20px">
+    <div tile style="display:flex;align-items:center;margin-right:16px;margin-left: -20px">
       <v-tooltip right :open-delay="styling.tooltipDelay">
-        <template v-slot:activator="{on, attrs}">
+        <template v-slot:activator="{ props }">
 
-          <v-icon size="25" v-on="on" v-bind="attrs">{{ getIcon(data.type) }}</v-icon>
+          <v-icon size="25" v-bind="props">{{ getIcon(data.type) }}</v-icon>
         </template>
         <span>{{ data.type }}</span>
       </v-tooltip>
-    </v-list-item-avatar>
-    <v-list-item-content style="width: 20vw; max-width: 30vw">
+    </div>
+    <div style="flex:1 1 auto;overflow:hidden;padding:12px 0;width: 20vw; max-width: 30vw">
       <v-tooltip bottom :open-delay="styling.tooltipDelay">
-        <template v-slot:activator="{on, attrs}">
-          <v-list-item-title style="font-size: medium" v-bind="attrs" v-on="on">{{ data.text }}</v-list-item-title>
+        <template v-slot:activator="{ props }">
+          <v-list-item-title style="font-size: medium" v-bind="props">{{ data.text }}</v-list-item-title>
         </template>
         <span>{{ data.text }}</span>
       </v-tooltip>
       <v-list-item-subtitle>
         <v-tooltip top :open-delay="styling.tooltipDelay">
-          <template v-slot:activator="{on, attrs}">
-            <span style="font-size: smaller; overflow-y:auto"><b>{{ data.type.replaceAll("_", " ") }}</b>: <i v-on="on"
-                                                                                                              v-bind="attrs">'{{
+          <template v-slot:activator="{ props }">
+            <span style="font-size: smaller; overflow-y:auto"><b>{{ data.type.replaceAll("_", " ") }}</b>: <i
+                                                                                                              v-bind="props">'{{
                 data.key
               }}'</i></span>
           </template>
@@ -28,12 +28,12 @@
         </v-tooltip>
 
       </v-list-item-subtitle>
-    </v-list-item-content>
+    </div>
     <v-list-item-action style="margin-right: -10px">
       <span>
         <v-tooltip left>
-          <template v-slot:activator="{on, attrs}">
-            <v-chip pill style="padding:2px 5px; " v-on="on" v-bind="attrs">
+          <template v-slot:activator="{ props }">
+            <v-chip pill style="padding:2px 5px; " v-bind="props">
               {{ data.size }}
             </v-chip>
             </template>
@@ -44,8 +44,8 @@
       <template v-if="data.targetCount != null">
         <v-icon style="margin: 3px">fas fa-caret-right</v-icon>
         <v-tooltip left>
-           <template v-slot:activator="{on, attrs}">
-        <v-chip pill style="padding:2px 5px;" v-on="on" v-bind="attrs">
+           <template v-slot:activator="{ props }">
+        <v-chip pill style="padding:2px 5px;" v-bind="props">
           {{ data.targetCount }}
         </v-chip>
            </template>

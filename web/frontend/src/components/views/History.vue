@@ -22,15 +22,14 @@
             <template v-slot:prepend="{item}">
               <v-list-item>
                 <v-tooltip top>
-                  <template v-slot:activator="{ on, attrs }">
+                  <template v-slot:activator="{ props }">
                     <v-btn
                       v-if="item.state===undefined"
                       icon
                       :disabled="item.id === current || (item.state !== undefined &&item.state !== 'DONE')"
                       @click="loadGraph(item.id)"
                     >
-                      <v-icon v-bind="attrs"
-                              v-on="on"
+                      <v-icon v-bind="props"
                               :color="item.id === current ? 'gray': 'primary'"
                       >
                         far fa-play-circle
@@ -42,8 +41,7 @@
                       :disabled="item.id === current || (item.state !== undefined &&item.state !== 'DONE')"
                       @click="loadJobFromGraph(item.id)"
                     >
-                      <v-icon v-bind="attrs"
-                              v-on="on"
+                      <v-icon v-bind="props"
                               :color="item.id === current ? 'gray':'green'"
                       >
                         far fa-play-circle
@@ -56,13 +54,12 @@
                 <v-divider vertical style="margin: 10px"></v-divider>
                 <span style="color: darkgray; font-size: 10pt">
                     <v-tooltip top>
-                      <template v-slot:activator="{ on, attrs }">
+                      <template v-slot:activator="{ props }">
                         <v-icon
                           size="17px"
                           color="primary"
                           dark
-                          v-bind="attrs"
-                          v-on="on"
+                          v-bind="props"
                         >
                           far fa-clock
                         </v-icon>
@@ -210,7 +207,7 @@
               <!--              </v-row>-->
               <div v-if="selected.params" style="width: 100% ; display: flex; justify-content: center">
                 <div style="max-width: 300px">
-                  <v-simple-table v-show="showParams">
+                  <v-table v-show="showParams">
                     <template v-slot:default>
                       <thead>
                       <tr>
@@ -228,7 +225,7 @@
                       </tr>
                       </tbody>
                     </template>
-                  </v-simple-table>
+                  </v-table>
                 </div>
               </div>
               <v-row v-if="$global.metagraph!=null &&selected!==undefined">
@@ -279,7 +276,7 @@
               </v-row>
               <v-divider></v-divider>
               <v-row v-if="selected.thumbnailReady" style="padding:15px;display: flex;justify-content: center">
-                <v-img max-height="28vw" max-width="28vw" :src="getThumbnail(selectedId)">
+                <v-img eager max-height="28vw" max-width="28vw" :src="getThumbnail(selectedId)">
                 </v-img>
               </v-row>
               <v-row v-else style="padding:15px;display: flex;justify-content: center">
@@ -373,7 +370,7 @@ export default {
   },
 
   created() {
-    this.$socket.$on("thumbnailReady", this.thumbnailReady)
+    this.$socket.on("thumbnailReady", this.thumbnailReady)
     this.init()
   },
 
@@ -445,7 +442,6 @@ export default {
       this.selection = selected
       this.selected = undefined;
       this.selectedId = selected[0]
-      this.$set(this, "selectedId", selected[0])
       this.$http.get("getGraphHistory?gid=" + this.selectedId + "&uid=" + this.$cookies.get("uid")).then(response => {
         if (response.data !== undefined)
           return response.data
@@ -517,8 +513,8 @@ export default {
     },
 
     toggleStar: function () {
-      this.$set(this.selected, "starred", !this.selected.starred);
-      this.$set(this.list.filter(e => e.id === this.selectedId)[0], "starred", this.selected.starred)
+      this.selected.starred = !this.selected.starred;
+      this.list.filter(e => e.id === this.selectedId)[0].starred = this.selected.starred
       this.$http.get("toggleStarred?uid=" + this.$cookies.get("uid") + "&gid=" + this.selectedId).catch(console.error)
     },
 

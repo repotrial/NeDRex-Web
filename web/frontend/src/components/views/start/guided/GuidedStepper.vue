@@ -35,8 +35,8 @@
                      @updateConnectorCount="connectorCount=$refs.connectors && $refs.connectors.getList() ? $refs.connectors.getList().length :0"></ConnectorDialog>
     <div style="display: flex; justify-content: flex-end; margin-left: auto; ">
       <v-tooltip left>
-        <template v-slot:activator="{on, attrs}">
-          <v-btn icon style="padding:1em" color="red darker" @click="verify=true" v-on="on" v-bind="attrs">
+        <template v-slot:activator="{ props }">
+          <v-btn icon style="padding:1em" color="red darker" @click="verify=true" v-bind="props">
             <v-icon size="2em">far fa-times-circle</v-icon>
           </v-btn>
         </template>
@@ -120,9 +120,9 @@
               </ul>
             </v-card-subtitle>
             <v-tooltip top>
-              <template v-slot:activator="{on, attrs}">
-                <v-btn @click="copySourcesToTargets" outlined icon style="margin-top: 5px" v-bind="attrs" v-on="on"
-                       :disabled="sourceTypeId==null || (targetTypeId!=null && sourceTypeId !== targetTypeId) || (targetTypeId!=null && sourceTypeId===targetTypeId && ($refs.targetTable !=null  &&$refs.targetTable.getSeeds().length>0))|| ($refs.sourceTable == null || $refs.sourceTable.getSeeds().length===0)">
+              <template v-slot:activator="{ props }">
+                <v-btn variant="outlined" @click="copySourcesToTargets" icon style="margin-top: 5px" v-bind="props"
+ :disabled="sourceTypeId==null || (targetTypeId!=null && sourceTypeId !== targetTypeId) || (targetTypeId!=null && sourceTypeId===targetTypeId && ($refs.targetTable !=null &&$refs.targetTable.getSeeds().length>0))|| ($refs.sourceTable == null || $refs.sourceTable.getSeeds().length===0)">
                   <v-icon>fas fa-exchange-alt</v-icon>
                 </v-btn>
               </template>
@@ -293,8 +293,8 @@
                       <v-list-item v-for="(path,idx) in paths[0]" :key="'direct'+idx" v-if="paths[0].length>0">
                         <v-list-item-title>
                           <v-tooltip top>
-                            <template v-slot:activator="{on,attrs}">
-                              <v-icon v-on="on" v-bind="attrs"
+                            <template v-slot:activator="{ props }">
+                              <v-icon v-bind="props"
                                       :color="getColoring('nodes',nodeList[sourceTypeId].value,'light')"
                                       size="30px">
                                 fas fa-genderless
@@ -304,18 +304,17 @@
                           </v-tooltip>
                           <span v-for="(edge,idx2) in path" :key="'0_'+idx+'_'+idx2+'_'+edge.label">
                             <v-tooltip top>
-                               <template v-slot:activator="{ on, attrs }">
-                                  <v-icon v-bind="attrs"
-                                          size="30px"
-                                          v-on="on">{{
+                               <template v-slot:activator="{ props }">
+                                  <v-icon v-bind="props"
+                                          size="30px">{{
                                       edge.direction ? "fas fa-long-arrow-alt-right" : "fas fa-long-arrow-alt-left"
                                     }}</v-icon>
                                </template>
                               <span>{{ edge.label }}</span>
                             </v-tooltip>
                         <v-tooltip top>
-                        <template v-slot:activator="{on,attrs}">
-                          <v-icon v-on="on" v-bind="attrs"
+                        <template v-slot:activator="{ props }">
+                          <v-icon v-bind="props"
                                   size="30px"
                                   :color="getColoring('edges',edge.label,'light')[edge.direction ? 1:0]">fas fa-genderless</v-icon>
                         </template>
@@ -336,8 +335,8 @@
                       <v-list-item v-for="(path,idx) in paths[1]" :key="'indirect_'+idx">
                         <v-list-item-title>
                           <v-tooltip top>
-                            <template v-slot:activator="{on,attrs}">
-                              <v-icon v-on="on" v-bind="attrs" size="30px"
+                            <template v-slot:activator="{ props }">
+                              <v-icon v-bind="props" size="30px"
                                       :color="getColoring('nodes',nodeList[sourceTypeId].value,'light')">
                                 fas fa-genderless
                               </v-icon>
@@ -346,18 +345,17 @@
                           </v-tooltip>
                           <span v-for="(edge,idx2) in path" :key="'1_'+idx+'_'+idx2+'_'+edge.label">
                             <v-tooltip top>
-                               <template v-slot:activator="{ on, attrs }">
-                                  <v-icon v-bind="attrs"
-                                          size="30px"
-                                          v-on="on">{{
+                               <template v-slot:activator="{ props }">
+                                  <v-icon v-bind="props"
+                                          size="30px">{{
                                       edge.direction ? "fas fa-long-arrow-alt-right" : "fas fa-long-arrow-alt-left"
                                     }}</v-icon>
                                </template>
                               <span>{{ edge.label }}</span>
                             </v-tooltip>
                         <v-tooltip top>
-                        <template v-slot:activator="{on,attrs}">
-                          <v-icon v-on="on" v-bind="attrs"
+                        <template v-slot:activator="{ props }">
+                          <v-icon v-bind="props"
                                   size="30px"
                                   :color="getColoring('edges',edge.label,'light')[edge.direction ? 1:0]">fas fa-genderless</v-icon>
                         </template>
@@ -383,11 +381,11 @@
                   </v-card-title>
                   <v-list v-if="!direct">
                     <v-list-item>
-                      <v-list-item-content>
+                      <div style="flex:1 1 auto;overflow:hidden;padding:12px 0">
                         <v-tooltip top>
-                          <template v-slot:activator="{on,attrs}">
+                          <template v-slot:activator="{ props }">
                             <LabeledSwitch label-off="Hide Connector Nodes" label-on="Keep Connector Nodes"
-                                           v-model="options.general.keep" v-bind="attrs" v-on="on">
+                                           v-model="options.general.keep" v-bind="props">
                               <template v-slot:tooltip>
                                 <div>
                                   Defines if transitive edges are created from the successful paths <br>or if the graph
@@ -398,7 +396,7 @@
                           </template>
                           <span>Decide if you want to keep all edges or replace the created paths by generating one connecting your source and target nodes directly.</span>
                         </v-tooltip>
-                      </v-list-item-content>
+                      </div>
                     </v-list-item>
                     <v-list-item>
                       <v-list-item-action style="min-width: 400px" v-if="!options.general.keep">
@@ -406,7 +404,7 @@
                                       label="Combined Edge Name"
                                       :rules="[value => !!value || 'Required!',value=>$global.metagraph.edges.map(e=>e.label).indexOf(value)===-1 || 'Existing names are not possible!']"></v-text-field>
                       </v-list-item-action>
-                      <v-list-item-content v-else>
+                      <div v-else style="flex:1 1 auto;overflow:hidden;padding:12px 0">
                         <LabeledSwitch label-off="Keep partial paths"
                                        label-on="Keep only complete paths" v-model="options.general.removePartial">
                           <template v-slot:tooltip>
@@ -416,11 +414,11 @@
                             </div>
                           </template>
                         </LabeledSwitch>
-                      </v-list-item-content>
+                      </div>
                     </v-list-item>
 
                     <v-list-item v-show="!direct">
-                      <v-list-item-content>
+                      <div style="flex:1 1 auto;overflow:hidden;padding:12px 0">
                         <LabeledSwitch :disabled="connectorCount ===0" label-off="Exclude selected connectors"
                                        label-on="Use only selected" v-model="connectorModel">
                           <template v-slot:tooltip>
@@ -429,10 +427,10 @@
                             </div>
                           </template>
                         </LabeledSwitch>
-                      </v-list-item-content>
+                      </div>
                       <v-list-item-action>
                         <div>
-                          <v-btn @click="$refs.connectors.show()" outlined style="margin-top:-30px;">
+                          <v-btn variant="outlined" @click="$refs.connectors.show()" style="margin-top:-30px;">
                             Specify connectors ({{ connectorCount }})
                             <v-icon right>fas fa-link</v-icon>
                           </v-btn>
@@ -525,7 +523,7 @@
                     </v-list-item>
                     <v-list-item
                       v-if="isPathEdge('GeneAssociatedWithDisorder') || isPathEdge('ProteinAssociatedWithDisorder')">
-                      <v-list-item-content style="padding-top: 32px;padding-left: 20px; padding-right: 20px">
+                      <div style="flex:1 1 auto;overflow:hidden;padding:12px 0;padding-top: 32px;padding-left: 20px; padding-right: 20px">
                         <v-slider
                           hide-details
                           class="align-center"
@@ -540,13 +538,12 @@
                           <template v-slot:label>
                             Association Score Cutoff
                             <v-tooltip left>
-                              <template v-slot:activator="{ on, attrs }">
+                              <template v-slot:activator="{ props }">
                                 <a style="text-decoration: none"
                                    href="https://www.disgenet.org/help#:~:text=The%20DisGeNET%20score%20for%20GDAs,range%20from%200%20to%201."
                                    target="_blank">
                                   <v-icon
-                                    v-bind="attrs"
-                                    v-on="on"
+                                    v-bind="props"
                                     style="margin-top: -3px"> far fa-question-circle
                                   </v-icon>
                                 </a>
@@ -560,7 +557,7 @@
                             </v-tooltip>
                           </template>
                         </v-slider>
-                      </v-list-item-content>
+                      </div>
                     </v-list-item>
                   </v-list>
                 </v-col>
@@ -617,8 +614,8 @@
                   style="justify-content: flex-start">{{ resultTableModel !== 2 ? 'Sources' : 'Connectors' }}
                   ({{ resultTableModel !== 2 ? sources.length : connectors.length }})</span>
                   <v-tooltip top>
-                    <template v-slot:activator="{attrs, on}">
-                      <v-icon right size="12pt" v-on="on" v-bind="attrs">far fa-question-circle</v-icon>
+                    <template v-slot:activator="{ props }">
+                      <v-icon right size="12pt" v-bind="props">far fa-question-circle</v-icon>
                     </template>
                     <div>This is the number of initially selected source entries.<br>
                       If this number is different to the number in the graph, some filter you applied removed some
@@ -638,8 +635,8 @@
                               hide-default-footer @click:row="seedClicked">
                   <template v-slot:item.displayName="{item}">
                     <v-tooltip v-if="item.displayName.length>32" right>
-                      <template v-slot:activator="{attr,on }">
-                          <span v-bind="attr" v-on="on"
+                      <template v-slot:activator="{ props }">
+                          <span v-bind="props"
                                 style="color: dimgray">{{ item.displayName.substr(0, 29) }}...</span>
                       </template>
                       <span>{{ item.displayName }}</span>
@@ -734,7 +731,7 @@
                            @toggleOptionEvent="toggleToolOption" @clickOptionEvent="clickToolOption">
                       <template v-slot:append v-if="options.general.keep">
                         <ToolDropdown
-                          :items="[{value:'default', text:'Default'},{value:'tripartite',text:'Tripartite'}, {value:'portrait', text:'Portrait'}, {value:'topographic_x', text:'Topographic (X,Z)'}, {value:'topographic_y', text:'Topographic (Y,Z)'}, {value: 'geodesic', text: 'Geodesic (X,Y)'},{value: 'geodesic_x', text: 'Geodesic (X,Z)'},{value: 'geodesic_y', text: 'Geodesic (Y,Z)'}]"
+                          :items="[{value:'default', title:'Default'},{value:'tripartite',title:'Tripartite'}, {value:'portrait', title:'Portrait'}, {value:'topographic_x', title:'Topographic (X,Z)'}, {value:'topographic_y', title:'Topographic (Y,Z)'}, {value: 'geodesic', title: 'Geodesic (X,Y)'},{value: 'geodesic_x', title: 'Geodesic (X,Z)'},{value: 'geodesic_y', title: 'Geodesic (Y,Z)'}]"
                           label="Layout" icon="fas fa-project-diagram" @change="$refs.graph.loadLayout">
                           <template v-slot:tooltip>
                             <div style="display: inline-block"><i><b>Change the layout of the network!</b></i> <br>Options:<br>
@@ -764,8 +761,8 @@
                   </v-progress-circular>
                   <template v-else>
                     <v-tooltip top>
-                      <template v-slot:activator="{attrs, on}">
-                        <v-icon right size="12pt" v-on="on" v-bind="attrs">far fa-question-circle</v-icon>
+                      <template v-slot:activator="{ props }">
+                        <v-icon right size="12pt" v-bind="props">far fa-question-circle</v-icon>
                       </template>
                       <div>This is the target entries.<br>
                         If there was an initial selection of those and this number is different to the number in the
@@ -790,8 +787,8 @@
                                 hide-default-footer @click:row="targetClicked">
                     <template v-slot:item.displayName="{item}">
                       <v-tooltip v-if="item.displayName.length>32" right>
-                        <template v-slot:activator="{attr,on }">
-                          <span v-bind="attr" v-on="on"
+                        <template v-slot:activator="{ props }">
+                          <span v-bind="props"
                                 style="color: dimgray">{{ item.displayName.substr(0, 29) }}...</span>
                         </template>
                         <span>{{ item.displayName }}</span>
@@ -942,7 +939,7 @@ export default {
   created() {
     this.uid = this.$cookies.get("uid")
     this.$global.metagraph.nodes.forEach((n, index) => {
-      this.nodeList.push({id: index, value: n.group, text: n.label})
+      this.nodeList.push({id: index, value: n.group, title: n.label})
       this.nodeIdTypeList.push(this.$global.metagraph.data[n.label])
     })
     this.init()
@@ -953,9 +950,9 @@ export default {
     pathModel: function (val) {
       if (this.pathModel == null)
         return
-      this.$set(this.options.general, "keep", false)
+      this.options.general.keep = false
       if (val < this.paths[0].length) {
-        this.$set(this.options.general, "keep", true)
+        this.options.general.keep = true
         this.selectedPath = this.paths[0][val]
         this.direct = true
         this.connectorTypeId = undefined
@@ -968,7 +965,7 @@ export default {
         if (this.example.compress) {
           this.options.general.name = this.example.edge
         } else {
-          this.$set(this.options.general, "keep", true)
+          this.options.general.keep = true
         }
       this.$refs.connectors.clear()
     }
@@ -1055,10 +1052,10 @@ export default {
         let node = this.$global.metagraph.nodes.filter(n => n.id === nid)[0]
         if (node.group === type)
           selfAdded = true
-        return {value: node.group, text: node.label}
+        return {value: node.group, title: node.label}
       })
       if (!selfAdded)
-        typeList.push({value: type, text: this.nodeList[[this.sourceTypeId, this.targetTypeId][index]].text})
+        typeList.push({value: type, title: this.nodeList[[this.sourceTypeId, this.targetTypeId][index]].text})
       return typeList
     },
 
@@ -1134,7 +1131,7 @@ export default {
     },
 
     updateSourceCount: function () {
-      this.$set(this, "sourceCount", this.$refs.sourceTable ? this.$refs.sourceTable.getSeeds().length : 0);
+      this.sourceCount = this.$refs.sourceTable ? this.$refs.sourceTable.getSeeds().length : 0;
     },
 
     nodeDoubleclicked: function (obj) {
@@ -1482,13 +1479,13 @@ export default {
     }
     ,
     getHeaders: function () {
-      return [{text: "Deg.", align: "end", sortable: true, value: "degree", width: "75px"}, {
-        text: "Name",
+      return [{title: "Deg.", align: "end", sortable: true, value: "degree", width: "75px"}, {
+        title: "Name",
         align: "start",
         sortable: true,
         value: "displayName"
       }, {
-        text: "",
+        title: "",
         value: "data-table-expand"
       }]
     }

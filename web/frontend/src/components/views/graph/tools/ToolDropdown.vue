@@ -1,15 +1,15 @@
 <template>
   <v-list-item>
-    <v-list-item-avatar style="margin-top:-12px">
+    <div style="display:flex;align-items:center;margin-right:16px;margin-top:-12px">
       <v-icon size="20" color="primary">{{ icon }}</v-icon>
-    </v-list-item-avatar>
+    </div>
     <v-list-item-action style="min-width: 10rem; max-width: 10rem">
       <v-select v-model="model" :items="items" :label="label" outlined @change="emitEvent" dense></v-select>
     </v-list-item-action>
     <v-list-item-action style="margin-top:-12px">
       <v-tooltip top>
-        <template v-slot:activator="{on,attrs}">
-          <v-icon size="20" v-on="on" v-bind="attrs">
+        <template v-slot:activator="{ props }">
+          <v-icon size="20" v-bind="props">
             far fa-question-circle
           </v-icon>
         </template>

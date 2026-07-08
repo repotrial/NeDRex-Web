@@ -30,9 +30,8 @@
     </v-card>
     <div style="position: sticky;padding-top: 10px; top: 110px; z-index: 1001">
         <v-menu bottom transition="slide-y-transition">
-          <template v-slot:activator="{on,attrs}">
-            <v-btn icon style="background-color: #383838; position: absolute; left: 10px" v-bind="attrs"
-                   v-on="on">
+          <template v-slot:activator="{ props }">
+            <v-btn icon style="background-color: #383838; position: absolute; left: 10px" v-bind="props">
               <v-icon color="primary">
                 fas fa-question
               </v-icon>
@@ -41,9 +40,9 @@
           <v-list color="#383838">
             <v-list-item>
               <v-tooltip left>
-                <template v-slot:activator="{on, attrs}">
-                  <v-btn icon small @click="showVersionInfo=true" style="background-color: #383838" v-on="on"
-                         v-bind="attrs">
+                <template v-slot:activator="{ props }">
+                  <v-btn icon small @click="showVersionInfo=true" style="background-color: #383838"
+                         v-bind="props">
                     <v-icon color="primary">
                       fas fa-info-circle
                     </v-icon>
@@ -54,9 +53,9 @@
             </v-list-item>
             <v-list-item>
               <v-tooltip left>
-                <template v-slot:activator="{on, attrs}">
-                  <v-btn small icon @click="showBugInfo=true" style="background-color:  #383838" v-on="on"
-                         v-bind="attrs">
+                <template v-slot:activator="{ props }">
+                  <v-btn small icon @click="showBugInfo=true" style="background-color:  #383838"
+                         v-bind="props">
                     <v-icon color="primary">
                       fas fa-bug
                     </v-icon>
@@ -67,9 +66,9 @@
             </v-list-item>
             <v-list-item>
               <v-tooltip left>
-                <template v-slot:activator="{on, attrs}">
-                  <v-btn small icon @click="showHelp=true" style="background-color:  #383838" v-on="on"
-                         v-bind="attrs">
+                <template v-slot:activator="{ props }">
+                  <v-btn small icon @click="showHelp=true" style="background-color:  #383838"
+                         v-bind="props">
                     <v-icon color="primary">
                       fas fa-question-circle
                     </v-icon>
@@ -80,9 +79,9 @@
             </v-list-item>
             <v-list-item>
               <v-tooltip left>
-                <template v-slot:activator="{on, attrs}">
-                  <v-btn small icon @click="showCompatability=true" style="background-color:  #383838" v-on="on"
-                         v-bind="attrs">
+                <template v-slot:activator="{ props }">
+                  <v-btn small icon @click="showCompatability=true" style="background-color:  #383838"
+                         v-bind="props">
                     <v-icon color="primary">
                       fas fa-laptop-code
                     </v-icon>
@@ -147,7 +146,7 @@
                          @toggleOptionEvent="toggleToolOption" @clickOptionEvent="clickToolOption">
                     <template v-slot:append>
                       <ToolDropdown
-                        :items="[{value:'default', text:'Default'}, {value:'portrait', text:'Portrait'}, {value:'topographic_x', text:'Topographic (X,Z)'}, {value:'topographic_y', text:'Topographic (Y,Z)'}, {value: 'geodesic', text: 'Geodesic (X,Y)'},{value: 'geodesic_x', text: 'Geodesic (X,Z)'},{value: 'geodesic_y', text: 'Geodesic (Y,Z)'}]"
+                        :items="[{value:'default', title:'Default'}, {value:'portrait', title:'Portrait'}, {value:'topographic_x', title:'Topographic (X,Z)'}, {value:'topographic_y', title:'Topographic (Y,Z)'}, {value: 'geodesic', title: 'Geodesic (X,Y)'},{value: 'geodesic_x', title: 'Geodesic (X,Z)'},{value: 'geodesic_y', title: 'Geodesic (Y,Z)'}]"
                         label="Layout" icon="fas fa-project-diagram" @change="$refs.graph.loadLayout">
                         <template v-slot:tooltip>
                           <div style="display: inline-block"><i><b>Change the layout of the network!</b></i> <br>Options:<br>
@@ -254,14 +253,13 @@
                 </v-card-text>
                 <v-card-actions>
                   <v-spacer></v-spacer>
-                  <v-btn color="green darken-1" text @click="resolveWarning(listWarnObject.id,true)">
+                  <v-btn variant="text" color="green darken-1" @click="resolveWarning(listWarnObject.id,true)">
                     Download
                   </v-btn>
-                  <v-btn
-                    color="green darken-1"
-                    text
-                    @click="resolveWarning(listWarnObject.id, false)"
-                  >
+                  <v-btn variant="text"
+ color="green darken-1"
+ 
+ @click="resolveWarning(listWarnObject.id, false)">
                     Dismiss
                   </v-btn>
 
@@ -327,7 +325,7 @@
           <v-list-item-subtitle>
             <i>This page stores browser cookies to improve the user experience. To continue you have to confirm once
               that you comply with NeDRex-Web setting browser cookies.</i>
-            <v-btn small outlined @click="acceptedCookies()" style="margin-left: 8px">
+            <v-btn variant="outlined" small @click="acceptedCookies()" style="margin-left: 8px">
               <v-icon left>fas fa-check</v-icon>
               OK
             </v-btn>
@@ -586,7 +584,7 @@ export default {
     },
 
     setSideVisible: function (bool) {
-      this.$set(this, 'sideHidden', !bool)
+      this.sideHidden = !bool
     }
     ,
     visualizationEvent: function () {
@@ -819,12 +817,12 @@ export default {
     ,
     resizeDown: function (e) {
       this.resizeStart = e
-      this.$refs.mainContainer.addEventListener("mousemove", this.resizeMove)
+      this.$refs.mainContainer.$el.addEventListener("mousemove", this.resizeMove)
     },
 
     resizeUp: function (e) {
       this.resizeStart = undefined
-      this.$refs.mainContainer.removeEventListener("mousemove", this.resizeMove)
+      this.$refs.mainContainer.$el.removeEventListener("mousemove", this.resizeMove)
     },
 
     resizeMove: function (e) {
@@ -1090,15 +1088,6 @@ a
 
 .v-dialog:not(.v-dialog--fullscreen)
   max-height: none !important
-
-.theme--light.v-btn.v-btn--has-bg.error
-  background-color: #b80c09 !important
-
-.theme--light.v-btn.v-btn--has-bg.success
-  background-color: #29b809 !important
-
-.theme--light.v-btn.v-btn--has-bg.warn
-  background-color: #b86109 !important
 
 
 </style>

@@ -7,15 +7,15 @@
         </v-list-item-title>
       </v-list-item>
       <v-list-item>
-        <v-list-item-content>
+        <div style="flex:1 1 auto;overflow:hidden;padding:12px 0">
           You can either write an email, check the tutorial videos or refer to the documentation sheet:
-        </v-list-item-content>
+        </div>
       </v-list-item>
 
       <v-list-item>
-        <v-list-item-icon>
+        <div style="display:flex;align-items:center;margin-right:16px">
           <v-icon left>fas fa-at</v-icon>
-        </v-list-item-icon>
+        </div>
         <v-list-item-title>By Mail:</v-list-item-title>
         <v-list-item-subtitle><v-chip outlined><a style="text-decoration: none; color: white" :href="'mailto:andreas.maier-1@uni-hamburg.de?subject='+getMailSubject()">andreas.maier-1(_at_]uni-hamburg.de</a>
           <v-icon right small>fas fa-envelope</v-icon>
@@ -24,10 +24,10 @@
       </v-list-item>
 
       <v-list-item>
-        <v-list-item-icon>
+        <div style="display:flex;align-items:center;margin-right:16px">
           <v-icon left>fab fa-youtube</v-icon>
 
-        </v-list-item-icon>
+        </div>
         <v-list-item-title>Tutorial playlist:</v-list-item-title>
         <v-list-item-subtitle>
           <v-chip outlined
@@ -38,10 +38,10 @@
         </v-list-item-subtitle>
       </v-list-item>
       <v-list-item>
-        <v-list-item-icon>
+        <div style="display:flex;align-items:center;margin-right:16px">
           <v-icon left>fas fa-file-word</v-icon>
 
-        </v-list-item-icon>
+        </div>
         <v-list-item-title>Documentation page:</v-list-item-title>
         <v-list-item-subtitle>
           <v-chip outlined

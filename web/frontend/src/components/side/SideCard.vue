@@ -15,9 +15,9 @@
         <template v-if="show.summary">
           <v-card-title v-if="!summaryTitleEdit"><span>{{ graphInfo.name }}
             <v-tooltip left>
-              <template v-slot:activator="{attrs, on}">
+              <template v-slot:activator="{ props }">
                 <v-btn icon style="top: -3px; left: -3px"  @click="summaryTitleEdit=true">
-                  <v-icon size="15"  v-on="on" v-bind="attrs" color="primary">fas fa-edit</v-icon>
+                  <v-icon size="15" v-bind="props" color="primary">fas fa-edit</v-icon>
                 </v-btn>
                 </template>
               <div >Edit the name of the network</div>
@@ -46,11 +46,11 @@
               </v-list-item-title>
             </v-list-item>
             <v-list-item v-for="(count,name) in graphInfo.counts.nodes" :key="name" class="nedrex-list-item">
-              <v-list-item-avatar>
+              <div style="display:flex;align-items:center;margin-right:16px">
                 <v-icon left :color="getEntityGraph().nodes !=null ? getExtendedColoring('nodes',name,'light'):''">fas
                   fa-genderless
                 </v-icon>
-              </v-list-item-avatar>
+              </div>
               <v-list-item-subtitle>{{ name }}</v-list-item-subtitle>
               <v-list-item-subtitle style="min-width: 3rem; max-width: 4.5rem">{{
                   options.list.countMap.nodes[name] != null ? options.list.countMap.nodes[name].selected : 0
@@ -65,7 +65,7 @@
               </v-list-item-title>
             </v-list-item>
             <v-list-item v-for="(count,name) in graphInfo.counts.edges" :key="name" class="nedrex-list-item">
-              <v-list-item-avatar>
+              <div style="display:flex;align-items:center;margin-right:16px">
                 <v-icon class="nedrex-list-icon" size="15" :color="getExtendedColoring('edges',name,'light')[0]">fas
                   fa-genderless
                 </v-icon>
@@ -81,7 +81,7 @@
                     fa-genderless
                   </v-icon>
                 </template>
-              </v-list-item-avatar>
+              </div>
               <v-list-item-subtitle>{{ name }}</v-list-item-subtitle>
               <v-list-item-subtitle style="min-width: 3rem; max-width: 4.5rem">{{
                   options.list.countMap.edges[name] != null ? options.list.countMap.edges[name].selected : 0
@@ -89,12 +89,11 @@
               </v-list-item-subtitle>
             </v-list-item>
             <v-tooltip top>
-              <template v-slot:activator="{attrs, on}">
+              <template v-slot:activator="{ props }">
                 <v-chip
                   outlined
                   icon
-                  v-on="on"
-                  v-bind="attrs"
+                  v-bind="props"
                   style="margin:8px"
                   @click="requestGraphDownload"
                 >
@@ -113,10 +112,9 @@
               </div>
             </v-tooltip>
             <v-tooltip top>
-              <template v-slot:activator="{attrs, on}">
+              <template v-slot:activator="{ props }">
                 <v-chip
-                  v-on="on"
-                  v-bind="attrs"
+                  v-bind="props"
                   outlined
                   icon
                   style="margin:8px"
@@ -188,9 +186,8 @@
           <v-divider></v-divider>
           <v-card-subtitle style="font-size: 14pt"><i>General</i></v-card-subtitle>
           <v-tooltip top>
-            <template v-slot:activator="{attrs, on}">
-              <div v-on="on"
-                   v-bind="attrs" style="width: 100%; display: flex; justify-content: center">
+            <template v-slot:activator="{ props }">
+              <div v-bind="props" style="width: 100%; display: flex; justify-content: center">
                 <v-switch
                   style="margin:8px; font-size: small"
                   dense
@@ -207,11 +204,10 @@
             </div>
           </v-tooltip>
           <v-tooltip top>
-            <template v-slot:activator="{attrs, on}">
+            <template v-slot:activator="{ props }">
               <v-chip
                 style="margin:8px"
-                v-on="on"
-                v-bind="attrs"
+                v-bind="props"
                 outlined
                 @click="$emit('selectionEvent','all','none')"
               >
@@ -224,11 +220,10 @@
             </div>
           </v-tooltip>
           <v-tooltip top>
-            <template v-slot:activator="{attrs, on}">
+            <template v-slot:activator="{ props }">
               <v-chip
                 style="margin:8px"
-                v-on="on"
-                v-bind="attrs"
+                v-bind="props"
                 outlined
                 @click="$emit('graphModificationEvent','subselect');$forceUpdate"
               >
@@ -244,12 +239,11 @@
           <v-divider style="margin-left: 16px; margin-right: 16px"></v-divider>
           <v-card-subtitle style="font-size: 14pt"><i>Nodes</i></v-card-subtitle>
           <v-tooltip top>
-            <template v-slot:activator="{attrs, on}">
+            <template v-slot:activator="{ props }">
               <v-chip
                 style="margin:8px"
                 icon
-                v-bind="attrs"
-                v-on="on"
+                v-bind="props"
                 outlined
                 v-on:click="$emit('selectionEvent','nodes','all')"
               >
@@ -262,10 +256,9 @@
             </div>
           </v-tooltip>
           <v-tooltip top>
-            <template v-slot:activator="{attrs, on}">
+            <template v-slot:activator="{ props }">
               <v-chip
-                v-bind="attrs"
-                v-on="on"
+                v-bind="props"
                 style="margin:8px"
                 icon
                 outlined
@@ -281,11 +274,10 @@
             </div>
           </v-tooltip>
           <v-tooltip top>
-            <template v-slot:activator="{attrs, on}">
+            <template v-slot:activator="{ props }">
               <v-chip
                 style="margin:8px"
-                v-on="on"
-                v-bind="attrs"
+                v-bind="props"
                 icon
                 outlined
                 v-on:click="$emit('selectionEvent','nodes','none')"
@@ -301,11 +293,10 @@
           <v-divider style="margin-left: 16px; margin-right: 16px"></v-divider>
           <v-card-subtitle style="font-size: 14pt"><i>Edges</i></v-card-subtitle>
           <v-tooltip top>
-            <template v-slot:activator="{attrs, on}">
+            <template v-slot:activator="{ props }">
               <v-chip
                 style="margin:8px"
-                v-on="on"
-                v-bind="attrs"
+                v-bind="props"
                 icon
                 outlined
                 v-on:click="$emit('selectionEvent','edges','all')"
@@ -320,11 +311,10 @@
 
           </v-tooltip>
           <v-tooltip top>
-            <template v-slot:activator="{attrs, on}">
+            <template v-slot:activator="{ props }">
               <v-chip
                 style="margin:8px"
-                v-on="on"
-                v-bind="attrs"
+                v-bind="props"
                 icon
                 outlined
                 v-on:click="$emit('selectionEvent','edges','none')"
@@ -352,10 +342,9 @@
 
         <div v-show="show.modify">
           <v-tooltip top>
-            <template v-slot:activator="{attrs, on}">
+            <template v-slot:activator="{ props }">
               <v-chip
-                v-on="on"
-                v-bind="attrs"
+                v-bind="props"
                 v-on:click="$emit('graphModificationEvent','extend')"
                 class="pa-3"
                 outlined
@@ -372,10 +361,9 @@
             </div>
           </v-tooltip>
           <v-tooltip top>
-            <template v-slot:activator="{attrs, on}">
+            <template v-slot:activator="{ props }">
               <v-chip
-                v-on="on"
-                v-bind="attrs"
+                v-bind="props"
                 v-on:click="$emit('graphModificationEvent','collapse')"
                 class="pa-3"
                 outlined
@@ -392,10 +380,9 @@
             </div>
           </v-tooltip>
           <v-tooltip top>
-            <template v-slot:activator="{attrs, on}">
+            <template v-slot:activator="{ props }">
               <v-chip
-                v-on="on"
-                v-bind="attrs"
+                v-bind="props"
                 v-on:click="$emit('colorSelectionEvent')"
                 class="pa-3"
                 outlined
@@ -438,7 +425,7 @@
           <v-card-text>Select a node to view its neighborhood. Double click the currently selected node to change to
             detail view.
           </v-card-text>
-          <v-simple-table fixed-header height="300px" dense
+          <v-table fixed-header height="300px" dense
                           v-if="selectedTab === 1 && (selectedNode !== undefined || (neighborNodes !== undefined && neighborNodes.length>0))">
             <template v-slot:default>
               <thead>
@@ -460,7 +447,7 @@
               </tr>
               </tbody>
             </template>
-          </v-simple-table>
+          </v-table>
           <i v-else>no selection available</i>
         </v-container>
       </v-card>

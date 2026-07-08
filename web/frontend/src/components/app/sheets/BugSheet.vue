@@ -7,25 +7,25 @@
           </v-list-item-title>
         </v-list-item>
         <v-list-item>
-          <v-list-item-content>
+          <div style="flex:1 1 auto;overflow:hidden;padding:12px 0">
             Did you find a bug or have other ideas to improve NeDRex-Web? Great! Just let us know using one of the
             following options:
-          </v-list-item-content>
+          </div>
         </v-list-item>
 
         <v-list-item>
-          <v-list-item-icon>
+          <div style="display:flex;align-items:center;margin-right:16px">
             <v-icon left>fas fa-at</v-icon>
-          </v-list-item-icon>
+          </div>
           <v-list-item-title>By Mail:</v-list-item-title>
           <v-list-item-subtitle><a :href="'mailto:andreas.maier-1@uni-hamburg.de?subject='+getMailSubject()">andreas.maier-1(at)uni-hamburg.de</a></v-list-item-subtitle>
         </v-list-item>
 
         <v-list-item>
-          <v-list-item-icon>
+          <div style="display:flex;align-items:center;margin-right:16px">
             <v-icon left>fab fa-github</v-icon>
 
-          </v-list-item-icon>
+          </div>
           <v-list-item-title>Filing an Issue:</v-list-item-title>
           <v-list-item-subtitle>
             <v-chip outlined @click="openExternal('https://github.com/AndiMajore/RepoScapeWeb/issues')">
@@ -35,9 +35,9 @@
           </v-list-item-subtitle>
         </v-list-item>
 <!--        <v-list-item>-->
-<!--          <v-list-item-icon>-->
+<!--          <div style="display:flex;align-items:center;margin-right:16px">-->
 <!--            <v-icon left>fas fa-table</v-icon>-->
-<!--          </v-list-item-icon>-->
+<!--          </div>-->
 <!--          <v-list-item-title>Adding to spreadsheet:</v-list-item-title>-->
 <!--          <v-list-item-subtitle>-->
 <!--            <v-chip outlined-->

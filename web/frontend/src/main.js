@@ -1,40 +1,30 @@
-
-import Vue from 'vue'
+import { createApp } from 'vue'
 import Page from './Page.vue'
 
 import router from './router'
 import vuetify from './plugins/vuetify'
 import VueCookies from "vue-cookies";
 
-import 'babel-polyfill'
-import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
-
 import * as CONFIG from "./Config"
 import Utils from "./scripts/Utils"
-
-Vue.component('font-awesome-icon', FontAwesomeIcon)
-Vue.use(VueCookies);
-Vue.$cookies.config("10000d")
 import ApiService from "./services/api.service";
 // import NedrexService from "./services/nedrex.service"
+import Socket from "./services/socket";
 
 ApiService.init(CONFIG.HOST_URL+CONFIG.CONTEXT_PATH+"/api/")
 // ApiService.setNedrex(CONFIG.NEDREX_API)
-Vue.prototype.$http = ApiService;
 
+const app = createApp(Page)
 
-Vue.prototype.$global = {metagraph:undefined, metadata: undefined}
+app.config.globalProperties.$http = ApiService;
+app.config.globalProperties.$global = {metagraph: undefined, metadata: undefined}
+app.config.globalProperties.$socket = Socket
+app.config.globalProperties.$utils = Utils
+app.config.globalProperties.$config = CONFIG
 
-import Socket from "./services/socket";
-Vue.prototype.$socket = Socket
-Vue.prototype.$utils = Utils
-Vue.prototype.$config = CONFIG
+app.use(VueCookies);
+VueCookies.config("10000d")
 
-
-
-new Vue({
-  router,
-  vuetify,
-  globalVariables: global,
-  render: h => h(Page)
-}).$mount("#app")
+app.use(router)
+app.use(vuetify)
+router.isReady().then(() => app.mount("#app"))

@@ -69,7 +69,7 @@
             </v-list-item>
             <v-list-item
               v-if="isPathEdge('GeneAssociatedWithDisorder') || isPathEdge('ProteinAssociatedWithDisorder')">
-              <v-list-item-content style="padding-top: 32px;padding-left: 20px; padding-right: 20px">
+              <div style="flex:1 1 auto;overflow:hidden;padding:12px 0;padding-top: 32px;padding-left: 20px; padding-right: 20px">
                 <v-slider
                   hide-details
                   class="align-center"
@@ -84,13 +84,12 @@
                   <template v-slot:label>
                     Association Score Cutoff
                     <v-tooltip left>
-                      <template v-slot:activator="{ on, attrs }">
+                      <template v-slot:activator="{ props }">
                         <a style="text-decoration: none"
                            href="https://www.disgenet.org/help#:~:text=The%20DisGeNET%20score%20for%20GDAs,range%20from%200%20to%201."
                            target="_blank">
                           <v-icon
-                            v-bind="attrs"
-                            v-on="on"
+                            v-bind="props"
                             style="margin-top: -3px"> far fa-question-circle
                           </v-icon>
                         </a>
@@ -104,7 +103,7 @@
                     </v-tooltip>
                   </template>
                 </v-slider>
-              </v-list-item-content>
+              </div>
             </v-list-item>
           </v-list>
         </div>

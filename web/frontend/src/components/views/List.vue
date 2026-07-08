@@ -29,7 +29,7 @@
                 {{ node }}
               </v-tab>
             </v-tabs>
-            <v-tabs-items>
+            <div>
               <v-data-table
                 ref="nodeTab"
                 fixed-header
@@ -49,12 +49,12 @@
                     </div>
                     <div style="justify-self: flex-end; margin-left: auto;">
                       <v-tooltip right>
-                        <template v-slot:activator="{attrs, on}">
+                        <template v-slot:activator="{ props }">
                           <v-btn small
                                  style="margin-top: -2px;"
                                  icon
                                  @click="downloadNodeTable()">
-                            <v-icon small v-bind="attrs" v-on="on">fas fa-download</v-icon>
+                            <v-icon small v-bind="props">fas fa-download</v-icon>
                           </v-btn>
                         </template>
                         <span>Download table</span>
@@ -64,10 +64,10 @@
                 </template>
                 <template v-slot:header.selected>
                   <v-tooltip right>
-                    <template v-slot:activator="{attrs, on}">
+                    <template v-slot:activator="{ props }">
                       <v-btn small style="margin-left: -10px; margin-top: -2px;" icon
                              @click="nodeOptions">
-                        <v-icon small v-bind="attrs" v-on="on">fas fa-cog</v-icon>
+                        <v-icon small v-bind="props">fas fa-cog</v-icon>
                       </v-btn>
                     </template>
                     <span>Edit table headers</span>
@@ -144,13 +144,14 @@
                         <v-autocomplete
                           dense
                           chips
-                          :search-input.sync="findNodeSuggestions"
+                          v-model:search-input="findNodeSuggestions"
                           v-show="filters.nodes.suggestions"
                           :loading="suggestions.nodes.loading"
                           :items="suggestions.nodes.data"
                           :filter="()=>{return true}"
                           v-model="filterNodeModel"
                           item-value="key"
+                          item-title="text"
                           label="Query (case insensitive)"
                           class="mx-4"
                           style="max-width: 500px; margin-bottom: 4px"
@@ -183,14 +184,13 @@
                   <v-row>
                     <v-col cols="1">
                       <v-tooltip right>
-                        <template v-slot:activator="{ on, attrs }">
+                        <template v-slot:activator="{ props }">
                           <v-icon
                             small
                             left
                             color="primary"
                             dark
-                            v-bind="attrs"
-                            v-on="on"
+                            v-bind="props"
                             v-on:click="showInGraph('node',item)"
                           >
                             fas fa-project-diagram
@@ -201,13 +201,12 @@
                     </v-col>
                     <v-col cols="1">
                       <v-tooltip right>
-                        <template v-slot:activator="{ on, attrs }">
+                        <template v-slot:activator="{ props }">
                           <v-icon
                             color="primary"
                             dark
                             right
-                            v-bind="attrs"
-                            v-on="on"
+                            v-bind="props"
                             v-on:click="nodeDetails(item.id)"
                           >
                             fas fa-info-circle
@@ -220,7 +219,7 @@
 
                 </template>
               </v-data-table>
-            </v-tabs-items>
+            </div>
           </template>
         </template>
       </v-card>
@@ -251,14 +250,14 @@
                   {{ edge }}
                 </template>
                 <v-tooltip v-else top>
-                  <template v-slot:activator="{on, attrs}">
-                    <span v-on="on" v-bind="attrs">{{ edge.substring(0, 32) }}...</span>
+                  <template v-slot:activator="{ props }">
+                    <span v-bind="props">{{ edge.substring(0, 32) }}...</span>
                   </template>
                   {{ edge }}
                 </v-tooltip>
               </v-tab>
             </v-tabs>
-            <v-tabs-items>
+            <div>
               <v-data-table
                 ref="edgeTab"
                 fixed-header
@@ -277,12 +276,12 @@
                     </div>
                     <div style="justify-self: flex-end; margin-left: auto;">
                       <v-tooltip right>
-                        <template v-slot:activator="{attrs, on}">
+                        <template v-slot:activator="{ props }">
                           <v-btn small
                                  style="margin-top: -2px;"
                                  icon
                                  @click="downloadEdgeTable()">
-                            <v-icon small v-bind="attrs" v-on="on">fas fa-download</v-icon>
+                            <v-icon small v-bind="props">fas fa-download</v-icon>
                           </v-btn>
                         </template>
                         <span>Download table</span>
@@ -292,10 +291,10 @@
                 </template>
                 <template v-slot:header.selected>
                   <v-tooltip right>
-                    <template v-slot:activator="{attrs, on}">
+                    <template v-slot:activator="{ props }">
                       <v-btn small style="margin-left: -10px; margin-top: -2px;" icon
                              @click="edgeOptions">
-                        <v-icon small v-bind="attrs" v-on="on">fas fa-cog</v-icon>
+                        <v-icon small v-bind="props">fas fa-cog</v-icon>
                       </v-btn>
                     </template>
                     <span>Edit table headers</span>
@@ -384,12 +383,11 @@
                   <v-row>
                     <v-col cols="1">
                       <v-tooltip right>
-                        <template v-slot:activator="{ on, attrs }">
+                        <template v-slot:activator="{ props }">
                           <v-icon
                             color="primary"
                             dark
-                            v-bind="attrs"
-                            v-on="on"
+                            v-bind="props"
                             v-on:click="edgeDetails(item)"
                           >
                             fas fa-info-circle
@@ -402,7 +400,7 @@
 
                 </template>
               </v-data-table>
-            </v-tabs-items>
+            </div>
           </template>
         </template>
       </v-card>
@@ -423,8 +421,8 @@
         </v-card-text>
         <v-divider></v-divider>
         <v-list style="max-height: calc(80vh - 150px); overflow-y: auto ">
-          <template v-for="attr in extension.edges">
-            <v-list-item :key="attr.name">
+          <template v-for="attr in extension.edges" :key="attr.name">
+            <v-list-item>
               <v-switch v-model="attr.selected" :disabled="attr.disabled"></v-switch>
               <span>
                 <v-icon :color="getColoring('edges',attr.name,'light')[0]">fas fa-genderless</v-icon>
@@ -472,18 +470,16 @@
 
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn
-            color="red darken-1"
-            text
-            @click="extensionDialogResolve(false)"
-          >
+          <v-btn variant="text"
+ color="red darken-1"
+ 
+ @click="extensionDialogResolve(false)">
             Cancel
           </v-btn>
-          <v-btn
-            color="green darken-1"
-            text
-            @click="extensionDialogResolve(true)"
-          >
+          <v-btn variant="text"
+ color="green darken-1"
+ 
+ @click="extensionDialogResolve(true)">
             Apply
           </v-btn>
         </v-card-actions>
@@ -520,8 +516,8 @@
           <v-card-text style="margin-top:-16px; margin-bottom: -16px"><i style="color: dimgray">Select the node type
             used as connector node to limit the suggestion for available paths.</i></v-card-text>
           <v-list>
-            <template v-for="attr in collapse.nodes">
-              <v-list-item :key="attr.name">
+            <template v-for="attr in collapse.nodes" :key="attr.name">
+              <v-list-item>
                 <v-switch v-model="attr.selected" :disabled="attr.disabled" @click="isDisabled('nodes',attr.name)">
                 </v-switch>
                 <span>
@@ -536,8 +532,8 @@
           <v-card-text style="margin-top:-16px; margin-bottom: -16px"><i style="color: dimgray">Select two edge types,
             sharing at least one node that will be used to create the paths.</i></v-card-text>
           <v-list>
-            <template v-for="attr in collapse.edges">
-              <v-list-item :key="attr.name">
+            <template v-for="attr in collapse.edges" :key="attr.name">
+              <v-list-item>
                 <v-switch v-model="attr.selected" :disabled="attr.disabled" @click="isDisabled('edges',attr.name)">
                 </v-switch>
                 <span>
@@ -605,13 +601,12 @@
                     Keep
                     <v-tooltip
                       right>
-                      <template v-slot:activator="{ on, attrs }">
+                      <template v-slot:activator="{ props }">
                         <v-icon
                           right
                           color="grey"
                           dark
-                          v-bind="attrs"
-                          v-on="on"
+                          v-bind="props"
                         >
                           far fa-question-circle
                         </v-icon>
@@ -627,19 +622,17 @@
         <v-divider></v-divider>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn
-            color="error"
-            text
-            @click="collapseDialogResolve(false)"
-          >
+          <v-btn variant="text"
+ color="error"
+ 
+ @click="collapseDialogResolve(false)">
             Cancel
           </v-btn>
-          <v-btn
-            color="success"
-            text
-            :disabled="!collapse.accept"
-            @click="collapseDialogResolve(true)"
-          >
+          <v-btn variant="text"
+ color="success"
+ 
+ :disabled="!collapse.accept"
+ @click="collapseDialogResolve(true)">
             Apply
           </v-btn>
         </v-card-actions>
@@ -675,18 +668,16 @@
 
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn
-            color="green darken-1"
-            text
-            @click="dialogResolve(false)"
-          >
+          <v-btn variant="text"
+ color="green darken-1"
+ 
+ @click="dialogResolve(false)">
             Cancel
           </v-btn>
-          <v-btn
-            color="green darken-1"
-            text
-            @click="dialogResolve(true)"
-          >
+          <v-btn variant="text"
+ color="green darken-1"
+ 
+ @click="dialogResolve(true)">
             Apply
           </v-btn>
         </v-card-actions>
@@ -708,10 +699,10 @@
         <v-divider></v-divider>
         <div style="overflow-y: auto; max-height: calc(80vh - 200px)">
           <v-card-subtitle style="font-size: 16pt; margin-top:8px;"><i>Nodes</i></v-card-subtitle>
-          <v-tabs-items>
+          <div>
             <v-list>
-              <template v-for="attr in selectionDialog.seeds">
-                <v-list-item :key="attr.name">
+              <template v-for="attr in selectionDialog.seeds" :key="attr.name">
+                <v-list-item>
                   <v-switch v-model="attr.select" :disabled="attr.disabled"></v-switch>
                   <span>
                 <v-icon :color="getColoring('nodes',attr.name,'light')">fas fa-genderless</v-icon>
@@ -721,14 +712,14 @@
               </template>
 
             </v-list>
-          </v-tabs-items>
+          </div>
 
           <v-divider></v-divider>
           <v-card-subtitle style="font-size: 16pt; margin-top:8px"><i>Edges</i></v-card-subtitle>
-          <v-tabs-items>
+          <div>
             <v-list>
-              <template v-for="attr in selectionDialog.targets">
-                <v-list-item :key="attr.name">
+              <template v-for="attr in selectionDialog.targets" :key="attr.name">
+                <v-list-item>
                   <v-switch v-model="attr.select" :disabled="attr.disabled">
                   </v-switch>
                   <span>
@@ -745,7 +736,7 @@
                 </v-list-item>
               </template>
             </v-list>
-          </v-tabs-items>
+          </div>
           <v-divider></v-divider>
           <v-card-subtitle style="font-size: 16pt; margin-top:8px;"><i>Options</i></v-card-subtitle>
           <v-container>
@@ -756,12 +747,11 @@
                     Extend start selection
                     <v-tooltip
                       right>
-                      <template v-slot:activator="{ on, attrs }">
+                      <template v-slot:activator="{ props }">
                         <v-icon
                           color="grey"
                           dark
-                          v-bind="attrs"
-                          v-on="on"
+                          v-bind="props"
                           right
                         >
                           far fa-question-circle
@@ -778,18 +768,16 @@
         <v-divider></v-divider>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn
-            color="green darken-1"
-            text
-            @click="selectionDialogResolve(false)"
-          >
+          <v-btn variant="text"
+ color="green darken-1"
+ 
+ @click="selectionDialogResolve(false)">
             Cancel
           </v-btn>
-          <v-btn
-            color="green darken-1"
-            text
-            @click="selectionDialogResolve(true)"
-          >
+          <v-btn variant="text"
+ color="green darken-1"
+ 
+ @click="selectionDialogResolve(true)">
             Apply
           </v-btn>
         </v-card-actions>
@@ -814,10 +802,10 @@
         <v-divider></v-divider>
         <v-list style="overflow-y: auto; max-height: calc(80vh - 150px ) ">
           <v-list-item>
-            <v-list-item-content>
+            <div style="flex:1 1 auto;overflow:hidden;padding:12px 0">
               <v-text-field v-model=selectionColor.name label="Group-Name"
                             :rules="[value=>!!value|| 'Required!']"></v-text-field>
-            </v-list-item-content>
+            </div>
           </v-list-item>
           <v-list-item style="justify-content: center">
             <v-color-picker v-model=selectionColor.color dot-size="20" mode="hexa"></v-color-picker>
@@ -1726,8 +1714,7 @@ export default {
       let isDistinct = this.isDistinctAttribute(type, this.filters[type].attribute.name)
       if (isDistinct) {
         this.distinctFilter(type, items, tab).forEach(item => {
-          this.$set(item, "selected", true)
-          // item.selected = true
+          item.selected = true
         })
       } else {
         let filterActive = this.filters[type].attribute.name !== undefined && this.filters[type].attribute.name.length > 0 && this.filters[type].query !== null && this.filters[type].query.length > 0 && this.filters[type].attribute.operator !== undefined && this.filters[type].attribute.operator.length > 0
@@ -1735,13 +1722,11 @@ export default {
             if (type === "nodes") {
               if (this.suggestion) {
                 if (item.suggested)
-                  this.$set(item, "selected", true)
+                  item.selected = true
               } else if (!filterActive || (filterActive && this.filterNode(undefined, this.filters[type].query, item)))
-                this.$set(item, "selected", true)
-              // item.selected = true;
+                item.selected = true
             } else if (!filterActive || (filterActive && this.filterEdge(undefined, this.filters[type].query, item)))
-              this.$set(item, "selected", true)
-            // item.selected = true
+              item.selected = true
           }
         )
       }
@@ -1757,7 +1742,7 @@ export default {
       let data = {nodes: this.nodes, edges: this.edges}
       if (type === "all") {
         this.filterNodeModel = null
-        Object.values(data).forEach(set => Object.values(set).forEach(type => type.forEach(n => this.$set(n, "selected", false))))
+        Object.values(data).forEach(set => Object.values(set).forEach(type => type.forEach(n => n.selected = false)))
       } else {
         let tab = (type === "nodes") ? this.nodeTab : this.edgeTab
         let items = data[type][Object.keys(data[type])[tab]]
@@ -1811,7 +1796,7 @@ export default {
     }
     ,
     headers: function (entity, node) {
-      let out = [{text: "Select", align: 'start', sortable: false, value: "selected", width: "90px"}]
+      let out = [{title: "Select", align: 'start', sortable: false, value: "selected", width: "90px"}]
       this.attributes[entity][node].forEach(attr => {
         if (!attr.list)
           return
@@ -1820,7 +1805,7 @@ export default {
           return;
         if (name === "sourceId" || name === "idOne") {
           out.push({
-            text: "EdgeId",
+            title: "EdgeId",
             align: 'start',
             sortable: false,
             value: "edgeid",
@@ -1830,7 +1815,7 @@ export default {
           })
         }
         out.push({
-          text: attr.label,
+          title: attr.label,
           align: 'start',
           sortable: attr.numeric,
           list: attr.array,
@@ -1841,7 +1826,7 @@ export default {
         })
       })
       this.update[entity] = false;
-      out.push({text: "Info", align: 'start', sortable: false, value: "info"})
+      out.push({title: "Info", align: 'start', sortable: false, value: "info"})
       return out
     }
     ,

@@ -1,14 +1,14 @@
-FROM node:18.20 AS build-stage
+FROM node:22 AS build-stage
 WORKDIR /app
 COPY package*.json pnpm-lock.yaml ./
 RUN npm i -g pnpm
 RUN pnpm install
 COPY ./ .
-COPY docker/index.html public/index.html
-COPY docker/vue.config.js ./vue.config.js
+COPY docker/index.html ./index.html
+COPY docker/vite.config.js ./vite.config.js
 COPY docker/Config.js src/Config.js
 
-RUN npm run build
+RUN pnpm run build
 
 FROM ubuntu:latest AS production-stage
 WORKDIR /usr/app

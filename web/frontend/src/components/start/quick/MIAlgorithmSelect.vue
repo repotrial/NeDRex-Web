@@ -26,8 +26,8 @@
       <v-card-title style="text-align: left"><b>Select the Algorithm group!</b>
         <v-radio-group row v-model="groupModel" style="display: inline-block; margin-left: 32px">
           <v-tooltip bottom v-for="group in groups" :key="group.id">
-            <template v-slot:activator="{attrs, on}">
-              <v-radio :label="group.label" :value="group.id" v-on="on" v-bind="attrs"
+            <template v-slot:activator="{ props }">
+              <v-radio :label="group.label" :value="group.id" v-bind="props"
                        :disabled="group.id==='nw' && (seeds==null || seeds.length ===0)">
               </v-radio>
             </template>
@@ -73,10 +73,9 @@
                 >
                   <template v-slot:append>
                     <v-tooltip left>
-                      <template v-slot:activator="{ on, attrs }">
+                      <template v-slot:activator="{ props }">
                         <v-icon
-                          v-bind="attrs"
-                          v-on="on"
+                          v-bind="props"
                           left> far fa-question-circle
                           style="flex-grow: 0"
                         </v-icon>
@@ -94,14 +93,13 @@
                 <template v-if="getAlgorithmMethod()==='bicon'">
                   <div style="display: flex; width: 100%">
                     <div style="width: 200px; justify-self: flex-start">
-                      <v-select :items="exprIds" item-text="id" item-value="id"
+                      <v-select :items="exprIds" item-title="id" item-value="id"
                                 v-model="getAlgorithmModels().exprIDType">
                         <template v-slot:append-outer>
                           <v-tooltip left>
-                            <template v-slot:activator="{ on, attrs }">
+                            <template v-slot:activator="{ props }">
                               <v-icon
-                                v-bind="attrs"
-                                v-on="on"
+                                v-bind="props"
                                 left> far fa-question-circle
                                 style="flex-grow: 0"
                               </v-icon>
@@ -129,10 +127,9 @@
                         </template>
                         <template v-slot:append-outer>
                           <v-tooltip left>
-                            <template v-slot:activator="{ on, attrs }">
+                            <template v-slot:activator="{ props }">
                               <v-icon
-                                v-bind="attrs"
-                                v-on="on"
+                                v-bind="props"
                                 left> far fa-question-circle
                               </v-icon>
                             </template>
@@ -141,13 +138,12 @@
                             </div>
                           </v-tooltip>
                           <v-tooltip left>
-                            <template v-slot:activator="{on,attrs}">
+                            <template v-slot:activator="{ props }">
                               <a
                                 href="https://drive.google.com/file/d/1zyKDy9rN_3KBDsKmzrqhodLmwAf0Sw3W/view?usp=sharing"
                                 target="_blank" style="text-decoration: none">
                                 <v-icon
-                                  v-bind="attrs"
-                                  v-on="on"
+                                  v-bind="props"
                                   left
                                 >
                                   fas fa-download
@@ -187,11 +183,10 @@
                           label="max"
                         ></v-text-field>
                         <v-tooltip left>
-                          <template v-slot:activator="{ on, attrs }">
+                          <template v-slot:activator="{ props }">
                             <v-icon
                               style="margin-top: -15px;"
-                              v-bind="attrs"
-                              v-on="on"
+                              v-bind="props"
                               left> far fa-question-circle
                             </v-icon>
                           </template>
@@ -221,10 +216,9 @@
                       </template>
                       <template v-slot:append>
                         <v-tooltip left>
-                          <template v-slot:activator="{ on, attrs }">
+                          <template v-slot:activator="{ props }">
                             <v-icon
-                              v-bind="attrs"
-                              v-on="on"
+                              v-bind="props"
                               left> far fa-question-circle
                             </v-icon>
                           </template>
@@ -253,10 +247,9 @@
                       </template>
                       <template v-slot:append>
                         <v-tooltip left>
-                          <template v-slot:activator="{ on, attrs }">
+                          <template v-slot:activator="{ props }">
                             <v-icon
-                              v-bind="attrs"
-                              v-on="on"
+                              v-bind="props"
                               left> far fa-question-circle
                             </v-icon>
                           </template>
@@ -286,10 +279,9 @@
                       </template>
                       <template v-slot:append>
                         <v-tooltip left>
-                          <template v-slot:activator="{ on, attrs }">
+                          <template v-slot:activator="{ props }">
                             <v-icon
-                              v-bind="attrs"
-                              v-on="on"
+                              v-bind="props"
                               left> far fa-question-circle
                             </v-icon>
                           </template>
@@ -320,10 +312,9 @@
                       </template>
                       <template v-slot:append>
                         <v-tooltip left>
-                          <template v-slot:activator="{ on, attrs }">
+                          <template v-slot:activator="{ props }">
                             <v-icon
-                              v-bind="attrs"
-                              v-on="on"
+                              v-bind="props"
                               left> far fa-question-circle
                             </v-icon>
                           </template>
@@ -358,10 +349,9 @@
                       </template>
                       <template v-slot:append>
                         <v-tooltip left>
-                          <template v-slot:activator="{ on, attrs }">
+                          <template v-slot:activator="{ props }">
                             <v-icon
-                              v-bind="attrs"
-                              v-on="on"
+                              v-bind="props"
                               left> far fa-question-circle
                             </v-icon>
                           </template>
@@ -397,10 +387,9 @@
                       </template>
                       <template v-slot:append>
                         <v-tooltip left>
-                          <template v-slot:activator="{ on, attrs }">
+                          <template v-slot:activator="{ props }">
                             <v-icon
-                              v-bind="attrs"
-                              v-on="on"
+                              v-bind="props"
                               left> far fa-question-circle
                             </v-icon>
                           </template>
@@ -431,10 +420,9 @@
                       </template>
                       <template v-slot:append>
                         <v-tooltip left>
-                          <template v-slot:activator="{ on, attrs }">
+                          <template v-slot:activator="{ props }">
                             <v-icon
-                              v-bind="attrs"
-                              v-on="on"
+                              v-bind="props"
                               left> far fa-question-circle
                             </v-icon>
                           </template>
@@ -466,10 +454,9 @@
                       </template>
                       <template v-slot:append>
                         <v-tooltip left>
-                          <template v-slot:activator="{ on, attrs }">
+                          <template v-slot:activator="{ props }">
                             <v-icon
-                              v-bind="attrs"
-                              v-on="on"
+                              v-bind="props"
                               left> far fa-question-circle
                             </v-icon>
                           </template>
@@ -504,10 +491,9 @@
                       </template>
                       <template v-slot:append>
                         <v-tooltip left>
-                          <template v-slot:activator="{ on, attrs }">
+                          <template v-slot:activator="{ props }">
                             <v-icon
-                              v-bind="attrs"
-                              v-on="on"
+                              v-bind="props"
                               left> far fa-question-circle
                             </v-icon>
                           </template>
@@ -523,10 +509,9 @@
                     >
                       <template v-slot:append>
                         <v-tooltip left>
-                          <template v-slot:activator="{ on, attrs }">
+                          <template v-slot:activator="{ props }">
                             <v-icon
-                              v-bind="attrs"
-                              v-on="on"
+                              v-bind="props"
                               left> far fa-question-circle
                             </v-icon>
                           </template>
@@ -554,10 +539,9 @@
                       </template>
                       <template v-slot:append>
                         <v-tooltip left>
-                          <template v-slot:activator="{ on, attrs }">
+                          <template v-slot:activator="{ props }">
                             <v-icon
-                              v-bind="attrs"
-                              v-on="on"
+                              v-bind="props"
                               left> far fa-question-circle
                             </v-icon>
                           </template>
@@ -585,10 +569,9 @@
                       </template>
                       <template v-slot:append>
                         <v-tooltip left>
-                          <template v-slot:activator="{ on, attrs }">
+                          <template v-slot:activator="{ props }">
                             <v-icon
-                              v-bind="attrs"
-                              v-on="on"
+                              v-bind="props"
                               left> far fa-question-circle
                             </v-icon>
                           </template>
@@ -946,9 +929,9 @@ export default {
         if (response.data != null)
           return response.data
       }).then(data => {
-        this.tissues = [{text: 'All', value: 'all'}]
+        this.tissues = [{title: 'All', value: 'all'}]
         data.forEach(tissue => {
-          this.tissues.push({text: tissue, value: tissue})
+          this.tissues.push({title: tissue, value: tissue})
         })
       }).catch(console.error)
     },

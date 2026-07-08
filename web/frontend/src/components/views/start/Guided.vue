@@ -18,7 +18,7 @@
             also can be <b>exported</b> in the form of <b>edge-lists</b> on request.
           </div>
           <div>
-            <v-img style="justify-self: flex-end; margin-left: auto; cursor: pointer ; margin-right: 5px;"
+            <v-img eager style="justify-self: flex-end; margin-left: auto; cursor: pointer ; margin-right: 5px;"
                    :gradient="imgHover?'to top right, rgba(69,69,69,.3),rgba(69,69,69,.3)':''"
                    :src="$config.STATIC_PATH+'/assets/guided_visual_description.png'" max-width="20vw" width="20vw"
                    @mouseenter="imgHover=true" @mouseleave="imgHover=false"
@@ -48,15 +48,15 @@
       <v-sheet style="padding:10px">
         <div style="display: flex; justify-content: flex-end; margin-left: auto; ">
           <v-tooltip left>
-            <template v-slot:activator="{on, attrs}">
-              <v-btn icon style="padding:1em" color="red darker" @click="bigImage=false" v-on="on" v-bind="attrs">
+            <template v-slot:activator="{ props }">
+              <v-btn icon style="padding:1em" color="red darker" @click="bigImage=false" v-bind="props">
                 <v-icon size="2em">far fa-times-circle</v-icon>
               </v-btn>
             </template>
             <div>Close image</div>
           </v-tooltip>
         </div>
-        <v-img :src="$config.STATIC_PATH+'/assets/guided_visual_description.png'" width="700px"></v-img>
+        <v-img eager :src="$config.STATIC_PATH+'/assets/guided_visual_description.png'" width="700px"></v-img>
         <div style="text-align: justify-all">The <b>Guided Exploration</b> can be used to research the direct or
           indirect association between a known selection of starting elements and either also defined target set or
           other than type-wise unspecific target definition. Paths to construct these indirect associations can be

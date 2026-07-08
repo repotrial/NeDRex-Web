@@ -1,8 +1,8 @@
 <template>
   <div>
       <v-menu bottom offset-y :disabled="disabled">
-        <template v-slot:activator="{on,attrs}">
-          <v-btn small outlined right v-bind="attrs" v-on="on" :disabled="disabled">
+        <template v-slot:activator="{ props }">
+          <v-btn variant="outlined" small right v-bind="props" :disabled="disabled">
             <v-icon small left color="primary">
               fas fa-graduation-cap
             </v-icon>
@@ -19,8 +19,8 @@
         </v-list>
       </v-menu>
       <v-tooltip right>
-        <template v-slot:activator="{attrs, on}">
-          <v-icon right color="gray" size="10pt" v-on="on" v-bind="attrs">far fa-question-circle</v-icon>
+        <template v-slot:activator="{ props }">
+          <v-icon right color="gray" size="10pt" v-bind="props">far fa-question-circle</v-icon>
         </template>
         <div>Select an example and this and all further steps are automatically defined.<br> You can still adjust
           anything you want or just <b>continue</b> straight to the result page!

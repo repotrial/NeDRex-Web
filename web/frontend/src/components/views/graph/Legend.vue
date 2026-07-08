@@ -4,9 +4,9 @@
     <v-card-title style="margin-top:.5rem;padding-bottom:0">Nodes</v-card-title>
     <v-list ref="list">
       <v-list-item v-for="node in Object.values(countMap.nodes)" :key="node.name" style="min-height: 30px; height:2rem">
-        <v-list-item-avatar width="20" height="20">
+        <div width="20" height="20" style="display:flex;align-items:center;margin-right:16px">
           <v-icon :color="getColoring('nodes',node.name,'light')" style="max-height: 1rem">fas fa-genderless</v-icon>
-        </v-list-item-avatar>
+        </div>
         <v-list-item-title style="font-size: small">{{ node.name }}</v-list-item-title>
         <v-list-item-subtitle style="font-size: small">{{ node.total }}</v-list-item-subtitle>
         <LegendAction
@@ -31,11 +31,11 @@
         </LegendAction>
       </v-list-item>
       <v-list-item v-for="node in nodeMap" :key="node.label" ref="custom">
-        <v-list-item-avatar width="20" height="20">
+        <div width="20" height="20" style="display:flex;align-items:center;margin-right:16px">
           <v-icon :color="options.toggled.nodes[node.name] ? node.color :'gray'" style="max-height: 1rem">fas
             fa-genderless
           </v-icon>
-        </v-list-item-avatar>
+        </div>
         <v-list-item-title style="font-size: small">{{ node.name }}</v-list-item-title>
         <v-list-item-subtitle style="font-size: small">{{ node.total }}</v-list-item-subtitle>
         <LegendAction
@@ -63,7 +63,7 @@
     <v-card-title style="margin-top:0;padding-bottom:0">Edges</v-card-title>
     <v-list>
       <v-list-item v-for="edge in Object.values(countMap.edges)" :key="edge.name" style="min-height: 30px; height:2rem">
-        <v-list-item-avatar min-width="65" height="20">
+        <div min-width="65" height="20" style="display:flex;align-items:center;margin-right:16px">
             <span>
             <v-icon class="edge-icon" :color="getColoring('edges',edge.name,'light')[0]">fas fa-genderless</v-icon>
               <template v-if="direction(edge.name)===0">
@@ -75,10 +75,10 @@
                 <v-icon class="edge-icon" :color="getColoring('edges',edge.name,'light')[1]">fas fa-genderless</v-icon>
               </template>
               </span>
-        </v-list-item-avatar>
+        </div>
         <v-tooltip bottom>
-          <template v-slot:activator="{on, attrs}">
-            <v-list-item-title style="font-size: small" v-on="on" v-bind="attrs">{{ edge.name }}</v-list-item-title>
+          <template v-slot:activator="{ props }">
+            <v-list-item-title style="font-size: small" v-bind="props">{{ edge.name }}</v-list-item-title>
           </template>
           <span>{{ edge.name }}</span>
         </v-tooltip>

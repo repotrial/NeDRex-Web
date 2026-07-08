@@ -3,10 +3,10 @@
     <v-container v-show="show">
       <v-list ref="list" style="margin-top: 30px;">
         <v-tooltip top>
-          <template v-slot:activator="{on, attrs}">
+          <template v-slot:activator="{ props }">
             <v-list-item>
               <v-list-item-action>
-                <v-chip outlined v-on:click="$emit('clickOptionEvent','fit')" v-on="on" v-bind="attrs">
+                <v-chip outlined v-on:click="$emit('clickOptionEvent','fit')" v-bind="props">
                   <v-icon left>fas fa-globe</v-icon>
                   Overview
                 </v-chip>
@@ -100,7 +100,7 @@ export default {
     },
 
     setPhysics:function(state){
-      this.$set(this,"physicsOn",state)
+      this.physicsOn = state
     }
   }
 

@@ -15,12 +15,11 @@
         <template class="text--primary" style="font-size: x-large" v-if="detailedObject.node">
           <div class="text-h5">
             <v-tooltip left>
-              <template v-slot:activator="{ on, attrs }">
+              <template v-slot:activator="{ props }">
                 <v-icon
                   left
                   :color="getColoring('nodes',detailedObject['Type'],'light')"
-                  v-bind="attrs"
-                  v-on="on"
+                  v-bind="props"
                   :size="hover.node1?'45px':'35px'"
                   @mouseleave.native="hover.node1=false"
                   @mouseover.native="hover.node1=true"
@@ -37,11 +36,10 @@
         <template class="text--primary" style="font-size: x-large" v-if="detailedObject.edge">
           <div class="text-h5">
             <v-tooltip left>
-              <template v-slot:activator="{ on, attrs }">
+              <template v-slot:activator="{ props }">
                 <v-icon
                   :color="getExtendedColoring('edges',detailedObject['Type'], 'light')[0]"
-                  v-bind="attrs"
-                  v-on="on"
+                  v-bind="props"
                   :size="hover.node1?'45px':'35px'"
                   @mouseleave.native="hover.node1=false"
                   @mouseover.native="hover.node1=true"
@@ -56,10 +54,9 @@
           </div>
           <div>
             <v-tooltip left>
-              <template v-slot:activator="{ on, attrs }">
+              <template v-slot:activator="{ props }">
                 <v-icon
-                  v-bind="attrs"
-                  v-on="on"
+                  v-bind="props"
                   :size="hover.arrow?'45px':'35px'"
                   @mouseleave.native="hover.arrow=false"
                   @mouseover.native="hover.arrow=true">
@@ -71,11 +68,10 @@
           </div>
           <div class="text-h5">
             <v-tooltip left>
-              <template v-slot:activator="{ on, attrs }">
+              <template v-slot:activator="{ props }">
                 <v-icon
                   :color="getExtendedColoring('edges',detailedObject['Type'], 'light')[1]"
-                  v-bind="attrs"
-                  v-on="on"
+                  v-bind="props"
                   :size="hover.node2?'45px':'35px'"
                   @mouseleave.native="hover.node2=false"
                   @mouseover.native="hover.node2=true"
@@ -429,7 +425,7 @@ export default {
       let list = this.attributes == null ? this.detailedObject.order : this.attributes;
       if (list.indexOf(attributeName) === -1)
         list.splice(pos, 0, attributeName)
-      this.$set(this.detailedObject, attributeName, value)
+      this.detailedObject[attributeName] = value
     },
 
     loadDetails: function (detailRequest, redirect, attributes) {

@@ -41,15 +41,14 @@
 </template>
 
 <script>
-import {tree} from 'vued3tree'
-import {DataSet, Network} from "vue-vis-network";
+import {DataSet} from "vis-data";
+import VisNetworkGraph from "@/components/common/VisNetworkGraph.vue";
 
 export default {
 
   name: "DisorderHierarchyDialog",
   components: {
-    tree,
-    'VisNetwork': Network
+    'VisNetwork': VisNetworkGraph
   },
   props: {
     value: Boolean,

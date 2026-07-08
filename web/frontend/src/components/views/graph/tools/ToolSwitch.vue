@@ -1,12 +1,12 @@
 <template>
   <v-tooltip top>
-    <template v-slot:activator="{on, attrs}">
+    <template v-slot:activator="{ props }">
       <v-list-item style="min-height: 2rem; max-height: 2.5rem">
-        <v-list-item-avatar>
+        <div style="display:flex;align-items:center;margin-right:16px">
           <v-icon size="20" :color="model ? 'primary':''">{{icon}}</v-icon>
-        </v-list-item-avatar>
+        </div>
         <v-list-item-subtitle>{{label}}</v-list-item-subtitle>
-        <v-list-item-action v-on="on" v-bind="attrs">
+        <v-list-item-action v-bind="props">
           <v-switch v-model="model" :disabled="disabled" @change="$emit('input',model)"
                     @click="$emit('click')" dense></v-switch>
         </v-list-item-action>

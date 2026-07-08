@@ -122,22 +122,20 @@
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn
-              color="green darken-1"
-              text
-              @click="dialogResolve(false)"
-            >
+            <v-btn variant="text"
+ color="green darken-1"
+ 
+ @click="dialogResolve(false)">
               Skip
             </v-btn>
-            <v-btn v-if="secondaryViewer" color="green darken-1" text
-                   @click="dialogResolve(false);$emit('loadIntoAdvancedEvent')" :disabled="disableAdvancedLoading">
+            <v-btn variant="text" v-if="secondaryViewer" color="green darken-1" 
+ @click="dialogResolve(false);$emit('loadIntoAdvancedEvent')" :disabled="disableAdvancedLoading">
               Advanced
             </v-btn>
-            <v-btn
-              color="green darken-1"
-              text
-              @click="dialogResolve(true)"
-            >
+            <v-btn variant="text"
+ color="green darken-1"
+ 
+ @click="dialogResolve(true)">
               Visualize
             </v-btn>
           </v-card-actions>
@@ -148,8 +146,8 @@
 </template>
 <script>
 
-import {DataSet} from 'vue-vis-network'
-import {Network} from "vue-vis-network";
+import {DataSet} from 'vis-data'
+import VisNetworkGraph from "@/components/common/VisNetworkGraph.vue";
 import * as CONFIG from "@/Config";
 
 export default {
@@ -206,7 +204,7 @@ export default {
   },
 
   created() {
-    this.$socket.$on("NetworkThumbnailReady", this.thumbnailReady)
+    this.$socket.on("NetworkThumbnailReady", this.thumbnailReady)
     this.physics = false
     this.colors = {bar: {backend: "#6db33f", vis: 'primary', error: 'red darken-2'}}
     this.configuration.visualized = false
@@ -390,8 +388,8 @@ export default {
     checkSizeWarning: function () {
       let sum = (this.nodeSet != null ? this.nodeSet.length : 0) + (this.edgeSet != null ? this.edgeSet.length : 0);
       this.$emit("disablePhysicsEvent", sum > 20000)
-      this.$set(this.configuration, "sizeWarning", (this.nodeSet !== undefined && this.nodeSet.length > 1000) || (this.edgeSet !== undefined && this.edgeSet.length > 1000))
-      this.$set(this.configuration, "sizeCheck", true)
+      this.configuration.sizeWarning = (this.nodeSet !== undefined && this.nodeSet.length > 1000) || (this.edgeSet !== undefined && this.edgeSet.length > 1000)
+      this.configuration.sizeCheck = true
     },
     showLoops: function (state) {
       let updates = Object.values(this.edgeSet.get({
@@ -485,7 +483,7 @@ export default {
     }
     ,
     togglePanel: function (index) {
-      this.$set(this, "showPanels", (this.showPanels === index ? -1 : index))
+      this.showPanels = (this.showPanels === index ? -1 : index)
     },
 
     isShowPanel: function (index) {
@@ -500,7 +498,7 @@ export default {
     },
     setPhysics: function (bool) {
       this.saveLayout()
-      this.$set(this.options.physics, 'enabled', bool)
+      this.options.physics.enabled = bool
       this.reloadOptions()
       return bool
     },
@@ -972,7 +970,7 @@ export default {
     }
   },
   components: {
-    'VisNetwork': Network
+    'VisNetwork': VisNetworkGraph
   }
 }
 </script>

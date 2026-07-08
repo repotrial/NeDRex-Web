@@ -13,10 +13,10 @@
     <v-card-title>Contact</v-card-title>
     <v-card-text>
       <v-tooltip right>
-        <template v-slot:activator="{on, attrs}">
+        <template v-slot:activator="{ props }">
           <v-btn icon><a style="text-decoration: none"
                          href="mailto:andreas.maier-1@uni-hamburg.de?subject=NeDRex-Web%20contact">
-            <v-icon v-on="on" v-bind="attrs" color="white">fas fa-envelope</v-icon>
+            <v-icon v-bind="props" color="white">fas fa-envelope</v-icon>
           </a></v-btn>
           andreas.maier-1(_at_]uni-hamburg.de
         </template>
@@ -29,11 +29,11 @@
         License Agreement below, and there is no login requirement.</i></b>
     </v-card-text>
 
-    <template v-for="entry in eula">
-      <v-card-title :key="entry.title+'_title'">
+    <template v-for="entry in eula" :key="entry.title">
+      <v-card-title>
         {{ entry.title }}
       </v-card-title>
-      <v-card-text :key="entry.title+'_content'">
+      <v-card-text>
         <div v-html="entry.content"></div>
       </v-card-text>
     </template>
