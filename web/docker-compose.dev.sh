@@ -7,7 +7,7 @@
 #cp frontend/docker/configs/vue.config_dev.js frontend/docker/vue.config.js
 cp compose-scripts/docker-compose_dev.yml ./docker-compose.yml
 #cp frontend/docker/configs/index_dev.html frontend/docker/index.html
-docker compose build --no-cache
+docker compose build --no-cache --progress=plain
 #docker compose build
 rm docker-compose.yml
 
@@ -18,5 +18,5 @@ cp compose-scripts/docker-compose_prod.yml ./docker-compose.yml
 
 #docker tag andimajore/nedrex_repo:server_prod andimajore/nedrex_repo:server_dev
 
-#docker push andimajore/nedrex_repo:server_dev
+docker push andimajore/nedrex_repo:server_dev
 #docker push andimajore/nedrex_repo:web_prod

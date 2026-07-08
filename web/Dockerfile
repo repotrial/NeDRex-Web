@@ -1,4 +1,4 @@
-FROM ghcr.io/repotrial/nedrexdb_v2d-base:latest
+FROM ghcr.io/repotrial/nedrexdb_v2d-base:dev
 #
 WORKDIR /usr/app
 #
