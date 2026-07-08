@@ -1,7 +1,8 @@
 FROM node:18.20 AS build-stage
 WORKDIR /app
-COPY package*.json ./
-RUN npm install
+COPY package*.json pnpm-lock.yaml ./
+RUN npm i -g pnpm
+RUN pnpm install
 COPY ./ .
 COPY docker/index.html public/index.html
 COPY docker/vue.config.js ./vue.config.js
